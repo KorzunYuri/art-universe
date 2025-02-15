@@ -1,0 +1,1 @@
+//tasks.matching { it.name == 'jar' }.configureEach { enabled = true }

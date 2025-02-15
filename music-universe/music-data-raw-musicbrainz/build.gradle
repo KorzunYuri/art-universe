@@ -1,0 +1,5 @@
+//apply plugin: "org.springframework.boot"
+//apply plugin: "org.liquibase.gradle"
+
+//tasks.matching { it.name == 'jar' }.configureEach { enabled = true }
+//tasks.matching { it.name == 'bootJar' }.configureEach { enabled = true }

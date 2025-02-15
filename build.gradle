@@ -1,19 +1,62 @@
+buildscript {
+    ext {
+        springBootVersion = '2.7.12'
+        lombokVersion = '1.18.24'
+        junitBomVersion = '5.10.0'
+        liquibaseVersion = '4.15.0'
+        // plugins
+        springDependenciesPluginVersion = '1.0.11.RELEASE'
+        liquibasePluginVersion = '2.0.4'
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath("io.spring.gradle:dependency-management-plugin:1.0.11.RELEASE")
+    }
+}
+
 plugins {
-    id 'java'
+    id 'io.spring.dependency-management' version "${springDependenciesPluginVersion}" apply false
+    id 'org.springframework.boot' version "${springBootVersion}" apply false
+    id 'org.liquibase.gradle' version "${liquibasePluginVersion}" apply false
 }
 
-group = 'yurykorzun.art'
-version = '1.0-SNAPSHOT'
-
-repositories {
-    mavenCentral()
+allprojects {
+    group = 'yurykorzun.art'
+    version = '0.0.1-SNAPSHOT'
+    repositories {
+        mavenCentral()
+    }
 }
 
-dependencies {
-    testImplementation platform('org.junit:junit-bom:5.10.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
-}
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'io.spring.dependency-management'
 
-test {
-    useJUnitPlatform()
+    sourceCompatibility = '17'
+    targetCompatibility = '17'
+
+    dependencyManagement {
+        imports {
+            mavenBom "org.springframework.boot:spring-boot-dependencies:${springBootVersion}"
+        }
+    }
+
+    dependencies {
+        compileOnly "org.projectlombok:lombok:${lombokVersion}"
+        annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+
+        testImplementation platform("org.junit:junit-bom:${junitBomVersion}")
+        testImplementation "org.junit.jupiter:junit-jupiter"
+
+        implementation "org.springframework.boot:spring-boot-starter"
+
+        implementation "org.liquibase:liquibase-core:${liquibaseVersion}"
+    }
+
+    tasks.matching { it.name in ['jar', 'bootJar'] }.configureEach {
+        enabled = false
+    }
 }
