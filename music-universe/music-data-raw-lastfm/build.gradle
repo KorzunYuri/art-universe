@@ -1,5 +1,23 @@
-//apply plugin: "org.springframework.boot"
-//apply plugin: "org.liquibase.gradle"
+apply plugin: "org.springframework.boot"
+apply plugin: "org.liquibase.gradle"
 
-//tasks.matching { it.name == 'jar' }.configureEach { enabled = true }
-//tasks.matching { it.name == 'bootJar' }.configureEach { enabled = true }
+tasks.matching { it.name == 'jar' }.configureEach { enabled = true }
+tasks.matching { it.name == 'bootJar' }.configureEach { enabled = true }
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.liquibase:liquibase-core'
+
+    runtimeOnly 'org.postgresql:postgresql'
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation "org.testcontainers:testcontainers"
+    testImplementation "org.testcontainers:postgresql"
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
+}

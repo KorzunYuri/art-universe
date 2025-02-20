@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: music-universe-raw-data-service
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:9999/music-universe
+    username: muraw_lastfm_dm
+    password: ${DB_MURAW_LASTFM_PASSWORD}
+  hikari:
+    maximum-pool-size: 10
+    minimum-idle: 2
+    pool-name: MusicUniverseHikariPool
+  jpa:
+    database: postgresql
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        show-sql: false
+        jdbc:
+          batch_size: 10
+    hibernate:
+      ddl-auto: none
+  liquibase:
+    change-log: classpath:db/migration/muraw/liquibase/db.changelog.xml
+
+server:
+  port: ${MURAW_LASTFM_PORT:8081}
+
+logging:
+  level:
+    liquibase: DEBUG

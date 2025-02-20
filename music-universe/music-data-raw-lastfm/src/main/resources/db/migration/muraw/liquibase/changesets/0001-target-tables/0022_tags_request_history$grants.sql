@@ -1,0 +1,1 @@
+GRANT ALL PRIVILEGES ON tags_request_history TO muraw_lastfm_dm;
