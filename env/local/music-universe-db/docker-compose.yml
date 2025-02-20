@@ -1,0 +1,30 @@
+services:
+  postgres:
+    build:
+      context: .
+      dockerfile: mu-db.dockerfile
+    container_name: music-universe-db-postgres
+    restart: always
+    shm_size: 128mb
+    environment:
+      POSTGRES_USER: ${PG_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${PG_PASSWORD:-postgres}
+    volumes:
+      - music_universe_db_postgres_data:/var/lib/postgresql/data
+    ports:
+      - "9999:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "9998:8080"
+    container_name: music-universe-db-adminer
+
+volumes:
+  music_universe_db_postgres_data:
