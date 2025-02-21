@@ -19,3 +19,5 @@ include 'art-universe-commons'
         include 'music-universe:music-data-raw-musicbrainz'
         findProject(':music-universe:music-data-raw-musicbrainz')?.name = 'music-data-raw-musicbrainz'
 
+        include 'music-universe:music-data-commons'
+        findProject(':music-universe:music-data-commons')?.name = 'music-data-commons'
