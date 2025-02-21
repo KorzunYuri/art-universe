@@ -1,0 +1,3 @@
+ALTER DEFAULT PRIVILEGES    IN SCHEMA mu_raw_lastfm GRANT ALL ON TABLES     TO mu_raw_lastfm_dm;
+ALTER DEFAULT PRIVILEGES    IN SCHEMA mu_raw_lastfm GRANT ALL ON SEQUENCES  TO mu_raw_lastfm_dm;
+ALTER DEFAULT PRIVILEGES    IN SCHEMA mu_raw_lastfm GRANT ALL ON FUNCTIONS  TO mu_raw_lastfm_dm;

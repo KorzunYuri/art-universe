@@ -3,8 +3,8 @@ spring:
     name: music-universe-raw-data-service
   datasource:
     driverClassName: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:9999/music-universe
-    username: muraw_lastfm_dm
+    url: jdbc:postgresql://localhost:9999/mu_raw_lastfm
+    username: mu_raw_lastfm_dm
     password: ${DB_MURAW_LASTFM_PASSWORD}
   hikari:
     maximum-pool-size: 10

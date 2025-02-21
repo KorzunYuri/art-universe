@@ -1,0 +1,1 @@
+CREATE SCHEMA mu_raw_lastfm AUTHORIZATION mu_raw_lastfm_dm;
