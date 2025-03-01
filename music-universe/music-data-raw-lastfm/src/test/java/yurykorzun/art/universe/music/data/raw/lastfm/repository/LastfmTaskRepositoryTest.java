@@ -6,8 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import yurykorzun.art.universe.common.persistence.entity.RequestStatus;
-import yurykorzun.art.universe.music.data.raw.lastfm.entity.TagsRequest;
+import yurykorzun.art.universe.common.persistence.entity.TaskStatus;
+import yurykorzun.art.universe.music.data.raw.lastfm.entity.LastfmTask;
+import yurykorzun.art.universe.music.data.raw.lastfm.entity.LastfmTaskType;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -22,10 +23,10 @@ import static yurykorzun.art.universe.music.data.raw.lastfm.utils.TimeTestUtils.
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @ActiveProfiles("test")
-public class TagsRequestRepositoryTest {
+public class LastfmTaskRepositoryTest {
 
     @Autowired
-    private TagsRequestRepository tagsRequestRepository;
+    private LastfmTaskRepository taskRepository;
 
     @Autowired
     private EntityManager entityManager;
@@ -33,43 +34,49 @@ public class TagsRequestRepositoryTest {
     @Test
     public void givenEmptyTable_whenTagsRequestInserted_thenTagsRequestPersisted() {
         // given
-        Instant from = now();
-        Instant to = now().plus(1, ChronoUnit.MINUTES);
-        TagsRequest request = new TagsRequest(from, to);
+        Instant today = now();
+        Instant dueDttm = now().plus(1, ChronoUnit.MINUTES);
+        LastfmTask request = LastfmTask.builder()
+                .type(LastfmTaskType.TAGS_TOP_TAGS)
+                .dueDttm(dueDttm)
+            .build();
 
         // when
-        request = tagsRequestRepository.save(request);
+        request = taskRepository.save(request);
 
         // then
-        Optional<TagsRequest> optPersisted = tagsRequestRepository.findById(request.getId());
+        Optional<LastfmTask> optPersisted = taskRepository.findById(request.getId());
         assertTrue(optPersisted.isPresent());
-        TagsRequest persisted = optPersisted.get();
-        assertEquals(from, persisted.getFromDttm());
-        assertEquals(to, persisted.getToDttm());
+        LastfmTask persisted = optPersisted.get();
         assertEquals(request.getId(), persisted.getId());
+        assertEquals(request.getType(), persisted.getType());
+        assertEquals(dueDttm, persisted.getDueDttm());
         assertEquals(request.getStatus(), persisted.getStatus());
-        assertEquals(request.getStatus(), RequestStatus.CREATED);
+        assertEquals(request.getStatus(), TaskStatus.CREATED);
 
-        assertEquals(1, tagsRequestRepository.count());
+        assertEquals(1, taskRepository.count());
     }
 
     @Test
     @Transactional
     public void givenEmptyTable_whenTagsRequestInserted_thenTagsRequestHistoryUpdated() {
         // given
-        Instant from = now();
-        Instant to = now().plus(1, ChronoUnit.MINUTES);
-        TagsRequest request = new TagsRequest(from, to);
+        Instant today = now();
+        Instant dueDttm = now().plus(1, ChronoUnit.MINUTES);
+        LastfmTask request = LastfmTask.builder()
+                .type(LastfmTaskType.TAGS_TOP_TAGS)
+                .dueDttm(dueDttm)
+            .build();
 
         // when
-        tagsRequestRepository.save(request);
+        taskRepository.save(request);
         entityManager.flush();
 
         // then
         Query query = entityManager.createNativeQuery("""
             SELECT  COUNT(*) 
-            FROM    tags_request_history 
-            WHERE   tag_request_id = :id
+            FROM    task_history 
+            WHERE   task_id = :id
         """);
         query.setParameter("id", request.getId());
         Number count = (Number) query.getSingleResult();

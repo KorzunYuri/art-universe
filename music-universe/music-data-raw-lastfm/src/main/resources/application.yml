@@ -6,10 +6,10 @@ spring:
     url: jdbc:postgresql://localhost:9999/mu_raw_lastfm
     username: mu_raw_lastfm_dm
     password: ${DB_MURAW_LASTFM_PASSWORD}
-  hikari:
-    maximum-pool-size: 10
-    minimum-idle: 2
-    pool-name: MusicUniverseHikariPool
+    hikari:
+      pool-name: MuRawLastFmHikariPool
+      maximum-pool-size: 10
+      minimum-idle: 2
   jpa:
     database: postgresql
     properties:
@@ -22,9 +22,23 @@ spring:
       ddl-auto: none
   liquibase:
     change-log: classpath:db/migration/muraw/liquibase/db.changelog.xml
-
+  kafka:
+    bootstrap-servers: localhost:29092,localhost:39092
+    groups:
+      tags: "mu-raw-lastfm-tags"
 server:
   port: ${MURAW_LASTFM_PORT:8081}
+
+scheduling:
+  cron:
+    lastfm:
+      tags: "0 0 21 * * *"
+
+messaging:
+  lastfm:
+    topics:
+      tags:
+        topTags: "tags.topTags"
 
 logging:
   level:
