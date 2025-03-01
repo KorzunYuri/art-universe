@@ -1,7 +1,5 @@
 package yurykorzun.art.universe.common.persistence.entity;
 
-import java.util.Collection;
-
 /**
  * Any data collection task type has to:
  *  1) be enum

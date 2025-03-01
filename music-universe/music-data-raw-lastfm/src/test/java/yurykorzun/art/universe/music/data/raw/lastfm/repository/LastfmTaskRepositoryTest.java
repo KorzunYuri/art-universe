@@ -34,7 +34,6 @@ public class LastfmTaskRepositoryTest {
     @Test
     public void givenEmptyTable_whenTagsRequestInserted_thenTagsRequestPersisted() {
         // given
-        Instant today = now();
         Instant dueDttm = now().plus(1, ChronoUnit.MINUTES);
         LastfmTask request = LastfmTask.builder()
                 .type(LastfmTaskType.TAGS_TOP_TAGS)
@@ -51,8 +50,8 @@ public class LastfmTaskRepositoryTest {
         assertEquals(request.getId(), persisted.getId());
         assertEquals(request.getType(), persisted.getType());
         assertEquals(dueDttm, persisted.getDueDttm());
-        assertEquals(request.getStatus(), persisted.getStatus());
-        assertEquals(request.getStatus(), TaskStatus.CREATED);
+        assertEquals(persisted.getStatus(), request.getStatus());
+        assertEquals(TaskStatus.CREATED, request.getStatus());
 
         assertEquals(1, taskRepository.count());
     }
@@ -61,7 +60,6 @@ public class LastfmTaskRepositoryTest {
     @Transactional
     public void givenEmptyTable_whenTagsRequestInserted_thenTagsRequestHistoryUpdated() {
         // given
-        Instant today = now();
         Instant dueDttm = now().plus(1, ChronoUnit.MINUTES);
         LastfmTask request = LastfmTask.builder()
                 .type(LastfmTaskType.TAGS_TOP_TAGS)
@@ -74,8 +72,8 @@ public class LastfmTaskRepositoryTest {
 
         // then
         Query query = entityManager.createNativeQuery("""
-            SELECT  COUNT(*) 
-            FROM    task_history 
+            SELECT  COUNT(*)
+            FROM    task_history
             WHERE   task_id = :id
         """);
         query.setParameter("id", request.getId());

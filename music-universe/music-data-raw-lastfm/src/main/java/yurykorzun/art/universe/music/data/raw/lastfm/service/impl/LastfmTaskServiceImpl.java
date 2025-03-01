@@ -4,6 +4,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.common.dto.DataCollectionTaskCreateRequest;
 import yurykorzun.art.universe.common.dto.DataCollectionTaskCreateResponse;
+import yurykorzun.art.universe.common.messaging.MessageProducer;
+import yurykorzun.art.universe.common.messaging.dto.DataCollectionTaskMessage;
 import yurykorzun.art.universe.common.persistence.entity.TaskStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.entity.LastfmTask;
 import yurykorzun.art.universe.music.data.raw.lastfm.entity.LastfmTaskType;
@@ -18,9 +20,11 @@ import java.time.temporal.ChronoUnit;
 public class LastfmTaskServiceImpl implements LastfmTaskService {
 
     private final LastfmTaskRepository repository;
+    private final MessageProducer messageProducer;
 
-    public LastfmTaskServiceImpl(LastfmTaskRepository taskRepository) {
+    public LastfmTaskServiceImpl(LastfmTaskRepository taskRepository, MessageProducer messageProducer) {
         this.repository = taskRepository;
+        this.messageProducer = messageProducer;
     }
 
     @Override
@@ -35,6 +39,8 @@ public class LastfmTaskServiceImpl implements LastfmTaskService {
                 .build();
         task = repository.save(task);
 
+        messageProducer.send(taskToMessage(task));
+
         return new DataCollectionTaskCreateResponse(task.getId());
     }
 
@@ -44,5 +50,9 @@ public class LastfmTaskServiceImpl implements LastfmTaskService {
         LastfmTask task = repository.getReferenceById(id);
         task.setStatus(status);
         repository.save(task);
+    }
+
+    private DataCollectionTaskMessage taskToMessage(LastfmTask task) {
+        return new DataCollectionTaskMessage(task.getId(), task.getType(), task.getDueDttm());
     }
 }
