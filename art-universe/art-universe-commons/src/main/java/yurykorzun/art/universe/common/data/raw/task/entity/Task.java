@@ -37,7 +37,7 @@ public class Task extends BaseEntity {
     private int attemptCnt = 0;
 
     public void setStatus(TaskStatus newStatus) {
-        if (this.status.isValidTransition(newStatus)) {
+        if (!this.status.isValidTransition(newStatus)) {
             throw new IllegalStateException(String.format("Invalid transition from %s to %s", this.status, newStatus));
         }
         this.status = newStatus;
