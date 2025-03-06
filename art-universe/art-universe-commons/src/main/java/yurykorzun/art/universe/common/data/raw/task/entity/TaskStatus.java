@@ -30,7 +30,7 @@ public enum TaskStatus {
     static {
         for (TaskStatus status : TaskStatus.values()) {
             if (idMap.putIfAbsent(status.id, status) != null) {
-                throw new IllegalArgumentException("Duplicate RequestStatus %d".formatted(status.id));
+                throw new IllegalArgumentException("Duplicate TaskStatus %d".formatted(status.id));
             }
         }
     }
