@@ -30,6 +30,13 @@ class TaskTest {
     }
 
     @Test
+    void testInvalidTaskStatusTransition() {
+        Task task = validTaskSupplier.get();
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> task.setStatus(TaskStatus.CREATED));
+        assertEquals("Invalid transition from CREATED to CREATED", e.getMessage());
+    }
+
+    @Test
     void testAttemptsIncrement() {
         Task task = validTaskSupplier.get();
         task.incAttempts();

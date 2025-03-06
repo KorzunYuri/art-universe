@@ -23,6 +23,7 @@ public class ApiCall {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @NonNull
     @Column(name = "type")
     @Convert(converter = ApiCallTypeConverter.class)
     private ApiCallType type;
@@ -50,7 +51,7 @@ public class ApiCall {
     }
 
     protected void validateParams(ApiCallType type, Map<String, String> params) {
-        // TODO check optional/default params overriding
+        // TODO check optional/default params overriding and add tests
         Collection<String> paramNames = type.getMandatoryParams();
         if (paramNames.isEmpty()) return;
         params.forEach((k, v) -> {
@@ -61,8 +62,10 @@ public class ApiCall {
         });
     }
 
-    public void setStatus(ApiCallStatus status) {
-        // TODO validate status transitions (watch Task.class for example)
-        this.status = status;
+    public void setStatus(ApiCallStatus newStatus) {
+        if (!this.status.isValidTransition(newStatus)) {
+            throw new IllegalArgumentException(String.format("Invalid transition from %s to %s", this.status, newStatus));
+        }
+        this.status = newStatus;
     }
 }
