@@ -1,6 +1,10 @@
 rootProject.name = 'art-universe'
 
-include 'art-universe-commons'
+    include 'art-universe:art-universe-commons'
+    findProject(':art-universe:art-universe-commons')?.name = 'art-universe-commons'
+
+    include 'art-universe:art-universe-messaging-impl-kafka'
+    findProject(':art-universe:art-universe-messaging-impl-kafka')?.name = 'art-universe-messaging-impl-kafka'
 
 include 'music-universe'
 

@@ -7,8 +7,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import yurykorzun.art.universe.common.persistence.entity.TaskStatus;
-import yurykorzun.art.universe.music.data.raw.lastfm.entity.LastfmTask;
-import yurykorzun.art.universe.music.data.raw.lastfm.entity.LastfmTaskType;
+import yurykorzun.art.universe.music.data.raw.lastfm.task.entity.LastfmTask;
+import yurykorzun.art.universe.music.data.raw.lastfm.task.entity.LastfmTaskType;
+import yurykorzun.art.universe.music.data.raw.lastfm.task.repository.LastfmTaskRepository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -18,7 +19,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static yurykorzun.art.universe.music.data.raw.lastfm.utils.TimeTestUtils.*;
+import static yurykorzun.art.universe.music.data.raw.lastfm.common.utils.TimeTestUtils.*;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
