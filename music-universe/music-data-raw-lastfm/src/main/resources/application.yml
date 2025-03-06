@@ -34,11 +34,9 @@ scheduling:
     lastfm:
       tags: "0 0 21 * * *"
 
-messaging:
-  lastfm:
-    topics:
-      tags:
-        topTags: "tags.topTags"
+lastfm:
+  baseUrl: "http://ws.audioscrobbler.com/2.0/"
+  apikey: ${LASTFM_API_KEY}
 
 logging:
   level:
