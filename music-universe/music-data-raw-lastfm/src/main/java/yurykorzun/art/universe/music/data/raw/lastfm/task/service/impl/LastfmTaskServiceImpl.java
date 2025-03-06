@@ -2,7 +2,6 @@ package yurykorzun.art.universe.music.data.raw.lastfm.task.service.impl;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import yurykorzun.art.universe.common.data.raw.task.messaging.TaskMessageProducer;
 import yurykorzun.art.universe.common.data.raw.task.dto.TaskRunRequest;
 import yurykorzun.art.universe.common.persistence.entity.TaskStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.dto.LastfmTaskCreateRequest;
@@ -16,11 +15,9 @@ import java.time.Instant;
 public class LastfmTaskServiceImpl implements LastfmTaskService {
 
     private final LastfmTaskRepository repository;
-    private final TaskMessageProducer messageProducer;
 
-    public LastfmTaskServiceImpl(LastfmTaskRepository taskRepository, TaskMessageProducer messageProducer) {
+    public LastfmTaskServiceImpl(LastfmTaskRepository taskRepository) {
         this.repository = taskRepository;
-        this.messageProducer = messageProducer;
     }
 
 
@@ -29,8 +26,6 @@ public class LastfmTaskServiceImpl implements LastfmTaskService {
     public long createRequest(LastfmTaskCreateRequest dto) {
 
         LastfmTask task = repository.save(dtoToTask(dto));
-
-        messageProducer.send(buildRunRequest(task));
 
         return task.getId();
     }

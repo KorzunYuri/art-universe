@@ -1,7 +1,6 @@
 subprojects {
     dependencies {
         implementation project(":art-universe:art-universe-commons")
-        implementation project(":art-universe:art-universe-messaging-impl-kafka")
     }
 }
 
