@@ -5,6 +5,6 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-    <includeAll path="../changesets/0001-target-tables" relativeToChangelogFile="true"/>
+    <includeAll path="../changesets/0002-api-call-tables" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

@@ -33,7 +33,7 @@ public class LastfmTaskRepositoryTest {
     private EntityManager entityManager;
 
     @Test
-    public void givenEmptyTable_whenTagsRequestInserted_thenTagsRequestPersisted() {
+    public void givenValidLastfmTask_whenSaved_thenPersistedCorrectly() {
         // given
         Instant dueDttm = now().plus(1, ChronoUnit.MINUTES);
         LastfmTask request = LastfmTask.builder()
