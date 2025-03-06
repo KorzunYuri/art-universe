@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import yurykorzun.art.universe.common.persistence.entity.TaskStatus;
+import yurykorzun.art.universe.common.data.raw.task.entity.TaskStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.entity.LastfmTask;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.entity.LastfmTaskType;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.repository.LastfmTaskRepository;

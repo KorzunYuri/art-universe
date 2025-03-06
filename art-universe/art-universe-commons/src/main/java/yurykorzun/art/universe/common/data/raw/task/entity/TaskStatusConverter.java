@@ -1,6 +1,4 @@
-package yurykorzun.art.universe.common.persistence.converter;
-
-import yurykorzun.art.universe.common.persistence.entity.TaskStatus;
+package yurykorzun.art.universe.common.data.raw.task.entity;
 
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
