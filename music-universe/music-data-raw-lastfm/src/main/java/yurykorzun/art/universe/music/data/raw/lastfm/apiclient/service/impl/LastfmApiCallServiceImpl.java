@@ -3,7 +3,6 @@ package yurykorzun.art.universe.music.data.raw.lastfm.apiclient.service.impl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.common.data.raw.apiclient.entity.ApiCallStatus;
-import yurykorzun.art.universe.common.data.raw.apiclient.messaging.ApiCallMessageProducer;
 import yurykorzun.art.universe.music.data.raw.lastfm.apiclient.dto.LastfmApiCallCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.apiclient.dto.LastfmApiCallRunRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.apiclient.entity.LastfmApiCall;
@@ -14,22 +13,17 @@ import yurykorzun.art.universe.music.data.raw.lastfm.apiclient.service.LastfmApi
 public class LastfmApiCallServiceImpl implements LastfmApiCallService {
 
     private final LastfmApiCallRepository repository;
-    private final ApiCallMessageProducer messageProducer;
 
     public LastfmApiCallServiceImpl(
-            LastfmApiCallRepository repository,
-            ApiCallMessageProducer messageProducer
+            LastfmApiCallRepository repository
     ) {
         this.repository = repository;
-        this.messageProducer = messageProducer;
     }
 
     @Override
     @Transactional
     public long createRequest(LastfmApiCallCreateRequest dto) {
         LastfmApiCall lastfmApiCall = repository.save(dtoToApiCall(dto));
-
-        messageProducer.send(getRunRequest(dto));
 
         return lastfmApiCall.getId();
     }
@@ -45,13 +39,13 @@ public class LastfmApiCallServiceImpl implements LastfmApiCallService {
         return LastfmApiCall.builder()
                 .type(dto.getType())
                 .dueDttm(dto.getDueDttm())
-                .build();
+            .build();
     }
 
     private static LastfmApiCallRunRequest getRunRequest(LastfmApiCallCreateRequest dto) {
         return LastfmApiCallRunRequest.builder()
                 .type(dto.getType())
                 .dueDttm(dto.getDueDttm())
-                .build();
+            .build();
     }
 }
