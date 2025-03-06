@@ -33,6 +33,7 @@ public class ApiCall {
     private Map<String, String> params = Collections.emptyMap();
 
     @Column(name = "status")
+    @Convert(converter = ApiCallStatusConverter.class)
     @Builder.Default
     private ApiCallStatus status = ApiCallStatus.CREATED;
 
