@@ -1,4 +1,4 @@
-package yurykorzun.art.universe.common.persistence.entity;
+package yurykorzun.art.universe.common.data.raw.task.entity;
 
 import lombok.Getter;
 

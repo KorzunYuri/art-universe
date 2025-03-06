@@ -2,7 +2,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.task.service.impl;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import yurykorzun.art.universe.common.persistence.entity.TaskStatus;
+import yurykorzun.art.universe.common.data.raw.task.entity.TaskStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.apiclient.dto.LastfmApiCallCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.apiclient.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.apiclient.service.LastfmApiCallService;

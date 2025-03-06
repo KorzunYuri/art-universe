@@ -3,7 +3,6 @@ package yurykorzun.art.universe.common.data.raw.task.entity;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import yurykorzun.art.universe.common.persistence.entity.BaseEntity;
-import yurykorzun.art.universe.common.persistence.entity.TaskStatus;
 
 import javax.persistence.*;
 import java.time.Instant;
@@ -30,6 +29,7 @@ public class Task extends BaseEntity {
     @NonNull
     @Builder.Default
     @Column(name = "status")
+    @Convert(converter = TaskStatusConverter.class)
     private TaskStatus status = TaskStatus.CREATED;
 
     @Builder.Default

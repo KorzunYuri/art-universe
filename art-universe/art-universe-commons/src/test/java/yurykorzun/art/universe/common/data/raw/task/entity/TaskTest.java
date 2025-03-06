@@ -1,7 +1,6 @@
 package yurykorzun.art.universe.common.data.raw.task.entity;
 
 import org.junit.jupiter.api.Test;
-import yurykorzun.art.universe.common.persistence.entity.TaskStatus;
 
 import java.time.Instant;
 import java.util.List;
