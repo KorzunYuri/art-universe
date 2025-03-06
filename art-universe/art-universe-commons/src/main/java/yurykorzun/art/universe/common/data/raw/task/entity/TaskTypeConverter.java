@@ -17,6 +17,6 @@ public class TaskTypeConverter implements AttributeConverter<TaskType, String> {
             return null;
         }
         return TaskTypeRegistry.getByCode(taskTypeCode)
-                .orElseThrow(() -> new IllegalArgumentException("Unknown RequestType code: " + taskTypeCode));
+                .orElseThrow(() -> new IllegalArgumentException("Unknown TaskType code: " + taskTypeCode));
     }
 }
