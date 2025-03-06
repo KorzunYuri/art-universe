@@ -1,0 +1,510 @@
+{
+  "toptags": {
+    "tag": [
+      {
+        "count": 100,
+        "name": "pop",
+        "url": "https://www.last.fm/tag/pop"
+      },
+      {
+        "count": 78,
+        "name": "dance",
+        "url": "https://www.last.fm/tag/dance"
+      },
+      {
+        "count": 59,
+        "name": "90s",
+        "url": "https://www.last.fm/tag/90s"
+      },
+      {
+        "count": 55,
+        "name": "cher",
+        "url": "https://www.last.fm/tag/cher"
+      },
+      {
+        "count": 51,
+        "name": "female vocalists",
+        "url": "https://www.last.fm/tag/female+vocalists"
+      },
+      {
+        "count": 13,
+        "name": "Believe",
+        "url": "https://www.last.fm/tag/Believe"
+      },
+      {
+        "count": 12,
+        "name": "electronic",
+        "url": "https://www.last.fm/tag/electronic"
+      },
+      {
+        "count": 11,
+        "name": "80s",
+        "url": "https://www.last.fm/tag/80s"
+      },
+      {
+        "count": 10,
+        "name": "female vocalist",
+        "url": "https://www.last.fm/tag/female+vocalist"
+      },
+      {
+        "count": 9,
+        "name": "Love",
+        "url": "https://www.last.fm/tag/Love"
+      },
+      {
+        "count": 8,
+        "name": "Disco",
+        "url": "https://www.last.fm/tag/Disco"
+      },
+      {
+        "count": 6,
+        "name": "diva",
+        "url": "https://www.last.fm/tag/diva"
+      },
+      {
+        "count": 6,
+        "name": "1998",
+        "url": "https://www.last.fm/tag/1998"
+      },
+      {
+        "count": 6,
+        "name": "electronica",
+        "url": "https://www.last.fm/tag/electronica"
+      },
+      {
+        "count": 6,
+        "name": "favorites",
+        "url": "https://www.last.fm/tag/favorites"
+      },
+      {
+        "count": 6,
+        "name": "gay",
+        "url": "https://www.last.fm/tag/gay"
+      },
+      {
+        "count": 5,
+        "name": "House",
+        "url": "https://www.last.fm/tag/House"
+      },
+      {
+        "count": 5,
+        "name": "american",
+        "url": "https://www.last.fm/tag/american"
+      },
+      {
+        "count": 5,
+        "name": "party",
+        "url": "https://www.last.fm/tag/party"
+      },
+      {
+        "count": 5,
+        "name": "rock",
+        "url": "https://www.last.fm/tag/rock"
+      },
+      {
+        "count": 5,
+        "name": "female",
+        "url": "https://www.last.fm/tag/female"
+      },
+      {
+        "count": 4,
+        "name": "Guilty Pleasures",
+        "url": "https://www.last.fm/tag/Guilty+Pleasures"
+      },
+      {
+        "count": 4,
+        "name": "techno",
+        "url": "https://www.last.fm/tag/techno"
+      },
+      {
+        "count": 4,
+        "name": "Energetic",
+        "url": "https://www.last.fm/tag/Energetic"
+      },
+      {
+        "count": 3,
+        "name": "singer",
+        "url": "https://www.last.fm/tag/singer"
+      },
+      {
+        "count": 3,
+        "name": "club",
+        "url": "https://www.last.fm/tag/club"
+      },
+      {
+        "count": 3,
+        "name": "oldies",
+        "url": "https://www.last.fm/tag/oldies"
+      },
+      {
+        "count": 3,
+        "name": "fun",
+        "url": "https://www.last.fm/tag/fun"
+      },
+      {
+        "count": 3,
+        "name": "90's",
+        "url": "https://www.last.fm/tag/90%27s"
+      },
+      {
+        "count": 3,
+        "name": "auto-tune",
+        "url": "https://www.last.fm/tag/auto-tune"
+      },
+      {
+        "count": 3,
+        "name": "guilty pleasure",
+        "url": "https://www.last.fm/tag/guilty+pleasure"
+      },
+      {
+        "count": 3,
+        "name": "dance pop",
+        "url": "https://www.last.fm/tag/dance+pop"
+      },
+      {
+        "count": 3,
+        "name": "1999",
+        "url": "https://www.last.fm/tag/1999"
+      },
+      {
+        "count": 3,
+        "name": "us number one",
+        "url": "https://www.last.fm/tag/us+number+one"
+      },
+      {
+        "count": 3,
+        "name": "catchy",
+        "url": "https://www.last.fm/tag/catchy"
+      },
+      {
+        "count": 3,
+        "name": "i am a party girl here is my soundtrack",
+        "url": "https://www.last.fm/tag/i+am+a+party+girl+here+is+my+soundtrack"
+      },
+      {
+        "count": 3,
+        "name": "cheesy",
+        "url": "https://www.last.fm/tag/cheesy"
+      },
+      {
+        "count": 3,
+        "name": "elite beat agents",
+        "url": "https://www.last.fm/tag/elite+beat+agents"
+      },
+      {
+        "count": 3,
+        "name": "oh man i cant believe im listening to this but i never want to stop i love it more than life itself",
+        "url": "https://www.last.fm/tag/oh+man+i+cant+believe+im+listening+to+this+but+i+never+want+to+stop+i+love+it+more+than+life+itself"
+      },
+      {
+        "count": 2,
+        "name": "upbeat",
+        "url": "https://www.last.fm/tag/upbeat"
+      },
+      {
+        "count": 2,
+        "name": "english",
+        "url": "https://www.last.fm/tag/english"
+      },
+      {
+        "count": 2,
+        "name": "hit",
+        "url": "https://www.last.fm/tag/hit"
+      },
+      {
+        "count": 2,
+        "name": "autotune",
+        "url": "https://www.last.fm/tag/autotune"
+      },
+      {
+        "count": 2,
+        "name": "pop dance",
+        "url": "https://www.last.fm/tag/pop+dance"
+      },
+      {
+        "count": 2,
+        "name": "90s pop",
+        "url": "https://www.last.fm/tag/90s+pop"
+      },
+      {
+        "count": 2,
+        "name": "gayest song ever",
+        "url": "https://www.last.fm/tag/gayest+song+ever"
+      },
+      {
+        "count": 2,
+        "name": "Cher-Believe",
+        "url": "https://www.last.fm/tag/Cher-Believe"
+      },
+      {
+        "count": 2,
+        "name": "epic",
+        "url": "https://www.last.fm/tag/epic"
+      },
+      {
+        "count": 2,
+        "name": "Awesome",
+        "url": "https://www.last.fm/tag/Awesome"
+      },
+      {
+        "count": 2,
+        "name": "vocoder",
+        "url": "https://www.last.fm/tag/vocoder"
+      },
+      {
+        "count": 2,
+        "name": "bouncy",
+        "url": "https://www.last.fm/tag/bouncy"
+      },
+      {
+        "count": 2,
+        "name": "Favourites",
+        "url": "https://www.last.fm/tag/Favourites"
+      },
+      {
+        "count": 2,
+        "name": "Anthemic",
+        "url": "https://www.last.fm/tag/Anthemic"
+      },
+      {
+        "count": 2,
+        "name": "my soundtrack",
+        "url": "https://www.last.fm/tag/my+soundtrack"
+      },
+      {
+        "count": 2,
+        "name": "classic rock",
+        "url": "https://www.last.fm/tag/classic+rock"
+      },
+      {
+        "count": 2,
+        "name": "chillout",
+        "url": "https://www.last.fm/tag/chillout"
+      },
+      {
+        "count": 2,
+        "name": "electropop",
+        "url": "https://www.last.fm/tag/electropop"
+      },
+      {
+        "count": 2,
+        "name": "dance-pop",
+        "url": "https://www.last.fm/tag/dance-pop"
+      },
+      {
+        "count": 2,
+        "name": "beautiful",
+        "url": "https://www.last.fm/tag/beautiful"
+      },
+      {
+        "count": 2,
+        "name": "favourite",
+        "url": "https://www.last.fm/tag/favourite"
+      },
+      {
+        "count": 2,
+        "name": "loved",
+        "url": "https://www.last.fm/tag/loved"
+      },
+      {
+        "count": 2,
+        "name": "eurodance",
+        "url": "https://www.last.fm/tag/eurodance"
+      },
+      {
+        "count": 2,
+        "name": "top 40",
+        "url": "https://www.last.fm/tag/top+40"
+      },
+      {
+        "count": 2,
+        "name": "best",
+        "url": "https://www.last.fm/tag/best"
+      },
+      {
+        "count": 2,
+        "name": "women",
+        "url": "https://www.last.fm/tag/women"
+      },
+      {
+        "count": 2,
+        "name": "girl power",
+        "url": "https://www.last.fm/tag/girl+power"
+      },
+      {
+        "count": 2,
+        "name": "my music",
+        "url": "https://www.last.fm/tag/my+music"
+      },
+      {
+        "count": 2,
+        "name": "divas",
+        "url": "https://www.last.fm/tag/divas"
+      },
+      {
+        "count": 2,
+        "name": "superhit",
+        "url": "https://www.last.fm/tag/superhit"
+      },
+      {
+        "count": 2,
+        "name": "disco heaven",
+        "url": "https://www.last.fm/tag/disco+heaven"
+      },
+      {
+        "count": 2,
+        "name": "the fabulous female voice",
+        "url": "https://www.last.fm/tag/the+fabulous+female+voice"
+      },
+      {
+        "count": 2,
+        "name": "pop dance female vocalists 90s electronic",
+        "url": "https://www.last.fm/tag/pop+dance+female+vocalists+90s+electronic"
+      },
+      {
+        "count": 2,
+        "name": "cher - believe",
+        "url": "https://www.last.fm/tag/cher+-+believe"
+      },
+      {
+        "count": 2,
+        "name": "The Very Best of Cher",
+        "url": "https://www.last.fm/tag/The+Very+Best+of+Cher"
+      },
+      {
+        "count": 1,
+        "name": "funk",
+        "url": "https://www.last.fm/tag/funk"
+      },
+      {
+        "count": 1,
+        "name": "funky",
+        "url": "https://www.last.fm/tag/funky"
+      },
+      {
+        "count": 1,
+        "name": "female vocals",
+        "url": "https://www.last.fm/tag/female+vocals"
+      },
+      {
+        "count": 1,
+        "name": "wishlist",
+        "url": "https://www.last.fm/tag/wishlist"
+      },
+      {
+        "count": 1,
+        "name": "groovy",
+        "url": "https://www.last.fm/tag/groovy"
+      },
+      {
+        "count": 1,
+        "name": "love songs",
+        "url": "https://www.last.fm/tag/love+songs"
+      },
+      {
+        "count": 1,
+        "name": "High School",
+        "url": "https://www.last.fm/tag/High+School"
+      },
+      {
+        "count": 1,
+        "name": "female vocal",
+        "url": "https://www.last.fm/tag/female+vocal"
+      },
+      {
+        "count": 1,
+        "name": "love at first listen",
+        "url": "https://www.last.fm/tag/love+at+first+listen"
+      },
+      {
+        "count": 1,
+        "name": "Female Voices",
+        "url": "https://www.last.fm/tag/Female+Voices"
+      },
+      {
+        "count": 1,
+        "name": "jecks",
+        "url": "https://www.last.fm/tag/jecks"
+      },
+      {
+        "count": 1,
+        "name": "Empowering",
+        "url": "https://www.last.fm/tag/Empowering"
+      },
+      {
+        "count": 1,
+        "name": "mainstream",
+        "url": "https://www.last.fm/tag/mainstream"
+      },
+      {
+        "count": 1,
+        "name": "gotanygoodmusic",
+        "url": "https://www.last.fm/tag/gotanygoodmusic"
+      },
+      {
+        "count": 1,
+        "name": "Like this",
+        "url": "https://www.last.fm/tag/Like+this"
+      },
+      {
+        "count": 1,
+        "name": "essential 90s",
+        "url": "https://www.last.fm/tag/essential+90s"
+      },
+      {
+        "count": 1,
+        "name": "uk number one",
+        "url": "https://www.last.fm/tag/uk+number+one"
+      },
+      {
+        "count": 1,
+        "name": "power voice",
+        "url": "https://www.last.fm/tag/power+voice"
+      },
+      {
+        "count": 1,
+        "name": "songs i should hate but secretly like",
+        "url": "https://www.last.fm/tag/songs+i+should+hate+but+secretly+like"
+      },
+      {
+        "count": 1,
+        "name": "Songs From My Childhood",
+        "url": "https://www.last.fm/tag/Songs+From+My+Childhood"
+      },
+      {
+        "count": 1,
+        "name": "decade: 90s",
+        "url": "https://www.last.fm/tag/decade:+90s"
+      },
+      {
+        "count": 1,
+        "name": "to make a party",
+        "url": "https://www.last.fm/tag/to+make+a+party"
+      },
+      {
+        "count": 1,
+        "name": "jazzyfunA-K",
+        "url": "https://www.last.fm/tag/jazzyfunA-K"
+      },
+      {
+        "count": 1,
+        "name": "All of the songs",
+        "url": "https://www.last.fm/tag/All+of+the+songs"
+      },
+      {
+        "count": 1,
+        "name": "no matter what people say she is great",
+        "url": "https://www.last.fm/tag/no+matter+what+people+say+she+is+great"
+      },
+      {
+        "count": 1,
+        "name": "grammy for best dance recording",
+        "url": "https://www.last.fm/tag/grammy+for+best+dance+recording"
+      }
+    ],
+    "@attr": {
+      "artist": "Cher",
+      "track": "Believe"
+    }
+  }
+}
