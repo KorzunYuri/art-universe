@@ -2,22 +2,27 @@ package yurykorzun.art.universe.music.data.raw.lastfm.task.service.impl;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import yurykorzun.art.universe.common.data.raw.task.dto.TaskRunRequest;
 import yurykorzun.art.universe.common.persistence.entity.TaskStatus;
+import yurykorzun.art.universe.music.data.raw.lastfm.apiclient.dto.LastfmApiCallCreateRequest;
+import yurykorzun.art.universe.music.data.raw.lastfm.apiclient.entity.LastfmApiCallType;
+import yurykorzun.art.universe.music.data.raw.lastfm.apiclient.service.LastfmApiCallService;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.dto.LastfmTaskCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.entity.LastfmTask;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.repository.LastfmTaskRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.service.LastfmTaskService;
 
+import java.time.Duration;
 import java.time.Instant;
 
 @Service
 public class LastfmTaskServiceImpl implements LastfmTaskService {
 
     private final LastfmTaskRepository repository;
+    private final LastfmApiCallService lastfmApiCallService;
 
-    public LastfmTaskServiceImpl(LastfmTaskRepository taskRepository) {
+    public LastfmTaskServiceImpl(LastfmTaskRepository taskRepository, LastfmApiCallService lastfmApiCallService) {
         this.repository = taskRepository;
+        this.lastfmApiCallService = lastfmApiCallService;
     }
 
 
@@ -26,6 +31,7 @@ public class LastfmTaskServiceImpl implements LastfmTaskService {
     public long createRequest(LastfmTaskCreateRequest dto) {
 
         LastfmTask task = repository.save(dtoToTask(dto));
+        lastfmApiCallService.create(createTagTopTagsApiCallRequest());
 
         return task.getId();
     }
@@ -42,10 +48,13 @@ public class LastfmTaskServiceImpl implements LastfmTaskService {
         return LastfmTask.builder()
                 .type(dto.getTaskType())
                 .dueDttm(Instant.now().plus(dto.getTaskType().getDueDuration()))
-            .build();
+                .build();
     }
 
-    private TaskRunRequest buildRunRequest(LastfmTask task) {
-        return new TaskRunRequest(task.getId(), task.getType(), task.getDueDttm());
+    private LastfmApiCallCreateRequest createTagTopTagsApiCallRequest() {
+        return LastfmApiCallCreateRequest.builder()
+                .type(LastfmApiCallType.TAG_TOP_TAGS)
+                .dueDttm(Instant.now().plus(Duration.ofDays(1)))
+            .build();
     }
 }
