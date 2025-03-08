@@ -1,17 +1,18 @@
 package yurykorzun.art.universe.common.data.raw.task.entity;
 
-import lombok.Getter;
+import yurykorzun.art.universe.common.Coded;
+import yurykorzun.art.universe.common.CodedRegistry;
 
+import java.util.Arrays;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toMap;
 
-@Getter
-public enum TaskStatus {
+
+public enum TaskStatus implements Coded {
     CREATED(1),
     PROCESSING(2),
     SUCCESS(3),
@@ -19,24 +20,19 @@ public enum TaskStatus {
     RETRY(5),
     SKIPPED(6);
 
-    private final int id;
+    private final int code;
 
-    TaskStatus(int id) {
-        this.id = id;
+    TaskStatus(int code) {
+        this.code = code;
     }
 
-    // Mapping for convenient retrieval of RequestStatus by id
-    private static final Map<Integer, TaskStatus> idMap = new HashMap<>();
+    @Override
+    public Integer getCode() {
+        return code;
+    }
+
     static {
-        for (TaskStatus status : TaskStatus.values()) {
-            if (idMap.putIfAbsent(status.id, status) != null) {
-                throw new IllegalArgumentException("Duplicate TaskStatus %d".formatted(status.id));
-            }
-        }
-    }
-
-    public static TaskStatus getById(int id) {
-        return idMap.get(id);
+        CodedRegistry.register(Arrays.asList(values()), TaskStatus.class);
     }
 
     //  status transition validation

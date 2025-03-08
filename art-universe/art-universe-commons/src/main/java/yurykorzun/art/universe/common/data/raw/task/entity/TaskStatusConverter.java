@@ -1,18 +1,13 @@
 package yurykorzun.art.universe.common.data.raw.task.entity;
 
-import javax.persistence.AttributeConverter;
+import yurykorzun.art.universe.common.CodedConverter;
+
 import javax.persistence.Converter;
 
 @Converter
-public class TaskStatusConverter implements AttributeConverter<TaskStatus, Integer> {
+public class TaskStatusConverter extends CodedConverter<TaskStatus> {
 
-    @Override
-    public Integer convertToDatabaseColumn(TaskStatus status) {
-        return status.getId();
-    }
-
-    @Override
-    public TaskStatus convertToEntityAttribute(Integer id) {
-        return TaskStatus.getById(id);
+    public TaskStatusConverter() {
+        super(TaskStatus.class);
     }
 }

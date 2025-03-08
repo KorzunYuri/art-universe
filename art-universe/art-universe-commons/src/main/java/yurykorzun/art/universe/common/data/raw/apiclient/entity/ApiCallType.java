@@ -1,6 +1,6 @@
 package yurykorzun.art.universe.common.data.raw.apiclient.entity;
 
-import yurykorzun.art.universe.common.data.raw.Coded;
+import yurykorzun.art.universe.common.Coded;
 
 import java.util.Collection;
 import java.util.Map;

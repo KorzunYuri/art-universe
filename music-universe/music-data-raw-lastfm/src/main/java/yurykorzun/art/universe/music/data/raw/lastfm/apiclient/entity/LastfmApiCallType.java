@@ -1,8 +1,8 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.apiclient.entity;
 
 import lombok.Getter;
+import yurykorzun.art.universe.common.CodedRegistry;
 import yurykorzun.art.universe.common.data.raw.apiclient.entity.ApiCallType;
-import yurykorzun.art.universe.common.data.raw.apiclient.entity.ApiCallTypeRegistry;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmSpecific;
 
 import java.util.*;
@@ -11,25 +11,29 @@ import java.util.*;
 public enum LastfmApiCallType implements ApiCallType, LastfmSpecific {
 
     TAG_TOP_TAGS(
+            1,
             "tag.getTopTags",
             Set.of("api_key"),
             Collections.emptySet())
     ;
 
     static {
-        Arrays.stream(values()).forEach(ApiCallTypeRegistry::register);
+        CodedRegistry.register(Arrays.asList(values()), ApiCallType.class);
     }
 
+    private final int code;
     private final String method;
     private final Map<String, String> defaultParameterValues = new HashMap<>();
     private final Collection<String> mandatoryParameters;
     private final Collection<String> optionalParameters;
 
     LastfmApiCallType(
+            int code,
             String method,
             Collection<String> mandatoryParameters,
             Collection<String> optionalParameters
     ) {
+        this.code = code;
         this.method = method;
         this.optionalParameters = optionalParameters;
         this.mandatoryParameters = Set.copyOf(mandatoryParameters);
@@ -63,7 +67,7 @@ public enum LastfmApiCallType implements ApiCallType, LastfmSpecific {
     }
 
     @Override
-    public String getCode() {
-        return this.method;
+    public Integer getCode() {
+        return this.code;
     }
 }
