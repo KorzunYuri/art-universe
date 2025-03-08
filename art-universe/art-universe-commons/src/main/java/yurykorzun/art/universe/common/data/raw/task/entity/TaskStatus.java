@@ -2,6 +2,7 @@ package yurykorzun.art.universe.common.data.raw.task.entity;
 
 import yurykorzun.art.universe.common.Coded;
 import yurykorzun.art.universe.common.CodedRegistry;
+import yurykorzun.art.universe.common.TransitionAware;
 
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -12,7 +13,7 @@ import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toMap;
 
 
-public enum TaskStatus implements Coded {
+public enum TaskStatus implements Coded, TransitionAware<TaskStatus> {
     CREATED(1),
     PROCESSING(2),
     SUCCESS(3),
@@ -35,8 +36,7 @@ public enum TaskStatus implements Coded {
         CodedRegistry.register(Arrays.asList(values()), TaskStatus.class);
     }
 
-    //  status transition validation
-
+    @Override
     public boolean isValidTransition(TaskStatus to) {
         return Transition.transitions.getOrDefault(this, Map.of()).containsKey(to);
     }

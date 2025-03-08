@@ -3,6 +3,7 @@ package yurykorzun.art.universe.common.data.raw.apiclient.entity;
 import lombok.Getter;
 import yurykorzun.art.universe.common.Coded;
 import yurykorzun.art.universe.common.CodedRegistry;
+import yurykorzun.art.universe.common.TransitionAware;
 
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -13,7 +14,7 @@ import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toMap;
 
 @Getter
-public enum ApiCallStatus implements Coded {
+public enum ApiCallStatus implements Coded, TransitionAware<ApiCallStatus> {
 
     CREATED(1),
     SCHEDULED(2),
@@ -39,8 +40,7 @@ public enum ApiCallStatus implements Coded {
         CodedRegistry.register(Arrays.asList(values()), ApiCallStatus.class);
     }
 
-    //  status transition validation
-
+    @Override
     public boolean isValidTransition(ApiCallStatus to) {
         return ApiCallStatus.Transition.transitions.getOrDefault(this, Map.of()).containsKey(to);
     }
