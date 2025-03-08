@@ -33,22 +33,7 @@ public enum TestApiCallType implements ApiCallType {
     }
 
     @Override
-    public String getCode() {
-        return "";
-    }
-
-    @Override
-    public String getDataSourceCode() {
-        return "";
-    }
-
-    @Override
-    public String getDomainCode() {
-        return "";
-    }
-
-    @Override
-    public String getTypeName() {
-        return "";
+    public Integer getCode() {
+        return 1;
     }
 }

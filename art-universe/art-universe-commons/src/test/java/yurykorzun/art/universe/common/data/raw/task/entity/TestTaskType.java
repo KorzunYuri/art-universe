@@ -13,23 +13,7 @@ public enum TestTaskType implements TaskType {
     }
 
     @Override
-    public String getCode() {
-        return "test-code";
+    public Integer getCode() {
+        return 1;
     }
-
-    @Override
-    public String getDataSourceCode() {
-        return "test-ds";
-    }
-
-    @Override
-    public String getDomainCode() {
-        return "music";
-    }
-
-    @Override
-    public String getTypeName() {
-        return "test-task";
-    }
-
 }
