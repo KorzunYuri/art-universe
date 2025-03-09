@@ -61,7 +61,6 @@ class LastfmApiCallServiceImplTest {
         // given
         long id = 1L;
         LastfmApiCall apiCall = LastfmApiCall.builder()
-                .id(id)
                 .type(LastfmApiCallType.TAG_TOP_TAGS)
                 .dueDttm(Instant.now())
             .build();
