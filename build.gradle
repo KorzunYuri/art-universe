@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        springBootVersion = '2.7.12'
+        springBootVersion = '3.4.3'
         lombokVersion = '1.18.26'
         junitBomVersion = '5.10.0'
         liquibaseVersion = '4.15.0'
