@@ -1,11 +1,11 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.apiclient.service.impl;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import yurykorzun.art.universe.common.data.raw.apiclient.service.BaseHttpApiClient;
 
-import javax.annotation.PostConstruct;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;

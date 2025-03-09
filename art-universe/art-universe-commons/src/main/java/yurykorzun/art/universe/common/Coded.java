@@ -30,7 +30,7 @@ package yurykorzun.art.universe.common;
  *     </li>
  *     <li>
  *         have a dedicated extension of {@link CodedConverter} for persistence convertation.
- *         When used as an {@link javax.persistence.Entity} field, it must have {@link javax.persistence.Converter} on it.
+ *         When used as an {@link jakarta.persistence.Entity} field, it must have {@link jakarta.persistence.Converter} on it.
  *         <pre>
  *             {@code
  *                  @Converter(autoApply = true)
