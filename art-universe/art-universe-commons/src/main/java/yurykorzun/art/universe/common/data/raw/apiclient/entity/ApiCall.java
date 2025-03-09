@@ -7,7 +7,7 @@ import lombok.NonNull;
 import lombok.experimental.SuperBuilder;
 import yurykorzun.art.universe.common.persistence.converter.MapConverter;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Collections;

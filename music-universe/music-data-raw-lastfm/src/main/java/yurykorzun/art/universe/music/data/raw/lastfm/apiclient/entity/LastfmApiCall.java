@@ -4,7 +4,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import yurykorzun.art.universe.common.data.raw.apiclient.entity.ApiCall;
 
-import javax.persistence.Entity;
+import jakarta.persistence.Entity;
 
 @Entity(name = "api_call")
 @SuperBuilder

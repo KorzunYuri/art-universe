@@ -1,7 +1,7 @@
 package yurykorzun.art.universe.common;
 
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Converter;
 
 @Converter
 public class CodedConverter <T extends Coded> implements AttributeConverter<T, Integer> {
