@@ -1,0 +1,37 @@
+package yurykorzun.art.universe.common.data.raw.api.client.entity;
+
+import yurykorzun.art.universe.common.Coded;
+import yurykorzun.art.universe.common.CodedRegistry;
+import yurykorzun.art.universe.common.TransitionAware;
+
+import java.util.Arrays;
+
+public enum ApiResponseStatus implements Coded, TransitionAware<ApiResponseStatus> {
+
+    CREATED(1),
+    PENDING(2),
+    PROCESSING(3),
+    PROCESSING_ERROR(4),
+    COMPLETED(5);
+
+    private final int code;
+
+    ApiResponseStatus(int code) {
+        this.code = code;
+    }
+
+    static {
+        CodedRegistry.register(Arrays.asList(values()), ApiResponseStatus.class);
+    }
+
+    @Override
+    public Integer getCode() {
+        return code;
+    }
+
+    @Override
+    public boolean isValidTransition(ApiResponseStatus to) {
+        // TODO add ApiResponseStatus transition validation
+        return true;
+    }
+}
