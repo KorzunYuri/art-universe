@@ -30,13 +30,25 @@ server:
   port: ${MURAW_LASTFM_PORT:8081}
 
 scheduling:
-  cron:
-    lastfm:
-      tags: "0 0 21 * * *"
+  lastfm:
+    apicalls:
+      fetch:
+        fixedRate: 5
+#       Cron: "*/5 * * * * *"
+    tasks:
+      tag:
+        topTags:
+          cron: "0 0 21 * * *"
 
 lastfm:
   baseUrl: "http://ws.audioscrobbler.com/2.0/"
   apikey: ${LASTFM_API_KEY}
+  client:
+    callsPerSec: 1
+    retry:
+      max-attempts: 3
+      initial-delay-ms: 500
+      multiplier: 1.5
 
 logging:
   level:

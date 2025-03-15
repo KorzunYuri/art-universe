@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 
-public class CodedRegistry<T extends Coded> {
+public class CodedRegistry {
 
     private static final Map<Class<? extends Coded>, Map<Integer, ? extends Coded>> REGISTRIES = new ConcurrentHashMap<>();
 

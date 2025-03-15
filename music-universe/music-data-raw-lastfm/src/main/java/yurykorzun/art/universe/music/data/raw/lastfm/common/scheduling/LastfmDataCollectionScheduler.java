@@ -15,7 +15,7 @@ public class LastfmDataCollectionScheduler {
         this.tagsRequestService = tagsRequestService;
     }
 
-    @Scheduled(cron = "${scheduling.cron.lastfm.tags}")
+    @Scheduled(cron = "${scheduling.lastfm.tasks.tag.topTags.cron}")
     public void generateTagsRequest() {
         tagsRequestService.createRequest(
                 LastfmTaskCreateRequest.builder()
