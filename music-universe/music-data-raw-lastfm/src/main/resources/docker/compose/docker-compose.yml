@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+
+#  template_processor:
+#    image: alpine:latest
+#    volumes:
+#      - ./initdb/templates:/templates
+#      - ./initdb/processed:/processed
+#    environment:
+#      MURAW_LASTFM_DB_PASSWORD: ${MURAW_LASTFM_DB_PASSWORD}
+#    entrypoint: /bin/sh -c "echo $MURAW_LASTFM_DB_PASSWORD && apk add --no-cache gettext && envsubst < /templates/init.sql.template > /processed/init.sql && tail -f /dev/null"
+
+  postgres:
+#    image: postgres:14
+    container_name: mu-raw-lastfm-db-postgres
+    restart: always
+    shm_size: 128mb
+    build:
+      dockerfile: postgres.dockerfile
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${PG_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${PG_PASSWORD:-postgres}
+      MURAW_LASTFM_DB_PASSWORD: ${MURAW_LASTFM_DB_PASSWORD}
+    volumes:
+      - mu_raw_lastfm_db_postgres_data:/var/lib/postgresql/data
+      - ./initdb/templates:/docker-entrypoint-initdb.d
+#      - ./initdb/processed:/docker-entrypoint-initdb.d
+
+    command: bash -c "envsubst < /docker-entrypoint-initdb.d/init.sql.template > /docker-entrypoint-initdb.d/init.sql && exec docker-entrypoint.sh postgres"
+    ports:
+      - "9999:5432"
+#    depends_on:
+#      - template_processor
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "9998:8080"
+    container_name: mu-raw-lastfm-db-adminer
+
+networks:
+  default:
+    name: mu_raw_lastfm_network
+
+volumes:
+  mu_raw_lastfm_db_postgres_data:

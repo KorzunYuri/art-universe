@@ -1,0 +1,8 @@
+CREATE DATABASE music_universe;
+\connect music_universe;
+CREATE USER mu_raw_lastfm_dm WITH LOGIN PASSWORD '${MURAW_LASTFM_DB_PASSWORD}';
+CREATE SCHEMA IF NOT EXISTS mu_raw_lastfm AUTHORIZATION mu_raw_lastfm_dm;
+GRANT ALL PRIVILEGES ON SCHEMA mu_raw_lastfm TO mu_raw_lastfm_dm;
+ALTER DEFAULT PRIVILEGES    IN SCHEMA mu_raw_lastfm GRANT ALL ON TABLES     TO mu_raw_lastfm_dm;
+ALTER DEFAULT PRIVILEGES    IN SCHEMA mu_raw_lastfm GRANT ALL ON SEQUENCES  TO mu_raw_lastfm_dm;
+ALTER DEFAULT PRIVILEGES    IN SCHEMA mu_raw_lastfm GRANT ALL ON FUNCTIONS  TO mu_raw_lastfm_dm;
