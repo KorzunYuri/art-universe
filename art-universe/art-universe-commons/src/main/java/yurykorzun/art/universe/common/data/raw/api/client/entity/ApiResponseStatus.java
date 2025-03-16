@@ -10,6 +10,7 @@ public enum ApiResponseStatus implements Coded, TransitionAware<ApiResponseStatu
 
     CREATED(1),
     PENDING(2),
+    SCHEDULED(6),
     PROCESSING(3),
     PROCESSING_ERROR(4),
     COMPLETED(5);
