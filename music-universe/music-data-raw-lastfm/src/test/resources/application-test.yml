@@ -11,3 +11,6 @@ spring:
   docker:
     compose:
       enabled: false
+
+lastfm:
+  apikey: DUMMY_API_KEY
