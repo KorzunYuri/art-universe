@@ -3,8 +3,10 @@ package yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.enti
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import yurykorzun.art.universe.common.Coded;
+import yurykorzun.art.universe.common.CodedRegistry;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -43,6 +45,10 @@ public enum LastfmAttribute implements Coded {
     private final String description;
     private final LastfmAttribute.Type type;
     private final Collection<LastfmEntityType> supportedEntities;
+
+    static {
+        CodedRegistry.register(Arrays.asList(values()), LastfmAttribute.class);
+    }
 
     LastfmAttribute(int id, String name, String description, Type type,
                     Collection<LastfmEntityType> supportedEntities) {

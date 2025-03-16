@@ -52,7 +52,9 @@ public class LastfmApiCallServiceImpl implements LastfmApiCallService {
     @Override
     @Transactional
     public long create(LastfmApiCallCreateRequest dto) {
-        LastfmApiCall lastfmApiCall = apiCallRepository.save(dtoToApiCall(dto));
+        LastfmApiCall call = dtoToApiCall(dto);
+        call.setStatus(ApiCallStatus.PENDING);
+        LastfmApiCall lastfmApiCall = apiCallRepository.save(call);
 
         return lastfmApiCall.getId();
     }

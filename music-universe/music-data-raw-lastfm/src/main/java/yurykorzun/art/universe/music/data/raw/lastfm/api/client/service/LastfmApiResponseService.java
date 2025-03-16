@@ -9,4 +9,5 @@ public interface LastfmApiResponseService {
 
     void setStatus(long id, ApiResponseStatus status) throws IllegalStateException;
 
+    void triggerResponsesProcessing();
 }
