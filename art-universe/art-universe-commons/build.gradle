@@ -9,4 +9,7 @@ dependencies {
 
     // api calls
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+    // reflection
+    implementation 'org.reflections:reflections:0.10.2'
 }
