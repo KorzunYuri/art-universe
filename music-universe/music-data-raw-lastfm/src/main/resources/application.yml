@@ -3,9 +3,9 @@ spring:
     name: music-universe-raw-data-service
   datasource:
     driverClassName: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:9999/mu_raw_lastfm
+    url: jdbc:postgresql://localhost:9999/music_universe?currentSchema=mu_raw_lastfm
     username: mu_raw_lastfm_dm
-    password: ${DB_MURAW_LASTFM_PASSWORD}
+    password: ${MURAW_LASTFM_DB_PASSWORD}
     hikari:
       pool-name: MuRawLastFmHikariPool
       maximum-pool-size: 10
@@ -22,10 +22,10 @@ spring:
       ddl-auto: none
   liquibase:
     change-log: classpath:db/migration/muraw/liquibase/db.changelog.xml
-  kafka:
-    bootstrap-servers: localhost:29092,localhost:39092
-    groups:
-      tags: "mu-raw-lastfm-tags"
+  docker:
+    compose:
+      enabled: true
+      file: classpath:docker/compose/docker-compose.yml
 server:
   port: ${MURAW_LASTFM_PORT:8081}
 
@@ -42,7 +42,7 @@ scheduling:
 
 lastfm:
   baseUrl: "http://ws.audioscrobbler.com/2.0/"
-  apikey: ${LASTFM_API_KEY}
+  apikey: ${MURAW_LASTFM_API_KEY}
   client:
     callsPerSec: 1
     retry:

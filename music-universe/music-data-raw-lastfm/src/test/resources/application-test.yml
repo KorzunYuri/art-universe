@@ -8,3 +8,6 @@ spring:
     properties:
       hibernate:
         show-sql: true
+  docker:
+    compose:
+      enabled: false
