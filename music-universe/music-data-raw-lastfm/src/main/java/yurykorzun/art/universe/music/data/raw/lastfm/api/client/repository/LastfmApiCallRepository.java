@@ -16,12 +16,12 @@ public interface LastfmApiCallRepository extends JpaRepository<LastfmApiCall, Lo
     Collection<LastfmApiCall> findAllByTypeAndStatusOrderByDueDttmAsc(@NonNull ApiCallType type, ApiCallStatus status);
 
     default Collection<LastfmApiCall> findAllUnprocessedByType(@NonNull ApiCallType type) {
-        return findAllByTypeAndStatusOrderByDueDttmAsc(type, ApiCallStatus.CREATED);
+        return findAllByTypeAndStatusOrderByDueDttmAsc(type, ApiCallStatus.PENDING);
     }
 
     Collection<LastfmApiCall> findAllByStatus(@NonNull ApiCallStatus status);
 
     default Collection<LastfmApiCall> findAllUnprocessed() {
-        return findAllByStatus(ApiCallStatus.CREATED);
+        return findAllByStatus(ApiCallStatus.PENDING);
     };
 }
