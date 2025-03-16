@@ -1,17 +1,11 @@
 package yurykorzun.art.universe.common.data.raw.api.methods.common;
 
-import yurykorzun.art.universe.common.Registry;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallType;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiResponse;
 
 import java.io.IOException;
 
 public abstract class BaseApiResponseProcessor <T extends ApiResponse> {
-
-    protected BaseApiResponseProcessor() {
-        Registry<ApiCallType, BaseApiResponseProcessor<?>> registry = Registry.getInstance();
-        registry.register(this.getType(), this);
-    }
 
     protected abstract ApiCallType getType();
     protected abstract void processResponse(T response) throws IOException;

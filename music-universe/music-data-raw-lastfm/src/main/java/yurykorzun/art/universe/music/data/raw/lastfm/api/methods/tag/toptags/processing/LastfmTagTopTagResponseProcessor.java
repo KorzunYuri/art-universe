@@ -3,6 +3,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.pr
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
@@ -55,7 +56,7 @@ public class LastfmTagTopTagResponseProcessor extends LastfmApiResponseProcessor
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     protected void processParsedResponse(TopTagsDtoRoot parsed) {
         log.info("Start processing DTO of type {} with {} records",
                 parsed.getClass().getName(),
@@ -82,7 +83,7 @@ public class LastfmTagTopTagResponseProcessor extends LastfmApiResponseProcessor
         //  convert attributes in DTO to entities
         List<LastfmAttributeHistoryRecord> attributesToSave = tagDtosToAttributes(dtoMappingByName);
         attributesToSave = attributeHistoryRepository.saveAll(attributesToSave);
-        log.info("{} tag attributes have been saved", attributesToSave.size());
+        log.info("Tag attributes saved: {}", attributesToSave.size());
 
         log.info("Finished processing DTO of type {}", parsed.getClass().getName());
     }
@@ -95,7 +96,7 @@ public class LastfmTagTopTagResponseProcessor extends LastfmApiResponseProcessor
         Map<String, TagMapping> dtoMappingByName = new HashMap<>();
         for (int i = 0; i < tagDtos.size(); i++) {
             TagDto tagDto = tagDtos.get(i);
-            dtoMappingByName.put(tagDto.getName(), new TagMapping(tagDto, pageInfo.getOffset() + i));
+            dtoMappingByName.put(tagDto.getName(), new TagMapping(tagDto, pageInfo.getOffset() + i + 1));
         }
         return dtoMappingByName;
     }
