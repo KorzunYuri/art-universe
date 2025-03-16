@@ -10,9 +10,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiCal
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmApiCallRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallPrioritizer;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiClient;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiResponseService;
 
 import java.time.Duration;
 import java.time.Instant;

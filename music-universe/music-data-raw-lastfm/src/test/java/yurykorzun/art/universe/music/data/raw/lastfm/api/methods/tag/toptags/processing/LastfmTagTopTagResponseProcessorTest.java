@@ -1,6 +1,5 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.processing;
 
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,37 +38,46 @@ public class LastfmTagTopTagResponseProcessorTest {
     }
 
     @Test
-    @Transactional
-    public void testInitialSave() {
+    public void testFirstSave() {
         TopTagsDtoRoot dto = createTestDtoRoot();
-
-        processor.processParsedResponse(dto);
-
-        List<LastfmTag> tags = tagRepository.findAll();
-        List<LastfmAttributeHistoryRecord> attributes = attributeHistoryRepository.findAll();
-
-        assertEquals(2, tags.size(), "Must save all tags");
-        assertEquals(6, attributes.size(), "Must save (tags X (tag attributes)) attribute records");
-    }
-
-    @Test
-    @Transactional
-    public void testSecondarySave() {
-        TopTagsDtoRoot dto = createTestDtoRoot();
+        final int tagsNumber = dto.getTopTags().getTags().size();
+        final int attributesNumber = 3;
 
         // initial save
         processor.processParsedResponse(dto);
         List<LastfmTag> tagsAfterFirst = tagRepository.findAll();
+        List<LastfmAttributeHistoryRecord> attributesAfterFirst = attributeHistoryRepository.findAll();
+
+        assertEquals(tagsNumber, tagsAfterFirst.size(),
+                "First save must save tags that haven't existed in DB");
+        assertEquals(tagsNumber * attributesNumber, attributesAfterFirst.size(),
+                "First save must save (tags X (tag attributes)) attribute records");
+    }
+
+    @Test
+    public void testSecondarySave() {
+        TopTagsDtoRoot dto = createTestDtoRoot();
+        final int tagsNumber = dto.getTopTags().getTags().size();
+        final int attributesNumber = 3;
+
+        // initial save
+        processor.processParsedResponse(dto);
+        List<LastfmTag> tagsAfterFirst = tagRepository.findAll();
+        List<LastfmAttributeHistoryRecord> attributesAfterFirst = attributeHistoryRepository.findAll();
+
+        assertEquals(tagsNumber, tagsAfterFirst.size(),
+                "First save must save tags that haven't existed in DB");
+        assertEquals(tagsNumber * attributesNumber, attributesAfterFirst.size(),
+                "First save must save (tags X (tag attributes)) attribute records");
 
         // secondary save
         processor.processParsedResponse(dto);
         List<LastfmTag> tagsAfterSecond = tagRepository.findAll();
         List<LastfmAttributeHistoryRecord> attributesAfterSecond = attributeHistoryRepository.findAll();
 
-        assertEquals(tagsAfterFirst.size(), tagsAfterSecond.size(), "Tags must not duplicate on second save");
-        assertEquals(2, tagsAfterSecond.size(), "Must save all tags");
-        assertEquals(12, attributesAfterSecond.size(),
-                "Must save (tags X (tag attributes)) attribute records on each save");
+        assertEquals(tagsAfterFirst.size(), tagsAfterSecond.size(), "Second save must not produce duplicate tags");
+        assertEquals(tagsNumber * attributesNumber * 2, attributesAfterSecond.size(),
+                "Second save must produce new tag attribute values (tags X (tag attributes)) records");
     }
 
     private TopTagsDtoRoot createTestDtoRoot() {
