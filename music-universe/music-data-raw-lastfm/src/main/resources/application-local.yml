@@ -1,0 +1,29 @@
+spring:
+  docker:
+    compose:
+      enabled: true
+      file: classpath:docker/compose/docker-compose.yml
+  jpa:
+    properties:
+      hibernate:
+        show-sql: true
+
+logging:
+  level:
+    liquibase: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+scheduling:
+  lastfm:
+    api:
+      calls:
+        fetch:
+          fixedRate: 10000
+      responses:
+        parse:
+          fixedRate: 10000
+    tasks:
+      tag:
+        topTags:
+          cron: "0 * * * * *"
