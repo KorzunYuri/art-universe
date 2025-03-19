@@ -30,6 +30,8 @@ server:
 
 scheduling:
   lastfm:
+    threadPool:
+      size: 5
     api:
       calls:
         generate:
