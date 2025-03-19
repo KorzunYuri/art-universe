@@ -48,7 +48,7 @@ class LastfmApiCallServiceImplTest {
         when(repository.save(any(LastfmApiCall.class))).thenReturn(apiCall);
 
         // when
-        long returnedId = service.create(request);
+        long returnedId = service.createApiCall(request);
 
         // then
         verify(repository).save(any(LastfmApiCall.class));

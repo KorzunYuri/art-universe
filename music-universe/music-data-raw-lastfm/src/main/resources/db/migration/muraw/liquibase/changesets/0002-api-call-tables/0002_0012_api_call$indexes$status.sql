@@ -1,0 +1,1 @@
+CREATE INDEX api_call_I_status ON api_call (status);

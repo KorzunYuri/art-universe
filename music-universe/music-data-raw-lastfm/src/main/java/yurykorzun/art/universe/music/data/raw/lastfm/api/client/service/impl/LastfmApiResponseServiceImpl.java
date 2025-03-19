@@ -1,6 +1,7 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiResponseStatus;
@@ -21,9 +22,14 @@ import java.util.List;
 public class LastfmApiResponseServiceImpl implements LastfmApiResponseService {
 
     private final LastfmApiResponseRepository repository;
+    private final LastfmApiResponseServiceImpl self;
 
-    public LastfmApiResponseServiceImpl(LastfmApiResponseRepository repository) {
+    public LastfmApiResponseServiceImpl(
+            LastfmApiResponseRepository repository,
+            @Lazy LastfmApiResponseServiceImpl self
+    ) {
         this.repository = repository;
+        this.self = self;
     }
 
     @Override
@@ -42,25 +48,27 @@ public class LastfmApiResponseServiceImpl implements LastfmApiResponseService {
     }
 
     @Override
-    @Transactional
     public void triggerResponsesProcessing() {
         List<LastfmApiResponse> unprocessed = repository.findAllPending();
         log.info("Unprocessed API responses: {}", unprocessed.size());
         // TODO handle concurrent processing by several Processors, then process responses in parallel
         // TODO send responses to Processor not in parallel but in batches
-        unprocessed.forEach(r -> {
-            try {
-                LastfmApiResponseProcessor<?> processor = LastfmApiResponseProcessorsRegistry.get(
-                        ((LastfmApiCallType) r.getApiCallType()).getResponseDtoClass());
-                processor.process(r);
-                r.setStatus(ApiResponseStatus.COMPLETED);
-            } catch (IOException e) {
-                r.setStatus(ApiResponseStatus.PROCESSING_ERROR);
-            }
-            r.setUpdatedAt(Instant.now());
-            repository.save(r);
-        });
+        unprocessed.forEach(self::processResponse);
         log.info("Finished processing API responses");
+    }
+
+    @Transactional
+    protected void processResponse(LastfmApiResponse r) {
+        try {
+            LastfmApiResponseProcessor<?> processor = LastfmApiResponseProcessorsRegistry.get(
+                    ((LastfmApiCallType) r.getApiCallType()).getResponseDtoClass());
+            processor.process(r);
+            r.setStatus(ApiResponseStatus.COMPLETED);
+        } catch (IOException e) {
+            r.setStatus(ApiResponseStatus.PROCESSING_ERROR);
+        }
+        r.setUpdatedAt(Instant.now());
+        repository.save(r);
     }
 
     private static LastfmApiResponse dtoToApiResponse(LastfmApiResponseCreateRequest dto) {

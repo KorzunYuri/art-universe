@@ -46,7 +46,7 @@ class LastfmTaskServiceImplTest {
             .build();
 
         when(taskRepository.save(any(LastfmTask.class))).thenReturn(savedTask);
-        when(lastfmApiCallService.create(any(LastfmApiCallCreateRequest.class))).thenReturn(100L);
+        when(lastfmApiCallService.createApiCall(any(LastfmApiCallCreateRequest.class))).thenReturn(100L);
 
         // when
         long returnedTaskId = taskService.createRequest(request);
@@ -54,7 +54,7 @@ class LastfmTaskServiceImplTest {
         // then
         assertEquals(1L, returnedTaskId);
         verify(taskRepository, times(1)).save(any(LastfmTask.class));
-        verify(lastfmApiCallService, times(1)).create(any(LastfmApiCallCreateRequest.class));
+        verify(lastfmApiCallService, times(1)).createApiCall(any(LastfmApiCallCreateRequest.class));
     }
 
     @Test

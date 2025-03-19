@@ -9,14 +9,16 @@ import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmSpecific;
 
 import java.util.*;
 
+import static yurykorzun.art.universe.music.data.raw.lastfm.api.LastfmApiConstants.*;
+
 @Getter
 public enum LastfmApiCallType implements ApiCallType, LastfmSpecific {
 
         TAG_TOP_TAGS(
             1,
             "tag.getTopTags",
-            Set.of("api_key"),
-            Collections.emptySet(),
+            Set.of(PARAM_NAME_API_KEY),
+            Set.of(PARAM_NAME_OFFSET),
             TopTagsDtoRoot.class)
     ;
 
@@ -35,15 +37,16 @@ public enum LastfmApiCallType implements ApiCallType, LastfmSpecific {
             int code,
             String method,
             Collection<String> mandatoryParameters,
-            Collection<String> optionalParameters, Class<? extends RootDto> responseDtoClass
+            Collection<String> optionalParameters,
+            Class<? extends RootDto> responseDtoClass
     ) {
         this.code = code;
         this.method = method;
         this.optionalParameters = optionalParameters;
         this.mandatoryParameters = Set.copyOf(mandatoryParameters);
         this.responseDtoClass = responseDtoClass;
-        this.defaultParameterValues.put("method", method);
-        this.defaultParameterValues.put("format", "json");
+        this.defaultParameterValues.put(PARAM_NAME_METHOD, method);
+        this.defaultParameterValues.put(PARAM_NAME_FORMAT, PARAM_DEFAULT_FORMAT);
     }
 
     @Override

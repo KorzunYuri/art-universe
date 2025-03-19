@@ -13,6 +13,7 @@ import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiCallCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiResponseCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmApiCallRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallPrioritizer;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallService;
@@ -20,6 +21,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmAp
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiResponseService;
 
 import java.util.Collection;
+import java.util.List;
 
 @Service
 public class LastfmApiCallServiceImpl implements LastfmApiCallService {
@@ -38,7 +40,7 @@ public class LastfmApiCallServiceImpl implements LastfmApiCallService {
             LastfmApiCallPrioritizer apiCallPrioritizer,
             LastfmApiClient apiClient,
             @Lazy LastfmApiCallServiceImpl self,
-            @Value("${lastfm.client.callsPerSec}") Integer apiClientCallsPerSec
+            @Value("${lastfm.client.callsPerSec}") double apiClientCallsPerSec
     ) {
         this.apiCallRepository = apiCallRepository;
         this.responseService = responseService;
@@ -51,12 +53,29 @@ public class LastfmApiCallServiceImpl implements LastfmApiCallService {
 
     @Override
     @Transactional
-    public long create(LastfmApiCallCreateRequest dto) {
+    public long createApiCall(LastfmApiCallCreateRequest dto) {
         LastfmApiCall call = dtoToApiCall(dto);
         call.setStatus(ApiCallStatus.PENDING);
         LastfmApiCall lastfmApiCall = apiCallRepository.save(call);
 
         return lastfmApiCall.getId();
+    }
+
+    @Override
+    @Transactional
+    public void createApiCalls(List<LastfmApiCallCreateRequest> lastfmApiCallCreateRequests) {
+        List<LastfmApiCall> calls = lastfmApiCallCreateRequests.stream()
+                .map(this::dtoToApiCall)
+                .peek(t -> t.setStatus(ApiCallStatus.PENDING))
+            .toList();
+
+        apiCallRepository.saveAll(calls);
+    }
+
+    @Override
+    @Transactional
+    public void expireApiCallsForType(LastfmApiCallType type) {
+        apiCallRepository.expireOutdatedApiCallsByType(type);
     }
 
     @Override
@@ -67,17 +86,18 @@ public class LastfmApiCallServiceImpl implements LastfmApiCallService {
         apiCallRepository.save(call);
     }
 
-    private static LastfmApiCall dtoToApiCall(LastfmApiCallCreateRequest dto) {
+    private LastfmApiCall dtoToApiCall(LastfmApiCallCreateRequest dto) {
         return LastfmApiCall.builder()
                 .type(dto.getType())
                 .dueDttm(dto.getDueDttm())
+                .params(dto.getParams())
             .build();
     }
 
     @Override
     public void triggerApiCalls() {
         //   TODO design complex priority logic to fit LastFm API calls rate limit
-        Collection<LastfmApiCall> apiCalls = apiCallRepository.findAllUnprocessed();
+        Collection<LastfmApiCall> apiCalls = apiCallRepository.findAllUnprocessedUnexpired();
         apiCalls = apiCallPrioritizer.prioritizeApiCalls(apiCalls);
         apiCalls.forEach(apiCall -> {
             rateLimiter.acquire();

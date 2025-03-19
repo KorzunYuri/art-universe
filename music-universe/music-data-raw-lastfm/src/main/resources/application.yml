@@ -32,6 +32,8 @@ scheduling:
   lastfm:
     api:
       calls:
+        generate:
+          fixedRate: 30000
         fetch:
           fixedRate: 5000
       responses:
@@ -46,8 +48,13 @@ lastfm:
   baseUrl: "http://ws.audioscrobbler.com/2.0/"
   apikey: ${MURAW_LASTFM_API_KEY}
   client:
-    callsPerSec: 1
+    callsPerSec: 1.0
     retry:
       max-attempts: 3
       initial-delay-ms: 500
       multiplier: 1.5
+    methods:
+      tag:
+        topTags:
+          recordsLimit: 10000
+          dueDurationDays: 1

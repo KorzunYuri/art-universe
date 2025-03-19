@@ -31,7 +31,7 @@ public class LastfmTaskServiceImpl implements LastfmTaskService {
     public long createRequest(LastfmTaskCreateRequest dto) {
 
         LastfmTask task = repository.save(dtoToTask(dto));
-        lastfmApiCallService.create(createTagTopTagsApiCallRequest());
+        lastfmApiCallService.createApiCall(createTagTopTagsApiCallRequest());
 
         return task.getId();
     }

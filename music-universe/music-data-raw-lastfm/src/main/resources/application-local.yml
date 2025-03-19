@@ -27,3 +27,11 @@ scheduling:
       tag:
         topTags:
           cron: "0 * * * * *"
+
+lastfm:
+  client:
+    callsPerSec: 0.5
+    methods:
+      tag:
+        topTags:
+          recordsLimit: 250
