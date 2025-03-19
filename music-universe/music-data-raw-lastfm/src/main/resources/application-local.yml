@@ -7,6 +7,7 @@ spring:
     properties:
       hibernate:
         show-sql: true
+        generate_statistics: true
 
 logging:
   level:
@@ -34,4 +35,4 @@ lastfm:
     methods:
       tag:
         topTags:
-          recordsLimit: 250
+          recordsLimit: 10000

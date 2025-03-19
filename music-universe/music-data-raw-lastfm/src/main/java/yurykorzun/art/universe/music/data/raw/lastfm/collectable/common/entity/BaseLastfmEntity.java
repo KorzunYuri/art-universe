@@ -9,15 +9,16 @@ import jakarta.persistence.*;
 
 import java.util.Objects;
 
+/**
+ * Base class for Lastfm collected entities. Child classes must provide their own id
+ */
 @MappedSuperclass
 @SuperBuilder
 @NoArgsConstructor
 @Getter
 public abstract class BaseLastfmEntity extends BaseCollectableEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    public abstract long getId();
 
     @Column(name = "name")
     private String name;

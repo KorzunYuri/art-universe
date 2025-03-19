@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class TaskTest {
 
-    private static final Supplier<Task> validTaskSupplier = () -> Task.builder()
+    private static final Supplier<Task> validTaskSupplier = () -> TestTask.builder()
             .type(TestTaskType.TEST_TASK)
             .dueDttm(Instant.now())
         .build();
@@ -46,10 +46,10 @@ class TaskTest {
     @Test
     void testIncompleteTaskException() {
         List<Supplier<Task>> incompleteTaskSuppliers = List.of(
-                () -> Task.builder()
+                () -> TestTask.builder()
                         .dueDttm(Instant.now())
                     .build(),
-                () -> Task.builder()
+                () -> TestTask.builder()
                         .type(TestTaskType.TEST_TASK)
                     .build()
         );

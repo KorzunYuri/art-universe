@@ -11,3 +11,4 @@ CREATE TABLE attribute_history (
     ,   CONSTRAINT attribute_history_FK_attribute_id
             FOREIGN KEY (attribute_id) REFERENCES attribute (id)
 );
+CREATE SEQUENCE attribute_history_seq START 1 INCREMENT BY 50;

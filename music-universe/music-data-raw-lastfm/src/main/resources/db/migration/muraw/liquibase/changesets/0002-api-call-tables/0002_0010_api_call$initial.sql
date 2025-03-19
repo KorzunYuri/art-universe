@@ -9,3 +9,4 @@ CREATE TABLE api_call (
     ,   CONSTRAINT api_call_PK
             PRIMARY KEY (id)
 );
+CREATE SEQUENCE api_call_seq START 1 INCREMENT BY 50;

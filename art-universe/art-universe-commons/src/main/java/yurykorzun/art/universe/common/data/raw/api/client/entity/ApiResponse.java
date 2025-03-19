@@ -5,20 +5,19 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import yurykorzun.art.universe.common.persistence.entity.BaseEntity;
 
-import java.util.Objects;
-
 /**
- * Basic response of datasource API. Child classes must have 'response_body' field and take care of its persistence
+ * <p>Base class for responses from data source API.</p>
+ * Child classes must:
+ * <ul>
+ *     <li>have their own ID field</li>
+ *     <li>have 'response_body' field and take care of its persistence</li>
+ * </ul>
  */
 @MappedSuperclass
 @SuperBuilder
 @NoArgsConstructor
 @Getter
 public abstract class ApiResponse extends BaseEntity {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
 
     @NonNull
     @Column(name = "api_call_id")
@@ -39,28 +38,5 @@ public abstract class ApiResponse extends BaseEntity {
             throw new IllegalArgumentException(String.format("Invalid transition from %s to %s", this.status, newStatus));
         }
         this.status = newStatus;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        ApiResponse other = (ApiResponse) o;
-        if (Objects.equals(apiCallType, other.apiCallType)) {
-            if (this.getId() != 0 && other.getId() != 0) {
-                return this.getId() == other.getId();
-            } else {
-                return Objects.equals(apiCallId, other.apiCallId);
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        if (this.getId() != 0) {
-            return Objects.hash(id, apiCallType);
-        } else {
-            return Objects.hash(apiCallId, apiCallType);
-        }
     }
 }

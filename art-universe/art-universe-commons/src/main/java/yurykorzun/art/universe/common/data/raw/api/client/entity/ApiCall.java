@@ -13,15 +13,15 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
+/**
+ * <p>Base class for all api calls. </p>
+ * <p>Child classes must provide their own ID field.</p>
+ */
 @MappedSuperclass
 @SuperBuilder
 @NoArgsConstructor
 @Getter
-public class ApiCall {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+public abstract class ApiCall {
 
     @NonNull
     @Column(name = "type")

@@ -7,6 +7,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.L
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityTypeConverter;
 
 import java.time.Instant;
+import java.util.Objects;
 
 @Entity(name = "attribute_history")
 @Builder
@@ -16,7 +17,12 @@ import java.time.Instant;
 public class LastfmAttributeHistoryRecord {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SequenceGenerator(
+            name = "attribute_history_seq_gen",
+            sequenceName = "attribute_history_seq",
+            allocationSize = 50
+    )
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "attribute_history_seq_gen")
     private long id;
 
     @NotNull
@@ -43,5 +49,28 @@ public class LastfmAttributeHistoryRecord {
 
     @Column(name = "int_value")
     private Integer intValue;
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof LastfmAttributeHistoryRecord other)) return false;
+
+        if (this.getId() != 0 && other.getId() != 0) {
+            return this.getId() == other.getId();
+        }
+        return      entityId == other.entityId
+                &&  entityTypeId == other.entityTypeId
+                &&  attribute == other.attribute
+                &&  Objects.equals(collectionTs, other.collectionTs);
+    }
+
+    @Override
+    public int hashCode() {
+        if (this.getId() != 0) {
+            return Long.hashCode(this.getId());
+        }
+        return Objects.hash(entityTypeId, entityId, attribute);
+    }
 
 }

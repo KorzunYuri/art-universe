@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCall;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallStatus;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.LastfmApiConstants;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiCallCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiResponseCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
@@ -122,7 +123,7 @@ public class LastfmApiCallServiceImpl implements LastfmApiCallService {
         }
     }
 
-    private LastfmApiResponseCreateRequest createApiResponseCreateDto(ApiCall call, String response) {
+    private LastfmApiResponseCreateRequest createApiResponseCreateDto(LastfmApiCall call, String response) {
         return LastfmApiResponseCreateRequest.builder()
                 .apiCallId(call.getId())
                 .apiCallType(call.getType())

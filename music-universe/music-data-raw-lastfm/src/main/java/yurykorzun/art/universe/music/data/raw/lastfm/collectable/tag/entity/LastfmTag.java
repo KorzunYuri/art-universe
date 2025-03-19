@@ -15,6 +15,15 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.L
 @Getter
 public class LastfmTag extends BaseLastfmEntity {
 
+    @Id
+    @SequenceGenerator(
+            name = "tag_seq_gen",
+            sequenceName = "tag_seq",
+            allocationSize = 50
+    )
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "tag_seq_gen")
+    private long id;
+
     @Override
     @Transient
     public CollectableEntityType getType() {

@@ -10,3 +10,4 @@ CREATE TABLE task
     ,   CONSTRAINT task_PK
             PRIMARY KEY (id)
 );
+CREATE SEQUENCE task_seq START 1 INCREMENT BY 50;

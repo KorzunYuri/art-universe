@@ -9,3 +9,4 @@ CREATE TABLE attribute (
             PRIMARY KEY (id)
     ,   UNIQUE (name)
 );
+CREATE SEQUENCE attribute_seq START 1 INCREMENT BY 50;

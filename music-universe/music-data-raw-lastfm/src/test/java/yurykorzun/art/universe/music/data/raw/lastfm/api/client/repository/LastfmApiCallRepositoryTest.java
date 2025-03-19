@@ -23,7 +23,6 @@ class LastfmApiCallRepositoryTest {
     private LastfmApiCallRepository repository;
 
     @Test
-    @Transactional
     void testApiCallCreation() {
         LastfmApiCall created = LastfmApiCall.builder()
                 .type(LastfmApiCallType.TAG_TOP_TAGS)
@@ -41,7 +40,6 @@ class LastfmApiCallRepositoryTest {
     }
 
     @Test
-    @Transactional
     void testApiCallStatusUpdate() {
         LastfmApiCall created = LastfmApiCall.builder()
                 .type(LastfmApiCallType.TAG_TOP_TAGS)

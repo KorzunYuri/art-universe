@@ -48,7 +48,6 @@ class LastfmApiResponseRepositoryTest {
     }
 
     @Test
-    @Transactional
     void testApiResponseCreation() {
         LastfmApiCall dummyApiCall = createDummyApiCall();
         LastfmApiResponse created = responseForApiCall(dummyApiCall);
@@ -61,7 +60,6 @@ class LastfmApiResponseRepositoryTest {
     }
 
     @Test
-    @Transactional
     void testApiResponseStatusUpdate() {
 
         LastfmApiCall dummyApiCall = createDummyApiCall();
@@ -78,19 +76,17 @@ class LastfmApiResponseRepositoryTest {
     }
 
     @Test
-    @Transactional
     void testApiResponseFKApiCallConstraint() {
         LastfmApiResponse orphanResponse = LastfmApiResponse.builder()
                 .apiCallId(2L)
                 .apiCallType(dummyApiCallType)
                 .responseBody(sampleResponse)
             .build();
-        Exception e = assertThrows(Exception.class, () -> repository.save(orphanResponse));
+        Exception e = assertThrows(Exception.class, () -> repository.saveAndFlush(orphanResponse));
         assertInstanceOf(DataIntegrityViolationException.class, e);
     }
 
     @Test
-    @Transactional
     void testApiResponseDuplicationPrevention() {
         LastfmApiCall dummyApiCall = createDummyApiCall();
         LastfmApiResponse created = responseForApiCall(dummyApiCall);

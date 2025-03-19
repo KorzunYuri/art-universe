@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ApiCallTest {
 
-    private static final Supplier<ApiCall> validApiCallSupplier = () -> ApiCall.builder()
+    private static final Supplier<ApiCall> validApiCallSupplier = () -> TestApiCall.builder()
             .type(TestApiCallType.TEST_TYPE)
             .dueDttm(Instant.now())
         .build();
@@ -40,10 +40,10 @@ class ApiCallTest {
     @Test
     void testIncompleteApiCallException() {
         List<Supplier<ApiCall>> incompleteApiCallSuppliers = List.of(
-                () -> ApiCall.builder()
+                () -> TestApiCall.builder()
                         .dueDttm(Instant.now())
                     .build(),
-                () -> ApiCall.builder()
+                () -> TestApiCall.builder()
                         .type(TestApiCallType.TEST_TYPE)
                     .build()
         );

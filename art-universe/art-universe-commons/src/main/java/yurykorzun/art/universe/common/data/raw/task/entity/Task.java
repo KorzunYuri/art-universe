@@ -7,15 +7,15 @@ import yurykorzun.art.universe.common.persistence.entity.BaseEntity;
 import jakarta.persistence.*;
 import java.time.Instant;
 
+/**
+ * Base class for tasks.
+ * Child classes must provide their own ID
+ */
 @MappedSuperclass
 @SuperBuilder
 @NoArgsConstructor
 @Getter
-public class Task extends BaseEntity {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+public abstract class Task extends BaseEntity {
 
     @NonNull
     @Column(name = "task_type")

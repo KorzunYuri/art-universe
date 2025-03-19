@@ -10,3 +10,4 @@ CREATE TABLE api_response (
             PRIMARY KEY (id)
     ,   UNIQUE (api_call_id)
 );
+CREATE SEQUENCE api_response_seq START 1 INCREMENT BY 50;

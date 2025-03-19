@@ -8,3 +8,4 @@ CREATE TABLE tag (
             PRIMARY KEY (id)
     ,   UNIQUE (name)
 );
+CREATE SEQUENCE tag_seq START 1 INCREMENT BY 50;

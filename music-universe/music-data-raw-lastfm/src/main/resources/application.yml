@@ -18,6 +18,8 @@ spring:
         show-sql: false
         jdbc:
           batch_size: 10
+        order_inserts: true
+        order_updates: true
     hibernate:
       ddl-auto: none
   liquibase:
