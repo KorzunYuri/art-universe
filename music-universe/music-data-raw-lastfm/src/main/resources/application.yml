@@ -3,7 +3,7 @@ spring:
     name: music-universe-raw-data-service
   datasource:
     driverClassName: org.postgresql.Driver
-    url: jdbc:postgresql://${MURAW_LASTFM_DB_HOST:localhost}:${MURAW_LASTFM_DB_PORT:9999}/music_universe?currentSchema=mu_raw_lastfm
+    url: jdbc:postgresql://${MURAW_LASTFM_DB_HOST:localhost}:${MURAW_LASTFM_DB_PORT:5432}/music_universe?currentSchema=mu_raw_lastfm
     username: mu_raw_lastfm_dm
     password: '${MURAW_LASTFM_DB_PASSWORD}'
     hikari:
@@ -22,27 +22,29 @@ spring:
         order_updates: true
     hibernate:
       ddl-auto: none
+  task:
+    scheduling:
+      pool:
+        size: 10
   liquibase:
     change-log: classpath:db/migration/muraw/liquibase/db.changelog.xml
   docker:
     compose:
       enabled: false
 server:
-  port: ${MURAW_LASTFM_PORT:8081}
+  port: ${MURAW_LASTFM_PORT:8080}
 
 scheduling:
   lastfm:
-    threadPool:
-      size: 5
     api:
       calls:
         generate:
           fixedRate: 30000
         fetch:
-          fixedRate: 5000
+          fixedRate: 30000
       responses:
         parse:
-          fixedRate: 5000
+          fixedRate: 30000
     tasks:
       tag:
         topTags:
@@ -60,5 +62,5 @@ lastfm:
     methods:
       tag:
         topTags:
-          recordsLimit: 10000
+          recordsLimit: 2000 # it is known that Lastfm API offset breaks after 2000th record for this method
           dueDurationDays: 1

@@ -2,7 +2,7 @@ spring:
   docker:
     compose:
       enabled: true
-      file: classpath:docker/compose/docker-compose.yml
+      file: classpath:docker/compose/local/docker-compose.yml
   jpa:
     properties:
       hibernate:
@@ -35,4 +35,4 @@ lastfm:
     methods:
       tag:
         topTags:
-          recordsLimit: 10000
+          recordsLimit: 250

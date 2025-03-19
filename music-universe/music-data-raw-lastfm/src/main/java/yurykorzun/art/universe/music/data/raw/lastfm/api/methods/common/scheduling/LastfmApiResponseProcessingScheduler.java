@@ -17,8 +17,9 @@ public class LastfmApiResponseProcessingScheduler {
 
     @Scheduled(fixedRateString = "${scheduling.lastfm.api.responses.parse.fixedRate}")
     public void triggerResponsesProcessing() {
-        log.info("Triggered: response processing");
+        log.info("Lastfm API responses processing: triggered");
         apiResponseService.triggerResponsesProcessing();
+        log.info("Lastfm API responses processing: trigger finished");
     }
 
 }

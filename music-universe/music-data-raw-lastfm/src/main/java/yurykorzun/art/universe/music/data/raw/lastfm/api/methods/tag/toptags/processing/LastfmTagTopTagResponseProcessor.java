@@ -58,7 +58,9 @@ public class LastfmTagTopTagResponseProcessor extends LastfmApiResponseProcessor
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     protected void processParsedResponse(TopTagsDtoRoot parsed) {
-        log.info("Start processing DTO of type {} with {} records",
+        final String logPrefix = "Lastfm tag.topTags response processing";
+        log.info("{}: start processing DTO of type {} with {} records",
+                logPrefix,
                 parsed.getClass().getName(),
                 parsed.getTopTags().getTags().size());
 
@@ -66,7 +68,7 @@ public class LastfmTagTopTagResponseProcessor extends LastfmApiResponseProcessor
 
         //  assign ids to DTOs that already exist in DB
         List<LastfmTag> existingTags = tagRepository.findAllByNameIn(dtoMappingByName.keySet());
-        log.info("Tags existed: {}", existingTags.size());
+        log.info("{}: Tags existed: {}", logPrefix, existingTags.size());
         mapDtosToIds(dtoMappingByName, existingTags);
 
         //  save tags that are not in DB yet
@@ -75,7 +77,7 @@ public class LastfmTagTopTagResponseProcessor extends LastfmApiResponseProcessor
                 .map(this::tagDtoToTag)
                 .toList();
         List<LastfmTag> savedTags = tagRepository.saveAll(tagsToSave);
-        log.info("Tags saved  : {}", savedTags.size());
+        log.info("\"{}: Tags saved  : {}", logPrefix, savedTags.size());
 
         //  finalize id mapping. At this point every DTO must have a corresponding tag in DB
         mapDtosToIds(dtoMappingByName, savedTags);
@@ -83,9 +85,9 @@ public class LastfmTagTopTagResponseProcessor extends LastfmApiResponseProcessor
         //  convert attributes in DTO to entities
         List<LastfmAttributeHistoryRecord> attributesToSave = tagDtosToAttributes(dtoMappingByName);
         attributesToSave = attributeHistoryRepository.saveAll(attributesToSave);
-        log.info("Tag attributes saved: {}", attributesToSave.size());
+        log.info("\"{}: Tag attributes saved: {}", logPrefix, attributesToSave.size());
 
-        log.info("Finished processing DTO of type {}", parsed.getClass().getName());
+        log.info("\"{}: Finished processing DTO of type {}", logPrefix, parsed.getClass().getName());
     }
 
     private Map<String, TagMapping> createTagDtosMapping(TopTagsDtoRoot tagsDtoRoot) {

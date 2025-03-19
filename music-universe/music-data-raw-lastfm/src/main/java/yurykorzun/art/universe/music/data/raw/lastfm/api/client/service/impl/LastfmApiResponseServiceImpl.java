@@ -49,12 +49,14 @@ public class LastfmApiResponseServiceImpl implements LastfmApiResponseService {
 
     @Override
     public void triggerResponsesProcessing() {
+        final String logPrefix = "Lasftm API responses processing";
+        log.info("{}: start", logPrefix);
         List<LastfmApiResponse> unprocessed = repository.findAllPending();
-        log.info("Unprocessed API responses: {}", unprocessed.size());
+        log.info("{}: Unprocessed API responses: {}", logPrefix, unprocessed.size());
         // TODO handle concurrent processing by several Processors, then process responses in parallel
         // TODO send responses to Processor not in parallel but in batches
         unprocessed.forEach(self::processResponse);
-        log.info("Finished processing API responses");
+        log.info("{}: finish", logPrefix);
     }
 
     @Transactional
