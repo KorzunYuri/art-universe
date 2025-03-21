@@ -19,7 +19,7 @@ public class TagToptagsMappingTest {
 
     @Test
     public void givenTagTopTagsResponse_whenParsed_thenParsedCorrectly() throws IOException {
-        String responseJsonString = LastfmApiClientResourceUtil.getApiClientResponse("tag.topTags");
+        String responseJsonString = LastfmApiClientResourceUtil.getApiClientResponse("tag.getTopTags");
         TopTagsDtoRoot topTagsDtoRoot = mapper.readValue(responseJsonString, TopTagsDtoRoot.class);
 
         assertNotNull(topTagsDtoRoot);
