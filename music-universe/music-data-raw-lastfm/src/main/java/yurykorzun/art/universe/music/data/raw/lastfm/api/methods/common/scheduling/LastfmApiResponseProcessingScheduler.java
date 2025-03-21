@@ -5,6 +5,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiResponseService;
 
+import java.util.concurrent.TimeUnit;
+
 @Component
 @Slf4j
 public class LastfmApiResponseProcessingScheduler {
@@ -15,7 +17,7 @@ public class LastfmApiResponseProcessingScheduler {
         this.apiResponseService = apiResponseService;
     }
 
-    @Scheduled(fixedRateString = "${scheduling.lastfm.api.responses.parse.fixedRate}")
+    @Scheduled(fixedDelayString = "${scheduling.lastfm.api.responses.parse.fixedDelaySecs}", timeUnit = TimeUnit.SECONDS)
     public void triggerResponsesProcessing() {
         log.info("Lastfm API responses processing: triggered");
         apiResponseService.triggerResponsesProcessing();

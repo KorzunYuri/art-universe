@@ -25,7 +25,7 @@ spring:
   task:
     scheduling:
       pool:
-        size: 10
+        size: 3
   liquibase:
     change-log: classpath:db/migration/muraw/liquibase/db.changelog.xml
   docker:
@@ -39,12 +39,12 @@ scheduling:
     api:
       calls:
         generate:
-          fixedRate: 30000
+          fixedDelaySecs: 60
         fetch:
-          fixedRate: 30000
+          fixedDelaySecs: 5
       responses:
         parse:
-          fixedRate: 30000
+          fixedDelaySecs: 5
     tasks:
       tag:
         topTags:

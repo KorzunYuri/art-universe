@@ -8,6 +8,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmAp
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallGeneratorsRegistry;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Component
 @Slf4j
@@ -19,7 +20,7 @@ public class LastfmApiCallScheduler {
         this.lastfmApiCallService = lastfmApiCallService;
     }
 
-    @Scheduled(fixedRateString = "${scheduling.lastfm.api.calls.generate.fixedRate}")
+    @Scheduled(fixedDelayString = "${scheduling.lastfm.api.calls.generate.fixedDelaySecs}", timeUnit = TimeUnit.SECONDS)
     public void generateApiCalls() {
         final String logPrefix = "Lastfm api calls generation";
         log.info("{}: Start", logPrefix);
@@ -35,7 +36,7 @@ public class LastfmApiCallScheduler {
         log.info("{}: finish", logPrefix);
     }
 
-    @Scheduled(fixedRateString  = "${scheduling.lastfm.api.calls.fetch.fixedRate}")
+    @Scheduled(fixedDelayString  = "${scheduling.lastfm.api.calls.fetch.fixedDelaySecs}", timeUnit = TimeUnit.SECONDS)
     public void triggerApiCalls() {
         final String logPrefix = "Lastfm api calls performing";
         log.info("{}: start", logPrefix);

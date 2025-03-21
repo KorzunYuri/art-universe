@@ -20,10 +20,10 @@ scheduling:
     api:
       calls:
         fetch:
-          fixedRate: 10000
+          fixedDelaySecs: 10
       responses:
         parse:
-          fixedRate: 10000
+          fixedDelaySecs: 10
     tasks:
       tag:
         topTags:
