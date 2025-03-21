@@ -21,7 +21,7 @@ public interface LastfmApiCallRepository extends JpaRepository<LastfmApiCall, Lo
             "FROM api_call " +
             "WHERE  1=1 " +
             "   AND status = :status " +
-            "   AND due_dttm > NOW()" +
+            "   AND due_dttm > NOW() " +
             "LIMIT :batchSize",
             nativeQuery = true)
     List<LastfmApiCall> findAllUnexpiredByStatus(@Param("status") int status, @Param("batchSize") int batchSize);
