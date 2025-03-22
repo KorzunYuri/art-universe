@@ -12,6 +12,6 @@ public abstract class LastfmApiCallGenerator {
     }
 
     public abstract LastfmApiCallType getType();
-    public abstract List<LastfmApiCallCreateRequest> generateApiCalls();
+    public abstract List<LastfmApiCallCreateRequest> generateApiCallCreationRequests();
 
 }

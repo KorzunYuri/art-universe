@@ -36,7 +36,7 @@ public class LastfmTagTopTagApiCallGenerator extends LastfmApiCallGenerator {
     }
 
     @Override
-    public List<LastfmApiCallCreateRequest> generateApiCalls() {
+    public List<LastfmApiCallCreateRequest> generateApiCallCreationRequests() {
 
         //  TODO get pages number from the last api call (@attr.count field)
         final int tagsCount = Integer.MAX_VALUE;

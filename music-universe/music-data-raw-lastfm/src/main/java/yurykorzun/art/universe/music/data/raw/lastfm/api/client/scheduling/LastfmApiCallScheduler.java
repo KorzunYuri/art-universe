@@ -29,7 +29,7 @@ public class LastfmApiCallScheduler {
                     log.info("{}: Expiring  for type {}", logPrefix, key.getMethod());
                     lastfmApiCallService.expireApiCallsForType(key);
                     log.info("{}: Generating for type {}", logPrefix, key.getMethod());
-                    List<LastfmApiCallCreateRequest> generated = value.generateApiCalls();
+                    List<LastfmApiCallCreateRequest> generated = value.generateApiCallCreationRequests();
                     log.info("{}: Generated {} for type {}", logPrefix, generated.size(), key.getMethod());
                     lastfmApiCallService.createApiCalls(generated);
                 });
