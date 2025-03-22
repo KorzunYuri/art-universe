@@ -14,6 +14,9 @@ public class CodedConverter <T extends Coded> implements AttributeConverter<T, I
 
     @Override
     public Integer convertToDatabaseColumn(T coded) {
+        if (coded == null) {
+            return null;
+        }
         return coded.getCode();
     }
 
