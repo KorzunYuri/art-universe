@@ -1,0 +1,2 @@
+ALTER TABLE api_call ADD COLUMN entity_type SMALLINT;
+ALTER TABLE api_call ADD COLUMN entity_id BIGSERIAL;

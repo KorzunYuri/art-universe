@@ -4,6 +4,8 @@ import lombok.Getter;
 import yurykorzun.art.universe.common.Coded;
 import yurykorzun.art.universe.common.CodedRegistry;
 import yurykorzun.art.universe.common.data.raw.entity.CollectableEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmSpecific;
 
 import java.util.Arrays;
@@ -11,15 +13,17 @@ import java.util.Arrays;
 @Getter
 public enum LastfmEntityType implements LastfmSpecific, Coded, CollectableEntityType {
 
-    ARTIST(1),
-    ALBUM(2),
-    TRACK(3),
-    TAG(4);
+    ARTIST(1, LastfmArtist.class),
+    //ALBUM(2),
+    //TRACK(3),
+    TAG(4, LastfmTag.class);
 
     private final int code;
+    private final Class<? extends BaseLastfmEntity> entityClass;
 
-    LastfmEntityType(int code) {
+    LastfmEntityType(int code, Class<? extends BaseLastfmEntity> entityClass) {
         this.code = code;
+        this.entityClass = entityClass;
     }
 
     @Override

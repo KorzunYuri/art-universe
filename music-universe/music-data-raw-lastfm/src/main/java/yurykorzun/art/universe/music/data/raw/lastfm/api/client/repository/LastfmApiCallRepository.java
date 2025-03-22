@@ -18,8 +18,9 @@ import java.util.List;
 @Repository
 public interface LastfmApiCallRepository extends JpaRepository<LastfmApiCall, Long> {
 
-    @Query(value = "SELECT * " +
-            "FROM api_call " +
+    @Query(value =
+            "SELECT * " +
+            "FROM   api_call " +
             "WHERE  1=1 " +
             "   AND status = :status " +
             "   AND due_dttm > NOW() " +
@@ -37,9 +38,9 @@ public interface LastfmApiCallRepository extends JpaRepository<LastfmApiCall, Lo
 
     @Modifying
     @Query(value =
-            "   UPDATE api_call " +
-            "   SET status = :status " +
-            "   WHERE  1=1 " +
+            "   UPDATE  api_call " +
+            "   SET     status = :status " +
+            "   WHERE   1=1 " +
             "       AND type = :type " +
             "       AND due_dttm < NOW()",
         nativeQuery = true)

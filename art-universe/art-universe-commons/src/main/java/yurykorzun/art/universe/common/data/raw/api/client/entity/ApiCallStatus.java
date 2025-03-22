@@ -7,6 +7,7 @@ import yurykorzun.art.universe.common.TransitionAware;
 
 import java.util.Arrays;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -38,6 +39,10 @@ public enum ApiCallStatus implements Coded, TransitionAware<ApiCallStatus> {
 
     static {
         CodedRegistry.register(Arrays.asList(values()), ApiCallStatus.class);
+    }
+
+    public static List<ApiCallStatus> getNonTerminalStatuses() {
+        return List.of(CREATED, PENDING, PROCESSING, DUE_TO_RETRY);
     }
 
     @Override

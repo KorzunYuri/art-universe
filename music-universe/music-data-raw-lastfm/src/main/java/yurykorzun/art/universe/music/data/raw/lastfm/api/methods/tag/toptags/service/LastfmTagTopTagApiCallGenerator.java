@@ -8,10 +8,8 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmApiCallRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallGenerator;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.LastfmApiConstants;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.utils.TimeUtil;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import static yurykorzun.art.universe.music.data.raw.lastfm.api.LastfmApiConstants.*;
@@ -62,19 +60,11 @@ public class LastfmTagTopTagApiCallGenerator extends LastfmApiCallGenerator {
             params.put(LastfmApiConstants.PARAM_NAME_OFFSET, String.valueOf(offset));
             calls.add(LastfmApiCallCreateRequest.builder()
                     .type(getType())
-                    .dueDttm(generateDueDttm())
+                    .dueDttm(TimeUtil.calcDueDttm(dueDurationDays))
                     .params(params)
                 .build());
         }
 
         return calls;
     }
-
-    private Instant generateDueDttm() {
-        return Instant.now()
-                .plus(Duration.ofDays(dueDurationDays))
-                .truncatedTo(ChronoUnit.DAYS)
-                .minus(Duration.ofMillis(1));
-    }
-
 }
