@@ -6,6 +6,7 @@ import lombok.experimental.SuperBuilder;
 import yurykorzun.art.universe.common.data.raw.task.entity.Task;
 
 import jakarta.persistence.*;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 
 @Entity(name = "task")
 @SuperBuilder
@@ -17,7 +18,7 @@ public class LastfmTask extends Task {
     @SequenceGenerator(
             name = "task_seq_gen",
             sequenceName = "task_seq",
-            allocationSize = 50
+            allocationSize = LastfmConstants.HIBERNATE_BATCH_SIZE
     )
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "task_seq_gen")
     private long id;

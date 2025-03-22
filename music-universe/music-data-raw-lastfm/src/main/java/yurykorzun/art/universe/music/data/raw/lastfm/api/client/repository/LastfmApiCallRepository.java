@@ -10,6 +10,7 @@ import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallStatus;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 
 import java.time.Instant;
 import java.util.List;
@@ -31,7 +32,7 @@ public interface LastfmApiCallRepository extends JpaRepository<LastfmApiCall, Lo
     }
 
     default List<LastfmApiCall> findAllUnprocessedUnexpired() {
-        return findAllUnprocessedUnexpired(50);
+        return findAllUnprocessedUnexpired(LastfmConstants.HIBERNATE_BATCH_SIZE);
     }
 
     @Modifying

@@ -5,6 +5,7 @@ import lombok.*;
 import org.antlr.v4.runtime.misc.NotNull;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityTypeConverter;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 
 import java.time.Instant;
 import java.util.Objects;
@@ -20,7 +21,7 @@ public class LastfmAttributeHistoryRecord {
     @SequenceGenerator(
             name = "attribute_history_seq_gen",
             sequenceName = "attribute_history_seq",
-            allocationSize = 50
+            allocationSize = LastfmConstants.HIBERNATE_BATCH_SIZE
     )
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "attribute_history_seq_gen")
     private long id;

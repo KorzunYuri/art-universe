@@ -8,6 +8,7 @@ import yurykorzun.art.universe.common.data.raw.entity.CollectableEntityType;
 import jakarta.persistence.*;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 
 @Entity(name = "tag")
 @SuperBuilder
@@ -19,7 +20,7 @@ public class LastfmTag extends BaseLastfmEntity {
     @SequenceGenerator(
             name = "tag_seq_gen",
             sequenceName = "tag_seq",
-            allocationSize = 50
+            allocationSize = LastfmConstants.HIBERNATE_BATCH_SIZE
     )
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "tag_seq_gen")
     private long id;

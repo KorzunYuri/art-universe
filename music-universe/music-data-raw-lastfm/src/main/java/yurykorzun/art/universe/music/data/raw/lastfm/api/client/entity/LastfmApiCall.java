@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCall;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 
 @Entity(name = "api_call")
 @SuperBuilder
@@ -16,7 +17,7 @@ public class LastfmApiCall extends ApiCall {
     @SequenceGenerator(
             name = "api_call_seq_gen",
             sequenceName = "api_call_seq",
-            allocationSize = 50
+            allocationSize = LastfmConstants.HIBERNATE_BATCH_SIZE
     )
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "api_call_seq_gen")
     private long id;

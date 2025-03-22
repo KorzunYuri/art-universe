@@ -9,10 +9,10 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApi
 
 import java.util.List;
 
+import static yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants.HIBERNATE_BATCH_SIZE;
+
 @Repository
 public interface LastfmApiResponseRepository extends JpaRepository<LastfmApiResponse, Long> {
-
-    int DEFAULT_BATCH_SIZE = 50;
 
     @Query(
             value = "SELECT * FROM api_response " +
@@ -23,7 +23,7 @@ public interface LastfmApiResponseRepository extends JpaRepository<LastfmApiResp
     List<LastfmApiResponse> findAllByStatus(@Param("statusCode") int statusCode, @Param("batchSize") int batchSize);
 
     default List<LastfmApiResponse> findAllByStatus(ApiResponseStatus status) {
-        return findAllByStatus(status.getCode(), DEFAULT_BATCH_SIZE);
+        return findAllByStatus(status.getCode(), HIBERNATE_BATCH_SIZE);
     };
 
     default List<LastfmApiResponse> findAllPending() {

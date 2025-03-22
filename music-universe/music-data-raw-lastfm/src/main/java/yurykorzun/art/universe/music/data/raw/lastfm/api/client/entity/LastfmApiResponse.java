@@ -10,6 +10,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.Type;
 import org.hibernate.type.SqlTypes;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiResponse;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 
 import java.util.Objects;
 
@@ -23,7 +24,7 @@ public class LastfmApiResponse extends ApiResponse {
     @SequenceGenerator(
             name = "api_response_seq_gen",
             sequenceName = "api_response_seq",
-            allocationSize = 50
+            allocationSize = LastfmConstants.HIBERNATE_BATCH_SIZE
     )
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "api_response_seq")
     private long id;
