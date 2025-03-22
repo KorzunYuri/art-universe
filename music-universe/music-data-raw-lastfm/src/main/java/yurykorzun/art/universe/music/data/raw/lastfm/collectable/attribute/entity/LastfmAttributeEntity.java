@@ -4,7 +4,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.antlr.v4.runtime.misc.NotNull;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import yurykorzun.art.universe.common.persistence.entity.BaseEntity;
 
 /**
@@ -14,17 +15,18 @@ import yurykorzun.art.universe.common.persistence.entity.BaseEntity;
  */
 @Entity(name = "attribute")
 @Data
+@NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 public class LastfmAttributeEntity extends BaseEntity {
 
     @Id
     private Integer id;
 
-    @NotNull
+    @NonNull
     private String name;
 
     private String description;
 
-    @NotNull
+    @NonNull
     private Integer type;
 }
