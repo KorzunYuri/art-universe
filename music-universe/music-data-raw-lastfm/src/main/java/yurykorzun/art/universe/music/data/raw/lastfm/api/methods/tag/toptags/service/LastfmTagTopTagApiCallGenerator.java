@@ -8,6 +8,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmApiCallRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallGenerator;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.LastfmApiConstants;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.utils.TimeUtil;
 
 import java.util.*;
@@ -24,7 +25,8 @@ public class LastfmTagTopTagApiCallGenerator extends LastfmApiCallGenerator {
     @Value("${lastfm.client.methods.tag.topTags.dueDurationDays}")
     private int dueDurationDays;
 
-    public LastfmTagTopTagApiCallGenerator(LastfmApiCallRepository repository) {
+    public LastfmTagTopTagApiCallGenerator(LastfmApiCallRepository repository, LastfmApiCallService apiCallService) {
+        super(apiCallService);
         this.repository = repository;
     }
 

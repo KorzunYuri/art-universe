@@ -7,11 +7,20 @@ import java.util.List;
 
 public abstract class LastfmApiCallGenerator {
 
-    protected LastfmApiCallGenerator() {
+    protected final LastfmApiCallService apiCallService;
+
+    protected LastfmApiCallGenerator(LastfmApiCallService apiCallService) {
+        this.apiCallService = apiCallService;
         LastfmApiCallGeneratorsRegistry.register(getType(), this);
     }
 
     public abstract LastfmApiCallType getType();
-    public abstract List<LastfmApiCallCreateRequest> generateApiCallCreationRequests();
+
+    public void createApiCalls() {
+        List<LastfmApiCallCreateRequest> apiCallCreationRequests = generateApiCallCreationRequests();
+        apiCallService.createApiCalls(apiCallCreationRequests);
+    }
+
+    protected abstract List<LastfmApiCallCreateRequest> generateApiCallCreationRequests();
 
 }

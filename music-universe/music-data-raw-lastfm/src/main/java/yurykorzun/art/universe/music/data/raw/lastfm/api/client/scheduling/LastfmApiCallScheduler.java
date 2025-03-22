@@ -3,11 +3,9 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.client.scheduling;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiCallCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallGeneratorsRegistry;
 
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Component
@@ -23,15 +21,12 @@ public class LastfmApiCallScheduler {
     @Scheduled(fixedDelayString = "${scheduling.lastfm.api.calls.generate.fixedDelaySecs}", timeUnit = TimeUnit.SECONDS)
     public void generateApiCalls() {
         final String logPrefix = "Lastfm api calls generation";
-        log.info("{}: Start", logPrefix);
+        log.info("{}: start", logPrefix);
         LastfmApiCallGeneratorsRegistry.getRegistry()
                 .forEach((key, value) -> {
-                    log.info("{}: Expiring  for type {}", logPrefix, key.getMethod());
-                    lastfmApiCallService.expireApiCallsForType(key);
-                    log.info("{}: Generating for type {}", logPrefix, key.getMethod());
-                    List<LastfmApiCallCreateRequest> generated = value.generateApiCallCreationRequests();
-                    log.info("{}: Generated {} for type {}", logPrefix, generated.size(), key.getMethod());
-                    lastfmApiCallService.createApiCalls(generated);
+                    log.info("{} for {}: start", logPrefix, key);
+                    value.createApiCalls();
+                    log.info("{} for {}: finish", logPrefix, key);
                 });
         log.info("{}: finish", logPrefix);
     }
