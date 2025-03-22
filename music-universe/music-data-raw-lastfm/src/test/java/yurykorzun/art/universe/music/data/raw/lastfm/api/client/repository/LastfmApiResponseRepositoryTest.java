@@ -2,24 +2,20 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiResponseStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
 
 import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 
-@DataJpaTest
-@ActiveProfiles("test")
-class LastfmApiResponseRepositoryTest {
+class LastfmApiResponseRepositoryTest extends JpaOnlyTest {
 
     @Autowired
     private LastfmApiResponseRepository repository;

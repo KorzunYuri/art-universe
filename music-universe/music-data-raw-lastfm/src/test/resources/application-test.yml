@@ -1,16 +1,26 @@
 spring:
-  datasource:
-    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
-    url: jdbc:tc:postgresql:14:///music-universe
-    username: mu_raw_lastfm_dm
-    password: mu_raw_lastfm_dm_pwd
   jpa:
     properties:
       hibernate:
         show-sql: true
+        jdbc:
+          batch_size: 1
   docker:
     compose:
       enabled: false
 
 lastfm:
   apikey: DUMMY_API_KEY
+
+#logging:
+#  level:
+#    org:
+#      springframework:
+#        transaction: TRACE
+#      hibernate:
+#        transaction: DEBUG
+#        SQL: DEBUG
+#        type:
+#          descriptor:
+#            sql:
+#              BasicBinder: TRACE

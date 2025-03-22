@@ -2,22 +2,17 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
 
 import java.time.Instant;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
-
-@DataJpaTest
-@ActiveProfiles("test")
-class LastfmApiCallRepositoryTest {
+class LastfmApiCallRepositoryTest extends JpaOnlyTest {
 
     @Autowired
     private LastfmApiCallRepository repository;
@@ -31,12 +26,12 @@ class LastfmApiCallRepositoryTest {
             .build();
 
         LastfmApiCall saved = repository.save(created);
-        assertThat(saved).isNotNull();
+        assertNotNull(saved);
 
         LastfmApiCall fetched = repository.getReferenceById(saved.getId());
-        assertThat(fetched).isNotNull();
-        assertThat(fetched.getType()).isEqualTo(created.getType());
-        assertThat(fetched.getParams()).isEqualTo(created.getParams());
+        assertNotNull(fetched);
+        assertEquals(created.getType(), fetched.getType());
+        assertEquals(created.getParams(), fetched.getParams());
     }
 
     @Test
@@ -53,7 +48,7 @@ class LastfmApiCallRepositoryTest {
         repository.save(saved);
 
         LastfmApiCall updated = repository.getReferenceById(saved.getId());
-        assertThat(updated).isNotNull();
-        assertThat(updated.getStatus()).isEqualTo(ApiCallStatus.EXPIRED);
+        assertNotNull(updated);
+        assertEquals(ApiCallStatus.EXPIRED, updated.getStatus());
     }
 }

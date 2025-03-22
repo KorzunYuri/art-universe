@@ -1,16 +1,16 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.task.repository;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
+import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.common.data.raw.task.entity.TaskStatus;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.entity.LastfmTask;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.entity.LastfmTaskType;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.Query;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
@@ -18,15 +18,18 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static yurykorzun.art.universe.music.data.raw.lastfm.common.utils.TimeTestUtils.*;
 
-@DataJpaTest
-@ActiveProfiles("test")
-public class LastfmTaskRepositoryTest {
+public class LastfmTaskRepositoryTest extends JpaOnlyTest {
 
     @Autowired
     private LastfmTaskRepository taskRepository;
 
     @Autowired
     private EntityManager entityManager;
+
+    @AfterEach
+    public void cleanDb() {
+        taskRepository.deleteAll();
+    }
 
     @Test
     public void givenValidLastfmTask_whenSaved_thenPersistedCorrectly() {

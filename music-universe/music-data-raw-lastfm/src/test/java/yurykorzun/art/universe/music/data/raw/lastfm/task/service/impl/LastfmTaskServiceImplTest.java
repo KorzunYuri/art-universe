@@ -1,13 +1,13 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.task.service.impl;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import yurykorzun.art.universe.common.data.raw.task.entity.TaskStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiCallCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallService;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.FullContextTest;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.dto.LastfmTaskCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.entity.LastfmTask;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.entity.LastfmTaskType;
@@ -17,12 +17,10 @@ import java.time.Duration;
 import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
-@ActiveProfiles("test")
-class LastfmTaskServiceImplTest {
+class LastfmTaskServiceImplTest extends FullContextTest {
 
     @MockitoBean
     private LastfmTaskRepository taskRepository;
@@ -32,6 +30,11 @@ class LastfmTaskServiceImplTest {
 
     @Autowired
     private LastfmTaskServiceImpl taskService;
+
+    @AfterEach
+    public void cleanDb() {
+        taskRepository.deleteAll();
+    }
 
     @Test
     void testLastfmTaskCreation() {

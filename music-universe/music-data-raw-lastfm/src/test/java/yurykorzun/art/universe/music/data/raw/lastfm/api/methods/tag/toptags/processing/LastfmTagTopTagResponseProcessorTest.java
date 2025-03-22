@@ -1,10 +1,8 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.processing;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.PageInfo;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.common.dto.TagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.dto.TopTagsDto;
@@ -13,14 +11,14 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entit
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repository.LastfmAttributeHistoryRecordRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.repository.LastfmTagRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.FullContextTest;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
-@ActiveProfiles("test")
-public class LastfmTagTopTagResponseProcessorTest {
+@Slf4j
+public class LastfmTagTopTagResponseProcessorTest extends FullContextTest {
 
     @Autowired
     private LastfmTagTopTagResponseProcessor processor;
@@ -31,7 +29,12 @@ public class LastfmTagTopTagResponseProcessorTest {
     @Autowired
     private LastfmAttributeHistoryRecordRepository attributeHistoryRepository;
 
-    @BeforeEach
+    @AfterEach
+    public void reset() {
+        cleanDatabase();
+    }
+
+    @AfterEach
     public void cleanDatabase() {
         tagRepository.deleteAll();
         attributeHistoryRepository.deleteAll();
@@ -39,6 +42,7 @@ public class LastfmTagTopTagResponseProcessorTest {
 
     @Test
     public void testFirstSave() {
+        log.info("testFirstSave START");
         TopTagsDtoRoot dto = createTestDtoRoot();
         final int tagsNumber = dto.getTopTags().getTags().size();
         final int attributesNumber = 3;
@@ -52,10 +56,12 @@ public class LastfmTagTopTagResponseProcessorTest {
                 "First save must save tags that haven't existed in DB");
         assertEquals(tagsNumber * attributesNumber, attributesAfterFirst.size(),
                 "First save must save (tags X (tag attributes)) attribute records");
+        log.info("testFirstSave FINISH");
     }
 
     @Test
     public void testSecondarySave() {
+        log.info("testSecondarySave START");
         TopTagsDtoRoot dto = createTestDtoRoot();
         final int tagsNumber = dto.getTopTags().getTags().size();
         final int attributesNumber = 3;
@@ -78,6 +84,7 @@ public class LastfmTagTopTagResponseProcessorTest {
         assertEquals(tagsAfterFirst.size(), tagsAfterSecond.size(), "Second save must not produce duplicate tags");
         assertEquals(tagsNumber * attributesNumber * 2, attributesAfterSecond.size(),
                 "Second save must produce new tag attribute values (tags X (tag attributes)) records");
+        log.info("testSecondarySave FINISH");
     }
 
     private TopTagsDtoRoot createTestDtoRoot() {
