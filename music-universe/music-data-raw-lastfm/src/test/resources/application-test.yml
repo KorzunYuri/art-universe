@@ -24,3 +24,6 @@ lastfm:
 #          descriptor:
 #            sql:
 #              BasicBinder: TRACE
+#        orm:
+#          jdbc:
+#            bind: TRACE
