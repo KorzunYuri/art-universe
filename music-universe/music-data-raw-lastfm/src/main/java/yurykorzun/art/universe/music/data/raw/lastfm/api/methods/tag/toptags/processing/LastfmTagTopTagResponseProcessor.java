@@ -58,7 +58,7 @@ public class LastfmTagTopTagResponseProcessor extends LastfmApiResponseProcessor
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     protected void processParsedResponse(TopTagsDtoRoot parsed) {
-        final String logPrefix = "Lastfm tag.topTags response processing";
+        final String logPrefix = String.format("Lastfm %s response processing", LastfmApiCallType.TAG_TOP_TAGS.getMethod());
         log.info("{}: start processing DTO of type {} with {} records",
                 logPrefix,
                 parsed.getClass().getName(),
