@@ -3,6 +3,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import yurykorzun.art.universe.common.data.raw.entity.CollectableEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
@@ -23,8 +24,10 @@ public class LastfmArtist extends BaseLastfmEntity {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "artist_seq_gen")
     private long id;
 
+    @Setter
     private String mbid;
 
+    @Setter
     private String url;
 
     @Override

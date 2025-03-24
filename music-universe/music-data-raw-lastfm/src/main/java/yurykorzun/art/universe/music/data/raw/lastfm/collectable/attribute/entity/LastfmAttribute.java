@@ -38,6 +38,12 @@ public enum LastfmAttribute implements Coded {
             "global rank of the entity",
             Type.INTEGER,
             List.of(LastfmEntityType.values()))
+    ,   MBID(
+            5,
+            "mbid",
+            "MusicBrainz ID",
+            Type.STRING,
+            List.of(LastfmEntityType.ARTIST))
     ;
 
     private final int id;
