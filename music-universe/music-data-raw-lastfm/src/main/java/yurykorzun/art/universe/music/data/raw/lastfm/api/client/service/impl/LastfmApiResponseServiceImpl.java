@@ -61,9 +61,13 @@ public class LastfmApiResponseServiceImpl implements LastfmApiResponseService {
 
     @Transactional
     protected void processResponse(LastfmApiResponse r) {
+        LastfmApiResponseProcessor<?> processor = LastfmApiResponseProcessorsRegistry.get(
+                ((LastfmApiCallType) r.getApiCallType()).getResponseDtoClass());
+        if (processor == null) {
+            return;
+        }
+
         try {
-            LastfmApiResponseProcessor<?> processor = LastfmApiResponseProcessorsRegistry.get(
-                    ((LastfmApiCallType) r.getApiCallType()).getResponseDtoClass());
             processor.process(r);
             r.setStatus(ApiResponseStatus.COMPLETED);
         } catch (IOException e) {
