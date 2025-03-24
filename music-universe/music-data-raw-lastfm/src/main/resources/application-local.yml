@@ -36,3 +36,5 @@ lastfm:
       tag:
         topTags:
           recordsLimit: 250
+        topArtists:
+          dueDurationDays: 1
