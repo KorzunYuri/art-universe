@@ -4,6 +4,7 @@ import lombok.Getter;
 import yurykorzun.art.universe.common.CodedRegistry;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.common.dto.RootDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.TopArtistsDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.dto.TopTagsDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmSpecific;
 
@@ -20,6 +21,12 @@ public enum LastfmApiCallType implements ApiCallType, LastfmSpecific {
             Set.of(PARAM_NAME_API_KEY),
             Set.of(PARAM_NAME_OFFSET),
             TopTagsDtoRoot.class)
+    ,   TAG_TOP_ARTISTS(
+            2,
+            "tag.getTopArtists",
+            Set.of(PARAM_NAME_API_KEY, PARAM_NAME_TAG),
+            Set.of(PARAM_NAME_LIMIT, PARAM_NAME_PAGE),
+            TopArtistsDtoRoot.class)
     ;
 
     static {
