@@ -5,9 +5,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmDataSnapshot;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
 
 import java.time.Instant;
+import java.util.Date;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -17,9 +19,17 @@ class LastfmApiCallRepositoryTest extends JpaOnlyTest {
     @Autowired
     private LastfmApiCallRepository repository;
 
+    @Autowired
+    private LastfmDataSnapshotRepository snapshotRepository;
+
+    private LastfmDataSnapshot createDummyDataSnapshot() {
+        return snapshotRepository.save(new LastfmDataSnapshot(LastfmApiCallType.TAG_TOP_TAGS, new Date()));
+    }
+
     @Test
     void testApiCallCreation() {
         LastfmApiCall created = LastfmApiCall.builder()
+                .dataSnapshotId(createDummyDataSnapshot().getId())
                 .type(LastfmApiCallType.TAG_TOP_TAGS)
                 .params(Map.of("key", "value"))
                 .dueDttm(Instant.now())
@@ -37,6 +47,7 @@ class LastfmApiCallRepositoryTest extends JpaOnlyTest {
     @Test
     void testApiCallStatusUpdate() {
         LastfmApiCall created = LastfmApiCall.builder()
+                .dataSnapshotId(createDummyDataSnapshot().getId())
                 .type(LastfmApiCallType.TAG_TOP_TAGS)
                 .params(Map.of("key", "value"))
                 .dueDttm(Instant.now())

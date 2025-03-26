@@ -21,34 +21,36 @@ import static org.mockito.Mockito.*;
 class LastfmApiCallServiceImplTest extends FullContextTest {
 
     @MockitoBean
-    private LastfmApiCallRepository repository;
+    private LastfmApiCallRepository apiCallRepository;
 
     @Autowired
     private LastfmApiCallServiceImpl service;
 
     private static final Instant dueDttm = Instant.now().plus(Duration.ofDays(1));
-    private static final Supplier<LastfmApiCallCreateRequest> validCreateRequestSupplier =
-            () -> LastfmApiCallCreateRequest.builder()
-                        .type(LastfmApiCallType.TAG_TOP_TAGS)
-                        .dueDttm(dueDttm)
-                    .build();
+    private Supplier<LastfmApiCallCreateRequest> validCreateRequestSupplier() {
+        return () -> LastfmApiCallCreateRequest.builder()
+                .type(LastfmApiCallType.TAG_TOP_TAGS)
+                .dataSnapshotId(1L)
+                .dueDttm(dueDttm)
+            .build();
+    }
 
     @Test
     void testApiCallCreation() {
         // given
-        LastfmApiCallCreateRequest request = validCreateRequestSupplier.get();
+        LastfmApiCallCreateRequest request = validCreateRequestSupplier().get();
         LastfmApiCall apiCall = LastfmApiCall.builder()
                 .id(1L)
                 .dueDttm(request.getDueDttm())
                 .type(request.getType())
             .build();
-        when(repository.save(any(LastfmApiCall.class))).thenReturn(apiCall);
+        when(apiCallRepository.save(any(LastfmApiCall.class))).thenReturn(apiCall);
 
         // when
         long returnedId = service.createApiCall(request);
 
         // then
-        verify(repository).save(any(LastfmApiCall.class));
+        verify(apiCallRepository).save(any(LastfmApiCall.class));
         assertEquals(1L, returnedId);
     }
 
@@ -60,14 +62,14 @@ class LastfmApiCallServiceImplTest extends FullContextTest {
                 .type(LastfmApiCallType.TAG_TOP_TAGS)
                 .dueDttm(Instant.now())
             .build();
-        when(repository.getReferenceById(id)).thenReturn(apiCall);
+        when(apiCallRepository.getReferenceById(id)).thenReturn(apiCall);
 
         // when
         service.setStatus(id, ApiCallStatus.PENDING);
 
         // then
-        verify(repository).getReferenceById(id);
-        verify(repository).save(apiCall);
+        verify(apiCallRepository).getReferenceById(id);
+        verify(apiCallRepository).save(apiCall);
         assertEquals(ApiCallStatus.PENDING, apiCall.getStatus());
     }
 }

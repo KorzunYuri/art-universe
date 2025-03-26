@@ -26,8 +26,12 @@ public class LastfmAttributeHistoryRecord {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "attribute_history_seq_gen")
     private long id;
 
+    @NonNull
+    @Column(name = "api_call_id")
+    private long apiCallId;
+
     @NotNull
-    @Column(name = "entity_type_id")
+    @Column(name = "entity_type")
     @Convert(converter = LastfmEntityTypeConverter.class)
     private LastfmEntityType entityTypeId;
 
@@ -39,6 +43,15 @@ public class LastfmAttributeHistoryRecord {
     @Column(name = "attribute_id")
     @Convert(converter = LastfmAttributeConverter.class)
     private LastfmAttribute attribute;
+
+    @NotNull
+    @Column(name = "scope_entity_type")
+    @Convert(converter = LastfmEntityTypeConverter.class)
+    private LastfmEntityType scopeEntityTypeId;
+
+    @NotNull
+    @Column(name = "scope_entity_id")
+    private long scopeEntityId;
 
     @NonNull
     @Builder.Default

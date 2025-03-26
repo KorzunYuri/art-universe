@@ -1,0 +1,20 @@
+package yurykorzun.art.universe.music.data.raw.lastfm.api.client.service;
+
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmDataSnapshot;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
+
+public interface LastfmDataSnapshotService {
+
+    LastfmDataSnapshot getSnapshotFor(LastfmApiCallType apiCallType);
+
+    LastfmDataSnapshot getSnapshotFor(LastfmApiCallType apiCallType, BaseLastfmEntity entity);
+
+    void incCreatedCount(           long id             );
+    void incCreatedCountByNumber(   long id, int number );
+    void incCompletedCount(         long id             );
+    void incCompletedCountByNumber( long id, int number );
+    void incParsedCount(            long id             );
+    void incParsedCountByNumber(    long id, int number );
+
+}

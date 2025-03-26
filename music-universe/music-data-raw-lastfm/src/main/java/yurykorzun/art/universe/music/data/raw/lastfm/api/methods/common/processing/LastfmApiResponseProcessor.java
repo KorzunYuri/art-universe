@@ -22,14 +22,6 @@ public abstract class LastfmApiResponseProcessor<T extends RootDto>
         LastfmApiResponseProcessorsRegistry.register(clazz, this);
     }
 
-    protected abstract void processParsedResponse(T parsed);
-
-    @Override
-    protected void processResponse(LastfmApiResponse response) throws JsonProcessingException {
-        T parsed = parseResponse(response);
-        processParsedResponse(parsed);
-    }
-
     protected T parseResponse(LastfmApiResponse response) throws JsonProcessingException {
         return objectMapper.readValue(response.getResponseBody(), clazz);
     }

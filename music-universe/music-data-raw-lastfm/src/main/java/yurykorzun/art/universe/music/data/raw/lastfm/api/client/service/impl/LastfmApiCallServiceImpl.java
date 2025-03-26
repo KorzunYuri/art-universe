@@ -8,9 +8,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
-import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCall;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallStatus;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.LastfmApiConstants;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiCallCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiResponseCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
@@ -90,6 +88,7 @@ public class LastfmApiCallServiceImpl implements LastfmApiCallService {
     private LastfmApiCall dtoToApiCall(LastfmApiCallCreateRequest dto) {
         return LastfmApiCall.builder()
                 .type(dto.getType())
+                .dataSnapshotId(dto.getDataSnapshotId())
                 .dueDttm(dto.getDueDttm())
                 .params(dto.getParams())
             .build();

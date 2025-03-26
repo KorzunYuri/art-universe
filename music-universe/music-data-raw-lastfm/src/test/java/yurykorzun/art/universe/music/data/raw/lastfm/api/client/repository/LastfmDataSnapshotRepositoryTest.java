@@ -23,8 +23,7 @@ class LastfmDataSnapshotRepositoryTest extends JpaOnlyTest {
     void givenNewDataSnapshot_whenPersisted_thenSavesCorrectValues() {
         //  given
         final Date dataDate = new Date();
-        final int createdCnt = 3;
-        LastfmDataSnapshot snapshot = new LastfmDataSnapshot(LastfmApiCallType.TAG_TOP_TAGS, dataDate, createdCnt);
+        LastfmDataSnapshot snapshot = new LastfmDataSnapshot(LastfmApiCallType.TAG_TOP_TAGS, dataDate);
 
         //  when
         snapshot = repository.save(snapshot);
@@ -34,17 +33,35 @@ class LastfmDataSnapshotRepositoryTest extends JpaOnlyTest {
         assertTrue(snapshot.getId() > 0);
         assertEquals(dataDate, snapshot.getDataDate());
         assertEquals(LastfmApiCallType.TAG_TOP_TAGS, snapshot.getApiCallType());
-        assertEquals(createdCnt, snapshot.getCreatedCount());
+        assertEquals(0, snapshot.getCreatedCount());
         assertEquals(0, snapshot.getCompletedCount());
         assertEquals(0, snapshot.getParsedCount());
     }
 
     @Test
-    void givenPersistedDataSnapshot_whenIncrementCompletedCalled_thenIncrementsCorrectly() {
+    void givenPersistedDataSnapshot_whenIncrementCreated_thenIncrementsCorrectly() {
         //  given
         final Date dataDate = new Date();
-        final int createdCnt = 3;
-        LastfmDataSnapshot snapshot = new LastfmDataSnapshot(LastfmApiCallType.TAG_TOP_TAGS, dataDate, createdCnt);
+        LastfmDataSnapshot snapshot = new LastfmDataSnapshot(LastfmApiCallType.TAG_TOP_TAGS, dataDate);
+        snapshot = repository.save(snapshot);
+        final long id = snapshot.getId();
+
+        //  when
+        repository.incCreatedCount(id);
+        entityManager.refresh(snapshot);
+        snapshot = repository.findById(id).get();
+
+        //  then
+        assertEquals(1, snapshot.getCreatedCount());
+        assertEquals(0, snapshot.getCompletedCount());
+        assertEquals(0, snapshot.getParsedCount());
+    }
+
+    @Test
+    void givenPersistedDataSnapshot_whenIncrementCompleted_thenIncrementsCorrectly() {
+        //  given
+        final Date dataDate = new Date();
+        LastfmDataSnapshot snapshot = new LastfmDataSnapshot(LastfmApiCallType.TAG_TOP_TAGS, dataDate);
         snapshot = repository.save(snapshot);
         final long id = snapshot.getId();
 
@@ -54,16 +71,16 @@ class LastfmDataSnapshotRepositoryTest extends JpaOnlyTest {
         snapshot = repository.findById(id).get();
 
         //  then
+        assertEquals(0, snapshot.getCreatedCount());
         assertEquals(1, snapshot.getCompletedCount());
         assertEquals(0, snapshot.getParsedCount());
     }
 
     @Test
-    void givenPersistedDataSnapshot_whenIncrementParsedCalled_thenIncrementsCorrectly() {
+    void givenPersistedDataSnapshot_whenIncrementParsed_thenIncrementsCorrectly() {
         // given
         final Date dataDate = new Date();
-        final int createdCnt = 3;
-        LastfmDataSnapshot snapshot = new LastfmDataSnapshot(LastfmApiCallType.TAG_TOP_TAGS, dataDate, createdCnt);
+        LastfmDataSnapshot snapshot = new LastfmDataSnapshot(LastfmApiCallType.TAG_TOP_TAGS, dataDate);
         snapshot = repository.save(snapshot);
         final long id = snapshot.getId();
 
@@ -73,7 +90,66 @@ class LastfmDataSnapshotRepositoryTest extends JpaOnlyTest {
         snapshot = repository.findById(id).get();
 
         // then
+        assertEquals(0, snapshot.getCreatedCount());
         assertEquals(0, snapshot.getCompletedCount());
         assertEquals(1, snapshot.getParsedCount());
+    }
+
+
+    @Test
+    void givenPersistedDataSnapshot_whenIncrementCreatedByNumber_thenIncrementsCorrectly() {
+        //  given
+        final Date dataDate = new Date();
+        LastfmDataSnapshot snapshot = new LastfmDataSnapshot(LastfmApiCallType.TAG_TOP_TAGS, dataDate);
+        snapshot = repository.save(snapshot);
+        final long id = snapshot.getId();
+
+        //  when
+        repository.incCreatedCountByNumber(id, 3);
+        entityManager.refresh(snapshot);
+        snapshot = repository.findById(id).get();
+
+        //  then
+        assertEquals(3, snapshot.getCreatedCount());
+        assertEquals(0, snapshot.getCompletedCount());
+        assertEquals(0, snapshot.getParsedCount());
+    }
+
+    @Test
+    void givenPersistedDataSnapshot_whenIncrementCompletedByNumber_thenIncrementsCorrectly() {
+        //  given
+        final Date dataDate = new Date();
+        LastfmDataSnapshot snapshot = new LastfmDataSnapshot(LastfmApiCallType.TAG_TOP_TAGS, dataDate);
+        snapshot = repository.save(snapshot);
+        final long id = snapshot.getId();
+
+        //  when
+        repository.incCompletedCountByNumber(id, 3);
+        entityManager.refresh(snapshot);
+        snapshot = repository.findById(id).get();
+
+        //  then
+        assertEquals(0, snapshot.getCreatedCount());
+        assertEquals(3, snapshot.getCompletedCount());
+        assertEquals(0, snapshot.getParsedCount());
+    }
+
+    @Test
+    void givenPersistedDataSnapshot_whenIncrementParsedByNumber_thenIncrementsCorrectly() {
+        // given
+        final Date dataDate = new Date();
+        LastfmDataSnapshot snapshot = new LastfmDataSnapshot(LastfmApiCallType.TAG_TOP_TAGS, dataDate);
+        snapshot = repository.save(snapshot);
+        final long id = snapshot.getId();
+
+        // when
+        repository.incParsedCountByNumber(id, 3);
+        entityManager.refresh(snapshot);
+        snapshot = repository.findById(id).get();
+
+        // then
+        assertEquals(0, snapshot.getCreatedCount());
+        assertEquals(0, snapshot.getCompletedCount());
+        assertEquals(3, snapshot.getParsedCount());
     }
 }

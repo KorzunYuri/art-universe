@@ -38,20 +38,17 @@ public class LastfmDataSnapshot extends BaseEntity {
 
     public LastfmDataSnapshot(
             @NonNull LastfmApiCallType apiCallType,
-            @NonNull Date dataDate,
-            int createdCount) {
+            @NonNull Date dataDate) {
         this.apiCallType = apiCallType;
         this.dataDate = dataDate;
-        this.createdCount = createdCount;
     }
 
     public LastfmDataSnapshot(
             @NonNull LastfmApiCallType apiCallType,
             @NonNull Date dataDate,
-            int createdCount,
             BaseLastfmEntity entity
     ) {
-        this(apiCallType, dataDate, createdCount);
+        this(apiCallType, dataDate);
         this.entityType = (LastfmEntityType) entity.getType();
         this.entityId = entity.getId();
     }
@@ -82,7 +79,7 @@ public class LastfmDataSnapshot extends BaseEntity {
     private Date dataDate;
 
     @Column(name = "created_cnt")
-    private int createdCount;
+    private int createdCount = 0;
 
     @Column(name = "completed_cnt")
     private int completedCount = 0;

@@ -7,10 +7,12 @@ import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiResponseStat
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmDataSnapshot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
 
 import java.time.Instant;
+import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -18,20 +20,29 @@ import static org.junit.jupiter.api.Assertions.*;
 class LastfmApiResponseRepositoryTest extends JpaOnlyTest {
 
     @Autowired
-    private LastfmApiResponseRepository repository;
+    private LastfmApiResponseRepository apiResponseRepository;
 
     @Autowired
-    private LastfmApiCallRepository lastfmApiCallRepository;
+    private LastfmApiCallRepository apiCallRepository;
+
+    @Autowired
+    private LastfmDataSnapshotRepository snapshotRepository;
 
     private static final String sampleResponse = LastfmApiClientResourceUtil.getAnyResponse();
     private static final LastfmApiCallType dummyApiCallType = LastfmApiCallType.TAG_TOP_TAGS;
 
+    private LastfmDataSnapshot createDummyDataSnapshot() {
+        return snapshotRepository.save(new LastfmDataSnapshot(LastfmApiCallType.TAG_TOP_TAGS, new Date()));
+    }
+
     private LastfmApiCall createDummyApiCall() {
+        LastfmDataSnapshot snapshot = createDummyDataSnapshot();
         LastfmApiCall dummyApiCall = LastfmApiCall.builder()
                 .type(dummyApiCallType)
+                .dataSnapshotId(snapshot.getId())
                 .dueDttm(Instant.now())
             .build();
-        dummyApiCall = lastfmApiCallRepository.save(dummyApiCall);
+        dummyApiCall = apiCallRepository.save(dummyApiCall);
         return dummyApiCall;
     }
 
@@ -47,7 +58,7 @@ class LastfmApiResponseRepositoryTest extends JpaOnlyTest {
     void testApiResponseCreation() {
         LastfmApiCall dummyApiCall = createDummyApiCall();
         LastfmApiResponse created = responseForApiCall(dummyApiCall);
-        LastfmApiResponse saved = repository.save(created);
+        LastfmApiResponse saved = apiResponseRepository.save(created);
 
         assertNotNull(saved);
         assertEquals(dummyApiCall.getId(), saved.getApiCallId());
@@ -60,13 +71,13 @@ class LastfmApiResponseRepositoryTest extends JpaOnlyTest {
 
         LastfmApiCall dummyApiCall = createDummyApiCall();
         LastfmApiResponse created = responseForApiCall(dummyApiCall);
-        LastfmApiResponse saved = repository.save(created);
+        LastfmApiResponse saved = apiResponseRepository.save(created);
 
         ApiResponseStatus newStatus = ApiResponseStatus.PENDING;
         saved.setStatus(newStatus);
-        repository.save(created);
+        apiResponseRepository.save(created);
 
-        LastfmApiResponse updated = repository.getReferenceById(saved.getId());
+        LastfmApiResponse updated = apiResponseRepository.getReferenceById(saved.getId());
         assertNotNull(updated);
         assertEquals(newStatus, updated.getStatus());
     }
@@ -78,7 +89,7 @@ class LastfmApiResponseRepositoryTest extends JpaOnlyTest {
                 .apiCallType(dummyApiCallType)
                 .responseBody(sampleResponse)
             .build();
-        Exception e = assertThrows(Exception.class, () -> repository.saveAndFlush(orphanResponse));
+        Exception e = assertThrows(Exception.class, () -> apiResponseRepository.saveAndFlush(orphanResponse));
         assertInstanceOf(DataIntegrityViolationException.class, e);
     }
 
@@ -86,12 +97,12 @@ class LastfmApiResponseRepositoryTest extends JpaOnlyTest {
     void testApiResponseDuplicationPrevention() {
         LastfmApiCall dummyApiCall = createDummyApiCall();
         LastfmApiResponse created = responseForApiCall(dummyApiCall);
-        LastfmApiResponse saved = repository.save(created);
+        LastfmApiResponse saved = apiResponseRepository.save(created);
 
         LastfmApiResponse duplicate = responseForApiCall(dummyApiCall);
-        LastfmApiResponse duplicateSaved = repository.save(created);
+        LastfmApiResponse duplicateSaved = apiResponseRepository.save(created);
 
-        long count = repository.count();
+        long count = apiResponseRepository.count();
         assertEquals(1, count);
 
         // TODO when there is more than one ApiCallType - check that response for another ApiCallType doesn't count as a duplicate

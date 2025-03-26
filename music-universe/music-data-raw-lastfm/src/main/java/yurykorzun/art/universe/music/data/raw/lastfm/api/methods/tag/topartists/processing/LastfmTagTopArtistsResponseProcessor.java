@@ -3,8 +3,11 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiResponseProcessor;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.ArtistsRankedDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.TopArtistsDtoRoot;
@@ -15,6 +18,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entit
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repository.LastfmAttributeHistoryRecordRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -37,8 +41,33 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
         return LastfmApiCallType.TAG_TOP_ARTISTS;
     }
 
+    @RequiredArgsConstructor
+    private static class ArtistBinding {
+
+        // holding response is required for extracting snapshotId and apiCallId later
+        final LastfmApiResponse response;
+
+        final ArtistsRankedDto dto;
+
+        LastfmArtist entity;
+
+        // Attributes require entity_id, which is missing in case of new entities.
+        // Hence, we store attributes builders and finalize them when we can.
+        List<LastfmAttributeHistoryRecord.LastfmAttributeHistoryRecordBuilder> newAttrValuesBuilders = new ArrayList<>();
+
+        // marks bindings containing new entities - they must be revisited to assign entity_id to their attributes
+        boolean isNew = false;
+
+        // marks non-changed entities to eliminate unnecessary saving
+        boolean shouldBeSaved = false;
+    }
+
     @Override
-    protected void processParsedResponse(TopArtistsDtoRoot parsed) {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    protected void processResponse(LastfmApiResponse response) throws IOException {
+
+        TopArtistsDtoRoot parsed = parseResponse(response);
+
         final String logPrefix = String.format("Lastfm %s response processing", LastfmApiCallType.TAG_TOP_TAGS.getMethod());
         log.info("{}: start processing DTO of type {} with {} records",
                 logPrefix,
@@ -46,7 +75,7 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
                 parsed.getTopArtists().getArtists().size());
 
         Map<String, ArtistBinding> dtoBindingByName = parsed.getTopArtists().getArtists().stream()
-                .collect(Collectors.toMap(ArtistsRankedDto::getName, ArtistBinding::new));
+                .collect(Collectors.toMap(ArtistsRankedDto::getName, dto -> new ArtistBinding(response, dto)));
 
         //  bind persisted entities to dtos
         artistRepository.findAllByNameIn(dtoBindingByName.keySet()).forEach(
@@ -95,21 +124,21 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
      * Update existing values in entity and mark for saving
      */
     private void updateWithNewValues(ArtistBinding binding) {
-        LastfmArtist entity = binding.entity;
+        LastfmArtist artist = binding.entity;
         ArtistsRankedDto dto = binding.dto;
         List<LastfmAttributeHistoryRecord.LastfmAttributeHistoryRecordBuilder> newValues = binding.newAttrValuesBuilders;
-        if (!Objects.equals(entity.getUrl(), dto.getUrl())) {
+        if (!Objects.equals(artist.getUrl(), dto.getUrl())) {
             newValues.add(
-                    getAttrValueBuilderForEntity(entity, LastfmAttribute.URL)
+                    createAttrValueBuilderForEntity(binding, LastfmAttribute.URL)
                             .stringValue(dto.getUrl()));
-            entity.setUrl(dto.getUrl());
+            artist.setUrl(dto.getUrl());
             binding.shouldBeSaved = true;
         }
-        if (!Objects.equals(entity.getMbid(), dto.getMbid())) {
+        if (!Objects.equals(artist.getMbid(), dto.getMbid())) {
             newValues.add(
-                    getAttrValueBuilderForEntity(entity, LastfmAttribute.MBID)
+                    createAttrValueBuilderForEntity(binding, LastfmAttribute.MBID)
                             .stringValue(dto.getMbid()));
-            entity.setMbid(dto.getMbid());
+            artist.setMbid(dto.getMbid());
             binding.shouldBeSaved = true;
         }
     }
@@ -122,51 +151,37 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
         ArtistsRankedDto dto = binding.dto;
         List<LastfmAttributeHistoryRecord.LastfmAttributeHistoryRecordBuilder> newValues = binding.newAttrValuesBuilders;
 
-        newValues.add(getAttrValueBuilderForDto(dto, LastfmAttribute.URL)
+        newValues.add(createAttrValueBuilder(binding, LastfmAttribute.URL)
                 .stringValue(dto.getUrl()));
-        newValues.add(getAttrValueBuilderForDto(dto, LastfmAttribute.MBID)
+        newValues.add(createAttrValueBuilder(binding, LastfmAttribute.MBID)
                 .stringValue(dto.getMbid()));
-        binding.entity = dtoToArtist(dto);
+        binding.entity = createArtist(binding);
         binding.isNew = true;
         binding.shouldBeSaved = true;
     }
 
-    private LastfmAttributeHistoryRecord.LastfmAttributeHistoryRecordBuilder getAttrValueBuilderForEntity(
-            LastfmArtist artist, LastfmAttribute attribute) {
+    private LastfmAttributeHistoryRecord.LastfmAttributeHistoryRecordBuilder createAttrValueBuilderForEntity(
+            ArtistBinding binding, LastfmAttribute attribute) {
+        return createAttrValueBuilder(binding, attribute)
+                .entityTypeId((LastfmEntityType) binding.entity.getType())
+                .entityId(binding.entity.getId());
+    }
+
+    private LastfmAttributeHistoryRecord.LastfmAttributeHistoryRecordBuilder createAttrValueBuilder(
+            ArtistBinding binding, LastfmAttribute attribute) {
         return LastfmAttributeHistoryRecord.builder()
                 .attribute(attribute)
                 .entityTypeId(LastfmEntityType.ARTIST)
-                .entityId(artist.getId());
+                .apiCallId(binding.response.getApiCallId());
     }
 
-    private LastfmAttributeHistoryRecord.LastfmAttributeHistoryRecordBuilder getAttrValueBuilderForDto(
-            ArtistsRankedDto artist, LastfmAttribute attribute) {
-        return LastfmAttributeHistoryRecord.builder()
-                .attribute(attribute)
-                .entityTypeId(LastfmEntityType.ARTIST);
-    }
-
-    private LastfmArtist dtoToArtist(ArtistsRankedDto dto) {
+    private LastfmArtist createArtist(ArtistBinding binding) {
+        ArtistsRankedDto dto = binding.dto;
         return LastfmArtist.builder()
                 .name(dto.getName())
                 .url(dto.getUrl())
                 .mbid(dto.getMbid())
+                .apiCallId(binding.response.getApiCallId())
             .build();
-    }
-
-    @RequiredArgsConstructor
-    private static class ArtistBinding {
-        final ArtistsRankedDto dto;
-        LastfmArtist entity;
-
-        // Attributes require entity_id, which is missing in case of new entities.
-        // Hence, we store attributes builders and finalize them when we can.
-        List<LastfmAttributeHistoryRecord.LastfmAttributeHistoryRecordBuilder> newAttrValuesBuilders = new ArrayList<>();
-
-        // marks bindings containing new entities - they must be revisited to assign entity_id to their attributes
-        boolean isNew = false;
-
-        // marks non-changed entities to eliminate unnecessary saving
-        boolean shouldBeSaved = false;
     }
 }

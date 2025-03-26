@@ -5,10 +5,12 @@ import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiCallCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmDataSnapshot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmApiCallRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallGenerator;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.LastfmApiConstants;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallService;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmDataSnapshotService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.utils.TimeUtil;
 
 import java.util.*;
@@ -18,16 +20,22 @@ import static yurykorzun.art.universe.music.data.raw.lastfm.api.LastfmApiConstan
 @Component
 public class LastfmTagTopTagApiCallGenerator extends LastfmApiCallGenerator {
 
-    private final LastfmApiCallRepository repository;
+    private final LastfmApiCallRepository apiCallRepository;
+    private final LastfmDataSnapshotService snapshotService;
 
     @Value("${lastfm.client.methods.tag.topTags.recordsLimit}")
     private int recordsLimit;
     @Value("${lastfm.client.methods.tag.topTags.dueDurationDays}")
     private int dueDurationDays;
 
-    public LastfmTagTopTagApiCallGenerator(LastfmApiCallRepository repository, LastfmApiCallService apiCallService) {
+    public LastfmTagTopTagApiCallGenerator(
+            LastfmApiCallRepository apiCallRepository,
+            LastfmApiCallService apiCallService,
+            LastfmDataSnapshotService snapshotService
+    ) {
         super(apiCallService);
-        this.repository = repository;
+        this.apiCallRepository = apiCallRepository;
+        this.snapshotService = snapshotService;
     }
 
     @Override
@@ -38,17 +46,17 @@ public class LastfmTagTopTagApiCallGenerator extends LastfmApiCallGenerator {
     @Override
     public List<LastfmApiCallCreateRequest> generateApiCallCreationRequests() {
 
-        //  TODO get pages number from the last api call (@attr.count field)
         final int tagsCount = Integer.MAX_VALUE;
         final int pagesNumber = Math.min(tagsCount, recordsLimit / PAGE_SIZE);
 
         //  find all pending non expired requests to not duplicate them
-        List<LastfmApiCall> pendingCalls = repository.findAllUnexpiredByType(getType());
+        List<LastfmApiCall> pendingCalls = apiCallRepository.findAllUnexpiredByType(getType());
         Set<Integer> pendingOffsets = new HashSet<>();
         for (LastfmApiCall pendingCall : pendingCalls) {
             pendingOffsets.add(Integer.parseInt(pendingCall.getParams().getOrDefault(LastfmApiConstants.PARAM_NAME_OFFSET, "0")));
         }
 
+        LastfmDataSnapshot snapshot = snapshotService.getSnapshotFor(getType());
         List<LastfmApiCallCreateRequest> calls = new ArrayList<>();
         for (int i = 0; i < pagesNumber; i++) {
             // skip duplicate call
@@ -62,6 +70,7 @@ public class LastfmTagTopTagApiCallGenerator extends LastfmApiCallGenerator {
             params.put(LastfmApiConstants.PARAM_NAME_OFFSET, String.valueOf(offset));
             calls.add(LastfmApiCallCreateRequest.builder()
                     .type(getType())
+                    .dataSnapshotId(snapshot.getId())
                     .dueDttm(TimeUtil.calcDueDttm(dueDurationDays))
                     .params(params)
                 .build());

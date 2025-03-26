@@ -20,10 +20,10 @@ import static org.mockito.Mockito.*;
 class LastfmApiResponseServiceImplTest extends FullContextTest {
 
     @MockitoBean
-    private LastfmApiResponseRepository repository;
+    private LastfmApiResponseRepository apiResponseRepository;
 
     @Autowired
-    private LastfmApiResponseServiceImpl service;
+    private LastfmApiResponseServiceImpl apiResponseService;
 
     private static final String sampleResponse = LastfmApiClientResourceUtil.getAnyResponse();
     private static final Supplier<LastfmApiResponseCreateRequest> validCreateRequestSupplier =
@@ -48,13 +48,13 @@ class LastfmApiResponseServiceImplTest extends FullContextTest {
         long id = 1L;
         LastfmApiResponseCreateRequest request = validCreateRequestSupplier.get();
         LastfmApiResponse created = getMockResponse(request, id);
-        when(repository.save(any(LastfmApiResponse.class))).thenReturn(created);
+        when(apiResponseRepository.save(any(LastfmApiResponse.class))).thenReturn(created);
 
         // when
-        long returnedId = service.create(request);
+        long returnedId = apiResponseService.create(request);
 
         // then
-        verify(repository).save(any(LastfmApiResponse.class));
+        verify(apiResponseRepository).save(any(LastfmApiResponse.class));
         assertEquals(id, returnedId);
     }
 
@@ -63,14 +63,14 @@ class LastfmApiResponseServiceImplTest extends FullContextTest {
         // given
         long id = 1L;
         LastfmApiResponse apiResponse = getMockResponse(validCreateRequestSupplier.get(), id);
-        when(repository.getReferenceById(id)).thenReturn(apiResponse);
+        when(apiResponseRepository.getReferenceById(id)).thenReturn(apiResponse);
 
         // when
-        service.setStatus(id, ApiResponseStatus.PENDING);
+        apiResponseService.setStatus(id, ApiResponseStatus.PENDING);
 
         // then
-        verify(repository).getReferenceById(id);
-        verify(repository).save(apiResponse);
+        verify(apiResponseRepository).getReferenceById(id);
+        verify(apiResponseRepository).save(apiResponse);
         assertEquals(ApiResponseStatus.PENDING, apiResponse.getStatus());
     }
 

@@ -23,6 +23,9 @@ public abstract class BaseLastfmEntity extends BaseCollectableEntity {
     @Column(name = "name")
     private String name;
 
+    @Column(name = "api_call_id")
+    private long apiCallId;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

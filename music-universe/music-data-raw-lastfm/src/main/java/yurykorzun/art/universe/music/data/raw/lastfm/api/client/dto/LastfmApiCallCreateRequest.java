@@ -10,4 +10,5 @@ import java.util.Map;
 @Getter
 public class LastfmApiCallCreateRequest extends ApiCallCreateRequest {
     private Map<String, String> params;
+    private long dataSnapshotId;
 }

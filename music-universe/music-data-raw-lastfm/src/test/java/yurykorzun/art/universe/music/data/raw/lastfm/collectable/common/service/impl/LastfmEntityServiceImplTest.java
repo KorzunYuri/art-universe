@@ -7,7 +7,9 @@ import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallStatus;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmDataSnapshot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmApiCallRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmDataSnapshotRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.repository.LastfmTagRepository;
@@ -15,6 +17,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTe
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -33,7 +36,25 @@ class LastfmEntityServiceImplTest extends JpaOnlyTest {
     private LastfmApiCallRepository apiCallRepository;
 
     @Autowired
+    private LastfmDataSnapshotRepository snapshotRepository;
+
+    @Autowired
     private LastfmTagRepository tagRepository;
+
+    private LastfmDataSnapshot createDummyDataSnapshot(LastfmApiCallType type) {
+        return snapshotRepository.save(new LastfmDataSnapshot(type, new Date()));
+    }
+
+    private LastfmApiCall createDummyTagSourceApiCall() {
+        LastfmDataSnapshot snapshot = createDummyDataSnapshot(LastfmApiCallType.TAG_TOP_TAGS);
+        LastfmApiCall dummyApiCall = LastfmApiCall.builder()
+                .type(LastfmApiCallType.TAG_TOP_TAGS)
+                .dataSnapshotId(snapshot.getId())
+                .dueDttm(Instant.now())
+                .build();
+        dummyApiCall = apiCallRepository.save(dummyApiCall);
+        return dummyApiCall;
+    }
 
     @Test
     void givenManyEntitiesAndNoApiCalls_whenUnprocessedRequested_limitsResultToBatchSize() {
@@ -55,7 +76,6 @@ class LastfmEntityServiceImplTest extends JpaOnlyTest {
         // given
         final int approvedTagsNumber = HIBERNATE_BATCH_SIZE * 2;
         final int processedTagsNumber = HIBERNATE_BATCH_SIZE + 1;
-        final int firstUnprocessedTagId = processedTagsNumber + 1;
         final LastfmApiCallType apiCallType = LastfmApiCallType.TAG_TOP_ARTISTS;
         // generate tags
         List<LastfmTag> approvedTags = generateApprovedTags(approvedTagsNumber);
@@ -75,9 +95,10 @@ class LastfmEntityServiceImplTest extends JpaOnlyTest {
     void givenEntityWithNonPendingCall_whenUnprocessedRequested_returnsEntity() {
         // given
         final LastfmApiCallType apiCallType = LastfmApiCallType.TAG_TOP_ARTISTS;
-        LastfmTag tagToBeProcessed        = tagRepository.save(generateApprovedTag());
-        LastfmTag tagWithNonPendingCall   = tagRepository.save(generateApprovedTag()); // to be processed as well
-        LastfmApiCall call = generateCallForTag(tagWithNonPendingCall, apiCallType, ApiCallStatus.CANCELLED);
+        LastfmApiCall apiCall = createDummyTagSourceApiCall();
+        LastfmTag tagToBeProcessed        = tagRepository.save(generateApprovedTag(apiCall));
+        LastfmTag tagWithNonPendingCall   = tagRepository.save(generateApprovedTag(apiCall)); // to be processed as well
+        LastfmApiCall call = generateCallForTag(tagWithNonPendingCall, apiCallType, ApiCallStatus.CANCELLED, apiCall.getDataSnapshotId());
         apiCallRepository.save(call);
 
         // when
@@ -93,9 +114,10 @@ class LastfmEntityServiceImplTest extends JpaOnlyTest {
     void givenApprovedEntityWithPendingCall_whenUnprocessedRequested_ignoresEntity() {
         // given
         final LastfmApiCallType apiCallType = LastfmApiCallType.TAG_TOP_ARTISTS;
-        LastfmTag tagToBeProcessed      = tagRepository.save(generateApprovedTag());
-        LastfmTag tagWithPendingCall    = tagRepository.save(generateApprovedTag()); // must not be processed
-        LastfmApiCall call = generatePendingCallForTag(tagWithPendingCall, apiCallType);
+        LastfmApiCall apiCall = createDummyTagSourceApiCall();
+        LastfmTag tagToBeProcessed      = tagRepository.save(generateApprovedTag(apiCall));
+        LastfmTag tagWithPendingCall    = tagRepository.save(generateApprovedTag(apiCall)); // must not be processed
+        LastfmApiCall call = generatePendingCallForTag(tagWithPendingCall, apiCallType, apiCall.getDataSnapshotId());
         apiCallRepository.save(call);
 
         // when
@@ -109,11 +131,12 @@ class LastfmEntityServiceImplTest extends JpaOnlyTest {
     @Test
     void givenApprovedEntityWithPendingCallOfWrongType_whenUnprocessedRequested_returnsEntity() {
         // given
+        LastfmApiCall apiCall = createDummyTagSourceApiCall();
         final LastfmApiCallType correctApiCallType = LastfmApiCallType.TAG_TOP_ARTISTS;
         final LastfmApiCallType wrongApiCallType = LastfmApiCallType.TAG_TOP_TAGS;
-        LastfmTag tagToBeProcessed      = tagRepository.save(generateApprovedTag());
-        LastfmTag tagWithNonRelatedCall = tagRepository.save(generateApprovedTag()); // to be processed as well
-        LastfmApiCall call = generatePendingCallForTag(tagWithNonRelatedCall, wrongApiCallType);
+        LastfmTag tagToBeProcessed      = tagRepository.save(generateApprovedTag(apiCall));
+        LastfmTag tagWithNonRelatedCall = tagRepository.save(generateApprovedTag(apiCall)); // to be processed as well
+        LastfmApiCall call = generatePendingCallForTag(tagWithNonRelatedCall, wrongApiCallType, apiCall.getDataSnapshotId());
         apiCallRepository.save(call);
 
         // when
@@ -129,9 +152,10 @@ class LastfmEntityServiceImplTest extends JpaOnlyTest {
     void givenNonApprovedEntityWithPendingCall_whenUnprocessedRequested_returnsEntity() {
         // given
         final LastfmApiCallType apiCallType = LastfmApiCallType.TAG_TOP_ARTISTS;
-        LastfmTag tagToBeProcessed      = tagRepository.save(generateApprovedTag());
-        LastfmTag nonApprovedTag        = tagRepository.save(generateTag(ApprovalStatus.PENDING)); // must not be processed
-        LastfmApiCall call = generatePendingCallForTag(nonApprovedTag, apiCallType);
+        LastfmApiCall apiCall = createDummyTagSourceApiCall();
+        LastfmTag tagToBeProcessed      = tagRepository.save(generateApprovedTag(apiCall));
+        LastfmTag nonApprovedTag        = tagRepository.save(generateTag(ApprovalStatus.PENDING, apiCall)); // must not be processed
+        LastfmApiCall call = generatePendingCallForTag(nonApprovedTag, apiCallType, apiCall.getDataSnapshotId());
         apiCallRepository.save(call);
 
         // when
@@ -147,26 +171,25 @@ class LastfmEntityServiceImplTest extends JpaOnlyTest {
      * Generate a list of APPROVED tags
      */
     private List<LastfmTag> generateApprovedTags(int recordsNumber) {
+        LastfmApiCall apiCall = createDummyTagSourceApiCall();
         return IntStream.range(0, recordsNumber)
-                .mapToObj(i -> generateTag(ApprovalStatus.APPROVED, String.format("Tag %2d", i)))
+                .mapToObj(i -> generateTag(ApprovalStatus.APPROVED, String.format("Tag %2d", i), apiCall))
             .collect(Collectors.toList());
     }
 
-    private LastfmTag generateApprovedTag() {
-        return generateTag(ApprovalStatus.APPROVED);
+    private LastfmTag generateApprovedTag(LastfmApiCall apiCall) {
+        return generateTag(ApprovalStatus.APPROVED, apiCall);
     }
 
-    private LastfmTag generateTag(ApprovalStatus approvalStatus) {
-        return LastfmTag.builder()
-                .name(UUID.randomUUID().toString())
-                .approvalStatus(approvalStatus)
-            .build();
+    private LastfmTag generateTag(ApprovalStatus approvalStatus, LastfmApiCall apiCall) {
+        return generateTag(approvalStatus, UUID.randomUUID().toString(), apiCall);
     }
 
-    private LastfmTag generateTag(ApprovalStatus approvalStatus, String name) {
+    private LastfmTag generateTag(ApprovalStatus approvalStatus, String name, LastfmApiCall apiCall) {
         return LastfmTag.builder()
                 .name(name)
                 .approvalStatus(approvalStatus)
+                .apiCallId(apiCall.getId())
             .build();
     }
 
@@ -175,22 +198,24 @@ class LastfmEntityServiceImplTest extends JpaOnlyTest {
      * Presence of an unexpired call means the tag shouldn't be considered for a new api call creation
      */
     private List<LastfmApiCall> generatePendingCalls(List<LastfmTag> tags, LastfmApiCallType apiCallType) {
+        LastfmDataSnapshot snapshot = createDummyDataSnapshot(apiCallType);
         return tags.stream()
-                .map(tag -> generatePendingCallForTag(tag, apiCallType))
+                .map(tag -> generatePendingCallForTag(tag, apiCallType, snapshot.getId()))
                 .collect(Collectors.toList());
     }
 
-    private LastfmApiCall generatePendingCallForTag(LastfmTag tag, LastfmApiCallType apiCallType) {
-        return generateCallForTag(tag, apiCallType, ApiCallStatus.PENDING);
+    private LastfmApiCall generatePendingCallForTag(LastfmTag tag, LastfmApiCallType apiCallType, long snapshotId) {
+        return generateCallForTag(tag, apiCallType, ApiCallStatus.PENDING, snapshotId);
     }
 
-    private LastfmApiCall generateCallForTag(LastfmTag tag, LastfmApiCallType apiCallType, ApiCallStatus status) {
+    private LastfmApiCall generateCallForTag(LastfmTag tag, LastfmApiCallType apiCallType, ApiCallStatus status, long snapshotId) {
         return LastfmApiCall.builder()
                 .type(apiCallType)
                 .status(status)
                 .entityType((LastfmEntityType) tag.getType())
                 .entityId(tag.getId())
                 .dueDttm(Instant.now().plus(Duration.ofDays(1)))
+                .dataSnapshotId(snapshotId)
             .build();
     }
 
