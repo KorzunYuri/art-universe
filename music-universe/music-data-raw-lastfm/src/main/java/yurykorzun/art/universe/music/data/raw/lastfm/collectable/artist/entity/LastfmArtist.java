@@ -31,7 +31,7 @@ public class LastfmArtist extends BaseLastfmEntity {
     private String url;
 
     @Override
-    public CollectableEntityType getType() {
+    public LastfmEntityType getType() {
         return LastfmEntityType.ARTIST;
     }
 }

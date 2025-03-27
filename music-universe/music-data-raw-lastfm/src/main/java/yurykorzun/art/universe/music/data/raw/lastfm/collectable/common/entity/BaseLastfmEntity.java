@@ -2,10 +2,12 @@ package yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.experimental.SuperBuilder;
 import yurykorzun.art.universe.common.data.raw.entity.BaseCollectableEntity;
 
 import jakarta.persistence.*;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 
 import java.util.Objects;
 
@@ -18,13 +20,16 @@ import java.util.Objects;
 @Getter
 public abstract class BaseLastfmEntity extends BaseCollectableEntity {
 
+    // TODO drop sequences created automatically
     public abstract long getId();
 
     @Column(name = "name")
     private String name;
 
-    @Column(name = "api_call_id")
-    private long apiCallId;
+    @NonNull
+    @JoinColumn(name = "api_call_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private LastfmApiCall apiCall;
 
     @Override
     public boolean equals(Object o) {

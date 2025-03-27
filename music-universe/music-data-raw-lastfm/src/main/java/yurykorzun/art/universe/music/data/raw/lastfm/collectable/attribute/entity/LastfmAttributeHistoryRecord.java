@@ -30,12 +30,12 @@ public class LastfmAttributeHistoryRecord {
     @Column(name = "api_call_id")
     private long apiCallId;
 
-    @NotNull
+    @NonNull
     @Column(name = "entity_type")
     @Convert(converter = LastfmEntityTypeConverter.class)
-    private LastfmEntityType entityTypeId;
+    private LastfmEntityType entityType;
 
-    @NotNull
+    @NonNull
     @Column(name = "entity_id")
     private long entityId;
 
@@ -44,12 +44,10 @@ public class LastfmAttributeHistoryRecord {
     @Convert(converter = LastfmAttributeConverter.class)
     private LastfmAttribute attribute;
 
-    @NotNull
     @Column(name = "scope_entity_type")
     @Convert(converter = LastfmEntityTypeConverter.class)
-    private LastfmEntityType scopeEntityTypeId;
+    private LastfmEntityType scopeEntityType;
 
-    @NotNull
     @Column(name = "scope_entity_id")
     private long scopeEntityId;
 
@@ -64,7 +62,6 @@ public class LastfmAttributeHistoryRecord {
     @Column(name = "int_value")
     private Integer intValue;
 
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -74,7 +71,7 @@ public class LastfmAttributeHistoryRecord {
             return this.getId() == other.getId();
         }
         return      entityId == other.entityId
-                &&  entityTypeId == other.entityTypeId
+                &&  entityType == other.entityType
                 &&  attribute == other.attribute
                 &&  Objects.equals(collectionTs, other.collectionTs);
     }
@@ -84,7 +81,7 @@ public class LastfmAttributeHistoryRecord {
         if (this.getId() != 0) {
             return Long.hashCode(this.getId());
         }
-        return Objects.hash(entityTypeId, entityId, attribute);
+        return Objects.hash(entityType, entityId, attribute);
     }
 
 }

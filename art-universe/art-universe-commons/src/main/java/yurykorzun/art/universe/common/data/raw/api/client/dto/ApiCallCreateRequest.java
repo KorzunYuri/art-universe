@@ -8,7 +8,7 @@ import java.time.Instant;
 
 @SuperBuilder
 @Getter
-public class ApiCallCreateRequest {
-    private ApiCallType type;
+public abstract class ApiCallCreateRequest {
+    public abstract ApiCallType getType();
     private Instant dueDttm;
 }

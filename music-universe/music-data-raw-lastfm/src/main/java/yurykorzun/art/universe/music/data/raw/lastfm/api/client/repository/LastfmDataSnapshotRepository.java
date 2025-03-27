@@ -20,8 +20,8 @@ public interface LastfmDataSnapshotRepository extends JpaRepository<LastfmDataSn
     @Modifying
     @Query(value =
             "UPDATE data_snapshot " +
-                    "SET created_cnt = created_cnt + :count " +
-                    "WHERE  id = :id",
+            "SET created_cnt = created_cnt + :count " +
+            "WHERE  id = :id",
             nativeQuery = true)
     void incCreatedCountByNumber(@Param("id") long id, @Param("count") int count);
 
@@ -34,7 +34,7 @@ public interface LastfmDataSnapshotRepository extends JpaRepository<LastfmDataSn
             "UPDATE data_snapshot " +
             "SET completed_cnt = completed_cnt + :count " +
             "WHERE  id = :id",
-        nativeQuery = true)
+            nativeQuery = true)
     void incCompletedCountByNumber(@Param("id") long id, @Param("count") int count);
 
     default void incCompletedCount(long id) {

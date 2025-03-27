@@ -30,6 +30,11 @@ public class LastfmApiResponse extends ApiResponse {
     private long id;
 
     @NonNull
+    @JoinColumn(name = "api_call_id")
+    @ManyToOne(fetch = FetchType.EAGER)
+    private LastfmApiCall apiCall;
+
+    @NonNull
     @Type(JsonBinaryType.class)
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "response_body", columnDefinition = "jsonb")
@@ -39,22 +44,19 @@ public class LastfmApiResponse extends ApiResponse {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         LastfmApiResponse other = (LastfmApiResponse) o;
-        if (Objects.equals(getApiCallType(), other.getApiCallType())) {
-            if (this.getId() != 0 && other.getId() != 0) {
-                return this.getId() == other.getId();
-            } else {
-                return Objects.equals(getApiCallId(), other.getApiCallId());
-            }
+        if (this.getId() != 0 && other.getId() != 0) {
+            return this.getId() == other.getId();
+        } else {
+            return Objects.equals(getApiCall(), other.getApiCall());
         }
-        return false;
     }
 
     @Override
     public int hashCode() {
         if (this.getId() != 0) {
-            return Objects.hash(id, getApiCallType());
+            return Objects.hash(id);
         } else {
-            return Objects.hash(getApiCallId(), getApiCallType());
+            return Objects.hash(getApiCall());
         }
     }
 

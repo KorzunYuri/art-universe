@@ -189,7 +189,7 @@ class LastfmEntityServiceImplTest extends JpaOnlyTest {
         return LastfmTag.builder()
                 .name(name)
                 .approvalStatus(approvalStatus)
-                .apiCallId(apiCall.getId())
+                .apiCall(apiCall)
             .build();
     }
 

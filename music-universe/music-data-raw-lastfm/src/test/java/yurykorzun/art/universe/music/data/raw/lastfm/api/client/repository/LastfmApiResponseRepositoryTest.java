@@ -48,8 +48,7 @@ class LastfmApiResponseRepositoryTest extends JpaOnlyTest {
 
     private LastfmApiResponse responseForApiCall(LastfmApiCall apiCall) {
         return LastfmApiResponse.builder()
-                .apiCallId(apiCall.getId())
-                .apiCallType(apiCall.getType())
+                .apiCall(apiCall)
                 .responseBody(sampleResponse)
             .build();
     }
@@ -61,8 +60,7 @@ class LastfmApiResponseRepositoryTest extends JpaOnlyTest {
         LastfmApiResponse saved = apiResponseRepository.save(created);
 
         assertNotNull(saved);
-        assertEquals(dummyApiCall.getId(), saved.getApiCallId());
-        assertEquals(dummyApiCall.getType(), saved.getApiCallType());
+        assertEquals(dummyApiCall, saved.getApiCall());
         assertEquals(sampleResponse, saved.getResponseBody());
     }
 
@@ -80,17 +78,6 @@ class LastfmApiResponseRepositoryTest extends JpaOnlyTest {
         LastfmApiResponse updated = apiResponseRepository.getReferenceById(saved.getId());
         assertNotNull(updated);
         assertEquals(newStatus, updated.getStatus());
-    }
-
-    @Test
-    void testApiResponseFKApiCallConstraint() {
-        LastfmApiResponse orphanResponse = LastfmApiResponse.builder()
-                .apiCallId(2L)
-                .apiCallType(dummyApiCallType)
-                .responseBody(sampleResponse)
-            .build();
-        Exception e = assertThrows(Exception.class, () -> apiResponseRepository.saveAndFlush(orphanResponse));
-        assertInstanceOf(DataIntegrityViolationException.class, e);
     }
 
     @Test

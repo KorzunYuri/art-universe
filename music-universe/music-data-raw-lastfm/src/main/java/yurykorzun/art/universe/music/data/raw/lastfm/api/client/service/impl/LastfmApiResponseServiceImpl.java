@@ -62,7 +62,7 @@ public class LastfmApiResponseServiceImpl implements LastfmApiResponseService {
     @Transactional
     protected void processResponse(LastfmApiResponse r) {
         LastfmApiResponseProcessor<?> processor = LastfmApiResponseProcessorsRegistry.get(
-                ((LastfmApiCallType) r.getApiCallType()).getResponseDtoClass());
+                r.getApiCall().getType().getResponseDtoClass());
         if (processor == null) {
             return;
         }
@@ -79,8 +79,7 @@ public class LastfmApiResponseServiceImpl implements LastfmApiResponseService {
 
     private static LastfmApiResponse dtoToApiResponse(LastfmApiResponseCreateRequest dto) {
         return LastfmApiResponse.builder()
-                .apiCallId(dto.getApiCallId())
-                .apiCallType(dto.getApiCallType())
+                .apiCall(dto.getApiCall())
                 .responseBody(dto.getResponseBody())
             .build();
     }

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallType;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiResponseProcessor;
@@ -16,7 +17,9 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.reposito
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttributeHistoryRecord;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repository.LastfmAttributeHistoryRecordRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityRelation;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityRelationService;
 
 import java.io.IOException;
 import java.util.*;
@@ -27,12 +30,18 @@ import java.util.stream.Collectors;
 public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProcessor<TopArtistsDtoRoot> {
 
     private final LastfmArtistRepository artistRepository;
+    private final LastfmEntityRelationService entityRelationService;
     private final LastfmAttributeHistoryRecordRepository attributeHistoryRecordRepository;
 
-    protected LastfmTagTopArtistsResponseProcessor(LastfmArtistRepository artistRepository, LastfmAttributeHistoryRecordRepository attributeHistoryRecordRepository) {
+    protected LastfmTagTopArtistsResponseProcessor(
+            LastfmArtistRepository artistRepository,
+            LastfmEntityRelationService entityRelationService,
+            LastfmAttributeHistoryRecordRepository attributeHistoryRecordRepository
+    ) {
         super(TopArtistsDtoRoot.class);
 
         this.artistRepository = artistRepository;
+        this.entityRelationService = entityRelationService;
         this.attributeHistoryRecordRepository = attributeHistoryRecordRepository;
     }
 
@@ -70,9 +79,7 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
 
         final String logPrefix = String.format("Lastfm %s response processing", LastfmApiCallType.TAG_TOP_TAGS.getMethod());
         log.info("{}: start processing DTO of type {} with {} records",
-                logPrefix,
-                parsed.getClass().getName(),
-                parsed.getTopArtists().getArtists().size());
+                logPrefix, parsed.getClass().getName(), parsed.getTopArtists().getArtists().size());
 
         Map<String, ArtistBinding> dtoBindingByName = parsed.getTopArtists().getArtists().stream()
                 .collect(Collectors.toMap(ArtistsRankedDto::getName, dto -> new ArtistBinding(response, dto)));
@@ -91,12 +98,25 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
                 .filter(binding -> binding.shouldBeSaved)
                 .map(binding -> binding.entity)
             .toList();
-        artistsToSave = artistRepository.saveAll(artistsToSave);
+        List<LastfmArtist> savedNewArtists = artistRepository.saveAll(artistsToSave);
         log.info("{}: saved {} artists", logPrefix, artistsToSave.size());
 
-        //  update new entities' attributes with entity_ids we have just acquired
+        //  save new entity relations
+        List<LastfmEntityRelation> relations = savedNewArtists.stream()
+                .map(a -> LastfmEntityRelation.builder()
+                    .scopeEntityType(response.getApiCall().getEntityType())
+                    .scopeEntityId(response.getApiCall().getEntityId())
+                    .entityType(a.getType())
+                    .entityId(a.getId())
+                    .apiCall(response.getApiCall())
+                .build())
+            .collect(Collectors.toList());
+        entityRelationService.upsertEntityRelations(relations);
+        log.info("{}: saved tag-artist relations", logPrefix);
+
+        //  save new attribute values with artist ids we have just acquired
         final List<LastfmAttributeHistoryRecord> newAttrValues = new ArrayList<>();
-        artistsToSave.forEach(a -> {
+        savedNewArtists.forEach(a -> {
             ArtistBinding binding = dtoBindingByName.get(a.getName());
             binding.newAttrValuesBuilders.forEach(v -> {
                 if (binding.isNew) {
@@ -151,8 +171,9 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
         ArtistsRankedDto dto = binding.dto;
         List<LastfmAttributeHistoryRecord.LastfmAttributeHistoryRecordBuilder> newValues = binding.newAttrValuesBuilders;
 
-        newValues.add(createAttrValueBuilder(binding, LastfmAttribute.URL)
-                .stringValue(dto.getUrl()));
+        newValues.add(
+                createAttrValueBuilder(binding, LastfmAttribute.URL)
+                    .stringValue(dto.getUrl()));
         newValues.add(createAttrValueBuilder(binding, LastfmAttribute.MBID)
                 .stringValue(dto.getMbid()));
         binding.entity = createArtist(binding);
@@ -163,16 +184,19 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
     private LastfmAttributeHistoryRecord.LastfmAttributeHistoryRecordBuilder createAttrValueBuilderForEntity(
             ArtistBinding binding, LastfmAttribute attribute) {
         return createAttrValueBuilder(binding, attribute)
-                .entityTypeId((LastfmEntityType) binding.entity.getType())
+                .entityType((LastfmEntityType) binding.entity.getType())
                 .entityId(binding.entity.getId());
     }
 
     private LastfmAttributeHistoryRecord.LastfmAttributeHistoryRecordBuilder createAttrValueBuilder(
             ArtistBinding binding, LastfmAttribute attribute) {
+        LastfmApiCall apiCall = binding.response.getApiCall();
         return LastfmAttributeHistoryRecord.builder()
                 .attribute(attribute)
-                .entityTypeId(LastfmEntityType.ARTIST)
-                .apiCallId(binding.response.getApiCallId());
+                .entityType(LastfmEntityType.ARTIST)
+                .apiCallId(apiCall.getId())
+                .scopeEntityType(apiCall.getEntityType())
+                .scopeEntityId(apiCall.getEntityId());
     }
 
     private LastfmArtist createArtist(ArtistBinding binding) {
@@ -181,7 +205,7 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
                 .name(dto.getName())
                 .url(dto.getUrl())
                 .mbid(dto.getMbid())
-                .apiCallId(binding.response.getApiCallId())
+                .apiCall(binding.response.getApiCall())
             .build();
     }
 }

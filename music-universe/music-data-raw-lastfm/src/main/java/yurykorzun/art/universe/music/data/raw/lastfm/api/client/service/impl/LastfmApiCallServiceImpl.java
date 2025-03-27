@@ -124,8 +124,7 @@ public class LastfmApiCallServiceImpl implements LastfmApiCallService {
 
     private LastfmApiResponseCreateRequest createApiResponseCreateDto(LastfmApiCall call, String response) {
         return LastfmApiResponseCreateRequest.builder()
-                .apiCallId(call.getId())
-                .apiCallType(call.getType())
+                .apiCall(call)
                 .responseBody(response)
             .build();
     }

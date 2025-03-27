@@ -45,7 +45,7 @@ class LastfmArtistRepositoryTest extends JpaOnlyTest {
     private LastfmArtist createArtist(String name, LastfmApiCall apiCall) {
         return LastfmArtist.builder()
                 .name(name)
-                .apiCallId(apiCall.getId())
+                .apiCall(apiCall)
                 .build();
     }
 
@@ -60,7 +60,7 @@ class LastfmArtistRepositoryTest extends JpaOnlyTest {
                 .name(name)
                 .url(url)
                 .mbid(mbid)
-                .apiCallId(apiCall.getId())
+                .apiCall(apiCall)
             .build();
         LastfmArtist saved = artistRepository.save(artist);
 

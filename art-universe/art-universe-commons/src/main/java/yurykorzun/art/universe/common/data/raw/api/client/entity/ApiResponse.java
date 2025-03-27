@@ -19,14 +19,8 @@ import yurykorzun.art.universe.common.persistence.entity.BaseEntity;
 @Getter
 public abstract class ApiResponse extends BaseEntity {
 
-    @NonNull
-    @Column(name = "api_call_id")
-    private Long apiCallId;
-
-    @NonNull
-    @Column(name = "api_call_type")
-    @Convert(converter = ApiCallTypeConverter.class)
-    private ApiCallType apiCallType;
+    public abstract ApiCall getApiCall();
+    public abstract String getResponseBody();
 
     @Column(name = "status")
     @Convert(converter = ApiResponseStatusConverter.class)

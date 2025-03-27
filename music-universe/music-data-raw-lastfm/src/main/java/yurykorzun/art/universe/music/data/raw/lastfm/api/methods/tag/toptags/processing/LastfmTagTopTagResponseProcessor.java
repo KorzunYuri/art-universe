@@ -114,7 +114,7 @@ public class LastfmTagTopTagResponseProcessor extends LastfmApiResponseProcessor
     private LastfmTag tagDtoToTag(TagMapping tagMapping) {
         return LastfmTag.builder()
                 .name(tagMapping.dto.getName())
-                .apiCallId(tagMapping.response.getApiCallId())
+                .apiCall(tagMapping.response.getApiCall())
             .build();
     }
 
@@ -161,8 +161,8 @@ public class LastfmTagTopTagResponseProcessor extends LastfmApiResponseProcessor
      */
     private LastfmAttributeHistoryRecord.LastfmAttributeHistoryRecordBuilder initTagBuilder(TagMapping tagDtoInfo) {
         return LastfmAttributeHistoryRecord.builder()
-                .apiCallId(tagDtoInfo.response.getApiCallId())
-                .entityTypeId(LastfmEntityType.TAG)
+                .apiCallId(tagDtoInfo.response.getApiCall().getId())
+                .entityType(LastfmEntityType.TAG)
                 .entityId(tagDtoInfo.id);
     }
 }

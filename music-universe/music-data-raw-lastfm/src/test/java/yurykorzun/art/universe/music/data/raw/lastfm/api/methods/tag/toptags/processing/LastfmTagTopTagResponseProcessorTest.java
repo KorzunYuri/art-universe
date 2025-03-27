@@ -1,8 +1,5 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.processing;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
@@ -10,12 +7,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmDataSnapshot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmApiCallRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmApiResponseRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmDataSnapshotRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.PageInfo;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.common.dto.TagDto;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.dto.TopTagsDto;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.dto.TopTagsDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttributeHistoryRecord;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repository.LastfmAttributeHistoryRecordRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
@@ -29,11 +21,12 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Slf4j
 public class LastfmTagTopTagResponseProcessorTest extends FullContextTest {
 
     @Autowired
     private LastfmTagTopTagResponseProcessor processor;
+
+    //  repositories, for which processor produces new entities
 
     @Autowired
     private LastfmTagRepository tagRepository;
@@ -44,16 +37,10 @@ public class LastfmTagTopTagResponseProcessorTest extends FullContextTest {
     // injections for creating consistent state in db
 
     @Autowired
-    private LastfmApiResponseRepository apiResponseRepository;
-
-    @Autowired
-    private LastfmApiCallRepository apiCallRepository;
-
-    @Autowired
     private LastfmDataSnapshotRepository snapshotRepository;
 
     @Autowired
-    private ObjectMapper objectMapper;
+    private LastfmApiCallRepository apiCallRepository;
 
     @AfterEach
     public void reset() {
@@ -66,32 +53,51 @@ public class LastfmTagTopTagResponseProcessorTest extends FullContextTest {
         attributeHistoryRepository.deleteAll();
     }
 
+    private static final String TEST_DTO = """
+            {
+              "toptags": {
+                "@attr": {
+                  "offset": 0,
+                  "num_res": 50,
+                  "total": 2855332
+                },
+                "tag": [
+                  {
+                    "name": "rock",
+                    "count": 4050770,
+                    "reach": 401715
+                  },
+                  {
+                    "name": "electronic",
+                    "count": 2475740,
+                    "reach": 260815
+                  }
+                ]
+              }
+            }
+            """;
+
     @Test
-    public void testFirstSave() throws IOException {
-        log.info("testFirstSave START");
-        LastfmApiResponse response = createApiResponse();
-        TopTagsDtoRoot dto = objectMapper.readValue(response.getResponseBody(), TopTagsDtoRoot.class);
-        final int tagsNumber = dto.getTopTags().getTags().size();
+    public void givenTagTopTagsResponse_whenProcessed_tagsAndAttributeValuesAreCreated() throws IOException {
+        LastfmApiResponse response = createApiResponse(TEST_DTO);
+        final int tagsNumber = 2;
         final int attributesNumber = 3;
 
         // initial save
         processor.processResponse(response);
-        List<LastfmTag> tagsAfterFirst = tagRepository.findAll();
-        List<LastfmAttributeHistoryRecord> attributesAfterFirst = attributeHistoryRepository.findAll();
+        List<LastfmTag> createdTags = tagRepository.findAll();
+        List<LastfmAttributeHistoryRecord> createdAttributeValues = attributeHistoryRepository.findAll();
 
-        assertEquals(tagsNumber, tagsAfterFirst.size(),
+        assertEquals(tagsNumber, createdTags.size(),
                 "First save must save tags that haven't existed in DB");
-        assertEquals(tagsNumber * attributesNumber, attributesAfterFirst.size(),
+        assertEquals(tagsNumber * attributesNumber, createdAttributeValues.size(),
                 "First save must save (tags X (tag attributes)) attribute records");
-        log.info("testFirstSave FINISH");
     }
 
     @Test
-    public void testSecondarySave() throws IOException {
-        log.info("testSecondarySave START");
-        LastfmApiResponse response = createApiResponse();
-        TopTagsDtoRoot dto = objectMapper.readValue(response.getResponseBody(), TopTagsDtoRoot.class);
-        final int tagsNumber = dto.getTopTags().getTags().size();
+    public void givenTagTopTagsResponse_whenProcessedTwice_tagsAndAttributeValuesAreNotDuplicated() throws IOException {
+        LastfmApiResponse response = createApiResponse(TEST_DTO);
+        final int tagsNumber = 2;
         final int attributesNumber = 3;
 
         // initial save
@@ -112,16 +118,48 @@ public class LastfmTagTopTagResponseProcessorTest extends FullContextTest {
         assertEquals(tagsAfterFirst.size(), tagsAfterSecond.size(), "Second save must not produce duplicate tags");
         assertEquals(tagsNumber * attributesNumber * 2, attributesAfterSecond.size(),
                 "Second save must produce new tag attribute values (tags X (tag attributes)) records");
-        log.info("testSecondarySave FINISH");
+
+        // partially new save
+        // ONE new tag appears
+        String newResponseBody = """
+                {
+                  "toptags": {
+                    "@attr": {
+                      "offset": 0,
+                      "num_res": 50,
+                      "total": 2855332
+                    },
+                    "tag": [
+                      {
+                        "name": "electronic",
+                        "count": 2475740,
+                        "reach": 260815
+                      },
+                      {
+                        "name": "seen live",
+                        "count": 2182394,
+                        "reach": 82489
+                      }
+                    ]
+                  }
+                }
+                """;
+        LastfmApiResponse newResponse = createApiResponse(newResponseBody);
+
+        processor.processResponse(newResponse);
+        List<LastfmTag> tagsAfterThird = tagRepository.findAll();
+        List<LastfmAttributeHistoryRecord> attributesAfterThird = attributeHistoryRepository.findAll();
+
+        assertEquals(tagsAfterFirst.size() + 1, tagsAfterThird.size(), "Second save must not produce duplicate tags");
+        assertEquals(tagsNumber * attributesNumber * 3, attributesAfterThird.size(),
+                "Second save must produce new tag attribute values (tags X (tag attributes)) records");
     }
 
-    private LastfmApiResponse createApiResponse() throws JsonProcessingException {
+    private LastfmApiResponse createApiResponse(String responseBody) {
         LastfmApiCall apiCall = createDummyApiCall();
-        String responseBody = objectMapper.writeValueAsString(createTestDtoRoot());
         return LastfmApiResponse.builder()
                 .responseBody(responseBody)
-                .apiCallId(apiCall.getId())
-                .apiCallType(apiCall.getType())
+                .apiCall(apiCall)
             .build();
     }
 
@@ -138,29 +176,5 @@ public class LastfmTagTopTagResponseProcessorTest extends FullContextTest {
                 .build();
         dummyApiCall = apiCallRepository.save(dummyApiCall);
         return dummyApiCall;
-    }
-
-    private TopTagsDtoRoot createTestDtoRoot() {
-        TopTagsDtoRoot root = new TopTagsDtoRoot();
-        TopTagsDto topTags = new TopTagsDto();
-        PageInfo pageInfo = new PageInfo();
-        pageInfo.setOffset(0);
-        pageInfo.setCount(2);
-        pageInfo.setTotal(2);
-        topTags.setPageInfo(pageInfo);
-
-        TagDto tag1 = new TagDto();
-        tag1.setName("rock");
-        tag1.setCount(4050770);
-        tag1.setReach(401715);
-
-        TagDto tag2 = new TagDto();
-        tag2.setName("electronic");
-        tag2.setCount(2475740);
-        tag2.setReach(260815);
-
-        topTags.setTags(List.of(tag1, tag2));
-        root.setTopTags(topTags);
-        return root;
     }
 }

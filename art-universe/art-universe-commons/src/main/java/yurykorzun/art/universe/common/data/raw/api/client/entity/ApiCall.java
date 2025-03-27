@@ -23,10 +23,7 @@ import java.util.Map;
 @Getter
 public abstract class ApiCall {
 
-    @NonNull
-    @Column(name = "type")
-    @Convert(converter = ApiCallTypeConverter.class)
-    private ApiCallType type;
+    public abstract ApiCallType getType();
 
     @Column(name = "parameters")
     @Convert(converter = MapConverter.class)
@@ -41,14 +38,6 @@ public abstract class ApiCall {
     @NonNull
     @Column(name = "due_dttm")
     private Instant dueDttm;
-
-    public ApiCall(ApiCallType type, Map<String, String> params) {
-
-        validateParams(type, params);
-
-        this.type = type;
-        this.params = params;
-    }
 
     protected void validateParams(ApiCallType type, Map<String, String> params) {
         // TODO check optional/default params overriding and add tests

@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.experimental.SuperBuilder;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCall;
+import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallTypeConverter;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 
@@ -23,6 +24,11 @@ public class LastfmApiCall extends ApiCall {
     )
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "api_call_seq_gen")
     private long id;
+
+    @NonNull
+    @Column(name = "type")
+    @Convert(converter = ApiCallTypeConverter.class)
+    private LastfmApiCallType type;
 
     @NonNull
     @Column(name = "data_snapshot_id")

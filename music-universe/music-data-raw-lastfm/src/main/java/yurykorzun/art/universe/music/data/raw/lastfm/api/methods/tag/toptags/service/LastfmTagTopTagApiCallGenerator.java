@@ -2,6 +2,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.se
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiCallCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
@@ -12,6 +13,9 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.LastfmApiConstants;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmDataSnapshotService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.utils.TimeUtil;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.LastfmAttributeSnapshotService;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 
 import java.util.*;
 
@@ -20,8 +24,10 @@ import static yurykorzun.art.universe.music.data.raw.lastfm.api.LastfmApiConstan
 @Component
 public class LastfmTagTopTagApiCallGenerator extends LastfmApiCallGenerator {
 
+    private final LastfmApiCallService apiCallService;
     private final LastfmApiCallRepository apiCallRepository;
     private final LastfmDataSnapshotService snapshotService;
+    private final LastfmAttributeSnapshotService attributeSnapshotService;
 
     @Value("${lastfm.client.methods.tag.topTags.recordsLimit}")
     private int recordsLimit;
@@ -31,11 +37,13 @@ public class LastfmTagTopTagApiCallGenerator extends LastfmApiCallGenerator {
     public LastfmTagTopTagApiCallGenerator(
             LastfmApiCallRepository apiCallRepository,
             LastfmApiCallService apiCallService,
-            LastfmDataSnapshotService snapshotService
+            LastfmDataSnapshotService snapshotService,
+            LastfmAttributeSnapshotService attributeSnapshotService
     ) {
-        super(apiCallService);
         this.apiCallRepository = apiCallRepository;
+        this.apiCallService = apiCallService;
         this.snapshotService = snapshotService;
+        this.attributeSnapshotService = attributeSnapshotService;
     }
 
     @Override
@@ -44,7 +52,23 @@ public class LastfmTagTopTagApiCallGenerator extends LastfmApiCallGenerator {
     }
 
     @Override
-    public List<LastfmApiCallCreateRequest> generateApiCallCreationRequests() {
+    @Transactional
+    public void createApiCalls() {
+
+        //  get or create snapshot
+        LastfmDataSnapshot snapshot = snapshotService.getSnapshotFor(getType());
+
+        //  create attribute snapshots on first launch
+        if (snapshot.getCreatedCount() == 0) {
+            createAttributeSnapshots(snapshot);
+        }
+
+        //  generate api calls
+        List<LastfmApiCallCreateRequest> apiCallCreationRequests = generateApiCallCreationRequests(snapshot);
+        apiCallService.createApiCalls(apiCallCreationRequests);
+    }
+
+    public List<LastfmApiCallCreateRequest> generateApiCallCreationRequests(LastfmDataSnapshot snapshot) {
 
         final int tagsCount = Integer.MAX_VALUE;
         final int pagesNumber = Math.min(tagsCount, recordsLimit / PAGE_SIZE);
@@ -56,7 +80,6 @@ public class LastfmTagTopTagApiCallGenerator extends LastfmApiCallGenerator {
             pendingOffsets.add(Integer.parseInt(pendingCall.getParams().getOrDefault(LastfmApiConstants.PARAM_NAME_OFFSET, "0")));
         }
 
-        LastfmDataSnapshot snapshot = snapshotService.getSnapshotFor(getType());
         List<LastfmApiCallCreateRequest> calls = new ArrayList<>();
         for (int i = 0; i < pagesNumber; i++) {
             // skip duplicate call
@@ -76,6 +99,17 @@ public class LastfmTagTopTagApiCallGenerator extends LastfmApiCallGenerator {
                 .build());
         }
 
+        if (!calls.isEmpty()) {
+            snapshotService.incCreatedCountByNumber(snapshot.getId(), calls.size());
+        }
+
         return calls;
     }
+
+    private void createAttributeSnapshots(LastfmDataSnapshot parentSnapshot) {
+        attributeSnapshotService.getOrCreateForEntityType(parentSnapshot, LastfmEntityType.TAG, LastfmAttribute.RANK);
+        attributeSnapshotService.getOrCreateForEntityType(parentSnapshot, LastfmEntityType.TAG, LastfmAttribute.RELATIONS_COUNT);
+        attributeSnapshotService.getOrCreateForEntityType(parentSnapshot, LastfmEntityType.TAG, LastfmAttribute.REACH);
+    }
+
 }

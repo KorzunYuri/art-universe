@@ -48,7 +48,7 @@ class LastfmTagRepositoryTest extends JpaOnlyTest {
     private LastfmTag createTag(String rock, LastfmApiCall apiCall) {
         return LastfmTag.builder()
                 .name(rock)
-                .apiCallId(apiCall.getId())
+                .apiCall(apiCall)
             .build();
     }
 
