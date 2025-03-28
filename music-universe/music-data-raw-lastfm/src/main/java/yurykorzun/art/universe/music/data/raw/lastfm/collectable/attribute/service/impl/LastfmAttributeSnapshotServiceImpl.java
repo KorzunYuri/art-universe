@@ -53,7 +53,7 @@ public class LastfmAttributeSnapshotServiceImpl implements LastfmAttributeSnapsh
         LastfmAttributeSnapshot attributeSnapshot = attributeSnapshotRepository.findEntityLevelSnapshot(attribute, entityType, scopeEntity);
         if (attributeSnapshot == null) {
             attributeSnapshot = builderForType(snapshot, attribute, entityType)
-                    .scopeEntityType((LastfmEntityType) scopeEntity.getType())
+                    .scopeEntityType(scopeEntity.getType())
                     .scopeEntityId(scopeEntity.getId())
                 .build();
             isUpdated = true;

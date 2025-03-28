@@ -3,7 +3,6 @@ package yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import yurykorzun.art.universe.common.data.raw.entity.CollectableEntityType;
 
 import jakarta.persistence.*;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
@@ -27,7 +26,7 @@ public class LastfmTag extends BaseLastfmEntity {
 
     @Override
     @Transient
-    public CollectableEntityType getType() {
+    public LastfmEntityType getType() {
         return LastfmEntityType.TAG;
     }
 }

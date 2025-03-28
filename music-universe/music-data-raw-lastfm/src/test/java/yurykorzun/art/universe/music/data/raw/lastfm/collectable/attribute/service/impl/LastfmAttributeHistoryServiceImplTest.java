@@ -14,7 +14,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repos
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repository.LastfmAttributeTypeSynchronizer;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.LastfmAttributeHistoryService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.repository.LastfmTagRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
@@ -79,9 +78,9 @@ public class LastfmAttributeHistoryServiceImplTest extends JpaOnlyTest {
     ) {
         return LastfmAttributeHistoryRecord.builder()
             .apiCallId(apiCall.getId())
-            .entityType((LastfmEntityType) entity.getType())
+            .entityType(entity.getType())
             .entityId(entity.getId())
-            .scopeEntityType((LastfmEntityType) scopeEntity.getType())
+            .scopeEntityType(scopeEntity.getType())
             .scopeEntityId(scopeEntity.getId());
     }
 

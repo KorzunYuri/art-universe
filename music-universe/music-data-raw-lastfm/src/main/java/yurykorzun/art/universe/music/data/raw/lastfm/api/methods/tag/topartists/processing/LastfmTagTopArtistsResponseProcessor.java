@@ -184,7 +184,7 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
     private LastfmAttributeHistoryRecord.LastfmAttributeHistoryRecordBuilder createAttrValueBuilderForEntity(
             ArtistBinding binding, LastfmAttribute attribute) {
         return createAttrValueBuilder(binding, attribute)
-                .entityType((LastfmEntityType) binding.entity.getType())
+                .entityType(binding.entity.getType())
                 .entityId(binding.entity.getId());
     }
 

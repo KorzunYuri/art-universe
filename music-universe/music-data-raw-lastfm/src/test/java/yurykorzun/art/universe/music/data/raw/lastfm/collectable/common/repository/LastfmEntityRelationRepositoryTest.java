@@ -9,7 +9,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.Lastf
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmDataSnapshotRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityRelation;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.repository.LastfmTagRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
@@ -65,9 +64,9 @@ class LastfmEntityRelationRepositoryTest extends JpaOnlyTest {
         BaseLastfmEntity entity = createDummyEntity();
         LastfmApiCall sourceApiCall = createDummyApiCall();
         LastfmEntityRelation entityRelation = LastfmEntityRelation.builder()
-                .scopeEntityType((LastfmEntityType) scopeEntity.getType())
+                .scopeEntityType(scopeEntity.getType())
                 .scopeEntityId(scopeEntity.getId())
-                .entityType((LastfmEntityType) entity.getType())
+                .entityType(entity.getType())
                 .entityId(entity.getId())
                 .apiCall(sourceApiCall)
             .build();

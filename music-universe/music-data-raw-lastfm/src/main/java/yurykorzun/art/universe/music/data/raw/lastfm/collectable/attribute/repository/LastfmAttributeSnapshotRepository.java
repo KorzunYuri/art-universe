@@ -34,6 +34,6 @@ public interface LastfmAttributeSnapshotRepository extends JpaRepository<LastfmA
         return findByAttributeAndEntityTypeAndScopeEntityTypeAndScopeEntityId(
                 attribute,
                 entityType,
-                (LastfmEntityType) scopeEntity.getType(), scopeEntity.getId());
+                scopeEntity.getType(), scopeEntity.getId());
     }
 }

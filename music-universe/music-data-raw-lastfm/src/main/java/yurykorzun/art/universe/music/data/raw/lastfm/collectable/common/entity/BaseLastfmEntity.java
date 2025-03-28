@@ -23,6 +23,9 @@ public abstract class BaseLastfmEntity extends BaseCollectableEntity {
     // TODO drop sequences created automatically
     public abstract long getId();
 
+    @Override
+    public abstract LastfmEntityType getType();
+
     @Column(name = "name")
     private String name;
 

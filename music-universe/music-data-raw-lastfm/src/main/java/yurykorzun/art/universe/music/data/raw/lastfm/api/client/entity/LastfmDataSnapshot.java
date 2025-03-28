@@ -49,7 +49,7 @@ public class LastfmDataSnapshot extends BaseEntity {
             BaseLastfmEntity entity
     ) {
         this(apiCallType, dataDate);
-        this.entityType = (LastfmEntityType) entity.getType();
+        this.entityType = entity.getType();
         this.entityId = entity.getId();
     }
 

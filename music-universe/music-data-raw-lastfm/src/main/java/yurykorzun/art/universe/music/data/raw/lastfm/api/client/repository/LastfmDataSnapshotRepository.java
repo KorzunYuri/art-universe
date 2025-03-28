@@ -67,6 +67,6 @@ public interface LastfmDataSnapshotRepository extends JpaRepository<LastfmDataSn
 
     default LastfmDataSnapshot findForApiCallTypeAndEntity(LastfmApiCallType apiCallType, BaseLastfmEntity entity) {
         return findByApiCallTypeAndEntityTypeAndEntityIdAndDataDate(
-                apiCallType, (LastfmEntityType) entity.getType(), entity.getId(), new Date());
+                apiCallType, entity.getType(), entity.getId(), new Date());
     }
 }
