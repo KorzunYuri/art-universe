@@ -18,35 +18,35 @@ public enum LastfmAttribute implements Coded {
             1,
             "Relations number",
             "Number of entities associated with entity",
-            Type.INTEGER,
+            DataType.INTEGER,
             HistoryType.SNAPSHOT,
             List.of(LastfmEntityType.TAG))
     ,   REACH(
             2,
             "Reach",
             "Number of users that used entity",
-            Type.INTEGER,
+            DataType.INTEGER,
             HistoryType.SNAPSHOT,
             List.of(LastfmEntityType.TAG))
     ,   URL(
             3,
             "URL",
             "Entity's URL",
-            Type.STRING,
+            DataType.STRING,
             HistoryType.SCD2,
             List.of(LastfmEntityType.values()))
     ,   RANK(
             4,
             "rank",
             "global rank of the entity",
-            Type.INTEGER,
+            DataType.INTEGER,
             HistoryType.SNAPSHOT,
             List.of(LastfmEntityType.values()))
     ,   MBID(
             5,
             "mbid",
             "MusicBrainz ID",
-            Type.STRING,
+            DataType.STRING,
             HistoryType.SCD2,
             List.of(LastfmEntityType.ARTIST))
     ;
@@ -54,7 +54,7 @@ public enum LastfmAttribute implements Coded {
     private final int id;
     private final String name;
     private final String description;
-    private final LastfmAttribute.Type type;
+    private final DataType dataType;
     private final HistoryType historyType;
     private final Collection<LastfmEntityType> supportedEntities;
 
@@ -63,12 +63,12 @@ public enum LastfmAttribute implements Coded {
     }
 
     LastfmAttribute(int id, String name, String description,
-                    Type type, HistoryType historyType,
+                    DataType dataType, HistoryType historyType,
                     Collection<LastfmEntityType> supportedEntities) {
         this.id = id;
         this.name = name;
         this.description = description;
-        this.type = type;
+        this.dataType = dataType;
         this.historyType = historyType;
         this.supportedEntities = supportedEntities;
     }
@@ -79,7 +79,7 @@ public enum LastfmAttribute implements Coded {
     }
 
     @AllArgsConstructor
-    public enum Type implements Coded {
+    public enum DataType implements Coded {
             STRING(1)
         ,   INTEGER(2)
         ;

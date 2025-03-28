@@ -30,7 +30,7 @@ public class LastfmAttributeTypeSynchronizer {
             entity.setId(attribute.getId());
             entity.setName(attribute.getName());
             entity.setDescription(attribute.getDescription());
-            entity.setType(attribute.getType().getCode());
+            entity.setType(attribute.getDataType().getCode());
             entity.setUpdatedAt(Instant.now());
             entitiesToSave.add(entity);
         }
