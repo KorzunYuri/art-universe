@@ -76,51 +76,57 @@ public class LastfmTagTopTagResponseProcessorTest extends FullContextTest {
               }
             }
             """;
+    private static final int TEST_DTO_TAGS_NUMBER = 2;
+    private static final int SCD2_ATTRIBUTES_NUMBER = 0;
+    private static final int SNAPSHOT_ATTRIBUTES_NUMBER = 3;
 
-    @Test
-    public void givenTagTopTagsResponse_whenProcessed_tagsAndAttributeValuesAreCreated() throws IOException {
-        LastfmApiResponse response = createApiResponse(TEST_DTO);
-        final int tagsNumber = 2;
-        final int attributesNumber = 3;
+    private void testPrimarySave(LastfmApiResponse response, int tagsNumber) throws IOException {
 
-        // initial save
         processor.processResponse(response);
         List<LastfmTag> createdTags = tagRepository.findAll();
         List<LastfmAttributeHistoryRecord> createdAttributeValues = attributeHistoryRepository.findAll();
 
         assertEquals(tagsNumber, createdTags.size(),
-                "First save must save tags that haven't existed in DB");
-        assertEquals(tagsNumber * attributesNumber, createdAttributeValues.size(),
-                "First save must save (tags X (tag attributes)) attribute records");
+            "First save must save tags that haven't existed in DB");
+        assertEquals(tagsNumber * (SCD2_ATTRIBUTES_NUMBER + SNAPSHOT_ATTRIBUTES_NUMBER), createdAttributeValues.size(),
+            "First save must save (tags X (tag attributes)) attribute records");
     }
 
     @Test
-    public void givenTagTopTagsResponse_whenProcessedTwice_tagsAndAttributeValuesAreNotDuplicated() throws IOException {
+    public void givenTagTopTagsResponse_whenProcessed_tagsAndAttributeValuesAreCreated() throws IOException {
         LastfmApiResponse response = createApiResponse(TEST_DTO);
-        final int tagsNumber = 2;
-        final int attributesNumber = 3;
+
+        testPrimarySave(response, TEST_DTO_TAGS_NUMBER);
+    }
+
+    @Test
+    public void givenProcessedTagTopTagsResponse_whenProcessedTwice_tagsAndAttributeValuesAreNotDuplicated() throws IOException {
+        LastfmApiResponse firstResponse = createApiResponse(TEST_DTO);
 
         // initial save
-        processor.processResponse(response);
-        List<LastfmTag> tagsAfterFirst = tagRepository.findAll();
-        List<LastfmAttributeHistoryRecord> attributesAfterFirst = attributeHistoryRepository.findAll();
+        testPrimarySave(firstResponse, TEST_DTO_TAGS_NUMBER);
 
-        assertEquals(tagsNumber, tagsAfterFirst.size(),
-                "First save must save tags that haven't existed in DB");
-        assertEquals(tagsNumber * attributesNumber, attributesAfterFirst.size(),
-                "First save must save (tags X (tag attributes)) attribute records");
-
-        // secondary save
-        processor.processResponse(response);
+        // secondary save of the same data with the same snapshot
+        processor.processResponse(firstResponse);
         List<LastfmTag> tagsAfterSecond = tagRepository.findAll();
         List<LastfmAttributeHistoryRecord> attributesAfterSecond = attributeHistoryRepository.findAll();
 
-        assertEquals(tagsAfterFirst.size(), tagsAfterSecond.size(), "Second save must not produce duplicate tags");
-        assertEquals(tagsNumber * attributesNumber * 2, attributesAfterSecond.size(),
-                "Second save must produce new tag attribute values (tags X (tag attributes)) records");
+        assertEquals(TEST_DTO_TAGS_NUMBER, tagsAfterSecond.size(),
+            "Second save of same entities must not produce duplicates");
+        assertEquals(TEST_DTO_TAGS_NUMBER * (SCD2_ATTRIBUTES_NUMBER + SNAPSHOT_ATTRIBUTES_NUMBER), attributesAfterSecond.size(),
+            "Second save of same attributes must not produce duplicates");
+    }
 
-        // partially new save
-        // ONE new tag appears
+    @Test
+    public void givenProcessedTagTopTagsResponse_whenPartialUpdatesReceived_thenProducesOnlyNewRecords() throws IOException {
+        LastfmApiResponse firstResponse = createApiResponse(TEST_DTO);
+
+        // initial save
+        testPrimarySave(firstResponse, TEST_DTO_TAGS_NUMBER);
+
+        // partially new save: new tag appears, old tag didn't change
+        final int newTagsNumber = 1;
+        final int retainedTagsNumber = 1;
         String newResponseBody = """
                 {
                   "toptags": {
@@ -144,15 +150,23 @@ public class LastfmTagTopTagResponseProcessorTest extends FullContextTest {
                   }
                 }
                 """;
-        LastfmApiResponse newResponse = createApiResponse(newResponseBody);
+        LastfmApiResponse responseWithUpdates = createApiResponse(newResponseBody);
 
-        processor.processResponse(newResponse);
-        List<LastfmTag> tagsAfterThird = tagRepository.findAll();
-        List<LastfmAttributeHistoryRecord> attributesAfterThird = attributeHistoryRepository.findAll();
+        processor.processResponse(responseWithUpdates);
+        List<LastfmTag> tagsAfterUpdate = tagRepository.findAll();
+        List<LastfmAttributeHistoryRecord> attributesAfterUpdate = attributeHistoryRepository.findAll();
 
-        assertEquals(tagsAfterFirst.size() + 1, tagsAfterThird.size(), "Second save must not produce duplicate tags");
-        assertEquals(tagsNumber * attributesNumber * 3, attributesAfterThird.size(),
-                "Second save must produce new tag attribute values (tags X (tag attributes)) records");
+        int oldValuesNumber = TEST_DTO_TAGS_NUMBER * (SCD2_ATTRIBUTES_NUMBER + SNAPSHOT_ATTRIBUTES_NUMBER);
+        int newValuesNumber = newTagsNumber * (SCD2_ATTRIBUTES_NUMBER + SNAPSHOT_ATTRIBUTES_NUMBER)
+                            + retainedTagsNumber * SNAPSHOT_ATTRIBUTES_NUMBER;
+        final int expectedValuesNumber = oldValuesNumber + newValuesNumber;
+
+
+        assertEquals((TEST_DTO_TAGS_NUMBER + newTagsNumber), tagsAfterUpdate.size(),
+            "Partially new batch of tags must produce only new tags");
+        assertEquals(expectedValuesNumber, attributesAfterUpdate.size(),
+            "Partially new batch of attributes must produce only new attribute values + snapshot values");
+
     }
 
     private LastfmApiResponse createApiResponse(String responseBody) {

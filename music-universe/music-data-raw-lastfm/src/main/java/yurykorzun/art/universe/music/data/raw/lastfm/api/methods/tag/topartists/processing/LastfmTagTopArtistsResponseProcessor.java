@@ -16,7 +16,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.L
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.repository.LastfmArtistRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttributeHistoryRecord;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repository.LastfmAttributeHistoryRecordRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.LastfmAttributeHistoryService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityRelation;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityRelationService;
@@ -31,18 +31,18 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
 
     private final LastfmArtistRepository artistRepository;
     private final LastfmEntityRelationService entityRelationService;
-    private final LastfmAttributeHistoryRecordRepository attributeHistoryRecordRepository;
+    private final LastfmAttributeHistoryService attributeHistoryService;
 
     protected LastfmTagTopArtistsResponseProcessor(
-            LastfmArtistRepository artistRepository,
-            LastfmEntityRelationService entityRelationService,
-            LastfmAttributeHistoryRecordRepository attributeHistoryRecordRepository
+        LastfmArtistRepository artistRepository,
+        LastfmEntityRelationService entityRelationService,
+        LastfmAttributeHistoryService attributeHistoryService
     ) {
         super(TopArtistsDtoRoot.class);
 
         this.artistRepository = artistRepository;
         this.entityRelationService = entityRelationService;
-        this.attributeHistoryRecordRepository = attributeHistoryRecordRepository;
+        this.attributeHistoryService = attributeHistoryService;
     }
 
     @Override
@@ -61,7 +61,7 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
         LastfmArtist entity;
 
         // Attributes require entity_id, which is missing in case of new entities.
-        // Hence, we store attributes builders and finalize them when we can.
+        // Hence, we store attribute builders to finalize them later when we have the entities.
         List<LastfmAttributeHistoryRecord.LastfmAttributeHistoryRecordBuilder> newAttrValuesBuilders = new ArrayList<>();
 
         // marks bindings containing new entities - they must be revisited to assign entity_id to their attributes
@@ -126,8 +126,8 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
                 newAttrValues.add(v.build());
             });
         });
-        attributeHistoryRecordRepository.saveAll(newAttrValues);
-        log.info("{}: saved {} attribute values", logPrefix, newAttrValues.size());
+        List<LastfmAttributeHistoryRecord> savedAttrValues = attributeHistoryService.upsertCandidateValues(newAttrValues);
+        log.info("{}: saved {} attribute values", logPrefix, savedAttrValues.size());
 
         log.info("\"{}: Finished processing DTO of type {}", logPrefix, parsed.getClass().getName());
     }

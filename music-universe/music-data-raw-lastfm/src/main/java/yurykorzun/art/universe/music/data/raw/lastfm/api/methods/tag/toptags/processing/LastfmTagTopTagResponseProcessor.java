@@ -14,7 +14,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.common.dto.
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.dto.TopTagsDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttributeHistoryRecord;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repository.LastfmAttributeHistoryRecordRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.LastfmAttributeHistoryService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.repository.LastfmTagRepository;
@@ -30,16 +30,16 @@ import java.util.stream.Stream;
 public class LastfmTagTopTagResponseProcessor extends LastfmApiResponseProcessor<TopTagsDtoRoot> {
 
     private final LastfmTagRepository tagRepository;
-    private final LastfmAttributeHistoryRecordRepository attributeHistoryRepository;
+    private final LastfmAttributeHistoryService attributeHistoryService;
 
     protected LastfmTagTopTagResponseProcessor(
-            LastfmTagRepository tagRepository,
-            LastfmAttributeHistoryRecordRepository attributeHistoryRepository)
+        LastfmTagRepository tagRepository,
+        LastfmAttributeHistoryService attributeHistoryService)
     {
         super(TopTagsDtoRoot.class);
 
         this.tagRepository = tagRepository;
-        this.attributeHistoryRepository = attributeHistoryRepository;
+        this.attributeHistoryService = attributeHistoryService;
     }
 
     @Override
@@ -89,9 +89,9 @@ public class LastfmTagTopTagResponseProcessor extends LastfmApiResponseProcessor
         mapDtosToIds(dtoMappingByName, savedTags);
 
         //  convert attributes in DTO to entities
-        List<LastfmAttributeHistoryRecord> attributesToSave = tagDtosToAttributes(dtoMappingByName);
-        attributesToSave = attributeHistoryRepository.saveAll(attributesToSave);
-        log.info("\"{}: Tag attributes saved: {}", logPrefix, attributesToSave.size());
+        List<LastfmAttributeHistoryRecord> attrValuesToSave = tagDtosToAttributes(dtoMappingByName);
+        List<LastfmAttributeHistoryRecord> savedAttrValues = attributeHistoryService.upsertCandidateValues(attrValuesToSave);
+        log.info("\"{}: Tag attributes saved: {}", logPrefix, savedAttrValues.size());
 
         log.info("\"{}: Finished processing DTO of type {}", logPrefix, parsed.getClass().getName());
     }

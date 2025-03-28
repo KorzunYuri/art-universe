@@ -19,30 +19,35 @@ public enum LastfmAttribute implements Coded {
             "Relations number",
             "Number of entities associated with entity",
             Type.INTEGER,
+            HistoryType.SNAPSHOT,
             List.of(LastfmEntityType.TAG))
     ,   REACH(
             2,
             "Reach",
             "Number of users that used entity",
             Type.INTEGER,
+            HistoryType.SNAPSHOT,
             List.of(LastfmEntityType.TAG))
     ,   URL(
             3,
             "URL",
             "Entity's URL",
             Type.STRING,
+            HistoryType.SCD2,
             List.of(LastfmEntityType.values()))
     ,   RANK(
             4,
             "rank",
             "global rank of the entity",
             Type.INTEGER,
+            HistoryType.SNAPSHOT,
             List.of(LastfmEntityType.values()))
     ,   MBID(
             5,
             "mbid",
             "MusicBrainz ID",
             Type.STRING,
+            HistoryType.SCD2,
             List.of(LastfmEntityType.ARTIST))
     ;
 
@@ -50,18 +55,21 @@ public enum LastfmAttribute implements Coded {
     private final String name;
     private final String description;
     private final LastfmAttribute.Type type;
+    private final HistoryType historyType;
     private final Collection<LastfmEntityType> supportedEntities;
 
     static {
         CodedRegistry.register(Arrays.asList(values()), LastfmAttribute.class);
     }
 
-    LastfmAttribute(int id, String name, String description, Type type,
+    LastfmAttribute(int id, String name, String description,
+                    Type type, HistoryType historyType,
                     Collection<LastfmEntityType> supportedEntities) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.type = type;
+        this.historyType = historyType;
         this.supportedEntities = supportedEntities;
     }
 
@@ -82,5 +90,16 @@ public enum LastfmAttribute implements Coded {
         public Integer getCode() {
             return id;
         }
+    }
+
+    public enum HistoryType {
+        /**
+         * Add new attribute value record only if the value has changed
+         */
+        SCD2, // SlowlyChangingDimension
+        /**
+         * Add new attribute value record with every snapshot
+         */
+        SNAPSHOT
     }
 }

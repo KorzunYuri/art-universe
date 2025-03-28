@@ -2,12 +2,12 @@ package yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.enti
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.antlr.v4.runtime.misc.NotNull;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityTypeConverter;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Objects;
 
 @Entity(name = "attribute_history")
@@ -61,6 +61,17 @@ public class LastfmAttributeHistoryRecord {
 
     @Column(name = "int_value")
     private Integer intValue;
+
+    @NonNull
+    @Builder.Default
+    @Column(name = "valid_from")
+    private LocalDate validFrom = LocalDate.now();
+
+    @NonNull
+    @Builder.Default
+    @Setter
+    @Column(name = "valid_till")
+    private LocalDate validTill = LastfmConstants.END_OF_TIME;
 
     @Override
     public boolean equals(Object o) {
