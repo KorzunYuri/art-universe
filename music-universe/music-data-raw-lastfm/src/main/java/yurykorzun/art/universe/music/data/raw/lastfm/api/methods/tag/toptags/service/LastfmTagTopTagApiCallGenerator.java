@@ -87,16 +87,7 @@ public class LastfmTagTopTagApiCallGenerator extends LastfmApiCallGenerator {
             if (pendingOffsets.contains(offset)) {
                 continue;
             }
-
-            // generate new call
-            Map<String, String> params = new HashMap<>();
-            params.put(LastfmApiConstants.PARAM_NAME_OFFSET, String.valueOf(offset));
-            calls.add(LastfmApiCallCreateRequest.builder()
-                    .type(getApiCallType())
-                    .dataSnapshotId(snapshot.getId())
-                    .dueDttm(TimeUtil.calcDueDttm(dueDurationDays))
-                    .params(params)
-                .build());
+            calls.add(buildApiCallCreationRequest(snapshot, offset));
         }
 
         if (!calls.isEmpty()) {
@@ -104,6 +95,16 @@ public class LastfmTagTopTagApiCallGenerator extends LastfmApiCallGenerator {
         }
 
         return calls;
+    }
+
+    private LastfmApiCallCreateRequest buildApiCallCreationRequest(LastfmDataSnapshot snapshot, int offset) {
+        return LastfmApiCallCreateRequest.builder()
+                .type(getApiCallType())
+                .entityType(LastfmEntityType.TAG)
+                .dataSnapshotId(snapshot.getId())
+                .dueDttm(TimeUtil.calcDueDttm(dueDurationDays))
+                .params(Map.of(LastfmApiConstants.PARAM_NAME_OFFSET, String.valueOf(offset)))
+            .build();
     }
 
     private void createAttributeSnapshots(LastfmDataSnapshot parentSnapshot) {

@@ -89,6 +89,8 @@ public class LastfmApiCallServiceImpl implements LastfmApiCallService {
         return LastfmApiCall.builder()
                 .type(dto.getType())
                 .dataSnapshotId(dto.getDataSnapshotId())
+                .entityType(dto.getEntityType())
+                .entityId(dto.getEntityId())
                 .dueDttm(dto.getDueDttm())
                 .params(dto.getParams())
             .build();

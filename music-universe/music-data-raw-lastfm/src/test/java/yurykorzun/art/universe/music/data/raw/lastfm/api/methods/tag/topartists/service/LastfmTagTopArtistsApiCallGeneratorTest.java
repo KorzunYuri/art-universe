@@ -87,7 +87,7 @@ class LastfmTagTopArtistsApiCallGeneratorTest extends JpaOnlyTest {
                         .apiCall(apiCall)
                         .approvalStatus(ApprovalStatus.APPROVED)
                     .build();
-                ReflectionTestUtils.setField(tag, "id", i);
+                ReflectionTestUtils.setField(tag, "id", i + 1);
                 return tag;
             })
             .collect(Collectors.toList());
@@ -120,6 +120,8 @@ class LastfmTagTopArtistsApiCallGeneratorTest extends JpaOnlyTest {
         // check that params contain tag name
         capturedCalls.forEach(request -> {
             Map<String, String> params = request.getParams();
+            assertEquals(LastfmEntityType.TAG, request.getEntityType());
+            assertTrue(request.getEntityId() > 0);
             String tagName = params.get(LastfmApiConstants.PARAM_NAME_TAG);
             assertNotNull(tagName, "'tag' must be present in api call parameters'");
             assertTrue(tagName.startsWith("tag"), "Tag name in api call parameters is incorrect");

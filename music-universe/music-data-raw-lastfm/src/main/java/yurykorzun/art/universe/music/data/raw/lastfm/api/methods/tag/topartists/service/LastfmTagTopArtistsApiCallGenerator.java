@@ -78,6 +78,8 @@ public class LastfmTagTopArtistsApiCallGenerator extends LastfmApiCallGenerator 
     private LastfmApiCallCreateRequest createApiCallCreationRequest(LastfmTag tag, LastfmDataSnapshot snapshot) {
         return LastfmApiCallCreateRequest.builder()
                 .type(getApiCallType())
+                .entityType(LastfmEntityType.TAG)
+                .entityId(tag.getId())
                 .dataSnapshotId(snapshot.getId())
                 .dueDttm(TimeUtil.calcDueDttm(dueDurationDays))
                 .params(generateApiCallParameters(tag))

@@ -94,9 +94,16 @@ class LastfmTagTopTagApiCallGeneratorTest extends JpaOnlyTest {
 
         ArgumentCaptor<List<LastfmApiCallCreateRequest>> captor = ArgumentCaptor.forClass(List.class);
         verify(apiCallService).createApiCalls(captor.capture());
-        List<LastfmApiCallCreateRequest> capturedCalls = captor.getValue();
-        assertEquals(ALL_API_CALLS_NUMBER - existingApiCallsNumber, capturedCalls.size(),
+        List<LastfmApiCallCreateRequest> capturedRequests = captor.getValue();
+        assertEquals(ALL_API_CALLS_NUMBER - existingApiCallsNumber, capturedRequests.size(),
             String.format("Generator was expected to produce %s records", ALL_API_CALLS_NUMBER - existingApiCallsNumber));
+        capturedRequests.forEach(request -> {
+            assertEquals(LastfmEntityType.TAG, request.getEntityType());
+            assertEquals(0, request.getEntityId());
+            Map<String, String> params = request.getParams();
+            assertEquals(1, params.size());
+            assertTrue(params.containsKey(LastfmApiConstants.PARAM_NAME_OFFSET));
+        });
     }
 
     @Test

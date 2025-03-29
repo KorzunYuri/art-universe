@@ -8,6 +8,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiCal
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmApiCallRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.FullContextTest;
 
 import java.time.Duration;
@@ -31,6 +32,7 @@ class LastfmApiCallServiceImplTest extends FullContextTest {
         return () -> LastfmApiCallCreateRequest.builder()
                 .type(LastfmApiCallType.TAG_TOP_TAGS)
                 .dataSnapshotId(1L)
+                .entityType(LastfmEntityType.TAG)
                 .dueDttm(dueDttm)
             .build();
     }
