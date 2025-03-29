@@ -24,7 +24,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTe
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -63,15 +62,17 @@ class LastfmTagTopTagApiCallGeneratorTest extends JpaOnlyTest {
 
     void testApiCallCreation(int existingApiCallsNumber) {
         // mock snapshot
+        final long mockSnapshotId = 1L;
         LastfmDataSnapshot existingSnapshot = new LastfmDataSnapshot(generator.getApiCallType(), LocalDate.now());
         ReflectionTestUtils.setField(existingSnapshot, "createdCount", existingApiCallsNumber);
+        ReflectionTestUtils.setField(existingSnapshot, "id", mockSnapshotId);
         when(snapshotService.getOrCreateSnapshotFor(generator.getApiCallType())).thenReturn(existingSnapshot);
         // mock api calls
         List<LastfmApiCall> existingApiCalls = IntStream.range(0, existingApiCallsNumber)
             .mapToObj(i -> LastfmApiCall.builder()
                 .type(generator.getApiCallType())
                 .dueDttm(Instant.now().plus(Duration.ofDays(1)))
-                .dataSnapshotId(1L)
+                .dataSnapshotId(mockSnapshotId)
                 .entityType(ENTITY_TYPE)
                 .params(Map.of(LastfmApiConstants.PARAM_NAME_OFFSET, String.valueOf(i * PAGE_SIZE)))
                 .build())
@@ -92,11 +93,12 @@ class LastfmTagTopTagApiCallGeneratorTest extends JpaOnlyTest {
             verify(attributeSnapshotService, never()).getOrCreateForEntityType(any(), any(), any());
         }
 
+        final int expectedCreatedApiCallsNumber = ALL_API_CALLS_NUMBER - existingApiCallsNumber;
         ArgumentCaptor<List<LastfmApiCallCreateRequest>> captor = ArgumentCaptor.forClass(List.class);
         verify(apiCallService).createApiCalls(captor.capture());
         List<LastfmApiCallCreateRequest> capturedRequests = captor.getValue();
-        assertEquals(ALL_API_CALLS_NUMBER - existingApiCallsNumber, capturedRequests.size(),
-            String.format("Generator was expected to produce %s records", ALL_API_CALLS_NUMBER - existingApiCallsNumber));
+        assertEquals(expectedCreatedApiCallsNumber, capturedRequests.size(),
+            String.format("Generator was expected to produce %s records", expectedCreatedApiCallsNumber));
         capturedRequests.forEach(request -> {
             assertEquals(LastfmEntityType.TAG, request.getEntityType());
             assertEquals(0, request.getEntityId());
@@ -104,6 +106,10 @@ class LastfmTagTopTagApiCallGeneratorTest extends JpaOnlyTest {
             assertEquals(1, params.size());
             assertTrue(params.containsKey(LastfmApiConstants.PARAM_NAME_OFFSET));
         });
+
+        if (expectedCreatedApiCallsNumber > 0) {
+            verify(snapshotService).incCreatedCountByNumber(eq(mockSnapshotId), eq(expectedCreatedApiCallsNumber));
+        }
     }
 
     @Test

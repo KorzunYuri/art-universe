@@ -95,6 +95,8 @@ class LastfmTagTopArtistsApiCallGeneratorTest extends JpaOnlyTest {
             .thenReturn(unprocessedTags);
 
         LastfmDataSnapshot snapshot = new LastfmDataSnapshot(LastfmApiCallType.TAG_TOP_ARTISTS, LocalDate.now());
+        long mockSnapshotId = 1L;
+        ReflectionTestUtils.setField(snapshot, "id", mockSnapshotId);
         when(snapshotService.getOrCreateSnapshotFor(eq(generator.getApiCallType()), any(LastfmTag.class)))
             .thenReturn(snapshot);
 
@@ -126,5 +128,7 @@ class LastfmTagTopArtistsApiCallGeneratorTest extends JpaOnlyTest {
             assertNotNull(tagName, "'tag' must be present in api call parameters'");
             assertTrue(tagName.startsWith("tag"), "Tag name in api call parameters is incorrect");
         });
+
+        verify(snapshotService).incCreatedCountByNumber(eq(mockSnapshotId), eq(UNPROCESSED_TAGS_COUNT));
     }
 }
