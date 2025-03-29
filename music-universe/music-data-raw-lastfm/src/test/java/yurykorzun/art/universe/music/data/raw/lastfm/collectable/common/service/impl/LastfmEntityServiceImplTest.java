@@ -76,22 +76,21 @@ class LastfmEntityServiceImplTest extends JpaOnlyTest {
     }
 
     @Test
-    void givenEntityWithNonPendingCall_whenUnprocessedRequested_returnsEntity() {
+    void givenEntityWithExistingCall_whenUnprocessedRequested_ignoresEntity() {
         // given
         final LastfmApiCallType apiCallType = LastfmApiCallType.TAG_TOP_ARTISTS;
         LastfmApiCall tagsApiCall = consistencyHelper.createDummyApiCall(LastfmApiCallType.TAG_TOP_TAGS);
         LastfmTag tagToBeProcessed        = tagRepository.save(generateApprovedTag(tagsApiCall));
-        LastfmTag tagWithNonPendingCall   = tagRepository.save(generateApprovedTag(tagsApiCall)); // to be processed as well
-        LastfmApiCall call = generateCallForTag(tagWithNonPendingCall, apiCallType, ApiCallStatus.CANCELLED, tagsApiCall.getDataSnapshotId());
+        LastfmTag tagWithExistingCall   = tagRepository.save(generateApprovedTag(tagsApiCall)); // to be processed as well
+        LastfmApiCall call = generateCallForTag(tagWithExistingCall, apiCallType, ApiCallStatus.CANCELLED, tagsApiCall.getDataSnapshotId());
         apiCallRepository.save(call);
 
         // when
         List<LastfmTag> unprocessed = service.findAllUnprocessed(LastfmEntityType.TAG, apiCallType);
 
         // then
-        assertEquals(2, unprocessed.size());
+        assertEquals(1, unprocessed.size());
         assertTrue(unprocessed.contains(tagToBeProcessed));
-        assertTrue(unprocessed.contains(tagWithNonPendingCall));
     }
 
     @Test
