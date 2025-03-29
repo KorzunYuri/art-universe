@@ -67,12 +67,33 @@ public class DbConsistencyHelper {
         return dummyApiCall;
     }
 
+    public LastfmApiCall createDummyApiCall(LastfmApiCallType apiCallType, BaseLastfmEntity entity) {
+        LastfmDataSnapshot snapshot = createDummyDataSnapshot(apiCallType);
+        LastfmApiCall dummyApiCall = LastfmApiCall.builder()
+                .type(apiCallType)
+                .dataSnapshotId(snapshot.getId())
+                .entityType(entity.getType())
+                .entityId(entity.getId())
+                .dueDttm(Instant.now())
+            .build();
+        dummyApiCall = apiCallRepository.save(dummyApiCall);
+        return dummyApiCall;
+    }
+
     public LastfmApiCall createDummyApiCall() {
         return createDummyApiCall(DUMMY_API_CALL_TYPE);
     }
 
     public LastfmApiResponse createDummyApiResponse(String responseBody, LastfmApiCallType apiCallType) {
         LastfmApiCall apiCall = createDummyApiCall(apiCallType);
+        return LastfmApiResponse.builder()
+                .responseBody(responseBody)
+                .apiCall(apiCall)
+            .build();
+    }
+
+    public LastfmApiResponse createDummyApiResponse(String responseBody, LastfmApiCallType apiCallType, BaseLastfmEntity scopeEntity) {
+        LastfmApiCall apiCall = createDummyApiCall(apiCallType, scopeEntity);
         return LastfmApiResponse.builder()
                 .responseBody(responseBody)
                 .apiCall(apiCall)
@@ -88,6 +109,15 @@ public class DbConsistencyHelper {
         LastfmTag tag = LastfmTag.builder()
                 .name(UUID.randomUUID().toString())
                 .apiCall(dummyApiCall)
+            .build();
+        return tagRepository.save(tag);
+    }
+
+    public BaseLastfmEntity createDummyEntity(LastfmApiCallType sourceApiCallType) {
+        LastfmApiCall dummyApiCall = createDummyApiCall(sourceApiCallType);
+        LastfmTag tag = LastfmTag.builder()
+            .name(UUID.randomUUID().toString())
+            .apiCall(dummyApiCall)
             .build();
         return tagRepository.save(tag);
     }
