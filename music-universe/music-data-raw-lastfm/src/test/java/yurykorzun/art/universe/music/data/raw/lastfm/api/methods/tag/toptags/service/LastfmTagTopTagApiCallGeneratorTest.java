@@ -59,10 +59,6 @@ class LastfmTagTopTagApiCallGeneratorTest extends JpaOnlyTest {
     void setUp() {
         ReflectionTestUtils.setField(generator, "recordsLimit", RECORDS_LIMIT);
         ReflectionTestUtils.setField(generator, "dueDurationDays", 1);
-
-        // no pending calls by default
-        when(apiCallRepository.findAllUnexpiredByType(generator.getApiCallType()))
-            .thenReturn(Collections.emptyList());
     }
 
     void testApiCallCreation(int existingApiCallsNumber) {
