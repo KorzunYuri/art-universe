@@ -8,7 +8,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.Lastf
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmDataSnapshotService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @Service
 public class LastfmDataSnapshotServiceImpl implements LastfmDataSnapshotService {
@@ -31,7 +31,7 @@ public class LastfmDataSnapshotServiceImpl implements LastfmDataSnapshotService 
 
         LastfmDataSnapshot snapshot = snapshotRepository.findForApiCallType((apiCallType));
         if (snapshot == null) {
-            snapshot = new LastfmDataSnapshot(apiCallType, new Date());
+            snapshot = new LastfmDataSnapshot(apiCallType, LocalDate.now());
             snapshot = snapshotRepository.save(snapshot);
         }
         return snapshot;
@@ -50,7 +50,7 @@ public class LastfmDataSnapshotServiceImpl implements LastfmDataSnapshotService 
 
         LastfmDataSnapshot snapshot = snapshotRepository.findForApiCallTypeAndEntity(apiCallType, entity);
         if (snapshot == null) {
-            snapshot = new LastfmDataSnapshot(apiCallType, new Date(), entity);
+            snapshot = new LastfmDataSnapshot(apiCallType, LocalDate.now(), entity);
             snapshot = snapshotRepository.save(snapshot);
         }
         return snapshot;

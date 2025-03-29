@@ -12,7 +12,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmDat
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @Repository
 public interface LastfmDataSnapshotRepository extends JpaRepository<LastfmDataSnapshot, Long> {
@@ -57,16 +57,16 @@ public interface LastfmDataSnapshotRepository extends JpaRepository<LastfmDataSn
             @NonNull    LastfmApiCallType apiCallType,
             @Nullable   LastfmEntityType entityType,
             @Nullable   Long entityId,
-            @NonNull    Date dataDate
+            @NonNull    LocalDate dataDate
     );
 
     default LastfmDataSnapshot findForApiCallType(LastfmApiCallType apiCallType) {
         return findByApiCallTypeAndEntityTypeAndEntityIdAndDataDate(
-                apiCallType, null, null, new Date());
+                apiCallType, null, null, LocalDate.now());
     }
 
     default LastfmDataSnapshot findForApiCallTypeAndEntity(LastfmApiCallType apiCallType, BaseLastfmEntity entity) {
         return findByApiCallTypeAndEntityTypeAndEntityIdAndDataDate(
-                apiCallType, entity.getType(), entity.getId(), new Date());
+                apiCallType, entity.getType(), entity.getId(), LocalDate.now());
     }
 }

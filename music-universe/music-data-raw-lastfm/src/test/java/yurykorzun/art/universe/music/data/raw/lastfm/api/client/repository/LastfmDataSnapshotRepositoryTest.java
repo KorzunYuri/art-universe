@@ -7,7 +7,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmDataSnapshot;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -22,7 +22,7 @@ class LastfmDataSnapshotRepositoryTest extends JpaOnlyTest {
     @Test
     void givenNewDataSnapshot_whenPersisted_thenSavesCorrectValues() {
         //  given
-        final Date dataDate = new Date();
+        final LocalDate dataDate = LocalDate.now();
         LastfmDataSnapshot snapshot = new LastfmDataSnapshot(LastfmApiCallType.TAG_TOP_TAGS, dataDate);
 
         //  when
@@ -41,7 +41,7 @@ class LastfmDataSnapshotRepositoryTest extends JpaOnlyTest {
     @Test
     void givenPersistedDataSnapshot_whenIncrementCreated_thenIncrementsCorrectly() {
         //  given
-        final Date dataDate = new Date();
+        final LocalDate dataDate = LocalDate.now();
         LastfmDataSnapshot snapshot = new LastfmDataSnapshot(LastfmApiCallType.TAG_TOP_TAGS, dataDate);
         snapshot = repository.save(snapshot);
         final long id = snapshot.getId();
@@ -60,7 +60,7 @@ class LastfmDataSnapshotRepositoryTest extends JpaOnlyTest {
     @Test
     void givenPersistedDataSnapshot_whenIncrementCompleted_thenIncrementsCorrectly() {
         //  given
-        final Date dataDate = new Date();
+        final LocalDate dataDate = LocalDate.now();
         LastfmDataSnapshot snapshot = new LastfmDataSnapshot(LastfmApiCallType.TAG_TOP_TAGS, dataDate);
         snapshot = repository.save(snapshot);
         final long id = snapshot.getId();
@@ -79,7 +79,7 @@ class LastfmDataSnapshotRepositoryTest extends JpaOnlyTest {
     @Test
     void givenPersistedDataSnapshot_whenIncrementParsed_thenIncrementsCorrectly() {
         // given
-        final Date dataDate = new Date();
+        final LocalDate dataDate = LocalDate.now();
         LastfmDataSnapshot snapshot = new LastfmDataSnapshot(LastfmApiCallType.TAG_TOP_TAGS, dataDate);
         snapshot = repository.save(snapshot);
         final long id = snapshot.getId();
@@ -99,7 +99,7 @@ class LastfmDataSnapshotRepositoryTest extends JpaOnlyTest {
     @Test
     void givenPersistedDataSnapshot_whenIncrementCreatedByNumber_thenIncrementsCorrectly() {
         //  given
-        final Date dataDate = new Date();
+        final LocalDate dataDate = LocalDate.now();
         LastfmDataSnapshot snapshot = new LastfmDataSnapshot(LastfmApiCallType.TAG_TOP_TAGS, dataDate);
         snapshot = repository.save(snapshot);
         final long id = snapshot.getId();
@@ -118,7 +118,7 @@ class LastfmDataSnapshotRepositoryTest extends JpaOnlyTest {
     @Test
     void givenPersistedDataSnapshot_whenIncrementCompletedByNumber_thenIncrementsCorrectly() {
         //  given
-        final Date dataDate = new Date();
+        final LocalDate dataDate = LocalDate.now();
         LastfmDataSnapshot snapshot = new LastfmDataSnapshot(LastfmApiCallType.TAG_TOP_TAGS, dataDate);
         snapshot = repository.save(snapshot);
         final long id = snapshot.getId();
@@ -137,7 +137,7 @@ class LastfmDataSnapshotRepositoryTest extends JpaOnlyTest {
     @Test
     void givenPersistedDataSnapshot_whenIncrementParsedByNumber_thenIncrementsCorrectly() {
         // given
-        final Date dataDate = new Date();
+        final LocalDate dataDate = LocalDate.now();
         LastfmDataSnapshot snapshot = new LastfmDataSnapshot(LastfmApiCallType.TAG_TOP_TAGS, dataDate);
         snapshot = repository.save(snapshot);
         final long id = snapshot.getId();

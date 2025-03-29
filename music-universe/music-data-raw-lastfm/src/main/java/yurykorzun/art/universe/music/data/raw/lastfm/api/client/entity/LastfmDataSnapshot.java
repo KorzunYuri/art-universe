@@ -10,7 +10,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.L
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityTypeConverter;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 /**
  * <p>
@@ -38,14 +38,14 @@ public class LastfmDataSnapshot extends BaseEntity {
 
     public LastfmDataSnapshot(
             @NonNull LastfmApiCallType apiCallType,
-            @NonNull Date dataDate) {
+            @NonNull LocalDate dataDate) {
         this.apiCallType = apiCallType;
         this.dataDate = dataDate;
     }
 
     public LastfmDataSnapshot(
             @NonNull LastfmApiCallType apiCallType,
-            @NonNull Date dataDate,
+            @NonNull LocalDate dataDate,
             BaseLastfmEntity entity
     ) {
         this(apiCallType, dataDate);
@@ -76,7 +76,7 @@ public class LastfmDataSnapshot extends BaseEntity {
 
     @NonNull
     @Column(name = "data_date")
-    private Date dataDate;
+    private LocalDate dataDate;
 
     @Column(name = "created_cnt")
     private int createdCount = 0;

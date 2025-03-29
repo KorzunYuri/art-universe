@@ -14,7 +14,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.Last
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.repository.LastfmTagRepository;
 
 import java.time.Instant;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.UUID;
 
 /**
@@ -45,7 +45,7 @@ public class DbConsistencyHelper {
     }
 
     public LastfmDataSnapshot createDummyDataSnapshot(LastfmApiCallType apiCallType) {
-        return snapshotRepository.save(new LastfmDataSnapshot(apiCallType, new Date()));
+        return snapshotRepository.save(new LastfmDataSnapshot(apiCallType, LocalDate.now()));
     }
 
     public LastfmDataSnapshot createDummyDataSnapshot() {
