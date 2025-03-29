@@ -41,10 +41,6 @@ public enum ApiCallStatus implements Coded, TransitionAware<ApiCallStatus> {
         CodedRegistry.register(Arrays.asList(values()), ApiCallStatus.class);
     }
 
-    public static List<ApiCallStatus> getNonTerminalStatuses() {
-        return List.of(CREATED, PENDING, PROCESSING, DUE_TO_RETRY);
-    }
-
     @Override
     public boolean isValidTransition(ApiCallStatus to) {
         return ApiCallStatus.Transition.transitions.getOrDefault(this, Map.of()).containsKey(to);

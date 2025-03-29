@@ -46,13 +46,10 @@ public class LastfmEntityServiceImpl implements LastfmEntityService {
         Path<Long>      apiCallEntityIdRef = apiCallRoot.get("entityId");
         Path<Object>    apiCallTypeField = apiCallRoot.get("type");
         Path<Object>    apiCallEntityType = apiCallRoot.get("entityType");
-        Path<Integer>   apiCallStatus = apiCallRoot.get("status");
         Path<Timestamp> apiCallDueDttm = apiCallRoot.get("dueDttm");
         // predicates
         Predicate entityIsApproved = cb.equal(entityApprovalStatus, ApprovalStatus.APPROVED.getCode());
         Predicate apiCallIsOfRequestedType = cb.equal(apiCallTypeField, apiCallType.getCode());
-        CriteriaBuilder.In<Integer> apiCallIsNotTerminated = cb.in(apiCallStatus);
-        ApiCallStatus.getNonTerminalStatuses().forEach(s -> apiCallIsNotTerminated.value(s.getCode()));
         Predicate apiCallIsForRequestedEntityType = cb.equal(apiCallEntityType, entityType.getCode());
         Predicate apiCallReferencesEntity = cb.equal(apiCallEntityIdRef, entityId);
         Predicate apiCallIsNotExpired = cb.greaterThan(apiCallDueDttm, cb.currentTimestamp());
@@ -61,7 +58,6 @@ public class LastfmEntityServiceImpl implements LastfmEntityService {
                 .where(
                         entityIsApproved,
                         apiCallIsOfRequestedType,
-                        apiCallIsNotTerminated,
                         apiCallIsForRequestedEntityType,
                         apiCallReferencesEntity,
                         apiCallIsNotExpired
