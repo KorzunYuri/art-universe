@@ -56,7 +56,7 @@ public class LastfmTagTopTagApiCallGenerator extends LastfmApiCallGenerator {
     public void createApiCalls() {
 
         //  get or create snapshot
-        LastfmDataSnapshot snapshot = snapshotService.getSnapshotFor(getType());
+        LastfmDataSnapshot snapshot = snapshotService.getOrCreateSnapshotFor(getType());
 
         //  create attribute snapshots on first launch
         if (snapshot.getCreatedCount() == 0) {
@@ -68,7 +68,7 @@ public class LastfmTagTopTagApiCallGenerator extends LastfmApiCallGenerator {
         apiCallService.createApiCalls(apiCallCreationRequests);
     }
 
-    public List<LastfmApiCallCreateRequest> generateApiCallCreationRequests(LastfmDataSnapshot snapshot) {
+    private List<LastfmApiCallCreateRequest> generateApiCallCreationRequests(LastfmDataSnapshot snapshot) {
 
         final int tagsCount = Integer.MAX_VALUE;
         final int pagesNumber = Math.min(tagsCount, recordsLimit / PAGE_SIZE);

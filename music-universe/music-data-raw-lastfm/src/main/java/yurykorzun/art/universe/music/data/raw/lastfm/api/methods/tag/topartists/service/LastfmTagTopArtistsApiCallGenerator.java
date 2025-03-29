@@ -64,7 +64,7 @@ public class LastfmTagTopArtistsApiCallGenerator extends LastfmApiCallGenerator 
 
     private LastfmApiCallCreateRequest prepareApiCallCreationRequest(LastfmTag tag) {
         //  create snapshot
-        LastfmDataSnapshot snapshot = snapshotService.getSnapshotFor(getType(), tag);
+        LastfmDataSnapshot snapshot = snapshotService.getOrCreateSnapshotFor(getType(), tag);
         //  create attribute_snapshots
         createAttributeSnapshotsForArtistsWithinTag(tag, snapshot);
         //  create api call

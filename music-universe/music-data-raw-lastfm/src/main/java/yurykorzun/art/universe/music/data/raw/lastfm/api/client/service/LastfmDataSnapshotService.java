@@ -6,9 +6,9 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.B
 
 public interface LastfmDataSnapshotService {
 
-    LastfmDataSnapshot getSnapshotFor(LastfmApiCallType apiCallType);
+    LastfmDataSnapshot getOrCreateSnapshotFor(LastfmApiCallType apiCallType);
 
-    LastfmDataSnapshot getSnapshotFor(LastfmApiCallType apiCallType, BaseLastfmEntity entity);
+    LastfmDataSnapshot getOrCreateSnapshotFor(LastfmApiCallType apiCallType, BaseLastfmEntity entity);
 
     void incCreatedCount(           long id             );
     void incCreatedCountByNumber(   long id, int number );

@@ -20,7 +20,7 @@ public class LastfmDataSnapshotServiceImpl implements LastfmDataSnapshotService 
     }
 
     @Override
-    public LastfmDataSnapshot getSnapshotFor(LastfmApiCallType apiCallType) {
+    public LastfmDataSnapshot getOrCreateSnapshotFor(LastfmApiCallType apiCallType) {
 
         if (apiCallType.getScopeEntityType() != null) {
             throw new IllegalArgumentException(
@@ -38,7 +38,7 @@ public class LastfmDataSnapshotServiceImpl implements LastfmDataSnapshotService 
     }
 
     @Override
-    public LastfmDataSnapshot getSnapshotFor(LastfmApiCallType apiCallType, BaseLastfmEntity entity) {
+    public LastfmDataSnapshot getOrCreateSnapshotFor(LastfmApiCallType apiCallType, BaseLastfmEntity entity) {
 
         if (!entity.getClass().equals(apiCallType.getScopeEntityType())) {
             throw new IllegalArgumentException(
