@@ -18,7 +18,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entit
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttributeHistoryRecord;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.LastfmAttributeHistoryService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityRelation;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityRelationService;
 
 import java.io.IOException;
@@ -51,7 +50,7 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
     }
 
     @RequiredArgsConstructor
-    private static class ArtistBinding {
+    private static class ArtistMapping {
 
         // holding response is required for extracting snapshotId and apiCallId later
         final LastfmApiResponse response;
@@ -61,10 +60,10 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
         LastfmArtist entity;
 
         // Attributes require entity_id, which is missing in case of new entities.
-        // Hence, we store attribute builders to finalize them later when we have the entities.
+        // Hence, we store attribute builders to finalize them later when we have all the entities.
         List<LastfmAttributeHistoryRecord.LastfmAttributeHistoryRecordBuilder> newAttrValuesBuilders = new ArrayList<>();
 
-        // marks bindings containing new entities - they must be revisited to assign entity_id to their attributes
+        // marks mappings containing new entities - they must be revisited to assign entity_id to their attributes
         boolean isNew = false;
 
         // marks non-changed entities to eliminate unnecessary saving
@@ -79,133 +78,148 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
 
         final String logPrefix = String.format("Lastfm %s response processing", LastfmApiCallType.TAG_TOP_TAGS.getMethod());
         log.info("{}: start processing DTO of type {} with {} records",
-                logPrefix, parsed.getClass().getName(), parsed.getTopArtists().getArtists().size());
+            logPrefix, parsed.getClass().getName(), parsed.getTopArtists().getArtists().size());
 
-        Map<String, ArtistBinding> dtoBindingByName = parsed.getTopArtists().getArtists().stream()
-                .collect(Collectors.toMap(ArtistsRankedDto::getName, dto -> new ArtistBinding(response, dto)));
+        //  create mapping and map existing entities to dtos
+        Map<String, ArtistMapping> mappings = createDtoToEntityMapping(response, parsed);
+        List<LastfmArtist> existingArtists = artistRepository.findAllByNameIn(mappings.keySet());
+        assignExistingEntitiesToDtos(mappings, existingArtists);
 
-        //  bind persisted entities to dtos
-        artistRepository.findAllByNameIn(dtoBindingByName.keySet()).forEach(
-                artist -> dtoBindingByName.get(artist.getName()).entity = artist);
+        //  find out whether entity has to be saved
+        prepareMappingsForSavingArtists(mappings);
 
-        //  generate new entities, update old entities, generate new values
-        dtoBindingByName.forEach((name, binding) -> {
-            updateBinding(binding);
+        //  init new entities
+        mappings.forEach((n, b) -> {
+            if (b.entity == null) b.entity = createArtist(b);
         });
 
         //  save new and updated records
-        List<LastfmArtist> artistsToSave = dtoBindingByName.values().stream()
-                .filter(binding -> binding.shouldBeSaved)
-                .map(binding -> binding.entity)
+        List<LastfmArtist> artistsToSave = mappings.values().stream()
+            .filter(m -> m.shouldBeSaved)
+            .map(m -> m.entity)
             .toList();
-        List<LastfmArtist> savedNewArtists = artistRepository.saveAll(artistsToSave);
+        List<LastfmArtist> createdArtists = artistRepository.saveAll(artistsToSave);
         log.info("{}: saved {} artists", logPrefix, artistsToSave.size());
 
+        //  update mapping with new ids. After that, all the mapping will have entities
+        assignExistingEntitiesToDtos(mappings, createdArtists);
+
         //  save new entity relations
-        List<LastfmEntityRelation> relations = savedNewArtists.stream()
-                .map(a -> LastfmEntityRelation.builder()
-                    .scopeEntityType(response.getApiCall().getEntityType())
-                    .scopeEntityId(response.getApiCall().getEntityId())
-                    .entityType(a.getType())
-                    .entityId(a.getId())
-                    .apiCall(response.getApiCall())
-                .build())
+        List<LastfmEntityRelation> relations = createdArtists.stream()
+            .map(a -> generateEntityRelation(response, a))
             .collect(Collectors.toList());
         entityRelationService.upsertEntityRelations(relations);
-        log.info("{}: saved tag-artist relations", logPrefix);
+        log.info("{}: upserted {} tag-artist relations (number of actual inserts is unknown)", logPrefix, relations.size());
 
-        //  save new attribute values with artist ids we have just acquired
-        final List<LastfmAttributeHistoryRecord> newAttrValues = new ArrayList<>();
-        savedNewArtists.forEach(a -> {
-            ArtistBinding binding = dtoBindingByName.get(a.getName());
-            binding.newAttrValuesBuilders.forEach(v -> {
-                if (binding.isNew) {
-                    v.entityId(a.getId());
-                }
-                // finalize builder and make a new attribute value to be saved
-                newAttrValues.add(v.build());
-            });
-        });
-        List<LastfmAttributeHistoryRecord> savedAttrValues = attributeHistoryService.upsertCandidateValues(newAttrValues);
+        //  finalize and save attributes
+        List<LastfmAttributeHistoryRecord> attrValuesToSave = mappings.values().stream()
+                .flatMap(
+                    m -> m.newAttrValuesBuilders.stream()
+                        .map(bldr ->
+                            bldr.entityId(m.entity.getId())
+                                .entityType(m.entity.getType())
+                                .build()))
+            .toList();
+        List<LastfmAttributeHistoryRecord> savedAttrValues = attributeHistoryService.upsertCandidateValues(attrValuesToSave);
         log.info("{}: saved {} attribute values", logPrefix, savedAttrValues.size());
 
         log.info("\"{}: Finished processing DTO of type {}", logPrefix, parsed.getClass().getName());
     }
 
-    private void updateBinding(ArtistBinding binding) {
-        if (binding.entity == null) {
-            updateWithNewEntity(binding);
+    private static LastfmEntityRelation generateEntityRelation(LastfmApiResponse response, LastfmArtist a) {
+        return LastfmEntityRelation.builder()
+            .scopeEntityType(response.getApiCall().getEntityType())
+            .scopeEntityId(response.getApiCall().getEntityId())
+            .entityType(a.getType())
+            .entityId(a.getId())
+            .apiCall(response.getApiCall())
+            .build();
+    }
+
+    private void prepareMappingsForSavingArtists(Map<String, ArtistMapping> mappings) {
+        mappings.forEach((n, m) -> prepareMappingForSavingArtists(m));
+    }
+
+    private void prepareMappingForSavingArtists(ArtistMapping mapping) {
+        if (mapping.entity == null) {
+            prepareMappingForSavingNewEntity(mapping);
         } else {
-            updateWithNewValues(binding);
+            prepareMappingForSavingExistingEntity(mapping);
         }
+    }
+
+    /**
+     * <p>Updates mapping with new entity and marks it for saving.</p>
+     * <p>Also, marks mapping as new, to update attribute records with entity id later, after entity will be saved</p>
+     */
+    private void prepareMappingForSavingNewEntity(ArtistMapping mapping) {
+        ArtistsRankedDto dto = mapping.dto;
+        List<LastfmAttributeHistoryRecord.LastfmAttributeHistoryRecordBuilder> newValues = mapping.newAttrValuesBuilders;
+
+        newValues.add(initAttrValueBuilder(mapping, LastfmAttribute.URL)
+            .stringValue(dto.getUrl()));
+        newValues.add(initAttrValueBuilder(mapping, LastfmAttribute.MBID)
+            .stringValue(dto.getMbid()));
+        newValues.add(initAttrValueBuilder(mapping, LastfmAttribute.RANK)
+            .intValue(dto.getRecordInfo().getRank())
+            .scopeEntityType(mapping.response.getApiCall().getEntityType())
+            .scopeEntityId(mapping.response.getApiCall().getEntityId()));
+        mapping.entity = createArtist(mapping);
+        mapping.isNew = true;
+        mapping.shouldBeSaved = true;
     }
 
     /**
      * Update existing values in entity and mark for saving
      */
-    private void updateWithNewValues(ArtistBinding binding) {
-        LastfmArtist artist = binding.entity;
-        ArtistsRankedDto dto = binding.dto;
-        List<LastfmAttributeHistoryRecord.LastfmAttributeHistoryRecordBuilder> newValues = binding.newAttrValuesBuilders;
+    private void prepareMappingForSavingExistingEntity(ArtistMapping mapping) {
+        LastfmArtist artist = mapping.entity;
+        ArtistsRankedDto dto = mapping.dto;
+        List<LastfmAttributeHistoryRecord.LastfmAttributeHistoryRecordBuilder> newValues = mapping.newAttrValuesBuilders;
         if (!Objects.equals(artist.getUrl(), dto.getUrl())) {
-            newValues.add(
-                    createAttrValueBuilderForEntity(binding, LastfmAttribute.URL)
-                            .stringValue(dto.getUrl()));
+            newValues.add(initAttrValueBuilder(mapping, LastfmAttribute.URL)
+                .stringValue(dto.getUrl()));
             artist.setUrl(dto.getUrl());
-            binding.shouldBeSaved = true;
+            mapping.shouldBeSaved = true;
         }
         if (!Objects.equals(artist.getMbid(), dto.getMbid())) {
-            newValues.add(
-                    createAttrValueBuilderForEntity(binding, LastfmAttribute.MBID)
-                            .stringValue(dto.getMbid()));
-            artist.setMbid(dto.getMbid());
-            binding.shouldBeSaved = true;
-        }
-    }
-
-    /**
-     * <p>Updates binding with new entity and marks it for saving.</p>
-     * <p>Also, marks binding as new, to update attribute records with entity id later, after entity will be saved</p>
-     */
-    private void updateWithNewEntity(ArtistBinding binding) {
-        ArtistsRankedDto dto = binding.dto;
-        List<LastfmAttributeHistoryRecord.LastfmAttributeHistoryRecordBuilder> newValues = binding.newAttrValuesBuilders;
-
-        newValues.add(
-                createAttrValueBuilder(binding, LastfmAttribute.URL)
-                    .stringValue(dto.getUrl()));
-        newValues.add(createAttrValueBuilder(binding, LastfmAttribute.MBID)
+            newValues.add(initAttrValueBuilder(mapping, LastfmAttribute.MBID)
                 .stringValue(dto.getMbid()));
-        binding.entity = createArtist(binding);
-        binding.isNew = true;
-        binding.shouldBeSaved = true;
+            artist.setMbid(dto.getMbid());
+            mapping.shouldBeSaved = true;
+        }
+        newValues.add(initAttrValueBuilder(mapping, LastfmAttribute.RANK)
+            .intValue(dto.getRecordInfo().getRank())
+            .scopeEntityType(mapping.response.getApiCall().getEntityType())
+            .scopeEntityId(mapping.response.getApiCall().getEntityId()));
     }
 
-    private LastfmAttributeHistoryRecord.LastfmAttributeHistoryRecordBuilder createAttrValueBuilderForEntity(
-            ArtistBinding binding, LastfmAttribute attribute) {
-        return createAttrValueBuilder(binding, attribute)
-                .entityType(binding.entity.getType())
-                .entityId(binding.entity.getId());
+    private Map<String, ArtistMapping> createDtoToEntityMapping(LastfmApiResponse response, TopArtistsDtoRoot parsed) {
+        return parsed.getTopArtists().getArtists().stream()
+            .collect(Collectors.toMap(
+                ArtistsRankedDto::getName,
+                dto -> new ArtistMapping(response, dto)));
     }
 
-    private LastfmAttributeHistoryRecord.LastfmAttributeHistoryRecordBuilder createAttrValueBuilder(
-            ArtistBinding binding, LastfmAttribute attribute) {
-        LastfmApiCall apiCall = binding.response.getApiCall();
+    private void assignExistingEntitiesToDtos(Map<String, ArtistMapping> mappings, List<LastfmArtist> entities) {
+        entities.forEach(artist -> mappings.get(artist.getName()).entity = artist);
+    }
+
+    private LastfmAttributeHistoryRecord.LastfmAttributeHistoryRecordBuilder initAttrValueBuilder(
+        ArtistMapping mapping, LastfmAttribute attribute) {
+        LastfmApiCall apiCall = mapping.response.getApiCall();
         return LastfmAttributeHistoryRecord.builder()
-                .attribute(attribute)
-                .entityType(LastfmEntityType.ARTIST)
-                .apiCallId(apiCall.getId())
-                .scopeEntityType(apiCall.getEntityType())
-                .scopeEntityId(apiCall.getEntityId());
+            .attribute(attribute)
+            .apiCallId(apiCall.getId());
     }
 
-    private LastfmArtist createArtist(ArtistBinding binding) {
-        ArtistsRankedDto dto = binding.dto;
+    private LastfmArtist createArtist(ArtistMapping mapping) {
+        ArtistsRankedDto dto = mapping.dto;
         return LastfmArtist.builder()
-                .name(dto.getName())
-                .url(dto.getUrl())
-                .mbid(dto.getMbid())
-                .apiCall(binding.response.getApiCall())
+            .name(dto.getName())
+            .url(dto.getUrl())
+            .mbid(dto.getMbid())
+            .apiCall(mapping.response.getApiCall())
             .build();
     }
 }
