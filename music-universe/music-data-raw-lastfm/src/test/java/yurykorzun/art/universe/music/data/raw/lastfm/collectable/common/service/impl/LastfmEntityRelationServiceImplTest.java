@@ -5,22 +5,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmDataSnapshot;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmApiCallRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmDataSnapshotRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityRelation;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.repository.LastfmEntityRelationRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.repository.LastfmTagRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
 
-import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -34,40 +26,10 @@ class LastfmEntityRelationServiceImplTest extends JpaOnlyTest {
     private LastfmEntityRelationRepository entityRelationRepository;
 
     @Autowired
-    private LastfmDataSnapshotRepository snapshotRepository;
-
-    @Autowired
-    private LastfmApiCallRepository apiCallRepository;
-
-    @Autowired
-    private LastfmTagRepository tagRepository;
+    private DbConsistencyHelper consistencyHelper;
 
     @Autowired
     private EntityManager entityManager;
-
-    private LastfmDataSnapshot createDummyDataSnapshot() {
-        return snapshotRepository.save(new LastfmDataSnapshot(LastfmApiCallType.TAG_TOP_TAGS, new Date()));
-    }
-
-    private LastfmApiCall createDummyApiCall() {
-        LastfmDataSnapshot snapshot = createDummyDataSnapshot();
-        LastfmApiCall dummyApiCall = LastfmApiCall.builder()
-                .type(LastfmApiCallType.TAG_TOP_TAGS)
-                .dataSnapshotId(snapshot.getId())
-                .dueDttm(Instant.now())
-            .build();
-        dummyApiCall = apiCallRepository.save(dummyApiCall);
-        return dummyApiCall;
-    }
-
-    private BaseLastfmEntity createDummyEntity() {
-        LastfmApiCall dummyApiCall = createDummyApiCall();
-        LastfmTag tag = LastfmTag.builder()
-                .name(UUID.randomUUID().toString())
-                .apiCall(dummyApiCall)
-            .build();
-        return tagRepository.save(tag);
-    }
 
     private LastfmEntityRelation buildEntityRelation(
             BaseLastfmEntity scopeEntity,
@@ -86,9 +48,9 @@ class LastfmEntityRelationServiceImplTest extends JpaOnlyTest {
     @Test
     void givenNewEntityRelation_whenPersistedTwice_thenNotDuplicated() {
         //  given new entity relation
-        BaseLastfmEntity scopeEntity = createDummyEntity();
-        BaseLastfmEntity entity = createDummyEntity();
-        LastfmApiCall sourceApiCall = createDummyApiCall();
+        BaseLastfmEntity scopeEntity = consistencyHelper.createDummyEntity();
+        BaseLastfmEntity entity = consistencyHelper.createDummyEntity();
+        LastfmApiCall sourceApiCall = consistencyHelper.createDummyApiCall();
         LastfmEntityRelation entityRelation = buildEntityRelation(scopeEntity, entity, sourceApiCall);
 
         // when persisted
@@ -116,9 +78,9 @@ class LastfmEntityRelationServiceImplTest extends JpaOnlyTest {
         // given N different relations
         List<LastfmEntityRelation> relations = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
-            BaseLastfmEntity scopeEntity = createDummyEntity();
-            BaseLastfmEntity entity = createDummyEntity();
-            LastfmApiCall sourceApiCall = createDummyApiCall();
+            BaseLastfmEntity scopeEntity = consistencyHelper.createDummyEntity();
+            BaseLastfmEntity entity = consistencyHelper.createDummyEntity();
+            LastfmApiCall sourceApiCall = consistencyHelper.createDummyApiCall();
             relations.add(buildEntityRelation(scopeEntity, entity, sourceApiCall));
         }
 
@@ -130,9 +92,9 @@ class LastfmEntityRelationServiceImplTest extends JpaOnlyTest {
         assertEquals(relations.size(), entityRelationRepository.findAll().size());
 
         // when partly persisted twice
-        BaseLastfmEntity scopeEntity = createDummyEntity();
-        BaseLastfmEntity entity = createDummyEntity();
-        LastfmApiCall sourceApiCall = createDummyApiCall();
+        BaseLastfmEntity scopeEntity = consistencyHelper.createDummyEntity();
+        BaseLastfmEntity entity = consistencyHelper.createDummyEntity();
+        LastfmApiCall sourceApiCall = consistencyHelper.createDummyApiCall();
         LastfmEntityRelation newRelation = buildEntityRelation(scopeEntity, entity, sourceApiCall);
         List<LastfmEntityRelation> newBatch = List.of(
                 relations.get(0),

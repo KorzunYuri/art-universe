@@ -2,17 +2,12 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiResponseStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmDataSnapshot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
-
-import java.time.Instant;
-import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -23,28 +18,9 @@ class LastfmApiResponseRepositoryTest extends JpaOnlyTest {
     private LastfmApiResponseRepository apiResponseRepository;
 
     @Autowired
-    private LastfmApiCallRepository apiCallRepository;
-
-    @Autowired
-    private LastfmDataSnapshotRepository snapshotRepository;
+    private DbConsistencyHelper consistencyHelper;
 
     private static final String sampleResponse = LastfmApiClientResourceUtil.getAnyResponse();
-    private static final LastfmApiCallType dummyApiCallType = LastfmApiCallType.TAG_TOP_TAGS;
-
-    private LastfmDataSnapshot createDummyDataSnapshot() {
-        return snapshotRepository.save(new LastfmDataSnapshot(LastfmApiCallType.TAG_TOP_TAGS, new Date()));
-    }
-
-    private LastfmApiCall createDummyApiCall() {
-        LastfmDataSnapshot snapshot = createDummyDataSnapshot();
-        LastfmApiCall dummyApiCall = LastfmApiCall.builder()
-                .type(dummyApiCallType)
-                .dataSnapshotId(snapshot.getId())
-                .dueDttm(Instant.now())
-            .build();
-        dummyApiCall = apiCallRepository.save(dummyApiCall);
-        return dummyApiCall;
-    }
 
     private LastfmApiResponse responseForApiCall(LastfmApiCall apiCall) {
         return LastfmApiResponse.builder()
@@ -55,7 +31,7 @@ class LastfmApiResponseRepositoryTest extends JpaOnlyTest {
 
     @Test
     void testApiResponseCreation() {
-        LastfmApiCall dummyApiCall = createDummyApiCall();
+        LastfmApiCall dummyApiCall = consistencyHelper.createDummyApiCall();
         LastfmApiResponse created = responseForApiCall(dummyApiCall);
         LastfmApiResponse saved = apiResponseRepository.save(created);
 
@@ -67,7 +43,7 @@ class LastfmApiResponseRepositoryTest extends JpaOnlyTest {
     @Test
     void testApiResponseStatusUpdate() {
 
-        LastfmApiCall dummyApiCall = createDummyApiCall();
+        LastfmApiCall dummyApiCall = consistencyHelper.createDummyApiCall();
         LastfmApiResponse created = responseForApiCall(dummyApiCall);
         LastfmApiResponse saved = apiResponseRepository.save(created);
 
@@ -82,7 +58,7 @@ class LastfmApiResponseRepositoryTest extends JpaOnlyTest {
 
     @Test
     void testApiResponseDuplicationPrevention() {
-        LastfmApiCall dummyApiCall = createDummyApiCall();
+        LastfmApiCall dummyApiCall = consistencyHelper.createDummyApiCall();
         LastfmApiResponse created = responseForApiCall(dummyApiCall);
         LastfmApiResponse saved = apiResponseRepository.save(created);
 

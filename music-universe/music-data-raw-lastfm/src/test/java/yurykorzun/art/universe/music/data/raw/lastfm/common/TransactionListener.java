@@ -14,16 +14,16 @@ public class TransactionListener {
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public void beforeCommit(ApplicationEvent event) {
-        log.info("🚀 Перед коммитом транзакции");
+        log.info("Before the commit");
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void afterCommit(ApplicationEvent event) {
-        log.info("✅ Транзакция закоммичена");
+        log.info("Transaction has been commited");
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_ROLLBACK)
     public void afterRollback(ApplicationEvent event) {
-        log.warn("❌ Транзакция откатилась!");
+        log.warn("Transaction has been rolled back");
     }
 }

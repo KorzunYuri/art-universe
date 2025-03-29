@@ -5,18 +5,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiResponseStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiResponseCreateRequest;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmDataSnapshot;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmApiCallRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmApiResponseRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmDataSnapshotRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.FullContextTest;
 
-import java.time.Instant;
-import java.util.Date;
 import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -32,31 +26,13 @@ class LastfmApiResponseServiceImplTest extends FullContextTest {
     private LastfmApiResponseServiceImpl apiResponseService;
 
     @Autowired
-    private LastfmApiCallRepository apiCallRepository;
-
-    @Autowired
-    private LastfmDataSnapshotRepository snapshotRepository;
+    private DbConsistencyHelper consistencyHelper;
 
     private static final String sampleResponse = LastfmApiClientResourceUtil.getAnyResponse();
 
-    private LastfmDataSnapshot createDummyDataSnapshot() {
-        return snapshotRepository.save(new LastfmDataSnapshot(LastfmApiCallType.TAG_TOP_TAGS, new Date()));
-    }
-
-    private LastfmApiCall createDummyApiCall() {
-        LastfmDataSnapshot snapshot = createDummyDataSnapshot();
-        LastfmApiCall dummyApiCall = LastfmApiCall.builder()
-                .type(LastfmApiCallType.TAG_TOP_TAGS)
-                .dataSnapshotId(snapshot.getId())
-                .dueDttm(Instant.now())
-                .build();
-        dummyApiCall = apiCallRepository.save(dummyApiCall);
-        return dummyApiCall;
-    }
-
     private Supplier<LastfmApiResponseCreateRequest> validCreateRequestSupplier() {
         return () -> LastfmApiResponseCreateRequest.builder()
-                .apiCall(createDummyApiCall())
+                .apiCall(consistencyHelper.createDummyApiCall())
                 .responseBody(sampleResponse)
                 .build();
     }

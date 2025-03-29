@@ -3,15 +3,10 @@ package yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.reposit
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmDataSnapshot;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmApiCallRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmDataSnapshotRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
 
-import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -22,25 +17,7 @@ class LastfmArtistRepositoryTest extends JpaOnlyTest {
     private LastfmArtistRepository artistRepository;
 
     @Autowired
-    private LastfmDataSnapshotRepository snapshotRepository;
-
-    @Autowired
-    private LastfmApiCallRepository apiCallRepository;
-
-    private LastfmDataSnapshot createDummyDataSnapshot() {
-        return snapshotRepository.save(new LastfmDataSnapshot(LastfmApiCallType.TAG_TOP_TAGS, new Date()));
-    }
-
-    private LastfmApiCall createDummyApiCall() {
-        LastfmDataSnapshot snapshot = createDummyDataSnapshot();
-        LastfmApiCall dummyApiCall = LastfmApiCall.builder()
-                .type(LastfmApiCallType.TAG_TOP_ARTISTS)
-                .dataSnapshotId(snapshot.getId())
-                .dueDttm(Instant.now())
-                .build();
-        dummyApiCall = apiCallRepository.save(dummyApiCall);
-        return dummyApiCall;
-    }
+    private DbConsistencyHelper consistencyHelper;
 
     private LastfmArtist createArtist(String name, LastfmApiCall apiCall) {
         return LastfmArtist.builder()
@@ -55,7 +32,7 @@ class LastfmArtistRepositoryTest extends JpaOnlyTest {
         final String url = "https://www.last.fm/music/Queen";
         String mbid = "cc197bad-dc9c-440d-a5b5-d52ba2e14234";
 
-        LastfmApiCall apiCall = createDummyApiCall();
+        LastfmApiCall apiCall = consistencyHelper.createDummyApiCall();
         LastfmArtist artist = LastfmArtist.builder()
                 .name(name)
                 .url(url)
@@ -72,7 +49,7 @@ class LastfmArtistRepositoryTest extends JpaOnlyTest {
 
     @Test
     void testArtistSaveAll() {
-        LastfmApiCall apiCall = createDummyApiCall();
+        LastfmApiCall apiCall = consistencyHelper.createDummyApiCall();
         LastfmArtist artist1 = createArtist("Queen", apiCall);
         LastfmArtist artist2 = createArtist("Deep purple", apiCall);
 

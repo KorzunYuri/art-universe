@@ -2,21 +2,15 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.pr
 
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmDataSnapshot;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmApiCallRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmDataSnapshotRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttributeHistoryRecord;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repository.LastfmAttributeHistoryRecordRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.repository.LastfmTagRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.FullContextTest;
 
 import java.io.IOException;
-import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,21 +20,15 @@ public class LastfmTagTopTagResponseProcessorTest extends FullContextTest {
     @Autowired
     private LastfmTagTopTagResponseProcessor processor;
 
-    //  repositories, for which processor produces new entities
+    @Autowired
+    private DbConsistencyHelper consistencyHelper;
 
+    //  repositories, for which processor produces new entities
     @Autowired
     private LastfmTagRepository tagRepository;
-
     @Autowired
     private LastfmAttributeHistoryRecordRepository attributeHistoryRepository;
 
-    // injections for creating consistent state in db
-
-    @Autowired
-    private LastfmDataSnapshotRepository snapshotRepository;
-
-    @Autowired
-    private LastfmApiCallRepository apiCallRepository;
 
     @AfterEach
     public void reset() {
@@ -53,7 +41,7 @@ public class LastfmTagTopTagResponseProcessorTest extends FullContextTest {
         attributeHistoryRepository.deleteAll();
     }
 
-    private static final String TEST_DTO = """
+    private static final String TEST_DTO_STRING = """
             {
               "toptags": {
                 "@attr": {
@@ -94,14 +82,14 @@ public class LastfmTagTopTagResponseProcessorTest extends FullContextTest {
 
     @Test
     public void givenTagTopTagsResponse_whenProcessed_tagsAndAttributeValuesAreCreated() throws IOException {
-        LastfmApiResponse response = createApiResponse(TEST_DTO);
+        LastfmApiResponse response = consistencyHelper.createDummyApiResponse(TEST_DTO_STRING);
 
         testPrimarySave(response, TEST_DTO_TAGS_NUMBER);
     }
 
     @Test
     public void givenProcessedTagTopTagsResponse_whenProcessedTwice_tagsAndAttributeValuesAreNotDuplicated() throws IOException {
-        LastfmApiResponse firstResponse = createApiResponse(TEST_DTO);
+        LastfmApiResponse firstResponse = consistencyHelper.createDummyApiResponse(TEST_DTO_STRING);
 
         // initial save
         testPrimarySave(firstResponse, TEST_DTO_TAGS_NUMBER);
@@ -119,7 +107,7 @@ public class LastfmTagTopTagResponseProcessorTest extends FullContextTest {
 
     @Test
     public void givenProcessedTagTopTagsResponse_whenPartialUpdatesReceived_thenProducesOnlyNewRecords() throws IOException {
-        LastfmApiResponse firstResponse = createApiResponse(TEST_DTO);
+        LastfmApiResponse firstResponse = consistencyHelper.createDummyApiResponse(TEST_DTO_STRING);
 
         // initial save
         testPrimarySave(firstResponse, TEST_DTO_TAGS_NUMBER);
@@ -150,7 +138,7 @@ public class LastfmTagTopTagResponseProcessorTest extends FullContextTest {
                   }
                 }
                 """;
-        LastfmApiResponse responseWithUpdates = createApiResponse(newResponseBody);
+        LastfmApiResponse responseWithUpdates = consistencyHelper.createDummyApiResponse(newResponseBody);
 
         processor.processResponse(responseWithUpdates);
         List<LastfmTag> tagsAfterUpdate = tagRepository.findAll();
@@ -166,29 +154,5 @@ public class LastfmTagTopTagResponseProcessorTest extends FullContextTest {
             "Partially new batch of tags must produce only new tags");
         assertEquals(expectedValuesNumber, attributesAfterUpdate.size(),
             "Partially new batch of attributes must produce only new attribute values + snapshot values");
-
-    }
-
-    private LastfmApiResponse createApiResponse(String responseBody) {
-        LastfmApiCall apiCall = createDummyApiCall();
-        return LastfmApiResponse.builder()
-                .responseBody(responseBody)
-                .apiCall(apiCall)
-            .build();
-    }
-
-    private LastfmDataSnapshot createDummyDataSnapshot() {
-        return snapshotRepository.save(new LastfmDataSnapshot(LastfmApiCallType.TAG_TOP_TAGS, new Date()));
-    }
-
-    private LastfmApiCall createDummyApiCall() {
-        LastfmDataSnapshot snapshot = createDummyDataSnapshot();
-        LastfmApiCall dummyApiCall = LastfmApiCall.builder()
-                .type(LastfmApiCallType.TAG_TOP_TAGS)
-                .dataSnapshotId(snapshot.getId())
-                .dueDttm(Instant.now())
-                .build();
-        dummyApiCall = apiCallRepository.save(dummyApiCall);
-        return dummyApiCall;
     }
 }
