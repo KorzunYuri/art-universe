@@ -71,7 +71,7 @@ public class LastfmTagTopTagApiCallGenerator extends LastfmApiCallGenerator {
     private List<LastfmApiCallCreateRequest> generateApiCallCreationRequests(LastfmDataSnapshot snapshot) {
 
         final int tagsCount = Integer.MAX_VALUE;
-        final int pagesNumber = Math.min(tagsCount, recordsLimit / PAGE_SIZE);
+        final int pagesNumber = Math.min(tagsCount, (int) Math.ceil((float) recordsLimit / PAGE_SIZE));
 
         //  find all pending non expired requests to not duplicate them
         List<LastfmApiCall> pendingCalls = apiCallRepository.findAllUnexpiredByType(getType());
