@@ -29,7 +29,7 @@ public class LastfmDataSnapshotServiceImpl implements LastfmDataSnapshotService 
                             apiCallType.getScopeEntityType()));
         }
 
-        LastfmDataSnapshot snapshot = snapshotRepository.findForApiCallType((apiCallType));
+        LastfmDataSnapshot snapshot = snapshotRepository.findForApiCallType(apiCallType);
         if (snapshot == null) {
             snapshot = new LastfmDataSnapshot(apiCallType, LocalDate.now());
             snapshot = snapshotRepository.save(snapshot);

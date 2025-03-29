@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmDataSnapshot;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
 
 import java.time.LocalDate;
@@ -18,6 +20,9 @@ class LastfmDataSnapshotRepositoryTest extends JpaOnlyTest {
 
     @Autowired
     private EntityManager entityManager;
+
+    @Autowired
+    private DbConsistencyHelper consistencyHelper;
 
     @Test
     void givenNewDataSnapshot_whenPersisted_thenSavesCorrectValues() {
@@ -36,6 +41,38 @@ class LastfmDataSnapshotRepositoryTest extends JpaOnlyTest {
         assertEquals(0, snapshot.getCreatedCount());
         assertEquals(0, snapshot.getCompletedCount());
         assertEquals(0, snapshot.getParsedCount());
+    }
+
+    @Test
+    void givenExistingDataSnapshotForType_whenRequested_thenRetrieved() {
+        //  given
+        final LocalDate dataDate = LocalDate.now();
+        LastfmApiCallType apiCallType = LastfmApiCallType.TAG_TOP_TAGS;
+        LastfmDataSnapshot snapshot = new LastfmDataSnapshot(apiCallType, dataDate);
+
+        //  when
+        repository.save(snapshot);
+        snapshot = repository.findForApiCallType(apiCallType);
+
+        //  then
+        assertNotNull(snapshot);
+    }
+
+    @Test
+    void givenExistingDataSnapshotForEntity_whenRequested_thenRetrieved() {
+        //  given
+        final LocalDate dataDate = LocalDate.now();
+        LastfmApiCallType apiCallType = LastfmApiCallType.TAG_TOP_ARTISTS;
+        BaseLastfmEntity entity = consistencyHelper.createDummyEntity();
+
+        LastfmDataSnapshot snapshot = new LastfmDataSnapshot(apiCallType, dataDate, entity);
+
+        //  when
+        repository.save(snapshot);
+        snapshot = repository.findForApiCallTypeAndEntity(apiCallType, entity);
+
+        //  then
+        assertNotNull(snapshot);
     }
 
     @Test
