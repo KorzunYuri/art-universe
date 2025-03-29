@@ -32,16 +32,20 @@ public class DbConsistencyHelper {
 
     public static final LastfmApiCallType DUMMY_API_CALL_TYPE = LastfmApiCallType.TAG_TOP_TAGS;
 
-    public DbConsistencyHelper(LastfmDataSnapshotRepository snapshotRepository, LastfmApiCallRepository apiCallRepository, LastfmTagRepository tagRepository) {
+    public DbConsistencyHelper(
+        LastfmDataSnapshotRepository snapshotRepository,
+        LastfmApiCallRepository apiCallRepository,
+        LastfmTagRepository tagRepository
+    ) {
         this.snapshotRepository = snapshotRepository;
         this.apiCallRepository = apiCallRepository;
         this.tagRepository = tagRepository;
     }
 
     public void cleanup() {
-        snapshotRepository.deleteAll();
-        apiCallRepository.deleteAll();
         tagRepository.deleteAll();
+        apiCallRepository.deleteAll();
+        snapshotRepository.deleteAll();
     }
 
     public LastfmDataSnapshot createDummyDataSnapshot(LastfmApiCallType apiCallType) {
