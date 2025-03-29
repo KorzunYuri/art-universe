@@ -29,16 +29,12 @@ public class LastfmTagTopTagResponseProcessorTest extends FullContextTest {
     @Autowired
     private LastfmAttributeHistoryRecordRepository attributeHistoryRepository;
 
-
-    @AfterEach
-    public void reset() {
-        cleanDatabase();
-    }
-
     @AfterEach
     public void cleanDatabase() {
         tagRepository.deleteAll();
         attributeHistoryRepository.deleteAll();
+
+        consistencyHelper.cleanup();
     }
 
     private static final String TEST_DTO_STRING = """
@@ -148,7 +144,6 @@ public class LastfmTagTopTagResponseProcessorTest extends FullContextTest {
         int newValuesNumber = newTagsNumber * (SCD2_ATTRIBUTES_NUMBER + SNAPSHOT_ATTRIBUTES_NUMBER)
                             + retainedTagsNumber * SNAPSHOT_ATTRIBUTES_NUMBER;
         final int expectedValuesNumber = oldValuesNumber + newValuesNumber;
-
 
         assertEquals((TEST_DTO_TAGS_NUMBER + newTagsNumber), tagsAfterUpdate.size(),
             "Partially new batch of tags must produce only new tags");
