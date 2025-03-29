@@ -19,6 +19,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.Last
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 public class LastfmTagTopArtistsApiCallGenerator extends LastfmApiCallGenerator {
@@ -53,6 +54,11 @@ public class LastfmTagTopArtistsApiCallGenerator extends LastfmApiCallGenerator 
     public void createApiCalls() {
         List<LastfmApiCallCreateRequest> apiCallCreationRequests = generateApiCallCreationRequests();
         apiCallService.createApiCalls(apiCallCreationRequests);
+
+        Map<Long, List<LastfmApiCallCreateRequest>> snapshotGroups = apiCallCreationRequests.stream()
+            .collect(Collectors.groupingBy(LastfmApiCallCreateRequest::getDataSnapshotId));
+        snapshotGroups.forEach((k, v) -> snapshotService.incCreatedCountByNumber(k, v.size()));
+
     }
 
     public List<LastfmApiCallCreateRequest> generateApiCallCreationRequests() {
