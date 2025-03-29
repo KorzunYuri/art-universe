@@ -61,32 +61,32 @@ class LastfmTagTopTagApiCallGeneratorTest extends JpaOnlyTest {
         ReflectionTestUtils.setField(generator, "dueDurationDays", 1);
 
         // no pending calls by default
-        when(apiCallRepository.findAllUnexpiredByType(generator.getType()))
+        when(apiCallRepository.findAllUnexpiredByType(generator.getApiCallType()))
             .thenReturn(Collections.emptyList());
     }
 
     void testApiCallCreation(int existingApiCallsNumber) {
         // mock snapshot
-        LastfmDataSnapshot existingSnapshot = new LastfmDataSnapshot(generator.getType(), LocalDate.now());
+        LastfmDataSnapshot existingSnapshot = new LastfmDataSnapshot(generator.getApiCallType(), LocalDate.now());
         ReflectionTestUtils.setField(existingSnapshot, "createdCount", existingApiCallsNumber);
-        when(snapshotService.getOrCreateSnapshotFor(generator.getType())).thenReturn(existingSnapshot);
+        when(snapshotService.getOrCreateSnapshotFor(generator.getApiCallType())).thenReturn(existingSnapshot);
         // mock api calls
         List<LastfmApiCall> existingApiCalls = IntStream.range(0, existingApiCallsNumber)
             .mapToObj(i -> LastfmApiCall.builder()
-                .type(generator.getType())
+                .type(generator.getApiCallType())
                 .dueDttm(Instant.now().plus(Duration.ofDays(1)))
                 .dataSnapshotId(1L)
                 .entityType(ENTITY_TYPE)
                 .params(Map.of(LastfmApiConstants.PARAM_NAME_OFFSET, String.valueOf(i * PAGE_SIZE)))
                 .build())
             .collect(Collectors.toList());
-        when(apiCallRepository.findAllUnexpiredByType(generator.getType())).thenReturn(existingApiCalls);
+        when(apiCallRepository.findAllUnexpiredByType(generator.getApiCallType())).thenReturn(existingApiCalls);
 
         // run
         generator.createApiCalls();
 
         // check that snapshot was returned
-        verify(snapshotService).getOrCreateSnapshotFor(generator.getType());
+        verify(snapshotService).getOrCreateSnapshotFor(generator.getApiCallType());
 
         if (existingApiCallsNumber == 0) {
             verify(attributeSnapshotService).getOrCreateForEntityType(any(), eq(ENTITY_TYPE), eq(LastfmAttribute.RANK));
@@ -104,8 +104,8 @@ class LastfmTagTopTagApiCallGeneratorTest extends JpaOnlyTest {
     }
 
     @Test
-    void testGetType_returnsTagTopTags() {
-        LastfmApiCallType type = generator.getType();
+    void testGetApiCallType_returnsTagTopTags() {
+        LastfmApiCallType type = generator.getApiCallType();
         assertNotNull(type, "Generator type must not be null");
         assertEquals(LastfmApiCallType.TAG_TOP_TAGS, type, "Generator type must be TAG_TOP_TAGS");
     }

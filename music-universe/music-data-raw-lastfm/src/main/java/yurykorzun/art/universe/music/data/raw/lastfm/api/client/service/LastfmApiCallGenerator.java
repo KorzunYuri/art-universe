@@ -5,10 +5,10 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApi
 public abstract class LastfmApiCallGenerator {
 
     protected LastfmApiCallGenerator() {
-        LastfmApiCallGeneratorsRegistry.register(getType(), this);
+        LastfmApiCallGeneratorsRegistry.register(getApiCallType(), this);
     }
 
-    public abstract LastfmApiCallType getType();
+    public abstract LastfmApiCallType getApiCallType();
 
     public abstract void createApiCalls();
 

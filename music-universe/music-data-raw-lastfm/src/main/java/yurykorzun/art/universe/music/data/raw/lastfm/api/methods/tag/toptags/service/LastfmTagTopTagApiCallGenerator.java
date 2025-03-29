@@ -47,7 +47,7 @@ public class LastfmTagTopTagApiCallGenerator extends LastfmApiCallGenerator {
     }
 
     @Override
-    public LastfmApiCallType getType() {
+    public LastfmApiCallType getApiCallType() {
         return LastfmApiCallType.TAG_TOP_TAGS;
     }
 
@@ -56,7 +56,7 @@ public class LastfmTagTopTagApiCallGenerator extends LastfmApiCallGenerator {
     public void createApiCalls() {
 
         //  get or create snapshot
-        LastfmDataSnapshot snapshot = snapshotService.getOrCreateSnapshotFor(getType());
+        LastfmDataSnapshot snapshot = snapshotService.getOrCreateSnapshotFor(getApiCallType());
 
         //  create attribute snapshots on first launch
         if (snapshot.getCreatedCount() == 0) {
@@ -74,7 +74,7 @@ public class LastfmTagTopTagApiCallGenerator extends LastfmApiCallGenerator {
         final int pagesNumber = Math.min(tagsCount, (int) Math.ceil((float) recordsLimit / PAGE_SIZE));
 
         //  find all pending non expired requests to not duplicate them
-        List<LastfmApiCall> pendingCalls = apiCallRepository.findAllUnexpiredByType(getType());
+        List<LastfmApiCall> pendingCalls = apiCallRepository.findAllUnexpiredByType(getApiCallType());
         Set<Integer> pendingOffsets = new HashSet<>();
         for (LastfmApiCall pendingCall : pendingCalls) {
             pendingOffsets.add(Integer.parseInt(pendingCall.getParams().getOrDefault(LastfmApiConstants.PARAM_NAME_OFFSET, "0")));
@@ -92,7 +92,7 @@ public class LastfmTagTopTagApiCallGenerator extends LastfmApiCallGenerator {
             Map<String, String> params = new HashMap<>();
             params.put(LastfmApiConstants.PARAM_NAME_OFFSET, String.valueOf(offset));
             calls.add(LastfmApiCallCreateRequest.builder()
-                    .type(getType())
+                    .type(getApiCallType())
                     .dataSnapshotId(snapshot.getId())
                     .dueDttm(TimeUtil.calcDueDttm(dueDurationDays))
                     .params(params)

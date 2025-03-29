@@ -44,7 +44,7 @@ public class LastfmTagTopArtistsApiCallGenerator extends LastfmApiCallGenerator 
     }
 
     @Override
-    public LastfmApiCallType getType() {
+    public LastfmApiCallType getApiCallType() {
         return LastfmApiCallType.TAG_TOP_ARTISTS;
     }
 
@@ -64,7 +64,7 @@ public class LastfmTagTopArtistsApiCallGenerator extends LastfmApiCallGenerator 
 
     private LastfmApiCallCreateRequest prepareApiCallCreationRequest(LastfmTag tag) {
         //  create snapshot
-        LastfmDataSnapshot snapshot = snapshotService.getOrCreateSnapshotFor(getType(), tag);
+        LastfmDataSnapshot snapshot = snapshotService.getOrCreateSnapshotFor(getApiCallType(), tag);
         //  create attribute_snapshots
         createAttributeSnapshotsForArtistsWithinTag(tag, snapshot);
         //  create api call
@@ -77,7 +77,7 @@ public class LastfmTagTopArtistsApiCallGenerator extends LastfmApiCallGenerator 
 
     private LastfmApiCallCreateRequest createApiCallCreationRequest(LastfmTag tag, LastfmDataSnapshot snapshot) {
         return LastfmApiCallCreateRequest.builder()
-                .type(getType())
+                .type(getApiCallType())
                 .dataSnapshotId(snapshot.getId())
                 .dueDttm(TimeUtil.calcDueDttm(dueDurationDays))
                 .params(generateApiCallParameters(tag))
