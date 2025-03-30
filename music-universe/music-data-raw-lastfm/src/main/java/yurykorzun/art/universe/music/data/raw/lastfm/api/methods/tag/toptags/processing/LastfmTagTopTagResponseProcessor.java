@@ -43,7 +43,7 @@ public class LastfmTagTopTagResponseProcessor extends LastfmApiResponseProcessor
     }
 
     @Override
-    protected ApiCallType getType() {
+    protected ApiCallType getApiCallType() {
         return LastfmApiCallType.TAG_TOP_TAGS;
     }
 

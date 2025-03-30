@@ -7,7 +7,7 @@ import java.io.IOException;
 
 public abstract class BaseApiResponseProcessor <T extends ApiResponse> {
 
-    protected abstract ApiCallType getType();
+    protected abstract ApiCallType getApiCallType(); // rename for clarity
     protected abstract void processResponse(T response) throws IOException;
 
     public final void process(T response) throws IOException {
@@ -16,9 +16,9 @@ public abstract class BaseApiResponseProcessor <T extends ApiResponse> {
     }
 
     protected void validateResponse(T response) {
-        if (!this.getType().equals(response.getApiCall().getType())) {
+        if (!this.getApiCallType().equals(response.getApiCall().getType())) {
             throw new IllegalArgumentException(
-                    String.format("Response of type %s doesn't match processor's type %s", response.getApiCall().getType(), this.getType()));
+                    String.format("Response of type %s doesn't match processor's type %s", response.getApiCall().getType(), this.getApiCallType()));
         }
     }
 

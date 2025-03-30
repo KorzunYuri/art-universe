@@ -50,7 +50,7 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
     );
 
     @Override
-    protected ApiCallType getType() {
+    protected ApiCallType getApiCallType() {
         return LastfmApiCallType.TAG_TOP_ARTISTS;
     }
 
