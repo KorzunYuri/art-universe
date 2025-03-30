@@ -3,7 +3,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity;
 import lombok.Getter;
 import yurykorzun.art.universe.common.CodedRegistry;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallType;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.common.dto.RootDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.RootDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.TopArtistsDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.dto.TopTagsDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;

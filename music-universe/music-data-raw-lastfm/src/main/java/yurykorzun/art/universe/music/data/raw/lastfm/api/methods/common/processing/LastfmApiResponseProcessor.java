@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import yurykorzun.art.universe.common.data.raw.api.methods.common.BaseApiResponseProcessor;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.common.dto.RootDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.RootDto;
 
 /**
  * Basic class incorporating common logic for all processors of Lastfm API methods responses

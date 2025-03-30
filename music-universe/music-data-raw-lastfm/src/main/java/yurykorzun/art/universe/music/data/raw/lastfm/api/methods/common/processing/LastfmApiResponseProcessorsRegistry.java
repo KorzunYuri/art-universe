@@ -1,6 +1,6 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing;
 
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.common.dto.RootDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.RootDto;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
