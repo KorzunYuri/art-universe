@@ -38,7 +38,7 @@ public enum LastfmAttribute implements Coded {
     ,   RANK(
             4,
             "rank",
-            "global rank of the entity",
+            "Rank of the entity, global or scoped",
             DataType.INTEGER,
             HistoryType.SNAPSHOT,
             List.of(LastfmEntityType.values()))
