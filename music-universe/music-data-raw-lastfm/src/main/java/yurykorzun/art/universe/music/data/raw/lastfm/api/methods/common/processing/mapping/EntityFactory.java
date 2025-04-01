@@ -6,8 +6,8 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.B
 
 /**
  * Helper class for creating new entity objects from DTOs or existing entities,
- * @param <E>
- * @param <D>
+ * @param <E>   entity
+ * @param <D>   DTO
  */
 public abstract class EntityFactory<E extends BaseLastfmEntity, D extends EntityDto> {
 

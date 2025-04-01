@@ -25,6 +25,9 @@ public class LastfmArtistEntityFactory extends EntityFactory<LastfmArtist, Artis
                 .url(entity.getUrl())
                 .mbid(entity.getMbid())
                 .apiCall(entity.getApiCall())
+                .approvalStatus(entity.getApprovalStatus())
+                .createdAt(entity.getCreatedAt())
+                .updatedAt(entity.getUpdatedAt())
             .build();
     }
 }
