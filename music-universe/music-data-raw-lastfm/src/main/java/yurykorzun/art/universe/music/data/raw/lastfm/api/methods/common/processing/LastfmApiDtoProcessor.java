@@ -11,6 +11,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entit
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityRelation;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -22,6 +23,8 @@ public class LastfmApiDtoProcessor<E extends BaseLastfmEntity, D extends EntityD
     private final EntityPersister<E, D> entityPersister;
     private final AttributeHistoryBuilder<E, D> attributeHistoryBuilder;
     private final EntityRelationBuilder<E, D> relationBuilder;
+
+    private EntityMappings<E, D> mappings;
 
     public LastfmApiDtoProcessor(
         EntityMappingBuilder<E, D> mappingBuilder,
@@ -42,6 +45,14 @@ public class LastfmApiDtoProcessor<E extends BaseLastfmEntity, D extends EntityD
      *     <li>new attribute_history records</li>
      *     <li>list of generated entity_relations <b>WITHOUT IDS</b></li>
      * </ul>
+     * @param dtos              list of incoming DTOs, result of API response parsing
+     * @param existingEntities  list of existing entities
+     * @param apiResponse       source api response (holds reference to source api call)
+     * @param entityFactory     class capable of producing entities from DTOs
+     * @param attrHandlers      handlers for all the attributes that have to be processed within this call
+     * @param entitySaver       function responsible for persisting entities
+     * @param attrSaver         function responsible for persisting {@link LastfmAttributeHistoryRecord}
+     * @param relationSaver     function responsible for persisting {@link LastfmEntityRelation}. DOESN'T RETURN VALUE.
      */
     public LastfmApiDtoProcessingResult<E> processDtos(
         List<D> dtos,
@@ -53,8 +64,34 @@ public class LastfmApiDtoProcessor<E extends BaseLastfmEntity, D extends EntityD
         Function<List<LastfmAttributeHistoryRecord>, List<LastfmAttributeHistoryRecord>> attrSaver,
         Consumer<List<LastfmEntityRelation>> relationSaver
     ) {
+        LastfmApiDtoProcessingResult<E> intermediateResult = processDtos(
+            dtos, existingEntities, apiResponse, entityFactory, attrHandlers, entitySaver, attrSaver);
+
+        // Build entity relations
+        List<LastfmEntityRelation> relations = relationBuilder.buildEntityRelations(this.mappings, apiResponse.getApiCall());
+        relationSaver.accept(relations);
+        log.info("{}: created {} entity relations", getClass().getSimpleName(), relations.size());
+
+        return new LastfmApiDtoProcessingResult<>(
+            intermediateResult.savedEntities(),
+            intermediateResult.attributeHistories(),
+            relations);
+    }
+
+    /**
+     * Process a non-scoped api call result, which means there will be no entity relations
+     */
+    public LastfmApiDtoProcessingResult<E> processDtos(
+        List<D> dtos,
+        List<E> existingEntities,
+        LastfmApiResponse apiResponse,
+        EntityFactory<E, D> entityFactory,
+        List<EntityAttributeHandler<E, ?, D>> attrHandlers,
+        Function<List<E>, List<E>> entitySaver,
+        Function<List<LastfmAttributeHistoryRecord>, List<LastfmAttributeHistoryRecord>> attrSaver
+    ) {
         // Build mapping
-        EntityMappings<E, D> mappings = mappingBuilder.buildMapping(
+        this.mappings = mappingBuilder.buildMapping(
             dtos, existingEntities, apiResponse, entityFactory, attrHandlers);
 
         // Persist new/updated entities and update mapping with new IDs
@@ -67,11 +104,6 @@ public class LastfmApiDtoProcessor<E extends BaseLastfmEntity, D extends EntityD
         attrSaver.apply(attrRecords);
         log.info("{}: created {} attribute history records", getClass().getSimpleName(), attrRecords.size());
 
-        // Build entity relations
-        List<LastfmEntityRelation> relations = relationBuilder.buildEntityRelations(mappings, apiResponse.getApiCall());
-        relationSaver.accept(relations);
-        log.info("{}: created {} entity relations", getClass().getSimpleName(), relations.size());
-
-        return new LastfmApiDtoProcessingResult<>(savedEntities, attrRecords, relations);
+        return new LastfmApiDtoProcessingResult<>(savedEntities, attrRecords, Collections.emptyList());
     }
 }
