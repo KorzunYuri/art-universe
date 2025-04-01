@@ -74,7 +74,7 @@ public class LastfmApiDtoProcessor<E extends BaseLastfmEntity, D extends EntityD
 
         return new LastfmApiDtoProcessingResult<>(
             intermediateResult.savedEntities(),
-            intermediateResult.attributeHistories(),
+            intermediateResult.createdAttributeValues(),
             relations);
     }
 
