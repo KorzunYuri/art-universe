@@ -8,12 +8,17 @@ import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.*;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityMappingBuilder;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityRelationBuilder;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandler;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.DefaultEntityAttributeHandler;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.DefaultAttributeHistoryBuilder;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.persistence.DefaultEntityPersister;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.ArtistsRankedDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.TopArtistsDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.repository.LastfmArtistRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttributeHistoryRecord;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.LastfmAttributeHistoryService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityRelationService;
 
@@ -41,11 +46,11 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
     }
 
     private static final List<EntityAttributeHandler<LastfmArtist, ?, ArtistsRankedDto>> attrHandlers = List.of(
-        new HistoryAttributeHandler<>(LastfmAttribute.MBID, true, false,
+        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.MBID, true, false,
             LastfmArtist::getMbid, LastfmArtist::setMbid, ArtistsRankedDto::getMbid),
-        new HistoryAttributeHandler<>(LastfmAttribute.URL,true, false,
+        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.URL,true, false,
             LastfmArtist::getUrl, LastfmArtist::setUrl, ArtistsRankedDto::getUrl),
-        new SnapshotAttributeHandler<>(LastfmAttribute.RANK, false, true,
+        DefaultEntityAttributeHandler.forExternalAttribute(LastfmAttribute.RANK, false, true,
             (ArtistsRankedDto dto) -> dto.getRecordInfo().getRank())
     );
 
@@ -67,25 +72,18 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
         List<ArtistsRankedDto> dtos = dtoRoot.getTopArtists().getArtists();
         List<LastfmArtist> existingArtists = artistRepository.findAllByNameIn(dtos.stream()
             .map(dto -> dto.getName()).toList());
-        EntityMappingTemplate<LastfmArtist, ArtistsRankedDto> mappingTemplate = new EntityMappingTemplate<>(
-            dtos, existingArtists,
-            response,
-            new LastfmArtistEntityFactory(),
-            attrHandlers
+
+        LastfmApiDtoProcessor<LastfmArtist, ArtistsRankedDto> mappingService = new LastfmApiDtoProcessor<>(
+            new EntityMappingBuilder<>(),
+            new DefaultEntityPersister<>(),
+            new DefaultAttributeHistoryBuilder<>(),
+            new EntityRelationBuilder<>()
         );
-
-        //  save new and updated records
-        List<LastfmArtist> savedArtists = mappingTemplate.saveUpdatedEntities(artistRepository::saveAll);
-        log.info("{}: created/updated {} artists", logPrefix, savedArtists.size());
-
-        //  save new entity relations
-        mappingTemplate.saveEntityRelations(entityRelationService::upsertEntityRelations);
-        log.info("{}: upserted ? tag-artist relations (number of actual inserts is unknown)", logPrefix);
-
-        //  finalize and save attributes
-        List<LastfmAttributeHistoryRecord> savedAttrValues =
-            mappingTemplate.saveUpdatedAttrValues(attributeHistoryService::upsertCandidateValues);
-        log.info("{}: created/updated {} entity attr values", logPrefix, savedAttrValues.size());
+        mappingService.processDtos(dtos, existingArtists, response, new LastfmArtistEntityFactory(), attrHandlers,
+            artistRepository::saveAll,
+            attributeHistoryService::upsertCandidateValues,
+            entityRelationService::upsertEntityRelations
+        );
 
         log.info("\"{}: Finished processing DTO of type {}", logPrefix, dtoRoot.getClass().getName());
     }

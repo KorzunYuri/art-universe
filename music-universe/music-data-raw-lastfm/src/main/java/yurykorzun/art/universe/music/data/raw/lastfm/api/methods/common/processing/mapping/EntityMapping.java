@@ -1,4 +1,4 @@
-package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing;
+package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -8,7 +8,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.B
 
 /**
  * <p>Helper class holding objects that participate in inserting & updating entities with DTOs involved.</p>
- * <p>The class is manager by {@link EntityMappingTemplate}</p>
+ * <p>Is held by {@link EntityMappings}</p>
  * <p>Presence of <b>oldEntity</b> indicates that entity exists.</p>
  * <ul>
  *     <li>For existing entities, <b>newVersion</b> is initialized with entity from db then updated if needed</li>
@@ -21,7 +21,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.B
 @RequiredArgsConstructor
 @Getter
 @Setter
-class EntityMapping<E extends BaseLastfmEntity, D extends EntityDto> {
+public class EntityMapping<E extends BaseLastfmEntity, D extends EntityDto> {
 
     private final D dto;
 
