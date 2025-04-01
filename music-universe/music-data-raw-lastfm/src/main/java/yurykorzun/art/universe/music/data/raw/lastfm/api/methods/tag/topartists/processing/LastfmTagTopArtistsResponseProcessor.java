@@ -46,11 +46,11 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
     }
 
     private static final List<EntityAttributeHandler<LastfmArtist, ?, ArtistsRankedDto>> attrHandlers = List.of(
-        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.MBID, true, false,
+        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.MBID,  false,
             LastfmArtist::getMbid, LastfmArtist::setMbid, ArtistsRankedDto::getMbid),
-        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.URL,true, false,
+        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.URL, false,
             LastfmArtist::getUrl, LastfmArtist::setUrl, ArtistsRankedDto::getUrl),
-        DefaultEntityAttributeHandler.forExternalAttribute(LastfmAttribute.RANK, false, true,
+        DefaultEntityAttributeHandler.forExternalAttribute(LastfmAttribute.RANK,  true,
             (ArtistsRankedDto dto) -> dto.getRecordInfo().getRank())
     );
 

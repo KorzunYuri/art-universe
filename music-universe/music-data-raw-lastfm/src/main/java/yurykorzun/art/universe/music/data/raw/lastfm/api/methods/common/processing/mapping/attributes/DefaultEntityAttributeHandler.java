@@ -40,13 +40,14 @@ public class DefaultEntityAttributeHandler<E extends BaseLastfmEntity, T, D exte
     };
 
     public static <E extends BaseLastfmEntity, T, D extends EntityDto> DefaultEntityAttributeHandler<E, T, D> forEmbeddedAttribute(
-        LastfmAttribute attribute, boolean isAttributeEmbedded, boolean isAttributeScoped,
+        LastfmAttribute attribute,
+        boolean isAttributeScoped,
         Function<E, T> entityValueExtractor,
         BiConsumer<E, T> entityValueSetter,
         Function<D, T> dtoValueExtractor
     ) {
         return new DefaultEntityAttributeHandler<>(
-            attribute, isAttributeEmbedded, isAttributeScoped,
+            attribute, true, isAttributeScoped,
             entityValueExtractor,
             entityValueSetter,
             dtoValueExtractor);
@@ -54,12 +55,11 @@ public class DefaultEntityAttributeHandler<E extends BaseLastfmEntity, T, D exte
 
     public static <E extends BaseLastfmEntity, T, D extends EntityDto> DefaultEntityAttributeHandler<E, T, D> forExternalAttribute(
         LastfmAttribute attribute,
-        boolean isAttributeEmbedded,
         boolean isAttributeScoped,
         Function<D, T> dtoValueExtractor
     ) {
         return new DefaultEntityAttributeHandler<>(
-            attribute, isAttributeEmbedded, isAttributeScoped,
+            attribute, false, isAttributeScoped,
             (e) -> throwUnsupported(String.format("External attribute %s cannot be extracted from entity", attribute)),
             (e, t) -> throwUnsupported(String.format("External attribute %s cannot be set to entity", attribute)),
             dtoValueExtractor);
