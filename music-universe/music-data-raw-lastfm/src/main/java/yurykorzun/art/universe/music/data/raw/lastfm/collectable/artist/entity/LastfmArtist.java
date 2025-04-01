@@ -34,4 +34,9 @@ public class LastfmArtist extends BaseLastfmEntity {
     public LastfmEntityType getType() {
         return LastfmEntityType.ARTIST;
     }
+
+    @Override
+    public String getUniqueKey() {
+        return getName();
+    }
 }

@@ -29,4 +29,9 @@ public class LastfmTag extends BaseLastfmEntity {
     public LastfmEntityType getType() {
         return LastfmEntityType.TAG;
     }
+
+    @Override
+    public String getUniqueKey() {
+        return getName();
+    }
 }

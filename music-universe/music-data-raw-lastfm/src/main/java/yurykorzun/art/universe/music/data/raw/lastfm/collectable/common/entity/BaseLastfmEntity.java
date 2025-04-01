@@ -8,6 +8,7 @@ import yurykorzun.art.universe.common.data.raw.entity.BaseCollectableEntity;
 
 import jakarta.persistence.*;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.UniquenessSupport;
 
 import java.util.Objects;
 
@@ -18,7 +19,7 @@ import java.util.Objects;
 @SuperBuilder
 @NoArgsConstructor
 @Getter
-public abstract class BaseLastfmEntity extends BaseCollectableEntity {
+public abstract class BaseLastfmEntity extends BaseCollectableEntity implements UniquenessSupport {
 
     // TODO drop sequences created automatically
     public abstract long getId();
