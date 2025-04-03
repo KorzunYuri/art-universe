@@ -26,6 +26,10 @@ public abstract class EntityAttributeHandler<E extends BaseLastfmEntity, T, D ex
     // Non-embedded value cannot be extracted/set from/to an entity.
     public abstract boolean isAttributeEmbedded();
 
+    public boolean isAttributeExternal() {
+        return !isAttributeEmbedded();
+    }
+
     // does attribute belong to an entity relation, i.e. has a 'scope' entity
     public abstract boolean isAttributeScoped();
 
@@ -51,6 +55,7 @@ public abstract class EntityAttributeHandler<E extends BaseLastfmEntity, T, D ex
 
     private boolean shouldCreateNewRecord(@Nullable E oldEntity, E newEntity, D newDto) {
         return shouldCreateNewValueUnconditionally()
+            || isAttributeExternal() // cannot extract external attribute from entity, thus cannot compare
             || hasAttributeChanged(oldEntity, newEntity, newDto);
     }
 
@@ -58,6 +63,7 @@ public abstract class EntityAttributeHandler<E extends BaseLastfmEntity, T, D ex
         return shouldCreateNewRecord(mapping.getOldEntity(), mapping.getNewEntity(), mapping.getDto());
     }
 
+    // TODO make sure not to call extraction for external attributes (there is no protection atm)
     private boolean hasAttributeChanged(@Nullable E oldEntity, E newEntity, D newDto) {
         return oldEntity == null
             || !Objects.equals(extractFrom(oldEntity), extractFrom(newEntity, newDto));
