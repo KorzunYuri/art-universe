@@ -19,14 +19,14 @@ public enum LastfmAttribute implements Coded {
             "Relations number",
             "Number of entities associated with entity",
             DataType.INTEGER,
-            HistoryType.SNAPSHOT,
+            HistoryType.SCD2,
             List.of(LastfmEntityType.TAG))
     ,   REACH(
             2,
             "Reach",
             "Number of users that used entity",
             DataType.INTEGER,
-            HistoryType.SNAPSHOT,
+            HistoryType.SCD2,
             List.of(LastfmEntityType.TAG))
     ,   URL(
             3,

@@ -61,8 +61,8 @@ public class LastfmTagTopTagResponseProcessorTest extends FullContextTest {
             }
             """;
     private static final int TEST_DTO_TAGS_NUMBER = 2;
-    private static final int SCD2_ATTRIBUTES_NUMBER = 0;
-    private static final int SNAPSHOT_ATTRIBUTES_NUMBER = 3;
+    private static final int SCD2_ATTRIBUTES_NUMBER = 2;
+    private static final int SNAPSHOT_ATTRIBUTES_NUMBER = 1;
 
     private void testPrimarySave(LastfmApiResponse response, int tagsNumber) throws IOException {
 
