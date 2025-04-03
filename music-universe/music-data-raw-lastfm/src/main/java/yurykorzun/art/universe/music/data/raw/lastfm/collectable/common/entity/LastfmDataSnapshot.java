@@ -1,13 +1,11 @@
-package yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity;
+package yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NonNull;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallTypeConverter;
 import yurykorzun.art.universe.common.persistence.entity.BaseEntity;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityTypeConverter;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 
 import java.time.LocalDate;

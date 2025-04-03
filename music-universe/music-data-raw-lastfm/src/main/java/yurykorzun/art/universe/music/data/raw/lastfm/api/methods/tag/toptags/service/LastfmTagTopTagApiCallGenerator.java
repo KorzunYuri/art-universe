@@ -6,20 +6,20 @@ import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiCallCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmDataSnapshot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmApiCallRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallGenerator;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.LastfmApiConstants;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallService;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmDataSnapshotService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.utils.TimeUtil;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.LastfmAttributeSnapshotService;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmDataSnapshot;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmDataSnapshotService;
 
 import java.util.*;
 
-import static yurykorzun.art.universe.music.data.raw.lastfm.api.LastfmApiConstants.*;
+import static yurykorzun.art.universe.music.data.raw.lastfm.api.LastfmApiConstants.PAGE_SIZE;
 
 @Component
 public class LastfmTagTopTagApiCallGenerator extends LastfmApiCallGenerator {
