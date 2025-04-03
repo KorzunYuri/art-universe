@@ -2,6 +2,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists
 
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.RankInfo;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.*;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
 
@@ -41,7 +42,7 @@ public class TagTopArtistsMappingTest {
         assertEquals("cc197bad-dc9c-440d-a5b5-d52ba2e14234", artist.getMbid());
         assertEquals("https://www.last.fm/music/Coldplay", artist.getUrl());
 
-        ArtistRecordInfo recordInfo = artist.getRecordInfo();
+        RankInfo recordInfo = artist.getRecordInfo();
         assertNotNull(recordInfo);
         assertEquals(1, recordInfo.getRank());
     }
