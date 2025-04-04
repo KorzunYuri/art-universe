@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmDataSnapshot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmApiCallRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.repository.LastfmDataSnapshotRepository;
@@ -132,6 +133,21 @@ public class DbConsistencyHelper {
         LastfmApiCall dummyApiCall = createDummyApiCall(sourceApiCallType);
         LastfmTag tag = createTag(dummyApiCall);
         return tagRepository.save(tag);
+    }
+
+    public LastfmArtist createArtist() {
+        return createArtist(randomString(), createDummyApiCall());
+    }
+
+    public LastfmArtist createArtist(String name) {
+        return createArtist(name, createDummyApiCall());
+    }
+
+    public LastfmArtist createArtist(String name, LastfmApiCall apiCall) {
+        return LastfmArtist.builder()
+                .name(name)
+                .apiCall(apiCall)
+            .build();
     }
 
     public LastfmTrack createTrack(String url, LastfmApiCall apiCall) {

@@ -19,13 +19,6 @@ class LastfmArtistRepositoryTest extends JpaOnlyTest {
     @Autowired
     private DbConsistencyHelper consistencyHelper;
 
-    private LastfmArtist createArtist(String name, LastfmApiCall apiCall) {
-        return LastfmArtist.builder()
-                .name(name)
-                .apiCall(apiCall)
-                .build();
-    }
-
     @Test
     void testArtistSave() {
         final String name = "Queen";
@@ -48,9 +41,8 @@ class LastfmArtistRepositoryTest extends JpaOnlyTest {
 
     @Test
     void testArtistSaveAll() {
-        LastfmApiCall apiCall = consistencyHelper.createDummyApiCall();
-        LastfmArtist artist1 = createArtist("Queen", apiCall);
-        LastfmArtist artist2 = createArtist("Deep purple", apiCall);
+        LastfmArtist artist1 = consistencyHelper.createArtist("Queen");
+        LastfmArtist artist2 = consistencyHelper.createArtist("Deep purple");
 
         List<LastfmArtist> firstSaveResult = artistRepository.saveAll(List.of(artist1, artist2));
         assertEquals(2, artistRepository.findAll().size());
@@ -58,7 +50,7 @@ class LastfmArtistRepositoryTest extends JpaOnlyTest {
                 .filter(a -> a.getName().equals(artist1.getName()))
                 .findFirst().get();
 
-        LastfmArtist artist3 = createArtist("Metallica", apiCall);
+        LastfmArtist artist3 = consistencyHelper.createArtist("Metallica");
 
         List<LastfmArtist> secondSaveResult = artistRepository.saveAll(List.of(artist1, artist3));
         assertEquals(3, artistRepository.findAll().size());
