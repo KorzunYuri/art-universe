@@ -13,6 +13,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.track.common.dt
 public class TagTopTracksTrackDto extends TrackDto {
 
     @JsonProperty("streamable")
-    private TrackStreamableAttrDto streamable;
+    private TrackStreamableAttrDto streamableObject;
 
 }

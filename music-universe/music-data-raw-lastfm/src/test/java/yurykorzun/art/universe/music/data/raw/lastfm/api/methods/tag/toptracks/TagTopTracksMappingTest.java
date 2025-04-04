@@ -36,9 +36,9 @@ public class TagTopTracksMappingTest {
         assertEquals(301, firstTrack.getDuration(), "Incorrect track duration");
         assertNotNull(firstTrack.getArtist(), "Artist information should not be null");
         assertEquals("Nirvana", firstTrack.getArtist().getName(), "Incorrect artist name");
-        assertNotNull(firstTrack.getStreamable(), "Streamable information should not be null");
-        assertEquals(0, firstTrack.getStreamable().getText(), "Incorrect streamable text value");
-        assertEquals(0, firstTrack.getStreamable().getFullTrack(), "Incorrect streamable fullTrack value");
+        assertNotNull(firstTrack.getStreamableObject(), "Streamable information should not be null");
+        assertEquals(0, firstTrack.getStreamableObject().getText(), "Incorrect streamable text value");
+        assertEquals(0, firstTrack.getStreamableObject().getFullTrack(), "Incorrect streamable fullTrack value");
         assertNotNull(firstTrack.getRankInfo(), "Rank information should not be null");
         assertEquals(1, firstTrack.getRankInfo().getRank(), "Incorrect track rank");
 
@@ -48,9 +48,9 @@ public class TagTopTracksMappingTest {
         assertEquals(224, secondTrack.getDuration(), "Incorrect track duration");
         assertNotNull(secondTrack.getArtist(), "Artist information should not be null");
         assertEquals("The Killers", secondTrack.getArtist().getName(), "Incorrect artist name");
-        assertNotNull(secondTrack.getStreamable(), "Streamable information should not be null");
-        assertEquals(0, secondTrack.getStreamable().getText(), "Incorrect streamable text value");
-        assertEquals(0, secondTrack.getStreamable().getFullTrack(), "Incorrect streamable fullTrack value");
+        assertNotNull(secondTrack.getStreamableObject(), "Streamable information should not be null");
+        assertEquals(0, secondTrack.getStreamableObject().getText(), "Incorrect streamable text value");
+        assertEquals(0, secondTrack.getStreamableObject().getFullTrack(), "Incorrect streamable fullTrack value");
         assertNotNull(secondTrack.getRankInfo(), "Rank information should not be null");
         assertEquals(2, secondTrack.getRankInfo().getRank(), "Incorrect track rank");
     }
