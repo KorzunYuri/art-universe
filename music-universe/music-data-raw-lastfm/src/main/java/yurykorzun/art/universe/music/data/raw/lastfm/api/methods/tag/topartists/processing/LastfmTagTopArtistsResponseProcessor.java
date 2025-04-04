@@ -17,7 +17,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.ArtistsRankedDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.TopArtistsDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.repository.LastfmArtistRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.LastfmAttributeHistoryService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityRelationService;
@@ -29,18 +29,18 @@ import java.util.*;
 @Slf4j
 public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProcessor<TopArtistsDtoRoot> {
 
-    private final LastfmArtistRepository artistRepository;
+    private final LastfmArtistService artistService;
     private final LastfmEntityRelationService entityRelationService;
     private final LastfmAttributeHistoryService attributeHistoryService;
 
     protected LastfmTagTopArtistsResponseProcessor(
-        LastfmArtistRepository artistRepository,
+        LastfmArtistService artistService,
         LastfmEntityRelationService entityRelationService,
         LastfmAttributeHistoryService attributeHistoryService
     ) {
         super(TopArtistsDtoRoot.class);
 
-        this.artistRepository = artistRepository;
+        this.artistService = artistService;
         this.entityRelationService = entityRelationService;
         this.attributeHistoryService = attributeHistoryService;
     }
@@ -70,7 +70,7 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
             logPrefix, dtoRoot.getClass().getName(), dtoRoot.getTopArtists().getArtists().size());
 
         List<ArtistsRankedDto> dtos = dtoRoot.getTopArtists().getArtists();
-        List<LastfmArtist> existingArtists = artistRepository.findAllByNameIn(dtos.stream()
+        List<LastfmArtist> existingArtists = artistService.findAllByNames(dtos.stream()
             .map(dto -> dto.getName()).toList());
 
         LastfmApiDtoProcessor<LastfmArtist, ArtistsRankedDto> mappingService = new LastfmApiDtoProcessor<>(
@@ -80,7 +80,7 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
             new EntityRelationBuilder<>()
         );
         mappingService.processDtos(dtos, existingArtists, response, new LastfmArtistEntityFactory(), attrHandlers,
-            artistRepository::saveAll,
+            artistService::saveArtists,
             attributeHistoryService::upsertCandidateValues,
             entityRelationService::upsertEntityRelations
         );
