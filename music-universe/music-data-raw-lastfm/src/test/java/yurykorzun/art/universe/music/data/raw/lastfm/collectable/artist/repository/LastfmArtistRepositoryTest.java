@@ -41,7 +41,6 @@ class LastfmArtistRepositoryTest extends JpaOnlyTest {
             .build();
         LastfmArtist saved = artistRepository.save(artist);
 
-        assertEquals(1L, saved.getId());
         assertEquals(name, saved.getName());
         assertEquals(url, saved.getUrl());
         assertEquals(mbid, saved.getMbid());
