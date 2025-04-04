@@ -5,9 +5,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import yurykorzun.art.universe.common.data.raw.entity.CollectableEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
+
+import java.util.Objects;
 
 @Entity(name = "artist")
 @SuperBuilder
@@ -38,5 +39,17 @@ public class LastfmArtist extends BaseLastfmEntity {
     @Override
     public String getUniqueKey() {
         return getName();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof LastfmArtist artist)) return false;
+        if (!super.equals(o)) return false;
+        return Objects.equals(mbid, artist.mbid) && Objects.equals(url, artist.url);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), mbid, url);
     }
 }

@@ -28,12 +28,12 @@ public abstract class BaseLastfmEntity extends BaseCollectableEntity implements 
     public abstract LastfmEntityType getType();
 
     @Column(name = "name")
-    private String name;
+    protected String name;
 
     @NonNull
     @JoinColumn(name = "api_call_id")
     @ManyToOne(fetch = FetchType.LAZY)
-    private LastfmApiCall apiCall;
+    protected LastfmApiCall apiCall;
 
     @Override
     public boolean equals(Object o) {
@@ -50,9 +50,6 @@ public abstract class BaseLastfmEntity extends BaseCollectableEntity implements 
 
     @Override
     public int hashCode() {
-        if (this.getId() != 0) {
-            return Long.hashCode(this.getId());
-        }
-        return Objects.hash(this.getName());
+        return Objects.hash(this.getName(), this.getApiCall());
     }
 }
