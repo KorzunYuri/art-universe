@@ -21,33 +21,6 @@ class LastfmTrackRepositoryTest extends JpaOnlyTest {
     @Autowired
     private DbConsistencyHelper consistencyHelper;
 
-    private String randomString() {
-        return UUID.randomUUID().toString();
-    }
-
-    private LastfmTrack createTrack(String url, LastfmApiCall apiCall) {
-        return LastfmTrack.builder()
-                .url(   url)
-                .name(  randomString())
-                .mbid(  randomString())
-                .duration(100)
-                .streamable(1)
-                .apiCall(apiCall)
-            .build();
-    }
-
-    private LastfmTrack createTrack(LastfmApiCall apiCall) {
-        return createTrack(randomString(), apiCall);
-    }
-
-    private LastfmTrack createTrack(String url) {
-        return createTrack(url, consistencyHelper.createDummyApiCall());
-    }
-
-    private LastfmTrack createTrack() {
-        return createTrack(randomString(), consistencyHelper.createDummyApiCall());
-    }
-
     @Test
     void testTrackSave() {
         final String name = "Smells Like Teen Spirit";
@@ -76,8 +49,8 @@ class LastfmTrackRepositoryTest extends JpaOnlyTest {
 
     @Test
     void testTrackSaveAll() {
-        LastfmTrack track1 = createTrack();
-        LastfmTrack track2 = createTrack();
+        LastfmTrack track1 = consistencyHelper.createTrack();
+        LastfmTrack track2 = consistencyHelper.createTrack();
 
         List<LastfmTrack> firstSaveResult = trackRepository.saveAll(List.of(track1, track2));
         assertEquals(2, trackRepository.findAll().size());
@@ -85,7 +58,7 @@ class LastfmTrackRepositoryTest extends JpaOnlyTest {
             .filter(a -> a.getName().equals(track1.getName()))
             .findFirst().get();
 
-        LastfmTrack track3 = createTrack();
+        LastfmTrack track3 = consistencyHelper.createTrack();
 
         List<LastfmTrack> secondSaveResult = trackRepository.saveAll(List.of(track1, track3));
         assertEquals(3, trackRepository.findAll().size());
@@ -99,9 +72,9 @@ class LastfmTrackRepositoryTest extends JpaOnlyTest {
     void testTrackFindAllByUrlIn() {
         final int totalTracks = 5;
         final int tracksToRetrieve = 2;
-        List<String> urls = IntStream.range(0, totalTracks).mapToObj(i -> randomString()).toList();
+        List<String> urls = IntStream.range(0, totalTracks).mapToObj(i -> UUID.randomUUID().toString()).toList();
 
-        trackRepository.saveAll(urls.stream().map(this::createTrack).toList());
+        trackRepository.saveAll(urls.stream().map(consistencyHelper::createTrack).toList());
         List<String> urlsSubset = urls.subList(0, tracksToRetrieve);
         List<LastfmTrack> retrieved = trackRepository.findAllByUrlIn(urlsSubset);
 

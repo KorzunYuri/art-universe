@@ -12,6 +12,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.reposito
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.repository.LastfmTagRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -46,6 +47,10 @@ public class DbConsistencyHelper {
         tagRepository.deleteAll();
         apiCallRepository.deleteAll();
         snapshotRepository.deleteAll();
+    }
+
+    private String randomString() {
+        return UUID.randomUUID().toString();
     }
 
     public LastfmDataSnapshot createDummyDataSnapshot(LastfmApiCallType apiCallType) {
@@ -105,21 +110,47 @@ public class DbConsistencyHelper {
     }
 
     public BaseLastfmEntity createDummyEntity() {
-        LastfmApiCall dummyApiCall = createDummyApiCall();
-        LastfmTag tag = LastfmTag.builder()
-                .name(UUID.randomUUID().toString())
-                .apiCall(dummyApiCall)
-            .build();
-        return tagRepository.save(tag);
+        return createAndSaveTag();
     }
 
     public BaseLastfmEntity createDummyEntity(LastfmApiCallType sourceApiCallType) {
-        LastfmApiCall dummyApiCall = createDummyApiCall(sourceApiCallType);
-        LastfmTag tag = LastfmTag.builder()
-            .name(UUID.randomUUID().toString())
-            .apiCall(dummyApiCall)
+        return createAndSaveTag(sourceApiCallType);
+    }
+
+    private static LastfmTag createTag(LastfmApiCall dummyApiCall) {
+        return LastfmTag.builder()
+                .name(UUID.randomUUID().toString())
+                .apiCall(dummyApiCall)
             .build();
+    }
+
+    public LastfmTag createAndSaveTag() {
+        return createAndSaveTag(LastfmApiCallType.TAG_TOP_TAGS);
+    }
+
+    public LastfmTag createAndSaveTag(LastfmApiCallType sourceApiCallType) {
+        LastfmApiCall dummyApiCall = createDummyApiCall(sourceApiCallType);
+        LastfmTag tag = createTag(dummyApiCall);
         return tagRepository.save(tag);
+    }
+
+    public LastfmTrack createTrack(String url, LastfmApiCall apiCall) {
+        return LastfmTrack.builder()
+                .url(   url)
+                .name(  randomString())
+                .mbid(  randomString())
+                .duration(100)
+                .streamable(1)
+                .apiCall(apiCall)
+            .build();
+    }
+
+    public LastfmTrack createTrack(String url) {
+        return createTrack(url, createDummyApiCall());
+    }
+
+    public LastfmTrack createTrack() {
+        return createTrack(randomString(), createDummyApiCall());
     }
 
 }
