@@ -1,0 +1,64 @@
+package yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity;
+
+import jakarta.persistence.*;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
+
+import java.util.Objects;
+
+@Entity(name = "track")
+@SuperBuilder
+@NoArgsConstructor
+@Getter @Setter
+public class LastfmTrack extends BaseLastfmEntity {
+
+    @Id
+    @SequenceGenerator(
+        name = "track_seq_gen",
+        sequenceName = "track_seq",
+        allocationSize = 50
+    )
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "track_seq_gen")
+    @Setter(value = AccessLevel.NONE)
+    private long id;
+
+    @Column(name = "mbid")
+    private String mbid;
+
+    @NonNull
+    @Column(name = "url")
+    private String url;
+
+    @Column(name = "duration")
+    private int duration;
+
+    @Column(name = "streamable")
+    private int streamable;
+
+    @Override
+    public LastfmEntityType getType() {
+        return LastfmEntityType.TRACK;
+    }
+
+    @Override
+    public String getUniqueKey() {
+        return getUrl();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof LastfmTrack that)) return false;
+        if (!super.equals(o)) return false;
+        return duration     == that.duration
+            && streamable   == that.streamable
+            && Objects.equals(mbid, that.mbid)
+            && Objects.equals(url,  that.url);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), duration, streamable, mbid, url);
+    }
+}

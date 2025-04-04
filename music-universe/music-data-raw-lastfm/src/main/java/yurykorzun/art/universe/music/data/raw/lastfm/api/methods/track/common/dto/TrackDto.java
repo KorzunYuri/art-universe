@@ -35,6 +35,6 @@ public abstract class TrackDto implements EntityDto {
 
     @Override
     public String getUniqueKey() {
-        return String.format("%s:%s - %s:%s", artist.getName(), artist.getMbid(), name, mbid);
+        return url;
     }
 }

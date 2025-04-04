@@ -6,6 +6,7 @@ import yurykorzun.art.universe.common.CodedRegistry;
 import yurykorzun.art.universe.common.data.raw.entity.CollectableEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmSpecific;
 
 import java.util.Arrays;
@@ -15,7 +16,7 @@ public enum LastfmEntityType implements LastfmSpecific, Coded, CollectableEntity
 
     ARTIST(1, LastfmArtist.class),
     //ALBUM(2),
-    //TRACK(3),
+    TRACK(3, LastfmTrack.class),
     TAG(4, LastfmTag.class);
 
     private final int code;
