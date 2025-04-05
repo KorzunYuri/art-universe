@@ -1,12 +1,11 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity;
 
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.experimental.SuperBuilder;
 import yurykorzun.art.universe.common.data.raw.entity.BaseCollectableEntity;
-
-import jakarta.persistence.*;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.UniquenessSupport;
 

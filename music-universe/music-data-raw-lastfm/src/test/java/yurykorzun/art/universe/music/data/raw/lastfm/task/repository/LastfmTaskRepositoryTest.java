@@ -15,8 +15,9 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static yurykorzun.art.universe.music.data.raw.lastfm.common.utils.TimeTestUtils.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static yurykorzun.art.universe.music.data.raw.lastfm.common.utils.TimeTestUtils.now;
 
 public class LastfmTaskRepositoryTest extends JpaOnlyTest {
 

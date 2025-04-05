@@ -1,11 +1,10 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.task.entity;
 
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import yurykorzun.art.universe.common.data.raw.task.entity.Task;
-
-import jakarta.persistence.*;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 
 @Entity(name = "task")
