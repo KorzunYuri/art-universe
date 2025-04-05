@@ -1,7 +1,9 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 import jakarta.persistence.*;
@@ -23,6 +25,14 @@ public class LastfmTag extends BaseLastfmEntity {
     )
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "tag_seq_gen")
     private long id;
+
+    @Setter
+    @Column(name = "usage_count")
+    private int usageCount;
+
+    @Setter
+    @Column(name = "usage_users_count")
+    private int usageUsersCount;
 
     @Override
     @Transient

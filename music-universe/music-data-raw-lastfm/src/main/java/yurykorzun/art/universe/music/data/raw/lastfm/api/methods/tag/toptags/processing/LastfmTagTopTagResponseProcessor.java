@@ -38,9 +38,11 @@ public class LastfmTagTopTagResponseProcessor extends LastfmApiResponseProcessor
     private static final List<EntityAttributeHandler<LastfmTag, ?, TagDtoWrapper>> attrHandlers = List.of(
         DefaultEntityAttributeHandler.forExternalAttribute(LastfmAttribute.RANK,  false,
             TagDtoWrapper::rank),
-        DefaultEntityAttributeHandler.forExternalAttribute(LastfmAttribute.RELATIONS_COUNT,  false,
+        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.RELATIONS_COUNT,  false,
+            LastfmTag::getUsageCount, LastfmTag::setUsageCount,
             (w) -> w.dto().getCount()),
-        DefaultEntityAttributeHandler.forExternalAttribute(LastfmAttribute.REACH,  false,
+        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.REACH,  false,
+            LastfmTag::getUsageUsersCount, LastfmTag::setUsageUsersCount,
             (w) -> w.dto().getReach())
     );
 

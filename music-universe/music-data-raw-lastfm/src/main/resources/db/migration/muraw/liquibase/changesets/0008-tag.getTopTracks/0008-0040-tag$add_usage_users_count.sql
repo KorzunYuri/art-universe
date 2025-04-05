@@ -1,0 +1,2 @@
+ALTER TABLE tag
+ADD COLUMN usage_users_count          INTEGER DEFAULT 0 NOT NULL;
