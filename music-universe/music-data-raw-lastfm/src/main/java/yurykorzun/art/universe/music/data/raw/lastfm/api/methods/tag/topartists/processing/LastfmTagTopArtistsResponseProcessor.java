@@ -7,7 +7,9 @@ import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.LastfmArtistEntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.*;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityMappingBuilder;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityRelationBuilder;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandler;
@@ -64,12 +66,11 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
     protected void processResponse(LastfmApiResponse response) throws IOException {
 
         TopArtistsDtoRoot dtoRoot = parseResponse(response);
+        List<ArtistsRankedDto> dtos = dtoRoot.getTopArtists().getArtists();
 
         final String logPrefix = String.format("Lastfm %s response processing", LastfmApiCallType.TAG_TOP_TAGS.getMethod());
-        log.info("{}: start processing DTO of type {} with {} records",
-            logPrefix, dtoRoot.getClass().getName(), dtoRoot.getTopArtists().getArtists().size());
+        log.info("{}: start processing DTO of type {} with {} records", logPrefix, dtoRoot.getClass().getName(), dtos.size());
 
-        List<ArtistsRankedDto> dtos = dtoRoot.getTopArtists().getArtists();
         List<LastfmArtist> existingArtists = artistService.findAllByNames(dtos.stream()
             .map(dto -> dto.getName()).toList());
 
@@ -79,12 +80,31 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
             new DefaultAttributeHistoryBuilder<>(),
             new EntityRelationBuilder<>()
         );
-        mappingService.processDtos(dtos, existingArtists, response, new LastfmArtistEntityFactory(), attrHandlers,
+        mappingService.processDtos(dtos, existingArtists, response, new FromRankedDtoArtistFactory(), attrHandlers,
             artistService::saveArtists,
             attributeHistoryService::upsertCandidateValues,
             entityRelationService::upsertEntityRelations
         );
 
         log.info("\"{}: Finished processing DTO of type {}", logPrefix, dtoRoot.getClass().getName());
+    }
+
+    private static class FromRankedDtoArtistFactory implements EntityFactory<LastfmArtist, ArtistsRankedDto> {
+
+        private final LastfmArtistEntityFactory factory;
+
+        private FromRankedDtoArtistFactory() {
+            this.factory = new LastfmArtistEntityFactory();
+        }
+
+        @Override
+        public LastfmArtist fromDto(ArtistsRankedDto dto, LastfmApiResponse response) {
+            return factory.fromDto(dto, response);
+        }
+
+        @Override
+        public LastfmArtist clone(LastfmArtist entity) {
+            return factory.clone(entity);
+        }
     }
 }

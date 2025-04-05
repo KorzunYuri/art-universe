@@ -11,7 +11,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.Rank
 @Data
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public abstract class TrackDto implements EntityDto {
+public class TrackDto implements EntityDto {
 
     private String name;
 
@@ -23,7 +23,8 @@ public abstract class TrackDto implements EntityDto {
 
     private ArtistDto artist;
 
-    private TrackStreamableAttrDto streamable;
+    @JsonProperty("streamable")
+    private TrackStreamableAttrDto streamableObject;
 
     @JsonProperty("@attr")
     private RankInfo rankInfo;

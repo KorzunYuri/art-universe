@@ -49,6 +49,20 @@ public enum LastfmAttribute implements Coded {
             DataType.STRING,
             HistoryType.SCD2,
             List.of(LastfmEntityType.ARTIST))
+    ,   DURATION(
+            6,
+            "duration",
+            "Track duration",
+            DataType.INTEGER,
+            HistoryType.SCD2,
+            List.of(LastfmEntityType.TRACK))
+    ,   IS_STREAMABLE(
+            7,
+            "streamable",
+            "Is streamable",
+            DataType.INTEGER,
+            HistoryType.SCD2,
+            List.of(LastfmEntityType.TRACK, LastfmEntityType.ARTIST))
     ;
 
     private final int id;

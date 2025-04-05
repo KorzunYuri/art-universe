@@ -53,6 +53,13 @@ public class LastfmApiDtoProcessor<E extends BaseLastfmEntity, D extends EntityD
      * @param entitySaver       function responsible for persisting entities
      * @param attrSaver         function responsible for persisting {@link LastfmAttributeHistoryRecord}
      * @param relationSaver     function responsible for persisting {@link LastfmEntityRelation}. DOESN'T RETURN VALUE.
+     *
+     * @return {@link LastfmApiDtoProcessingResult} containing:
+     * <ul>
+     *     <li><b>only saved</b> (new / updated) entities</li>
+     *     <li><b>only saved</b> (new / updated) attribute values</li>
+     *     <li><b>ALL</b> created entity_relations</li>
+     * </ul>
      */
     public LastfmApiDtoProcessingResult<E> processDtos(
         List<D> dtos,

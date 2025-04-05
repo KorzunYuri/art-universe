@@ -65,14 +65,12 @@ public class LastfmTagTopTagResponseProcessor extends LastfmApiResponseProcessor
     protected void processResponse(LastfmApiResponse response) throws IOException {
 
         TopTagsDtoRoot dtoRoot = parseResponse(response);
-        final String logPrefix = String.format("Lastfm %s response processing", LastfmApiCallType.TAG_TOP_TAGS.getMethod());
-        log.info("{}: start processing DTO of type {} with {} records",
-                logPrefix,
-                dtoRoot.getClass().getName(),
-                dtoRoot.getTopTags().getTags().size());
+        List<TagDto> dtos = dtoRoot.getTopTags().getTags();
+
+        final String logPrefix = String.format("Lastfm %s response processing", getApiCallType().getMethod());
+        log.info("{}: start processing DTO of type {} with {} records", logPrefix, dtoRoot.getClass().getName(), dtos.size());
 
         // wrap dtos to add 'rank' attribute
-        List<TagDto> dtos = dtoRoot.getTopTags().getTags();
         List<TagDtoWrapper> dtoWrappers = new ArrayList<>();
         PageInfo pageInfo = dtoRoot.getTopTags().getPageInfo();
         for (int i = 0; i < dtos.size(); i++) {

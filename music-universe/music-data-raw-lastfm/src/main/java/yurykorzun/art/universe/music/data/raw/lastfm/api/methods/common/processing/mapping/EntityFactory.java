@@ -9,16 +9,16 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.B
  * @param <E>   entity
  * @param <D>   DTO
  */
-public abstract class EntityFactory<E extends BaseLastfmEntity, D extends EntityDto> {
+public interface EntityFactory<E extends BaseLastfmEntity, D extends EntityDto> {
 
     /**
      * Create entity from DTO and other info held in response object.
      * Resulting entity is supposed to be saved.
      */
-    protected abstract E fromDto(D dto, LastfmApiResponse response);
+    E fromDto(D dto, LastfmApiResponse response);
 
     /**
      * Clone (no deep-clone) the entity, including id.
      */
-    protected abstract E clone(E entity);
+    E clone(E entity);
 }

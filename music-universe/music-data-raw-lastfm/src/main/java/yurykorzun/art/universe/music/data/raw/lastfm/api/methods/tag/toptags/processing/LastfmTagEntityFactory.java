@@ -5,10 +5,10 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.dto.TagDtoWrapper;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 
-public class LastfmTagEntityFactory extends EntityFactory<LastfmTag, TagDtoWrapper> {
+public class LastfmTagEntityFactory implements EntityFactory<LastfmTag, TagDtoWrapper> {
 
     @Override
-    protected LastfmTag fromDto(TagDtoWrapper dto, LastfmApiResponse response) {
+    public LastfmTag fromDto(TagDtoWrapper dto, LastfmApiResponse response) {
         return LastfmTag.builder()
                 .apiCall(response.getApiCall())
                 .name(dto.getName())
@@ -16,7 +16,7 @@ public class LastfmTagEntityFactory extends EntityFactory<LastfmTag, TagDtoWrapp
     }
 
     @Override
-    protected LastfmTag clone(LastfmTag entity) {
+    public LastfmTag clone(LastfmTag entity) {
         return LastfmTag.builder()
                 .apiCall(entity.getApiCall())
                 .name(entity.getName())
