@@ -9,5 +9,5 @@ import java.util.List;
 
 public interface LastfmEntityService {
     <E extends BaseCollectableEntity> List<E> findAllUnprocessed(LastfmEntityType entityType, LastfmApiCallType apiCallType);
-    <E extends BaseCollectableEntity> List<E> findAllUnprocessed(LastfmEntityType entityType, LastfmApiCallType apiCallType, int limit);
+    <E extends BaseCollectableEntity> List<E> findAllUnprocessed(LastfmEntityType entityType, LastfmApiCallType apiCallType, LastfmEntityQueryConfig config);
 }

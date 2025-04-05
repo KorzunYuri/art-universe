@@ -1,6 +1,5 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity;
 
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
