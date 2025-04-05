@@ -70,9 +70,9 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
             LastfmTrack::getDuration, LastfmTrack::setDuration, TrackDto::getDuration),
         DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.IS_STREAMABLE, false,
             LastfmTrack::getStreamable, LastfmTrack::setStreamable,
-            (dto) -> dto.getStreamableObject().getFullTrack()),
-        DefaultEntityAttributeHandler.forExternalAttribute(LastfmAttribute.RANK,  true,
-            (dto) -> dto.getRankInfo().getRank())
+            (dto) -> dto.getStreamableObject().getFullTrack())
+        //DefaultEntityAttributeHandler.forExternalAttribute(LastfmAttribute.RANK,  true,
+        //    (dto) -> dto.getRankInfo().getRank())
     );
 
     private static final List<EntityAttributeHandler<LastfmArtist, ?, ArtistDto>> artistAttrHandlers = List.of(

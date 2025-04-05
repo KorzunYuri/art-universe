@@ -83,7 +83,7 @@ public class LastfmTagTopTracksApiCallGenerator extends LastfmApiCallGenerator {
     }
 
     private void createAttributeSnapshotsForTracksWithinTag(LastfmTag tag, LastfmDataSnapshot snapshot) {
-        attributeSnapshotService.getOrCreateForEntity(snapshot, LastfmEntityType.TRACK, LastfmAttribute.RANK, tag);
+        // attributeSnapshotService.getOrCreateForEntity(snapshot, LastfmEntityType.TRACK, LastfmAttribute.RANK, tag);
     }
 
     private List<LastfmApiCallCreateRequest> createApiCallCreationRequests(LastfmTag tag, LastfmDataSnapshot snapshot) {

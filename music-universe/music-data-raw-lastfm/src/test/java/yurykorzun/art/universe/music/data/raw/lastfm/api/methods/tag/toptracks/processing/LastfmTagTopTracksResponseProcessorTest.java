@@ -54,7 +54,7 @@ class LastfmTagTopTracksResponseProcessorTest extends FullContextTest {
 
     // the variables below depend on currently supported attributes and should change along with processor implementation
     private static final int TRACK_SCD2_ATTRS_NUMBER = 4;
-    private static final int TRACK_SNAPSHOT_ATTRS_NUMBER = 1;
+    private static final int TRACK_SNAPSHOT_ATTRS_NUMBER = 0;
     private static final int TRACK_ATTRS_NUMBER = TRACK_SCD2_ATTRS_NUMBER + TRACK_SNAPSHOT_ATTRS_NUMBER;
     private static final int ARTIST_SCD2_ATTRS_NUMBER = 2;
     private static final int ARTIST_SNAPSHOT_ATTRS_NUMBER = 0;
