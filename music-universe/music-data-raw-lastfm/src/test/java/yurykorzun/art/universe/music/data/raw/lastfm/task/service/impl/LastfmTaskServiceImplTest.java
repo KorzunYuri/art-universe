@@ -16,8 +16,8 @@ import yurykorzun.art.universe.music.data.raw.lastfm.task.repository.LastfmTaskR
 import java.time.Duration;
 import java.time.Instant;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class LastfmTaskServiceImplTest extends FullContextTest {

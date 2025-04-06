@@ -1,12 +1,11 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity;
 
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.experimental.SuperBuilder;
 import yurykorzun.art.universe.common.data.raw.entity.BaseCollectableEntity;
-
-import jakarta.persistence.*;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.UniquenessSupport;
 
@@ -28,12 +27,12 @@ public abstract class BaseLastfmEntity extends BaseCollectableEntity implements 
     public abstract LastfmEntityType getType();
 
     @Column(name = "name")
-    private String name;
+    protected String name;
 
     @NonNull
     @JoinColumn(name = "api_call_id")
     @ManyToOne(fetch = FetchType.LAZY)
-    private LastfmApiCall apiCall;
+    protected LastfmApiCall apiCall;
 
     @Override
     public boolean equals(Object o) {
@@ -50,9 +49,6 @@ public abstract class BaseLastfmEntity extends BaseCollectableEntity implements 
 
     @Override
     public int hashCode() {
-        if (this.getId() != 0) {
-            return Long.hashCode(this.getId());
-        }
-        return Objects.hash(this.getName());
+        return Objects.hash(this.getName(), this.getApiCall());
     }
 }

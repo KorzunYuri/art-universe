@@ -66,3 +66,6 @@ lastfm:
           dueDurationDays: 1
         topArtists:
           dueDurationDays: 7
+        topTracks:
+          dueDurationDays: 7
+          usageToPageRatio: 50000 # for each N usages of the tag, ONE 50-items api call will be generated

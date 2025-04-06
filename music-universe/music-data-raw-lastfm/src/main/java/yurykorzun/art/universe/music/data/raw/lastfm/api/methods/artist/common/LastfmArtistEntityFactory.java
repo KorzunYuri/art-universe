@@ -1,14 +1,14 @@
-package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.processing;
+package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common;
 
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.dto.ArtistDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityFactory;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.ArtistsRankedDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 
-public class LastfmArtistEntityFactory extends EntityFactory<LastfmArtist, ArtistsRankedDto> {
+public class LastfmArtistEntityFactory implements EntityFactory<LastfmArtist, ArtistDto> {
 
     @Override
-    protected LastfmArtist fromDto(ArtistsRankedDto dto, LastfmApiResponse response) {
+    public LastfmArtist fromDto(ArtistDto dto, LastfmApiResponse response) {
         return LastfmArtist.builder()
                 .name(dto.getName())
                 .url(dto.getUrl())
@@ -18,7 +18,7 @@ public class LastfmArtistEntityFactory extends EntityFactory<LastfmArtist, Artis
     }
 
     @Override
-    protected LastfmArtist clone(LastfmArtist entity) {
+    public LastfmArtist clone(LastfmArtist entity) {
         return LastfmArtist.builder()
                 .id(entity.getId())
                 .name(entity.getName())

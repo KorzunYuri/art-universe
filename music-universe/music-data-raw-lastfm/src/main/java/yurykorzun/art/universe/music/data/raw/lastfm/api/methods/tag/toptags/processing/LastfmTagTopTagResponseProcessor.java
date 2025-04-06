@@ -38,9 +38,11 @@ public class LastfmTagTopTagResponseProcessor extends LastfmApiResponseProcessor
     private static final List<EntityAttributeHandler<LastfmTag, ?, TagDtoWrapper>> attrHandlers = List.of(
         DefaultEntityAttributeHandler.forExternalAttribute(LastfmAttribute.RANK,  false,
             TagDtoWrapper::rank),
-        DefaultEntityAttributeHandler.forExternalAttribute(LastfmAttribute.RELATIONS_COUNT,  false,
+        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.RELATIONS_COUNT,  false,
+            LastfmTag::getUsageCount, LastfmTag::setUsageCount,
             (w) -> w.dto().getCount()),
-        DefaultEntityAttributeHandler.forExternalAttribute(LastfmAttribute.REACH,  false,
+        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.REACH,  false,
+            LastfmTag::getUsageUsersCount, LastfmTag::setUsageUsersCount,
             (w) -> w.dto().getReach())
     );
 
@@ -65,14 +67,12 @@ public class LastfmTagTopTagResponseProcessor extends LastfmApiResponseProcessor
     protected void processResponse(LastfmApiResponse response) throws IOException {
 
         TopTagsDtoRoot dtoRoot = parseResponse(response);
-        final String logPrefix = String.format("Lastfm %s response processing", LastfmApiCallType.TAG_TOP_TAGS.getMethod());
-        log.info("{}: start processing DTO of type {} with {} records",
-                logPrefix,
-                dtoRoot.getClass().getName(),
-                dtoRoot.getTopTags().getTags().size());
+        List<TagDto> dtos = dtoRoot.getTopTags().getTags();
+
+        final String logPrefix = String.format("Lastfm %s response processing", getApiCallType().getMethod());
+        log.info("{}: start processing DTO of type {} with {} records", logPrefix, dtoRoot.getClass().getName(), dtos.size());
 
         // wrap dtos to add 'rank' attribute
-        List<TagDto> dtos = dtoRoot.getTopTags().getTags();
         List<TagDtoWrapper> dtoWrappers = new ArrayList<>();
         PageInfo pageInfo = dtoRoot.getTopTags().getPageInfo();
         for (int i = 0; i < dtos.size(); i++) {

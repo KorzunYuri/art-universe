@@ -3,9 +3,12 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.process
 import lombok.extern.slf4j.Slf4j;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.EntityDto;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.*;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandler;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityFactory;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityMappingBuilder;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityMappings;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityRelationBuilder;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.AttributeHistoryBuilder;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.persistence.EntityPersister;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttributeHistoryRecord;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
@@ -53,6 +56,13 @@ public class LastfmApiDtoProcessor<E extends BaseLastfmEntity, D extends EntityD
      * @param entitySaver       function responsible for persisting entities
      * @param attrSaver         function responsible for persisting {@link LastfmAttributeHistoryRecord}
      * @param relationSaver     function responsible for persisting {@link LastfmEntityRelation}. DOESN'T RETURN VALUE.
+     *
+     * @return {@link LastfmApiDtoProcessingResult} containing:
+     * <ul>
+     *     <li><b>only saved</b> (new / updated) entities</li>
+     *     <li><b>only saved</b> (new / updated) attribute values</li>
+     *     <li><b>ALL</b> created entity_relations</li>
+     * </ul>
      */
     public LastfmApiDtoProcessingResult<E> processDtos(
         List<D> dtos,

@@ -3,17 +3,18 @@ package yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallStatus;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.common.data.raw.entity.BaseCollectableEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityQueryConfig;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityService;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -27,12 +28,14 @@ public class LastfmEntityServiceImpl implements LastfmEntityService {
 
     @Override
     public <E extends BaseCollectableEntity> List<E> findAllUnprocessed(LastfmEntityType entityType, LastfmApiCallType apiCallType) {
-        return findAllUnprocessed(entityType, apiCallType, LastfmConstants.HIBERNATE_BATCH_SIZE);
+        return findAllUnprocessed(entityType, apiCallType, LastfmEntityQueryConfig.builder().build());
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <E extends BaseCollectableEntity> List<E> findAllUnprocessed(LastfmEntityType entityType, LastfmApiCallType apiCallType, int limit) {
+    public <E extends BaseCollectableEntity> List<E> findAllUnprocessed(
+        LastfmEntityType entityType, LastfmApiCallType apiCallType, LastfmEntityQueryConfig config
+    ) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<E> query = (CriteriaQuery<E>) cb.createQuery(entityType.getEntityClass());
         Root<E> entityRoot = (Root<E>) query.from(entityType.getEntityClass());
@@ -62,17 +65,24 @@ public class LastfmEntityServiceImpl implements LastfmEntityService {
                         apiCallReferencesEntity,
                         apiCallIsNotExpired
                 );
+        // build sorting based on ROOT entity
+        List<Order> jpaOrders = new ArrayList<>();
+        for (Sort.Order order : config.getSort()) {
+            Path<?> path = entityRoot.get(order.getProperty());
+            Order jpaOrder = order.isAscending() ? cb.asc(path) : cb.desc(path);
+            jpaOrders.add(jpaOrder);
+        }
 
-        //  finalize query
-        query   .select(entityRoot)
-                .where(
-                        cb.equal(entityApprovalStatus, ApprovalStatus.APPROVED.getCode()),
-                        cb.not(cb.exists(idsWithPendingCallsQuery))
-                )
-                .orderBy(cb.desc(entityId));
+        // finalize query
+        query.select(entityRoot)
+            .where(
+                cb.equal(entityApprovalStatus, ApprovalStatus.APPROVED.getCode()),
+                cb.not(cb.exists(idsWithPendingCallsQuery))
+            )
+            .orderBy(jpaOrders);
 
         TypedQuery<E> typedQuery = entityManager.createQuery(query);
-        typedQuery.setMaxResults(limit);
+        typedQuery.setMaxResults(config.getLimit().max());
         return typedQuery.getResultList();
     }
 
