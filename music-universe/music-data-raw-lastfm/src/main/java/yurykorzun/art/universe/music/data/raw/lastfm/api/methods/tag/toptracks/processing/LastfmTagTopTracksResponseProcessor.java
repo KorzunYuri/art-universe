@@ -45,6 +45,8 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
     private final LastfmEntityRelationService entityRelationService;
     private final LastfmAttributeHistoryService attributeHistoryService;
 
+    private final String logPrefix = String.format("Lastfm %s response processing", getApiCallType().getMethod());
+
     private Set<TagTopTracksDtoRoot> rootsWithMissingAttrsLogged = new HashSet<>();
 
     protected LastfmTagTopTracksResponseProcessor(
@@ -93,7 +95,6 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
         TagTopTracksDtoRoot dtoRoot = parseResponse(sourceApiResponse);
         List<TrackDto> trackDtos = getTrackDtos(dtoRoot);
 
-        final String logPrefix = String.format("Lastfm %s response processing", getApiCallType().getMethod());
         log.info("{}: start processing DTO of type {} with {} records", logPrefix, dtoRoot.getClass().getName(), trackDtos.size());
 
         //  first save new artists
@@ -125,7 +126,7 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
         //  finally, bind all tracks to artists
         bindTracksToArtists(trackDtos, trackMap, artistMap, sourceApiResponse.getApiCall());
 
-        log.info("\"{}: Finished processing DTO of type {}", logPrefix, dtoRoot.getClass().getName());
+        log.info("{}: Finished processing DTO of type {}", logPrefix, dtoRoot.getClass().getName());
     }
 
     /**
@@ -133,7 +134,7 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
      * @return <b>ALL</b> the artist entities.
      */
     private Map<String, LastfmArtist> updateArtists(TagTopTracksDtoRoot dtoRoot, LastfmApiResponse sourceApiResponse) {
-        log.info("start processing artists contained in tracks");
+        log.info("{}: Start processing artists contained in tracks", logPrefix);
 
         List<ArtistDto> artistDtos = getArtistDtos(dtoRoot);
         List<String> artistNames = getArtistNames(dtoRoot);
@@ -151,7 +152,7 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
             artistService::saveArtists,
             attributeHistoryService::upsertCandidateValues
         );
-        log.info("saved {} artists", result.savedEntities().size());
+        log.info("{}: saved {} artists", logPrefix, result.savedEntities().size());
 
         //  merge existing and new artists to eliminate the second call to database for artists
         Map<String, LastfmArtist> artistMap = existingArtists.stream()
