@@ -31,6 +31,11 @@ public enum LastfmTaskType implements TaskType, LastfmSpecific {
     }
 
     @Override
+    public String getName() {
+        return name();
+    }
+
+    @Override
     public Duration getDueDuration() {
         return this.dueDuration;
     }

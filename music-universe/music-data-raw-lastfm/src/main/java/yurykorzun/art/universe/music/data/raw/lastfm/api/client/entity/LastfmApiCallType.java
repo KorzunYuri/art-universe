@@ -104,4 +104,9 @@ public enum LastfmApiCallType implements ApiCallType, LastfmSpecific {
     public Integer getCode() {
         return this.code;
     }
+
+    @Override
+    public String getName() {
+        return name();
+    }
 }

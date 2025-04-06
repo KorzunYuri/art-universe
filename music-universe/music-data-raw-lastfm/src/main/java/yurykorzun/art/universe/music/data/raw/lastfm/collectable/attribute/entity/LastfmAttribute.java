@@ -104,6 +104,11 @@ public enum LastfmAttribute implements Coded {
         public Integer getCode() {
             return id;
         }
+
+        @Override
+        public String getName() {
+            return name();
+        }
     }
 
     public enum HistoryType {

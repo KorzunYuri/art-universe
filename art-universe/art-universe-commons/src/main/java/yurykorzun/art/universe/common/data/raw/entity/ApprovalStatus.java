@@ -31,6 +31,11 @@ public enum ApprovalStatus implements Coded, TransitionAware<ApiCallStatus> {
     }
 
     @Override
+    public String getName() {
+        return this.name();
+    }
+
+    @Override
     public boolean isValidTransition(ApiCallStatus to) {
         // TODO add ApprovalStatus transition validation
         return true;

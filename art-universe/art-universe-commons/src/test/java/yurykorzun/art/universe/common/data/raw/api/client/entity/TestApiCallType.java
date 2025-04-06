@@ -36,4 +36,9 @@ public enum TestApiCallType implements ApiCallType {
     public Integer getCode() {
         return 1;
     }
+
+    @Override
+    public String getName() {
+        return name();
+    }
 }

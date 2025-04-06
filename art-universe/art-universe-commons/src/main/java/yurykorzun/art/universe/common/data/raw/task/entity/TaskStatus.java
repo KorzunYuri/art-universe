@@ -32,6 +32,11 @@ public enum TaskStatus implements Coded, TransitionAware<TaskStatus> {
         return code;
     }
 
+    @Override
+    public String getName() {
+        return name();
+    }
+
     static {
         CodedRegistry.register(Arrays.asList(values()), TaskStatus.class);
     }

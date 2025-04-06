@@ -33,6 +33,11 @@ public enum LastfmEntityType implements LastfmSpecific, Coded, CollectableEntity
     }
 
     @Override
+    public String getName() {
+        return name();
+    }
+
+    @Override
     public String getTypeName() {
         return "entity_type";
     }

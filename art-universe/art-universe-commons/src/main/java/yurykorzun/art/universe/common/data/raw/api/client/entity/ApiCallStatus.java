@@ -37,6 +37,11 @@ public enum ApiCallStatus implements Coded, TransitionAware<ApiCallStatus> {
         return code;
     }
 
+    @Override
+    public String getName() {
+        return this.name();
+    }
+
     static {
         CodedRegistry.register(Arrays.asList(values()), ApiCallStatus.class);
     }

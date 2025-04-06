@@ -31,6 +31,11 @@ public enum ApiResponseStatus implements Coded, TransitionAware<ApiResponseStatu
     }
 
     @Override
+    public String getName() {
+        return name();
+    }
+
+    @Override
     public boolean isValidTransition(ApiResponseStatus to) {
         // TODO add ApiResponseStatus transition validation
         return true;

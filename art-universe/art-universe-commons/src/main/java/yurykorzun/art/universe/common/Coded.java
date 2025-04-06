@@ -57,4 +57,5 @@ package yurykorzun.art.universe.common;
  */
 public interface Coded {
     Integer getCode();
+    String getName();
 }
