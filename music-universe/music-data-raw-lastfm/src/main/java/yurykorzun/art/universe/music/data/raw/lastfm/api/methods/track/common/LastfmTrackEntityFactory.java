@@ -13,7 +13,7 @@ public class LastfmTrackEntityFactory implements EntityFactory<LastfmTrack, Trac
                 .name(dto.getName())
                 .url(dto.getUrl())
                 .mbid(dto.getMbid())
-                .streamable(dto.getStreamableObject().getFullTrack())
+                .streamable(1 == dto.getStreamableObject().getFullTrack())
                 .duration(dto.getDuration())
                 .apiCall(response.getApiCall())
             .build();
@@ -26,7 +26,7 @@ public class LastfmTrackEntityFactory implements EntityFactory<LastfmTrack, Trac
                 .name(entity.getName())
                 .url(entity.getUrl())
                 .mbid(entity.getMbid())
-                .streamable(entity.getStreamable())
+                .streamable(entity.isStreamable())
                 .duration(entity.getDuration())
                 .apiCall(entity.getApiCall())
                 .approvalStatus(entity.getApprovalStatus())

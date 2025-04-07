@@ -156,7 +156,7 @@ public class DbConsistencyHelper {
                 .name(  randomString())
                 .mbid(  randomString())
                 .duration(100)
-                .streamable(1)
+                .streamable(true)
                 .apiCall(apiCall)
             .build();
     }

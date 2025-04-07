@@ -60,7 +60,7 @@ public enum LastfmAttribute implements Coded {
             7,
             "streamable",
             "Is streamable",
-            DataType.INTEGER,
+            DataType.BOOLEAN,
             HistoryType.SCD2,
             List.of(LastfmEntityType.TRACK, LastfmEntityType.ARTIST))
     ;
@@ -96,6 +96,7 @@ public enum LastfmAttribute implements Coded {
     public enum DataType implements Coded {
             STRING(1)
         ,   INTEGER(2)
+        ,   BOOLEAN(3)
         ;
 
         private final int id;

@@ -1,6 +1,7 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,7 +14,7 @@ import java.util.Objects;
 @Entity(name = "artist")
 @SuperBuilder
 @NoArgsConstructor
-@Getter
+@Getter @Setter
 public class LastfmArtist extends BaseLastfmEntity {
 
     @Id
@@ -23,13 +24,17 @@ public class LastfmArtist extends BaseLastfmEntity {
             allocationSize = 50
     )
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "artist_seq_gen")
+    @Setter(value = AccessLevel.NONE)
     private long id;
 
-    @Setter
+    @Column(name = "mbid")
     private String mbid;
 
-    @Setter
+    @Column(name = "url")
     private String url;
+
+    @Column(name = "is_streamable")
+    private boolean isStreamable;
 
     @Override
     public LastfmEntityType getType() {

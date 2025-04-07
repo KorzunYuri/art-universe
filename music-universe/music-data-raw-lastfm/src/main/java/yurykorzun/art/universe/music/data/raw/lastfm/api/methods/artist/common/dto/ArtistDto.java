@@ -16,6 +16,8 @@ public class ArtistDto implements EntityDto {
 
     private String url;
 
+    private int streamable;
+
     @Override
     public String getUniqueKey() {
         return name;
