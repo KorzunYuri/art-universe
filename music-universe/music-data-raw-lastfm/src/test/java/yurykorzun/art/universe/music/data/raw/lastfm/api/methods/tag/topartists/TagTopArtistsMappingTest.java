@@ -3,7 +3,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.RankInfo;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.ArtistsRankedDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.TopArtistsArtistDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.TopArtistsDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.TopArtistsDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.TopArtistsPageInfo;
@@ -36,11 +36,11 @@ public class TagTopArtistsMappingTest {
         assertEquals(3578, pageInfo.getPagesTotal());
         assertEquals(178853, pageInfo.getRecordsTotal());
 
-        List<ArtistsRankedDto> artists = topArtists.getArtists();
+        List<TopArtistsArtistDto> artists = topArtists.getArtists();
         assertNotNull(artists);
         assertEquals(50, artists.size());
 
-        ArtistsRankedDto artist = artists.get(0);
+        TopArtistsArtistDto artist = artists.get(0);
         assertEquals("Coldplay", artist.getName());
         assertEquals("cc197bad-dc9c-440d-a5b5-d52ba2e14234", artist.getMbid());
         assertEquals("https://www.last.fm/music/Coldplay", artist.getUrl());

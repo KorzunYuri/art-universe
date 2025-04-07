@@ -5,7 +5,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.d
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 
-public class LastfmArtistEntityFactory implements EntityFactory<LastfmArtist, ArtistDto> {
+public class LastfmArtistEntityFactory<D extends ArtistDto> implements EntityFactory<LastfmArtist, D> {
 
     @Override
     public LastfmArtist fromDto(ArtistDto dto, LastfmApiResponse response) {

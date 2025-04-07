@@ -14,6 +14,6 @@ public class TopArtistsDto {
     private TopArtistsPageInfo pageInfo;
 
     @JsonProperty("artist")
-    private List<ArtistsRankedDto> artists;
+    private List<TopArtistsArtistDto> artists;
 
 }

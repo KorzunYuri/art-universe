@@ -21,8 +21,6 @@ public class TrackDto implements EntityDto {
 
     private int duration;
 
-    private ArtistDto artist;
-
     @JsonProperty("streamable")
     private TrackStreamableAttrDto streamableObject;
 

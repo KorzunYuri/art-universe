@@ -13,8 +13,9 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.LastfmArtistEntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.dto.TagTopTracksDtoRoot;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.dto.TagTopTracksTrackArtistDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.dto.TagTopTracksTrackDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.track.common.LastfmTrackEntityFactory;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.track.common.dto.TrackDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.repository.LastfmArtistRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttributeHistoryRecord;
@@ -76,10 +77,8 @@ class LastfmTagTopTracksResponseProcessorTest extends FullContextTest {
         final int expectedCreatedArtistAttrValuesNumber = expectedCreatedArtistsNumber * ARTIST_ATTRS_NUMBER;
         final int expectedCreatedAttrValuesNumber = expectedCreatedTrackAttrValuesNumber + expectedCreatedArtistAttrValuesNumber;
 
-        // when(trackRepository.findAllByUrlIn(testCase.getTrackUrls())).thenReturn(List.of());
         when(trackRepository.saveAll(any())).thenAnswer(invocation -> invocation.getArguments()[0]);
 
-        // when(artistRepository.findAllByNameIn(testCase.getArtistNames())).thenReturn(List.of());
         when(artistRepository.saveAll(any())).thenAnswer(invocation -> invocation.getArguments()[0]);
 
         when(attributeHistoryService.upsertCandidateValue(any())).thenAnswer(invocation -> invocation.getArguments()[0]);
@@ -286,14 +285,14 @@ class LastfmTagTopTracksResponseProcessorTest extends FullContextTest {
             ObjectMapper objectMapper = new ObjectMapper();
             TagTopTracksDtoRoot dtoRoot = objectMapper.readValue(dtoString, TagTopTracksDtoRoot.class);
 
-            LastfmTrackEntityFactory trackFactory = new LastfmTrackEntityFactory();
+            LastfmTrackEntityFactory<TagTopTracksTrackDto> trackFactory = new LastfmTrackEntityFactory<>();
             List<LastfmTrack> expectedTracks = dtoRoot.getRootObject().getTracks().stream()
                     .map(track -> trackFactory.fromDto(track, sourceApiResponse))
                 .toList();
 
-            LastfmArtistEntityFactory artistFactory = new LastfmArtistEntityFactory();
+            LastfmArtistEntityFactory<TagTopTracksTrackArtistDto> artistFactory = new LastfmArtistEntityFactory<>();
             List<LastfmArtist> expectedArtists = dtoRoot.getRootObject().getTracks().stream()
-                    .map(TrackDto::getArtist)
+                    .map(TagTopTracksTrackDto::getArtist)
                     .filter(Objects::nonNull)
                     .distinct()
                     .map(artistDto -> artistFactory.fromDto(artistDto, sourceApiResponse))
