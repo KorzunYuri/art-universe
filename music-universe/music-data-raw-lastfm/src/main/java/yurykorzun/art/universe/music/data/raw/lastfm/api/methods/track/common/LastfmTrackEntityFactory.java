@@ -9,14 +9,19 @@ public class LastfmTrackEntityFactory<D extends TrackDto>  implements EntityFact
 
     @Override
     public LastfmTrack fromDto(D dto, LastfmApiResponse response) {
-        return LastfmTrack.builder()
+        return setExtensionFields(
+            LastfmTrack.builder()
                 .name(dto.getName())
                 .url(dto.getUrl())
                 .mbid(dto.getMbid())
-                .streamable(1 == dto.getStreamableObject().getFullTrack())
                 .duration(dto.getDuration())
-                .apiCall(response.getApiCall())
-            .build();
+                .apiCall(response.getApiCall()),
+            dto
+        ).build();
+    }
+
+    protected LastfmTrack.LastfmTrackBuilder<?,?> setExtensionFields(LastfmTrack.LastfmTrackBuilder<?,?> builder, D dto) {
+        return builder;
     }
 
     @Override

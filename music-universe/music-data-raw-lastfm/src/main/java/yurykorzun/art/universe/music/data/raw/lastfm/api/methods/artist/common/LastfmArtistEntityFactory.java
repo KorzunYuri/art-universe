@@ -8,13 +8,18 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.L
 public class LastfmArtistEntityFactory<D extends ArtistDto> implements EntityFactory<LastfmArtist, D> {
 
     @Override
-    public LastfmArtist fromDto(ArtistDto dto, LastfmApiResponse response) {
-        return LastfmArtist.builder()
+    public LastfmArtist fromDto(D dto, LastfmApiResponse response) {
+        return setExtensionFields(LastfmArtist.builder()
                 .name(dto.getName())
                 .url(dto.getUrl())
                 .mbid(dto.getMbid())
-                .apiCall(response.getApiCall())
-            .build();
+                .apiCall(response.getApiCall()),
+            dto
+        ).build();
+    }
+
+    protected LastfmArtist.LastfmArtistBuilder<?,?> setExtensionFields(LastfmArtist.LastfmArtistBuilder<?,?> builder, D dto) {
+        return builder;
     }
 
     @Override

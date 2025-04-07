@@ -44,6 +44,7 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
     private final LastfmTrackService trackService;
     private final LastfmEntityRelationService entityRelationService;
     private final LastfmAttributeHistoryService attributeHistoryService;
+    private final TagTopTracksTrackFactory trackFactory;
 
     private final String logPrefix = String.format("Lastfm %s response processing", getApiCallType().getMethod());
 
@@ -56,11 +57,13 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
         LastfmAttributeHistoryService attributeHistoryService
     ) {
         super(TagTopTracksDtoRoot.class);
-        this.artistService = artistService;
 
+        this.artistService = artistService;
         this.trackService = lastfmTrackService;
         this.entityRelationService = entityRelationService;
         this.attributeHistoryService = attributeHistoryService;
+
+        this.trackFactory = new TagTopTracksTrackFactory();
     }
 
     private static final List<EntityAttributeHandler<LastfmTrack, ?, TagTopTracksTrackDto>> trackAttrHandlers = List.of(
@@ -112,7 +115,7 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
         List<LastfmTrack> existingTracks = trackService.findAllByUrls(trackUrls);
 
         LastfmApiDtoProcessingResult<LastfmTrack> result = mappingService.processDtos(trackDtos, existingTracks, sourceApiResponse,
-            new LastfmTrackEntityFactory<>(), trackAttrHandlers,
+            trackFactory, trackAttrHandlers,
             trackService::saveTracks,
             attributeHistoryService::upsertCandidateValues,
             entityRelationService::upsertEntityRelations
@@ -225,5 +228,14 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
                 .filter(Objects::nonNull)
                 .distinct()
             .toList();
+    }
+
+    private static class TagTopTracksTrackFactory extends LastfmTrackEntityFactory<TagTopTracksTrackDto> {
+
+        @Override
+        protected LastfmTrack.LastfmTrackBuilder<?, ?> setExtensionFields(LastfmTrack.LastfmTrackBuilder<?, ?> builder, TagTopTracksTrackDto dto) {
+            return builder
+                .streamable(1 == dto.getStreamableObject().getFullTrack());
+        }
     }
 }
