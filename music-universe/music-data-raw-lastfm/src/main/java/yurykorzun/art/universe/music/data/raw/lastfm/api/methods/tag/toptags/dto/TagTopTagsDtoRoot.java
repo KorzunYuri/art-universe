@@ -7,9 +7,9 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.Root
 
 @Data
 @NoArgsConstructor
-public class TopTagsDtoRoot implements RootDto {
+public class TagTopTagsDtoRoot implements RootDto {
 
     @JsonProperty("toptags")
-    private TopTagsDto topTags;
+    private TagTopTagsTagsDto topTags;
 
 }

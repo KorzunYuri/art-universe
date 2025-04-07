@@ -10,7 +10,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.Page
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class TopArtistsPageInfo extends PageInfoExtended {
+public class TagTopArtistsPageInfo extends PageInfoExtended {
 
     private String tag;
 

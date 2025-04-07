@@ -9,7 +9,7 @@ import java.util.List;
 
 @Data
 @NoArgsConstructor
-public class TopTagsDto {
+public class TagTopTagsTagsDto {
 
     @JsonProperty("@attr")
     private PageInfo pageInfo;

@@ -2,17 +2,23 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.pr
 
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityFactory;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.dto.TagDtoWrapper;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.common.dto.TagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 
-public class LastfmTagEntityFactory implements EntityFactory<LastfmTag, TagDtoWrapper> {
+public class LastfmTagEntityFactory <D extends TagDto> implements EntityFactory<LastfmTag, D> {
 
     @Override
-    public LastfmTag fromDto(TagDtoWrapper dto, LastfmApiResponse response) {
-        return LastfmTag.builder()
+    public LastfmTag fromDto(D dto, LastfmApiResponse response) {
+        return setExtensionFields(
+            LastfmTag.builder()
                 .apiCall(response.getApiCall())
-                .name(dto.getName())
-            .build();
+                .name(dto.getName()),
+            dto
+        ).build();
+    }
+
+    protected LastfmTag.LastfmTagBuilder<?, ?> setExtensionFields(LastfmTag.LastfmTagBuilder<?, ?> builder, D dto) {
+        return builder;
     }
 
     @Override

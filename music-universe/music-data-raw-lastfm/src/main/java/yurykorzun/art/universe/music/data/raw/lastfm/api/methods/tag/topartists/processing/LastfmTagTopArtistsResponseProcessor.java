@@ -16,8 +16,8 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.DefaultEntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.persistence.DefaultEntityPersister;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.TopArtistsArtistDto;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.TopArtistsDtoRoot;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.TagTopArtistsArtistDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.TagTopArtistsDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
@@ -29,19 +29,19 @@ import java.util.List;
 
 @Component
 @Slf4j
-public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProcessor<TopArtistsDtoRoot> {
+public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProcessor<TagTopArtistsDtoRoot> {
 
     private final LastfmArtistService artistService;
     private final LastfmEntityRelationService entityRelationService;
     private final LastfmAttributeHistoryService attributeHistoryService;
-    private final LastfmArtistEntityFactory<TopArtistsArtistDto> artistFactory;
+    private final LastfmArtistEntityFactory<TagTopArtistsArtistDto> artistFactory;
 
     protected LastfmTagTopArtistsResponseProcessor(
         LastfmArtistService artistService,
         LastfmEntityRelationService entityRelationService,
         LastfmAttributeHistoryService attributeHistoryService
     ) {
-        super(TopArtistsDtoRoot.class);
+        super(TagTopArtistsDtoRoot.class);
 
         this.artistService = artistService;
         this.entityRelationService = entityRelationService;
@@ -50,11 +50,11 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
         this.artistFactory = new LastfmArtistEntityFactory<>();
     }
 
-    private static final List<EntityAttributeHandler<LastfmArtist, ?, TopArtistsArtistDto>> attrHandlers = List.of(
+    private static final List<EntityAttributeHandler<LastfmArtist, ?, TagTopArtistsArtistDto>> attrHandlers = List.of(
         DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.MBID,  false,
-            LastfmArtist::getMbid, LastfmArtist::setMbid, TopArtistsArtistDto::getMbid),
+            LastfmArtist::getMbid, LastfmArtist::setMbid, TagTopArtistsArtistDto::getMbid),
         DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.URL, false,
-            LastfmArtist::getUrl, LastfmArtist::setUrl, TopArtistsArtistDto::getUrl),
+            LastfmArtist::getUrl, LastfmArtist::setUrl, TagTopArtistsArtistDto::getUrl),
         DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.IS_STREAMABLE,  true,
             LastfmArtist::isStreamable, LastfmArtist::setStreamable,
             (dto) -> 1 == dto.getStreamable()),
@@ -71,8 +71,8 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     protected void processResponse(LastfmApiResponse response) throws IOException {
 
-        TopArtistsDtoRoot dtoRoot = parseResponse(response);
-        List<TopArtistsArtistDto> dtos = dtoRoot.getTopArtists().getArtists();
+        TagTopArtistsDtoRoot dtoRoot = parseResponse(response);
+        List<TagTopArtistsArtistDto> dtos = dtoRoot.getTopArtists().getArtists();
 
         final String logPrefix = String.format("Lastfm %s response processing", LastfmApiCallType.TAG_TOP_TAGS.getMethod());
         log.info("{}: start processing DTO of type {} with {} records", logPrefix, dtoRoot.getClass().getName(), dtos.size());
@@ -80,7 +80,7 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
         List<LastfmArtist> existingArtists = artistService.findAllByNames(dtos.stream()
             .map(dto -> dto.getName()).toList());
 
-        LastfmApiDtoProcessor<LastfmArtist, TopArtistsArtistDto> mappingService = new LastfmApiDtoProcessor<>(
+        LastfmApiDtoProcessor<LastfmArtist, TagTopArtistsArtistDto> mappingService = new LastfmApiDtoProcessor<>(
             new EntityMappingBuilder<>(),
             new DefaultEntityPersister<>(),
             new DefaultAttributeHistoryBuilder<>(),

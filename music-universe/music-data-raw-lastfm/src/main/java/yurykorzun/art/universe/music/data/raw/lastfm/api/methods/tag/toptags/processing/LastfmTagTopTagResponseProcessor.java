@@ -16,45 +16,44 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.DefaultEntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.persistence.DefaultEntityPersister;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.dto.TagDtoWrapper;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.dto.TagTopTagsTagDto;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.dto.TopTagsDtoRoot;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.dto.TagTopTagsDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.LastfmAttributeHistoryService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.repository.LastfmTagRepository;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 @Component
 @Slf4j
-public class LastfmTagTopTagResponseProcessor extends LastfmApiResponseProcessor<TopTagsDtoRoot> {
+public class LastfmTagTopTagResponseProcessor extends LastfmApiResponseProcessor<TagTopTagsDtoRoot> {
 
     private final LastfmTagRepository tagRepository;
     private final LastfmAttributeHistoryService attributeHistoryService;
 
-    private static final List<EntityAttributeHandler<LastfmTag, ?, TagDtoWrapper>> attrHandlers = List.of(
+    private static final List<EntityAttributeHandler<LastfmTag, ?, TagTopTagsTagDto>> attrHandlers = List.of(
         DefaultEntityAttributeHandler.forExternalAttribute(LastfmAttribute.RANK,  false,
-            TagDtoWrapper::rank),
+            TagTopTagsTagDto::getRank),
         DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.RELATIONS_COUNT,  false,
-            LastfmTag::getUsageCount, LastfmTag::setUsageCount,
-            (w) -> w.dto().getCount()),
+            LastfmTag::getUsageCount, LastfmTag::setUsageCount, TagTopTagsTagDto::getCount),
         DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.REACH,  false,
-            LastfmTag::getUsageUsersCount, LastfmTag::setUsageUsersCount,
-            (w) -> w.dto().getReach())
+            LastfmTag::getUsageUsersCount, LastfmTag::setUsageUsersCount, TagTopTagsTagDto::getReach)
     );
+    private final TagTopTagsTagFactory tagFactory;
 
 
     protected LastfmTagTopTagResponseProcessor(
         LastfmTagRepository tagRepository,
         LastfmAttributeHistoryService attributeHistoryService)
     {
-        super(TopTagsDtoRoot.class);
+        super(TagTopTagsDtoRoot.class);
 
         this.tagRepository = tagRepository;
         this.attributeHistoryService = attributeHistoryService;
+
+        this.tagFactory = new TagTopTagsTagFactory();
     }
 
     @Override
@@ -66,36 +65,44 @@ public class LastfmTagTopTagResponseProcessor extends LastfmApiResponseProcessor
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     protected void processResponse(LastfmApiResponse response) throws IOException {
 
-        TopTagsDtoRoot dtoRoot = parseResponse(response);
+        TagTopTagsDtoRoot dtoRoot = parseResponse(response);
         List<TagTopTagsTagDto> dtos = dtoRoot.getTopTags().getTags();
 
         final String logPrefix = String.format("Lastfm %s response processing", getApiCallType().getMethod());
         log.info("{}: start processing DTO of type {} with {} records", logPrefix, dtoRoot.getClass().getName(), dtos.size());
 
-        // wrap dtos to add 'rank' attribute
-        List<TagDtoWrapper> dtoWrappers = new ArrayList<>();
+        // add 'rank' attribute
         PageInfo pageInfo = dtoRoot.getTopTags().getPageInfo();
         for (int i = 0; i < dtos.size(); i++) {
-            TagTopTagsTagDto dto = dtos.get(i);
-            dtoWrappers.add(new TagDtoWrapper(dto, pageInfo.getOffset() + i + 1));
+            dtos.get(i).setRank(pageInfo.getOffset() + i + 1);
         }
 
         List<LastfmTag> existingArtists = tagRepository.findAllByNameIn(dtos.stream()
             .map(dto -> dto.getName()).toList());
 
-        LastfmApiDtoProcessor<LastfmTag, TagDtoWrapper> mappingService = new LastfmApiDtoProcessor<>(
+        LastfmApiDtoProcessor<LastfmTag, TagTopTagsTagDto> mappingService = new LastfmApiDtoProcessor<>(
             new EntityMappingBuilder<>(),
             new DefaultEntityPersister<>(),
             new DefaultAttributeHistoryBuilder<>(),
             new EntityRelationBuilder<>()
         );
-        mappingService.processDtos(dtoWrappers, existingArtists, response,
-            new LastfmTagEntityFactory(),
+        mappingService.processDtos(dtos, existingArtists, response,
+            tagFactory,
             attrHandlers,
             tagRepository::saveAll,
             attributeHistoryService::upsertCandidateValues
         );
 
         log.info("\"{}: Finished processing DTO of type {}", logPrefix, dtoRoot.getClass().getName());
+    }
+
+    private static class TagTopTagsTagFactory extends LastfmTagEntityFactory<TagTopTagsTagDto> {
+
+        @Override
+        protected LastfmTag.LastfmTagBuilder<?, ?> setExtensionFields(LastfmTag.LastfmTagBuilder<?, ?> builder, TagTopTagsTagDto dto) {
+            return builder
+                .usageCount(dto.getCount())
+                .usageUsersCount(dto.getReach());
+        }
     }
 }

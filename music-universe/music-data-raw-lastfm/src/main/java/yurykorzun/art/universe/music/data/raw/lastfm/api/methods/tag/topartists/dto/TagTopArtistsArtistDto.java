@@ -10,7 +10,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.Rank
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public class TopArtistsArtistDto extends ArtistDto {
+public class TagTopArtistsArtistDto extends ArtistDto {
 
     @JsonProperty("@attr")
     private RankInfo recordInfo;
