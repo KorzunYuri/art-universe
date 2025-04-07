@@ -16,8 +16,8 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.DefaultEntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.persistence.DefaultEntityPersister;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.common.dto.TagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.dto.TagDtoWrapper;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.dto.TagTopTagsTagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.dto.TopTagsDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.LastfmAttributeHistoryService;
@@ -67,7 +67,7 @@ public class LastfmTagTopTagResponseProcessor extends LastfmApiResponseProcessor
     protected void processResponse(LastfmApiResponse response) throws IOException {
 
         TopTagsDtoRoot dtoRoot = parseResponse(response);
-        List<TagDto> dtos = dtoRoot.getTopTags().getTags();
+        List<TagTopTagsTagDto> dtos = dtoRoot.getTopTags().getTags();
 
         final String logPrefix = String.format("Lastfm %s response processing", getApiCallType().getMethod());
         log.info("{}: start processing DTO of type {} with {} records", logPrefix, dtoRoot.getClass().getName(), dtos.size());
@@ -76,7 +76,7 @@ public class LastfmTagTopTagResponseProcessor extends LastfmApiResponseProcessor
         List<TagDtoWrapper> dtoWrappers = new ArrayList<>();
         PageInfo pageInfo = dtoRoot.getTopTags().getPageInfo();
         for (int i = 0; i < dtos.size(); i++) {
-            TagDto dto = dtos.get(i);
+            TagTopTagsTagDto dto = dtos.get(i);
             dtoWrappers.add(new TagDtoWrapper(dto, pageInfo.getOffset() + i + 1));
         }
 
