@@ -48,7 +48,7 @@ public enum LastfmApiCallType implements ApiCallType, LastfmSpecific {
             Set.of(PARAM_NAME_API_KEY, PARAM_NAME_ARTIST),
             Set.of(),
             ArtistGetInfoDtoRoot.class,
-            LastfmArtist.class);
+            null);
 
     static {
         CodedRegistry.register(Arrays.asList(values()), ApiCallType.class);
