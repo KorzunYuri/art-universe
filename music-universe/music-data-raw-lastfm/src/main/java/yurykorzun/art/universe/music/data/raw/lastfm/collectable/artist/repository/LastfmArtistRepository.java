@@ -6,10 +6,12 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.L
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface LastfmArtistRepository extends JpaRepository<LastfmArtist, Long> {
 
+    Optional<LastfmArtist> findByName(String name);
     List<LastfmArtist> findAllByNameIn(Collection<String> strings);
 
 }

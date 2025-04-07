@@ -116,6 +116,7 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
     }
 
     private Map<String, LastfmTrack> updateTracks(TagTopTracksDtoRoot dtoRoot, LastfmApiResponse sourceApiResponse) {
+        log.info("{}: Start processing tracks", logPrefix);
 
         LastfmApiDtoProcessor<LastfmTrack, TagTopTracksTrackDto> mappingService = new LastfmApiDtoProcessor<>(
             new EntityMappingBuilder<>(),
@@ -134,11 +135,13 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
             attributeHistoryService::upsertCandidateValues,
             entityRelationService::upsertEntityRelations
         );
+        log.info("{}: saved {} tracks", logPrefix, result.savedEntities().size());
 
         // merge existing and saved tracks to eliminate the second call to database for tracks
         Map<String, LastfmTrack> trackMap = existingTracks.stream()
             .collect(Collectors.toMap(LastfmTrack::getUniqueKey, Function.identity()));
         result.savedEntities().forEach(t -> trackMap.putIfAbsent(t.getUniqueKey(), t));
+
         return trackMap;
     }
 
@@ -195,6 +198,7 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
         entityRelationService.upsertEntityRelations(relations);
+        log.info("{}: saved {} artist-track relations", logPrefix, relations.size());
     }
 
     private List<TagTopTracksTrackDto> getTrackDtos(TagTopTracksDtoRoot dtoRoot) {

@@ -16,6 +16,7 @@ public class LastfmApiConstants {
 
     //  method-specific
     public static final String PARAM_NAME_TAG = "tag";
+    public static final String PARAM_NAME_ARTIST = "artist";
 
     //  default values for API parameters
     public static final String PARAM_DEFAULT_FORMAT = "json";

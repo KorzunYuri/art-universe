@@ -9,13 +9,17 @@ public class LastfmArtistEntityFactory<D extends ArtistDto> implements EntityFac
 
     @Override
     public LastfmArtist fromDto(D dto, LastfmApiResponse response) {
-        return setExtensionFields(LastfmArtist.builder()
-                .name(dto.getName())
-                .url(dto.getUrl())
-                .mbid(dto.getMbid())
-                .apiCall(response.getApiCall()),
-            dto
-        ).build();
+        // set mandatory attrs
+        LastfmArtist.LastfmArtistBuilder<?,?> builder = LastfmArtist.builder()
+            .name(dto.getName())
+            .url(dto.getUrl())
+            .apiCall(response.getApiCall());
+        // set optional attrs
+        if (dto.getMbid() != null) {
+            builder.mbid(dto.getMbid());
+        }
+        // set extended attrs
+        return setExtensionFields(builder, dto).build();
     }
 
     protected LastfmArtist.LastfmArtistBuilder<?,?> setExtensionFields(LastfmArtist.LastfmArtistBuilder<?,?> builder, D dto) {

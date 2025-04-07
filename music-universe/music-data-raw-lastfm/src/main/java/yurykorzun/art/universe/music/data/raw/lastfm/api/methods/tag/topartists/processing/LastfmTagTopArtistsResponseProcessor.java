@@ -8,6 +8,7 @@ import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.LastfmArtistEntityFactory;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.dto.ArtistDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessor;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiResponseProcessor;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityMappingBuilder;
@@ -55,7 +56,7 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
             LastfmArtist::getMbid, LastfmArtist::setMbid, TagTopArtistsArtistDto::getMbid),
         DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.URL, false,
             LastfmArtist::getUrl, LastfmArtist::setUrl, TagTopArtistsArtistDto::getUrl),
-        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.IS_STREAMABLE,  true,
+        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.IS_STREAMABLE,  false,
             LastfmArtist::isStreamable, LastfmArtist::setStreamable,
             (dto) -> 1 == dto.getStreamable()),
         DefaultEntityAttributeHandler.forExternalAttribute(LastfmAttribute.RANK,  true,
@@ -77,8 +78,8 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
         final String logPrefix = String.format("Lastfm %s response processing", LastfmApiCallType.TAG_TOP_TAGS.getMethod());
         log.info("{}: start processing DTO of type {} with {} records", logPrefix, dtoRoot.getClass().getName(), dtos.size());
 
-        List<LastfmArtist> existingArtists = artistService.findAllByNames(dtos.stream()
-            .map(dto -> dto.getName()).toList());
+        List<String> artistNames = dtos.stream().map(ArtistDto::getName).toList();
+        List<LastfmArtist> existingArtists = artistService.findAllByNames(artistNames);
 
         LastfmApiDtoProcessor<LastfmArtist, TagTopArtistsArtistDto> mappingService = new LastfmApiDtoProcessor<>(
             new EntityMappingBuilder<>(),

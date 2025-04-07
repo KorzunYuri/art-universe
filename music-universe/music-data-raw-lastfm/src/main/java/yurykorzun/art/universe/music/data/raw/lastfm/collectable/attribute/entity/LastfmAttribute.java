@@ -63,6 +63,27 @@ public enum LastfmAttribute implements Coded {
             DataType.BOOLEAN,
             HistoryType.SCD2,
             List.of(LastfmEntityType.TRACK, LastfmEntityType.ARTIST))
+    ,   IS_ON_TOUR(
+            8,
+            "on_tour",
+            "Artist is on tour",
+            DataType.BOOLEAN,
+            HistoryType.SCD2,
+            List.of(LastfmEntityType.ARTIST))
+    ,   LISTENERS_COUNT(
+            9,
+            "listeners_count",
+            "Number of listeners",
+            DataType.INTEGER,
+            HistoryType.SCD2,
+            List.of(LastfmEntityType.values()))
+    ,   PLAY_COUNT(
+            10,
+            "play_count",
+            "How many times track(s) were scrobbled",
+            DataType.INTEGER,
+            HistoryType.SCD2,
+            List.of(LastfmEntityType.values()))
     ;
 
     private final int id;

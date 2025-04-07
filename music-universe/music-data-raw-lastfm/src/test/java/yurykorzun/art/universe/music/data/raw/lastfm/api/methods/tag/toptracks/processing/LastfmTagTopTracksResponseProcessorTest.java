@@ -17,14 +17,14 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.d
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.dto.TagTopTracksTrackDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.track.common.LastfmTrackEntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.repository.LastfmArtistRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttributeHistoryRecord;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.LastfmAttributeHistoryService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityRelation;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityRelationService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.repository.LastfmTrackRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.service.LastfmTrackService;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.FullContextTest;
 
@@ -49,9 +49,9 @@ class LastfmTagTopTracksResponseProcessorTest extends FullContextTest {
     @MockitoBean
     private LastfmAttributeHistoryService attributeHistoryService;
     @MockitoBean
-    private LastfmArtistRepository artistRepository;
+    private LastfmArtistService artistService;
     @MockitoBean
-    private LastfmTrackRepository trackRepository;
+    private LastfmTrackService trackService;
 
     // the variables below depend on currently supported attributes and should change along with processor implementation
     private static final int TRACK_SCD2_ATTRS_NUMBER = 4;
@@ -69,7 +69,7 @@ class LastfmTagTopTracksResponseProcessorTest extends FullContextTest {
     @Test
     void givenEmptyDatabase_whenProcessedTagTopTracksResponse_newRecordsAreCreated() throws Exception {
 
-        TestCase testCase = testCaseFromDtoString(TEST_DTO_ROOT);
+        TestCase testCase = testCaseFromResponse(TEST_DTO_ROOT);
 
         final int expectedCreatedTracksNumber = testCase.expectedTracks.size();
         final int expectedCreatedArtistsNumber = testCase.expectedArtists.size();
@@ -77,24 +77,22 @@ class LastfmTagTopTracksResponseProcessorTest extends FullContextTest {
         final int expectedCreatedArtistAttrValuesNumber = expectedCreatedArtistsNumber * ARTIST_ATTRS_NUMBER;
         final int expectedCreatedAttrValuesNumber = expectedCreatedTrackAttrValuesNumber + expectedCreatedArtistAttrValuesNumber;
 
-        when(trackRepository.saveAll(any())).thenAnswer(invocation -> invocation.getArguments()[0]);
-
-        when(artistRepository.saveAll(any())).thenAnswer(invocation -> invocation.getArguments()[0]);
-
+        when(trackService.saveTracks(any())).thenAnswer(invocation -> invocation.getArguments()[0]);
+        when(artistService.saveArtists(any())).thenAnswer(invocation -> invocation.getArguments()[0]);
         when(attributeHistoryService.upsertCandidateValue(any())).thenAnswer(invocation -> invocation.getArguments()[0]);
 
         processor.processResponse(testCase.sourceApiResponse);
 
         // Verify that trackRepository.findAllByUrlIn was called with the correct set of track urls.
         ArgumentCaptor<List<String>> urlsCaptor = ArgumentCaptor.forClass(List.class);
-        verify(trackRepository, times(1)).findAllByUrlIn(urlsCaptor.capture());
+        verify(trackService, times(1)).findAllByUrls(urlsCaptor.capture());
         List<String> capturedUrls = urlsCaptor.getValue();
         assertEquals(expectedCreatedTracksNumber, capturedUrls.size(),
             String.format("Expected %d track urls to be searched", expectedCreatedTracksNumber));
 
         // Verify that new tracks are saved
         ArgumentCaptor<List<LastfmTrack>> trackCaptor = ArgumentCaptor.forClass(List.class);
-        verify(trackRepository, times(1)).saveAll(trackCaptor.capture());
+        verify(trackService, times(1)).saveTracks(trackCaptor.capture());
         List<LastfmTrack> savedTracks = trackCaptor.getValue();
         assertEquals(expectedCreatedTracksNumber, savedTracks.size(),
             String.format("Expected %d new tracks to be saved", expectedCreatedTracksNumber));
@@ -102,14 +100,14 @@ class LastfmTagTopTracksResponseProcessorTest extends FullContextTest {
 
         // Verify that artistRepository.findAllByNameIn was called with the correct set of artist names.
         ArgumentCaptor<List<String>> namesCaptor = ArgumentCaptor.forClass(List.class);
-        verify(artistRepository, times(1)).findAllByNameIn(namesCaptor.capture());
+        verify(artistService, times(1)).findAllByNames(namesCaptor.capture());
         List<String> capturedNames = namesCaptor.getValue();
         assertEquals(expectedCreatedArtistsNumber, capturedNames.size(),
             String.format("Expected %d artist names to be searched", expectedCreatedTracksNumber));
 
         // Verify that new artists are saved
         ArgumentCaptor<List<LastfmArtist>> artistsCaptor = ArgumentCaptor.forClass(List.class);
-        verify(artistRepository, times(1)).saveAll(artistsCaptor.capture());
+        verify(artistService, times(1)).saveArtists(artistsCaptor.capture());
         List<LastfmArtist> savedArtists = artistsCaptor.getValue();
         assertEquals(expectedCreatedArtistsNumber, savedArtists.size(),
             String.format("Expected %d new artists to be saved", expectedCreatedArtistsNumber));
@@ -267,23 +265,15 @@ class LastfmTagTopTracksResponseProcessorTest extends FullContextTest {
         final LastfmApiResponse sourceApiResponse;
         final List<LastfmTrack> expectedTracks;
         final List<LastfmArtist> expectedArtists;
-
-        List<String> getTrackUrls() {
-            return expectedTracks.stream().map(LastfmTrack::getUrl).toList();
-        }
-
-        List<String> getArtistNames() {
-            return expectedArtists.stream().map(LastfmArtist::getName).toList();
-        }
     }
 
-    private TestCase testCaseFromDtoString(String dtoString) {
+    private TestCase testCaseFromResponse(String responseString) {
         LastfmTag scopeEntity = consistencyHelper.createAndSaveTag(LastfmApiCallType.TAG_TOP_ARTISTS);
         LastfmApiResponse sourceApiResponse = consistencyHelper.createDummyApiResponse(
-            dtoString, LastfmApiCallType.TAG_TOP_TRACKS, scopeEntity);
+            responseString, LastfmApiCallType.TAG_TOP_TRACKS, scopeEntity);
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            TagTopTracksDtoRoot dtoRoot = objectMapper.readValue(dtoString, TagTopTracksDtoRoot.class);
+            TagTopTracksDtoRoot dtoRoot = objectMapper.readValue(responseString, TagTopTracksDtoRoot.class);
 
             LastfmTrackEntityFactory<TagTopTracksTrackDto> trackFactory = new LastfmTrackEntityFactory<>();
             List<LastfmTrack> expectedTracks = dtoRoot.getRootObject().getTracks().stream()

@@ -3,10 +3,12 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity;
 import lombok.Getter;
 import yurykorzun.art.universe.common.CodedRegistry;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallType;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getinfo.dto.ArtistGetInfoDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.RootDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.TagTopArtistsDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.dto.TagTopTagsDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.dto.TagTopTracksDtoRoot;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmSpecific;
@@ -39,9 +41,14 @@ public enum LastfmApiCallType implements ApiCallType, LastfmSpecific {
             Set.of(PARAM_NAME_API_KEY, PARAM_NAME_TAG),
             Set.of(PARAM_NAME_LIMIT, PARAM_NAME_PAGE),
             TagTopTracksDtoRoot.class,
-            LastfmTag.class
-    )
-    ;
+            LastfmTag.class)
+    ,   ARTIST_GET_INFO(
+            4,
+            "artist.getInfo",
+            Set.of(PARAM_NAME_API_KEY, PARAM_NAME_ARTIST),
+            Set.of(),
+            ArtistGetInfoDtoRoot.class,
+            LastfmArtist.class);
 
     static {
         CodedRegistry.register(Arrays.asList(values()), ApiCallType.class);

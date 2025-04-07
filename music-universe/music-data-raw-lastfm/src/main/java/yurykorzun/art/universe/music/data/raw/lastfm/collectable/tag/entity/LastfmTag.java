@@ -25,6 +25,10 @@ public class LastfmTag extends BaseLastfmEntity {
     private long id;
 
     @Setter
+    @Column(name = "url")
+    private String url;
+
+    @Setter
     @Column(name = "usage_count")
     private int usageCount;
 
