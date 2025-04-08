@@ -44,7 +44,7 @@ class LastfmTrackRepositoryTest extends JpaOnlyTest {
         assertEquals(url, saved.getUrl());
         assertEquals(mbid, saved.getMbid());
         assertEquals(duration, saved.getDuration());
-        assertEquals(streamable, saved.isStreamable());
+        assertEquals(streamable, saved.getStreamable());
     }
 
     @Test

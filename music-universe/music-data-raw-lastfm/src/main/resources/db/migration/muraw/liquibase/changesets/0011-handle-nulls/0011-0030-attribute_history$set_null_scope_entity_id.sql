@@ -1,0 +1,1 @@
+UPDATE attribute_history SET scope_entity_id = NULL where scope_entity_id = 0;

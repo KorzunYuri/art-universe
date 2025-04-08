@@ -3,6 +3,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -31,6 +32,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.FullConte
 import java.util.List;
 import java.util.Objects;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -75,7 +77,6 @@ class LastfmTagTopTracksResponseProcessorTest extends FullContextTest {
         final int expectedCreatedArtistsNumber = testCase.expectedArtists.size();
         final int expectedCreatedTrackAttrValuesNumber = expectedCreatedTracksNumber * TRACK_ATTRS_NUMBER;
         final int expectedCreatedArtistAttrValuesNumber = expectedCreatedArtistsNumber * ARTIST_ATTRS_NUMBER;
-        final int expectedCreatedAttrValuesNumber = expectedCreatedTrackAttrValuesNumber + expectedCreatedArtistAttrValuesNumber;
 
         when(trackService.saveTracks(any())).thenAnswer(invocation -> invocation.getArguments()[0]);
         when(artistService.saveArtists(any())).thenAnswer(invocation -> invocation.getArguments()[0]);
@@ -96,7 +97,7 @@ class LastfmTagTopTracksResponseProcessorTest extends FullContextTest {
         List<LastfmTrack> savedTracks = trackCaptor.getValue();
         assertEquals(expectedCreatedTracksNumber, savedTracks.size(),
             String.format("Expected %d new tracks to be saved", expectedCreatedTracksNumber));
-        assertEquals(testCase.expectedTracks, savedTracks);
+        assertThat(savedTracks, Matchers.containsInAnyOrder(testCase.expectedTracks.toArray()));
 
         // Verify that artistRepository.findAllByNameIn was called with the correct set of artist names.
         ArgumentCaptor<List<String>> namesCaptor = ArgumentCaptor.forClass(List.class);
@@ -111,7 +112,7 @@ class LastfmTagTopTracksResponseProcessorTest extends FullContextTest {
         List<LastfmArtist> savedArtists = artistsCaptor.getValue();
         assertEquals(expectedCreatedArtistsNumber, savedArtists.size(),
             String.format("Expected %d new artists to be saved", expectedCreatedArtistsNumber));
-        assertEquals(testCase.expectedArtists, savedArtists);
+        assertThat(savedArtists, Matchers.containsInAnyOrder(testCase.expectedArtists.toArray()));
 
         // Verify that entity relations are created.
         ArgumentCaptor<List<LastfmEntityRelation>> relCaptor = ArgumentCaptor.forClass(List.class);

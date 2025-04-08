@@ -31,7 +31,7 @@ public class LastfmTrackEntityFactory<D extends TrackDto>  implements EntityFact
                 .name(entity.getName())
                 .url(entity.getUrl())
                 .mbid(entity.getMbid())
-                .streamable(entity.isStreamable())
+                .streamable(entity.getStreamable())
                 .duration(entity.getDuration())
                 .apiCall(entity.getApiCall())
                 .approvalStatus(entity.getApprovalStatus())

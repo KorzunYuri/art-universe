@@ -39,7 +39,7 @@ class LastfmArtistRepositoryTest extends JpaOnlyTest {
         assertEquals(name, saved.getName());
         assertEquals(url, saved.getUrl());
         assertEquals(mbid, saved.getMbid());
-        assertEquals(isStreamable, saved.isStreamable());
+        assertEquals(isStreamable, saved.getIsStreamable());
     }
 
     @Test

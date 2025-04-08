@@ -108,14 +108,14 @@ class LastfmArtistGetInfoResponseProcessorTest extends FullContextTest {
         List<LastfmArtist> savedSimilarArtists = savedArtistsInvocationParams.get(1);
         assertEquals(newSimilarArtistsNumber, savedSimilarArtists.size(),
             String.format("Expected %s similar artists to be saved", newSimilarArtistsNumber));
-        assertThat(testCase.expectedSimilarArtists, Matchers.containsInAnyOrder(savedSimilarArtists.toArray()));
+        assertThat(savedSimilarArtists, Matchers.containsInAnyOrder(testCase.expectedSimilarArtists.toArray()));
 
         // Verity that new tags were saved
         ArgumentCaptor<List<LastfmTag>> tagsCaptor = ArgumentCaptor.forClass(List.class);
         verify(tagService, times(1)).saveTags(tagsCaptor.capture());
         List<LastfmTag> savedTags = tagsCaptor.getValue();
         assertEquals(newTagsNumber, savedTags.size());
-        assertThat(testCase.expectedTags, Matchers.containsInAnyOrder(savedTags.toArray()));
+        assertThat(savedTags, Matchers.containsInAnyOrder(testCase.expectedTags.toArray()));
 
         // Verify that attributes were saved as expected
         ArgumentCaptor<List<LastfmAttributeHistoryRecord>> attrValuesCaptor = ArgumentCaptor.forClass(List.class);

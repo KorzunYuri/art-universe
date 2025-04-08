@@ -70,7 +70,7 @@ public class LastfmDataSnapshot extends BaseEntity {
     private LastfmEntityType entityType;
 
     @Column(name = "entity_id")
-    private long entityId;
+    private Long entityId;
 
     @NonNull
     @Column(name = "data_date")

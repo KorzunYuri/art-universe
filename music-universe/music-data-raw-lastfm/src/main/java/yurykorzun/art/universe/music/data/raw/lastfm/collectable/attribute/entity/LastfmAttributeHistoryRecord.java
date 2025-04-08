@@ -49,7 +49,7 @@ public class LastfmAttributeHistoryRecord {
     private LastfmEntityType scopeEntityType;
 
     @Column(name = "scope_entity_id")
-    private long scopeEntityId;
+    private Long scopeEntityId;
 
     @NonNull
     @Builder.Default
@@ -81,10 +81,11 @@ public class LastfmAttributeHistoryRecord {
         if (this.getId() != 0 && other.getId() != 0) {
             return this.getId() == other.getId();
         }
-        return      entityId == other.entityId
-                &&  entityType == other.entityType
-                &&  attribute == other.attribute
-                &&  Objects.equals(collectionTs, other.collectionTs);
+        return      entityType  == other.entityType
+                &&  entityId    == other.entityId
+                &&  Objects.equals(scopeEntityType, other.scopeEntityType)
+                &&  Objects.equals(scopeEntityId,   other.scopeEntityId)
+                &&  attribute   == other.attribute;
     }
 
     @Override
@@ -92,7 +93,7 @@ public class LastfmAttributeHistoryRecord {
         if (this.getId() != 0) {
             return Long.hashCode(this.getId());
         }
-        return Objects.hash(entityType, entityId, attribute);
+        return Objects.hash(entityType, entityId, scopeEntityType, scopeEntityId, attribute);
     }
 
 }

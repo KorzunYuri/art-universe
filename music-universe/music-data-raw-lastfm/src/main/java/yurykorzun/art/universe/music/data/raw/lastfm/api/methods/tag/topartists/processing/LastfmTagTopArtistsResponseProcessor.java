@@ -57,7 +57,7 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
         DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.URL, false,
             LastfmArtist::getUrl, LastfmArtist::setUrl, TagTopArtistsArtistDto::getUrl),
         DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.IS_STREAMABLE,  false,
-            LastfmArtist::isStreamable, LastfmArtist::setStreamable,
+            LastfmArtist::getIsStreamable, LastfmArtist::setIsStreamable,
             (dto) -> 1 == dto.getStreamable()),
         DefaultEntityAttributeHandler.forExternalAttribute(LastfmAttribute.RANK,  true,
             (dto) -> dto.getRecordInfo().getRank())

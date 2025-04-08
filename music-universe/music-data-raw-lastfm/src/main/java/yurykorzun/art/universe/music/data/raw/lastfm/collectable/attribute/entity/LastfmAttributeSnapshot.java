@@ -41,10 +41,10 @@ public class LastfmAttributeSnapshot extends BaseEntity {
     private LastfmEntityType scopeEntityType;
 
     @Column(name = "scope_entity_id")
-    private long scopeEntityId;
+    private Long scopeEntityId;
 
     @Column(name = "data_snapshot_id_prev")
-    private long previousSnapshotId;
+    private Long previousSnapshotId;
 
     @NonNull
     @Column(name = "data_snapshot_id_cur")

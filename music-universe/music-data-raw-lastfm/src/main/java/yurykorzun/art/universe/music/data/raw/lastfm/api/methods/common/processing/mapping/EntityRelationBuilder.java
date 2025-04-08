@@ -18,7 +18,7 @@ public class EntityRelationBuilder<E extends BaseLastfmEntity, D extends EntityD
         EntityMappings<E, D> mappings,
         LastfmApiCall apiCall
     ) {
-        if (apiCall.getEntityId() == 0) {
+        if (apiCall.getEntityId() == null) {
             return Collections.emptyList();
         }
         return mappings.values().stream()

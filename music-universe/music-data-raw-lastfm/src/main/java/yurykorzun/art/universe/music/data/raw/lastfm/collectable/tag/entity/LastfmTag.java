@@ -30,11 +30,11 @@ public class LastfmTag extends BaseLastfmEntity {
 
     @Setter
     @Column(name = "usage_count")
-    private int usageCount;
+    private Integer usageCount;
 
     @Setter
     @Column(name = "usage_users_count")
-    private int usageUsersCount;
+    private Integer usageUsersCount;
 
     @Override
     @Transient

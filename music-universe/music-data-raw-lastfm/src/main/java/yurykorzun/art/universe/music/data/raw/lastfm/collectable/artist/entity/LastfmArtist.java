@@ -34,16 +34,16 @@ public class LastfmArtist extends BaseLastfmEntity {
     private String url;
 
     @Column(name = "is_streamable")
-    private boolean isStreamable;
+    private Boolean isStreamable;
 
     @Column(name = "is_on_tour")
-    private boolean isOnTour;
+    private Boolean isOnTour;
 
     @Column(name = "listeners_count")
-    private int listenersCount;
+    private Integer listenersCount;
 
     @Column(name = "play_count")
-    private int playCount;
+    private Integer playCount;
 
     @Override
     public LastfmEntityType getType() {

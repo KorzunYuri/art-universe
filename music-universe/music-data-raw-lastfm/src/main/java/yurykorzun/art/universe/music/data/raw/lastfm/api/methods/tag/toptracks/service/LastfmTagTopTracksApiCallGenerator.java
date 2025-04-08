@@ -10,7 +10,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallGenerator;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.utils.TimeUtil;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.LastfmAttributeSnapshotService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmDataSnapshot;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
@@ -21,6 +20,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.Last
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -109,6 +109,6 @@ public class LastfmTagTopTracksApiCallGenerator extends LastfmApiCallGenerator {
     }
 
     private int calcPagesNumber(LastfmTag tag) {
-        return Math.max(1, tag.getUsageCount() / usageToPageRatio);
+        return Math.max(1, Objects.requireNonNullElse(tag.getUsageCount(), 0) / usageToPageRatio);
     }
 }
