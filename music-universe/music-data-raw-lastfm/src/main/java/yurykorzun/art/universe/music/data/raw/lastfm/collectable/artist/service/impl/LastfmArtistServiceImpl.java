@@ -36,4 +36,9 @@ public class LastfmArtistServiceImpl implements LastfmArtistService {
     public List<LastfmArtist> findAllByNames(List<String> names) {
         return artistRepository.findAllByNameIn(names);
     }
+
+    @Override
+    public List<LastfmArtist> findAllToGetInfoFor() {
+        return artistRepository.findAllToGetInfoFor();
+    }
 }

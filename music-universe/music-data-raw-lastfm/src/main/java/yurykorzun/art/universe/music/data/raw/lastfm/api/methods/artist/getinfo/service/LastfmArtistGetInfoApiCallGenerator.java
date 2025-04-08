@@ -9,10 +9,10 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmAp
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.utils.TimeUtil;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmDataSnapshot;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmDataSnapshotService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityService;
 
 import java.util.List;
 import java.util.Map;
@@ -21,7 +21,7 @@ import java.util.Map;
 public class LastfmArtistGetInfoApiCallGenerator extends LastfmApiCallGenerator {
 
     private final LastfmApiCallService apiCallService;
-    private final LastfmEntityService entityService;
+    private final LastfmArtistService artistService;
     private final LastfmDataSnapshotService snapshotService;
 
     @Value("${lastfm.client.methods.artist.getInfo.dueDurationDays}")
@@ -29,11 +29,11 @@ public class LastfmArtistGetInfoApiCallGenerator extends LastfmApiCallGenerator 
 
     public LastfmArtistGetInfoApiCallGenerator(
         LastfmApiCallService apiCallService,
-        LastfmEntityService entityService,
+        LastfmArtistService artistService,
         LastfmDataSnapshotService snapshotService
     ) {
         this.apiCallService = apiCallService;
-        this.entityService = entityService;
+        this.artistService = artistService;
         this.snapshotService = snapshotService;
     }
 
@@ -50,7 +50,7 @@ public class LastfmArtistGetInfoApiCallGenerator extends LastfmApiCallGenerator 
     }
 
     private List<LastfmApiCallCreateRequest> generateApiCallCreationRequests(LastfmDataSnapshot snapshot) {
-        List<LastfmArtist> unprocessed = entityService.findAllUnprocessed(LastfmEntityType.ARTIST, LastfmApiCallType.ARTIST_GET_INFO);
+        List<LastfmArtist> unprocessed = artistService.findAllToGetInfoFor();
         return unprocessed.stream()
             .map(artist -> prepareApiCallCreationRequest(artist, snapshot))
             .toList();

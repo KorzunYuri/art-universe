@@ -14,5 +14,7 @@ public interface LastfmArtistService {
     Optional<LastfmArtist> findByName(String name);
 
     List<LastfmArtist> findAllByNames(List<String> names);
+
+    List<LastfmArtist> findAllToGetInfoFor();
     
 }
