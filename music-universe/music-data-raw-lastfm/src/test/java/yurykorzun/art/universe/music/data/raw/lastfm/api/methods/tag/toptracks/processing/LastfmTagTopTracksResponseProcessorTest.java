@@ -276,7 +276,7 @@ class LastfmTagTopTracksResponseProcessorTest extends FullContextTest {
             ObjectMapper objectMapper = new ObjectMapper();
             TagTopTracksDtoRoot dtoRoot = objectMapper.readValue(responseString, TagTopTracksDtoRoot.class);
 
-            LastfmTrackEntityFactory<TagTopTracksTrackDto> trackFactory = new LastfmTrackEntityFactory<>();
+            LastfmTrackEntityFactory<TagTopTracksTrackDto> trackFactory = new TagTopTracksTrackFactory();
             List<LastfmTrack> expectedTracks = dtoRoot.getRootObject().getTracks().stream()
                     .map(track -> trackFactory.fromDto(track, sourceApiResponse))
                 .toList();

@@ -19,7 +19,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.dto.TagTopTracksDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.dto.TagTopTracksTrackArtistDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.dto.TagTopTracksTrackDto;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.track.common.LastfmTrackEntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
@@ -244,14 +243,5 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
                 .filter(Objects::nonNull)
                 .distinct()
             .toList();
-    }
-
-    private static class TagTopTracksTrackFactory extends LastfmTrackEntityFactory<TagTopTracksTrackDto> {
-
-        @Override
-        protected LastfmTrack.LastfmTrackBuilder<?, ?> setExtensionFields(LastfmTrack.LastfmTrackBuilder<?, ?> builder, TagTopTracksTrackDto dto) {
-            return builder
-                .streamable(1 == dto.getStreamableObject().getFullTrack());
-        }
     }
 }
