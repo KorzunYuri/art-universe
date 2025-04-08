@@ -111,8 +111,6 @@ public class LastfmTagTopTagApiCallGenerator extends LastfmApiCallGenerator {
 
     private void createAttributeSnapshots(LastfmDataSnapshot parentSnapshot) {
         attributeSnapshotService.getOrCreateForEntityType(parentSnapshot, LastfmEntityType.TAG, LastfmAttribute.RANK);
-        attributeSnapshotService.getOrCreateForEntityType(parentSnapshot, LastfmEntityType.TAG, LastfmAttribute.RELATIONS_COUNT);
-        attributeSnapshotService.getOrCreateForEntityType(parentSnapshot, LastfmEntityType.TAG, LastfmAttribute.REACH);
     }
 
 }

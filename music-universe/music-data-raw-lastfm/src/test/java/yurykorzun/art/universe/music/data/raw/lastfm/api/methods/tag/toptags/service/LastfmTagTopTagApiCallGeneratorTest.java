@@ -87,8 +87,6 @@ class LastfmTagTopTagApiCallGeneratorTest extends JpaOnlyTest {
 
         if (existingApiCallsNumber == 0) {
             verify(attributeSnapshotService).getOrCreateForEntityType(any(), eq(ENTITY_TYPE), eq(LastfmAttribute.RANK));
-            verify(attributeSnapshotService).getOrCreateForEntityType(any(), eq(ENTITY_TYPE), eq(LastfmAttribute.RELATIONS_COUNT));
-            verify(attributeSnapshotService).getOrCreateForEntityType(any(), eq(ENTITY_TYPE), eq(LastfmAttribute.REACH));
         } else {
             verify(attributeSnapshotService, never()).getOrCreateForEntityType(any(), any(), any());
         }
