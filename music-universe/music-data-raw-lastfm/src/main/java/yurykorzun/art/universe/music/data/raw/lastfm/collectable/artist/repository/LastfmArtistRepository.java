@@ -33,12 +33,13 @@ public interface LastfmArtistRepository extends JpaRepository<LastfmArtist, Long
                     ,   int_value as tag_rank
                 FROM
                     attribute_history
-                where   1=1
+                WHERE   1=1
                     and scope_entity_type  is null
                     and scope_entity_id    is null
                     and entity_type        = 4      -- tag
                     and attribute_id       = 4      -- rank
                     and valid_till         = '9999-12-31'
+                LIMIT :batchSize
             )
             , top_artists AS (
                 SELECT
@@ -56,6 +57,7 @@ public interface LastfmArtistRepository extends JpaRepository<LastfmArtist, Long
                             AND artist_rank.entity_type         =   1       -- artist
                             AND artist_rank.attribute_id        =   4       -- rank
                             AND artist_rank.valid_till          =   '9999-12-31'
+                LIMIT :batchSize * 10
             )
             , approved_artists AS (
                 SELECT  a.id,
@@ -63,6 +65,7 @@ public interface LastfmArtistRepository extends JpaRepository<LastfmArtist, Long
                         0 as priority_2
                 FROM    artist a
                 WHERE   a.approval_status = 2   -- approved
+                LIMIT   :batchSize
             )
             , top_artists_no_info AS (
                 SELECT  a.id,
