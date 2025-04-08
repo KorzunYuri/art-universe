@@ -66,6 +66,8 @@ public class LastfmTagTopTagApiCallGenerator extends LastfmApiCallGenerator {
         //  generate api calls
         List<LastfmApiCallCreateRequest> apiCallCreationRequests = generateApiCallCreationRequests(snapshot);
         apiCallService.createApiCalls(apiCallCreationRequests);
+
+        snapshotService.incCreatedCount(apiCallCreationRequests.size());
     }
 
     private List<LastfmApiCallCreateRequest> generateApiCallCreationRequests(LastfmDataSnapshot snapshot) {
