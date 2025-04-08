@@ -8,6 +8,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repos
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.LastfmAttributeHistoryService;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -53,9 +54,18 @@ public class LastfmAttributeHistoryServiceImpl implements LastfmAttributeHistory
     }
 
     private LastfmAttributeHistoryRecord expireOldAndSaveNewValue(LastfmAttributeHistoryRecord candidate, LastfmAttributeHistoryRecord existing) {
-        existing.setValidTill(candidate.getValidFrom().minusDays(1));
-        attributeHistoryRepository.saveAndFlush(existing);
-        return attributeHistoryRepository.save(candidate);
+
+        // 'duplicate' variable relates to a temporary fix for attribute_history duplication
+        // TODO fix attribute_history duplication
+        LocalDate expirationDate = candidate.getValidFrom().minusDays(1);
+        LastfmAttributeHistoryRecord duplicate = attributeHistoryRepository.findCurrentValueForCandidate(candidate, expirationDate);
+        if (duplicate == null) {
+            existing.setValidTill(expirationDate);
+            attributeHistoryRepository.saveAndFlush(existing);
+            return attributeHistoryRepository.save(candidate);
+        } else {
+            return existing;
+        }
     }
 
     private static boolean valueHasChanged(LastfmAttributeHistoryRecord candidate, LastfmAttributeHistoryRecord existing) {
