@@ -55,22 +55,14 @@ public class LastfmTagTopTagApiCallGenerator extends LastfmApiCallGenerator {
     @Transactional
     public void createApiCalls() {
 
-        //  get or create snapshot
-        LastfmDataSnapshot snapshot = snapshotService.getOrCreateSnapshotFor(getApiCallType());
-
-        //  create attribute snapshots on first launch
-        if (snapshot.getCreatedCount() == 0) {
-            createAttributeSnapshots(snapshot);
-        }
-
         //  generate api calls
-        List<LastfmApiCallCreateRequest> apiCallCreationRequests = generateApiCallCreationRequests(snapshot);
+        List<LastfmApiCallCreateRequest> apiCallCreationRequests = generateApiCallCreationRequests();
         apiCallService.createApiCalls(apiCallCreationRequests);
 
         snapshotService.incCreatedCount(apiCallCreationRequests.size());
     }
 
-    private List<LastfmApiCallCreateRequest> generateApiCallCreationRequests(LastfmDataSnapshot snapshot) {
+    private List<LastfmApiCallCreateRequest> generateApiCallCreationRequests() {
 
         final int tagsCount = Integer.MAX_VALUE;
         final int pagesNumber = Math.min(tagsCount, (int) Math.ceil((float) recordsLimit / PAGE_SIZE));
@@ -83,11 +75,24 @@ public class LastfmTagTopTagApiCallGenerator extends LastfmApiCallGenerator {
         }
 
         List<LastfmApiCallCreateRequest> calls = new ArrayList<>();
+        LastfmDataSnapshot snapshot = null;
+        boolean isSnapshotRetrieved = false;
         for (int i = 0; i < pagesNumber; i++) {
             // skip duplicate call
             int offset = i * PAGE_SIZE;
             if (pendingOffsets.contains(offset)) {
                 continue;
+            }
+
+            if (!isSnapshotRetrieved) {
+                //  get or create snapshot
+                snapshot = snapshotService.getOrCreateSnapshotFor(getApiCallType());
+
+                //  create attribute snapshots on first launch
+                if (snapshot.getCreatedCount() == 0) {
+                    createAttributeSnapshots(snapshot);
+                }
+                isSnapshotRetrieved = true;
             }
             calls.add(buildApiCallCreationRequest(snapshot, offset));
         }
