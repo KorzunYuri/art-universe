@@ -85,7 +85,9 @@ public class LastfmAttributeHistoryRecord {
                 &&  entityId    == other.entityId
                 &&  Objects.equals(scopeEntityType, other.scopeEntityType)
                 &&  Objects.equals(scopeEntityId,   other.scopeEntityId)
-                &&  attribute   == other.attribute;
+                &&  attribute   == other.attribute
+                &&  Objects.equals(stringValue, other.stringValue)
+                &&  Objects.equals(intValue, other.intValue);
     }
 
     @Override
