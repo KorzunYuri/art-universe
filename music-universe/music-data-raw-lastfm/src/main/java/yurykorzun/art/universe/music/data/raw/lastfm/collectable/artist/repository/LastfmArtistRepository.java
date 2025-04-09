@@ -29,17 +29,21 @@ public interface LastfmArtistRepository extends JpaRepository<LastfmArtist, Long
     @Query(value = """
             WITH top_tags AS (
                 SELECT
-                        entity_id as tag_id
-                    ,   int_value as tag_rank
+                        ah.entity_id as tag_id
+                    ,   ah.int_value as tag_rank
                 FROM
-                    attribute_history
+                    attribute_history ah
+                JOIN
+                    tag t
+                        ON  1=1
+                            AND ah.entity_id        = t.id
+                            AND t.approval_status   = 2   -- approved
                 WHERE   1=1
-                    and scope_entity_type  is null
-                    and scope_entity_id    is null
-                    and entity_type        = 4      -- tag
-                    and attribute_id       = 4      -- rank
-                    and valid_till         = '9999-12-31'
-                LIMIT :batchSize
+                    and ah.scope_entity_type  is null
+                    and ah.scope_entity_id    is null
+                    and ah.entity_type        = 4       -- tag
+                    and ah.attribute_id       = 4       -- rank
+                    and ah.valid_till         = '9999-12-31'
             )
             , top_artists AS (
                 SELECT
@@ -57,68 +61,93 @@ public interface LastfmArtistRepository extends JpaRepository<LastfmArtist, Long
                             AND artist_rank.entity_type         =   1       -- artist
                             AND artist_rank.attribute_id        =   4       -- rank
                             AND artist_rank.valid_till          =   '9999-12-31'
-                LIMIT :batchSize * 10
             )
             , approved_artists AS (
-                SELECT  a.id,
-                        1 as priority_1,
-                        0 as priority_2
-                FROM    artist a
-                WHERE   a.approval_status = 2   -- approved
+                SELECT
+                        a.id    as id
+                    ,   1       as priority_1
+                    ,   0       as priority_2
+                FROM    
+                    artist a
+                LEFT JOIN 
+                    api_call ac
+                        ON  1=1
+                            AND ac.entity_type  = 1       -- artist
+                            AND ac.entity_id    = a.id
+                            AND ac.type         = 4       -- getInfo
+                            AND ac.due_dttm     > now()
+                WHERE   1=1
+                    AND a.approval_status   = 2         -- approved
+                    AND ac.id               IS NULL     -- no pending api_calls with artist.getInfo type
                 LIMIT   :batchSize
             )
             , top_artists_no_info AS (
-                SELECT  a.id,
-                        ta.artist_rank  as priority_1,
-                        ta.tag_rank     as priority_2
-                FROM    top_artists ta
-                JOIN    artist a
-                    ON  a.id = ta.artist_id
+                SELECT  
+                        a.id
+                    ,   ta.artist_rank  as priority_1
+                    ,   ta.tag_rank     as priority_2
+                FROM    
+                    top_artists ta
+                JOIN    
+                    artist a
+                        ON  a.id = ta.artist_id
+                LEFT JOIN 
+                    api_call ac
+                        ON  1=1
+                            AND ac.entity_type  = 1       -- artist
+                            AND ac.entity_id    = a.id
+                            AND ac.type         = 4       -- getInfo
+                            AND ac.due_dttm     > now()
                 WHERE   1=1
                     AND (       a.listeners_count   IS NULL
-                            OR  a.play_count        IS NULL )
+                            OR  a.play_count        IS NULL )   -- data from artist.getInfo is missing
+                    AND ac.id                       IS NULL     -- no pending api_calls with artist.getInfo type
+                LIMIT :batchSize
             )
             , similar_artists AS (
                 SELECT
-                    a.id,
-                    ta.artist_rank  + 1000000  as priority_1,
-                    ta.tag_rank     + 1000000  as priority_2
+                        a.id
+                    ,   ta.artist_rank  + 1000000  as priority_1
+                    ,   ta.tag_rank     + 1000000  as priority_2
                 FROM
                     top_artists ta
                 JOIN
-                        entity_relation rel
-                    ON      1=1
-                        AND rel.scope_entity_type   =   1       -- artist
-                        AND rel.scope_entity_id     =   ta.artist_id
-                        AND rel.entity_type         =   1       -- artist
-                        JOIN
+                    entity_relation rel
+                        ON      1=1
+                            AND rel.scope_entity_type   =   1       -- artist
+                            AND rel.scope_entity_id     =   ta.artist_id
+                            AND rel.entity_type         =   1       -- artist
+                JOIN
                     artist a
-                    ON      1=1
-                        and a.id = rel.entity_id
+                        ON      1=1
+                            AND a.id = rel.entity_id
+                LEFT JOIN 
+                    api_call ac
+                        ON  1=1
+                            AND ac.entity_type  = 1       -- artist
+                            AND ac.entity_id    = a.id
+                            AND ac.type         = 4       -- getInfo
+                            AND ac.due_dttm     > now()
                 WHERE   1=1
                     AND (       a.listeners_count   IS NULL
-                            OR  a.play_count        IS NULL )
+                            OR  a.play_count        IS NULL )   -- data from artist.getInfo is missing
+                    AND ac.id                       IS NULL     -- no pending api_calls with artist.getInfo type
+                LIMIT :batchSize
             )
             , union_artists AS (
                 SELECT * FROM approved_artists
-                UNION ALL
+                UNION
                 SELECT * FROM top_artists_no_info
-                UNION ALL
+                UNION
                 SELECT * FROM similar_artists
             )
             SELECT
                 a.*
             FROM
                 union_artists ua
-            JOIN artist a
-                ON  a.id = ua.id
-            LEFT JOIN api_call ac
-                ON  1=1
-                    AND ac.entity_type  = 1       -- artist
-                    AND ac.entity_id    = a.id
-                    AND ac.type         = 4       -- getInfo
-                    AND ac.due_dttm     > now()
-            WHERE ac.id IS NULL
+            JOIN 
+                artist a
+                    ON  a.id = ua.id
             ORDER BY ua.priority_1, ua.priority_2
             LIMIT :batchSize
         """,
