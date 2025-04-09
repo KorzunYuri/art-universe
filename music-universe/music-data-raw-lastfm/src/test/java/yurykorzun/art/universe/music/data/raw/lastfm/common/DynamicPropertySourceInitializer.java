@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.core.env.Environment;
 
 @Slf4j
 public class DynamicPropertySourceInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
@@ -12,7 +11,6 @@ public class DynamicPropertySourceInitializer implements ApplicationContextIniti
     @Override
     public void initialize(ConfigurableApplicationContext applicationContext) {
         log.info("Refreshing properties");
-        Environment environment = applicationContext.getEnvironment();
         TestPropertyValues.of(
                 "spring.datasource.url=" + PostgresTestContainerHolder.getContainer().getJdbcUrl(),
                 "spring.datasource.username=" + PostgresTestContainerHolder.getContainer().getUsername(),
