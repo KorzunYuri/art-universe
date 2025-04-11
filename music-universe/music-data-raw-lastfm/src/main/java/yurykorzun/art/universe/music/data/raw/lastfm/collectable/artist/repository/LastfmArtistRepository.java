@@ -134,12 +134,34 @@ public interface LastfmArtistRepository extends JpaRepository<LastfmArtist, Long
                     AND ac.id                       IS NULL     -- no pending api_calls with artist.getInfo type
                 LIMIT :batchSize
             )
+            , not_approved_artists_no_info AS (
+                SELECT
+                        a.id    as id
+                    ,   100000000 + a.id as priority_1
+                    ,   100000000 + a.id as priority_2
+                FROM    
+                    artist a
+                LEFT JOIN 
+                    api_call ac
+                        ON  1=1
+                            AND ac.entity_type  = 1       -- artist
+                            AND ac.entity_id    = a.id
+                            AND ac.type         = 4       -- getInfo
+                            AND ac.due_dttm     > now()
+                WHERE   1=1
+                    AND a.approval_status   = 1         -- pending approval
+                    AND a.listeners_count   IS NULL
+                    AND ac.id               IS NULL     -- no pending api_calls with artist.getInfo type
+                LIMIT   :batchSize
+            )
             , union_artists AS (
                 SELECT * FROM approved_artists
                 UNION
                 SELECT * FROM top_artists_no_info
                 UNION
                 SELECT * FROM similar_artists
+                UNION
+                SELECT * FROM not_approved_artists_no_info
             )
             SELECT
                 a.*
