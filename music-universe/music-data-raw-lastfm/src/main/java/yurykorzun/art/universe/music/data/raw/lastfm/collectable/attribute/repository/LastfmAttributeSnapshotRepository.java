@@ -1,6 +1,8 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttributeSnapshot;
@@ -12,18 +14,27 @@ import javax.annotation.Nullable;
 @Repository
 public interface LastfmAttributeSnapshotRepository extends JpaRepository<LastfmAttributeSnapshot, Long> {
 
-    LastfmAttributeSnapshot findByAttributeAndEntityTypeAndScopeEntityTypeAndScopeEntityId(
-            LastfmAttribute attribute,
-            LastfmEntityType entityType,
-            LastfmEntityType scopeEntityType, @Nullable Long scopeEntityId
+    @Query(value = """
+        SELECT  s
+        FROM    attribute_snapshot s
+        WHERE   1=1
+            AND s.attribute         = :attribute
+            AND s.entityType        = :entityType
+            AND (:scopeEntityType   IS NULL OR s.scopeEntityType    = :scopeEntityType)
+            AND (:scopeEntityId     IS NULL OR s.scopeEntityId      = :scopeEntityId)
+    """)
+    LastfmAttributeSnapshot findAttributeSnapshot(
+                        @Param("attribute")         LastfmAttribute     attribute,
+                        @Param("entityType")        LastfmEntityType    entityType,
+            @Nullable   @Param("scopeEntityType")   LastfmEntityType    scopeEntityType,
+            @Nullable   @Param("scopeEntityId")     Long                scopeEntityId
     );
 
     default LastfmAttributeSnapshot findTypeLevelSnapshot(
             LastfmAttribute attribute,
             LastfmEntityType entityType
     ) {
-        return findByAttributeAndEntityTypeAndScopeEntityTypeAndScopeEntityId(
-                attribute, entityType, null, null);
+        return findAttributeSnapshot(attribute, entityType, null, null);
     }
 
     default <T extends BaseLastfmEntity> LastfmAttributeSnapshot findEntityLevelSnapshot(
@@ -31,9 +42,6 @@ public interface LastfmAttributeSnapshotRepository extends JpaRepository<LastfmA
             LastfmEntityType entityType,
             T scopeEntity
     ) {
-        return findByAttributeAndEntityTypeAndScopeEntityTypeAndScopeEntityId(
-                attribute,
-                entityType,
-                scopeEntity.getType(), scopeEntity.getId());
+        return findAttributeSnapshot(attribute, entityType, scopeEntity.getType(), scopeEntity.getId());
     }
 }

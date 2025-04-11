@@ -3,10 +3,10 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.RankInfo;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.ArtistsRankedDto;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.TopArtistsDto;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.TopArtistsDtoRoot;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.TopArtistsPageInfo;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.TagTopArtistsArtistDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.TagTopArtistsDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.TagTopArtistsDtoRoot;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.TagTopArtistsPageInfo;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
 
 import java.io.IOException;
@@ -21,14 +21,14 @@ public class TagTopArtistsMappingTest {
     @Test
     public void givenTagTopTagsResponse_whenParsed_thenParsedCorrectly() throws IOException {
         String responseJsonString = LastfmApiClientResourceUtil.getApiClientResponse("tag.getTopArtists");
-        TopArtistsDtoRoot root = mapper.readValue(responseJsonString, TopArtistsDtoRoot.class);
+        TagTopArtistsDtoRoot root = mapper.readValue(responseJsonString, TagTopArtistsDtoRoot.class);
 
         assertNotNull(root);
 
-        TopArtistsDto topArtists = root.getTopArtists();
+        TagTopArtistsDto topArtists = root.getTopArtists();
         assertNotNull(topArtists);
 
-        TopArtistsPageInfo pageInfo = topArtists.getPageInfo();
+        TagTopArtistsPageInfo pageInfo = topArtists.getPageInfo();
         assertNotNull(pageInfo);
         assertEquals("rock", pageInfo.getTag());
         assertEquals(1, pageInfo.getPageNumber());
@@ -36,11 +36,11 @@ public class TagTopArtistsMappingTest {
         assertEquals(3578, pageInfo.getPagesTotal());
         assertEquals(178853, pageInfo.getRecordsTotal());
 
-        List<ArtistsRankedDto> artists = topArtists.getArtists();
+        List<TagTopArtistsArtistDto> artists = topArtists.getArtists();
         assertNotNull(artists);
         assertEquals(50, artists.size());
 
-        ArtistsRankedDto artist = artists.get(0);
+        TagTopArtistsArtistDto artist = artists.get(0);
         assertEquals("Coldplay", artist.getName());
         assertEquals("cc197bad-dc9c-440d-a5b5-d52ba2e14234", artist.getMbid());
         assertEquals("https://www.last.fm/music/Coldplay", artist.getUrl());

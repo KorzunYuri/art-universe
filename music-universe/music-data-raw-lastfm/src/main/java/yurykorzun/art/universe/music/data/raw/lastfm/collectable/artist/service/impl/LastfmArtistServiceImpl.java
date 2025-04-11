@@ -6,6 +6,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.reposito
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class LastfmArtistServiceImpl implements LastfmArtistService {
@@ -27,7 +28,17 @@ public class LastfmArtistServiceImpl implements LastfmArtistService {
     }
 
     @Override
+    public Optional<LastfmArtist> findByName(String name) {
+        return artistRepository.findByName(name);
+    }
+
+    @Override
     public List<LastfmArtist> findAllByNames(List<String> names) {
         return artistRepository.findAllByNameIn(names);
+    }
+
+    @Override
+    public List<LastfmArtist> findAllToGetInfoFor() {
+        return artistRepository.findAllToGetInfoFor();
     }
 }

@@ -43,7 +43,7 @@ class LastfmTagTopArtistsResponseProcessorTest extends FullContextTest {
 
     // the variables below depend on currently supported attributes and should change along with processor implementation
     private static final int TEST_DTO_ENTITIES_NUMBER = 2;
-    private static final int SCD2_ATTRIBUTES_NUMBER = 2;
+    private static final int SCD2_ATTRIBUTES_NUMBER = 3;
     private static final int SNAPSHOT_ATTRIBUTES_NUMBER = 1;
     private static final int ATTRIBUTES_NUMBER = SCD2_ATTRIBUTES_NUMBER + SNAPSHOT_ATTRIBUTES_NUMBER;
 

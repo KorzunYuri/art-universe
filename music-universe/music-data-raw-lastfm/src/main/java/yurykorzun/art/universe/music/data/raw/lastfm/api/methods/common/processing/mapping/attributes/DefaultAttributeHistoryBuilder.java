@@ -52,6 +52,9 @@ public class DefaultAttributeHistoryBuilder<E extends BaseLastfmEntity, D extend
             case INTEGER:
                 builder.intValue((Integer) handler.extractFrom(mapping));
                 break;
+            case BOOLEAN:
+                builder.intValue((boolean) handler.extractFrom(mapping) ? 1 : 0);
+                break;
         }
         return builder.build();
     }

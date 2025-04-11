@@ -8,6 +8,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repos
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.LastfmAttributeHistoryService;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -40,10 +41,10 @@ public class LastfmAttributeHistoryServiceImpl implements LastfmAttributeHistory
                 if (isSnapshotAttribute(candidate) && belongsToTheSameSnapshot(candidate, existing)) {
                     return null; // don't save the new value for the same snapshot
                 }
-                return expireOldAndSaveNewValue(candidate, existing);
+                return setNewValue(candidate, existing);
             } else {
                 if (shouldSaveNonChangedValue(candidate, existing)) {
-                    return expireOldAndSaveNewValue(candidate, existing);
+                    return setNewValue(candidate, existing);
                 }
                 return null;
             }
@@ -52,10 +53,32 @@ public class LastfmAttributeHistoryServiceImpl implements LastfmAttributeHistory
         }
     }
 
-    private LastfmAttributeHistoryRecord expireOldAndSaveNewValue(LastfmAttributeHistoryRecord candidate, LastfmAttributeHistoryRecord existing) {
-        existing.setValidTill(candidate.getValidFrom().minusDays(1));
+    private LastfmAttributeHistoryRecord setNewValue(LastfmAttributeHistoryRecord candidate, LastfmAttributeHistoryRecord existing) {
+
+        LocalDate expirationDate = candidate.getValidFrom().minusDays(1);
+        if (hasDuplicateExpiredRecord(candidate, expirationDate) || hasSameDate(candidate, existing)) {
+            return replaceOldValue(candidate, existing);
+        } else {
+            return expireOldValueAndAddNewValue(candidate, existing, expirationDate);
+        }
+    }
+
+    private LastfmAttributeHistoryRecord expireOldValueAndAddNewValue(
+        LastfmAttributeHistoryRecord candidate, LastfmAttributeHistoryRecord existing, LocalDate expirationDate
+    ) {
+        existing.setValidTill(expirationDate);
         attributeHistoryRepository.saveAndFlush(existing);
         return attributeHistoryRepository.save(candidate);
+    }
+
+    private LastfmAttributeHistoryRecord replaceOldValue(LastfmAttributeHistoryRecord newValue, LastfmAttributeHistoryRecord existingValue) {
+        attributeHistoryRepository.delete(existingValue);
+        attributeHistoryRepository.flush();
+        return attributeHistoryRepository.save(newValue);
+    }
+
+    private boolean hasDuplicateExpiredRecord(LastfmAttributeHistoryRecord candidate, LocalDate expirationDate) {
+        return attributeHistoryRepository.findCurrentValueForCandidate(candidate, expirationDate) != null;
     }
 
     private static boolean valueHasChanged(LastfmAttributeHistoryRecord candidate, LastfmAttributeHistoryRecord existing) {
@@ -73,6 +96,10 @@ public class LastfmAttributeHistoryServiceImpl implements LastfmAttributeHistory
 
     private static boolean belongsToTheSameSnapshot(LastfmAttributeHistoryRecord candidate, LastfmAttributeHistoryRecord existing) {
         return Objects.equals(candidate.getApiCallId(), existing.getApiCallId());
+    }
+
+    private static boolean hasSameDate(LastfmAttributeHistoryRecord candidate, LastfmAttributeHistoryRecord existing) {
+        return Objects.equals(candidate.getValidFrom(), existing.getValidFrom());
     }
 
 }

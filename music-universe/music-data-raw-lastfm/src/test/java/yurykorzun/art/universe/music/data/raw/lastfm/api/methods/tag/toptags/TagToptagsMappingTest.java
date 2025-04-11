@@ -3,9 +3,9 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.PageInfo;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.common.dto.TagDto;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.dto.TopTagsDto;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.dto.TopTagsDtoRoot;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.dto.TagTopTagsTagDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.dto.TagTopTagsTagsDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.dto.TagTopTagsDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
 
 import java.io.IOException;
@@ -20,24 +20,24 @@ public class TagToptagsMappingTest {
     @Test
     public void givenTagTopTagsResponse_whenParsed_thenParsedCorrectly() throws IOException {
         String responseJsonString = LastfmApiClientResourceUtil.getApiClientResponse("tag.getTopTags");
-        TopTagsDtoRoot topTagsDtoRoot = mapper.readValue(responseJsonString, TopTagsDtoRoot.class);
+        TagTopTagsDtoRoot tagTopTagsDtoRoot = mapper.readValue(responseJsonString, TagTopTagsDtoRoot.class);
 
-        assertNotNull(topTagsDtoRoot);
+        assertNotNull(tagTopTagsDtoRoot);
 
-        TopTagsDto topTagsDto = topTagsDtoRoot.getTopTags();
-        assertNotNull(topTagsDto);
+        TagTopTagsTagsDto tagTopTagsTagsDto = tagTopTagsDtoRoot.getTopTags();
+        assertNotNull(tagTopTagsTagsDto);
 
-        PageInfo pageInfo = topTagsDto.getPageInfo();
+        PageInfo pageInfo = tagTopTagsTagsDto.getPageInfo();
         assertNotNull(pageInfo);
         assertEquals(0, pageInfo.getOffset());
         assertEquals(50, pageInfo.getCount());
         assertEquals(2855332, pageInfo.getTotal());
 
-        List<TagDto> tags = topTagsDto.getTags();
+        List<TagTopTagsTagDto> tags = tagTopTagsTagsDto.getTags();
         assertNotNull(tags);
         assertEquals(50, tags.size());
 
-        TagDto tagDto = tags.get(0);
+        TagTopTagsTagDto tagDto = tags.get(0);
         assertNotNull(tagDto);
         assertEquals("rock", tagDto.getName());
         assertEquals(4050770, tagDto.getCount());

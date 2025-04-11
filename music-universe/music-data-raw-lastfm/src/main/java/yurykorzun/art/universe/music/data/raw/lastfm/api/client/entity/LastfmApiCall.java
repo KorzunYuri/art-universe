@@ -38,7 +38,7 @@ public class LastfmApiCall extends ApiCall {
     private LastfmEntityType entityType;
 
     @Column(name = "entity_id")
-    private long entityId;
+    private Long entityId;
 
     // TODO write equals and hashCode when the fieldset is stable
 }

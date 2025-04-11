@@ -5,18 +5,23 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.track.common.dto.TrackDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
 
-public class LastfmTrackEntityFactory implements EntityFactory<LastfmTrack, TrackDto> {
+public class LastfmTrackEntityFactory<D extends TrackDto>  implements EntityFactory<LastfmTrack, D> {
 
     @Override
-    public LastfmTrack fromDto(TrackDto dto, LastfmApiResponse response) {
-        return LastfmTrack.builder()
+    public LastfmTrack fromDto(D dto, LastfmApiResponse response) {
+        return setExtensionFields(
+            LastfmTrack.builder()
                 .name(dto.getName())
                 .url(dto.getUrl())
                 .mbid(dto.getMbid())
-                .streamable(dto.getStreamableObject().getFullTrack())
                 .duration(dto.getDuration())
-                .apiCall(response.getApiCall())
-            .build();
+                .apiCall(response.getApiCall()),
+            dto
+        ).build();
+    }
+
+    protected LastfmTrack.LastfmTrackBuilder<?,?> setExtensionFields(LastfmTrack.LastfmTrackBuilder<?,?> builder, D dto) {
+        return builder;
     }
 
     @Override

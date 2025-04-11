@@ -1,8 +1,9 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repository;
 
 import jakarta.annotation.Nullable;
-import lombok.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttributeHistoryRecord;
@@ -14,24 +15,42 @@ import java.time.LocalDate;
 @Repository
 public interface LastfmAttributeHistoryRecordRepository extends JpaRepository<LastfmAttributeHistoryRecord, Long> {
 
-    LastfmAttributeHistoryRecord findByEntityTypeAndEntityIdAndScopeEntityTypeAndScopeEntityIdAndAttributeAndValidTill(
-        @NonNull    LastfmEntityType entityType,
-        @NonNull    long entityId,
-        @Nullable   LastfmEntityType scopeEntityType,
-        @Nullable   long scopeEntityId,
-        @NonNull    LastfmAttribute attribute,
-        @NonNull    LocalDate validTill
+    @Query(value = """
+        SELECT r
+        FROM attribute_history r
+        WHERE   1=1
+            AND r.entityType    = :entityType
+            AND r.entityId      = :entityId
+            AND (:scopeEntityType   IS NULL OR r.scopeEntityType    = :scopeEntityType)
+            AND (:scopeEntityId     IS NULL OR r.scopeEntityId      = :scopeEntityId)
+            AND r.attribute     = :attribute
+            AND r.validTill     = :validTill
+      """)
+    LastfmAttributeHistoryRecord findValue(
+                    @Param("entityType")        LastfmEntityType entityType,
+                    @Param("entityId")          Long entityId,
+        @Nullable   @Param("scopeEntityType")   LastfmEntityType scopeEntityType,
+        @Nullable   @Param("scopeEntityId")     Long scopeEntityId,
+                    @Param("attribute")         LastfmAttribute attribute,
+                    @Param("validTill")         LocalDate validTill
     );
 
     default LastfmAttributeHistoryRecord findCurrentValueForCandidate(LastfmAttributeHistoryRecord candidate) {
-        return findByEntityTypeAndEntityIdAndScopeEntityTypeAndScopeEntityIdAndAttributeAndValidTill(
+        return findCurrentValueForCandidate(candidate, LastfmConstants.END_OF_TIME);
+    }
+
+    /**
+     * Temporary fix to detect duplicating attribute value records
+     // TODO figure out the reason of attribute_history duplication
+     */
+    default LastfmAttributeHistoryRecord findCurrentValueForCandidate(LastfmAttributeHistoryRecord candidate, LocalDate expirationDate) {
+        return findValue(
             candidate.getEntityType(),
             candidate.getEntityId(),
             candidate.getScopeEntityType(),
             candidate.getScopeEntityId(),
             candidate.getAttribute(),
-            LastfmConstants.END_OF_TIME
+            expirationDate
         );
     }
-
 }

@@ -37,12 +37,8 @@ public abstract class EntityAttributeHandler<E extends BaseLastfmEntity, T, D ex
 
     protected abstract @Nullable T extractFrom(D dto);
 
-    protected @Nullable T extractFrom(E entity, D dto) {
-        return isAttributeEmbedded() ? extractFrom(entity) : extractFrom(dto);
-    }
-
     protected @Nullable T extractFrom(EntityMapping<E, D> mapping) {
-        return extractFrom(mapping.getNewEntity(), mapping.getDto());
+        return extractFrom(mapping.getDto());
     }
 
     public abstract void copyTo(E dest, E src);
@@ -53,24 +49,24 @@ public abstract class EntityAttributeHandler<E extends BaseLastfmEntity, T, D ex
         return LastfmAttribute.HistoryType.SNAPSHOT == getAttribute().getHistoryType();
     }
 
-    private boolean shouldCreateNewRecord(@Nullable E oldEntity, E newEntity, D newDto) {
+    private boolean shouldCreateNewRecord(@Nullable E oldEntity, D newDto) {
         return shouldCreateNewValueUnconditionally()
             || isAttributeExternal() // cannot extract external attribute from entity, thus cannot compare
-            || hasAttributeChanged(oldEntity, newEntity, newDto);
+            || hasAttributeChanged(oldEntity, newDto);
     }
 
     public boolean shouldCreateNewRecord(EntityMapping<E, D> mapping) {
-        return shouldCreateNewRecord(mapping.getOldEntity(), mapping.getNewEntity(), mapping.getDto());
+        return shouldCreateNewRecord(mapping.getOldEntity(), mapping.getDto());
     }
 
     // TODO make sure not to call extraction for external attributes (there is no protection atm)
-    private boolean hasAttributeChanged(@Nullable E oldEntity, E newEntity, D newDto) {
+    private boolean hasAttributeChanged(@Nullable E oldEntity, D newDto) {
         return oldEntity == null
-            || !Objects.equals(extractFrom(oldEntity), extractFrom(newEntity, newDto));
+            || !Objects.equals(extractFrom(oldEntity), extractFrom(newDto));
     }
 
     public boolean hasAttributeChanged(EntityMapping<E, D> mapping) {
-        return hasAttributeChanged(mapping.getOldEntity(), mapping.getNewEntity(), mapping.getDto());
+        return hasAttributeChanged(mapping.getOldEntity(), mapping.getDto());
     }
 
 }

@@ -3,17 +3,12 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.RootDto;
 
 @Data
 @NoArgsConstructor
-public class TopArtistsDto {
+public class TagTopArtistsDtoRoot implements RootDto {
 
-    @JsonProperty("@attr")
-    private TopArtistsPageInfo pageInfo;
-
-    @JsonProperty("artist")
-    private List<ArtistsRankedDto> artists;
-
+    @JsonProperty("topartists")
+    private TagTopArtistsDto topArtists;
 }

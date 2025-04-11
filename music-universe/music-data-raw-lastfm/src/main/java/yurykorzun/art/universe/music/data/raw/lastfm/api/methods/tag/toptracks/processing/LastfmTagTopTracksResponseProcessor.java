@@ -7,7 +7,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.LastfmArtistEntityFactory;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.dto.ArtistDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingResult;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessor;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiResponseProcessor;
@@ -18,8 +17,8 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.persistence.DefaultEntityPersister;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.dto.TagTopTracksDtoRoot;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.track.common.LastfmTrackEntityFactory;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.track.common.dto.TrackDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.dto.TagTopTracksTrackArtistDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.dto.TagTopTracksTrackDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
@@ -44,6 +43,7 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
     private final LastfmTrackService trackService;
     private final LastfmEntityRelationService entityRelationService;
     private final LastfmAttributeHistoryService attributeHistoryService;
+    private final TagTopTracksTrackFactory trackFactory;
 
     private final String logPrefix = String.format("Lastfm %s response processing", getApiCallType().getMethod());
 
@@ -56,32 +56,34 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
         LastfmAttributeHistoryService attributeHistoryService
     ) {
         super(TagTopTracksDtoRoot.class);
-        this.artistService = artistService;
 
+        this.artistService = artistService;
         this.trackService = lastfmTrackService;
         this.entityRelationService = entityRelationService;
         this.attributeHistoryService = attributeHistoryService;
+
+        this.trackFactory = new TagTopTracksTrackFactory();
     }
 
-    private static final List<EntityAttributeHandler<LastfmTrack, ?, TrackDto>> trackAttrHandlers = List.of(
+    private static final List<EntityAttributeHandler<LastfmTrack, ?, TagTopTracksTrackDto>> trackAttrHandlers = List.of(
         DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.MBID,  false,
-            LastfmTrack::getMbid, LastfmTrack::setMbid, TrackDto::getMbid),
+            LastfmTrack::getMbid, LastfmTrack::setMbid, TagTopTracksTrackDto::getMbid),
         DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.URL, false,
-            LastfmTrack::getUrl, LastfmTrack::setUrl, TrackDto::getUrl),
+            LastfmTrack::getUrl, LastfmTrack::setUrl, TagTopTracksTrackDto::getUrl),
         DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.DURATION, false,
-            LastfmTrack::getDuration, LastfmTrack::setDuration, TrackDto::getDuration),
+            LastfmTrack::getDuration, LastfmTrack::setDuration, TagTopTracksTrackDto::getDuration),
         DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.IS_STREAMABLE, false,
             LastfmTrack::getStreamable, LastfmTrack::setStreamable,
-            (dto) -> dto.getStreamableObject().getFullTrack())
+            (dto) -> 1 == dto.getStreamableObject().getFullTrack())
         //DefaultEntityAttributeHandler.forExternalAttribute(LastfmAttribute.RANK,  true,
         //    (dto) -> dto.getRankInfo().getRank())
     );
 
-    private static final List<EntityAttributeHandler<LastfmArtist, ?, ArtistDto>> artistAttrHandlers = List.of(
+    private static final List<EntityAttributeHandler<LastfmArtist, ?, TagTopTracksTrackArtistDto>> artistAttrHandlers = List.of(
         DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.MBID,  false,
-            LastfmArtist::getMbid, LastfmArtist::setMbid, ArtistDto::getMbid),
+            LastfmArtist::getMbid, LastfmArtist::setMbid, TagTopTracksTrackArtistDto::getMbid),
         DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.URL, false,
-            LastfmArtist::getUrl, LastfmArtist::setUrl, ArtistDto::getUrl)
+            LastfmArtist::getUrl, LastfmArtist::setUrl, TagTopTracksTrackArtistDto::getUrl)
     );
 
     @Override
@@ -93,40 +95,53 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
     protected void processResponse(LastfmApiResponse sourceApiResponse) throws IOException {
 
         TagTopTracksDtoRoot dtoRoot = parseResponse(sourceApiResponse);
-        List<TrackDto> trackDtos = getTrackDtos(dtoRoot);
 
-        log.info("{}: start processing DTO of type {} with {} records", logPrefix, dtoRoot.getClass().getName(), trackDtos.size());
+        log.info("{}: start processing DTO of type {} with {} records",
+            logPrefix, dtoRoot.getClass().getName(), dtoRoot.getRootObject().getTracks().size());
 
         //  first save new artists
         Map<String, LastfmArtist> artistMap = updateArtists(dtoRoot, sourceApiResponse);
 
         //  then save new tracks
-        LastfmApiDtoProcessor<LastfmTrack, TrackDto> mappingService = new LastfmApiDtoProcessor<>(
+        Map<String, LastfmTrack> trackMap = updateTracks(dtoRoot, sourceApiResponse);
+
+        //  finally, bind all tracks to artists
+        bindTracksToArtists(dtoRoot, trackMap, artistMap, sourceApiResponse.getApiCall());
+
+        //  clean cache
+        rootsWithMissingAttrsLogged.remove(dtoRoot);
+
+        log.info("{}: Finished processing DTO of type {}", logPrefix, dtoRoot.getClass().getName());
+    }
+
+    private Map<String, LastfmTrack> updateTracks(TagTopTracksDtoRoot dtoRoot, LastfmApiResponse sourceApiResponse) {
+        log.info("{}: Start processing tracks", logPrefix);
+
+        LastfmApiDtoProcessor<LastfmTrack, TagTopTracksTrackDto> mappingService = new LastfmApiDtoProcessor<>(
             new EntityMappingBuilder<>(),
             new DefaultEntityPersister<>(),
             new DefaultAttributeHistoryBuilder<>(),
             new EntityRelationBuilder<>()
         );
 
+        List<TagTopTracksTrackDto> trackDtos = getTrackDtos(dtoRoot);
         List<String> trackUrls = getTrackUrls(trackDtos);
         List<LastfmTrack> existingTracks = trackService.findAllByUrls(trackUrls);
 
         LastfmApiDtoProcessingResult<LastfmTrack> result = mappingService.processDtos(trackDtos, existingTracks, sourceApiResponse,
-            new LastfmTrackEntityFactory(), trackAttrHandlers,
+            trackFactory, trackAttrHandlers,
             trackService::saveTracks,
             attributeHistoryService::upsertCandidateValues,
             entityRelationService::upsertEntityRelations
         );
+        log.info("{}: saved {} tracks", logPrefix, result.savedEntities().size());
 
         // merge existing and saved tracks to eliminate the second call to database for tracks
         Map<String, LastfmTrack> trackMap = existingTracks.stream()
             .collect(Collectors.toMap(LastfmTrack::getUniqueKey, Function.identity()));
         result.savedEntities().forEach(t -> trackMap.putIfAbsent(t.getUniqueKey(), t));
 
-        //  finally, bind all tracks to artists
-        bindTracksToArtists(trackDtos, trackMap, artistMap, sourceApiResponse.getApiCall());
-
-        log.info("{}: Finished processing DTO of type {}", logPrefix, dtoRoot.getClass().getName());
+        return trackMap;
     }
 
     /**
@@ -136,11 +151,11 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
     private Map<String, LastfmArtist> updateArtists(TagTopTracksDtoRoot dtoRoot, LastfmApiResponse sourceApiResponse) {
         log.info("{}: Start processing artists contained in tracks", logPrefix);
 
-        List<ArtistDto> artistDtos = getArtistDtos(dtoRoot);
+        List<TagTopTracksTrackArtistDto> artistDtos = getArtistDtos(dtoRoot);
         List<String> artistNames = getArtistNames(dtoRoot);
         List<LastfmArtist> existingArtists = artistService.findAllByNames(artistNames);
 
-        LastfmApiDtoProcessor<LastfmArtist, ArtistDto> mappingService = new LastfmApiDtoProcessor<>(
+        LastfmApiDtoProcessor<LastfmArtist, TagTopTracksTrackArtistDto> mappingService = new LastfmApiDtoProcessor<>(
             new EntityMappingBuilder<>(),
             new DefaultEntityPersister<>(),
             new DefaultAttributeHistoryBuilder<>(),
@@ -148,7 +163,7 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
         );
 
         LastfmApiDtoProcessingResult<LastfmArtist> result = mappingService.processDtos(artistDtos, existingArtists, sourceApiResponse,
-             new LastfmArtistEntityFactory(), artistAttrHandlers,
+             new LastfmArtistEntityFactory<>(), artistAttrHandlers,
             artistService::saveArtists,
             attributeHistoryService::upsertCandidateValues
         );
@@ -164,7 +179,9 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
 
     //  map tracks to artists
     private void bindTracksToArtists(
-        List<TrackDto> trackDtos, Map<String, LastfmTrack> trackMap, Map<String, LastfmArtist> artistMap, LastfmApiCall sourceApiCall) {
+        TagTopTracksDtoRoot dtoRoot, Map<String, LastfmTrack> trackMap, Map<String, LastfmArtist> artistMap, LastfmApiCall sourceApiCall
+    ) {
+        List<TagTopTracksTrackDto> trackDtos = getTrackDtos(dtoRoot);
         List<LastfmEntityRelation> relations = trackDtos.stream()
             .map((dto) -> {
                 LastfmTrack track = trackMap.get(dto.getUniqueKey());
@@ -180,16 +197,17 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
         entityRelationService.upsertEntityRelations(relations);
+        log.info("{}: saved {} artist-track relations", logPrefix, relations.size());
     }
 
-    private List<TrackDto> getTrackDtos(TagTopTracksDtoRoot dtoRoot) {
+    private List<TagTopTracksTrackDto> getTrackDtos(TagTopTracksDtoRoot dtoRoot) {
         return dtoRoot.getRootObject().getTracks().stream()
                 .peek(logMissingAttributes(dtoRoot))
                 .filter(t -> t.getUrl() != null)
             .toList();
     }
 
-    private Consumer<TrackDto> logMissingAttributes(final TagTopTracksDtoRoot dtoRoot) {
+    private Consumer<TagTopTracksTrackDto> logMissingAttributes(final TagTopTracksDtoRoot dtoRoot) {
         return (dto) -> {
             if (!rootsWithMissingAttrsLogged.contains(dtoRoot)) {
                 rootsWithMissingAttrsLogged.add(dtoRoot);
@@ -207,24 +225,23 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
         return getTrackUrls(getTrackDtos(dtoRoot));
     }
 
-    private List<String> getTrackUrls(List<TrackDto> trackDtos) {
-        return trackDtos.stream().map(TrackDto::getUrl).toList();
+    private List<String> getTrackUrls(List<TagTopTracksTrackDto> trackDtos) {
+        return trackDtos.stream().map(TagTopTracksTrackDto::getUrl).toList();
     }
 
     private List<String> getArtistNames(TagTopTracksDtoRoot dtoRoot) {
         return getArtistNames(getArtistDtos(dtoRoot));
     }
 
-    private List<String> getArtistNames(List<ArtistDto> artistDtos) {
-        return artistDtos.stream().map(ArtistDto::getName).toList();
+    private List<String> getArtistNames(List<TagTopTracksTrackArtistDto> artistDtos) {
+        return artistDtos.stream().map(TagTopTracksTrackArtistDto::getName).toList();
     }
 
-    private List<ArtistDto> getArtistDtos(TagTopTracksDtoRoot dtoRoot) {
+    private List<TagTopTracksTrackArtistDto> getArtistDtos(TagTopTracksDtoRoot dtoRoot) {
         return getTrackDtos(dtoRoot).stream()
-                .map(TrackDto::getArtist)
+                .map(TagTopTracksTrackDto::getArtist)
                 .filter(Objects::nonNull)
                 .distinct()
             .toList();
     }
-
 }

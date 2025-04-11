@@ -141,8 +141,7 @@ public class LastfmTagTopTagResponseProcessorTest extends FullContextTest {
         List<LastfmAttributeHistoryRecord> attributesAfterUpdate = attributeHistoryRepository.findAll();
 
         int oldValuesNumber = TEST_DTO_TAGS_NUMBER * (SCD2_ATTRIBUTES_NUMBER + SNAPSHOT_ATTRIBUTES_NUMBER);
-        int newValuesNumber = newTagsNumber * (SCD2_ATTRIBUTES_NUMBER + SNAPSHOT_ATTRIBUTES_NUMBER)
-                            + retainedTagsNumber * SNAPSHOT_ATTRIBUTES_NUMBER;
+        int newValuesNumber = newTagsNumber * (SCD2_ATTRIBUTES_NUMBER + SNAPSHOT_ATTRIBUTES_NUMBER);
         final int expectedValuesNumber = oldValuesNumber + newValuesNumber;
 
         assertEquals((TEST_DTO_TAGS_NUMBER + newTagsNumber), tagsAfterUpdate.size(),

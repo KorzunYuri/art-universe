@@ -26,7 +26,7 @@ class LastfmTrackRepositoryTest extends JpaOnlyTest {
         final String name = "Smells Like Teen Spirit";
         final int duration = 301;
         final String url = "https://www.last.fm/music/Nirvana/_/Smells+Like+Teen+Spirit";
-        final int streamable = 1;
+        final boolean streamable = true;
         final String mbid = "0ebe2d92-a11d-4b2b-9922-806383074ed7";
 
         LastfmApiCall apiCall = consistencyHelper.createDummyApiCall();

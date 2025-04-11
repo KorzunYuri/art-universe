@@ -8,6 +8,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmApiCallRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.repository.LastfmArtistRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmDataSnapshot;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.repository.LastfmDataSnapshotRepository;
@@ -31,20 +32,23 @@ public class DbConsistencyHelper {
     private final LastfmDataSnapshotRepository snapshotRepository;
     private final LastfmApiCallRepository apiCallRepository;
     private final LastfmTagRepository tagRepository;
+    private final LastfmArtistRepository artistRepository;
 
     public static final LastfmApiCallType DUMMY_API_CALL_TYPE = LastfmApiCallType.TAG_TOP_TAGS;
 
     public DbConsistencyHelper(
         LastfmDataSnapshotRepository snapshotRepository,
         LastfmApiCallRepository apiCallRepository,
-        LastfmTagRepository tagRepository
+        LastfmTagRepository tagRepository, LastfmArtistRepository artistRepository
     ) {
         this.snapshotRepository = snapshotRepository;
         this.apiCallRepository = apiCallRepository;
         this.tagRepository = tagRepository;
+        this.artistRepository = artistRepository;
     }
 
     public void cleanup() {
+        artistRepository.deleteAll();
         tagRepository.deleteAll();
         apiCallRepository.deleteAll();
         snapshotRepository.deleteAll();
@@ -150,13 +154,19 @@ public class DbConsistencyHelper {
             .build();
     }
 
+    public LastfmArtist createAndSaveArtist(LastfmApiCallType sourceApiCallType) {
+        LastfmApiCall dummyApiCall = createDummyApiCall(sourceApiCallType);
+        LastfmArtist artist = createArtist(randomString(), dummyApiCall);
+        return artistRepository.save(artist);
+    }
+
     public LastfmTrack createTrack(String url, LastfmApiCall apiCall) {
         return LastfmTrack.builder()
                 .url(   url)
                 .name(  randomString())
                 .mbid(  randomString())
                 .duration(100)
-                .streamable(1)
+                .streamable(true)
                 .apiCall(apiCall)
             .build();
     }
