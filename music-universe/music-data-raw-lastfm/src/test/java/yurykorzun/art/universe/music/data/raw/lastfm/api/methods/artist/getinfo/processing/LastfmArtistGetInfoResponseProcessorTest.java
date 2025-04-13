@@ -3,27 +3,22 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getinfo
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
+import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.LastfmArtistEntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.dto.ArtistDto;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getinfo.dto.ArtistGetInfoArtistDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getinfo.dto.ArtistGetInfoArtistTagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getinfo.dto.ArtistGetInfoDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.common.LastfmTagEntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttributeHistoryRecord;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.LastfmAttributeHistoryService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityRelation;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityRelationService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.service.LastfmTagService;
@@ -31,11 +26,11 @@ import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.FullContextTest;
 
 import java.util.List;
+import java.util.Optional;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static yurykorzun.art.universe.music.data.raw.lastfm.common.utils.AssertionUtils.*;
 
 class LastfmArtistGetInfoResponseProcessorTest extends FullContextTest {
 
@@ -72,10 +67,11 @@ class LastfmArtistGetInfoResponseProcessorTest extends FullContextTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void givenExistingArtist_whenProcessedArtistGetInfoResponse_newRecordsAreCreated() throws Exception {
 
         String responseJsonString = LastfmApiClientResourceUtil.getApiClientResponse("artist.getInfo");
-        TestCase testCase = testCaseFromResponse(responseJsonString);
+        TestCase testCase = testCaseFromResponse(responseJsonString, true);
 
         // expected values
         final int newArtistAttrValuesNumber = ARTIST_ATTRS_NUMBER;
@@ -84,96 +80,89 @@ class LastfmArtistGetInfoResponseProcessorTest extends FullContextTest {
         final int newTagsNumber = testCase.expectedTags.size();
         final int newTagAttrValuesNumber = newTagsNumber * TAG_ATTRS_NUMBER;
 
+        when(artistService.findByName(eq(testCase.expectedArtist.getName()))).thenReturn(Optional.of(testCase.expectedArtist));
         when(artistService.saveArtists(any())).thenAnswer(invocation -> invocation.getArguments()[0]);
         when(tagService.saveTags(any())).thenAnswer(invocation -> invocation.getArguments()[0]);
         when(attributeHistoryService.upsertCandidateValue(any())).thenAnswer(invocation -> invocation.getArguments()[0]);
 
         processor.processResponse(testCase.sourceApiResponse);
 
-        verify(artistService, times(1)).findAllByNames(any());
+        // Verify that similar artists were searched
+        verifyInvocationsNumber(
+            captor -> verify(artistService, times(1)).findAllByNames(captor.capture()),
+            List.class,
+            1,
+            "artistService.findAllByNames");
 
-        ArgumentCaptor<List<String>> namesCaptor = ArgumentCaptor.forClass(List.class);
-        verify(artistService, times(1)).findAllByNames(namesCaptor.capture());
-        List<String> capturedNames = namesCaptor.getValue();
-        assertEquals(newSimilarArtistsNumber, capturedNames.size(),
-            String.format("Expected %d artist names to be searched", newSimilarArtistsNumber));
+        // Verify that base artist and similar artists were saved
+        verifyAndAssertInvocations(
+            captor -> verify(artistService, times(2)).saveArtists(captor.capture()),
+            List.class,
+            List.of(List.of(testCase.expectedArtist), testCase.expectedSimilarArtists),
+            "artistService.saveArtists");
 
-        // Verify that new artists were saved
-        ArgumentCaptor<List<LastfmArtist>> artistsCaptor = ArgumentCaptor.forClass(List.class);
-        verify(artistService, times(2)).saveArtists(artistsCaptor.capture());
-        List<List<LastfmArtist>> savedArtistsInvocationParams = artistsCaptor.getAllValues();
-        List<LastfmArtist> saveBaseArtist = savedArtistsInvocationParams.get(0);
-        assertEquals(1, saveBaseArtist.size(), "Expected base artist to be save first");
-        assertEquals(testCase.expectedArtist, saveBaseArtist.get(0));
-        List<LastfmArtist> savedSimilarArtists = savedArtistsInvocationParams.get(1);
-        assertEquals(newSimilarArtistsNumber, savedSimilarArtists.size(),
-            String.format("Expected %s similar artists to be saved", newSimilarArtistsNumber));
-        assertThat(savedSimilarArtists, Matchers.containsInAnyOrder(testCase.expectedSimilarArtists.toArray()));
+        // Verify that new tags were saved
+        verifyAndAssertInvocations(
+            captor -> verify(tagService, times(1)).saveTags(captor.capture()),
+            List.class,
+            List.of(testCase.expectedTags),
+            "tagService.saveTags");
 
-        // Verity that new tags were saved
-        ArgumentCaptor<List<LastfmTag>> tagsCaptor = ArgumentCaptor.forClass(List.class);
-        verify(tagService, times(1)).saveTags(tagsCaptor.capture());
-        List<LastfmTag> savedTags = tagsCaptor.getValue();
-        assertEquals(newTagsNumber, savedTags.size());
-        assertThat(savedTags, Matchers.containsInAnyOrder(testCase.expectedTags.toArray()));
+        // verify that attribute values were saved
+        verifyInvocationsNumberWithCollectionsSizeOnly(
+            captor -> verify(attributeHistoryService, times(3)).upsertCandidateValues(captor.capture()),
+            List.of(newArtistAttrValuesNumber, newSimilarArtistsAttrValuesNumber, newTagAttrValuesNumber),
+            "attributeHistoryService.upsertCandidateValues");
 
-        // Verify that attributes were saved as expected
-        ArgumentCaptor<List<LastfmAttributeHistoryRecord>> attrValuesCaptor = ArgumentCaptor.forClass(List.class);
-        verify(attributeHistoryService, times(3)).upsertCandidateValues(attrValuesCaptor.capture());
-        List<List<LastfmAttributeHistoryRecord>> saveAttrValuesInvocationParams = attrValuesCaptor.getAllValues();
-        List<LastfmAttributeHistoryRecord> artistAttrs = saveAttrValuesInvocationParams.get(0);
-        assertEquals(newArtistAttrValuesNumber, artistAttrs.size());
-        List<LastfmAttributeHistoryRecord> similarArtistsAttrs = saveAttrValuesInvocationParams.get(1);
-        assertEquals(newSimilarArtistsAttrValuesNumber, similarArtistsAttrs.size());
-        List<LastfmAttributeHistoryRecord> tagAttrs = saveAttrValuesInvocationParams.get(2);
-        assertEquals(newTagAttrValuesNumber, tagAttrs.size());
+        // verify that entity relations were saved
+        verifyInvocationsNumberWithCollectionsSizeOnly(
+            captor -> verify(entityRelationService, times(2)).upsertEntityRelations(captor.capture()),
+            List.of(newSimilarArtistsNumber, newTagsNumber),
+            "entityRelationService.upsertEntityRelations");
 
-        // verify that entity relations were saved as expected
-        ArgumentCaptor<List<LastfmEntityRelation>> relCaptor = ArgumentCaptor.forClass(List.class);
-        verify(entityRelationService, times(2)).upsertEntityRelations(relCaptor.capture());
-        List<List<LastfmEntityRelation>> saveRelationsInvocationParams = relCaptor.getAllValues();
-        List<LastfmEntityRelation> artistArtistRelations = saveRelationsInvocationParams.get(0);
-        assertEquals(newSimilarArtistsNumber, artistArtistRelations.size());
-        List<LastfmEntityRelation> tagArtistRelations = saveRelationsInvocationParams.get(1);
-        assertEquals(newTagsNumber, tagArtistRelations.size());
     }
 
+    /**
+     * Base test case for artist processor
+     */
     @AllArgsConstructor
     private static class TestCase {
-        final LastfmApiCall sourceApiCall;
-        final LastfmApiResponse sourceApiResponse;
-        final LastfmArtist expectedArtist;
-        final List<LastfmArtist> expectedSimilarArtists;
-        final List<LastfmTag> expectedTags;
+        LastfmApiResponse sourceApiResponse;
+        LastfmArtist expectedArtist;
+        List<LastfmArtist> expectedSimilarArtists;
+        List<LastfmTag> expectedTags;
     }
 
-    private TestCase testCaseFromResponse(String responseString) {
+    private TestCase testCaseFromResponse(String responseString, boolean isApproved) {
 
-        LastfmArtist scopeEntity = consistencyHelper.createAndSaveArtist(LastfmApiCallType.TAG_TOP_ARTISTS);
-        LastfmApiResponse sourceApiResponse = consistencyHelper.createDummyApiResponse(
-            responseString, LastfmApiCallType.ARTIST_GET_INFO, scopeEntity);
-
+        final ArtistGetInfoDtoRoot dtoRoot;
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            ArtistGetInfoDtoRoot dtoRoot = objectMapper.readValue(responseString, ArtistGetInfoDtoRoot.class);
-
-            LastfmArtistEntityFactory<ArtistGetInfoArtistDto> artistFactory = new LastfmArtistGetInfoArtistFactory();
-            LastfmArtist expectedArtist = artistFactory.fromDto(dtoRoot.getArtist(), sourceApiResponse);
-
-            LastfmArtistEntityFactory<ArtistDto> similarArtistFactory = new LastfmArtistEntityFactory<>();
-            List<LastfmArtist> expectedSimilarArtists = dtoRoot.getArtist().getSimilarArtistsObject().getArtists().stream()
-                .map(dto -> similarArtistFactory.fromDto(dto, sourceApiResponse))
-                .toList();
-
-            LastfmTagEntityFactory<ArtistGetInfoArtistTagDto> tagFactory = new LastfmTagEntityFactory<>();
-            List<LastfmTag> expectedTags = dtoRoot.getArtist().getTagsObject().getTags().stream()
-                .map(dto -> tagFactory.fromDto(dto, sourceApiResponse))
-                .toList();
-
-            return new TestCase(sourceApiResponse.getApiCall(), sourceApiResponse, expectedArtist, expectedSimilarArtists, expectedTags);
+            dtoRoot = objectMapper.readValue(responseString, ArtistGetInfoDtoRoot.class);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
+
+        LastfmArtist expectedArtist = consistencyHelper.createAndSaveArtist(
+            builder -> builder
+                .name(dtoRoot.getArtist().getName()) // for processor to find the record
+                .approvalStatus(isApproved ? ApprovalStatus.APPROVED : ApprovalStatus.PENDING) // affect processor's logic
+        );
+
+        LastfmApiResponse sourceApiResponse = consistencyHelper.createDummyApiResponse(
+            responseString, LastfmApiCallType.ARTIST_GET_INFO, expectedArtist);
+
+        LastfmArtistEntityFactory<ArtistDto> similarArtistFactory = new LastfmArtistEntityFactory<>();
+        List<LastfmArtist> expectedSimilarArtists = dtoRoot.getArtist().getSimilarArtistsObject().getArtists().stream()
+            .map(dto -> similarArtistFactory.fromDto(dto, sourceApiResponse))
+            .toList();
+
+        LastfmTagEntityFactory<ArtistGetInfoArtistTagDto> tagFactory = new LastfmTagEntityFactory<>();
+        List<LastfmTag> expectedTags = dtoRoot.getArtist().getTagsObject().getTags().stream()
+            .map(dto -> tagFactory.fromDto(dto, sourceApiResponse))
+            .toList();
+
+        return new TestCase(sourceApiResponse, expectedArtist, expectedSimilarArtists, expectedTags);
     }
 
 }

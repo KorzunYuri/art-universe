@@ -57,7 +57,9 @@ class LastfmArtistServiceImplTest extends JpaOnlyTest {
     void givenUrls_whenFindAllByUrls_thenReturnMatchingArtists() {
         final int artistsNumber = 3;
         List<String> urls = IntStream.range(0, artistsNumber).mapToObj(i -> UUID.randomUUID().toString()).toList();
-        List<LastfmArtist> artists = urls.stream().map(consistencyHelper::createArtist).toList();
+        List<LastfmArtist> artists = urls.stream()
+            .map(url -> consistencyHelper.createArtist(builder -> builder.url(url)))
+            .toList();
         when(artistRepository.findAllByNameIn(urls)).thenReturn(artists);
 
         List<LastfmArtist> foundArtists = artistService.findAllByNames(urls);

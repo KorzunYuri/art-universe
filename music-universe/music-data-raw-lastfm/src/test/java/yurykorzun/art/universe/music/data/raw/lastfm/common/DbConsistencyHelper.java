@@ -3,6 +3,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.common;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
@@ -19,6 +20,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.La
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 /**
  * While testing persistence/service layer, it's often needed to create related entities to maintain db consistency.
@@ -140,24 +142,19 @@ public class DbConsistencyHelper {
     }
 
     public LastfmArtist createArtist() {
-        return createArtist(randomString(), createDummyApiCall());
+        return createArtist(builder -> {});
     }
 
-    public LastfmArtist createArtist(String name) {
-        return createArtist(name, createDummyApiCall());
+    public LastfmArtist createArtist(Consumer<LastfmArtist.LastfmArtistBuilder<?, ?>> customizer) {
+        LastfmArtist.LastfmArtistBuilder<?, ?> builder = LastfmArtist.builder()
+            .name(randomString())
+            .apiCall(createDummyApiCall());
+        customizer.accept(builder);
+        return builder.build();
     }
 
-    public LastfmArtist createArtist(String name, LastfmApiCall apiCall) {
-        return LastfmArtist.builder()
-                .name(name)
-                .apiCall(apiCall)
-            .build();
-    }
-
-    public LastfmArtist createAndSaveArtist(LastfmApiCallType sourceApiCallType) {
-        LastfmApiCall dummyApiCall = createDummyApiCall(sourceApiCallType);
-        LastfmArtist artist = createArtist(randomString(), dummyApiCall);
-        return artistRepository.save(artist);
+    public LastfmArtist createAndSaveArtist(Consumer<LastfmArtist.LastfmArtistBuilder<?, ?>> customizer) {
+        return artistRepository.save(createArtist(customizer));
     }
 
     public LastfmTrack createTrack(String url, LastfmApiCall apiCall) {
