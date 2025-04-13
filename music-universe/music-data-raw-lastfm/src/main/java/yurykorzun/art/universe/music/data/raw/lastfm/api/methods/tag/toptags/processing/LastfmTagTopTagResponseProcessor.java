@@ -8,20 +8,15 @@ import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.PageInfo;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessor;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiResponseProcessor;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityMappingBuilder;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityRelationBuilder;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.DefaultAttributeHistoryBuilder;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.DefaultEntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandler;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.persistence.DefaultEntityPersister;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.common.LastfmTagEntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.common.dto.TagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.dto.TagTopTagsTagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.dto.TagTopTagsDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.LastfmAttributeHistoryService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.service.LastfmTagService;
 
@@ -34,7 +29,7 @@ import java.util.List;
 public class LastfmTagTopTagResponseProcessor extends LastfmApiResponseProcessor<TagTopTagsDtoRoot> {
 
     private final LastfmTagService tagService;
-    private final LastfmAttributeHistoryService attributeHistoryService;
+    private final LastfmApiDtoProcessingService dtoProcessingService;
 
     private static final List<EntityAttributeHandler<LastfmTag, ?, TagTopTagsTagDto>> attrHandlers = List.of(
         DefaultEntityAttributeHandler.forExternalAttribute(LastfmAttribute.RANK,  false,
@@ -49,12 +44,12 @@ public class LastfmTagTopTagResponseProcessor extends LastfmApiResponseProcessor
 
     protected LastfmTagTopTagResponseProcessor(
         LastfmTagService tagService,
-        LastfmAttributeHistoryService attributeHistoryService)
+        LastfmApiDtoProcessingService dtoProcessingService)
     {
         super(TagTopTagsDtoRoot.class);
 
         this.tagService = tagService;
-        this.attributeHistoryService = attributeHistoryService;
+        this.dtoProcessingService = dtoProcessingService;
 
         this.tagFactory = new TagTopTagsTagFactory();
     }
@@ -83,17 +78,9 @@ public class LastfmTagTopTagResponseProcessor extends LastfmApiResponseProcessor
         List<String> tagNames = dtos.stream().map(TagDto::getName).toList();
         List<LastfmTag> existingTags = tagService.findAllByNameIn(tagNames);
 
-        LastfmApiDtoProcessor<LastfmTag, TagTopTagsTagDto> mappingService = new LastfmApiDtoProcessor<>(
-            new EntityMappingBuilder<>(),
-            new DefaultEntityPersister<>(),
-            new DefaultAttributeHistoryBuilder<>(),
-            new EntityRelationBuilder<>()
-        );
-        mappingService.processDtos(dtos, existingTags, response,
-            tagFactory,
-            attrHandlers,
-            tagService::saveTags,
-            attributeHistoryService::upsertCandidateValues
+        dtoProcessingService.processDtosWithoutRelations(
+            dtos, existingTags, response,
+            tagFactory, attrHandlers, tagService::saveTags
         );
 
         log.info("\"{}: Finished processing DTO of type {}", logPrefix, dtoRoot.getClass().getName());
