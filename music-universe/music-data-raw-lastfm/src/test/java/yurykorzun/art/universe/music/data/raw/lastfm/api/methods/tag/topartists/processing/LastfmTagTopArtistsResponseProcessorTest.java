@@ -2,28 +2,23 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.repository.LastfmArtistRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttributeHistoryRecord;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.LastfmAttributeHistoryService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityRelation;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityRelationService;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.FullContextTest;
 
-import java.util.Collection;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static yurykorzun.art.universe.music.data.raw.lastfm.common.utils.AssertionUtils.*;
 
 class LastfmTagTopArtistsResponseProcessorTest extends FullContextTest {
 
@@ -53,6 +48,7 @@ class LastfmTagTopArtistsResponseProcessorTest extends FullContextTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void givenTagTopArtistsResponse_whenProcessed_newRecordsAreCreated() throws Exception {
 
         final int expectedCreatedArtistsNumber = TEST_DTO_ENTITIES_NUMBER;
@@ -62,34 +58,37 @@ class LastfmTagTopArtistsResponseProcessorTest extends FullContextTest {
         LastfmApiResponse response = consistencyHelper.createDummyApiResponse(
             TEST_DTO_ROOT, scopeEntity.getApiCall().getType(), scopeEntity);
         when(artistRepository.saveAll(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
         processor.processResponse(response);
 
-        // Verify that artistRepository.findAllByNameIn was called with the correct set of artist names.
-        ArgumentCaptor<Collection<String>> namesCaptor = ArgumentCaptor.forClass(Collection.class);
-        verify(artistRepository).findAllByNameIn(namesCaptor.capture());
-        Collection<String> capturedNames = namesCaptor.getValue();
-        assertEquals(expectedCreatedArtistsNumber, capturedNames.size(), "Expected 2 artist names to be searched");
-        assertTrue(capturedNames.contains("Coldplay"), "Artist1 should be in the search list");
-        assertTrue(capturedNames.contains("Linkin Park"), "Artist2 should be in the search list");
+        // Verify that artists were searched by names
+        verifyAndAssertInvocations(
+            captor -> verify(artistRepository).findAllByNameIn(captor.capture()),
+            List.class,
+            List.of(List.of("Coldplay", "Linkin Park")),
+            "artistRepository.findAllByNameIn"
+        );
 
         // Verify that new artists are saved
-        ArgumentCaptor<List<LastfmArtist>> artistCaptor = ArgumentCaptor.forClass(List.class);
-        verify(artistRepository).saveAll(artistCaptor.capture());
-        List<LastfmArtist> savedArtists = artistCaptor.getValue();
-        assertEquals(expectedCreatedArtistsNumber, savedArtists.size(), "Expected 2 new artists to be saved");
+        verifyInvocationsNumberWithCollectionsSizeOnly(
+            captor -> verify(artistRepository).saveAll(captor.capture()),
+            List.of(expectedCreatedArtistsNumber),
+            "artistRepository.saveAll"
+        );
 
-        // Verify that entity relations are created.
-        ArgumentCaptor<List<LastfmEntityRelation>> relCaptor = ArgumentCaptor.forClass(List.class);
-        verify(entityRelationService).upsertEntityRelations(relCaptor.capture());
-        List<LastfmEntityRelation> relations = relCaptor.getValue();
-        assertEquals(expectedCreatedArtistsNumber, relations.size(), "Expected 2 entity relations to be created");
+        // Verify that entity relations were upserted
+        verifyInvocationsNumberWithCollectionsSizeOnly(
+            captor -> verify(entityRelationService).upsertEntityRelations(captor.capture()),
+            List.of(expectedCreatedArtistsNumber),
+            "entityRelationService.upsertEntityRelations"
+        );
 
-        // Verify that attribute history records are upserted.
-        ArgumentCaptor<List<LastfmAttributeHistoryRecord>> attrCaptor = ArgumentCaptor.forClass(List.class);
-        verify(attributeHistoryService).upsertCandidateValues(attrCaptor.capture());
-        List<LastfmAttributeHistoryRecord> attrValues = attrCaptor.getValue();
-        assertEquals(expectedCreatedAttrValuesNumber, attrValues.size(),
-            String.format("Expected %d attribute history records to be created", expectedCreatedAttrValuesNumber));
+        // Verify that attribute history records were upserted
+        verifyInvocationsNumberWithCollectionsSizeOnly(
+            captor -> verify(attributeHistoryService).upsertCandidateValues(captor.capture()),
+            List.of(expectedCreatedAttrValuesNumber),
+            "attributeHistoryService.upsertCandidateValues"
+        );
     }
 
     // "image" array is ignored but is left here to make it realistic
