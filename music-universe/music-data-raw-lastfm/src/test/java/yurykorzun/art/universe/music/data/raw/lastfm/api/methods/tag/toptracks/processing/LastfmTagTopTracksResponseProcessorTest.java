@@ -3,10 +3,8 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
@@ -19,9 +17,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.d
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.track.common.LastfmTrackEntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttributeHistoryRecord;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.LastfmAttributeHistoryService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityRelation;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityRelationService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
@@ -32,10 +28,9 @@ import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.FullConte
 import java.util.List;
 import java.util.Objects;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static yurykorzun.art.universe.music.data.raw.lastfm.common.utils.AssertionUtils.*;
 
 class LastfmTagTopTracksResponseProcessorTest extends FullContextTest {
     
@@ -84,53 +79,49 @@ class LastfmTagTopTracksResponseProcessorTest extends FullContextTest {
 
         processor.processResponse(testCase.sourceApiResponse);
 
-        // Verify that trackRepository.findAllByUrlIn was called with the correct set of track urls.
-        ArgumentCaptor<List<String>> urlsCaptor = ArgumentCaptor.forClass(List.class);
-        verify(trackService, times(1)).findAllByUrls(urlsCaptor.capture());
-        List<String> capturedUrls = urlsCaptor.getValue();
-        assertEquals(expectedCreatedTracksNumber, capturedUrls.size(),
-            String.format("Expected %d track urls to be searched", expectedCreatedTracksNumber));
+        // Verify that tracks were searched by urls
+        verifyInvocationsNumberWithCollectionsSizeOnly(
+            captor -> verify(trackService, times(1)).findAllByUrls(captor.capture()),
+            List.of(expectedCreatedTracksNumber),
+            "trackService.findAllByUrls"
+        );
 
-        // Verify that new tracks are saved
-        ArgumentCaptor<List<LastfmTrack>> trackCaptor = ArgumentCaptor.forClass(List.class);
-        verify(trackService, times(1)).saveTracks(trackCaptor.capture());
-        List<LastfmTrack> savedTracks = trackCaptor.getValue();
-        assertEquals(expectedCreatedTracksNumber, savedTracks.size(),
-            String.format("Expected %d new tracks to be saved", expectedCreatedTracksNumber));
-        assertThat(savedTracks, Matchers.containsInAnyOrder(testCase.expectedTracks.toArray()));
+        // Verify that new tracks were saved
+        verifyAndAssertInvocations(
+            captor -> verify(trackService, times(1)).saveTracks(captor.capture()),
+            List.class,
+            List.of(testCase.expectedTracks),
+            "trackService.saveTracks"
+        );
 
-        // Verify that artistRepository.findAllByNameIn was called with the correct set of artist names.
-        ArgumentCaptor<List<String>> namesCaptor = ArgumentCaptor.forClass(List.class);
-        verify(artistService, times(1)).findAllByNames(namesCaptor.capture());
-        List<String> capturedNames = namesCaptor.getValue();
-        assertEquals(expectedCreatedArtistsNumber, capturedNames.size(),
-            String.format("Expected %d artist names to be searched", expectedCreatedTracksNumber));
+        // Verify that artists were searched by names.
+        verifyInvocationsNumberWithCollectionsSizeOnly(
+            captor -> verify(artistService, times(1)).findAllByNames(captor.capture()),
+            List.of(expectedCreatedArtistsNumber),
+            "artistService.findAllByNames"
+        );
 
         // Verify that new artists are saved
-        ArgumentCaptor<List<LastfmArtist>> artistsCaptor = ArgumentCaptor.forClass(List.class);
-        verify(artistService, times(1)).saveArtists(artistsCaptor.capture());
-        List<LastfmArtist> savedArtists = artistsCaptor.getValue();
-        assertEquals(expectedCreatedArtistsNumber, savedArtists.size(),
-            String.format("Expected %d new artists to be saved", expectedCreatedArtistsNumber));
-        assertThat(savedArtists, Matchers.containsInAnyOrder(testCase.expectedArtists.toArray()));
+        verifyAndAssertInvocations(
+            captor -> verify(artistService, times(1)).saveArtists(captor.capture()),
+            List.class,
+            List.of(testCase.expectedArtists),
+            "artistService.saveArtists"
+        );
 
-        // Verify that entity relations are created.
-        ArgumentCaptor<List<LastfmEntityRelation>> relCaptor = ArgumentCaptor.forClass(List.class);
-        verify(entityRelationService, times(2)).upsertEntityRelations(relCaptor.capture());
-        List<List<LastfmEntityRelation>> saveRelationsInvocationParams = relCaptor.getAllValues();
-        assertEquals(expectedCreatedTracksNumber, saveRelationsInvocationParams.get(0).size(),
-            String.format("Expected %d tag-track relations to be created", expectedCreatedTracksNumber));
-        assertEquals(expectedCreatedTracksNumber, saveRelationsInvocationParams.get(1).size(),
-            String.format("Expected %d artist-track relations to be created", expectedCreatedTracksNumber));
+        // Verify that entity relations were created
+        verifyInvocationsNumberWithCollectionsSizeOnly(
+            captor -> verify(entityRelationService, times(2)).upsertEntityRelations(captor.capture()),
+            List.of(expectedCreatedTracksNumber, expectedCreatedTracksNumber),
+            "entityRelationService.upsertEntityRelations"
+        );
 
-        // Verify that attribute history records are upserted.
-        ArgumentCaptor<List<LastfmAttributeHistoryRecord>> attrCaptor = ArgumentCaptor.forClass(List.class);
-        verify(attributeHistoryService, times(2)).upsertCandidateValues(attrCaptor.capture());
-        List<List<LastfmAttributeHistoryRecord>> saveAttrValuesInvocationParams = attrCaptor.getAllValues();
-        assertEquals(expectedCreatedArtistAttrValuesNumber, saveAttrValuesInvocationParams.get(0).size(),
-            String.format("Expected %d artist attr values to be created", expectedCreatedArtistAttrValuesNumber));
-        assertEquals(expectedCreatedTrackAttrValuesNumber, saveAttrValuesInvocationParams.get(1).size(),
-            String.format("Expected %d track attr values to be created", expectedCreatedTrackAttrValuesNumber));
+        // Verify that attribute values were upserted
+        verifyInvocationsNumberWithCollectionsSizeOnly(
+            captor -> verify(attributeHistoryService, times(2)).upsertCandidateValues(captor.capture()),
+            List.of(expectedCreatedArtistAttrValuesNumber, expectedCreatedTrackAttrValuesNumber),
+            "attributeHistoryService.upsertCandidateValues"
+        );
     }
 
     /**
