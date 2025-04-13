@@ -1,5 +1,6 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptags.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -17,5 +18,8 @@ public class ArtistTopTagsTagDto extends TagDto implements EntityDto {
 
     @JsonProperty("count")
     private int usageCount;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Integer rank;
 
 }

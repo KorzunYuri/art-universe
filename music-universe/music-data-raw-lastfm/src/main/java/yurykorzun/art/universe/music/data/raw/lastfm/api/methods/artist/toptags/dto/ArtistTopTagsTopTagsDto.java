@@ -15,4 +15,6 @@ public class ArtistTopTagsTopTagsDto {
     @JsonProperty("tag")
     private List<ArtistTopTagsTagDto> tags;
 
+    @JsonProperty("@attr")
+    private ArtistTopTagsArtistMetadata artist;
 }

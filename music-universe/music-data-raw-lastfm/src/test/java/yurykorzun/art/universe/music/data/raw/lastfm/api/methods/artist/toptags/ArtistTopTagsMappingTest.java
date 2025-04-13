@@ -2,6 +2,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptags
 
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptags.dto.ArtistTopTagsArtistMetadata;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptags.dto.ArtistTopTagsRootDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptags.dto.ArtistTopTagsTagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptags.dto.ArtistTopTagsTopTagsDto;
@@ -25,6 +26,10 @@ public class ArtistTopTagsMappingTest {
 
         ArtistTopTagsTopTagsDto topTagsObject = dtoRoot.getTopTagsObject();
         assertNotNull(topTagsObject);
+
+        ArtistTopTagsArtistMetadata artistMetadata = topTagsObject.getArtist();
+        assertNotNull(artistMetadata);
+        assertEquals("Cattle Decapitation", artistMetadata.getName());
 
         List<ArtistTopTagsTagDto> tagDtos = topTagsObject.getTags();
         assertNotNull(tagDtos);
