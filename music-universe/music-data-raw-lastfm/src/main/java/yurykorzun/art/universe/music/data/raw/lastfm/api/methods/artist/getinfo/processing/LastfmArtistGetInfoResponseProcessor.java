@@ -107,14 +107,20 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
         ArtistGetInfoDtoRoot dtoRoot = parseResponse(sourceApiResponse);
         log.info("{}: start processing DTO of type {}", logPrefix, dtoRoot.getClass().getName());
 
+        // update source artists
         LastfmArtist artist = updateArtist(dtoRoot, sourceApiResponse);
 
-        Map<String, LastfmArtist> artistMap = updateSimilarArtists(dtoRoot, sourceApiResponse);
+        if (ApprovalStatus.APPROVED.equals(artist.getApprovalStatus())) {
+            // update artist's similar artists
+            Map<String, LastfmArtist> artistMap = updateSimilarArtists(dtoRoot, sourceApiResponse);
+            // bind similar artists to base artist
+            bindArtistsToArtist(artist, artistMap, sourceApiResponse.getApiCall());
+        }
 
+        // update artist's tags
         Map<String, LastfmTag> tagMap = updateTags(dtoRoot, sourceApiResponse);
 
-        bindArtistsToArtist(artist, artistMap, sourceApiResponse.getApiCall());
-
+        // bind artist's tags to artist
         bindTagsToArtist(artist, tagMap, sourceApiResponse.getApiCall());
     }
 

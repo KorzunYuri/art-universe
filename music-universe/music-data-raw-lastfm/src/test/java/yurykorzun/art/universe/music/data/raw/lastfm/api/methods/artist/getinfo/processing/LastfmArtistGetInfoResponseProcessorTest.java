@@ -68,7 +68,7 @@ class LastfmArtistGetInfoResponseProcessorTest extends FullContextTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    void givenExistingArtist_whenProcessedArtistGetInfoResponse_newRecordsAreCreated() throws Exception {
+    void givenExistingApprovedArtist_whenProcessedArtistGetInfoResponse_newRecordsAreCreated() throws Exception {
 
         String responseJsonString = LastfmApiClientResourceUtil.getApiClientResponse("artist.getInfo");
         TestCase testCase = testCaseFromResponse(responseJsonString, true);
@@ -118,6 +118,58 @@ class LastfmArtistGetInfoResponseProcessorTest extends FullContextTest {
         verifyInvocationsNumberWithCollectionsSizeOnly(
             captor -> verify(entityRelationService, times(2)).upsertEntityRelations(captor.capture()),
             List.of(newSimilarArtistsNumber, newTagsNumber),
+            "entityRelationService.upsertEntityRelations");
+
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void givenExistingUnapprovedArtist_whenProcessedArtistGetInfoResponse_newRecordsAreCreated() throws Exception {
+
+        String responseJsonString = LastfmApiClientResourceUtil.getApiClientResponse("artist.getInfo");
+        TestCase testCase = testCaseFromResponse(responseJsonString, false);
+
+        // expected values
+        final int newArtistAttrValuesNumber = ARTIST_ATTRS_NUMBER;
+        final int newSimilarArtistsNumber = 0;
+        final int newSimilarArtistsAttrValuesNumber = newSimilarArtistsNumber * SIMILAR_ARTIST_ATTRS_NUMBER;
+        final int newTagsNumber = testCase.expectedTags.size();
+        final int newTagAttrValuesNumber = newTagsNumber * TAG_ATTRS_NUMBER;
+
+        when(artistService.findByName(eq(testCase.expectedArtist.getName()))).thenReturn(Optional.of(testCase.expectedArtist));
+        when(artistService.saveArtists(any())).thenAnswer(invocation -> invocation.getArguments()[0]);
+        when(tagService.saveTags(any())).thenAnswer(invocation -> invocation.getArguments()[0]);
+        when(attributeHistoryService.upsertCandidateValue(any())).thenAnswer(invocation -> invocation.getArguments()[0]);
+
+        processor.processResponse(testCase.sourceApiResponse);
+
+        // Verify that similar artists were not searched, because base artist is not approved
+        verify(artistService, times(0)).findAllByNames(any());
+
+        // Verify that base artist and similar artists were saved
+        verifyAndAssertInvocations(
+            captor -> verify(artistService, times(1)).saveArtists(captor.capture()),
+            List.class,
+            List.of(List.of(testCase.expectedArtist)),
+            "artistService.saveArtists");
+
+        // Verify that new tags were saved
+        verifyAndAssertInvocations(
+            captor -> verify(tagService, times(1)).saveTags(captor.capture()),
+            List.class,
+            List.of(testCase.expectedTags),
+            "tagService.saveTags");
+
+        // verify that attribute values were saved
+        verifyInvocationsNumberWithCollectionsSizeOnly(
+            captor -> verify(attributeHistoryService, times(2)).upsertCandidateValues(captor.capture()),
+            List.of(newArtistAttrValuesNumber, newTagAttrValuesNumber),
+            "attributeHistoryService.upsertCandidateValues");
+
+        // verify that entity relations were saved
+        verifyInvocationsNumberWithCollectionsSizeOnly(
+            captor -> verify(entityRelationService, times(1)).upsertEntityRelations(captor.capture()),
+            List.of(newTagsNumber),
             "entityRelationService.upsertEntityRelations");
 
     }
