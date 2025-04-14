@@ -2,6 +2,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptags
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.LastfmApiConstants;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiCallCreateRequest;
@@ -17,6 +18,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.servi
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmDataSnapshot;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmDataSnapshotService;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityQueryConfig;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityService;
 
 import java.util.List;
@@ -79,7 +81,11 @@ public class LastfmArtistTopTagsApiCallGenerator extends LastfmApiCallGenerator 
         // find artists without unexpired api calls of type artist.getTopTags
         List<LastfmArtist> artists = entityService.findAllUnprocessed(
             LastfmEntityType.ARTIST,
-            LastfmApiCallType.ARTIST_TOP_TAGS);
+            getApiCallType(),
+            LastfmEntityQueryConfig.builder()
+                .approvedEntitiesOnly(false)
+                .sort(Sort.by(Sort.Direction.DESC, "approvalStatus"))
+                .build());
 
         // convert artists to api call creation request
         return artists.stream()
@@ -89,7 +95,7 @@ public class LastfmArtistTopTagsApiCallGenerator extends LastfmApiCallGenerator 
 
     private LastfmApiCallCreateRequest prepareApiCallCreationRequest(LastfmArtist artist) {
         //  create scope snapshot
-        LastfmDataSnapshot dataSnapshot = dataSnapshotService.getOrCreateSnapshotFor(LastfmApiCallType.ARTIST_TOP_TAGS, artist);
+        LastfmDataSnapshot dataSnapshot = dataSnapshotService.getOrCreateSnapshotFor(getApiCallType(), artist);
         //  create attribute_snapshots
         createAttributeSnapshotsForTagWithinArtist(artist, dataSnapshot);
         //  create api call

@@ -72,14 +72,14 @@ class LastfmArtistTopTagsApiCallGeneratorTest extends JpaOnlyTest {
     }
 
     @Test
-    void testGetApiCallType_returnsTagTopArtists() {
+    void testGetApiCallType_returnsArtistTopTags() {
         LastfmApiCallType type = generator.getApiCallType();
         assertNotNull(type, "Generator api call type must not be null");
         assertEquals(LastfmApiCallType.ARTIST_TOP_TAGS, type, "Generator api call type must be ARTIST_TOP_TAGS");
     }
 
     @Test
-    void testCreateApiCalls_callsDependenciesAndCreatesRequests() {
+    void givenArtist_whenCreateApiCallsCalled_createsSnapshotsAndArtistTopTagsApiCalls() {
         LastfmApiCall apiCall = createArtistSourceApiCall(true);
         List<LastfmArtist> unprocessedArtists = IntStream.range(0, UNPROCESSED_ARTISTS_COUNT)
             .mapToObj(i -> {
@@ -92,7 +92,7 @@ class LastfmArtistTopTagsApiCallGeneratorTest extends JpaOnlyTest {
                 return artist;
             })
             .collect(Collectors.toList());
-        when(entityService.<LastfmArtist>findAllUnprocessed(LastfmEntityType.ARTIST, generator.getApiCallType()))
+        when(entityService.<LastfmArtist>findAllUnprocessed(eq(LastfmEntityType.ARTIST), eq(generator.getApiCallType()), any()))
             .thenReturn(unprocessedArtists);
 
 

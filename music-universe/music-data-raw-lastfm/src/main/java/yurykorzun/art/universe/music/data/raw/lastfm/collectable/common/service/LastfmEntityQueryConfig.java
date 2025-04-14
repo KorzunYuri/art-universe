@@ -15,4 +15,7 @@ public class LastfmEntityQueryConfig {
 
     @Builder.Default
     private Limit limit = Limit.of(LastfmConstants.HIBERNATE_BATCH_SIZE);
+
+    @Builder.Default
+    private boolean approvedEntitiesOnly = true;
 }
