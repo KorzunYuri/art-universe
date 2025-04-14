@@ -11,6 +11,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.L
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Repository
 public interface LastfmDataSnapshotRepository extends JpaRepository<LastfmDataSnapshot, Long> {
@@ -25,6 +26,18 @@ public interface LastfmDataSnapshotRepository extends JpaRepository<LastfmDataSn
 
     default void incCreatedCount(long id) {
         incCreatedCountByNumber(id, 1);
+    }
+
+    @Modifying
+    @Query(value = """
+            UPDATE  data_snapshot
+            SET     created_cnt = created_cnt + :count
+            WHERE   id IN (:ids)
+        """, nativeQuery = true)
+    void incCreatedCountByNumber(@Param("ids") List<Long> ids, @Param("count") int count);
+
+    default void incCreatedCount(List<Long> ids) {
+        incCreatedCountByNumber(ids, 1);
     }
 
     @Modifying
@@ -69,4 +82,5 @@ public interface LastfmDataSnapshotRepository extends JpaRepository<LastfmDataSn
         return findByApiCallTypeAndDataDate(
             apiCallType, LocalDate.now());
     }
+
 }

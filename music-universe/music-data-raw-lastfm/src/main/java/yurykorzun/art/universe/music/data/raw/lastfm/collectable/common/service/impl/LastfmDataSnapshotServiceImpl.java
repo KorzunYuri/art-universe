@@ -9,6 +9,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.reposito
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmDataSnapshotService;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class LastfmDataSnapshotServiceImpl implements LastfmDataSnapshotService {
@@ -59,13 +60,25 @@ public class LastfmDataSnapshotServiceImpl implements LastfmDataSnapshotService 
     @Transactional
     @Override
     public void incCreatedCount(long id) {
-        snapshotRepository.incCompletedCount(id);
+        snapshotRepository.incCreatedCount(id);
+    }
+
+    @Transactional
+    @Override
+    public void incCreatedCount(List<Long> ids) {
+        snapshotRepository.incCreatedCount(ids);
     }
 
     @Transactional
     @Override
     public void incCreatedCountByNumber(long id, int number) {
         snapshotRepository.incCreatedCountByNumber(id, number);
+    }
+
+    @Transactional
+    @Override
+    public void incCreatedCountByNumber(List<Long> ids, int number) {
+        snapshotRepository.incCreatedCountByNumber(ids, number);
     }
 
     @Transactional
