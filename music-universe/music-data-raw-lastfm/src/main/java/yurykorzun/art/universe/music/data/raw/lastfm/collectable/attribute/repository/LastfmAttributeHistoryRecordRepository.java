@@ -21,10 +21,19 @@ public interface LastfmAttributeHistoryRecordRepository extends JpaRepository<La
         WHERE   1=1
             AND r.entityType    = :entityType
             AND r.entityId      = :entityId
-            AND (:scopeEntityType   IS NULL OR r.scopeEntityType    = :scopeEntityType)
-            AND (:scopeEntityId     IS NULL OR r.scopeEntityId      = :scopeEntityId)
             AND r.attribute     = :attribute
             AND r.validTill     = :validTill
+            AND (
+                        (
+                                :scopeEntityType    IS NULL AND :scopeEntityId  IS NULL
+                            AND r.scopeEntityType   IS NULL AND r.scopeEntityId IS NULL
+                        )
+                    OR
+                        (
+                                r.scopeEntityType = :scopeEntityType
+                            AND r.scopeEntityId = :scopeEntityId
+                        )
+                )
       """)
     LastfmAttributeHistoryRecord findValue(
                     @Param("entityType")        LastfmEntityType entityType,
