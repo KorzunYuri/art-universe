@@ -14,7 +14,6 @@ public class LastfmTrackEntityFactory<D extends TrackDto>  implements EntityFact
                 .name(dto.getName())
                 .url(dto.getUrl())
                 .mbid(dto.getMbid())
-                .duration(dto.getDuration())
                 .apiCall(response.getApiCall()),
             dto
         ).build();

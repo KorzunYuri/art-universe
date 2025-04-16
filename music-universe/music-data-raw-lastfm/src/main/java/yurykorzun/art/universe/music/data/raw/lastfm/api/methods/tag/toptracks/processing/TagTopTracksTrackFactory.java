@@ -9,6 +9,7 @@ class TagTopTracksTrackFactory extends LastfmTrackEntityFactory<TagTopTracksTrac
     @Override
     protected LastfmTrack.LastfmTrackBuilder<?, ?> setExtensionFields(LastfmTrack.LastfmTrackBuilder<?, ?> builder, TagTopTracksTrackDto dto) {
         return builder
+            .duration(dto.getDuration())
             .streamable(1 == dto.getStreamableObject().getFullTrack());
     }
 }
