@@ -14,14 +14,24 @@ import javax.annotation.Nullable;
 @Repository
 public interface LastfmAttributeSnapshotRepository extends JpaRepository<LastfmAttributeSnapshot, Long> {
 
+    /**
+     * Returns scoped or non-scoped attribute snapshots, depending on whether scope entity is provided
+     */
     @Query(value = """
         SELECT  s
         FROM    attribute_snapshot s
         WHERE   1=1
             AND s.attribute         = :attribute
             AND s.entityType        = :entityType
-            AND (:scopeEntityType   IS NULL OR s.scopeEntityType    = :scopeEntityType)
-            AND (:scopeEntityId     IS NULL OR s.scopeEntityId      = :scopeEntityId)
+            AND (
+                        (       :scopeEntityType    IS NULL AND :scopeEntityId  IS NULL
+                            AND s.scopeEntityType   IS NULL AND s.scopeEntityId IS NULL
+                        )
+                    OR
+                        (       s.scopeEntityType = :scopeEntityType
+                            AND s.scopeEntityId = :scopeEntityId
+                        )
+                )
     """)
     LastfmAttributeSnapshot findAttributeSnapshot(
                         @Param("attribute")         LastfmAttribute     attribute,

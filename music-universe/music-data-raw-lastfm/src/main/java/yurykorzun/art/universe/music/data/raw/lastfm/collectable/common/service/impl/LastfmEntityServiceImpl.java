@@ -43,28 +43,39 @@ public class LastfmEntityServiceImpl implements LastfmEntityService {
         // subquery for api_call
         Subquery<Long> idsWithPendingCallsQuery = query.subquery(Long.class);
         Root<LastfmApiCall> apiCallRoot = idsWithPendingCallsQuery.from(LastfmApiCall.class);
+
         // reused paths
         Path<Object>    entityId = entityRoot.get("id");
-        Path<Object>    entityApprovalStatus = entityRoot.get("approvalStatus");
         Path<Long>      apiCallEntityIdRef = apiCallRoot.get("entityId");
         Path<Object>    apiCallTypeField = apiCallRoot.get("type");
         Path<Object>    apiCallEntityType = apiCallRoot.get("entityType");
         Path<Timestamp> apiCallDueDttm = apiCallRoot.get("dueDttm");
+
         // predicates
-        Predicate entityIsApproved = cb.equal(entityApprovalStatus, ApprovalStatus.APPROVED.getCode());
-        Predicate apiCallIsOfRequestedType = cb.equal(apiCallTypeField, apiCallType.getCode());
-        Predicate apiCallIsForRequestedEntityType = cb.equal(apiCallEntityType, entityType.getCode());
-        Predicate apiCallReferencesEntity = cb.equal(apiCallEntityIdRef, entityId);
-        Predicate apiCallIsNotExpired = cb.greaterThan(apiCallDueDttm, cb.currentTimestamp());
+        List<Predicate> subQueryPredicates = new ArrayList<>();
+        subQueryPredicates.add(cb.equal(apiCallTypeField, apiCallType.getCode()));
+        subQueryPredicates.add(cb.equal(apiCallEntityType, entityType.getCode()));
+        subQueryPredicates.add(cb.equal(apiCallEntityIdRef, entityId));
+        subQueryPredicates.add(cb.greaterThan(apiCallDueDttm, cb.currentTimestamp()));
+
+        Path<Integer> entityApprovalStatus = entityRoot.get("approvalStatus");
+        Predicate entityApprovalFilter;
+        if (config.isApprovedEntitiesOnly()) {
+            entityApprovalFilter = cb.equal(entityApprovalStatus, ApprovalStatus.APPROVED);
+        } else {
+            CriteriaBuilder.In<Integer> entityApprovalStatusIn = cb.in(entityApprovalStatus);
+            entityApprovalStatusIn
+                .value(ApprovalStatus.APPROVED.getCode())
+                .value(ApprovalStatus.PENDING.getCode());
+            entityApprovalFilter = entityApprovalStatusIn;
+        }
+        subQueryPredicates.add(entityApprovalFilter);
+
         // build subquery
-        idsWithPendingCallsQuery.select(apiCallEntityIdRef)
-                .where(
-                        entityIsApproved,
-                        apiCallIsOfRequestedType,
-                        apiCallIsForRequestedEntityType,
-                        apiCallReferencesEntity,
-                        apiCallIsNotExpired
-                );
+        idsWithPendingCallsQuery
+            .select(apiCallEntityIdRef)
+            .where(subQueryPredicates.toArray(new Predicate[]{}));
+
         // build sorting based on ROOT entity
         List<Order> jpaOrders = new ArrayList<>();
         for (Sort.Order order : config.getSort()) {
@@ -76,7 +87,7 @@ public class LastfmEntityServiceImpl implements LastfmEntityService {
         // finalize query
         query.select(entityRoot)
             .where(
-                cb.equal(entityApprovalStatus, ApprovalStatus.APPROVED.getCode()),
+                entityApprovalFilter,
                 cb.not(cb.exists(idsWithPendingCallsQuery))
             )
             .orderBy(jpaOrders);

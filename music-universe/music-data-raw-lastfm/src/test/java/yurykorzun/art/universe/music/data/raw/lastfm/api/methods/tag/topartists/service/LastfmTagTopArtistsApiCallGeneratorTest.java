@@ -75,7 +75,7 @@ class LastfmTagTopArtistsApiCallGeneratorTest extends JpaOnlyTest {
     }
 
     @Test
-    void testCreateApiCalls_callsDependenciesAndCreatesRequests() {
+    void givenUnexpiredTags_whenCreateApiCallsCalled_createsSnapshotsAndTagTopArtistsApiCalls() {
         LastfmApiCall apiCall = createTagSourceApiCall(true);
         List<LastfmTag> unprocessedTags = IntStream.range(0, UNPROCESSED_TAGS_COUNT)
             .mapToObj(i -> {

@@ -3,15 +3,16 @@ package yurykorzun.art.universe.music.data.raw.lastfm.common;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmApiCallRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.utils.TimeUtil;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.repository.LastfmArtistRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmDataSnapshot;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.repository.LastfmDataSnapshotRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.repository.LastfmTagRepository;
@@ -19,6 +20,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.La
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -66,6 +68,22 @@ public class DbConsistencyHelper {
 
     public LastfmDataSnapshot createDummyDataSnapshot() {
         return createDummyDataSnapshot(DUMMY_API_CALL_TYPE);
+    }
+
+    public LastfmApiCall createAndSaveApiCall(Consumer<LastfmApiCall.LastfmApiCallBuilder<?, ?>> customizer) {
+        return apiCallRepository.save(createApiCall(customizer));
+    }
+
+    public LastfmApiCall createApiCall(Consumer<LastfmApiCall.LastfmApiCallBuilder<?, ?>> customizer) {
+        LastfmApiCall.LastfmApiCallBuilder<?, ?> builder = LastfmApiCall.builder()
+                .dataSnapshotId(createDummyDataSnapshot().getId())
+                .entityType(LastfmEntityType.ARTIST)
+                .entityId(null)
+                .type(DUMMY_API_CALL_TYPE)
+                .dueDttm(TimeUtil.calcDueDttm(1))
+                .params(Map.of());
+        customizer.accept(builder);
+        return builder.build();
     }
 
     public LastfmApiCall createDummyApiCall(LastfmApiCallType apiCallType) {
@@ -157,6 +175,10 @@ public class DbConsistencyHelper {
         return artistRepository.save(createArtist(customizer));
     }
 
+    public LastfmArtist createAndSaveArtist() {
+        return createAndSaveArtist(builder -> {});
+    }
+
     public LastfmTrack createTrack(String url, LastfmApiCall apiCall) {
         return LastfmTrack.builder()
                 .url(   url)
@@ -175,5 +197,4 @@ public class DbConsistencyHelper {
     public LastfmTrack createTrack() {
         return createTrack(randomString(), createDummyApiCall());
     }
-
 }
