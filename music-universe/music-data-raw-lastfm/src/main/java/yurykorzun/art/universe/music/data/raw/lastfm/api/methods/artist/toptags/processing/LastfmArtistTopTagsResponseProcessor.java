@@ -70,6 +70,8 @@ public class LastfmArtistTopTagsResponseProcessor extends LastfmApiResponseProce
 
         // save new, update old tags
         updateTags(sourceApiResponse, dtoRoot);
+
+        log.info("{}: finished processing DTO of type {}", logPrefix, dtoRoot.getClass().getName());
     }
 
     private void updateTags(LastfmApiResponse sourceApiResponse, ArtistTopTagsRootDto dtoRoot) {
