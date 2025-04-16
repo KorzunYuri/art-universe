@@ -77,12 +77,7 @@ public class LastfmEntityServiceImpl implements LastfmEntityService {
             .where(subQueryPredicates.toArray(new Predicate[]{}));
 
         // build sorting based on ROOT entity
-        List<Order> jpaOrders = new ArrayList<>();
-        for (Sort.Order order : config.getSort()) {
-            Path<?> path = entityRoot.get(order.getProperty());
-            Order jpaOrder = order.isAscending() ? cb.asc(path) : cb.desc(path);
-            jpaOrders.add(jpaOrder);
-        }
+        List<Order> jpaOrders = buildOrders(config, entityRoot, cb);
 
         // finalize query
         query.select(entityRoot)
@@ -95,6 +90,35 @@ public class LastfmEntityServiceImpl implements LastfmEntityService {
         TypedQuery<E> typedQuery = entityManager.createQuery(query);
         typedQuery.setMaxResults(config.getLimit().max());
         return typedQuery.getResultList();
+    }
+
+    /**
+     * Builder ORDER expression based on {@link LastfmEntityQueryConfig} provided by caller.
+     * Number values will be wrapped in Coalesce function to support natural priority.
+     */
+    private <E extends BaseCollectableEntity> List<Order> buildOrders(
+        LastfmEntityQueryConfig config,
+        Root<E> entityRoot,
+        CriteriaBuilder cb
+    ) {
+        List<Order> jpaOrders = new ArrayList<>();
+        for (Sort.Order order : config.getSort()) {
+            Expression<?> sortExpr;
+            Path<?> path = entityRoot.get(order.getProperty());
+            Class<?> javaType = path.getJavaType();
+            // build coalesce(value, 0) for numbers
+            if (Integer.class.isAssignableFrom(javaType)) {
+                CriteriaBuilder.Coalesce<Integer> coalesce = cb.coalesce();
+                coalesce.value(path.as(Integer.class));
+                coalesce.value(0);
+                sortExpr = coalesce;
+            } else {
+                sortExpr = path;
+            }
+            Order jpaOrder = order.isAscending() ? cb.asc(sortExpr) : cb.desc(sortExpr);
+            jpaOrders.add(jpaOrder);
+        }
+        return jpaOrders;
     }
 
 }
