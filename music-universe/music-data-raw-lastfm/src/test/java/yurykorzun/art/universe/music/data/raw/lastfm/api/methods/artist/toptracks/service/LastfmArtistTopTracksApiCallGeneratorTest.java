@@ -1,4 +1,4 @@
-package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptags.service;
+package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptracks.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,6 +21,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.L
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmDataSnapshotService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityService;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
 
 import java.time.Duration;
@@ -37,8 +38,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@Import(LastfmArtistTopTagsApiCallGenerator.class)
-class LastfmArtistTopTagsApiCallGeneratorTest extends JpaOnlyTest {
+@Import(LastfmArtistTopTracksApiCallGenerator.class)
+class LastfmArtistTopTracksApiCallGeneratorTest extends JpaOnlyTest {
 
     @MockitoBean
     private LastfmApiCallService apiCallService;
@@ -53,7 +54,7 @@ class LastfmArtistTopTagsApiCallGeneratorTest extends JpaOnlyTest {
     private DbConsistencyHelper consistencyHelper;
 
     @Autowired
-    private LastfmArtistTopTagsApiCallGenerator generator;
+    private LastfmArtistTopTracksApiCallGenerator generator;
 
     private static final int UNPROCESSED_ARTISTS_COUNT = 3;
     private static final int DUE_DURATION_DAYS = 1;
@@ -65,26 +66,27 @@ class LastfmArtistTopTagsApiCallGeneratorTest extends JpaOnlyTest {
 
     private LastfmApiCall createArtistSourceApiCall(boolean isExpired) {
         return consistencyHelper.createAndSaveApiCall(builder -> builder
-                .type(LastfmApiCallType.TAG_TOP_ARTISTS)
-                .dueDttm(Instant.now().plus(Duration.ofDays(isExpired ? -1 : 1)))
-                .params(Map.of())
+            .type(LastfmApiCallType.TAG_TOP_ARTISTS)
+            .dueDttm(Instant.now().plus(Duration.ofDays(isExpired ? -1 : 1)))
+            .params(Map.of())
         );
     }
 
     @Test
-    void testGetApiCallType_returnsArtistTopTags() {
+    void testGetApiCallType_returnsArtistTopTracks() {
         LastfmApiCallType type = generator.getApiCallType();
         assertNotNull(type, "Generator api call type must not be null");
-        assertEquals(LastfmApiCallType.ARTIST_TOP_TAGS, type, "Generator api call type must be ARTIST_TOP_TAGS");
+        assertEquals(LastfmApiCallType.ARTIST_TOP_TRACKS, type);
     }
 
     @Test
-    void givenArtist_whenCreateApiCallsCalled_createsSnapshotsAndArtistTopTagsApiCalls() {
+    void givenArtist_whenCreateApiCallsCalled_createsSnapshotsAndArtistTopTracksApiCalls() {
         LastfmApiCall apiCall = createArtistSourceApiCall(true);
         List<LastfmArtist> unprocessedArtists = IntStream.range(0, UNPROCESSED_ARTISTS_COUNT)
             .mapToObj(i -> {
                 LastfmArtist artist = LastfmArtist.builder()
                     .name(String.format("artist-%d", i))
+                    .mbid(i % 2 == 0 ? null : String.format("mbid-%d", i))
                     .apiCall(apiCall)
                     .approvalStatus(ApprovalStatus.APPROVED)
                     .build();
@@ -94,7 +96,6 @@ class LastfmArtistTopTagsApiCallGeneratorTest extends JpaOnlyTest {
             .collect(Collectors.toList());
         when(entityService.<LastfmArtist>findAllUnprocessed(eq(LastfmEntityType.ARTIST), eq(generator.getApiCallType()), any()))
             .thenReturn(unprocessedArtists);
-
 
         when(dataSnapshotService.getOrCreateSnapshotFor(eq(generator.getApiCallType()), any(LastfmArtist.class)))
             .thenAnswer(invocation -> {
@@ -113,12 +114,6 @@ class LastfmArtistTopTagsApiCallGeneratorTest extends JpaOnlyTest {
         ArgumentCaptor<List<Long>> snapshotCreatedCountIncCaptor = ArgumentCaptor.forClass(List.class);
         verify(dataSnapshotService).incCreatedCount(snapshotCreatedCountIncCaptor.capture());
         assertEquals(UNPROCESSED_ARTISTS_COUNT, snapshotCreatedCountIncCaptor.getValue().size());
-
-        // for each artist, attribute_snapshot for tag RANK must have been created
-        for (LastfmArtist artist : unprocessedArtists) {
-            verify(attributeSnapshotService).getOrCreateForEntity(
-                any(), eq(LastfmEntityType.TAG), eq(LastfmAttribute.RANK), eq(artist));
-        }
 
         ArgumentCaptor<List<LastfmApiCallCreateRequest>> captor = ArgumentCaptor.forClass(List.class);
         verify(apiCallService).createApiCalls(captor.capture());
@@ -151,10 +146,15 @@ class LastfmArtistTopTagsApiCallGeneratorTest extends JpaOnlyTest {
 
             // check that call parameters contain autocorrect disabled
             String autocorrect = params.get(LastfmApiConstants.PARAM_NAME_AUTOCORRECT);
-            assertNotNull(autocorrect, "'autocorrect' must be present in api call parameters'");
+            assertNotNull(autocorrect, "'autocorrect' parameter must be present in api call parameters'");
             assertEquals("0", autocorrect);
 
+            // check that call parameters contain autocorrect disabled
+            String pageSize = params.get(LastfmApiConstants.PARAM_NAME_LIMIT);
+            assertNotNull(autocorrect, "'limit' parameter must be present in api call parameters'");
+            assertEquals(String.valueOf(LastfmConstants.HIBERNATE_BATCH_SIZE), pageSize);
         });
     }
+
 
 }

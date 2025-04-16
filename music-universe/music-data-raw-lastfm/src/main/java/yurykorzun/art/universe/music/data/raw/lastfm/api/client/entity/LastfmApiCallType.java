@@ -47,22 +47,22 @@ public enum LastfmApiCallType implements ApiCallType, LastfmSpecific {
     ,   ARTIST_GET_INFO(
             4,
             "artist.getInfo",
-            Set.of(PARAM_NAME_API_KEY, PARAM_NAME_ARTIST),
+            Set.of(PARAM_NAME_API_KEY, PARAM_NAME_ARTIST),   // TODO correct artist|mbid params pair
             Set.of(),
             ArtistGetInfoDtoRoot.class,
             null)
     ,   ARTIST_TOP_TAGS(
             5,
             "artist.getTopTags",
-            Set.of(PARAM_NAME_API_KEY, PARAM_NAME_ARTIST),
-            Set.of(PARAM_NAME_AUTOCORRECT),
+            Set.of(PARAM_NAME_API_KEY),
+            Set.of(PARAM_NAME_ARTIST, PARAM_NAME_MBID, PARAM_NAME_AUTOCORRECT, PARAM_NAME_LIMIT),
             ArtistTopTagsRootDto.class,
             LastfmArtist.class)
     ,   ARTIST_TOP_TRACKS(
             6,
             "artist.getTopTracks",
-            Set.of(PARAM_NAME_API_KEY, PARAM_NAME_ARTIST),
-            Set.of(PARAM_NAME_LIMIT),
+            Set.of(PARAM_NAME_API_KEY),
+            Set.of(PARAM_NAME_ARTIST, PARAM_NAME_MBID, PARAM_NAME_AUTOCORRECT, PARAM_NAME_LIMIT),
             ArtistTopTracksDtoRoot.class,
             LastfmArtist.class);
 
