@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-@Slf4j
 public class LastfmApiDtoProcessor<E extends BaseLastfmEntity, D extends EntityDto> {
 
     private final EntityMappingBuilder<E, D> mappingBuilder;
@@ -125,7 +124,6 @@ public class LastfmApiDtoProcessor<E extends BaseLastfmEntity, D extends EntityD
         Function<List<E>, List<E>> entitySaver
     ) {
         List<E> savedEntities = entityPersister.persistEntities(mappings, entitySaver);
-        log.info("{}: created/updated {} entities", getClass().getSimpleName(), savedEntities.size());
         return savedEntities;
     }
 
@@ -148,7 +146,6 @@ public class LastfmApiDtoProcessor<E extends BaseLastfmEntity, D extends EntityD
         List<LastfmAttributeHistoryRecord> attrRecords = attributeHistoryBuilder.buildAttributeHistoryRecords(
             mappings, attrHandlers, sourceApiResponse.getApiCall());
         attrSaver.apply(attrRecords);
-        log.info("{}: created {} attribute history records", getClass().getSimpleName(), attrRecords.size());
         return attrRecords;
     }
 
@@ -171,7 +168,6 @@ public class LastfmApiDtoProcessor<E extends BaseLastfmEntity, D extends EntityD
         if (relationBuilder != null && relationSaver != null) {
             relations = relationBuilder.buildEntityRelations(mappings, sourceApiResponse.getApiCall());
             relationSaver.accept(relations);
-            log.info("{}: created {} entity relations", getClass().getSimpleName(), relations.size());
         }
         return relations;
     }

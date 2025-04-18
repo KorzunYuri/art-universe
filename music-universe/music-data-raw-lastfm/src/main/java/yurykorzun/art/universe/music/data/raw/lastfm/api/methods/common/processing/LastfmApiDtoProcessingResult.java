@@ -8,7 +8,7 @@ import java.util.List;
 
 public record LastfmApiDtoProcessingResult<E extends BaseLastfmEntity>(
     List<E> savedEntities,
-    List<LastfmAttributeHistoryRecord> createdAttributeValues,
+    List<LastfmAttributeHistoryRecord> savedAttributeValues,
     List<LastfmEntityRelation> savedEntityRelations
 ) {
 }

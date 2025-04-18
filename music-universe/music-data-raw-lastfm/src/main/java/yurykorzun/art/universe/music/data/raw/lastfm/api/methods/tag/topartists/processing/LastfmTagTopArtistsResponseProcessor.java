@@ -9,6 +9,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.LastfmArtistEntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.dto.ArtistDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingResult;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiResponseProcessor;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.DefaultEntityAttributeHandler;
@@ -55,7 +56,7 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
     );
 
     @Override
-    protected ApiCallType getApiCallType() {
+    public ApiCallType getApiCallType() {
         return LastfmApiCallType.TAG_TOP_ARTISTS;
     }
 
@@ -66,18 +67,16 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
         TagTopArtistsDtoRoot dtoRoot = parseResponse(response);
         List<TagTopArtistsArtistDto> dtos = dtoRoot.getTopArtists().getArtists();
 
-        final String logPrefix = String.format("Lastfm %s response processing", LastfmApiCallType.TAG_TOP_TAGS.getMethod());
-        log.info("{}: start processing DTO of type {} with {} records", logPrefix, dtoRoot.getClass().getName(), dtos.size());
-
         List<String> artistNames = dtos.stream().map(ArtistDto::getName).toList();
         List<LastfmArtist> existingArtists = artistService.findAllByNames(artistNames);
 
-        dtoProcessingService.processDtosWithRelations(
+        LastfmApiDtoProcessingResult<LastfmArtist> result = dtoProcessingService.processDtosWithRelations(
             dtos, existingArtists, response,
             artistFactory, attrHandlers, artistService::saveArtists
         );
-
-        log.info("\"{}: Finished processing DTO of type {}", logPrefix, dtoRoot.getClass().getName());
+        log.info("saved {} tag's artists", result.savedEntities().size());
+        log.info("saved {} tag's artists' attributes", result.savedAttributeValues().size());
+        log.info("saved {} tag-artist relations", result.savedEntityRelations().size());
     }
 
 }

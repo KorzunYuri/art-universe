@@ -51,7 +51,7 @@ public class LastfmArtistTopTracksApiCallGenerator extends LastfmApiCallGenerato
     public void createApiCalls() {
         List<LastfmApiCallCreateRequest> apiCallCreationRequests = generateApiCallCreationRequests();
         apiCallService.createApiCalls(apiCallCreationRequests);
-        log.info("created {} api calls of type {}", apiCallCreationRequests.size(), getApiCallType());
+        log.info("created {} API calls for method {}", apiCallCreationRequests.size(), getApiCallType().getMethod());
 
         List<Long> snapshotIds = apiCallCreationRequests.stream()
             .map(LastfmApiCallCreateRequest::getDataSnapshotId)

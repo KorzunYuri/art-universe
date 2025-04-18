@@ -24,7 +24,6 @@ import java.util.List;
 @Slf4j
 public class LastfmArtistTopTracksResponseProcessor extends LastfmApiResponseProcessor<ArtistTopTracksDtoRoot> {
 
-    private final String logPrefix = String.format("Lastfm %s response processing", getApiCallType().getMethod());
     private final LastfmApiDtoProcessingService dtoProcessingService;
     private final LastfmTrackService trackService;
     private final EntityFactory<LastfmTrack, ArtistTopTracksTrackDto> trackEntityFactory;
@@ -56,18 +55,16 @@ public class LastfmArtistTopTracksResponseProcessor extends LastfmApiResponsePro
     );
 
     @Override
-    protected ApiCallType getApiCallType() {
+    public ApiCallType getApiCallType() {
         return LastfmApiCallType.ARTIST_TOP_TRACKS;
     }
 
     @Override
     protected void processResponse(LastfmApiResponse sourceApiResponse) throws IOException {
+
         ArtistTopTracksDtoRoot dtoRoot = parseResponse(sourceApiResponse);
-        log.info("{}: start processing DTO of type {}", logPrefix, dtoRoot.getClass().getName());
 
         updateTracks(sourceApiResponse, dtoRoot);
-        
-        log.info("{}: finished processing DTO of type {}", logPrefix, dtoRoot.getClass().getName());
     }
 
     private void updateTracks(LastfmApiResponse sourceApiResponse, ArtistTopTracksDtoRoot dtoRoot) {
@@ -82,6 +79,8 @@ public class LastfmArtistTopTracksResponseProcessor extends LastfmApiResponsePro
             trackAttrHandlers,
             trackService::saveTracks
         );
-        log.info("{}: saved/updated {} tracks", logPrefix, result.savedEntities().size());
+        log.info("saved {} artist's tracks", result.savedEntities().size());
+        log.info("saved {} artist's tracks' attributes", result.savedAttributeValues().size());
+        log.info("saved {} artist-track relations", result.savedEntityRelations().size());
     }
 }

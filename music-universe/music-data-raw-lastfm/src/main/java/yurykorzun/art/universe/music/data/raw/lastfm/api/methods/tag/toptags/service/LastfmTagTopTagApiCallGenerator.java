@@ -1,5 +1,6 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,7 @@ import java.util.*;
 import static yurykorzun.art.universe.music.data.raw.lastfm.api.LastfmApiConstants.PAGE_SIZE;
 
 @Component
+@Slf4j
 public class LastfmTagTopTagApiCallGenerator extends LastfmApiCallGenerator {
 
     private final LastfmApiCallService apiCallService;
@@ -58,6 +60,7 @@ public class LastfmTagTopTagApiCallGenerator extends LastfmApiCallGenerator {
         //  generate api calls
         List<LastfmApiCallCreateRequest> apiCallCreationRequests = generateApiCallCreationRequests();
         apiCallService.createApiCalls(apiCallCreationRequests);
+        log.info("created {} API calls for method {}", apiCallCreationRequests.size(), getApiCallType().getMethod());
 
         snapshotService.incCreatedCount(apiCallCreationRequests.size());
     }

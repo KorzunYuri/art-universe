@@ -1,5 +1,6 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Component
+@Slf4j
 public class LastfmTagTopTracksApiCallGenerator extends LastfmApiCallGenerator {
 
     private final LastfmApiCallService apiCallService;
@@ -55,6 +57,7 @@ public class LastfmTagTopTracksApiCallGenerator extends LastfmApiCallGenerator {
     public void createApiCalls() {
         List<LastfmApiCallCreateRequest> apiCallCreationRequests = generateApiCallCreationRequests();
         apiCallService.createApiCalls(apiCallCreationRequests);
+        log.info("created {} API calls for method {}", apiCallCreationRequests.size(), getApiCallType().getMethod());
 
         Map<Long, List<LastfmApiCallCreateRequest>> snapshotGroups = apiCallCreationRequests.stream()
             .collect(Collectors.groupingBy(LastfmApiCallCreateRequest::getDataSnapshotId));

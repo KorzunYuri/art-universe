@@ -61,14 +61,9 @@ public class LastfmArtistTopTagsApiCallGenerator extends LastfmApiCallGenerator 
     @Override
     public void createApiCalls() {
 
-        log.info("start generating api calls for method {}", getApiCallType().getMethod());
-
-        // generate api call creation requests
         List<LastfmApiCallCreateRequest> apiCallCreationRequests = generateApiCallCreationRequests();
-        log.info("created {} api call creation requests", apiCallCreationRequests.size());
-
-        // create api calls
         apiCallService.createApiCalls(apiCallCreationRequests);
+        log.info("created {} API calls for method {}", apiCallCreationRequests.size(), getApiCallType().getMethod());
 
         // increment 'created' counter for every data snapshot,
         // because every api call references exactly one dataSnapshot (for the specific artist)

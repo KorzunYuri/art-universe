@@ -39,7 +39,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProcessor<ArtistGetInfoDtoRoot> {
 
-    private final String logPrefix = String.format("Lastfm %s response processing", getApiCallType().getMethod());
     private final LastfmArtistService artistService;
     private final LastfmTagService tagService;
     private final LastfmApiDtoProcessingService dtoProcessingService;
@@ -97,15 +96,14 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
     );
 
     @Override
-    protected ApiCallType getApiCallType() {
+    public ApiCallType getApiCallType() {
         return LastfmApiCallType.ARTIST_GET_INFO;
     }
 
     @Override
     protected void processResponse(LastfmApiResponse sourceApiResponse) throws IOException {
-
+        
         ArtistGetInfoDtoRoot dtoRoot = parseResponse(sourceApiResponse);
-        log.info("{}: start processing DTO of type {}", logPrefix, dtoRoot.getClass().getName());
 
         // update source artists
         LastfmArtist artist = updateArtist(dtoRoot, sourceApiResponse);
@@ -131,8 +129,12 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
 
         LastfmApiDtoProcessingResult<LastfmArtist> result = dtoProcessingService.processDtosWithoutRelations(
             List.of(dto), artist.stream().toList(), sourceApiResponse,
-            artistFactory, artistAttrHandlers, artistService::saveArtists
+            artistFactory,
+            artistAttrHandlers,
+            artistService::saveArtists
         );
+        log.info("saved artist {}", dto.getName());
+        log.info("saved {} artists' attributes", result.savedAttributeValues().size());
 
         if (result.savedEntities().size() == 1) {
             return result.savedEntities().get(0);
@@ -151,9 +153,12 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
 
         LastfmApiDtoProcessingResult<LastfmArtist> result = dtoProcessingService.processDtosWithoutRelations(
             artistDtos, existingArtists, sourceApiResponse,
-            similarArtistFactory, similarArtistAttrHandlers, artistService::saveArtists
+            similarArtistFactory,
+            similarArtistAttrHandlers,
+            artistService::saveArtists
         );
-        log.info("{}: saved {} similar artists", logPrefix, result.savedEntities().size());
+        log.info("saved {} artist's similar artists", result.savedEntities().size());
+        log.info("saved {} artist's similar artists' attributes", result.savedAttributeValues().size());
 
         //  merge existing and new artists to eliminate the second call to database for artists
         Map<String, LastfmArtist> artistMap = existingArtists.stream()
@@ -173,6 +178,8 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
             dtos, existingTags, sourceApiResponse,
             tagFactory, tagAttrHandlers, tagService::saveTags
         );
+        log.info("saved {} artists", result.savedEntities().size());
+        log.info("saved {} artists' attributes", result.savedAttributeValues().size());
 
         //  merge existing and new artists to eliminate the second call to database for artists
         Map<String, LastfmTag> tagsMap = existingTags.stream()
@@ -193,7 +200,7 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
                 .build())
             .collect(Collectors.toList());
         entityRelationService.upsertEntityRelations(relations);
-        log.info("{}: saved {} artist-artist relations", logPrefix, relations.size());
+        log.info("saved {} artist-artist relations", relations.size());
     }
 
     private void bindTagsToArtist(LastfmArtist artist, Map<String, LastfmTag> tagMap, LastfmApiCall sourceApiCall) {
@@ -207,7 +214,7 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
                 .build())
             .collect(Collectors.toList());
         entityRelationService.upsertEntityRelations(relations);
-        log.info("{}: saved {} tag-artist relations", logPrefix, relations.size());
+        log.info("saved {} tag-artist relations", relations.size());
     }
 
 }
