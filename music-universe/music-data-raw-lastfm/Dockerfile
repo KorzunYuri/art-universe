@@ -1,4 +1,6 @@
 FROM openjdk:17-jdk-alpine
-ARG JAR_FILE=build/libs/*.jar
-COPY ${JAR_FILE} app.jar
-ENTRYPOINT ["java","-jar","/app.jar"]
+WORKDIR /app
+ARG JAR_SOURCE=build/libs/*.jar
+ARG JAR_TARGET=mu-data-raw-lastfm.jar
+COPY ${JAR_SOURCE} mu-data-raw-lastfm.jar
+ENTRYPOINT ["java", "-jar", "mu-data-raw-lastfm.jar"]

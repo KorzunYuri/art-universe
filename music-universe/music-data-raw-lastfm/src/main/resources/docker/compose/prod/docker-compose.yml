@@ -48,6 +48,8 @@ services:
       MURAW_LASTFM_DB_PASSWORD: ${MURAW_LASTFM_DB_PASSWORD}
       MURAW_LASTFM_PORT: ${MURAW_LASTFM_PORT}
       MURAW_LASTFM_API_KEY: ${MURAW_LASTFM_API_KEY}
+    volumes:
+      - mu-raw-lastfm-prod-logs:/app/logs
     depends_on:
       - postgres
 
@@ -57,3 +59,4 @@ networks:
 
 volumes:
   mu-raw-lastfm-prod-db-postgres-data:
+  mu-raw-lastfm-prod-logs:
