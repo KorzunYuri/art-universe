@@ -7,7 +7,7 @@ import java.io.IOException;
 
 public abstract class BaseApiResponseProcessor <T extends ApiResponse> {
 
-    protected abstract ApiCallType getApiCallType(); // rename for clarity
+    public abstract ApiCallType getApiCallType();
     protected abstract void processResponse(T response) throws IOException;
 
     public final void process(T response) throws IOException {

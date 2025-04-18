@@ -24,8 +24,6 @@ import java.util.List;
 @Slf4j
 public class LastfmArtistTopTagsResponseProcessor extends LastfmApiResponseProcessor<ArtistTopTagsRootDto> {
 
-    private final String logPrefix = String.format("Lastfm %s response processing", getApiCallType().getMethod());
-
     private final LastfmTagService tagService;
     private final LastfmApiDtoProcessingService dtoProcessingService;
     private final EntityFactory<LastfmTag, ArtistTopTagsTagDto> tagEntityFactory;
@@ -52,7 +50,7 @@ public class LastfmArtistTopTagsResponseProcessor extends LastfmApiResponseProce
     }
 
     @Override
-    protected ApiCallType getApiCallType() {
+    public ApiCallType getApiCallType() {
         return LastfmApiCallType.ARTIST_TOP_TAGS;
     }
 
@@ -60,7 +58,6 @@ public class LastfmArtistTopTagsResponseProcessor extends LastfmApiResponseProce
     protected void processResponse(LastfmApiResponse sourceApiResponse) throws IOException {
 
         ArtistTopTagsRootDto dtoRoot = parseResponse(sourceApiResponse);
-        log.info("{}: start processing DTO of type {}", logPrefix, dtoRoot.getClass().getName());
 
         // calculate rank manually
         List<ArtistTopTagsTagDto> tagDtos = dtoRoot.getTopTagsObject().getTags();
@@ -83,6 +80,8 @@ public class LastfmArtistTopTagsResponseProcessor extends LastfmApiResponseProce
             tagAttrHandlers,
             tagService::saveTags
         );
-        log.info("{}: saved {} artist tags", logPrefix, result.savedEntities().size());
+        log.info("saved {} artist's tags", result.savedEntities().size());
+        log.info("saved {} artist's tags' attributes", result.savedAttributeValues().size());
+        log.info("saved {} artist-tag relations", result.savedEntityRelations().size());
     }
 }

@@ -16,8 +16,6 @@ public class TrackDto implements EntityDto {
 
     private String url;
 
-    private int duration;
-
     @Override
     public String getName() {
         return name;

@@ -21,6 +21,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityQueryConfig;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityService;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -60,14 +61,9 @@ public class LastfmArtistTopTagsApiCallGenerator extends LastfmApiCallGenerator 
     @Override
     public void createApiCalls() {
 
-        log.info("start generating api calls for method {}", getApiCallType().getMethod());
-
-        // generate api call creation requests
         List<LastfmApiCallCreateRequest> apiCallCreationRequests = generateApiCallCreationRequests();
-        log.info("created {} api call creation requests", apiCallCreationRequests.size());
-
-        // create api calls
         apiCallService.createApiCalls(apiCallCreationRequests);
+        log.info("created {} API calls for method {}", apiCallCreationRequests.size(), getApiCallType().getMethod());
 
         // increment 'created' counter for every data snapshot,
         // because every api call references exactly one dataSnapshot (for the specific artist)
@@ -126,10 +122,14 @@ public class LastfmArtistTopTagsApiCallGenerator extends LastfmApiCallGenerator 
     }
 
     private Map<String, String> generateApiCallParameters(LastfmArtist artist) {
-        return Map.of(
-            LastfmApiConstants.PARAM_NAME_ARTIST, artist.getName(),
-            LastfmApiConstants.PARAM_NAME_AUTOCORRECT, "0"
-        );
+        Map<String, String> params = new HashMap<>();
+        params.put(LastfmApiConstants.PARAM_NAME_AUTOCORRECT, "0");
+        if (artist.getMbid() != null) {
+            params.put(LastfmApiConstants.PARAM_NAME_MBID, artist.getMbid());
+        } else {
+            params.put(LastfmApiConstants.PARAM_NAME_ARTIST, artist.getName());
+        }
+        return params;
     }
 
 }

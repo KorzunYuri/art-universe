@@ -24,11 +24,13 @@ public interface LastfmAttributeSnapshotRepository extends JpaRepository<LastfmA
             AND s.attribute         = :attribute
             AND s.entityType        = :entityType
             AND (
-                        (       :scopeEntityType    IS NULL AND :scopeEntityId  IS NULL
+                        (
+                                :scopeEntityType    IS NULL AND :scopeEntityId  IS NULL
                             AND s.scopeEntityType   IS NULL AND s.scopeEntityId IS NULL
                         )
                     OR
-                        (       s.scopeEntityType = :scopeEntityType
+                        (
+                                s.scopeEntityType = :scopeEntityType
                             AND s.scopeEntityId = :scopeEntityId
                         )
                 )

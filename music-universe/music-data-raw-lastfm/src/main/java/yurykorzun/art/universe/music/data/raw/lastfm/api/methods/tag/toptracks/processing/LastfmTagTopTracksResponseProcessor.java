@@ -41,7 +41,6 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
     private final LastfmEntityRelationService entityRelationService;
     private final LastfmApiDtoProcessingService dtoProcessingService;
 
-    private final String logPrefix = String.format("Lastfm %s response processing", getApiCallType().getMethod());
     private final EntityFactory<LastfmArtist, TagTopTracksTrackArtistDto> artistFactory;
 
     private final Set<TagTopTracksDtoRoot> rootsWithMissingAttrsLogged = new HashSet<>();
@@ -85,7 +84,7 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
     );
 
     @Override
-    protected ApiCallType getApiCallType() {
+    public ApiCallType getApiCallType() {
         return LastfmApiCallType.TAG_TOP_TRACKS;
     }
 
@@ -93,9 +92,6 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
     protected void processResponse(LastfmApiResponse sourceApiResponse) throws IOException {
 
         TagTopTracksDtoRoot dtoRoot = parseResponse(sourceApiResponse);
-
-        log.info("{}: start processing DTO of type {} with {} records",
-            logPrefix, dtoRoot.getClass().getName(), dtoRoot.getRootObject().getTracks().size());
 
         //  first save new artists
         Map<String, LastfmArtist> artistMap = updateArtists(dtoRoot, sourceApiResponse);
@@ -108,12 +104,9 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
 
         //  clean cache
         rootsWithMissingAttrsLogged.remove(dtoRoot);
-
-        log.info("{}: Finished processing DTO of type {}", logPrefix, dtoRoot.getClass().getName());
     }
 
     private Map<String, LastfmTrack> updateTracks(TagTopTracksDtoRoot dtoRoot, LastfmApiResponse sourceApiResponse) {
-        log.info("{}: Start processing tracks", logPrefix);
 
         List<TagTopTracksTrackDto> trackDtos = getTrackDtos(dtoRoot);
         List<String> trackUrls = getTrackUrls(trackDtos);
@@ -123,7 +116,9 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
             trackDtos, existingTracks, sourceApiResponse,
             trackFactory, trackAttrHandlers, trackService::saveTracks
         );
-        log.info("{}: saved {} tracks", logPrefix, result.savedEntities().size());
+        log.info("saved {} tag's tracks", result.savedEntities().size());
+        log.info("saved {} tag's tracks' attributes", result.savedAttributeValues().size());
+        log.info("saved {} tag-track relations", result.savedEntityRelations().size());
 
         // merge existing and saved tracks to eliminate the second call to database for tracks
         Map<String, LastfmTrack> trackMap = existingTracks.stream()
@@ -138,7 +133,6 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
      * @return <b>ALL</b> the artist entities.
      */
     private Map<String, LastfmArtist> updateArtists(TagTopTracksDtoRoot dtoRoot, LastfmApiResponse sourceApiResponse) {
-        log.info("{}: Start processing artists contained in tracks", logPrefix);
 
         List<TagTopTracksTrackArtistDto> artistDtos = getArtistDtos(dtoRoot);
         List<String> artistNames = getArtistNames(dtoRoot);
@@ -148,7 +142,8 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
             artistDtos, existingArtists, sourceApiResponse,
             artistFactory, artistAttrHandlers, artistService::saveArtists
         );
-        log.info("{}: saved {} artists", logPrefix, result.savedEntities().size());
+        log.info("saved {} tag's tracks' artists", result.savedEntities().size());
+        log.info("saved {} tag's tracks' artists' attributes", result.savedAttributeValues().size());
 
         //  merge existing and new artists to eliminate the second call to database for artists
         Map<String, LastfmArtist> artistMap = existingArtists.stream()
@@ -178,7 +173,7 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
         entityRelationService.upsertEntityRelations(relations);
-        log.info("{}: saved {} artist-track relations", logPrefix, relations.size());
+        log.info("saved {} artist-track relations", relations.size());
     }
 
     private List<TagTopTracksTrackDto> getTrackDtos(TagTopTracksDtoRoot dtoRoot) {

@@ -1,5 +1,6 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getinfo.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.LastfmApiConstants;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 @Component
+@Slf4j
 public class LastfmArtistGetInfoApiCallGenerator extends LastfmApiCallGenerator {
 
     private final LastfmApiCallService apiCallService;
@@ -47,6 +49,7 @@ public class LastfmArtistGetInfoApiCallGenerator extends LastfmApiCallGenerator 
         LastfmDataSnapshot snapshot = snapshotService.getOrCreateSnapshotFor(getApiCallType());
         List<LastfmApiCallCreateRequest> apiCallCreationRequests = generateApiCallCreationRequests(snapshot);
         apiCallService.createApiCalls(apiCallCreationRequests);
+        log.info("created {} API calls for method {}", apiCallCreationRequests.size(), getApiCallType().getMethod());
     }
 
     private List<LastfmApiCallCreateRequest> generateApiCallCreationRequests(LastfmDataSnapshot snapshot) {

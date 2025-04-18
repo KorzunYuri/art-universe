@@ -65,6 +65,8 @@ lastfm:
           dueDurationDays: 7
         getTopTags:
           dueDurationDays: 7
+        getTopTracks:
+          dueDurationDays: 28
       tag:
         topTags:
           recordsLimit: 2000 # it is known that Lastfm API offset breaks after 2000th record for this method

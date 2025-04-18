@@ -37,6 +37,12 @@ public class LastfmTrack extends BaseLastfmEntity {
     @Column(name = "is_streamable")
     private Boolean streamable;
 
+    @Column(name = "listeners_count")
+    private Integer listenersCount;
+
+    @Column(name = "play_count")
+    private Integer playCount;
+
     @Override
     public LastfmEntityType getType() {
         return LastfmEntityType.TRACK;

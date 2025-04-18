@@ -19,9 +19,9 @@ public class LastfmApiResponseProcessingScheduler {
 
     @Scheduled(fixedDelayString = "${scheduling.lastfm.api.responses.parse.fixedDelaySecs}", timeUnit = TimeUnit.SECONDS)
     public void triggerResponsesProcessing() {
-        log.info("Lastfm API responses processing: triggered");
+        log.info("start API responses processing");
         apiResponseService.triggerResponsesProcessing();
-        log.info("Lastfm API responses processing: trigger finished");
+        log.info("finished API responses processing");
     }
 
 }

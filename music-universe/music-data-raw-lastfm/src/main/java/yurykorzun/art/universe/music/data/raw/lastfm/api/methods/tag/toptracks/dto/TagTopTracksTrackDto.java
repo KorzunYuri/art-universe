@@ -16,6 +16,9 @@ public class TagTopTracksTrackDto extends TrackDto {
     @JsonProperty("artist")
     private TagTopTracksTrackArtistDto artist;
 
+    @JsonProperty("duration")
+    private int duration;
+
     @JsonProperty("streamable")
     private TrackStreamableAttrDto streamableObject;
 

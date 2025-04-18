@@ -8,6 +8,7 @@ import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.PageInfo;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingResult;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiResponseProcessor;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.DefaultEntityAttributeHandler;
@@ -55,7 +56,7 @@ public class LastfmTagTopTagResponseProcessor extends LastfmApiResponseProcessor
     }
 
     @Override
-    protected ApiCallType getApiCallType() {
+    public ApiCallType getApiCallType() {
         return LastfmApiCallType.TAG_TOP_TAGS;
     }
 
@@ -66,9 +67,6 @@ public class LastfmTagTopTagResponseProcessor extends LastfmApiResponseProcessor
         TagTopTagsDtoRoot dtoRoot = parseResponse(response);
         List<TagTopTagsTagDto> dtos = dtoRoot.getTopTags().getTags();
 
-        final String logPrefix = String.format("Lastfm %s response processing", getApiCallType().getMethod());
-        log.info("{}: start processing DTO of type {} with {} records", logPrefix, dtoRoot.getClass().getName(), dtos.size());
-
         // add 'rank' attribute
         PageInfo pageInfo = dtoRoot.getTopTags().getPageInfo();
         for (int i = 0; i < dtos.size(); i++) {
@@ -78,12 +76,13 @@ public class LastfmTagTopTagResponseProcessor extends LastfmApiResponseProcessor
         List<String> tagNames = dtos.stream().map(TagDto::getName).toList();
         List<LastfmTag> existingTags = tagService.findAllByNameIn(tagNames);
 
-        dtoProcessingService.processDtosWithoutRelations(
+        LastfmApiDtoProcessingResult<LastfmTag> result = dtoProcessingService.processDtosWithoutRelations(
             dtos, existingTags, response,
             tagFactory, attrHandlers, tagService::saveTags
         );
+        log.info("saved {} top tags", result.savedEntities().size());
+        log.info("saved {} top tags' attributes", result.savedAttributeValues().size());
 
-        log.info("\"{}: Finished processing DTO of type {}", logPrefix, dtoRoot.getClass().getName());
     }
 
     private static class TagTopTagsTagFactory extends LastfmTagEntityFactory<TagTopTagsTagDto> {
