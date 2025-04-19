@@ -63,10 +63,10 @@ lastfm:
       artist:
         getInfo:
           dueDurationDays: 7
-        getTopTags:
+        topTags:
           dueDurationDays: 7
           tagUsageCountThreshold: 10
-        getTopTracks:
+        topTracks:
           dueDurationDays: 28
           trackListenersThreshold: 1000
       tag:

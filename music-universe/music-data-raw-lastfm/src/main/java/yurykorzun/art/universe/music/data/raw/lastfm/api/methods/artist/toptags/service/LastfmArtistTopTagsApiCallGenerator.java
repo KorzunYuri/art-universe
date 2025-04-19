@@ -31,7 +31,7 @@ public class LastfmArtistTopTagsApiCallGenerator extends LastfmArtistApiCallsGen
     private final LastfmEntityService entityService;
     private final LastfmAttributeSnapshotService attributeSnapshotService;
 
-    @Value("${lastfm.client.methods.artist.getTopTags.dueDurationDays}")
+    @Value("${lastfm.client.methods.artist.topTags.dueDurationDays}")
     private int dueDurationDays;
 
     public LastfmArtistTopTagsApiCallGenerator(

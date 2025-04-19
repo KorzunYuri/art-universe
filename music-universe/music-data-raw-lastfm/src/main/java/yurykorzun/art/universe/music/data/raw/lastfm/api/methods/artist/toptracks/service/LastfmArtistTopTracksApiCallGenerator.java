@@ -26,7 +26,7 @@ public class LastfmArtistTopTracksApiCallGenerator extends LastfmArtistApiCallsG
     private final LastfmDataSnapshotService dataSnapshotService;
     private final LastfmApiCallService apiCallService;
 
-    @Value("${lastfm.client.methods.artist.getTopTracks.dueDurationDays}")
+    @Value("${lastfm.client.methods.artist.topTracks.dueDurationDays}")
     private int dueDurationDays;
 
     public LastfmArtistTopTracksApiCallGenerator(

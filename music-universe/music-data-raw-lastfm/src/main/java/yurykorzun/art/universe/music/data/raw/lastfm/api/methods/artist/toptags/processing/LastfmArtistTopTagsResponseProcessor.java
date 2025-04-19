@@ -29,7 +29,7 @@ public class LastfmArtistTopTagsResponseProcessor extends LastfmApiResponseProce
     private final LastfmApiDtoProcessingService dtoProcessingService;
     private final EntityFactory<LastfmTag, ArtistTopTagsTagDto> tagEntityFactory;
 
-    @Value("${lastfm.client.methods.artist.getTopTags.tagUsageCountThreshold:10}")
+    @Value("${lastfm.client.methods.artist.topTags.tagUsageCountThreshold:10}")
     private int tagUsageCountThreshold;
 
     private static final List<EntityAttributeHandler<LastfmTag, ?, ArtistTopTagsTagDto>> tagAttrHandlers = List.of(

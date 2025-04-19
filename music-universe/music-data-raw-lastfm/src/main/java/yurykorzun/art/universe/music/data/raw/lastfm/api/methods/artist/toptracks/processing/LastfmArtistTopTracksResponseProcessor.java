@@ -29,7 +29,7 @@ public class LastfmArtistTopTracksResponseProcessor extends LastfmApiResponsePro
     private final LastfmTrackService trackService;
     private final EntityFactory<LastfmTrack, ArtistTopTracksTrackDto> trackEntityFactory;
 
-    @Value("${lastfm.client.methods.artist.getTopTracks.trackListenersThreshold:1000}")
+    @Value("${lastfm.client.methods.artist.topTracks.trackListenersThreshold:1000}")
     private int trackListenersThreshold;
 
     protected LastfmArtistTopTracksResponseProcessor(
