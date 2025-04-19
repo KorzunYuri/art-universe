@@ -39,8 +39,6 @@ class LastfmTagTopTagApiCallGeneratorTest extends JpaOnlyTest {
     @MockitoBean
     private LastfmApiCallService apiCallService;
     @MockitoBean
-    private LastfmApiCallRepository apiCallRepository;
-    @MockitoBean
     private LastfmDataSnapshotService snapshotService;
     @MockitoBean
     private LastfmAttributeSnapshotService attributeSnapshotService;
@@ -77,7 +75,7 @@ class LastfmTagTopTagApiCallGeneratorTest extends JpaOnlyTest {
                 .params(Map.of(LastfmApiConstants.PARAM_NAME_OFFSET, String.valueOf(i * PAGE_SIZE)))
                 .build())
             .collect(Collectors.toList());
-        when(apiCallRepository.findAllUnexpiredByType(generator.getApiCallType())).thenReturn(existingApiCalls);
+        when(apiCallService.findAllUnexpiredByType(generator.getApiCallType())).thenReturn(existingApiCalls);
 
         // run
         generator.createApiCalls();

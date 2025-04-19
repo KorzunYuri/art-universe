@@ -3,14 +3,11 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.LastfmApiConstants;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiCallCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallGenerator;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallService;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.utils.TimeUtil;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.common.service.LastfmTagApiCallGenerator;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttributeSnapshot;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.LastfmAttributeSnapshotService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmDataSnapshot;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
@@ -19,16 +16,12 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Component
 @Slf4j
-public class LastfmTagTopArtistsApiCallGenerator extends LastfmApiCallGenerator {
+public class LastfmTagTopArtistsApiCallGenerator extends LastfmTagApiCallGenerator {
 
-    private final LastfmApiCallService apiCallService;
     private final LastfmEntityService entityService;
-    private final LastfmDataSnapshotService snapshotService;
     private final LastfmAttributeSnapshotService attributeSnapshotService;
 
     @Value("${lastfm.client.methods.tag.topArtists.dueDurationDays}")
@@ -40,9 +33,9 @@ public class LastfmTagTopArtistsApiCallGenerator extends LastfmApiCallGenerator 
             LastfmDataSnapshotService snapshotService,
             LastfmAttributeSnapshotService attributeSnapshotService
     ) {
+        super(apiCallService, snapshotService);
+
         this.entityService = entityService;
-        this.apiCallService = apiCallService;
-        this.snapshotService = snapshotService;
         this.attributeSnapshotService = attributeSnapshotService;
     }
 
@@ -52,50 +45,20 @@ public class LastfmTagTopArtistsApiCallGenerator extends LastfmApiCallGenerator 
     }
 
     @Override
-    @Transactional
-    public void createApiCalls() {
-        List<LastfmApiCallCreateRequest> apiCallCreationRequests = generateApiCallCreationRequests();
-        apiCallService.createApiCalls(apiCallCreationRequests);
-        log.info("created {} API calls for method {}", apiCallCreationRequests.size(), getApiCallType().getMethod());
-
-        Map<Long, List<LastfmApiCallCreateRequest>> snapshotGroups = apiCallCreationRequests.stream()
-            .collect(Collectors.groupingBy(LastfmApiCallCreateRequest::getDataSnapshotId));
-        snapshotGroups.forEach((k, v) -> snapshotService.incCreatedCountByNumber(k, v.size()));
-
+    protected int getDueDurationDays() {
+        return dueDurationDays;
     }
 
-    public List<LastfmApiCallCreateRequest> generateApiCallCreationRequests() {
-        List<LastfmTag> unprocessed = entityService.findAllUnprocessed(LastfmEntityType.TAG, LastfmApiCallType.TAG_TOP_ARTISTS);
-        return unprocessed.stream()
-                .map(this::prepareApiCallCreationRequest)
-            .toList();
+    @Override
+    protected List<LastfmTag> selectEntitiesForApiCalls() {
+        return entityService.findAllUnprocessed(LastfmEntityType.TAG, LastfmApiCallType.TAG_TOP_ARTISTS);
     }
 
-    private LastfmApiCallCreateRequest prepareApiCallCreationRequest(LastfmTag tag) {
-        //  create snapshot
-        LastfmDataSnapshot snapshot = snapshotService.getOrCreateSnapshotFor(getApiCallType(), tag);
-        //  create attribute_snapshots
-        createAttributeSnapshotsForArtistsWithinTag(tag, snapshot);
-        //  create api call
-        return createApiCallCreationRequest(tag, snapshot);
+    @Override
+    protected List<LastfmAttributeSnapshot> getOrCreateAttributeSnapshots(LastfmTag tag, LastfmDataSnapshot dataSnapshot) {
+        LastfmAttributeSnapshot rankAttrSnapshot = attributeSnapshotService.getOrCreateForEntity(
+            dataSnapshot, LastfmEntityType.ARTIST, LastfmAttribute.RANK, tag);
+        return List.of(rankAttrSnapshot);
     }
 
-    private void createAttributeSnapshotsForArtistsWithinTag(LastfmTag tag, LastfmDataSnapshot snapshot) {
-        attributeSnapshotService.getOrCreateForEntity(snapshot, LastfmEntityType.ARTIST, LastfmAttribute.RANK, tag);
-    }
-
-    private LastfmApiCallCreateRequest createApiCallCreationRequest(LastfmTag tag, LastfmDataSnapshot snapshot) {
-        return LastfmApiCallCreateRequest.builder()
-                .type(getApiCallType())
-                .entityType(LastfmEntityType.TAG)
-                .entityId(tag.getId())
-                .dataSnapshotId(snapshot.getId())
-                .dueDttm(TimeUtil.calcDueDttm(dueDurationDays))
-                .params(generateApiCallParameters(tag))
-            .build();
-    }
-
-    private Map<String, String> generateApiCallParameters(LastfmTag tag) {
-        return Map.of(LastfmApiConstants.PARAM_NAME_TAG, tag.getName());
-    }
 }

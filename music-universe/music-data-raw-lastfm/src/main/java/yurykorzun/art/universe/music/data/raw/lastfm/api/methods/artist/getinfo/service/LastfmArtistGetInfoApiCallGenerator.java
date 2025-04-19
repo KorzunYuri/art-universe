@@ -3,28 +3,20 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getinfo
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.LastfmApiConstants;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiCallCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallGenerator;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallService;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.utils.TimeUtil;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.service.LastfmArtistApiCallsGenerator;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmDataSnapshot;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmDataSnapshotService;
 
 import java.util.List;
-import java.util.Map;
 
 @Component
 @Slf4j
-public class LastfmArtistGetInfoApiCallGenerator extends LastfmApiCallGenerator {
+public class LastfmArtistGetInfoApiCallGenerator extends LastfmArtistApiCallsGenerator {
 
-    private final LastfmApiCallService apiCallService;
     private final LastfmArtistService artistService;
-    private final LastfmDataSnapshotService snapshotService;
 
     @Value("${lastfm.client.methods.artist.getInfo.dueDurationDays}")
     private int dueDurationDays;
@@ -34,9 +26,9 @@ public class LastfmArtistGetInfoApiCallGenerator extends LastfmApiCallGenerator 
         LastfmArtistService artistService,
         LastfmDataSnapshotService snapshotService
     ) {
-        this.apiCallService = apiCallService;
+        super(apiCallService, snapshotService);
+
         this.artistService = artistService;
-        this.snapshotService = snapshotService;
     }
 
     @Override
@@ -45,32 +37,12 @@ public class LastfmArtistGetInfoApiCallGenerator extends LastfmApiCallGenerator 
     }
 
     @Override
-    public void createApiCalls() {
-        LastfmDataSnapshot snapshot = snapshotService.getOrCreateSnapshotFor(getApiCallType());
-        List<LastfmApiCallCreateRequest> apiCallCreationRequests = generateApiCallCreationRequests(snapshot);
-        apiCallService.createApiCalls(apiCallCreationRequests);
-        log.info("created {} API calls for method {}", apiCallCreationRequests.size(), getApiCallType().getMethod());
+    protected int getDueDurationDays() {
+        return dueDurationDays;
     }
 
-    private List<LastfmApiCallCreateRequest> generateApiCallCreationRequests(LastfmDataSnapshot snapshot) {
-        List<LastfmArtist> unprocessed = artistService.findAllToGetInfoFor();
-        return unprocessed.stream()
-            .map(artist -> prepareApiCallCreationRequest(artist, snapshot))
-            .toList();
-    }
-
-    private LastfmApiCallCreateRequest prepareApiCallCreationRequest(LastfmArtist artist, LastfmDataSnapshot snapshot) {
-        return LastfmApiCallCreateRequest.builder()
-            .type(getApiCallType())
-            .entityType(LastfmEntityType.ARTIST)
-            .entityId(artist.getId())
-            .dataSnapshotId(snapshot.getId())
-            .dueDttm(TimeUtil.calcDueDttm(dueDurationDays))
-            .params(generateApiCallParameters(artist))
-        .build();
-    }
-
-    private Map<String, String> generateApiCallParameters(LastfmArtist artist) {
-        return Map.of(LastfmApiConstants.PARAM_NAME_ARTIST, artist.getName());
+    @Override
+    protected List<LastfmArtist> selectEntitiesForApiCalls() {
+        return artistService.findAllToGetInfoFor();
     }
 }

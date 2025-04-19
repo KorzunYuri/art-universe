@@ -4,13 +4,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.LastfmApiConstants;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiCallCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallGenerator;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.utils.TimeUtil;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.common.service.LastfmTagApiCallGenerator;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttributeSnapshot;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.LastfmAttributeSnapshotService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmDataSnapshot;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
@@ -27,11 +27,9 @@ import java.util.stream.IntStream;
 
 @Component
 @Slf4j
-public class LastfmTagTopTracksApiCallGenerator extends LastfmApiCallGenerator {
+public class LastfmTagTopTracksApiCallGenerator extends LastfmTagApiCallGenerator {
 
-    private final LastfmApiCallService apiCallService;
     private final LastfmEntityService entityService;
-    private final LastfmDataSnapshotService snapshotService;
     private final LastfmAttributeSnapshotService attributeSnapshotService;
 
     @Value("${lastfm.client.methods.tag.topTracks.dueDurationDays}")
@@ -40,10 +38,15 @@ public class LastfmTagTopTracksApiCallGenerator extends LastfmApiCallGenerator {
     @Value("${lastfm.client.methods.tag.topTracks.usageToPageRatio}")
     private int usageToPageRatio;
 
-    public LastfmTagTopTracksApiCallGenerator(LastfmApiCallService apiCallService, LastfmEntityService entityService, LastfmDataSnapshotService snapshotService, LastfmAttributeSnapshotService attributeSnapshotService) {
-        this.apiCallService = apiCallService;
+    public LastfmTagTopTracksApiCallGenerator(
+        LastfmApiCallService apiCallService,
+        LastfmEntityService entityService,
+        LastfmDataSnapshotService dataSnapshotService,
+        LastfmAttributeSnapshotService attributeSnapshotService
+    ) {
+        super(apiCallService, dataSnapshotService);
+
         this.entityService = entityService;
-        this.snapshotService = snapshotService;
         this.attributeSnapshotService = attributeSnapshotService;
     }
 
@@ -53,52 +56,43 @@ public class LastfmTagTopTracksApiCallGenerator extends LastfmApiCallGenerator {
     }
 
     @Override
-    @Transactional
-    public void createApiCalls() {
-        List<LastfmApiCallCreateRequest> apiCallCreationRequests = generateApiCallCreationRequests();
-        apiCallService.createApiCalls(apiCallCreationRequests);
-        log.info("created {} API calls for method {}", apiCallCreationRequests.size(), getApiCallType().getMethod());
-
-        Map<Long, List<LastfmApiCallCreateRequest>> snapshotGroups = apiCallCreationRequests.stream()
-            .collect(Collectors.groupingBy(LastfmApiCallCreateRequest::getDataSnapshotId));
-        snapshotGroups.forEach((k, v) -> snapshotService.incCreatedCountByNumber(k, v.size()));
+    protected int getDueDurationDays() {
+        return dueDurationDays;
     }
 
-    public List<LastfmApiCallCreateRequest> generateApiCallCreationRequests() {
+    @Override
+    protected List<LastfmTag> selectEntitiesForApiCalls() {
         Sort sort = Sort.by(Sort.Direction.DESC, "usageCount");
-        List<LastfmTag> unprocessed = entityService.findAllUnprocessed(
+        return entityService.findAllUnprocessed(
             LastfmEntityType.TAG,
             LastfmApiCallType.TAG_TOP_TRACKS,
             LastfmEntityQueryConfig.builder().sort(sort).build()
         );
-        return unprocessed.stream()
-            .flatMap(tag -> prepareApiCallCreationRequests(tag).stream())
-            .toList();
     }
 
-    private List<LastfmApiCallCreateRequest> prepareApiCallCreationRequests(LastfmTag tag) {
-        //  create snapshot
-        LastfmDataSnapshot snapshot = snapshotService.getOrCreateSnapshotFor(getApiCallType(), tag);
+    @Override
+    protected List<LastfmApiCallCreateRequest> generateApiCallCreationRequests(LastfmTag tag, LastfmDataSnapshot dataSnapshot) {
         //  create attribute_snapshots
-        createAttributeSnapshotsForTracksWithinTag(tag, snapshot);
+        getOrCreateAttributeSnapshots(tag, dataSnapshot);
         //  create api call
-        return createApiCallCreationRequests(tag, snapshot);
+        return createApiCallCreationRequests(tag, dataSnapshot);
     }
 
-    private void createAttributeSnapshotsForTracksWithinTag(LastfmTag tag, LastfmDataSnapshot snapshot) {
+    @Override
+    protected List<LastfmAttributeSnapshot> getOrCreateAttributeSnapshots(LastfmTag entity, LastfmDataSnapshot dataSnapshot) {
         // attributeSnapshotService.getOrCreateForEntity(snapshot, LastfmEntityType.TRACK, LastfmAttribute.RANK, tag);
+        return List.of();
     }
 
     private List<LastfmApiCallCreateRequest> createApiCallCreationRequests(LastfmTag tag, LastfmDataSnapshot snapshot) {
-
         return IntStream.range(1, calcPagesNumber(tag) + 1)
             .mapToObj(pageNumber -> LastfmApiCallCreateRequest.builder()
-                    .type(getApiCallType())
-                    .entityType(LastfmEntityType.TAG)
-                    .entityId(tag.getId())
-                    .dataSnapshotId(snapshot.getId())
-                    .dueDttm(TimeUtil.calcDueDttm(dueDurationDays))
-                    .params(generateApiCallParameters(tag, pageNumber))
+                .type(getApiCallType())
+                .entityType(tag.getType())
+                .entityId(tag.getId())
+                .dataSnapshotId(snapshot.getId())
+                .dueDttm(TimeUtil.calcDueDttm(dueDurationDays))
+                .params(generateApiCallParameters(tag, pageNumber))
                 .build())
             .collect(Collectors.toList());
     }

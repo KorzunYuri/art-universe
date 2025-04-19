@@ -62,19 +62,26 @@ public class LastfmApiCallServiceImpl implements LastfmApiCallService {
 
     @Override
     @Transactional
-    public void createApiCalls(List<LastfmApiCallCreateRequest> lastfmApiCallCreateRequests) {
+    public List<Long> createApiCalls(List<LastfmApiCallCreateRequest> lastfmApiCallCreateRequests) {
         List<LastfmApiCall> calls = lastfmApiCallCreateRequests.stream()
                 .map(this::dtoToApiCall)
                 .peek(t -> t.setStatus(ApiCallStatus.PENDING))
             .toList();
 
-        apiCallRepository.saveAll(calls);
+        List<LastfmApiCall> apiCalls = apiCallRepository.saveAll(calls);
+
+        return apiCalls.stream().map(LastfmApiCall::getId).toList();
     }
 
     @Override
     @Transactional
     public void expireApiCallsForType(LastfmApiCallType type) {
         apiCallRepository.expireOutdatedApiCallsByType(type);
+    }
+
+    @Override
+    public List<LastfmApiCall> findAllUnexpiredByType(LastfmApiCallType apiCallType) {
+        return apiCallRepository.findAllUnexpiredByType(apiCallType);
     }
 
     @Override

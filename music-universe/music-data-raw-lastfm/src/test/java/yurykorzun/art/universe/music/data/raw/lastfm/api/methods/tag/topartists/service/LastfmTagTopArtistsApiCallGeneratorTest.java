@@ -14,6 +14,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttributeSnapshot;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.LastfmAttributeSnapshotService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmDataSnapshot;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
@@ -91,11 +92,25 @@ class LastfmTagTopArtistsApiCallGeneratorTest extends JpaOnlyTest {
         when(entityService.<LastfmTag>findAllUnprocessed(LastfmEntityType.TAG, LastfmApiCallType.TAG_TOP_ARTISTS))
             .thenReturn(unprocessedTags);
 
+        // mock created data snapshot
         LastfmDataSnapshot snapshot = new LastfmDataSnapshot(LastfmApiCallType.TAG_TOP_ARTISTS, LocalDate.now());
         long mockSnapshotId = 1L;
         ReflectionTestUtils.setField(snapshot, "id", mockSnapshotId);
         when(snapshotService.getOrCreateSnapshotFor(eq(generator.getApiCallType()), any(LastfmTag.class)))
             .thenReturn(snapshot);
+        // mock created attribute snapshot
+        when(attributeSnapshotService.getOrCreateForEntity(eq(snapshot), eq(LastfmEntityType.ARTIST), eq(LastfmAttribute.RANK), any(LastfmTag.class)))
+            .thenAnswer(i -> {
+                    LastfmTag scopeEntity = i.getArgument(3);
+                    return LastfmAttributeSnapshot.builder()
+                        .currentSnapshotId(((LastfmDataSnapshot) i.getArgument(0)).getId())
+                        .previousSnapshotId(null)
+                        .scopeEntityType(scopeEntity.getType())
+                        .scopeEntityId(scopeEntity.getId())
+                        .attribute(i.getArgument(2))
+                        .entityType(i.getArgument(1))
+                        .build();
+                });
 
         generator.createApiCalls();
 

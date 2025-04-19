@@ -68,7 +68,7 @@ public class LastfmAttributeSnapshotServiceImpl implements LastfmAttributeSnapsh
         return attributeSnapshot;
     }
 
-    private LastfmAttributeSnapshot.LastfmAttributeSnapshotBuilder builderForType(
+    private LastfmAttributeSnapshot.LastfmAttributeSnapshotBuilder<?, ?> builderForType(
             LastfmDataSnapshot snapshot, LastfmAttribute attribute, LastfmEntityType entityType) {
         return LastfmAttributeSnapshot.builder()
                 .currentSnapshotId(snapshot.getId())

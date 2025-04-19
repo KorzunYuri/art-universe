@@ -2,6 +2,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.client.service;
 
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiCallCreateRequest;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 
 import java.util.List;
@@ -14,8 +15,9 @@ public interface LastfmApiCallService {
 
     void triggerApiCalls();
 
-    void createApiCalls(List<LastfmApiCallCreateRequest> lastfmApiCallCreateRequests);
+    List<Long> createApiCalls(List<LastfmApiCallCreateRequest> lastfmApiCallCreateRequests);
 
     void expireApiCallsForType(LastfmApiCallType type);
 
+    List<LastfmApiCall> findAllUnexpiredByType(LastfmApiCallType apiCallType);
 }
