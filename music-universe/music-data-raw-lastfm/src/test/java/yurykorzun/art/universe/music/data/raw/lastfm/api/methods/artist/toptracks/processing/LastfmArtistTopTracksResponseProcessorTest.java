@@ -7,6 +7,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.util.ReflectionTestUtils;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptracks.dto.ArtistTopTracksDtoRoot;
@@ -60,12 +61,16 @@ class LastfmArtistTopTracksResponseProcessorTest extends FullContextTest {
     @SuppressWarnings("unchecked")
     void givenTagTopArtistsResponse_whenProcessed_newRecordsAreCreated() throws Exception {
 
+        // given
         final int expectedCreatedTracksNumber = TEST_DTO_ENTITIES_NUMBER;
         final int expectedCreatedAttrValuesNumber = expectedCreatedTracksNumber * ATTRIBUTES_NUMBER;
+
+        ReflectionTestUtils.setField(processor, "trackListenersThreshold", 0); // isolate threshold effect
 
         TestCase testCase = testCaseFromResponse(LastfmApiClientResourceUtil.getApiClientResponse("artist.getTopTracks"));
         when(trackService.saveTracks(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
+        // when
         processor.processResponse(testCase.sourceApiResponse);
 
         // Verify that artists were searched by names

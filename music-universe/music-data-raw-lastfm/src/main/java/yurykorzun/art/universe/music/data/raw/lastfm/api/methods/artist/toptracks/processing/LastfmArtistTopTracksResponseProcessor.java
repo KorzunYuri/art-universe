@@ -1,6 +1,7 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptracks.processing;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
@@ -27,6 +28,9 @@ public class LastfmArtistTopTracksResponseProcessor extends LastfmApiResponsePro
     private final LastfmApiDtoProcessingService dtoProcessingService;
     private final LastfmTrackService trackService;
     private final EntityFactory<LastfmTrack, ArtistTopTracksTrackDto> trackEntityFactory;
+
+    @Value("${lastfm.client.methods.artist.getTopTracks.trackListenersThreshold:1000}")
+    private int trackListenersThreshold;
 
     protected LastfmArtistTopTracksResponseProcessor(
         LastfmApiDtoProcessingService dtoProcessingService,
@@ -69,7 +73,7 @@ public class LastfmArtistTopTracksResponseProcessor extends LastfmApiResponsePro
 
     private void updateTracks(LastfmApiResponse sourceApiResponse, ArtistTopTracksDtoRoot dtoRoot) {
 
-        List<ArtistTopTracksTrackDto> trackDtos = dtoRoot.getRootObject().getTracks();
+        List<ArtistTopTracksTrackDto> trackDtos = filterDtosForSaving(dtoRoot.getRootObject().getTracks());
         List<String> trackUrls = trackDtos.stream().map(ArtistTopTracksTrackDto::getUrl).toList();
         List<LastfmTrack> existingTracks = trackService.findAllByUrls(trackUrls);
 
@@ -82,5 +86,11 @@ public class LastfmArtistTopTracksResponseProcessor extends LastfmApiResponsePro
         log.info("saved {} artist's tracks", result.savedEntities().size());
         log.info("saved {} artist's tracks' attributes", result.savedAttributeValues().size());
         log.info("saved {} artist-track relations", result.savedEntityRelations().size());
+    }
+
+    private List<ArtistTopTracksTrackDto> filterDtosForSaving(List<ArtistTopTracksTrackDto> dtos) {
+        return dtos.stream()
+            .filter(dto -> dto.getListenersCount() >= trackListenersThreshold)
+            .toList();
     }
 }

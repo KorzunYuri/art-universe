@@ -68,6 +68,7 @@ lastfm:
           tagUsageCountThreshold: 10
         getTopTracks:
           dueDurationDays: 28
+          trackListenersThreshold: 1000
       tag:
         topTags:
           recordsLimit: 2000 # it is known that Lastfm API offset breaks after 2000th record for this method
