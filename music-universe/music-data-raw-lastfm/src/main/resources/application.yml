@@ -65,6 +65,7 @@ lastfm:
           dueDurationDays: 7
         getTopTags:
           dueDurationDays: 7
+          tagUsageCountThreshold: 10
         getTopTracks:
           dueDurationDays: 28
       tag:

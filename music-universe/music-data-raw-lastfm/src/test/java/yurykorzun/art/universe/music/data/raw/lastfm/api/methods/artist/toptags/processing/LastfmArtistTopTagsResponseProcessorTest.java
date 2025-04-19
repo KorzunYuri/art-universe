@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.util.ReflectionTestUtils;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptags.dto.ArtistTopTagsRootDto;
@@ -53,6 +54,8 @@ class LastfmArtistTopTagsResponseProcessorTest extends FullContextTest {
         // given
         String dtoResponseString = LastfmApiClientResourceUtil.getApiClientResponse("artist.getTopTags");
         TestCase testCase = testCaseFromResponse(dtoResponseString);
+
+        ReflectionTestUtils.setField(processor, "tagUsageCountThreshold", 0); // isolate threshold effect
 
         when(tagService.saveTags(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(attributeHistoryService.upsertCandidateValues(any())).thenAnswer(invocation -> invocation.getArgument(0));
