@@ -54,7 +54,6 @@ public class LastfmArtistTopTracksApiCallGenerator extends LastfmArtistApiCallsG
     protected List<LastfmArtist> selectEntitiesForApiCalls() {
         LastfmEntityQueryConfig config = LastfmEntityQueryConfig.builder()
                 .sort(Sort.by(Sort.Direction.DESC, "listenersCount"))
-                .approvedEntitiesOnly(false)
             .build();
 
         return entityService.findAllUnprocessed(
