@@ -11,6 +11,8 @@ public interface LastfmArtistService {
 
     List<LastfmArtist> saveArtists(List<LastfmArtist> artists);
 
+    Optional<LastfmArtist> findById(long id);
+
     Optional<LastfmArtist> findByName(String name);
 
     List<LastfmArtist> findAllByNames(List<String> names);

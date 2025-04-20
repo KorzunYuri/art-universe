@@ -28,6 +28,11 @@ public class LastfmArtistServiceImpl implements LastfmArtistService {
     }
 
     @Override
+    public Optional<LastfmArtist> findById(long id) {
+        return artistRepository.findById(id);
+    }
+
+    @Override
     public Optional<LastfmArtist> findByName(String name) {
         return artistRepository.findByName(name);
     }

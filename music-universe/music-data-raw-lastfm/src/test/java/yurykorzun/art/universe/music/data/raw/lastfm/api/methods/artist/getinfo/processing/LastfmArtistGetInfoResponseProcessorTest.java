@@ -116,8 +116,8 @@ class LastfmArtistGetInfoResponseProcessorTest extends FullContextTest {
 
         // verify that entity relations were saved
         verifyInvocationsNumberWithCollectionsSizeOnly(
-            captor -> verify(entityRelationService, times(2)).upsertEntityRelations(captor.capture()),
-            List.of(newSimilarArtistsNumber, newTagsNumber),
+            captor -> verify(entityRelationService, times(1)).upsertEntityRelations(captor.capture()),
+            List.of(newTagsNumber),
             "entityRelationService.upsertEntityRelations");
 
     }
