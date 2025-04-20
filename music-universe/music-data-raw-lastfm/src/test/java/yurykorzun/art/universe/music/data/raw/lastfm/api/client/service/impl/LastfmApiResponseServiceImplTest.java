@@ -30,7 +30,7 @@ class LastfmApiResponseServiceImplTest extends FullContextTest {
 
     private static final String sampleResponse = LastfmApiClientResourceUtil.getAnyResponse();
 
-    private Supplier<LastfmApiResponseCreateRequest> validCreateRequestSupplier() {
+    private Supplier<LastfmApiResponseCreateRequest> validCreateResponseRequestSupplier() {
         return () -> LastfmApiResponseCreateRequest.builder()
                 .apiCall(consistencyHelper.createDummyApiCall())
                 .responseBody(sampleResponse)
@@ -49,12 +49,12 @@ class LastfmApiResponseServiceImplTest extends FullContextTest {
     void testApiCallCreation() {
         // given
         long id = 1L;
-        LastfmApiResponseCreateRequest request = validCreateRequestSupplier().get();
+        LastfmApiResponseCreateRequest request = validCreateResponseRequestSupplier().get();
         LastfmApiResponse created = getMockResponse(request, id);
         when(apiResponseRepository.save(any(LastfmApiResponse.class))).thenReturn(created);
 
         // when
-        long returnedId = apiResponseService.create(request);
+        long returnedId = apiResponseService.createResponse(request);
 
         // then
         verify(apiResponseRepository).save(any(LastfmApiResponse.class));
@@ -65,7 +65,7 @@ class LastfmApiResponseServiceImplTest extends FullContextTest {
     void testApiCallStatusUpdate() {
         // given
         long id = 1L;
-        LastfmApiResponse apiResponse = getMockResponse(validCreateRequestSupplier().get(), id);
+        LastfmApiResponse apiResponse = getMockResponse(validCreateResponseRequestSupplier().get(), id);
         when(apiResponseRepository.getReferenceById(id)).thenReturn(apiResponse);
 
         // when

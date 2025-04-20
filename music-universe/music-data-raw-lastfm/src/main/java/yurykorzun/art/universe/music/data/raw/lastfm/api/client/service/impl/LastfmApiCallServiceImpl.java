@@ -122,7 +122,7 @@ public class LastfmApiCallServiceImpl implements LastfmApiCallService {
         try {
             String response = makeApiCallWithRetry(call)
                     .block();
-            responseService.create(createApiResponseCreateDto(call, response));
+            responseService.createResponse(createApiResponseCreateDto(call, response));
             call.setStatus(ApiCallStatus.SUCCESSFUL);
         } catch (Exception ex) {
             call.setStatus(ApiCallStatus.FAILED);

@@ -5,7 +5,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiRes
 
 public interface LastfmApiResponseService {
 
-    long create(LastfmApiResponseCreateRequest dto);
+    long createResponse(LastfmApiResponseCreateRequest dto);
 
     void setStatus(long id, ApiResponseStatus status) throws IllegalStateException;
 
