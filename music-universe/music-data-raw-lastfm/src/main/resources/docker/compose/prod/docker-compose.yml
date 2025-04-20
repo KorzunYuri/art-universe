@@ -34,7 +34,7 @@ services:
       - "9988:8080"
     container_name: mu-raw-lastfm-prod-db-adminer
 
-  app:
+  mu-raw-lastfm:
     build:
       context: ../../../../../../
       dockerfile: Dockerfile
@@ -52,6 +52,7 @@ services:
       - mu-raw-lastfm-prod-logs:/app/logs
     depends_on:
       - postgres
+    container_name: mu-raw-lastfm-prod
 
 networks:
   default:
