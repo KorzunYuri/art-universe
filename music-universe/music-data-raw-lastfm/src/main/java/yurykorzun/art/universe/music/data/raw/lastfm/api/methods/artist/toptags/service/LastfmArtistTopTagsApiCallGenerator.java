@@ -58,13 +58,12 @@ public class LastfmArtistTopTagsApiCallGenerator extends LastfmArtistApiCallsGen
 
     @Override
     protected List<LastfmArtist> selectEntitiesForApiCalls() {
-        return entityService.findAllUnprocessed(
-            LastfmEntityType.ARTIST,
-            getApiCallType(),
-            LastfmEntityQueryConfig.builder()
-                    .sort(Sort.by(Sort.Direction.DESC, "approvalStatus"))
-                .build()
-        );
+        // apply order: popular first
+        LastfmEntityQueryConfig config = LastfmEntityQueryConfig.builder()
+                .sort(Sort.by(Sort.Direction.DESC, "listenersCount"))
+            .build();
+
+        return entityService.findAllUnprocessed(LastfmEntityType.ARTIST, getApiCallType(), config);
     }
 
     @Override
