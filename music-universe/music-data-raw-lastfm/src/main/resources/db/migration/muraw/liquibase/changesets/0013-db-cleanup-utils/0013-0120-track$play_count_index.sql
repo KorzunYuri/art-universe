@@ -1,0 +1,1 @@
+CREATE INDEX IF NOT EXISTS track_I_play_count ON track(play_count);
