@@ -1,15 +1,12 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity;
 
-import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.annotations.Type;
-import org.hibernate.type.SqlTypes;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiResponse;
+import yurykorzun.art.universe.common.persistence.converter.GzipBase64StringConverter;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 
 import java.util.Objects;
@@ -35,9 +32,8 @@ public class LastfmApiResponse extends ApiResponse {
     private LastfmApiCall apiCall;
 
     @NonNull
-    @Type(JsonBinaryType.class)
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "response_body", columnDefinition = "jsonb")
+    @Convert(converter = GzipBase64StringConverter.class)
+    @Column(name = "response_body")
     private String responseBody;
 
     @Override

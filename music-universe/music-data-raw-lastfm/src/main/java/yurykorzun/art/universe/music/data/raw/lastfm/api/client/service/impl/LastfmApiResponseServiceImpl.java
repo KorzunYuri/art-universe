@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiResponseStatus;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.config.LastfmMigrationConfig;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiResponseCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmApiResponseRepository;
@@ -22,13 +23,15 @@ public class LastfmApiResponseServiceImpl implements LastfmApiResponseService {
 
     private final LastfmApiResponseRepository repository;
     private final LastfmApiResponseServiceImpl self;
+    private final LastfmMigrationConfig migrationConfig;
 
     public LastfmApiResponseServiceImpl(
-            LastfmApiResponseRepository repository,
-            @Lazy LastfmApiResponseServiceImpl self
+        LastfmApiResponseRepository repository,
+        @Lazy LastfmApiResponseServiceImpl self, LastfmMigrationConfig migrationConfig
     ) {
         this.repository = repository;
         this.self = self;
+        this.migrationConfig = migrationConfig;
     }
 
     @Override
@@ -48,6 +51,11 @@ public class LastfmApiResponseServiceImpl implements LastfmApiResponseService {
 
     @Override
     public void triggerResponsesProcessing() {
+        if (migrationConfig.isApiResponseBodyMigrationInProgress()) {
+            log.warn("API response body migration is in progress: skip processing");
+            return;
+        }
+
         List<LastfmApiResponse> unprocessed = repository.findAllPending();
         log.info("unprocessed API responses left: {}", unprocessed.size());
         // TODO handle concurrent processing by several Processors, then process responses in parallel
