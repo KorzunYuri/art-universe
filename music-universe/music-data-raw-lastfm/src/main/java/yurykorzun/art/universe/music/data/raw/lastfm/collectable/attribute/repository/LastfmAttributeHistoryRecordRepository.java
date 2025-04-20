@@ -19,22 +19,25 @@ public interface LastfmAttributeHistoryRecordRepository extends JpaRepository<La
         SELECT r
         FROM attribute_history r
         WHERE   1=1
-            AND r.entityType    = :entityType
-            AND r.entityId      = :entityId
-            AND r.attribute     = :attribute
-            AND r.validTill     = :validTill
-            AND (
-                        (
-                                :scopeEntityType    IS NULL AND :scopeEntityId  IS NULL
-                            AND r.scopeEntityType   IS NULL AND r.scopeEntityId IS NULL
-                        )
-                    OR
-                        (
-                                r.scopeEntityType = :scopeEntityType
-                            AND r.scopeEntityId = :scopeEntityId
-                        )
-                )
-      """)
+            AND r.entityType        = :entityType
+            AND r.entityId          = :entityId
+            AND r.attribute         = :attribute
+            AND r.validTill         = :validTill
+            AND :scopeEntityType    IS NULL AND :scopeEntityId  IS NULL
+            AND r.scopeEntityType   IS NULL AND r.scopeEntityId IS NULL
+        
+        UNION ALL
+        
+        SELECT r
+        FROM attribute_history r
+        WHERE   1=1
+            AND r.entityType        = :entityType
+            AND r.entityId          = :entityId
+            AND r.attribute         = :attribute
+            AND r.validTill         = :validTill
+            AND r.scopeEntityType   = :scopeEntityType
+            AND r.scopeEntityId     = :scopeEntityId
+        """)
     LastfmAttributeHistoryRecord findValue(
                     @Param("entityType")        LastfmEntityType entityType,
                     @Param("entityId")          Long entityId,
