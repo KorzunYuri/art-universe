@@ -45,7 +45,7 @@ public abstract class EntityScopedApiCallGenerator<SE extends BaseLastfmEntity> 
      * @return true by default, as some of the methods produce 'scoped' attributes, in example, rank of tag within artist.
      */
     protected boolean isApiCallEntityScoped() {
-        return true;
+        return getApiCallType().getScopeEntityType() != null;
     };
 
     /**
