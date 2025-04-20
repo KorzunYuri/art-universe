@@ -62,7 +62,6 @@ public class LastfmArtistTopTagsApiCallGenerator extends LastfmArtistApiCallsGen
             LastfmEntityType.ARTIST,
             getApiCallType(),
             LastfmEntityQueryConfig.builder()
-                    .approvedEntitiesOnly(false)
                     .sort(Sort.by(Sort.Direction.DESC, "approvalStatus"))
                 .build()
         );
