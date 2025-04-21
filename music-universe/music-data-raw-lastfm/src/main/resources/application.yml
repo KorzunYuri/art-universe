@@ -22,10 +22,6 @@ spring:
         order_updates: true
     hibernate:
       ddl-auto: none
-  task:
-    scheduling:
-      pool:
-        size: 3
   liquibase:
     change-log: classpath:db/migration/muraw/liquibase/db.changelog.xml
   docker:
@@ -46,6 +42,9 @@ scheduling:
         parse:
           fixedDelaySecs: 5
     tasks:
+      poolSize: 3
+      maintenance:
+        cron: "0 0 8 * * *"
       tag:
         topTags:
           cron: "0 0 21 * * *"
@@ -53,6 +52,13 @@ scheduling:
 lastfm:
   baseUrl: "http://ws.audioscrobbler.com/2.0/"
   apikey: ${MURAW_LASTFM_API_KEY}
+  threshold:
+    artist:
+      listenersCount: 1000
+    track:
+      playCount: 10000
+    tag:
+      usageCount: 1000
   client:
     callsPerSec: 1.0
     retry:

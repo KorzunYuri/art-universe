@@ -18,7 +18,10 @@ public class LastfmApiCallScheduler {
         this.lastfmApiCallService = lastfmApiCallService;
     }
 
-    @Scheduled(fixedDelayString = "${scheduling.lastfm.api.calls.generate.fixedDelaySecs}", timeUnit = TimeUnit.SECONDS)
+    @Scheduled(
+        fixedDelayString = "${scheduling.lastfm.api.calls.generate.fixedDelaySecs}",
+        timeUnit = TimeUnit.SECONDS,
+        scheduler = "dataCollectionScheduler")
     public void generateApiCalls() {
         log.info("start API calls generation");
         LastfmApiCallGeneratorsRegistry.getRegistry()
@@ -30,7 +33,10 @@ public class LastfmApiCallScheduler {
         log.info("finished API calls generation");
     }
 
-    @Scheduled(fixedDelayString  = "${scheduling.lastfm.api.calls.fetch.fixedDelaySecs}", timeUnit = TimeUnit.SECONDS)
+    @Scheduled(
+        fixedDelayString  = "${scheduling.lastfm.api.calls.fetch.fixedDelaySecs}",
+        timeUnit = TimeUnit.SECONDS,
+        scheduler = "dataCollectionScheduler")
     public void triggerApiCalls() {
         log.info("start API calls performing");
         lastfmApiCallService.triggerApiCalls();

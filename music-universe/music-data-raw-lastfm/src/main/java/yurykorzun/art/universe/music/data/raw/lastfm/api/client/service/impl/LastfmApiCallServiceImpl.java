@@ -1,6 +1,7 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.impl;
 
 import com.google.common.util.concurrent.RateLimiter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.retry.annotation.Backoff;
@@ -23,6 +24,7 @@ import java.util.Collection;
 import java.util.List;
 
 @Service
+@Slf4j
 public class LastfmApiCallServiceImpl implements LastfmApiCallService {
 
     private final LastfmApiCallRepository apiCallRepository;
@@ -109,8 +111,10 @@ public class LastfmApiCallServiceImpl implements LastfmApiCallService {
         Collection<LastfmApiCall> apiCalls = apiCallRepository.findAllUnprocessedUnexpired();
         apiCalls = apiCallPrioritizer.prioritizeApiCalls(apiCalls);
         apiCalls.forEach(apiCall -> {
+            log.info("initiating API call of type {} for entity {}", apiCall.getType(), apiCall.getEntityId());
             rateLimiter.acquire();
             self.makeApiCall(apiCall);
+            log.info("API call has been performed");
         });
     }
 
