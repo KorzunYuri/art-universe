@@ -3,7 +3,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptags
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptags.dto.ArtistTopTagsArtistMetadata;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptags.dto.ArtistTopTagsRootDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptags.dto.ArtistTopTagsDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptags.dto.ArtistTopTagsTagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptags.dto.ArtistTopTagsTopTagsDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
@@ -20,7 +20,7 @@ public class ArtistTopTagsMappingTest {
     @Test
     public void givenTagTopTagsResponse_whenParsed_thenParsedCorrectly() throws IOException {
         String responseJsonString = LastfmApiClientResourceUtil.getApiClientResponse("artist.getTopTags");
-        ArtistTopTagsRootDto dtoRoot = mapper.readValue(responseJsonString, ArtistTopTagsRootDto.class);
+        ArtistTopTagsDtoRoot dtoRoot = mapper.readValue(responseJsonString, ArtistTopTagsDtoRoot.class);
 
         assertNotNull(dtoRoot);
 

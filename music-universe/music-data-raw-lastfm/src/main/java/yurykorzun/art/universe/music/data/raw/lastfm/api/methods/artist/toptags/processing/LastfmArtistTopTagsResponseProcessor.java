@@ -7,7 +7,7 @@ import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptags.dto.ArtistTopTagsRootDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptags.dto.ArtistTopTagsDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptags.dto.ArtistTopTagsTagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingResult;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 
 @Component
 @Slf4j
-public class LastfmArtistTopTagsResponseProcessor extends LastfmApiResponseProcessor<ArtistTopTagsRootDto> {
+public class LastfmArtistTopTagsResponseProcessor extends LastfmApiResponseProcessor<ArtistTopTagsDtoRoot> {
 
     private final LastfmTagService tagService;
     private final LastfmArtistService artistService;
@@ -56,7 +56,7 @@ public class LastfmArtistTopTagsResponseProcessor extends LastfmApiResponseProce
         LastfmApiDtoProcessingService dtoProcessingService,
         LastfmEntityRelationService entityRelationService
     ) {
-        super(ArtistTopTagsRootDto.class);
+        super(ArtistTopTagsDtoRoot.class);
 
         this.tagService = tagService;
         this.artistService = artistService;
@@ -74,7 +74,7 @@ public class LastfmArtistTopTagsResponseProcessor extends LastfmApiResponseProce
     @Override
     protected void processResponse(LastfmApiResponse sourceApiResponse) throws IOException {
 
-        ArtistTopTagsRootDto dtoRoot = parseResponse(sourceApiResponse);
+        ArtistTopTagsDtoRoot dtoRoot = parseResponse(sourceApiResponse);
 
         LastfmApiDtoProcessingResult<LastfmTag> tagsUpdateResult = updateTags(sourceApiResponse, dtoRoot);
 
@@ -91,7 +91,7 @@ public class LastfmArtistTopTagsResponseProcessor extends LastfmApiResponseProce
         }
     }
 
-    private LastfmApiDtoProcessingResult<LastfmTag> updateTags(LastfmApiResponse sourceApiResponse, ArtistTopTagsRootDto dtoRoot) {
+    private LastfmApiDtoProcessingResult<LastfmTag> updateTags(LastfmApiResponse sourceApiResponse, ArtistTopTagsDtoRoot dtoRoot) {
 
         List<ArtistTopTagsTagDto> tagDtos = dtoRoot.getTopTagsObject().getTags();
 

@@ -9,7 +9,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptags.dto.ArtistTopTagsRootDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptags.dto.ArtistTopTagsDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.LastfmAttributeHistoryService;
@@ -94,10 +94,10 @@ class LastfmArtistTopTagsResponseProcessorTest extends FullContextTest {
     }
 
     private TestCase testCaseFromResponse(String responseString) {
-        final ArtistTopTagsRootDto dtoRoot;
+        final ArtistTopTagsDtoRoot dtoRoot;
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            dtoRoot = objectMapper.readValue(responseString, ArtistTopTagsRootDto.class);
+            dtoRoot = objectMapper.readValue(responseString, ArtistTopTagsDtoRoot.class);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }

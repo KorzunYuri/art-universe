@@ -4,9 +4,9 @@ import lombok.Getter;
 import yurykorzun.art.universe.common.CodedRegistry;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getinfo.dto.ArtistGetInfoDtoRoot;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptags.dto.ArtistTopTagsRootDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptags.dto.ArtistTopTagsDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptracks.dto.ArtistTopTracksDtoRoot;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.RootDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.DtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.TagTopArtistsDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.dto.TagTopTagsDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.dto.TagTopTracksDtoRoot;
@@ -56,7 +56,7 @@ public enum LastfmApiCallType implements ApiCallType, LastfmSpecific {
             "artist.getTopTags",
             Set.of(PARAM_NAME_API_KEY),
             Set.of(PARAM_NAME_ARTIST, PARAM_NAME_MBID, PARAM_NAME_AUTOCORRECT, PARAM_NAME_LIMIT),
-            ArtistTopTagsRootDto.class,
+            ArtistTopTagsDtoRoot.class,
             LastfmArtist.class)
     ,   ARTIST_TOP_TRACKS(
             6,
@@ -75,7 +75,7 @@ public enum LastfmApiCallType implements ApiCallType, LastfmSpecific {
     private final Map<String, String> defaultParameterValues = new HashMap<>();
     private final Collection<String> mandatoryParameters;
     private final Collection<String> optionalParameters;
-    private final Class<? extends RootDto> responseDtoClass;
+    private final Class<? extends DtoRoot> responseDtoClass;
     @Nullable
     private final Class<? extends BaseLastfmEntity> scopeEntityType;
 
@@ -84,7 +84,7 @@ public enum LastfmApiCallType implements ApiCallType, LastfmSpecific {
             String method,
             Collection<String> mandatoryParameters,
             Collection<String> optionalParameters,
-            Class<? extends RootDto> responseDtoClass,
+            Class<? extends DtoRoot> responseDtoClass,
             Class<? extends BaseLastfmEntity> scopeEntityType
     ) {
         this.code = code;
