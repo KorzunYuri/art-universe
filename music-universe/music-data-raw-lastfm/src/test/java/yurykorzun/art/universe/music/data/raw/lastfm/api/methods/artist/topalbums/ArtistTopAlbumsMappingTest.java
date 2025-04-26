@@ -1,0 +1,41 @@
+package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.topalbums;
+
+import org.junit.jupiter.api.Test;
+import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.topalbums.dto.ArtistTopAlbumAlbumDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.topalbums.dto.ArtistTopAlbumsDtoRoot;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.topalbums.dto.ArtistTopAlbumsTopAlbumsDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
+
+import java.io.IOException;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+public class ArtistTopAlbumsMappingTest {
+
+    private final ObjectMapper mapper = new ObjectMapper();
+
+    @Test
+    void givenArtistTopAlbumsResponse_whenParsed_thenParsedCorrectly() throws IOException {
+
+        String responseJsonString = LastfmApiClientResourceUtil.getApiClientResponse("artist.getTopAlbums");
+        ArtistTopAlbumsDtoRoot dtoRoot = mapper.readValue(responseJsonString, ArtistTopAlbumsDtoRoot.class);
+
+        assertNotNull(dtoRoot);
+
+        ArtistTopAlbumsTopAlbumsDto rootObject = dtoRoot.getTopAlbumsObject();
+        assertNotNull(rootObject);
+
+        List<ArtistTopAlbumAlbumDto> albums = rootObject.getAlbums();
+        assertNotNull(albums);
+        assertEquals(50, albums.size());
+
+        ArtistTopAlbumAlbumDto album = albums.get(0);
+        assertNotNull(album);
+        assertEquals("Monolith of Inhumanity", album.getName());
+        assertEquals("2967065a-a2b0-4a16-9fa9-f3169dcd0529", album.getMbid());
+        assertEquals("https://www.last.fm/music/Cattle+Decapitation/Monolith+of+Inhumanity", album.getUrl());
+        assertEquals(2341387, album.getPlayCount());
+    }
+}
