@@ -179,8 +179,8 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
             dtos, existingTags, sourceApiResponse,
             tagFactory, tagAttrHandlers, tagService::saveTags
         );
-        log.info("saved {} artists", result.savedEntities().size());
-        log.info("saved {} artists' attributes", result.savedAttributeValues().size());
+        log.info("saved {} tags", result.savedEntities().size());
+        log.info("saved {} tags' attributes", result.savedAttributeValues().size());
 
         //  merge existing and new artists to eliminate the second call to database for artists
         Map<String, LastfmTag> tagsMap = existingTags.stream()
