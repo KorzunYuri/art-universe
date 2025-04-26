@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbMaintenanceService;
 
 @RestController
-@RequestMapping("/maintenance")
+@RequestMapping("maintenance")
 public class MaintenanceController {
 
     private final DbMaintenanceService maintenanceService;
@@ -16,7 +16,7 @@ public class MaintenanceController {
         this.maintenanceService = maintenanceService;
     }
 
-    @GetMapping("trigger")
+    @GetMapping("/trigger")
     public ResponseEntity<String> triggerDbMaintenance() {
         if (maintenanceService.enqueueMaintenance()) {
             return ResponseEntity.ok().body("maintenance requested");
