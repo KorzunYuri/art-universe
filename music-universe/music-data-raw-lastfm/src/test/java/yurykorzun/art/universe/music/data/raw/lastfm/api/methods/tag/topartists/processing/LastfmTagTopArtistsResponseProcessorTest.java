@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.repository.LastfmArtistRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.LastfmAttributeHistoryService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityRelationService;
@@ -34,7 +34,7 @@ class LastfmTagTopArtistsResponseProcessorTest extends FullContextTest {
     @MockitoBean
     private LastfmAttributeHistoryService attributeHistoryService;
     @MockitoBean
-    private LastfmArtistRepository artistRepository;
+    private LastfmArtistService artistService; // TODO change to service
 
     // the variables below depend on currently supported attributes and should change along with processor implementation
     private static final int TEST_DTO_ENTITIES_NUMBER = 2;
@@ -57,23 +57,23 @@ class LastfmTagTopArtistsResponseProcessorTest extends FullContextTest {
         BaseLastfmEntity scopeEntity = consistencyHelper.createDummyEntity(LastfmApiCallType.TAG_TOP_ARTISTS);
         LastfmApiResponse response = consistencyHelper.createDummyApiResponse(
             TEST_DTO_ROOT, scopeEntity.getApiCall().getType(), scopeEntity);
-        when(artistRepository.saveAll(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(artistService.saveArtists(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         processor.processResponse(response);
 
         // Verify that artists were searched by names
         verifyAndAssertInvocations(
-            captor -> verify(artistRepository).findAllByNameIn(captor.capture()),
+            captor -> verify(artistService).findAllByNames(captor.capture()),
             List.class,
             List.of(List.of("Coldplay", "Linkin Park")),
-            "artistRepository.findAllByNameIn"
+            "artistService.findAllByNameIn"
         );
 
         // Verify that new artists are saved
         verifyInvocationsNumberWithCollectionsSizeOnly(
-            captor -> verify(artistRepository).saveAll(captor.capture()),
+            captor -> verify(artistService).saveArtists(captor.capture()),
             List.of(expectedCreatedArtistsNumber),
-            "artistRepository.saveAll"
+            "artistService.saveAll"
         );
 
         // Verify that entity relations were upserted
