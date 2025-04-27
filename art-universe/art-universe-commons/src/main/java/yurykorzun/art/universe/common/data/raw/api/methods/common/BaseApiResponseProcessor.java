@@ -10,15 +10,15 @@ public abstract class BaseApiResponseProcessor <T extends ApiResponse> {
     public abstract ApiCallType getApiCallType();
     protected abstract void processResponse(T response) throws IOException;
 
-    public final void process(T response) throws IOException {
-        validateResponse(response);
-        processResponse(response);
+    public final void process(T sourceApiResponse) throws IOException {
+        validateResponse(sourceApiResponse);
+        processResponse(sourceApiResponse);
     }
 
-    protected void validateResponse(T response) {
-        if (!this.getApiCallType().equals(response.getApiCall().getType())) {
+    protected void validateResponse(T sourceApiResponse) {
+        if (!this.getApiCallType().equals(sourceApiResponse.getApiCall().getType())) {
             throw new IllegalArgumentException(
-                    String.format("Response of type %s doesn't match processor's type %s", response.getApiCall().getType(), this.getApiCallType()));
+                    String.format("Response of type %s doesn't match processor's type %s", sourceApiResponse.getApiCall().getType(), this.getApiCallType()));
         }
     }
 
