@@ -5,11 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.topalbums.dto.ArtistTopAlbumsDtoRoot;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.entity.LastfmAlbum;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.service.LastfmAlbumService;
@@ -17,16 +19,20 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.L
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.LastfmAttributeHistoryService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityRelationService;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.FullContextTest;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
 
 import java.io.IOException;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static yurykorzun.art.universe.music.data.raw.lastfm.common.utils.AssertionUtils.verifyInvocationsNumberWithCollectionsSizeOnly;
+import static yurykorzun.art.universe.music.data.raw.lastfm.common.utils.AssertionUtils.*;
 
-class LastfmArtistTopAlbumsResponseProcessorTest extends FullContextTest {
+@Import({
+    LastfmArtistTopAlbumsResponseProcessor.class,
+    LastfmApiDtoProcessingService.class,
+})
+class LastfmArtistTopAlbumsResponseProcessorTest extends JpaOnlyTest {
 
     @Autowired
     private DbConsistencyHelper consistencyHelper;
