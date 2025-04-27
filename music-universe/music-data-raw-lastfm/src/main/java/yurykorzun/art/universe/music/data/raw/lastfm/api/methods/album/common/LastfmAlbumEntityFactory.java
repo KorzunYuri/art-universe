@@ -32,6 +32,7 @@ public class LastfmAlbumEntityFactory<D extends AlbumDto> implements EntityFacto
     public LastfmAlbum clone(LastfmAlbum entity) {
         return LastfmAlbum.builder()
                 .id(entity.getId())
+                .apiCall(entity.getApiCall())
                 .name(entity.getName())
                 .description(entity.getDescription())
                 .url(entity.getUrl())
