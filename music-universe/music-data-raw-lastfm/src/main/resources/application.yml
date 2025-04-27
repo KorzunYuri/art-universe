@@ -72,6 +72,8 @@ lastfm:
         topTags:
           dueDurationDays: 7
           tagUsageCountThreshold: 10
+        topAlbums:
+          albumPlayCountThreshold: 10000
         topTracks:
           dueDurationDays: 28
           trackListenersThreshold: 1000
