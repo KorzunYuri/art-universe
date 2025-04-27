@@ -8,6 +8,8 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmApiCallRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.utils.TimeUtil;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.entity.LastfmAlbum;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.repository.LastfmAlbumRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.repository.LastfmArtistRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
@@ -27,6 +29,7 @@ import java.util.function.Consumer;
 /**
  * While testing persistence/service layer, it's often needed to create related entities to maintain db consistency.
  * Current class provides methods to do this.
+ * TODO consider splitting create and saveAndCreate logic
  */
 @Component
 @Profile("test")
@@ -37,18 +40,22 @@ public class DbConsistencyHelper {
     private final LastfmApiCallRepository apiCallRepository;
     private final LastfmTagRepository tagRepository;
     private final LastfmArtistRepository artistRepository;
+    private final LastfmAlbumRepository albumRepository;
 
     public static final LastfmApiCallType DUMMY_API_CALL_TYPE = LastfmApiCallType.TAG_TOP_TAGS;
 
     public DbConsistencyHelper(
         LastfmDataSnapshotRepository snapshotRepository,
         LastfmApiCallRepository apiCallRepository,
-        LastfmTagRepository tagRepository, LastfmArtistRepository artistRepository
+        LastfmTagRepository tagRepository,
+        LastfmArtistRepository artistRepository,
+        LastfmAlbumRepository albumRepository
     ) {
         this.snapshotRepository = snapshotRepository;
         this.apiCallRepository = apiCallRepository;
         this.tagRepository = tagRepository;
         this.artistRepository = artistRepository;
+        this.albumRepository = albumRepository;
     }
 
     public void cleanup() {
@@ -177,6 +184,26 @@ public class DbConsistencyHelper {
 
     public LastfmArtist createAndSaveArtist() {
         return createAndSaveArtist(builder -> {});
+    }
+
+    public LastfmAlbum createAlbum(Consumer<LastfmAlbum.LastfmAlbumBuilder<?, ?>> customizer) {
+        LastfmAlbum.LastfmAlbumBuilder<?, ?> builder = LastfmAlbum.builder()
+            .name(randomString())
+            .apiCall(createDummyApiCall());
+        customizer.accept(builder);
+        return builder.build();
+    }
+
+    public LastfmAlbum createAlbum() {
+        return createAlbum(builder -> {});
+    }
+
+    public LastfmAlbum createAndSaveAlbum(Consumer<LastfmAlbum.LastfmAlbumBuilder<?, ?>> customizer) {
+        return albumRepository.save(createAlbum(customizer));
+    }
+
+    public LastfmAlbum createAndSaveAlbum() {
+        return createAndSaveAlbum(builder -> {});
     }
 
     public LastfmTrack createTrack(String url, LastfmApiCall apiCall) {

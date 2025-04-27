@@ -13,6 +13,6 @@ import java.util.List;
 public class ArtistTopAlbumsTopAlbumsDto {
 
     @JsonProperty("album")
-    private List<ArtistTopAlbumAlbumDto> albums;
+    private List<ArtistTopAlbumsAlbumDto> albums;
 
 }

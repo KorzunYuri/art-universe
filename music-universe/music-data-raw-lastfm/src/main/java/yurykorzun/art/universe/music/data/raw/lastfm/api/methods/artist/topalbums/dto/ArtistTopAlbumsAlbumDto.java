@@ -11,7 +11,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.album.common.dt
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ArtistTopAlbumAlbumDto extends AlbumDto {
+public class ArtistTopAlbumsAlbumDto extends AlbumDto {
 
     @JsonProperty("playcount")
     private int playCount;

@@ -2,7 +2,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.topalbu
 
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.topalbums.dto.ArtistTopAlbumAlbumDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.topalbums.dto.ArtistTopAlbumsAlbumDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.topalbums.dto.ArtistTopAlbumsDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.topalbums.dto.ArtistTopAlbumsTopAlbumsDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
@@ -27,11 +27,11 @@ public class ArtistTopAlbumsMappingTest {
         ArtistTopAlbumsTopAlbumsDto rootObject = dtoRoot.getTopAlbumsObject();
         assertNotNull(rootObject);
 
-        List<ArtistTopAlbumAlbumDto> albums = rootObject.getAlbums();
+        List<ArtistTopAlbumsAlbumDto> albums = rootObject.getAlbums();
         assertNotNull(albums);
         assertEquals(50, albums.size());
 
-        ArtistTopAlbumAlbumDto album = albums.get(0);
+        ArtistTopAlbumsAlbumDto album = albums.get(0);
         assertNotNull(album);
         assertEquals("Monolith of Inhumanity", album.getName());
         assertEquals("2967065a-a2b0-4a16-9fa9-f3169dcd0529", album.getMbid());

@@ -4,6 +4,7 @@ import lombok.Getter;
 import yurykorzun.art.universe.common.CodedRegistry;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getinfo.dto.ArtistGetInfoDtoRoot;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.topalbums.dto.ArtistTopAlbumsDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptags.dto.ArtistTopTagsDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptracks.dto.ArtistTopTracksDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.DtoRoot;
@@ -64,7 +65,15 @@ public enum LastfmApiCallType implements ApiCallType, LastfmSpecific {
             Set.of(PARAM_NAME_API_KEY),
             Set.of(PARAM_NAME_ARTIST, PARAM_NAME_MBID, PARAM_NAME_AUTOCORRECT, PARAM_NAME_LIMIT),
             ArtistTopTracksDtoRoot.class,
-            LastfmArtist.class);
+            LastfmArtist.class)
+    ,   ARTIST_TOP_ALBUMS(
+            7,
+            "artist.getTopAlbums",
+            Set.of(PARAM_NAME_API_KEY),
+            Set.of(PARAM_NAME_ARTIST, PARAM_NAME_MBID, PARAM_NAME_AUTOCORRECT, PARAM_NAME_LIMIT),
+            ArtistTopAlbumsDtoRoot.class,
+            LastfmArtist.class)
+    ;
 
     static {
         CodedRegistry.register(Arrays.asList(values()), ApiCallType.class);
