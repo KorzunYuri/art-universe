@@ -13,6 +13,6 @@ CREATE TABLE album (
     ,   updated_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
     ,   CONSTRAINT album_PK
             PRIMARY KEY (id)
-    ,   UNIQUE (name)
+    ,   UNIQUE (url)
 );
 CREATE SEQUENCE album_seq START 1 INCREMENT BY 50;
