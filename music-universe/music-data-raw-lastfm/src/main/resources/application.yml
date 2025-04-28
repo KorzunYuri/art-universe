@@ -55,6 +55,8 @@ lastfm:
   threshold:
     artist:
       listenersCount: 1000
+    album:
+      playCount: 10000
     track:
       playCount: 10000
     tag:

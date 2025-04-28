@@ -16,6 +16,8 @@ public class DbMaintenanceService {
 
     @Value("${lastfm.threshold.artist.listenersCount}")
     private int artistThreshold;
+    @Value("${lastfm.threshold.album.playCount}")
+    private int albumThreshold;
     @Value("${lastfm.threshold.track.playCount}")
     private int trackThreshold;
     @Value("${lastfm.threshold.tag.usageCount}")
@@ -40,6 +42,7 @@ public class DbMaintenanceService {
 
     private void executeMaintenanceTasks() {
         cleanupEntity(LastfmEntityType.ARTIST,  artistThreshold);
+        cleanupEntity(LastfmEntityType.ALBUM,   albumThreshold);
         cleanupEntity(LastfmEntityType.TRACK,   trackThreshold);
         cleanupEntity(LastfmEntityType.TAG,     tagThreshold);
 
