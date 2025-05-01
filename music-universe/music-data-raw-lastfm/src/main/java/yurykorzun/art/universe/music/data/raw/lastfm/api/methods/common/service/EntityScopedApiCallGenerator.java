@@ -9,7 +9,10 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.utils.Ti
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttributeSnapshot;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmDataSnapshot;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmDataSnapshotService;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityQueryConfig;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityService;
 
 import java.util.List;
 import java.util.Map;
@@ -28,19 +31,28 @@ public abstract class EntityScopedApiCallGenerator<SE extends BaseLastfmEntity> 
 
     protected final LastfmApiCallService apiCallService;
     protected final LastfmDataSnapshotService snapshotService;
+    protected final LastfmEntityService entityService;
 
     protected EntityScopedApiCallGenerator(
         LastfmApiCallService lastfmApiCallService,
-        LastfmDataSnapshotService snapshotService
+        LastfmDataSnapshotService snapshotService,
+        LastfmEntityService entityService
     ) {
         this.apiCallService = lastfmApiCallService;
         this.snapshotService = snapshotService;
+        this.entityService = entityService;
+    }
+
+    protected abstract LastfmEntityType getScopeEntityType();
+
+    protected LastfmEntityQueryConfig getUnprocessedEntitiesQueryConfig() {
+        return LastfmEntityQueryConfig.builder().build();
     }
 
     /**
      * Scope of api call implies data snapshots number.
      * If api call is entity scope, we will get as many data snapshots as there are entities.
-     * Otherwise it will be a one snapshot per period per api call type.
+     * Otherwise, it will be a one snapshot per period per api call type.
      *
      * @return true by default, as some of the methods produce 'scoped' attributes, in example, rank of tag within artist.
      */
@@ -89,7 +101,14 @@ public abstract class EntityScopedApiCallGenerator<SE extends BaseLastfmEntity> 
             .toList();
     }
 
-    protected abstract List<SE> selectEntitiesForApiCalls();
+    /**
+     * <p>Returns entities for API calls generation, following the most common logic -
+     * return those not having API calls of corresponding type, ordered by popularity.</p>
+     * <p>For most advanced retrieval/ordering/limiting logic subclasses should override this method.</p>
+     */
+    protected List<SE> selectEntitiesForApiCalls() {
+        return entityService.findAllUnprocessed(getScopeEntityType(), getApiCallType(), getUnprocessedEntitiesQueryConfig());
+    };
 
     /**
      * Returns a list with a single api call. If for a single entity several api calls have to be created,

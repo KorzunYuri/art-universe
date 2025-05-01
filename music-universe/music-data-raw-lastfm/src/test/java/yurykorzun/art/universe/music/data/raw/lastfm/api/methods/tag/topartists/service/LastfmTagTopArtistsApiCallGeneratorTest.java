@@ -89,7 +89,7 @@ class LastfmTagTopArtistsApiCallGeneratorTest extends JpaOnlyTest {
                 return tag;
             })
             .collect(Collectors.toList());
-        when(entityService.<LastfmTag>findAllUnprocessed(LastfmEntityType.TAG, LastfmApiCallType.TAG_TOP_ARTISTS))
+        when(entityService.<LastfmTag>findAllUnprocessed(eq(LastfmEntityType.TAG), eq(LastfmApiCallType.TAG_TOP_ARTISTS), any()))
             .thenReturn(unprocessedTags);
 
         // mock created data snapshot

@@ -21,7 +21,6 @@ import java.util.List;
 @Slf4j
 public class LastfmTagTopArtistsApiCallGenerator extends LastfmTagApiCallGenerator {
 
-    private final LastfmEntityService entityService;
     private final LastfmAttributeSnapshotService attributeSnapshotService;
 
     @Value("${lastfm.client.methods.tag.topArtists.dueDurationDays}")
@@ -33,9 +32,8 @@ public class LastfmTagTopArtistsApiCallGenerator extends LastfmTagApiCallGenerat
             LastfmDataSnapshotService snapshotService,
             LastfmAttributeSnapshotService attributeSnapshotService
     ) {
-        super(apiCallService, snapshotService);
+        super(apiCallService, snapshotService, entityService);
 
-        this.entityService = entityService;
         this.attributeSnapshotService = attributeSnapshotService;
     }
 
@@ -47,11 +45,6 @@ public class LastfmTagTopArtistsApiCallGenerator extends LastfmTagApiCallGenerat
     @Override
     protected int getDueDurationDays() {
         return dueDurationDays;
-    }
-
-    @Override
-    protected List<LastfmTag> selectEntitiesForApiCalls() {
-        return entityService.findAllUnprocessed(LastfmEntityType.TAG, LastfmApiCallType.TAG_TOP_ARTISTS);
     }
 
     @Override

@@ -9,6 +9,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.s
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmDataSnapshotService;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityService;
 
 import java.util.List;
 
@@ -24,9 +25,10 @@ public class LastfmArtistGetInfoApiCallGenerator extends LastfmArtistApiCallsGen
     public LastfmArtistGetInfoApiCallGenerator(
         LastfmApiCallService apiCallService,
         LastfmArtistService artistService,
-        LastfmDataSnapshotService snapshotService
+        LastfmDataSnapshotService snapshotService,
+        LastfmEntityService entityService
     ) {
-        super(apiCallService, snapshotService);
+        super(apiCallService, snapshotService, entityService);
 
         this.artistService = artistService;
     }
