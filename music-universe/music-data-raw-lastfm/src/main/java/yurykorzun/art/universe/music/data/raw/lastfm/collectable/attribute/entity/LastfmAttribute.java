@@ -84,6 +84,13 @@ public enum LastfmAttribute implements Coded {
             DataType.INTEGER,
             HistoryType.SCD2,
             List.of(LastfmEntityType.values()))
+    ,   MATCH_COEFF(
+            11,
+            "match_coeff",
+            "Represents how much two entities are similar to each other, %",
+            DataType.INTEGER, // float values much be converted to integer to save space
+            HistoryType.SCD2,
+            List.of(LastfmEntityType.values()))
     ;
 
     private final int id;
