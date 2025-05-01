@@ -10,6 +10,8 @@ import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallTypeConv
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 
+import java.util.Objects;
+
 @Entity(name = "api_call")
 @SuperBuilder
 @NoArgsConstructor
@@ -40,5 +42,22 @@ public class LastfmApiCall extends ApiCall {
     @Column(name = "entity_id")
     private Long entityId;
 
-    // TODO write equals and hashCode when the fieldset is stable
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof LastfmApiCall apiCall)) {
+            return false;
+        }
+        if (id != 0 && apiCall.getId() != 0) {
+            return this.id == apiCall.getId();
+        }
+        return dataSnapshotId   == apiCall.dataSnapshotId
+            && type             == apiCall.type
+            && entityType       == apiCall.entityType
+            && Objects.equals(entityId, apiCall.entityId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(type, dataSnapshotId, entityType, entityId);
+    }
 }
