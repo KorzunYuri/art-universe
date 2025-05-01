@@ -7,7 +7,7 @@ import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.LastfmArtistEntityFactory;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.processing.LastfmArtistEntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.dto.ArtistDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getinfo.dto.ArtistGetInfoArtistDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getinfo.dto.ArtistGetInfoArtistTagDto;
@@ -107,14 +107,6 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
 
         // update source artists
         LastfmArtist artist = updateArtist(dtoRoot, sourceApiResponse);
-
-        // TODO remove similar artists processing when artist.getSimilar is implemented
-        if (ApprovalStatus.APPROVED.equals(artist.getApprovalStatus())) {
-            // update artist's similar artists
-            Map<String, LastfmArtist> artistMap = updateSimilarArtists(dtoRoot, sourceApiResponse);
-            // bind similar artists to base artist
-            // bindArtistsToArtist(artist, artistMap, sourceApiResponse.getApiCall());
-        }
 
         // update artist's tags
         Map<String, LastfmTag> tagMap = updateTags(dtoRoot, sourceApiResponse);

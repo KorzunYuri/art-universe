@@ -16,6 +16,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getinfo.service.LastfmArtistGetInfoApiCallGenerator;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getsimilar.service.LastfmArtistGetSimilarApiCallGenerator;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.topalbums.service.LastfmArtistTopAlbumsApiCallGenerator;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptags.service.LastfmArtistTopTagsApiCallGenerator;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptracks.service.LastfmArtistTopTracksApiCallGenerator;
@@ -68,6 +69,7 @@ import static yurykorzun.art.universe.music.data.raw.lastfm.common.utils.Asserti
     LastfmArtistTopAlbumsApiCallGenerator.class,
     LastfmArtistTopTracksApiCallGenerator.class,
     LastfmArtistTopTagsApiCallGenerator.class,
+    LastfmArtistGetSimilarApiCallGenerator.class,
 })
 public class LastfmArtistApiCallGeneratorTest extends JpaOnlyTest {
 
@@ -119,6 +121,11 @@ public class LastfmArtistApiCallGeneratorTest extends JpaOnlyTest {
                 List.of(
                     new ExpectedAttributeSnapshotInfo(LastfmAttribute.RANK, LastfmEntityType.TAG)
                 )
+            ),
+            Arguments.of(
+                LastfmArtistGetSimilarApiCallGenerator.class,
+                LastfmApiCallType.ARTIST_GET_SIMILAR,
+                List.<ExpectedAttributeSnapshotInfo>of()
             )
         );
     }

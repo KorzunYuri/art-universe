@@ -1,11 +1,7 @@
-package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptracks;
+package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptracks.dto;
 
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptracks.dto.ArtistTopTracksDtoRoot;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptracks.dto.ArtistTopTracksRequestMetadataDto;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptracks.dto.ArtistTopTracksTopTracksDto;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptracks.dto.ArtistTopTracksTrackDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
 
 import java.io.IOException;
@@ -13,7 +9,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ArtistTopTracksMappingTest {
+class ArtistTopTracksDtoMappingTest {
 
     private final ObjectMapper mapper = new ObjectMapper();
 

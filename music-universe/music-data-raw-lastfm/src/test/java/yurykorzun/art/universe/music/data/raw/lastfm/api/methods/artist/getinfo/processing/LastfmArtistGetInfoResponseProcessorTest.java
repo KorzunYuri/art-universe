@@ -10,7 +10,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.LastfmArtistEntityFactory;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.processing.LastfmArtistEntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.dto.ArtistDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getinfo.dto.ArtistGetInfoArtistTagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getinfo.dto.ArtistGetInfoDtoRoot;
@@ -75,8 +75,6 @@ class LastfmArtistGetInfoResponseProcessorTest extends FullContextTest {
 
         // expected values
         final int newArtistAttrValuesNumber = ARTIST_ATTRS_NUMBER;
-        final int newSimilarArtistsNumber = testCase.expectedSimilarArtists.size();
-        final int newSimilarArtistsAttrValuesNumber = newSimilarArtistsNumber * SIMILAR_ARTIST_ATTRS_NUMBER;
         final int newTagsNumber = testCase.expectedTags.size();
         final int newTagAttrValuesNumber = newTagsNumber * TAG_ATTRS_NUMBER;
 
@@ -88,17 +86,13 @@ class LastfmArtistGetInfoResponseProcessorTest extends FullContextTest {
         processor.processResponse(testCase.sourceApiResponse);
 
         // Verify that similar artists were searched
-        verifyInvocationsNumber(
-            captor -> verify(artistService, times(1)).findAllByNames(captor.capture()),
-            List.class,
-            1,
-            "artistService.findAllByNames");
+        verify(artistService, never()).findAllByNames(any());
 
         // Verify that base artist and similar artists were saved
         verifyAndAssertInvocations(
-            captor -> verify(artistService, times(2)).saveArtists(captor.capture()),
+            captor -> verify(artistService, times(1)).saveArtists(captor.capture()),
             List.class,
-            List.of(List.of(testCase.expectedArtist), testCase.expectedSimilarArtists),
+            List.of(List.of(testCase.expectedArtist)),
             "artistService.saveArtists");
 
         // Verify that new tags were saved
@@ -110,8 +104,8 @@ class LastfmArtistGetInfoResponseProcessorTest extends FullContextTest {
 
         // verify that attribute values were saved
         verifyInvocationsNumberWithCollectionsSizeOnly(
-            captor -> verify(attributeHistoryService, times(3)).upsertCandidateValues(captor.capture()),
-            List.of(newArtistAttrValuesNumber, newSimilarArtistsAttrValuesNumber, newTagAttrValuesNumber),
+            captor -> verify(attributeHistoryService, times(2)).upsertCandidateValues(captor.capture()),
+            List.of(newArtistAttrValuesNumber, newTagAttrValuesNumber),
             "attributeHistoryService.upsertCandidateValues");
 
         // verify that entity relations were saved
@@ -131,8 +125,6 @@ class LastfmArtistGetInfoResponseProcessorTest extends FullContextTest {
 
         // expected values
         final int newArtistAttrValuesNumber = ARTIST_ATTRS_NUMBER;
-        final int newSimilarArtistsNumber = 0;
-        final int newSimilarArtistsAttrValuesNumber = newSimilarArtistsNumber * SIMILAR_ARTIST_ATTRS_NUMBER;
         final int newTagsNumber = testCase.expectedTags.size();
         final int newTagAttrValuesNumber = newTagsNumber * TAG_ATTRS_NUMBER;
 
@@ -144,7 +136,7 @@ class LastfmArtistGetInfoResponseProcessorTest extends FullContextTest {
         processor.processResponse(testCase.sourceApiResponse);
 
         // Verify that similar artists were not searched, because base artist is not approved
-        verify(artistService, times(0)).findAllByNames(any());
+        verify(artistService, never()).findAllByNames(any());
 
         // Verify that base artist and similar artists were saved
         verifyAndAssertInvocations(
@@ -181,7 +173,6 @@ class LastfmArtistGetInfoResponseProcessorTest extends FullContextTest {
     private static class TestCase {
         LastfmApiResponse sourceApiResponse;
         LastfmArtist expectedArtist;
-        List<LastfmArtist> expectedSimilarArtists;
         List<LastfmTag> expectedTags;
     }
 
@@ -204,17 +195,12 @@ class LastfmArtistGetInfoResponseProcessorTest extends FullContextTest {
         LastfmApiResponse sourceApiResponse = consistencyHelper.createDummyApiResponse(
             responseString, LastfmApiCallType.ARTIST_GET_INFO, expectedArtist);
 
-        LastfmArtistEntityFactory<ArtistDto> similarArtistFactory = new LastfmArtistEntityFactory<>();
-        List<LastfmArtist> expectedSimilarArtists = dtoRoot.getArtist().getSimilarArtistsObject().getArtists().stream()
-            .map(dto -> similarArtistFactory.fromDto(dto, sourceApiResponse))
-            .toList();
-
         LastfmTagEntityFactory<ArtistGetInfoArtistTagDto> tagFactory = new LastfmTagEntityFactory<>();
         List<LastfmTag> expectedTags = dtoRoot.getArtist().getTagsObject().getTags().stream()
             .map(dto -> tagFactory.fromDto(dto, sourceApiResponse))
             .toList();
 
-        return new TestCase(sourceApiResponse, expectedArtist, expectedSimilarArtists, expectedTags);
+        return new TestCase(sourceApiResponse, expectedArtist, expectedTags);
     }
 
 }

@@ -1,41 +1,36 @@
-package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getinfo.service;
+package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getsimilar.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.LastfmApiConstants;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.service.LastfmArtistApiCallsGenerator;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmDataSnapshotService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityService;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 
-import java.util.List;
+import java.util.Map;
 
 @Component
 @Slf4j
-public class LastfmArtistGetInfoApiCallGenerator extends LastfmArtistApiCallsGenerator {
+public class LastfmArtistGetSimilarApiCallGenerator extends LastfmArtistApiCallsGenerator {
 
-    private final LastfmArtistService artistService;
-
-    @Value("${lastfm.client.methods.artist.getInfo.dueDurationDays}")
+    @Value("${lastfm.client.methods.artist.getSimilar.dueDurationDays}")
     private int dueDurationDays;
 
-    public LastfmArtistGetInfoApiCallGenerator(
-        LastfmApiCallService apiCallService,
-        LastfmArtistService artistService,
+    protected LastfmArtistGetSimilarApiCallGenerator(
+        LastfmApiCallService lastfmApiCallService,
         LastfmDataSnapshotService snapshotService,
         LastfmEntityService entityService
     ) {
-        super(apiCallService, snapshotService, entityService);
-
-        this.artistService = artistService;
+        super(lastfmApiCallService, snapshotService, entityService);
     }
 
     @Override
     public LastfmApiCallType getApiCallType() {
-        return LastfmApiCallType.ARTIST_GET_INFO;
+        return LastfmApiCallType.ARTIST_GET_SIMILAR;
     }
 
     @Override
@@ -44,7 +39,8 @@ public class LastfmArtistGetInfoApiCallGenerator extends LastfmArtistApiCallsGen
     }
 
     @Override
-    protected List<LastfmArtist> selectEntitiesForApiCalls() {
-        return artistService.findAllToGetInfoFor();
+    protected Map<String, String> applyCustomApiCallParameters(Map<String, String> params) {
+        params.put(LastfmApiConstants.PARAM_NAME_LIMIT, String.valueOf(LastfmConstants.HIBERNATE_BATCH_SIZE));
+        return params;
     }
 }
