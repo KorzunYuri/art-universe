@@ -1,9 +1,7 @@
-package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks;
+package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.dto;
 
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.dto.TagTopTracksDtoRoot;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.dto.TagTopTracksTrackDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
 
 import java.io.IOException;
