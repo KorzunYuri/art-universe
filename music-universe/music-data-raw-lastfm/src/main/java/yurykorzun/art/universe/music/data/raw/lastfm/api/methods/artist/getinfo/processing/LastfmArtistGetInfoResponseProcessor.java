@@ -108,14 +108,6 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
         // update source artists
         LastfmArtist artist = updateArtist(dtoRoot, sourceApiResponse);
 
-        // TODO remove similar artists processing when artist.getSimilar is implemented
-        if (ApprovalStatus.APPROVED.equals(artist.getApprovalStatus())) {
-            // update artist's similar artists
-            Map<String, LastfmArtist> artistMap = updateSimilarArtists(dtoRoot, sourceApiResponse);
-            // bind similar artists to base artist
-            // bindArtistsToArtist(artist, artistMap, sourceApiResponse.getApiCall());
-        }
-
         // update artist's tags
         Map<String, LastfmTag> tagMap = updateTags(dtoRoot, sourceApiResponse);
 
