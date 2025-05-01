@@ -9,7 +9,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TagTopTracksMappingTest {
+public class TagTopTracksDtoMappingTest {
 
     private final ObjectMapper mapper = new ObjectMapper();
 

@@ -11,7 +11,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ArtistGetInfoMappingTest {
+public class ArtistGetInfoDtoMappingTest {
 
     private final ObjectMapper mapper = new ObjectMapper();
 

@@ -9,7 +9,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ArtistTopTracksMappingTest {
+class ArtistTopTracksDtoMappingTest {
 
     private final ObjectMapper mapper = new ObjectMapper();
 

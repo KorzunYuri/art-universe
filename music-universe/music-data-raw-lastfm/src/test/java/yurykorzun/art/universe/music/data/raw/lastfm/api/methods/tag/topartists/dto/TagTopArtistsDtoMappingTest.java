@@ -10,7 +10,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TagTopArtistsMappingTest {
+public class TagTopArtistsDtoMappingTest {
 
     private final ObjectMapper mapper = new ObjectMapper();
 
