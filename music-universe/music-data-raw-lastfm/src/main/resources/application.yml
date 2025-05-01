@@ -71,6 +71,8 @@ lastfm:
       artist:
         getInfo:
           dueDurationDays: 7
+        getSimilar:
+          dueDurationDays: 28
         topTags:
           dueDurationDays: 7
           tagUsageCountThreshold: 10
