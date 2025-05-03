@@ -1,6 +1,7 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getsimilar.processing;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
@@ -27,6 +28,11 @@ public class LastfmArtistGetSimilarResponseProcessor extends LastfmApiResponsePr
     private final LastfmArtistService artistService;
     private final LastfmApiDtoProcessingService dtoProcessingService;
     private final EntityFactory<LastfmArtist, ArtistGetSimilarArtistDto> artistFactory;
+
+    // TODO provide default value to injected values
+    // TODO implement on-the-fly value management
+    @Value("${lastfm.client.methods.artist.getSimilar.artistMatchThreshold}")
+    private float artistMatchThreshold;
 
     private static final List<EntityAttributeHandler<LastfmArtist, ?, ArtistGetSimilarArtistDto>> artistAttrHandlers = List.of(
         DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.MBID,  false,
@@ -84,6 +90,8 @@ public class LastfmArtistGetSimilarResponseProcessor extends LastfmApiResponsePr
      * TODO consider filtering out similar artists by match coeff
      */
     private List<ArtistGetSimilarArtistDto> filterDtosForSaving(ArtistGetSimilarDtoRoot dtoRoot) {
-        return dtoRoot.getRootObject().getArtists();
+        return dtoRoot.getRootObject().getArtists().stream()
+            .filter(a -> a.getMatchCoeff() > artistMatchThreshold)
+            .toList();
     }
 }

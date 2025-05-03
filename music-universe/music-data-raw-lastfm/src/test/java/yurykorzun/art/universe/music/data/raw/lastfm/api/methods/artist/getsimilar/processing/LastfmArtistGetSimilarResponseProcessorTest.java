@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.util.ReflectionTestUtils;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getsimilar.dto.ArtistGetSimilarDtoRoot;
@@ -62,6 +63,8 @@ class LastfmArtistGetSimilarResponseProcessorTest extends JpaOnlyTest {
 
         when(artistService.saveArtists(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(attributeHistoryService.upsertCandidateValues(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ReflectionTestUtils.setField(processor, "artistMatchThreshold", (float) 0.0);
 
         // when
         processor.processResponse(testCase.sourceApiResponse);
