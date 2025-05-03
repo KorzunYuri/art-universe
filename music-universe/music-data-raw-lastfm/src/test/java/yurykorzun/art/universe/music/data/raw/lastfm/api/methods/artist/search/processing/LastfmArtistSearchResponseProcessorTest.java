@@ -1,17 +1,20 @@
-package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getsimilar.processing;
+package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.search.processing;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.LastfmApiConstants;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getsimilar.dto.ArtistGetSimilarDtoRoot;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.search.dto.ArtistSearchArtistDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.search.dto.ArtistSearchDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
@@ -22,25 +25,25 @@ import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTe
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static yurykorzun.art.universe.music.data.raw.lastfm.common.utils.AssertionUtils.*;
 
 @Import({
-    LastfmArtistGetSimilarResponseProcessor.class,
-    LastfmArtistGetSimilarArtistFactory.class,
+    LastfmArtistSearchResponseProcessor.class,
+    LastfmArtistSearchArtistFactory.class,
     LastfmApiDtoProcessingService.class,
 })
-class LastfmArtistGetSimilarResponseProcessorTest extends JpaOnlyTest {
+class LastfmArtistSearchResponseProcessorTest extends JpaOnlyTest {
 
     @Autowired
     private DbConsistencyHelper consistencyHelper;
 
     @Autowired
-    private LastfmArtistGetSimilarResponseProcessor processor;
+    private LastfmArtistSearchResponseProcessor processor;
 
-    // injections for verifications
     @MockitoBean
     private LastfmArtistService artistService;
     @MockitoBean
@@ -54,22 +57,21 @@ class LastfmArtistGetSimilarResponseProcessorTest extends JpaOnlyTest {
     private static final int ATTRIBUTES_NUMBER = SCD2_ATTRIBUTES_NUMBER + SNAPSHOT_ATTRIBUTES_NUMBER;
 
     @Test
-    void givenArtistGetSimilarResponse_whenProcessed_newRecordsAreCreated() throws IOException {
+    void givenArtistSearchApiResponseAndEmptyDb_whenProcessed_thenNewEntitiesCreated() throws IOException {
+        String responseBody = LastfmApiClientResourceUtil.getApiClientResponse("artist.search");
+        TestCase testCase = createTestCase("PUP", responseBody);
 
-        // given
-        String dtoResponseString = LastfmApiClientResourceUtil.getApiClientResponse("artist.getSimilar");
-        TestCase testCase = testCaseFromResponse(dtoResponseString);
+        ReflectionTestUtils.setField(processor, "artistSimilarityThreshold", 0.0);
 
-        when(artistService.saveArtists(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(artistService.findAllByNames(any())).thenReturn(List.of());
+        when(artistService.saveArtists(any())).thenAnswer(i -> i.getArgument(0));
         when(attributeHistoryService.upsertCandidateValues(any())).thenAnswer(invocation -> invocation.getArgument(0));
-
-        ReflectionTestUtils.setField(processor, "artistMatchThreshold", (float) 0.0);
 
         // when
         processor.processResponse(testCase.sourceApiResponse);
 
         // then
-        final int expectedEntitiesNumber = 50;
+        final int expectedEntitiesNumber = 30;
         final int expectedAttrValuesNumber = ATTRIBUTES_NUMBER * expectedEntitiesNumber;
 
         // verify that artists were searched by names
@@ -100,31 +102,26 @@ class LastfmArtistGetSimilarResponseProcessorTest extends JpaOnlyTest {
     @AllArgsConstructor
     private static class TestCase {
         LastfmApiResponse sourceApiResponse;
-        LastfmArtist artist;
         List<LastfmArtist> expectedArtists;
     }
 
-    private TestCase testCaseFromResponse(String responseString) {
-        final ArtistGetSimilarDtoRoot dtoRoot;
+    private TestCase createTestCase(String searchString, String responseBody) {
+        LastfmApiCall sourceApiCall = consistencyHelper.createAndSaveApiCall(builder -> builder
+            .type(LastfmApiCallType.ARTIST_SEARCH)
+            .params(Map.of(LastfmApiConstants.PARAM_NAME_ARTIST, searchString))
+        );
+        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(responseBody, sourceApiCall);
+        EntityFactory<LastfmArtist, ArtistSearchArtistDto> entityFactory = new LastfmArtistSearchArtistFactory();
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            dtoRoot = objectMapper.readValue(responseString, ArtistGetSimilarDtoRoot.class);
-        } catch (JsonProcessingException e) {
+            ArtistSearchDtoRoot dtoRoot = objectMapper.readValue(responseBody, ArtistSearchDtoRoot.class);
+            List<LastfmArtist> expectedArtists = dtoRoot.getRootObject().getMatches().getArtists().stream()
+                .map(dto -> entityFactory.fromDto(dto, apiResponse))
+                .toList();
+
+            return new TestCase(apiResponse, expectedArtists);
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        LastfmArtist artist = consistencyHelper.createAndSaveArtist(
-            builder -> builder.name("test artist")
-        );
-
-        LastfmApiResponse sourceApiResponse = consistencyHelper.createAndSaveApiResponse(
-            responseString, LastfmApiCallType.ARTIST_GET_SIMILAR, artist);
-
-        LastfmArtistGetSimilarArtistFactory entityFactory = new LastfmArtistGetSimilarArtistFactory();
-        List<LastfmArtist> expectedArtists = dtoRoot.getRootObject().getArtists().stream()
-            .map(dto -> entityFactory.fromDto(dto, sourceApiResponse))
-            .toList();
-
-        return new TestCase(sourceApiResponse, artist, expectedArtists);
     }
 }

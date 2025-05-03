@@ -21,7 +21,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.La
 
 import java.util.function.Consumer;
 
-import static yurykorzun.art.universe.music.data.raw.lastfm.common.utils.StringUtils.randomString;
+import static yurykorzun.art.universe.music.data.raw.lastfm.common.utils.TestStringUtils.randomString;
 
 /**
  * Provides methods for creating entities for testing while maintaining DB consistency. Has two types of methods:
@@ -117,15 +117,17 @@ public class DbConsistencyHelper {
     //  API response
 
     public LastfmApiResponse createAndSaveApiResponse(String responseString, LastfmApiCallType apiCallType, BaseLastfmEntity scopeEntity) {
-        LastfmApiResponse apiResponse = EntityCreationHelper.createApiResponse(responseString, createAndSaveApiCall(apiCallType, scopeEntity));
-        return apiResponseRepository.save(apiResponse);
+        return createAndSaveApiResponse(responseString, createAndSaveApiCall(apiCallType, scopeEntity));
     }
 
     public LastfmApiResponse createAndSaveApiResponse(String responseString, LastfmApiCallType apiCallType) {
-        LastfmApiResponse apiResponse = EntityCreationHelper.createApiResponse(responseString, createAndSaveApiCall(apiCallType));
-        return apiResponseRepository.save(apiResponse);
+        return createAndSaveApiResponse(responseString, createAndSaveApiCall(apiCallType));
     }
 
+    public LastfmApiResponse createAndSaveApiResponse(String responseString, LastfmApiCall sourceApiCall) {
+        LastfmApiResponse apiResponse = EntityCreationHelper.createApiResponse(responseString, sourceApiCall);
+        return apiResponseRepository.save(apiResponse);
+    }
 
     //  tag
 

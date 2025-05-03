@@ -2,9 +2,9 @@ package yurykorzun.art.universe.music.data.raw.lastfm.common.utils;
 
 import java.util.UUID;
 
-public class StringUtils {
+public class TestStringUtils {
 
-    private StringUtils() {
+    private TestStringUtils() {
     }
 
     public static String randomString() {
