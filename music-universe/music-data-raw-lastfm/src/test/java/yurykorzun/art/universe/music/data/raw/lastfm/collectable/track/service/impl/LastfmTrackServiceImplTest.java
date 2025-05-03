@@ -7,6 +7,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.repository.LastfmTrackRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
 
 import java.util.List;
@@ -30,7 +31,7 @@ class LastfmTrackServiceImplTest extends JpaOnlyTest {
 
     @Test
     void givenTrack_whenSaveTrack_thenRepositorySaveIsCalled() {
-        LastfmTrack track = consistencyHelper.createTrack();
+        LastfmTrack track = EntityCreationHelper.createTrack();
         when(trackRepository.save(track)).thenReturn(track);
 
         LastfmTrack savedTrack = trackService.saveTrack(track);
@@ -42,7 +43,7 @@ class LastfmTrackServiceImplTest extends JpaOnlyTest {
 
     @Test
     void givenTracks_whenSaveTracks_thenRepositorySaveAllIsCalled() {
-        List<LastfmTrack> tracks = List.of(consistencyHelper.createTrack(), consistencyHelper.createTrack());
+        List<LastfmTrack> tracks = List.of(EntityCreationHelper.createTrack(), EntityCreationHelper.createTrack());
         when(trackRepository.saveAll(tracks)).thenReturn(tracks);
 
         List<LastfmTrack> savedTracks = trackService.saveTracks(tracks);
@@ -57,7 +58,7 @@ class LastfmTrackServiceImplTest extends JpaOnlyTest {
     void givenUrls_whenFindAllByUrls_thenReturnMatchingTracks() {
         final int tracksNumber = 3;
         List<String> urls = IntStream.range(0, tracksNumber).mapToObj(i -> UUID.randomUUID().toString()).toList();
-        List<LastfmTrack> tracks = urls.stream().map(consistencyHelper::createTrack).toList();
+        List<LastfmTrack> tracks = urls.stream().map(EntityCreationHelper::createTrack).toList();
         when(trackRepository.findAllByUrlIn(urls)).thenReturn(tracks);
 
         List<LastfmTrack> foundTracks = trackService.findAllByUrls(urls);

@@ -21,12 +21,13 @@ class LastfmApiCallRepositoryTest extends JpaOnlyTest {
     @Autowired
     private DbConsistencyHelper consistencyHelper;
 
+    private static LastfmApiCallType DEFAULT_API_CALL_TYPE = LastfmApiCallType.TAG_TOP_TAGS;
 
     @Test
     void testApiCallCreation() {
         LastfmApiCall created = LastfmApiCall.builder()
-                .dataSnapshotId(consistencyHelper.createDummyDataSnapshot().getId())
-                .type(LastfmApiCallType.TAG_TOP_TAGS)
+                .dataSnapshotId(consistencyHelper.createAndSaveDataSnapshot(DEFAULT_API_CALL_TYPE).getId())
+                .type(DEFAULT_API_CALL_TYPE)
                 .params(Map.of("key", "value"))
                 .dueDttm(Instant.now())
             .build();
@@ -43,8 +44,8 @@ class LastfmApiCallRepositoryTest extends JpaOnlyTest {
     @Test
     void testApiCallStatusUpdate() {
         LastfmApiCall created = LastfmApiCall.builder()
-                .dataSnapshotId(consistencyHelper.createDummyDataSnapshot().getId())
-                .type(LastfmApiCallType.TAG_TOP_TAGS)
+                .dataSnapshotId(consistencyHelper.createAndSaveDataSnapshot(DEFAULT_API_CALL_TYPE).getId())
+                .type(DEFAULT_API_CALL_TYPE)
                 .params(Map.of("key", "value"))
                 .dueDttm(Instant.now())
                 .status(ApiCallStatus.CREATED)

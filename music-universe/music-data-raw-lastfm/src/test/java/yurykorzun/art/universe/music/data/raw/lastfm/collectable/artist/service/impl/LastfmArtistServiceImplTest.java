@@ -7,6 +7,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.repository.LastfmArtistRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
 
 import java.util.List;
@@ -28,9 +29,16 @@ class LastfmArtistServiceImplTest extends JpaOnlyTest {
     @Autowired
     private LastfmArtistServiceImpl artistService;
 
+    private LastfmArtist createArtist() {
+        return EntityCreationHelper.createArtist();
+    }
+    private LastfmArtist createArtist(String url) {
+        return EntityCreationHelper.createArtist(builder -> builder.url(url));
+    }
+
     @Test
     void givenArtist_whenSaveArtist_thenRepositorySaveIsCalled() {
-        LastfmArtist artist = consistencyHelper.createArtist();
+        LastfmArtist artist = createArtist();
         when(artistRepository.save(artist)).thenReturn(artist);
 
         LastfmArtist savedArtist = artistService.saveArtist(artist);
@@ -42,7 +50,7 @@ class LastfmArtistServiceImplTest extends JpaOnlyTest {
 
     @Test
     void givenArtists_whenSaveArtists_thenRepositorySaveAllIsCalled() {
-        List<LastfmArtist> artists = List.of(consistencyHelper.createArtist(), consistencyHelper.createArtist());
+        List<LastfmArtist> artists = List.of(createArtist(), createArtist());
         when(artistRepository.saveAll(artists)).thenReturn(artists);
 
         List<LastfmArtist> savedArtists = artistService.saveArtists(artists);
@@ -54,19 +62,19 @@ class LastfmArtistServiceImplTest extends JpaOnlyTest {
     }
 
     @Test
-    void givenUrls_whenFindAllByUrls_thenReturnMatchingArtists() {
+    void givenUrls_whenFindAllByUrls_thenRepositoryFindAllByNameInIsCalled() {
         final int artistsNumber = 3;
-        List<String> urls = IntStream.range(0, artistsNumber).mapToObj(i -> UUID.randomUUID().toString()).toList();
-        List<LastfmArtist> artists = urls.stream()
-            .map(url -> consistencyHelper.createArtist(builder -> builder.url(url)))
+        List<String> names = IntStream.range(0, artistsNumber).mapToObj(i -> UUID.randomUUID().toString()).toList();
+        List<LastfmArtist> artists = names.stream()
+            .map(this::createArtist)
             .toList();
-        when(artistRepository.findAllByNameIn(urls)).thenReturn(artists);
+        when(artistRepository.findAllByNameIn(names)).thenReturn(artists);
 
-        List<LastfmArtist> foundArtists = artistService.findAllByNames(urls);
+        List<LastfmArtist> foundArtists = artistService.findAllByNames(names);
 
         assertNotNull(foundArtists);
         assertEquals(artists.size(), foundArtists.size());
         assertEquals(artists, foundArtists);
-        verify(artistRepository, times(1)).findAllByNameIn(urls);
+        verify(artistRepository, times(1)).findAllByNameIn(names);
     }
 }

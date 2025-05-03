@@ -111,12 +111,12 @@ class LastfmArtistTopTagsResponseProcessorTest extends JpaOnlyTest {
             throw new RuntimeException(e);
         }
 
-        LastfmArtist artist = consistencyHelper.createArtist(
+        LastfmArtist artist = consistencyHelper.createAndSaveArtist(
             builder -> builder
                 .name(dtoRoot.getTopTagsObject().getArtist().getName())
         );
 
-        LastfmApiResponse sourceApiResponse = consistencyHelper.createDummyApiResponse(
+        LastfmApiResponse sourceApiResponse = consistencyHelper.createAndSaveApiResponse(
             responseString, LastfmApiCallType.ARTIST_TOP_TAGS, artist);
 
         LastfmArtistTopTagsTagFactory tagFactory = new LastfmArtistTopTagsTagFactory();

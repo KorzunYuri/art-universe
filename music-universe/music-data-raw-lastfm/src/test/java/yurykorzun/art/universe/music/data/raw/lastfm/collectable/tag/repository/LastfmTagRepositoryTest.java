@@ -36,7 +36,7 @@ class LastfmTagRepositoryTest extends JpaOnlyTest {
         final String name = "Tag";
         final int usageCount = 42;
         final int usageUsersCount = 10;
-        final LastfmApiCall sourceApiCall = consistencyHelper.createDummyApiCall(LastfmApiCallType.TAG_TOP_TAGS);
+        final LastfmApiCall sourceApiCall = consistencyHelper.createAndSaveApiCall(LastfmApiCallType.TAG_TOP_TAGS);
 
         LastfmTag tag = LastfmTag.builder()
                 .name(name)
@@ -57,7 +57,7 @@ class LastfmTagRepositoryTest extends JpaOnlyTest {
     @Test
     void testFindAllByNameIn() {
         // given
-        LastfmApiCall apiCall = consistencyHelper.createDummyApiCall();
+        LastfmApiCall apiCall = consistencyHelper.createAndSaveApiCall();
         LastfmTag tag1 = createTag("rock", apiCall);
         LastfmTag tag2 = createTag("pop", apiCall);
         repository.saveAllAndFlush(Arrays.asList(tag1, tag2));
@@ -73,7 +73,7 @@ class LastfmTagRepositoryTest extends JpaOnlyTest {
     @Test
     void testSaveAllDoesNotDuplicate() {
         // given
-        LastfmApiCall apiCall = consistencyHelper.createDummyApiCall();
+        LastfmApiCall apiCall = consistencyHelper.createAndSaveApiCall();
         LastfmTag tag1 = createTag("jazz", apiCall);
         LastfmTag tag2 = createTag("latina", apiCall);
         repository.saveAllAndFlush(Arrays.asList(tag1, tag2));

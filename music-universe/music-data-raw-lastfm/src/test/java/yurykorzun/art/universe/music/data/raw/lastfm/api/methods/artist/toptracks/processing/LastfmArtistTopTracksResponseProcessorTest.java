@@ -22,6 +22,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.service.LastfmTrackService;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
 
 import java.util.List;
@@ -66,7 +67,7 @@ class LastfmArtistTopTracksResponseProcessorTest extends JpaOnlyTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    void givenTagTopArtistsResponse_whenProcessed_newRecordsAreCreated() throws Exception {
+    void givenArtistTopTracksResponse_whenProcessed_newRecordsAreCreated() throws Exception {
 
         // given
         final int expectedCreatedTracksNumber = TEST_DTO_ENTITIES_NUMBER;
@@ -117,8 +118,8 @@ class LastfmArtistTopTracksResponseProcessorTest extends JpaOnlyTest {
     }
 
     private TestCase testCaseFromResponse(String apiResponseBody) {
-        BaseLastfmEntity scopeEntity = consistencyHelper.createDummyEntity(LastfmApiCallType.TAG_TOP_ARTISTS);
-        LastfmApiResponse sourceApiResponse = consistencyHelper.createDummyApiResponse(
+        BaseLastfmEntity scopeEntity = EntityCreationHelper.createArtist(LastfmApiCallType.TAG_TOP_ARTISTS);
+        LastfmApiResponse sourceApiResponse = EntityCreationHelper.createApiResponse(
             apiResponseBody, scopeEntity.getApiCall().getType(), scopeEntity);
 
         try {

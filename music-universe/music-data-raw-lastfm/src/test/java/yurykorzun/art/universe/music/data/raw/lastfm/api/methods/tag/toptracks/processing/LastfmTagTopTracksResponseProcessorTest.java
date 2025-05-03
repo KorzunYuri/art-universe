@@ -3,7 +3,6 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -24,7 +23,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.service.LastfmTrackService;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
 
 import java.util.List;
@@ -41,9 +40,6 @@ import static yurykorzun.art.universe.music.data.raw.lastfm.common.utils.Asserti
     LastfmApiDtoProcessingService.class,
 })
 class LastfmTagTopTracksResponseProcessorTest extends JpaOnlyTest {
-    
-    @Autowired
-    private DbConsistencyHelper consistencyHelper;
     
     @Autowired
     private LastfmTagTopTracksResponseProcessor processor;
@@ -65,11 +61,6 @@ class LastfmTagTopTracksResponseProcessorTest extends JpaOnlyTest {
     private static final int ARTIST_SCD2_ATTRS_NUMBER = 2;
     private static final int ARTIST_SNAPSHOT_ATTRS_NUMBER = 0;
     private static final int ARTIST_ATTRS_NUMBER = ARTIST_SCD2_ATTRS_NUMBER + ARTIST_SNAPSHOT_ATTRS_NUMBER;
-
-    @AfterEach
-    public void cleanDatabase() {
-        consistencyHelper.cleanup();
-    }
 
     @Test
     void givenEmptyDatabase_whenProcessedTagTopTracksResponse_newRecordsAreCreated() throws Exception {
@@ -268,8 +259,8 @@ class LastfmTagTopTracksResponseProcessorTest extends JpaOnlyTest {
     }
 
     private TestCase testCaseFromResponse(String responseString) {
-        LastfmTag scopeEntity = consistencyHelper.createAndSaveTag(LastfmApiCallType.TAG_TOP_ARTISTS);
-        LastfmApiResponse sourceApiResponse = consistencyHelper.createDummyApiResponse(
+        LastfmTag scopeEntity = EntityCreationHelper.createTag(LastfmApiCallType.TAG_TOP_ARTISTS);
+        LastfmApiResponse sourceApiResponse = EntityCreationHelper.createApiResponse(
             responseString, LastfmApiCallType.TAG_TOP_TRACKS, scopeEntity);
         try {
             ObjectMapper objectMapper = new ObjectMapper();

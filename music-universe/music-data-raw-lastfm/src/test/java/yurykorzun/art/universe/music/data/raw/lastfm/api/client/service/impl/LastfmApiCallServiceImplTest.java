@@ -1,15 +1,21 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.impl;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiCallCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmApiCallRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallPrioritizer;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiClient;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiResponseService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.FullContextTest;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -19,13 +25,39 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-class LastfmApiCallServiceImplTest extends FullContextTest {
+@ExtendWith(MockitoExtension.class)
+class LastfmApiCallServiceImplTest {
 
-    @MockitoBean
+    @Mock
     private LastfmApiCallRepository apiCallRepository;
+    @Mock
+    private LastfmApiResponseService apiResponseService;
+    @Mock
+    private LastfmApiCallPrioritizer apiCallPrioritizer;
+    @Mock
+    private LastfmApiClient apiClient;
 
-    @Autowired
     private LastfmApiCallServiceImpl service;
+
+    @BeforeEach
+    void setUp() {
+        // first create service without self-proxy
+        LastfmApiCallServiceImpl rawService =
+            new LastfmApiCallServiceImpl(
+                apiCallRepository,
+                apiResponseService,
+                apiCallPrioritizer,
+                apiClient,
+                null,   // self
+                5.0 // limiter constant
+            );
+
+        // spy, for self-injection to refer to the spied object
+        service = Mockito.spy(rawService);
+
+        // inject self
+        ReflectionTestUtils.setField(service, "self", service);
+    }
 
     private static final Instant dueDttm = Instant.now().plus(Duration.ofDays(1));
     private Supplier<LastfmApiCallCreateRequest> validCreateRequestSupplier() {

@@ -54,9 +54,9 @@ public class LastfmAttributeHistoryServiceImplTest extends JpaOnlyTest {
     @Test
     void givenEmptuDb_whenUpsertedAttrValue_thenRecordIsSaved() {
         LastfmAttributeHistoryRecord candidate = initAttrValueBuilder(
-                consistencyHelper.createDummyEntity(),
-                consistencyHelper.createDummyEntity(),
-                consistencyHelper.createDummyApiCall())
+                consistencyHelper.createAndSaveDummyEntity(),
+                consistencyHelper.createAndSaveDummyEntity(),
+                consistencyHelper.createAndSaveApiCall())
             .attribute(SCD2_ATTRIBUTE)
             .intValue(42)
             .build();
@@ -69,9 +69,9 @@ public class LastfmAttributeHistoryServiceImplTest extends JpaOnlyTest {
     @Test
     void givenSCD2AttrValue_whenUpsertedTwice_thenNotDuplicated() {
         LastfmAttributeHistoryRecord candidate = initAttrValueBuilder(
-                consistencyHelper.createDummyEntity(),
-                consistencyHelper.createDummyEntity(),
-                consistencyHelper.createDummyApiCall())
+                consistencyHelper.createAndSaveDummyEntity(),
+                consistencyHelper.createAndSaveDummyEntity(),
+                consistencyHelper.createAndSaveApiCall())
             .attribute(SCD2_ATTRIBUTE)
             .intValue(42)
             .build();
@@ -83,9 +83,9 @@ public class LastfmAttributeHistoryServiceImplTest extends JpaOnlyTest {
 
     @Test
     void givenSnapshotAttrValue_whenUpsertedWithNewValueButSameSnapshotId_thenNotDuplicated() {
-        BaseLastfmEntity entity = consistencyHelper.createDummyEntity();
-        BaseLastfmEntity scopeEntity = consistencyHelper.createDummyEntity();
-        LastfmApiCall apiCall = consistencyHelper.createDummyApiCall();
+        BaseLastfmEntity entity = consistencyHelper.createAndSaveDummyEntity();
+        BaseLastfmEntity scopeEntity = consistencyHelper.createAndSaveDummyEntity();
+        LastfmApiCall apiCall = consistencyHelper.createAndSaveApiCall();
         LastfmAttributeHistoryRecord candidate = initAttrValueBuilder(entity, scopeEntity, apiCall)
             .attribute(SNAPSHOT_ATTRIBUTE)
             .intValue(42)
@@ -104,15 +104,15 @@ public class LastfmAttributeHistoryServiceImplTest extends JpaOnlyTest {
 
     @Test
     void givenSnapshotAttrValue_whenUpsertedTwiceWithTheDifferentSnapshotId_thenExpireOldAndSaveNew() {
-        BaseLastfmEntity entity = consistencyHelper.createDummyEntity();
-        BaseLastfmEntity scopeEntity = consistencyHelper.createDummyEntity();
-        LastfmAttributeHistoryRecord candidate = initAttrValueBuilder(entity, scopeEntity, consistencyHelper.createDummyApiCall())
+        BaseLastfmEntity entity = consistencyHelper.createAndSaveDummyEntity();
+        BaseLastfmEntity scopeEntity = consistencyHelper.createAndSaveDummyEntity();
+        LastfmAttributeHistoryRecord candidate = initAttrValueBuilder(entity, scopeEntity, consistencyHelper.createAndSaveApiCall())
             .attribute(SNAPSHOT_ATTRIBUTE)
             .intValue(42)
             .build();
         service.upsertCandidateValue(candidate);
 
-        LastfmAttributeHistoryRecord newValueForSameSnapshot = initAttrValueBuilder(entity, scopeEntity, consistencyHelper.createDummyApiCall())
+        LastfmAttributeHistoryRecord newValueForSameSnapshot = initAttrValueBuilder(entity, scopeEntity, consistencyHelper.createAndSaveApiCall())
             .attribute(candidate.getAttribute())
             .intValue(candidate.getIntValue())
             .validFrom(candidate.getValidFrom().plusDays(1))
@@ -133,14 +133,14 @@ public class LastfmAttributeHistoryServiceImplTest extends JpaOnlyTest {
 
     @Test
     void givenSCD2AttrValue_whenUpsertedNewValue_thenExpireOldAndSaveNew() {
-        BaseLastfmEntity entity = consistencyHelper.createDummyEntity();
-        BaseLastfmEntity scopeEntity = consistencyHelper.createDummyEntity();
-        LastfmAttributeHistoryRecord candidate = initAttrValueBuilder(entity, scopeEntity, consistencyHelper.createDummyApiCall())
+        BaseLastfmEntity entity = consistencyHelper.createAndSaveDummyEntity();
+        BaseLastfmEntity scopeEntity = consistencyHelper.createAndSaveDummyEntity();
+        LastfmAttributeHistoryRecord candidate = initAttrValueBuilder(entity, scopeEntity, consistencyHelper.createAndSaveApiCall())
             .attribute(SCD2_ATTRIBUTE)
             .intValue(42)
             .build();
         LastfmAttributeHistoryRecord initial = service.upsertCandidateValue(candidate);
-        LastfmAttributeHistoryRecord candidateUpdated = initAttrValueBuilder(entity, scopeEntity, consistencyHelper.createDummyApiCall())
+        LastfmAttributeHistoryRecord candidateUpdated = initAttrValueBuilder(entity, scopeEntity, consistencyHelper.createAndSaveApiCall())
             .attribute(candidate.getAttribute())
             .intValue(111)
             .validFrom(candidate.getValidFrom().plusDays(1))
@@ -162,16 +162,16 @@ public class LastfmAttributeHistoryServiceImplTest extends JpaOnlyTest {
     @Test
     void givenEmptyTable_whenUpsertCandidateValues_thenAllCandidatesAreProcessed() {
         LastfmAttributeHistoryRecord candidate1 = initAttrValueBuilder(
-                consistencyHelper.createDummyEntity(),
-                consistencyHelper.createDummyEntity(),
-                consistencyHelper.createDummyApiCall())
+                consistencyHelper.createAndSaveDummyEntity(),
+                consistencyHelper.createAndSaveDummyEntity(),
+                consistencyHelper.createAndSaveApiCall())
             .attribute(SCD2_ATTRIBUTE)
             .intValue(42)
             .build();
         LastfmAttributeHistoryRecord candidate2 = initAttrValueBuilder(
-                consistencyHelper.createDummyEntity(),
-                consistencyHelper.createDummyEntity(),
-                consistencyHelper.createDummyApiCall())
+                consistencyHelper.createAndSaveDummyEntity(),
+                consistencyHelper.createAndSaveDummyEntity(),
+                consistencyHelper.createAndSaveApiCall())
             .attribute(SNAPSHOT_ATTRIBUTE)
             .stringValue("http://example.org")
             .build();

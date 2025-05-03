@@ -112,11 +112,11 @@ class LastfmArtistGetSimilarResponseProcessorTest extends JpaOnlyTest {
             throw new RuntimeException(e);
         }
 
-        LastfmArtist artist = consistencyHelper.createArtist(
+        LastfmArtist artist = consistencyHelper.createAndSaveArtist(
             builder -> builder.name("test artist")
         );
 
-        LastfmApiResponse sourceApiResponse = consistencyHelper.createDummyApiResponse(
+        LastfmApiResponse sourceApiResponse = consistencyHelper.createAndSaveApiResponse(
             responseString, LastfmApiCallType.ARTIST_GET_SIMILAR, artist);
 
         LastfmArtistGetSimilarArtistFactory entityFactory = new LastfmArtistGetSimilarArtistFactory();

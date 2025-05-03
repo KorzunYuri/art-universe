@@ -7,6 +7,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.entity.LastfmAlbum;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.repository.LastfmAlbumRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.utils.AssertionUtils;
 
@@ -29,7 +30,7 @@ class LastfmAlbumServiceImplTest extends JpaOnlyTest {
 
     private List<LastfmAlbum> buildAlbums(int albumsNumber) {
         return IntStream.range(0, albumsNumber)
-            .mapToObj(i -> consistencyHelper.createAlbum(
+            .mapToObj(i -> EntityCreationHelper.createAlbum(
                 builder -> builder.url(String.format("url_%d", i))))
             .toList();
     }
@@ -61,7 +62,7 @@ class LastfmAlbumServiceImplTest extends JpaOnlyTest {
         List<LastfmAlbum> albumsToSave = buildAlbums(2);
 
         // when
-        List<LastfmAlbum> result = albumService.saveAlbums(albumsToSave);
+        albumService.saveAlbums(albumsToSave);
 
         // then
         AssertionUtils.verifyAndAssertInvocations(

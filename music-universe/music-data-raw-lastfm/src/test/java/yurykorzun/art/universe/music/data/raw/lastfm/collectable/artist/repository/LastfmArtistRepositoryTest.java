@@ -26,7 +26,7 @@ class LastfmArtistRepositoryTest extends JpaOnlyTest {
         final String mbid = "cc197bad-dc9c-440d-a5b5-d52ba2e14234";
         final boolean isStreamable = true;
 
-        LastfmApiCall apiCall = consistencyHelper.createDummyApiCall();
+        LastfmApiCall apiCall = consistencyHelper.createAndSaveApiCall();
         LastfmArtist artist = LastfmArtist.builder()
                 .name(name)
                 .url(url)
@@ -44,8 +44,8 @@ class LastfmArtistRepositoryTest extends JpaOnlyTest {
 
     @Test
     void testArtistSaveAll() {
-        LastfmArtist artist1 = consistencyHelper.createArtist(builder -> builder.name("Queen"));
-        LastfmArtist artist2 = consistencyHelper.createArtist(builder -> builder.name("Deep purple"));
+        LastfmArtist artist1 = consistencyHelper.createAndSaveArtist(builder -> builder.name("Queen"));
+        LastfmArtist artist2 = consistencyHelper.createAndSaveArtist(builder -> builder.name("Deep purple"));
 
         List<LastfmArtist> firstSaveResult = artistRepository.saveAll(List.of(artist1, artist2));
         assertEquals(2, artistRepository.findAll().size());
@@ -53,7 +53,7 @@ class LastfmArtistRepositoryTest extends JpaOnlyTest {
                 .filter(a -> a.getName().equals(artist1.getName()))
                 .findFirst().get();
 
-        LastfmArtist artist3 = consistencyHelper.createArtist(builder -> builder.name("Metallica"));
+        LastfmArtist artist3 = consistencyHelper.createAndSaveArtist(builder -> builder.name("Metallica"));
 
         List<LastfmArtist> secondSaveResult = artistRepository.saveAll(List.of(artist1, artist3));
         assertEquals(3, artistRepository.findAll().size());

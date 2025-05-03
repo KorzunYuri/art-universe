@@ -23,6 +23,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.service.LastfmTagService;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
 
 import java.util.List;
@@ -193,13 +194,13 @@ class LastfmArtistGetInfoResponseProcessorTest extends JpaOnlyTest {
             throw new RuntimeException(e);
         }
 
-        LastfmArtist expectedArtist = consistencyHelper.createAndSaveArtist(
+        LastfmArtist expectedArtist = EntityCreationHelper.createArtist(
             builder -> builder
                 .name(dtoRoot.getArtist().getName()) // for processor to find the record
                 .approvalStatus(isApproved ? ApprovalStatus.APPROVED : ApprovalStatus.PENDING) // affect processor's logic
         );
 
-        LastfmApiResponse sourceApiResponse = consistencyHelper.createDummyApiResponse(
+        LastfmApiResponse sourceApiResponse = EntityCreationHelper.createApiResponse(
             responseString, LastfmApiCallType.ARTIST_GET_INFO, expectedArtist);
 
         LastfmTagEntityFactory<ArtistGetInfoArtistTagDto> tagFactory = new LastfmTagEntityFactory<>();
