@@ -12,8 +12,8 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiResponseProcessor;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityFactory;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.DefaultEntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandler;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandlerFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.common.dto.TagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
@@ -64,33 +64,32 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
         this.tagFactory = tagFactory;
     }
 
-    private static final List<EntityAttributeHandler<LastfmArtist, ?, ArtistGetInfoArtistDto>> artistAttrHandlers = List.of(
-        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.MBID,  false,
-            LastfmArtist::getMbid, LastfmArtist::setMbid, ArtistGetInfoArtistDto::getMbid),
-        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.URL, false,
-            LastfmArtist::getUrl, LastfmArtist::setUrl, ArtistGetInfoArtistDto::getUrl),
-        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.IS_STREAMABLE,  false,
-            LastfmArtist::getIsStreamable, LastfmArtist::setIsStreamable,
-            (dto) -> 1 == dto.getStreamable()),
-        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.IS_ON_TOUR,  false,
-            LastfmArtist::getIsOnTour, LastfmArtist::setIsOnTour,
-            (dto) -> 1 == dto.getOnTour()),
-        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.LISTENERS_COUNT, false,
-            LastfmArtist::getListenersCount, LastfmArtist::setListenersCount,
-            (dto) -> dto.getStats().getListeners()),
-        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.PLAY_COUNT, false,
-            LastfmArtist::getPlayCount, LastfmArtist::setPlayCount,
-            (dto) -> dto.getStats().getPlayCount())
-    );
+    private static final List<EntityAttributeHandler<LastfmArtist, ?, ArtistGetInfoArtistDto>> artistAttrHandlers;
+    static {
+        EntityAttributeHandlerFactory<LastfmArtist, ArtistGetInfoArtistDto> factory =
+            new EntityAttributeHandlerFactory<>(LastfmArtist.class, ArtistGetInfoArtistDto.class);
+        artistAttrHandlers = List.of(
+            factory.createHandler(LastfmAttribute.MBID, false, "mbid"),
+            factory.createHandler(LastfmAttribute.URL, false, "url"),
+            factory.createHandler(LastfmAttribute.IS_STREAMABLE, false, "isStreamable",
+                (dto) -> 1 == dto.getStreamable()),
+            factory.createHandler(LastfmAttribute.IS_ON_TOUR, false, "isOnTour",
+                (dto) -> 1 == dto.getOnTour()),
+            factory.createHandler(LastfmAttribute.LISTENERS_COUNT, false, "listenersCount",
+                (dto) -> dto.getStats().getListeners()),
+            factory.createHandler(LastfmAttribute.PLAY_COUNT, false, "playCount",
+                (dto) -> dto.getStats().getPlayCount())
+        );
+    }
 
     private static final List<EntityAttributeHandler<LastfmArtist, ?, ArtistGetInfoSimilarArtistDto>> similarArtistAttrHandlers = List.of(
-        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.URL, false,
-            LastfmArtist::getUrl, LastfmArtist::setUrl, ArtistDto::getUrl)
+        new EntityAttributeHandlerFactory<>(LastfmArtist.class, ArtistGetInfoSimilarArtistDto.class)
+            .createHandler(LastfmAttribute.URL, false, "url")
     );
 
     private static final List<EntityAttributeHandler<LastfmTag, ?, ArtistGetInfoArtistTagDto>> tagAttrHandlers = List.of(
-        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.URL, false,
-            LastfmTag::getUrl, LastfmTag::setUrl, ArtistGetInfoArtistTagDto::getUrl)
+        new EntityAttributeHandlerFactory<>(LastfmTag.class, ArtistGetInfoArtistTagDto.class)
+            .createHandler(LastfmAttribute.URL, false, "url")
     );
 
     @Override

@@ -14,6 +14,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.DefaultEntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandler;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandlerFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.common.dto.TagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.dto.TagTopTagsTagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.dto.TagTopTagsDtoRoot;
@@ -32,14 +33,15 @@ public class LastfmTagTopTagResponseProcessor extends LastfmApiResponseProcessor
     private final LastfmApiDtoProcessingService dtoProcessingService;
     private final EntityFactory<LastfmTag, TagTopTagsTagDto> tagFactory;
 
-    private static final List<EntityAttributeHandler<LastfmTag, ?, TagTopTagsTagDto>> attrHandlers = List.of(
-        DefaultEntityAttributeHandler.forExternalAttribute(LastfmAttribute.RANK,  false,
-            TagTopTagsTagDto::getRank),
-        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.RELATIONS_COUNT,  false,
-            LastfmTag::getUsageCount, LastfmTag::setUsageCount, TagTopTagsTagDto::getCount),
-        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.REACH,  false,
-            LastfmTag::getUsageUsersCount, LastfmTag::setUsageUsersCount, TagTopTagsTagDto::getReach)
-    );
+    private static final List<EntityAttributeHandler<LastfmTag, ?, TagTopTagsTagDto>> attrHandlers;
+    static {
+        EntityAttributeHandlerFactory<LastfmTag, TagTopTagsTagDto> factory = new EntityAttributeHandlerFactory<>(LastfmTag.class, TagTopTagsTagDto.class);
+        attrHandlers = List.of(
+            factory.createHandler(LastfmAttribute.RELATIONS_COUNT,  false, "usageCount", "count"),
+            factory.createHandler(LastfmAttribute.REACH,  false, "usageUsersCount", "reach"),
+            DefaultEntityAttributeHandler.forExternalAttribute(LastfmAttribute.RANK,  false, TagTopTagsTagDto::getRank)
+        );
+    }
 
     protected LastfmTagTopTagResponseProcessor(
         LastfmTagService tagService,

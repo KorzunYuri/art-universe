@@ -14,6 +14,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.DefaultEntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandler;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandlerFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
@@ -34,17 +35,18 @@ public class LastfmArtistGetSimilarResponseProcessor extends LastfmApiResponsePr
     @Value("${lastfm.client.methods.artist.getSimilar.artistMatchThreshold}")
     private float artistMatchThreshold;
 
-    private static final List<EntityAttributeHandler<LastfmArtist, ?, ArtistGetSimilarArtistDto>> artistAttrHandlers = List.of(
-        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.MBID,  false,
-            LastfmArtist::getMbid, LastfmArtist::setMbid, ArtistGetSimilarArtistDto::getMbid),
-        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.URL, false,
-            LastfmArtist::getUrl, LastfmArtist::setUrl, ArtistGetSimilarArtistDto::getUrl),
-        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.IS_STREAMABLE,  false,
-            LastfmArtist::getIsStreamable, LastfmArtist::setIsStreamable,
-            (dto) -> 1 == dto.getStreamable()),
-        DefaultEntityAttributeHandler.forExternalAttribute(LastfmAttribute.MATCH_COEFF, true,
-            (dto) -> (int) (dto.getMatchCoeff() * 100))
-    );
+    private static final List<EntityAttributeHandler<LastfmArtist, ?, ArtistGetSimilarArtistDto>> artistAttrHandlers;
+    static {
+        EntityAttributeHandlerFactory<LastfmArtist, ArtistGetSimilarArtistDto> factory = 
+            new EntityAttributeHandlerFactory<>(LastfmArtist.class, ArtistGetSimilarArtistDto.class);
+        artistAttrHandlers = List.of(
+            factory.createHandler(LastfmAttribute.MBID,  false, "mbid"),
+            factory.createHandler(LastfmAttribute.URL, false, "url"),
+            factory.createHandler(LastfmAttribute.IS_STREAMABLE,  false, "isStreamable", (dto) -> 1 == dto.getStreamable()),
+            DefaultEntityAttributeHandler.forExternalAttribute(LastfmAttribute.MATCH_COEFF, true,
+                (dto) -> (int) (dto.getMatchCoeff() * 100))
+        );
+    }
 
     protected LastfmArtistGetSimilarResponseProcessor(
         LastfmArtistService artistService,

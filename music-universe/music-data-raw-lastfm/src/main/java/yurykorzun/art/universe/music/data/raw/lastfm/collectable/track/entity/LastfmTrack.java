@@ -35,7 +35,7 @@ public class LastfmTrack extends BaseLastfmEntity {
     private Integer duration;
 
     @Column(name = "is_streamable")
-    private Boolean streamable;
+    private Boolean isStreamable;
 
     @Column(name = "listeners_count")
     private Integer listenersCount;
@@ -58,13 +58,13 @@ public class LastfmTrack extends BaseLastfmEntity {
         if (!(o instanceof LastfmTrack that)) return false;
         if (!super.equals(o)) return false;
         return Objects.equals(duration,     that.duration)
-            && Objects.equals(streamable,   that.streamable)
+            && Objects.equals(isStreamable,   that.isStreamable)
             && Objects.equals(mbid,         that.mbid)
             && Objects.equals(url,          that.url);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), duration, streamable, mbid, url);
+        return Objects.hash(super.hashCode(), duration, isStreamable, mbid, url);
     }
 }
