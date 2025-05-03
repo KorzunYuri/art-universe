@@ -7,11 +7,11 @@ import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.processing.LastfmArtistEntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.dto.ArtistDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingResult;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiResponseProcessor;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.DefaultEntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.TagTopArtistsArtistDto;
@@ -29,18 +29,18 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
 
     private final LastfmArtistService artistService;
     private final LastfmApiDtoProcessingService dtoProcessingService;
-    private final LastfmArtistEntityFactory<TagTopArtistsArtistDto> artistFactory;
+    private final EntityFactory<LastfmArtist, TagTopArtistsArtistDto> artistFactory;
 
     protected LastfmTagTopArtistsResponseProcessor(
         LastfmArtistService artistService,
-        LastfmApiDtoProcessingService dtoProcessingService
+        LastfmApiDtoProcessingService dtoProcessingService,
+        EntityFactory<LastfmArtist, TagTopArtistsArtistDto> artistFactory
     ) {
         super(TagTopArtistsDtoRoot.class);
 
         this.artistService = artistService;
         this.dtoProcessingService = dtoProcessingService;
-
-        this.artistFactory = new LastfmArtistEntityFactory<>();
+        this.artistFactory = artistFactory;
     }
 
     private static final List<EntityAttributeHandler<LastfmArtist, ?, TagTopArtistsArtistDto>> attrHandlers = List.of(

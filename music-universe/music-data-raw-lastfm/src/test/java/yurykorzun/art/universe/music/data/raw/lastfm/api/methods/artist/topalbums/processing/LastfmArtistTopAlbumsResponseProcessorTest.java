@@ -30,6 +30,7 @@ import static yurykorzun.art.universe.music.data.raw.lastfm.common.utils.Asserti
 
 @Import({
     LastfmArtistTopAlbumsResponseProcessor.class,
+    LastfmArtistTopAlbumsAlbumFactory.class,
     LastfmApiDtoProcessingService.class,
 })
 class LastfmArtistTopAlbumsResponseProcessorTest extends JpaOnlyTest {

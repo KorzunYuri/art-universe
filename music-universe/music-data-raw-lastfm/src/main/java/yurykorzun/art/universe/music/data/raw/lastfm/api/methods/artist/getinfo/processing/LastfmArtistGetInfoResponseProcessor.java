@@ -3,15 +3,11 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getinfo
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallType;
-import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.processing.LastfmArtistEntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.dto.ArtistDto;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getinfo.dto.ArtistGetInfoArtistDto;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getinfo.dto.ArtistGetInfoArtistTagDto;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getinfo.dto.ArtistGetInfoDtoRoot;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getinfo.dto.*;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingResult;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiResponseProcessor;
@@ -45,14 +41,17 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
     private final LastfmEntityRelationService entityRelationService;
 
     private final EntityFactory<LastfmArtist, ArtistGetInfoArtistDto> artistFactory;
-    private final EntityFactory<LastfmArtist, ArtistDto> similarArtistFactory;
+    private final EntityFactory<LastfmArtist, ArtistGetInfoSimilarArtistDto> similarArtistFactory;
     private final EntityFactory<LastfmTag, ArtistGetInfoArtistTagDto> tagFactory;
 
     protected LastfmArtistGetInfoResponseProcessor(
         LastfmArtistService artistService,
         LastfmTagService tagService,
         LastfmApiDtoProcessingService dtoProcessingService,
-        LastfmEntityRelationService entityRelationService
+        LastfmEntityRelationService entityRelationService,
+        EntityFactory<LastfmArtist, ArtistGetInfoArtistDto> artistFactory,
+        EntityFactory<LastfmArtist, ArtistGetInfoSimilarArtistDto> similarArtistFactory,
+        EntityFactory<LastfmTag, ArtistGetInfoArtistTagDto> tagFactory
     ) {
         super(ArtistGetInfoDtoRoot.class);
 
@@ -60,10 +59,9 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
         this.tagService = tagService;
         this.dtoProcessingService = dtoProcessingService;
         this.entityRelationService = entityRelationService;
-
-        this.artistFactory = new LastfmArtistGetInfoArtistFactory();
-        this.similarArtistFactory = new LastfmArtistEntityFactory<>();
-        this.tagFactory = new LastfmArtistGetInfoTagFactory();
+        this.artistFactory = artistFactory;
+        this.similarArtistFactory = similarArtistFactory;
+        this.tagFactory = tagFactory;
     }
 
     private static final List<EntityAttributeHandler<LastfmArtist, ?, ArtistGetInfoArtistDto>> artistAttrHandlers = List.of(
@@ -85,7 +83,7 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
             (dto) -> dto.getStats().getPlayCount())
     );
 
-    private static final List<EntityAttributeHandler<LastfmArtist, ?, ArtistDto>> similarArtistAttrHandlers = List.of(
+    private static final List<EntityAttributeHandler<LastfmArtist, ?, ArtistGetInfoSimilarArtistDto>> similarArtistAttrHandlers = List.of(
         DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.URL, false,
             LastfmArtist::getUrl, LastfmArtist::setUrl, ArtistDto::getUrl)
     );
@@ -140,7 +138,7 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
 
     private Map<String, LastfmArtist> updateSimilarArtists(ArtistGetInfoDtoRoot dtoRoot, LastfmApiResponse sourceApiResponse) {
 
-        List<ArtistDto> artistDtos = dtoRoot.getArtist().getSimilarArtistsObject().getArtists();
+        List<ArtistGetInfoSimilarArtistDto> artistDtos = dtoRoot.getArtist().getSimilarArtistsObject().getArtists();
         List<String> artistNames = artistDtos.stream().map(ArtistDto::getName).toList();
         List<LastfmArtist> existingArtists = artistService.findAllByNames(artistNames);
 

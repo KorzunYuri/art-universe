@@ -11,9 +11,9 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.Page
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingResult;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiResponseProcessor;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.DefaultEntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandler;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.common.LastfmTagEntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.common.dto.TagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.dto.TagTopTagsTagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.dto.TagTopTagsDtoRoot;
@@ -26,11 +26,11 @@ import java.util.List;
 
 @Component
 @Slf4j
-// TODO rename
 public class LastfmTagTopTagResponseProcessor extends LastfmApiResponseProcessor<TagTopTagsDtoRoot> {
 
     private final LastfmTagService tagService;
     private final LastfmApiDtoProcessingService dtoProcessingService;
+    private final EntityFactory<LastfmTag, TagTopTagsTagDto> tagFactory;
 
     private static final List<EntityAttributeHandler<LastfmTag, ?, TagTopTagsTagDto>> attrHandlers = List.of(
         DefaultEntityAttributeHandler.forExternalAttribute(LastfmAttribute.RANK,  false,
@@ -40,19 +40,17 @@ public class LastfmTagTopTagResponseProcessor extends LastfmApiResponseProcessor
         DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.REACH,  false,
             LastfmTag::getUsageUsersCount, LastfmTag::setUsageUsersCount, TagTopTagsTagDto::getReach)
     );
-    private final TagTopTagsTagFactory tagFactory;
-
 
     protected LastfmTagTopTagResponseProcessor(
         LastfmTagService tagService,
-        LastfmApiDtoProcessingService dtoProcessingService)
+        LastfmApiDtoProcessingService dtoProcessingService,
+        EntityFactory<LastfmTag, TagTopTagsTagDto> tagFactory)
     {
         super(TagTopTagsDtoRoot.class);
 
         this.tagService = tagService;
         this.dtoProcessingService = dtoProcessingService;
-
-        this.tagFactory = new TagTopTagsTagFactory();
+        this.tagFactory = tagFactory;
     }
 
     @Override
@@ -85,13 +83,4 @@ public class LastfmTagTopTagResponseProcessor extends LastfmApiResponseProcessor
 
     }
 
-    private static class TagTopTagsTagFactory extends LastfmTagEntityFactory<TagTopTagsTagDto> {
-
-        @Override
-        protected LastfmTag.LastfmTagBuilder<?, ?> setExtensionFields(LastfmTag.LastfmTagBuilder<?, ?> builder, TagTopTagsTagDto dto) {
-            return builder
-                .usageCount(dto.getCount())
-                .usageUsersCount(dto.getReach());
-        }
-    }
 }

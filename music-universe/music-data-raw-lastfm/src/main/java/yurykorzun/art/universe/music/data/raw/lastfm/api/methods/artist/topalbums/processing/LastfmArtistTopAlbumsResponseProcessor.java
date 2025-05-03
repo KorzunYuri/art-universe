@@ -42,13 +42,16 @@ public class LastfmArtistTopAlbumsResponseProcessor extends LastfmApiResponsePro
             LastfmAlbum::getPlayCount, LastfmAlbum::setPlayCount, ArtistTopAlbumsAlbumDto::getPlayCount)
     );
 
-    protected LastfmArtistTopAlbumsResponseProcessor(LastfmAlbumService albumService, LastfmApiDtoProcessingService dtoProcessingService) {
+    protected LastfmArtistTopAlbumsResponseProcessor(
+        LastfmAlbumService albumService,
+        LastfmApiDtoProcessingService dtoProcessingService,
+        EntityFactory<LastfmAlbum, ArtistTopAlbumsAlbumDto> albumEntityFactory
+    ) {
         super(ArtistTopAlbumsDtoRoot.class);
+
         this.albumService = albumService;
-
         this.dtoProcessingService = dtoProcessingService;
-
-        this.albumEntityFactory = new LastfmArtistTopAlbumsAlbumFactory();
+        this.albumEntityFactory = albumEntityFactory;
     }
 
     @Override

@@ -54,7 +54,8 @@ public class LastfmArtistTopTagsResponseProcessor extends LastfmApiResponseProce
         LastfmTagService tagService,
         LastfmArtistService artistService,
         LastfmApiDtoProcessingService dtoProcessingService,
-        LastfmEntityRelationService entityRelationService
+        LastfmEntityRelationService entityRelationService,
+        EntityFactory<LastfmTag, ArtistTopTagsTagDto> tagEntityFactory
     ) {
         super(ArtistTopTagsDtoRoot.class);
 
@@ -62,8 +63,7 @@ public class LastfmArtistTopTagsResponseProcessor extends LastfmApiResponseProce
         this.artistService = artistService;
         this.dtoProcessingService = dtoProcessingService;
         this.entityRelationService = entityRelationService;
-
-        this.tagEntityFactory = new LastfmArtistTopTagsTagFactory();
+        this.tagEntityFactory = tagEntityFactory;
     }
 
     @Override

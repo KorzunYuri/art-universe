@@ -3,15 +3,17 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.LastfmAttributeHistoryService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityRelationService;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.FullContextTest;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
 
 import java.util.List;
 
@@ -20,7 +22,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static yurykorzun.art.universe.music.data.raw.lastfm.common.utils.AssertionUtils.*;
 
-class LastfmTagTopArtistsResponseProcessorTest extends FullContextTest {
+@Import({
+    LastfmTagTopArtistsResponseProcessor.class,
+    LastfmTagTopArtistsArtistFactory.class,
+    LastfmApiDtoProcessingService.class,
+})
+class LastfmTagTopArtistsResponseProcessorTest extends JpaOnlyTest {
 
     @Autowired
     private DbConsistencyHelper consistencyHelper;

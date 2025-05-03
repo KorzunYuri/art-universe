@@ -34,14 +34,14 @@ public class LastfmArtistTopTracksResponseProcessor extends LastfmApiResponsePro
 
     protected LastfmArtistTopTracksResponseProcessor(
         LastfmApiDtoProcessingService dtoProcessingService,
-        LastfmTrackService trackService
+        LastfmTrackService trackService,
+        EntityFactory<LastfmTrack, ArtistTopTracksTrackDto> trackEntityFactory
     ) {
         super(ArtistTopTracksDtoRoot.class);
         
         this.dtoProcessingService = dtoProcessingService;
         this.trackService = trackService;
-
-        this.trackEntityFactory = new LastfmArtistTopTracksTrackEntityFactory();
+        this.trackEntityFactory = trackEntityFactory;
     }
 
     private static final List<EntityAttributeHandler<LastfmTrack, ?, ArtistTopTracksTrackDto>> trackAttrHandlers = List.of(

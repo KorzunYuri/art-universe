@@ -37,7 +37,7 @@ public class ArtistGetInfoDtoMappingTest {
         assertEquals(10828364, stats.getPlayCount());
 
         // check similar artists
-        List<ArtistDto> similarArtists = artist.getSimilarArtistsObject().getArtists();
+        List<ArtistGetInfoSimilarArtistDto> similarArtists = artist.getSimilarArtistsObject().getArtists();
         assertNotNull(similarArtists);
         assertFalse(similarArtists.isEmpty());
         assertEquals(5, similarArtists.size());

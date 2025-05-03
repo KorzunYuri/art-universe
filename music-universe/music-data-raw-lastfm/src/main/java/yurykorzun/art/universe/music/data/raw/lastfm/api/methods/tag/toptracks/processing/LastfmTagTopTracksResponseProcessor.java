@@ -6,7 +6,6 @@ import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.processing.LastfmArtistEntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingResult;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiResponseProcessor;
@@ -37,10 +36,10 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
 
     private final LastfmArtistService artistService;
     private final LastfmTrackService trackService;
-    private final TagTopTracksTrackFactory trackFactory;
     private final LastfmEntityRelationService entityRelationService;
     private final LastfmApiDtoProcessingService dtoProcessingService;
 
+    private final EntityFactory<LastfmTrack, TagTopTracksTrackDto> trackFactory;
     private final EntityFactory<LastfmArtist, TagTopTracksTrackArtistDto> artistFactory;
 
     private final Set<TagTopTracksDtoRoot> rootsWithMissingAttrsLogged = new HashSet<>();
@@ -49,7 +48,9 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
         LastfmArtistService artistService,
         LastfmTrackService lastfmTrackService,
         LastfmEntityRelationService entityRelationService,
-        LastfmApiDtoProcessingService dtoProcessingService
+        LastfmApiDtoProcessingService dtoProcessingService,
+        EntityFactory<LastfmTrack, TagTopTracksTrackDto> trackFactory,
+        EntityFactory<LastfmArtist, TagTopTracksTrackArtistDto> artistFactory
     ) {
         super(TagTopTracksDtoRoot.class);
 
@@ -57,9 +58,8 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
         this.trackService = lastfmTrackService;
         this.entityRelationService = entityRelationService;
         this.dtoProcessingService = dtoProcessingService;
-
-        this.trackFactory = new TagTopTracksTrackFactory();
-        this.artistFactory = new LastfmArtistEntityFactory<>();
+        this.trackFactory = trackFactory;
+        this.artistFactory = artistFactory;
     }
 
     private static final List<EntityAttributeHandler<LastfmTrack, ?, TagTopTracksTrackDto>> trackAttrHandlers = List.of(
