@@ -5,6 +5,7 @@ import yurykorzun.art.universe.common.CodedRegistry;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getinfo.dto.ArtistGetInfoDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getsimilar.dto.ArtistGetSimilarDtoRoot;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.search.dto.ArtistSearchDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.topalbums.dto.ArtistTopAlbumsDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptags.dto.ArtistTopTagsDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptracks.dto.ArtistTopTracksDtoRoot;
@@ -81,7 +82,14 @@ public enum LastfmApiCallType implements ApiCallType, LastfmSpecific {
             Set.of(PARAM_NAME_ARTIST, PARAM_NAME_MBID, PARAM_NAME_AUTOCORRECT, PARAM_NAME_LIMIT),
             ArtistGetSimilarDtoRoot.class,
             LastfmArtist.class)
-    ;
+    ,   ARTIST_SEARCH(
+            9,
+            "artist.search",
+            Set.of(PARAM_NAME_API_KEY, PARAM_NAME_ARTIST),
+            Set.of(PARAM_NAME_LIMIT),
+            ArtistSearchDtoRoot.class,
+            null
+        );
 
     static {
         CodedRegistry.register(Arrays.asList(values()), ApiCallType.class);

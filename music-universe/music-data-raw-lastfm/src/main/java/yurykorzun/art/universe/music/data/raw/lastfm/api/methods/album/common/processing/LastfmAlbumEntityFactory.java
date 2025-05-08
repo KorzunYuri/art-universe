@@ -1,4 +1,4 @@
-package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.album.common;
+package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.album.common.processing;
 
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.album.common.dto.AlbumDto;
@@ -26,7 +26,6 @@ public class LastfmAlbumEntityFactory<D extends AlbumDto> implements EntityFacto
     protected LastfmAlbum.LastfmAlbumBuilder<?,?> setExtensionFields(LastfmAlbum.LastfmAlbumBuilder<?,?> builder, D dto) {
         return builder;
     }
-
 
     @Override
     public LastfmAlbum clone(LastfmAlbum entity) {

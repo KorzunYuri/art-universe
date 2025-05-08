@@ -7,13 +7,14 @@ import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.processing.LastfmArtistEntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.dto.ArtistDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingResult;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiResponseProcessor;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.DefaultEntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandler;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandlerFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.TagTopArtistsArtistDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.TagTopArtistsDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
@@ -29,31 +30,32 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
 
     private final LastfmArtistService artistService;
     private final LastfmApiDtoProcessingService dtoProcessingService;
-    private final LastfmArtistEntityFactory<TagTopArtistsArtistDto> artistFactory;
+    private final EntityFactory<LastfmArtist, TagTopArtistsArtistDto> artistFactory;
 
     protected LastfmTagTopArtistsResponseProcessor(
         LastfmArtistService artistService,
-        LastfmApiDtoProcessingService dtoProcessingService
+        LastfmApiDtoProcessingService dtoProcessingService,
+        EntityFactory<LastfmArtist, TagTopArtistsArtistDto> artistFactory
     ) {
         super(TagTopArtistsDtoRoot.class);
 
         this.artistService = artistService;
         this.dtoProcessingService = dtoProcessingService;
-
-        this.artistFactory = new LastfmArtistEntityFactory<>();
+        this.artistFactory = artistFactory;
     }
 
-    private static final List<EntityAttributeHandler<LastfmArtist, ?, TagTopArtistsArtistDto>> attrHandlers = List.of(
-        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.MBID,  false,
-            LastfmArtist::getMbid, LastfmArtist::setMbid, TagTopArtistsArtistDto::getMbid),
-        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.URL, false,
-            LastfmArtist::getUrl, LastfmArtist::setUrl, TagTopArtistsArtistDto::getUrl),
-        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.IS_STREAMABLE,  false,
-            LastfmArtist::getIsStreamable, LastfmArtist::setIsStreamable,
-            (dto) -> 1 == dto.getStreamable()),
-        DefaultEntityAttributeHandler.forExternalAttribute(LastfmAttribute.RANK,  true,
-            (dto) -> dto.getRecordInfo().getRank())
-    );
+    private static final List<EntityAttributeHandler<LastfmArtist, ?, TagTopArtistsArtistDto>> attrHandlers;
+    static {
+        EntityAttributeHandlerFactory<LastfmArtist, TagTopArtistsArtistDto> factory = new EntityAttributeHandlerFactory<>(LastfmArtist.class, TagTopArtistsArtistDto.class);
+        attrHandlers = List.of(
+            factory.createHandler(LastfmAttribute.MBID, false, "mbid"),
+            factory.createHandler(LastfmAttribute.URL, false, "url"),
+            factory.createHandler(LastfmAttribute.IS_STREAMABLE, false, "isStreamable",
+                (dto) -> 1 == dto.getStreamable()),
+            DefaultEntityAttributeHandler.forExternalAttribute(LastfmAttribute.RANK, true,
+                (dto) -> dto.getRecordInfo().getRank())
+        );
+    }
 
     @Override
     public ApiCallType getApiCallType() {

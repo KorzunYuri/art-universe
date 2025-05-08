@@ -15,6 +15,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.DefaultEntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandler;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandlerFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
@@ -41,20 +42,24 @@ public class LastfmArtistTopTagsResponseProcessor extends LastfmApiResponseProce
     @Value("${lastfm.client.methods.artist.topTags.tagUsageCountThreshold:10}")
     private int tagUsageCountThreshold;
 
-    private static final List<EntityAttributeHandler<LastfmTag, ?, ArtistTopTagsTagDto>> tagAttrHandlers = List.of(
-        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.URL, false,
-            LastfmTag::getUrl, LastfmTag::setUrl, ArtistTopTagsTagDto::getUrl),
-        DefaultEntityAttributeHandler.forExternalAttribute(LastfmAttribute.REACH, true,
-            ArtistTopTagsTagDto::getUsageCount),
-        DefaultEntityAttributeHandler.forExternalAttribute(LastfmAttribute.RANK, true,
-            ArtistTopTagsTagDto::getRank)
-    );
+    private static final List<EntityAttributeHandler<LastfmTag, ?, ArtistTopTagsTagDto>> tagAttrHandlers;
+    static {
+        tagAttrHandlers = List.of(
+            new EntityAttributeHandlerFactory<>(LastfmTag.class, ArtistTopTagsTagDto.class)
+                .createHandler(LastfmAttribute.URL, false, "url"),
+            DefaultEntityAttributeHandler.forExternalAttribute(LastfmAttribute.REACH, true,
+                ArtistTopTagsTagDto::getUsageCount),
+            DefaultEntityAttributeHandler.forExternalAttribute(LastfmAttribute.RANK, true,
+                ArtistTopTagsTagDto::getRank)
+        );
+    }
 
     protected LastfmArtistTopTagsResponseProcessor(
         LastfmTagService tagService,
         LastfmArtistService artistService,
         LastfmApiDtoProcessingService dtoProcessingService,
-        LastfmEntityRelationService entityRelationService
+        LastfmEntityRelationService entityRelationService,
+        EntityFactory<LastfmTag, ArtistTopTagsTagDto> tagEntityFactory
     ) {
         super(ArtistTopTagsDtoRoot.class);
 
@@ -62,8 +67,7 @@ public class LastfmArtistTopTagsResponseProcessor extends LastfmApiResponseProce
         this.artistService = artistService;
         this.dtoProcessingService = dtoProcessingService;
         this.entityRelationService = entityRelationService;
-
-        this.tagEntityFactory = new LastfmArtistTopTagsTagFactory();
+        this.tagEntityFactory = tagEntityFactory;
     }
 
     @Override

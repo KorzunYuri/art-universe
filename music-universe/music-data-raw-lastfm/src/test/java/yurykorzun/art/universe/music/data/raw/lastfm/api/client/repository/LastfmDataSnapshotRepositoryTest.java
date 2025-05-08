@@ -64,7 +64,7 @@ class LastfmDataSnapshotRepositoryTest extends JpaOnlyTest {
         //  given
         final LocalDate dataDate = LocalDate.now();
         LastfmApiCallType apiCallType = LastfmApiCallType.TAG_TOP_ARTISTS;
-        BaseLastfmEntity entity = consistencyHelper.createDummyEntity();
+        BaseLastfmEntity entity = consistencyHelper.createAndSaveDummyEntity();
 
         LastfmDataSnapshot snapshot = new LastfmDataSnapshot(apiCallType, dataDate, entity);
 

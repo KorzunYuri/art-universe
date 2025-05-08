@@ -30,6 +30,7 @@ import static yurykorzun.art.universe.music.data.raw.lastfm.common.utils.Asserti
 
 @Import({
     LastfmArtistTopAlbumsResponseProcessor.class,
+    LastfmArtistTopAlbumsAlbumFactory.class,
     LastfmApiDtoProcessingService.class,
 })
 class LastfmArtistTopAlbumsResponseProcessorTest extends JpaOnlyTest {
@@ -119,11 +120,11 @@ class LastfmArtistTopAlbumsResponseProcessorTest extends JpaOnlyTest {
             throw new RuntimeException(e);
         }
 
-        LastfmArtist artist = consistencyHelper.createArtist(
+        LastfmArtist artist = consistencyHelper.createAndSaveArtist(
             builder -> builder.name("test artist")
         );
 
-        LastfmApiResponse sourceApiResponse = consistencyHelper.createDummyApiResponse(
+        LastfmApiResponse sourceApiResponse = consistencyHelper.createAndSaveApiResponse(
             responseString, LastfmApiCallType.ARTIST_TOP_ALBUMS, artist);
 
         LastfmArtistTopAlbumsAlbumFactory entityFactory = new LastfmArtistTopAlbumsAlbumFactory();

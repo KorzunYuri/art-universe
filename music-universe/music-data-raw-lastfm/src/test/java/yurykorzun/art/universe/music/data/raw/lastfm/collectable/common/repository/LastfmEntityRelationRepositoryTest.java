@@ -23,9 +23,9 @@ class LastfmEntityRelationRepositoryTest extends JpaOnlyTest {
     @Test
     void givenNewEntityRelation_whenPersistedTwice_thenNotDuplicated() {
         //  given new entity relation
-        BaseLastfmEntity scopeEntity = consistencyHelper.createDummyEntity();
-        BaseLastfmEntity entity = consistencyHelper.createDummyEntity();
-        LastfmApiCall sourceApiCall = consistencyHelper.createDummyApiCall();
+        BaseLastfmEntity scopeEntity = consistencyHelper.createAndSaveDummyEntity();
+        BaseLastfmEntity entity = consistencyHelper.createAndSaveDummyEntity();
+        LastfmApiCall sourceApiCall = consistencyHelper.createAndSaveApiCall();
         LastfmEntityRelation entityRelation = LastfmEntityRelation.builder()
                 .scopeEntityType(scopeEntity.getType())
                 .scopeEntityId(scopeEntity.getId())

@@ -3,14 +3,15 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.processing.LastfmArtistEntityFactory;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.dto.TagTopTracksDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.dto.TagTopTracksTrackArtistDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.dto.TagTopTracksTrackDto;
@@ -22,8 +23,8 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.service.LastfmTrackService;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.FullContextTest;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
 
 import java.util.List;
 import java.util.Objects;
@@ -32,10 +33,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static yurykorzun.art.universe.music.data.raw.lastfm.common.utils.AssertionUtils.*;
 
-class LastfmTagTopTracksResponseProcessorTest extends FullContextTest {
-    
-    @Autowired
-    private DbConsistencyHelper consistencyHelper;
+@Import({
+    LastfmTagTopTracksResponseProcessor.class,
+    LastfmTagTopTracksArtistFactory.class,
+    LastfmTagTopTracksTrackFactory.class,
+    LastfmApiDtoProcessingService.class,
+})
+class LastfmTagTopTracksResponseProcessorTest extends JpaOnlyTest {
     
     @Autowired
     private LastfmTagTopTracksResponseProcessor processor;
@@ -57,11 +61,6 @@ class LastfmTagTopTracksResponseProcessorTest extends FullContextTest {
     private static final int ARTIST_SCD2_ATTRS_NUMBER = 2;
     private static final int ARTIST_SNAPSHOT_ATTRS_NUMBER = 0;
     private static final int ARTIST_ATTRS_NUMBER = ARTIST_SCD2_ATTRS_NUMBER + ARTIST_SNAPSHOT_ATTRS_NUMBER;
-
-    @AfterEach
-    public void cleanDatabase() {
-        consistencyHelper.cleanup();
-    }
 
     @Test
     void givenEmptyDatabase_whenProcessedTagTopTracksResponse_newRecordsAreCreated() throws Exception {
@@ -260,14 +259,14 @@ class LastfmTagTopTracksResponseProcessorTest extends FullContextTest {
     }
 
     private TestCase testCaseFromResponse(String responseString) {
-        LastfmTag scopeEntity = consistencyHelper.createAndSaveTag(LastfmApiCallType.TAG_TOP_ARTISTS);
-        LastfmApiResponse sourceApiResponse = consistencyHelper.createDummyApiResponse(
+        LastfmTag scopeEntity = EntityCreationHelper.createTag(LastfmApiCallType.TAG_TOP_ARTISTS);
+        LastfmApiResponse sourceApiResponse = EntityCreationHelper.createApiResponse(
             responseString, LastfmApiCallType.TAG_TOP_TRACKS, scopeEntity);
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             TagTopTracksDtoRoot dtoRoot = objectMapper.readValue(responseString, TagTopTracksDtoRoot.class);
 
-            LastfmTrackEntityFactory<TagTopTracksTrackDto> trackFactory = new TagTopTracksTrackFactory();
+            LastfmTrackEntityFactory<TagTopTracksTrackDto> trackFactory = new LastfmTagTopTracksTrackFactory();
             List<LastfmTrack> expectedTracks = dtoRoot.getRootObject().getTracks().stream()
                     .map(track -> trackFactory.fromDto(track, sourceApiResponse))
                 .toList();

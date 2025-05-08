@@ -5,19 +5,22 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptags.dto.ArtistTopTagsDtoRoot;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.LastfmAttributeHistoryService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityRelationService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.service.LastfmTagService;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.FullContextTest;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
 
 import java.io.IOException;
 import java.util.List;
@@ -26,8 +29,12 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static yurykorzun.art.universe.music.data.raw.lastfm.common.utils.AssertionUtils.*;
 
-
-class LastfmArtistTopTagsResponseProcessorTest extends FullContextTest {
+@Import({
+    LastfmArtistTopTagsResponseProcessor.class,
+    LastfmArtistTopTagsTagFactory.class,
+    LastfmApiDtoProcessingService.class,
+})
+class LastfmArtistTopTagsResponseProcessorTest extends JpaOnlyTest {
 
     @Autowired
     private DbConsistencyHelper consistencyHelper;
@@ -38,6 +45,8 @@ class LastfmArtistTopTagsResponseProcessorTest extends FullContextTest {
     // injections for verifications
     @MockitoBean
     private LastfmTagService tagService;
+    @MockitoBean
+    private LastfmArtistService artistService;
     @MockitoBean
     private LastfmEntityRelationService entityRelationService;
     @MockitoBean
@@ -102,12 +111,12 @@ class LastfmArtistTopTagsResponseProcessorTest extends FullContextTest {
             throw new RuntimeException(e);
         }
 
-        LastfmArtist artist = consistencyHelper.createArtist(
+        LastfmArtist artist = consistencyHelper.createAndSaveArtist(
             builder -> builder
                 .name(dtoRoot.getTopTagsObject().getArtist().getName())
         );
 
-        LastfmApiResponse sourceApiResponse = consistencyHelper.createDummyApiResponse(
+        LastfmApiResponse sourceApiResponse = consistencyHelper.createAndSaveApiResponse(
             responseString, LastfmApiCallType.ARTIST_TOP_TAGS, artist);
 
         LastfmArtistTopTagsTagFactory tagFactory = new LastfmArtistTopTagsTagFactory();

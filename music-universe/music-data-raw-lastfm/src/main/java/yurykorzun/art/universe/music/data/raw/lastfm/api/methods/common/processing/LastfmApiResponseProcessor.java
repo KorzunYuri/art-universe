@@ -22,8 +22,8 @@ public abstract class LastfmApiResponseProcessor<T extends DtoRoot>
         LastfmApiResponseProcessorsRegistry.register(clazz, this);
     }
 
-    protected T parseResponse(LastfmApiResponse response) throws JsonProcessingException {
-        return objectMapper.readValue(response.getResponseBody(), clazz);
+    protected T parseResponse(LastfmApiResponse sourceApiResponse) throws JsonProcessingException {
+        return objectMapper.readValue(sourceApiResponse.getResponseBody(), clazz);
     }
 }
 

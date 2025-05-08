@@ -48,9 +48,9 @@ class LastfmEntityRelationServiceImplTest extends JpaOnlyTest {
     @Test
     void givenNewEntityRelation_whenPersistedTwice_thenNotDuplicated() {
         //  given new entity relation
-        BaseLastfmEntity scopeEntity = consistencyHelper.createDummyEntity();
-        BaseLastfmEntity entity = consistencyHelper.createDummyEntity();
-        LastfmApiCall sourceApiCall = consistencyHelper.createDummyApiCall();
+        BaseLastfmEntity scopeEntity = consistencyHelper.createAndSaveDummyEntity();
+        BaseLastfmEntity entity = consistencyHelper.createAndSaveDummyEntity();
+        LastfmApiCall sourceApiCall = consistencyHelper.createAndSaveApiCall();
         LastfmEntityRelation entityRelation = buildEntityRelation(scopeEntity, entity, sourceApiCall);
 
         // when persisted
@@ -78,9 +78,9 @@ class LastfmEntityRelationServiceImplTest extends JpaOnlyTest {
         // given N different relations
         List<LastfmEntityRelation> relations = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
-            BaseLastfmEntity scopeEntity = consistencyHelper.createDummyEntity();
-            BaseLastfmEntity entity = consistencyHelper.createDummyEntity();
-            LastfmApiCall sourceApiCall = consistencyHelper.createDummyApiCall();
+            BaseLastfmEntity scopeEntity = consistencyHelper.createAndSaveDummyEntity();
+            BaseLastfmEntity entity = consistencyHelper.createAndSaveDummyEntity();
+            LastfmApiCall sourceApiCall = consistencyHelper.createAndSaveApiCall();
             relations.add(buildEntityRelation(scopeEntity, entity, sourceApiCall));
         }
 
@@ -92,9 +92,9 @@ class LastfmEntityRelationServiceImplTest extends JpaOnlyTest {
         assertEquals(relations.size(), entityRelationRepository.findAll().size());
 
         // when partly persisted twice
-        BaseLastfmEntity scopeEntity = consistencyHelper.createDummyEntity();
-        BaseLastfmEntity entity = consistencyHelper.createDummyEntity();
-        LastfmApiCall sourceApiCall = consistencyHelper.createDummyApiCall();
+        BaseLastfmEntity scopeEntity = consistencyHelper.createAndSaveDummyEntity();
+        BaseLastfmEntity entity = consistencyHelper.createAndSaveDummyEntity();
+        LastfmApiCall sourceApiCall = consistencyHelper.createAndSaveApiCall();
         LastfmEntityRelation newRelation = buildEntityRelation(scopeEntity, entity, sourceApiCall);
         List<LastfmEntityRelation> newBatch = List.of(
                 relations.get(0),

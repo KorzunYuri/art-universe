@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.entity.LastfmAlbum;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
 
@@ -31,7 +30,7 @@ class LastfmAlbumRepositoryTest extends JpaOnlyTest {
         final int listenersCount = 1;
         final LocalDateTime publishTs = LocalDateTime.now();
 
-        LastfmApiCall apiCall = consistencyHelper.createDummyApiCall();
+        LastfmApiCall apiCall = consistencyHelper.createAndSaveApiCall();
         LastfmAlbum album = LastfmAlbum.builder()
                 .apiCall(apiCall)
                 .name(name)
@@ -56,8 +55,8 @@ class LastfmAlbumRepositoryTest extends JpaOnlyTest {
 
     @Test
     void testSaveAlbums() {
-        LastfmAlbum album1 = consistencyHelper.createAlbum();
-        LastfmAlbum album2 = consistencyHelper.createAlbum();
+        LastfmAlbum album1 = consistencyHelper.createAlbumForPersistence();
+        LastfmAlbum album2 = consistencyHelper.createAlbumForPersistence();
 
         List<LastfmAlbum> firstSaveResult = albumRepository.saveAll(List.of(album1, album2));
         assertEquals(2, firstSaveResult.size());
@@ -66,7 +65,7 @@ class LastfmAlbumRepositoryTest extends JpaOnlyTest {
             .filter(a -> album1.getName().equals(a.getName()))
             .findFirst().get();
 
-        LastfmAlbum album3 = consistencyHelper.createAlbum();
+        LastfmAlbum album3 = consistencyHelper.createAlbumForPersistence();
         List<LastfmAlbum> secondSaveResult = albumRepository.saveAll(List.of(album1, album3));
         assertEquals(2, secondSaveResult.size());
         assertEquals(3, albumRepository.findAll().size());

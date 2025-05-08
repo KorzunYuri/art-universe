@@ -24,14 +24,13 @@ import java.io.IOException;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static yurykorzun.art.universe.music.data.raw.lastfm.common.utils.AssertionUtils.*;
 
 @Import({
     LastfmArtistGetSimilarResponseProcessor.class,
     LastfmArtistGetSimilarArtistFactory.class,
-    LastfmApiDtoProcessingService.class
+    LastfmApiDtoProcessingService.class,
 })
 class LastfmArtistGetSimilarResponseProcessorTest extends JpaOnlyTest {
 
@@ -94,8 +93,10 @@ class LastfmArtistGetSimilarResponseProcessorTest extends JpaOnlyTest {
             "attributeHistoryService.upsertCandidateValues"
         );
 
-
+        // verify entity relations are not saved
+        verify(entityRelationService, never()).upsertEntityRelations(any());
     }
+
     @AllArgsConstructor
     private static class TestCase {
         LastfmApiResponse sourceApiResponse;
@@ -112,11 +113,11 @@ class LastfmArtistGetSimilarResponseProcessorTest extends JpaOnlyTest {
             throw new RuntimeException(e);
         }
 
-        LastfmArtist artist = consistencyHelper.createArtist(
+        LastfmArtist artist = consistencyHelper.createAndSaveArtist(
             builder -> builder.name("test artist")
         );
 
-        LastfmApiResponse sourceApiResponse = consistencyHelper.createDummyApiResponse(
+        LastfmApiResponse sourceApiResponse = consistencyHelper.createAndSaveApiResponse(
             responseString, LastfmApiCallType.ARTIST_GET_SIMILAR, artist);
 
         LastfmArtistGetSimilarArtistFactory entityFactory = new LastfmArtistGetSimilarArtistFactory();

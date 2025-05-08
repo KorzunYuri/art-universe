@@ -78,14 +78,14 @@ public class LastfmTagTopTagResponseProcessorTest extends FullContextTest {
 
     @Test
     public void givenTagTopTagsResponse_whenProcessed_tagsAndAttributeValuesAreCreated() throws IOException {
-        LastfmApiResponse response = consistencyHelper.createDummyApiResponse(TEST_DTO_STRING);
+        LastfmApiResponse response = consistencyHelper.createAndSaveApiResponse(TEST_DTO_STRING, processor.getApiCallType());
 
         testPrimarySave(response, TEST_DTO_TAGS_NUMBER);
     }
 
     @Test
     public void givenProcessedTagTopTagsResponse_whenProcessedTwice_tagsAndAttributeValuesAreNotDuplicated() throws IOException {
-        LastfmApiResponse firstResponse = consistencyHelper.createDummyApiResponse(TEST_DTO_STRING);
+        LastfmApiResponse firstResponse = consistencyHelper.createAndSaveApiResponse(TEST_DTO_STRING, processor.getApiCallType());
 
         // initial save
         testPrimarySave(firstResponse, TEST_DTO_TAGS_NUMBER);
@@ -103,7 +103,7 @@ public class LastfmTagTopTagResponseProcessorTest extends FullContextTest {
 
     @Test
     public void givenProcessedTagTopTagsResponse_whenPartialUpdatesReceived_thenProducesOnlyNewRecords() throws IOException {
-        LastfmApiResponse firstResponse = consistencyHelper.createDummyApiResponse(TEST_DTO_STRING);
+        LastfmApiResponse firstResponse = consistencyHelper.createAndSaveApiResponse(TEST_DTO_STRING, processor.getApiCallType());
 
         // initial save
         testPrimarySave(firstResponse, TEST_DTO_TAGS_NUMBER);
@@ -134,7 +134,7 @@ public class LastfmTagTopTagResponseProcessorTest extends FullContextTest {
                   }
                 }
                 """;
-        LastfmApiResponse responseWithUpdates = consistencyHelper.createDummyApiResponse(newResponseBody);
+        LastfmApiResponse responseWithUpdates = consistencyHelper.createAndSaveApiResponse(newResponseBody, processor.getApiCallType());
 
         processor.processResponse(responseWithUpdates);
         List<LastfmTag> tagsAfterUpdate = tagRepository.findAll();

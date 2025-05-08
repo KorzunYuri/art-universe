@@ -13,8 +13,8 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiResponseProcessor;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityFactory;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.DefaultEntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandler;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandlerFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.entity.LastfmAlbum;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.service.LastfmAlbumService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
@@ -33,22 +33,27 @@ public class LastfmArtistTopAlbumsResponseProcessor extends LastfmApiResponsePro
     @Value("${lastfm.client.methods.artist.topAlbums.albumPlayCountThreshold:10000}")
     private int albumPlayCountThreshold;
 
-    private static final List<EntityAttributeHandler<LastfmAlbum, ?, ArtistTopAlbumsAlbumDto>> albumAttrHandlers = List.of(
-        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.URL, false,
-            LastfmAlbum::getUrl, LastfmAlbum::setUrl, ArtistTopAlbumsAlbumDto::getUrl),
-        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.MBID, false,
-            LastfmAlbum::getMbid, LastfmAlbum::setMbid, ArtistTopAlbumsAlbumDto::getMbid),
-        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.PLAY_COUNT, false,
-            LastfmAlbum::getPlayCount, LastfmAlbum::setPlayCount, ArtistTopAlbumsAlbumDto::getPlayCount)
-    );
+    private static final List<EntityAttributeHandler<LastfmAlbum, ?, ArtistTopAlbumsAlbumDto>> albumAttrHandlers;
+    static {
+        EntityAttributeHandlerFactory<LastfmAlbum, ArtistTopAlbumsAlbumDto> factory = 
+            new EntityAttributeHandlerFactory<>(LastfmAlbum.class, ArtistTopAlbumsAlbumDto.class);
+        albumAttrHandlers = List.of(
+            factory.createHandler(LastfmAttribute.URL, false, "url"),
+            factory.createHandler(LastfmAttribute.MBID, false, "mbid"),
+            factory.createHandler(LastfmAttribute.PLAY_COUNT, false, "playCount")
+        );
+    }
 
-    protected LastfmArtistTopAlbumsResponseProcessor(LastfmAlbumService albumService, LastfmApiDtoProcessingService dtoProcessingService) {
+    protected LastfmArtistTopAlbumsResponseProcessor(
+        LastfmAlbumService albumService,
+        LastfmApiDtoProcessingService dtoProcessingService,
+        EntityFactory<LastfmAlbum, ArtistTopAlbumsAlbumDto> albumEntityFactory
+    ) {
         super(ArtistTopAlbumsDtoRoot.class);
+
         this.albumService = albumService;
-
         this.dtoProcessingService = dtoProcessingService;
-
-        this.albumEntityFactory = new LastfmArtistTopAlbumsAlbumFactory();
+        this.albumEntityFactory = albumEntityFactory;
     }
 
     @Override

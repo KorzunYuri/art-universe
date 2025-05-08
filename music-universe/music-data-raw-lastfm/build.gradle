@@ -11,6 +11,7 @@ dependencies {
     implementation 'org.springframework:spring-aspects'
 
     implementation 'com.google.guava:guava:33.4.0-jre'
+    implementation 'info.debatty:java-string-similarity:2.0.0'
 
     implementation "org.liquibase:liquibase-core:${liquibaseVersion}"
     runtimeOnly 'org.postgresql:postgresql'

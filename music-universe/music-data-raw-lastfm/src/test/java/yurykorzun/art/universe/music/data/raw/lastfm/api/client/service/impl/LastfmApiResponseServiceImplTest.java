@@ -1,15 +1,18 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.impl;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiResponseStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiResponseCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmApiResponseRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.FullContextTest;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
 
 import java.util.function.Supplier;
 
@@ -17,22 +20,33 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-class LastfmApiResponseServiceImplTest extends FullContextTest {
+@ExtendWith(MockitoExtension.class)
+class LastfmApiResponseServiceImplTest {
 
-    @MockitoBean
+    @Mock
     private LastfmApiResponseRepository apiResponseRepository;
 
-    @Autowired
     private LastfmApiResponseServiceImpl apiResponseService;
 
-    @Autowired
-    private DbConsistencyHelper consistencyHelper;
+    @BeforeEach
+    void setUp() {
+        apiResponseService = new LastfmApiResponseServiceImpl(
+            apiResponseRepository,
+            null
+        );
+
+        // spy, for self-injection to refer to the spied object
+        apiResponseService = Mockito.spy(apiResponseService);
+
+        // inject self
+        ReflectionTestUtils.setField(apiResponseService, "self", apiResponseService);
+    }
 
     private static final String sampleResponse = LastfmApiClientResourceUtil.getAnyResponse();
 
     private Supplier<LastfmApiResponseCreateRequest> validCreateResponseRequestSupplier() {
         return () -> LastfmApiResponseCreateRequest.builder()
-                .apiCall(consistencyHelper.createDummyApiCall())
+                .apiCall(EntityCreationHelper.createApiCall())
                 .responseBody(sampleResponse)
                 .build();
     }

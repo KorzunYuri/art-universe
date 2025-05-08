@@ -6,13 +6,12 @@ import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.processing.LastfmArtistEntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingResult;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiResponseProcessor;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityFactory;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.DefaultEntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandler;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandlerFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.dto.TagTopTracksDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.dto.TagTopTracksTrackArtistDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.dto.TagTopTracksTrackDto;
@@ -37,10 +36,10 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
 
     private final LastfmArtistService artistService;
     private final LastfmTrackService trackService;
-    private final TagTopTracksTrackFactory trackFactory;
     private final LastfmEntityRelationService entityRelationService;
     private final LastfmApiDtoProcessingService dtoProcessingService;
 
+    private final EntityFactory<LastfmTrack, TagTopTracksTrackDto> trackFactory;
     private final EntityFactory<LastfmArtist, TagTopTracksTrackArtistDto> artistFactory;
 
     private final Set<TagTopTracksDtoRoot> rootsWithMissingAttrsLogged = new HashSet<>();
@@ -49,7 +48,9 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
         LastfmArtistService artistService,
         LastfmTrackService lastfmTrackService,
         LastfmEntityRelationService entityRelationService,
-        LastfmApiDtoProcessingService dtoProcessingService
+        LastfmApiDtoProcessingService dtoProcessingService,
+        EntityFactory<LastfmTrack, TagTopTracksTrackDto> trackFactory,
+        EntityFactory<LastfmArtist, TagTopTracksTrackArtistDto> artistFactory
     ) {
         super(TagTopTracksDtoRoot.class);
 
@@ -57,31 +58,33 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
         this.trackService = lastfmTrackService;
         this.entityRelationService = entityRelationService;
         this.dtoProcessingService = dtoProcessingService;
-
-        this.trackFactory = new TagTopTracksTrackFactory();
-        this.artistFactory = new LastfmArtistEntityFactory<>();
+        this.trackFactory = trackFactory;
+        this.artistFactory = artistFactory;
     }
 
-    private static final List<EntityAttributeHandler<LastfmTrack, ?, TagTopTracksTrackDto>> trackAttrHandlers = List.of(
-        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.MBID,  false,
-            LastfmTrack::getMbid, LastfmTrack::setMbid, TagTopTracksTrackDto::getMbid),
-        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.URL, false,
-            LastfmTrack::getUrl, LastfmTrack::setUrl, TagTopTracksTrackDto::getUrl),
-        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.DURATION, false,
-            LastfmTrack::getDuration, LastfmTrack::setDuration, TagTopTracksTrackDto::getDuration),
-        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.IS_STREAMABLE, false,
-            LastfmTrack::getStreamable, LastfmTrack::setStreamable,
-            (dto) -> 1 == dto.getStreamableObject().getFullTrack())
-        //DefaultEntityAttributeHandler.forExternalAttribute(LastfmAttribute.RANK,  true,
-        //    (dto) -> dto.getRankInfo().getRank())
-    );
+    private static final List<EntityAttributeHandler<LastfmTrack, ?, TagTopTracksTrackDto>> trackAttrHandlers;
 
-    private static final List<EntityAttributeHandler<LastfmArtist, ?, TagTopTracksTrackArtistDto>> artistAttrHandlers = List.of(
-        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.MBID,  false,
-            LastfmArtist::getMbid, LastfmArtist::setMbid, TagTopTracksTrackArtistDto::getMbid),
-        DefaultEntityAttributeHandler.forEmbeddedAttribute(LastfmAttribute.URL, false,
-            LastfmArtist::getUrl, LastfmArtist::setUrl, TagTopTracksTrackArtistDto::getUrl)
-    );
+    private static final List<EntityAttributeHandler<LastfmArtist, ?, TagTopTracksTrackArtistDto>> artistAttrHandlers;
+    
+    static {
+        EntityAttributeHandlerFactory<LastfmTrack, TagTopTracksTrackDto> trackAttrHandlerFactory =
+            new EntityAttributeHandlerFactory<>(LastfmTrack.class, TagTopTracksTrackDto.class);
+        trackAttrHandlers = List.of(
+            trackAttrHandlerFactory.createHandler(LastfmAttribute.MBID,  false, "mbid"),
+            trackAttrHandlerFactory.createHandler(LastfmAttribute.URL, false, "url"),
+            trackAttrHandlerFactory.createHandler(LastfmAttribute.DURATION, false, "duration"),
+            trackAttrHandlerFactory.createHandler(LastfmAttribute.IS_STREAMABLE, false, "isStreamable",
+                (dto) -> 1 == dto.getStreamableObject().getFullTrack())
+            //DefaultEntityAttributeHandler.forExternalAttribute(LastfmAttribute.RANK,  true,
+            //    (dto) -> dto.getRankInfo().getRank())
+        );
+
+        EntityAttributeHandlerFactory<LastfmArtist, TagTopTracksTrackArtistDto> factory =
+            new EntityAttributeHandlerFactory<>(LastfmArtist.class, TagTopTracksTrackArtistDto.class);
+        artistAttrHandlers = List.of(
+            factory.createHandler(LastfmAttribute.MBID,  false, "mbid"),
+            factory.createHandler(LastfmAttribute.URL, false, "url"));
+    }
 
     @Override
     public ApiCallType getApiCallType() {
