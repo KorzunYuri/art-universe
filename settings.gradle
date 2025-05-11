@@ -25,3 +25,5 @@ include 'music-universe'
 
     include 'music-universe:music-data-raw-musicbrainz'
     findProject(':music-universe:music-data-raw-musicbrainz')?.name = 'music-data-raw-musicbrainz'
+
+    include("music-universe:music-universe-ui")
