@@ -1,12 +1,23 @@
-import './MusicUniverseApp.css'
+import { useRoutes } from 'react-router-dom'
+import NavigationCard from './shared/components/NavigationCard'
+import LastfmApp from './sources/lastfm/LastfmApp'
 
-function MusicUniverseApp() {
+export default function MusicUniverseApp() {
+    const routes = [
+        {
+            path: '/',
+            element: (
+                <div>
+                    <h1>Choose data source:</h1>
+                    <NavigationCard to="/lastfm" label="Last.fm" />
+                </div>
+            ),
+        },
+        {
+            path: '/lastfm/*',  // "*" позволяет маршрутизировать внутри LastfmApp
+            element: <LastfmApp />,
+        },
+    ]
 
-  return (
-    <>
-      <h1>Music Universe data manager</h1>
-    </>
-  )
+    return useRoutes(routes)
 }
-
-export default MusicUniverseApp

@@ -1,10 +1,13 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import { BrowserRouter } from 'react-router-dom'
 import './index.css'
-import MusicUniverseApp from './MusicUniverseApp.tsx'
+import MusicUniverseApp from './MusicUniverseApp'
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <MusicUniverseApp />
-  </StrictMode>
+ReactDOM.createRoot(document.getElementById('root')!).render(
+    <React.StrictMode>
+        <BrowserRouter>
+            <MusicUniverseApp />
+        </BrowserRouter>
+    </React.StrictMode>,
 )
