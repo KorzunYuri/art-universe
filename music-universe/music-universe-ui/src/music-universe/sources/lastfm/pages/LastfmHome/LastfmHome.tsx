@@ -1,8 +1,9 @@
-import NavigationCard from '../../../shared/components/NavigationCard'
+import styles from './LastfmHome.module.css';
+import { NavigationCard } from "../../../../shared/components";
 
-export default function LastfmHome() {
+export function LastfmHome() {
     return (
-        <div>
+        <div className={styles.container}>
             <h2>Last.fm</h2>
             <NavigationCard to="/lastfm/tags"       label="Tags" />
             <NavigationCard to="/lastfm/artists"    label="Artists" />

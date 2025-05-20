@@ -1,0 +1,50 @@
+$gap-vertical: 8px;
+$gap-horizontal: 12px;
+$border-color: #ccc;
+$row-hover-bg: #fafafa;
+$header-bg: #f0f0f0;
+
+.container {
+  display: flex;
+  flex-direction: column;
+
+  width: 100%;
+
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  overflow: hidden;
+  font-family: sans-serif;
+}
+
+
+.header {
+  display: flex;
+  background-color: $header-bg;
+  font-weight: bold;
+  padding: $gap-vertical $gap-horizontal;
+  border-bottom: 1px solid $border-color;
+}
+
+.row {
+  display: flex;
+  padding: $gap-vertical $gap-horizontal;
+  border-bottom: 1px solid lighten($border-color, 20%);
+  align-items: center;
+  transition: background 0.2s ease;
+
+  &:hover {
+    background-color: $row-hover-bg;
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.cell {
+  padding: 4px 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 1;
+}

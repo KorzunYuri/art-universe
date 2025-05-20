@@ -1,5 +1,5 @@
 import { useRoutes } from 'react-router-dom'
-import NavigationCard from './shared/components/NavigationCard'
+import { NavigationCard } from './shared/components'
 import LastfmApp from './sources/lastfm/LastfmApp'
 
 export default function MusicUniverseApp() {

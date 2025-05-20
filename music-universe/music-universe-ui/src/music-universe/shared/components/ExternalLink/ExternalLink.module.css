@@ -1,0 +1,8 @@
+.ext-link {
+    color: blue;
+    text-decoration: underline;
+}
+
+.ext-link:hover {
+    color: darkblue;
+}
