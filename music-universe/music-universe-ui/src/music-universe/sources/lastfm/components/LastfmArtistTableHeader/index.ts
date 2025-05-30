@@ -1,0 +1,1 @@
+export { LastfmArtistTableHeader } from './LastfmArtistTableHeader';

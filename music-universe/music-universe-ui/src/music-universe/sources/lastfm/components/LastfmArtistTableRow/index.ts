@@ -1,0 +1,1 @@
+export { LastfmArtistTableRow } from './LastfmArtistTableRow';
