@@ -1,10 +1,6 @@
 .name {
-    flex: 6;
+    flex: 12;
     text-align: left;
-}
-
-.url {
-    flex: 3;
 }
 
 .mbid {

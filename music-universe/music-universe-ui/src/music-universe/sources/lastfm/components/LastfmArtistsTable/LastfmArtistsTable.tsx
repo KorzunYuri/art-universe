@@ -1,33 +1,39 @@
-import { useState} from 'react'
-
-import type {LastfmArtist} from '@/music-universe/sources/lastfm/types'
-import { PaginatedResource } from '@/music-universe/shared/hooks/paginatedResource'
-import { fetchArtists } from '@/music-universe/sources/lastfm/api/lastfm-artists.ts'
-import { LastfmArtistsTableHeader } from '@/music-universe/sources/lastfm/components'
-import { LastfmArtistsTableRow } from '../LastfmArtistsTableRow'
+import {
+    LastfmArtistsTableHeader,
+    LastfmArtistsTableRow,
+} from '@/music-universe/sources/lastfm/components'
+import { PaginatedResource } from '@/music-universe/shared/hooks/PaginatedResource.ts'
+import { fetchArtists } from '@/music-universe/sources/lastfm/api/lastfm-artists'
+import type { LastfmArtist } from '@/music-universe/sources/lastfm/types'
 
 export const LastfmArtistsTable = () => {
     const {
-        meta,
+        data,
+        setData,
         loading,
-        search,
-        setNewSearch,
-        page,
-        setPage,
-        reload
+        searchInput,
+        setSearchInput,
+        applySearch,
+        sort,
+        setSort,
+        nextPage,
+        prevPage,
+        hasNextPage,
+        hasPrevPage,
+        reload,
     } = PaginatedResource<LastfmArtist>(fetchArtists)
-
-    const [searchInput, setSearchInput] = useState(search)
-
-    const onSearchChanged = (newSearch: string) => {
-        setSearchInput(newSearch)
-    }
 
     const onSearchKeyDown = (key: string) => {
         if (key === 'Enter') {
-            setNewSearch(search)
+            applySearch()
         }
-    };
+    }
+
+    const onArtistChanged = (updated: LastfmArtist) => {
+        if (!data) return
+        const newContent = data.content.map(a => a.id === updated.id ? updated : a)
+        setData({ ...data, content: newContent })
+    }
 
     return (
         <div className="space-y-4">
@@ -36,31 +42,40 @@ export const LastfmArtistsTable = () => {
                     type="text"
                     value={searchInput}
                     placeholder="Search artist name..."
-                    onChange={(e) => onSearchChanged(e.target.value)}
+                    onChange={(e) => setSearchInput(e.target.value)}
                     onKeyDown={(e) => onSearchKeyDown(e.key)}
                 />
-                <button
-                    onClick={() => setNewSearch(searchInput)}
-                >
-                    Search
-                </button>
+                <button onClick={applySearch}>Search</button>
             </div>
 
             {loading && <p className="text-gray-500">Loading...</p>}
 
-            {!loading && meta && (
+            {!loading && data && (
                 <>
                     <div className="border rounded-md">
-                        <LastfmArtistsTableHeader />
-                        {meta.content.map((artist) => (
-                            <LastfmArtistsTableRow key={artist.id} artist={artist} onChange={() => reload()} />
+                        <LastfmArtistsTableHeader
+                            sort={sort}
+                            setSort={setSort}
+                        />
+                        {data.content.map((artist) => (
+                            <LastfmArtistsTableRow
+                                key={artist.id}
+                                artist={artist}
+                                onChange={onArtistChanged}
+                            />
                         ))}
                     </div>
 
                     <div className="flex gap-2 items-center mt-4">
-                        <button disabled={page <= 0} onClick={() => setPage(page - 1)}>Previous</button>
-                        <span>Page {page + 1} of {meta.totalPages}</span>
-                        <button disabled={page + 1 >= meta.totalPages} onClick={() => setPage(page + 1)}>Next</button>
+                        <button disabled={!hasPrevPage} onClick={prevPage}>
+                            Previous
+                        </button>
+                        <span>
+                            Page {data.pageable.pageNumber + 1} of {data.totalPages}
+                        </span>
+                        <button disabled={!hasNextPage} onClick={nextPage}>
+                            Next
+                        </button>
                     </div>
                 </>
             )}

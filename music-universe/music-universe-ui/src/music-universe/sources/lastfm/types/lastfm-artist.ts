@@ -3,7 +3,7 @@ export interface LastfmArtist {
     name: string
     mbid: string | null
     url: string
-    approval_status: number
-    play_count: number
-    listeners_count: number
+    approvalStatus: number
+    playCount: number
+    listenersCount: number
 }

@@ -1,6 +1,7 @@
-import { LastfmConfig } from "@/music-universe/sources/lastfm/config/lastfmconfig.ts"
+import {LastfmConfig} from "@/music-universe/sources/lastfm/config/lastfmconfig.ts"
 import type {Page} from "@/music-universe/shared/types/page.ts";
 import type {LastfmArtist} from "@/music-universe/sources/lastfm/types/lastfm-artist.ts";
+import axios from 'axios'
 
 export async function fetchArtists(params: {
     search?: string
@@ -8,14 +9,16 @@ export async function fetchArtists(params: {
     size?: number
     sort?: string
 }): Promise<Page<LastfmArtist>> {
-    const res = await fetch(`${LastfmConfig.baseApiUrl}/artists?${
-        new URLSearchParams({
-            search: params.search || '',
-            page: String(params.page ?? 0),
-            size: String(params.size ?? 20),
-            sort: params.sort || 'name,asc',
-        })
-    }`)
-    const json = await res.json()
-    return json.data
+    const response = await axios.get(
+        `${LastfmConfig.baseApiUrl}/artists`,
+        {
+            params: {
+                search: params.search ?? '',
+                page: params.page ?? 0,
+                size: params.size ?? 20,
+                sort: params.sort ?? 'name,asc',
+            },
+        });
+
+    return response.data.data;
 }
