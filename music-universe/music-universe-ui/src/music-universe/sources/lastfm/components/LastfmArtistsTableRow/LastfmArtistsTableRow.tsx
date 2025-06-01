@@ -1,19 +1,21 @@
-import type {LastfmArtist} from "../../api/lastfm-artists.ts";
-import sharedStyles from "../../../../shared/components/common/LastfmEntityTable.module.scss";
+import sharedStyles from "@/music-universe/sources/lastfm/common/LastfmEntityTable.module.scss";
 import artistStyles from "../LastfmArtistsTable/LastfmArtistsTable.module.css";
-import {ExternalLink, LabelWithPopup, ReadonlyAttr} from "../../../../shared/components";
-import {LastfmConfig} from "../../config/lastfmconfig.ts";
-import {ApprovalToggle} from "../ApprovalToggle";
+import { ExternalLink, LabelWithPopup, ReadonlyAttr } from "@/music-universe/shared/components";
+import { LastfmConfig } from "@/music-universe/sources/lastfm/config/lastfmconfig.ts";
+import { ApprovalToggle } from "@/music-universe/sources/lastfm/components";
+import type { LastfmArtist } from "@/music-universe/sources/lastfm/types";
 
 interface LastfmArtistTableRowProps {
     artist: LastfmArtist,
     onChange: (artist: LastfmArtist) => void
 }
 
-export const LastfmArtistTableRow = ({artist, onChange}: LastfmArtistTableRowProps) => {
+export const LastfmArtistsTableRow = ({artist, onChange}: LastfmArtistTableRowProps) => {
 
     function onStatusChange(updatedArtist: LastfmArtist, newStatus: number) {
         updatedArtist.approval_status = newStatus;
+        console.log("status changed, new artist: ")
+        console.log(artist)
         onChange(updatedArtist);
     }
 

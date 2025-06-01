@@ -1,10 +1,12 @@
-import styles from './LastfmArtistTableHeader.module.css';
-import sharedStyles from "../../../../shared/components/common/LastfmEntityTable.module.scss";
-import artistStyles from "../LastfmArtistsTable/LastfmArtistsTable.module.css";
+import styles from './LastfmArtistsTableHeader.module.css';
+import sharedStyles from "@/music-universe/sources/lastfm/common/LastfmEntityTable.module.scss";
+import artistStyles from "@/music-universe/sources/lastfm/components/LastfmArtistsTable/LastfmArtistsTable.module.css";
 
-export const LastfmArtistTableHeader = () => {
+export const LastfmArtistsTableHeader = () => {
   return (
-      <div className={sharedStyles.header}>
+      <div
+          className={`${styles.container} ${sharedStyles.header}`}
+      >
           <div className={`${sharedStyles.cell} ${artistStyles.name}`}>Name</div>
           <div className={`${sharedStyles.cell} ${artistStyles.url}`}>Last.fm</div>
           <div className={`${sharedStyles.cell} ${artistStyles.mbid}`}>MusicBrainz</div>
