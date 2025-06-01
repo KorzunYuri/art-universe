@@ -112,7 +112,7 @@ class LastfmArtistControllerTest {
     }
 
     @Test
-    void whenUpdateApprovalStatus_shouldReturnUpdatedArtist() {
+    void updateApprovalStatus_withValidRequest_shouldReturnUpdatedArtist() {
         Long artistId = 1L;
         ApprovalStatus newApprovalStatus = ApprovalStatus.APPROVED;
         int approvalStatusCode = newApprovalStatus.getCode();
@@ -129,12 +129,12 @@ class LastfmArtistControllerTest {
         assertNotNull(body);
         assertTrue(body.isSuccess());
         LastfmArtistResponseDto dto = body.getData();
-        assertEquals(newApprovalStatus, dto.approvalStatus());
+        assertEquals(newApprovalStatus.getCode(), dto.approvalStatus());
     }
 
 
     @Test
-    void shouldHandleServiceException() {
+    void updateApprovalStatus_shouldHandleServiceException() {
         Long artistId = 1L;
         when(artistService.updateApprovalStatus(anyLong(), anyInt()))
             .thenThrow(new IllegalArgumentException("Invalid status"));
