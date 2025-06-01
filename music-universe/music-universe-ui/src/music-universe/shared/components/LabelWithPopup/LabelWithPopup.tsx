@@ -6,10 +6,10 @@ interface Props {
     className?: string
 }
 
-export function LabelWithPopup({ text, popupText, className }: Props) {
+export function LabelWithPopup({ text, popupText, className = '' }: Props) {
     return (
         <div
-            className={`${styles.label} ${className ?? ''}`}
+            className={`${styles.label} ${className}`}
             title={popupText ?? text}
         >
             {text}

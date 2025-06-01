@@ -1,4 +1,4 @@
-import { LastfmArtistsTable } from "../../components/LastfmArtistsTable";
+import { LastfmArtistsTable } from "@/music-universe/sources/lastfm/components";
 import styles from "./LastfmArtists.module.css"
 
 export function LastfmArtists() {

@@ -1,4 +1,4 @@
-import './ExternalLink.module.css'
+import styles from './ExternalLink.module.css'
 
 interface Props {
     href: string
@@ -9,10 +9,10 @@ interface Props {
 export function ExternalLink({ href, label, className = '' }: Props) {
     return (
         <a
+            className={`${styles.extLink} ${className}`}
             href={href}
             target="_blank"
             rel="noreferrer"
-            className={`ext-link ${className}`}
         >
             {label}
         </a>

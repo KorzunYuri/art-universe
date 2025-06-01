@@ -10,6 +10,7 @@ type Status = typeof APPROVED | typeof DECLINED | typeof AUTOAPPROVED
 interface Props {
     status: number
     onChange: (newStatus: number) => void
+    className?: string
 }
 
 const options: {
@@ -23,7 +24,8 @@ const options: {
     { label: 'auto', value: AUTOAPPROVED, color: 'auto', disabled: true },
 ]
 
-export function ApprovalToggle({ status, onChange }: Props) {
+export function ApprovalToggle({ status, onChange, className = '' }: Props) {
+
     const handleClick = (value: number, disabled?: boolean) => {
         if (disabled) return
         if (value === status) {
@@ -34,7 +36,9 @@ export function ApprovalToggle({ status, onChange }: Props) {
     }
 
     return (
-        <div className={styles.toggleContainer}>
+        <div
+            className={`${styles.toggleContainer} ${className}`}
+        >
             {options.map(({ label, value, color, disabled }) => (
                 <button
                     key={value}

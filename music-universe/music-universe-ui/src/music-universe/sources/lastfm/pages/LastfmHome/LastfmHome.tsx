@@ -1,5 +1,5 @@
 import styles from './LastfmHome.module.css';
-import { NavigationCard } from "../../../../shared/components";
+import { NavigationCard } from "@/music-universe/shared/components";
 
 export function LastfmHome() {
     return (

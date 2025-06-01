@@ -6,5 +6,11 @@ interface Props {
 }
 
 export function ReadonlyAttr({ value, className = '' }: Props) {
-    return <span className={`${styles.attrReadonly} ${className}`}>{value}</span>
+    return (
+        <span
+            className={`${styles.attrReadonly} ${className}`}
+        >
+            {value}
+        </span>
+    )
 }

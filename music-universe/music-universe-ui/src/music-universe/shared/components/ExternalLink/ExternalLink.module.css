@@ -1,8 +1,8 @@
-.ext-link {
+.extLink {
     color: blue;
     text-decoration: underline;
 }
 
-.ext-link:hover {
+.extLink:hover {
     color: darkblue;
 }
