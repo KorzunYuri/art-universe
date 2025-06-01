@@ -5,14 +5,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.common.controller.ResponseWrapper;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto.LastfmArtistDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto.LastfmArtistResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.dto.ApprovalStatusRequestDto;
 
 @RestController
 @RequestMapping("/api/v1/artists")
@@ -27,17 +25,29 @@ public class LastfmArtistController {
     @GetMapping(
         produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<ResponseWrapper<Page<LastfmArtistDto>>> getArtists(
+    public ResponseEntity<ResponseWrapper<Page<LastfmArtistResponseDto>>> getArtists(
         @RequestParam(defaultValue = "") String search,
         @PageableDefault(size = 20, sort = "name") Pageable pageable
     ) {
         try {
             Page<LastfmArtist> page = artistService.findByName(search, pageable);
-            Page<LastfmArtistDto> dtoPage = page.map(LastfmArtistDto::from);
+            Page<LastfmArtistResponseDto> dtoPage = page.map(LastfmArtistResponseDto::from);
             return ResponseWrapper.success(dtoPage);
         } catch (Exception e) {
             return ResponseWrapper.failure("Failed to fetch artists: " + e.getMessage());
         }
     }
 
+    @PatchMapping("/{id}/approval")
+    public ResponseEntity<ResponseWrapper<LastfmArtistResponseDto>> updateApprovalStatus(
+        @PathVariable Long id,
+        @RequestBody ApprovalStatusRequestDto request
+    ) {
+        try {
+            LastfmArtist artist = artistService.updateApprovalStatus(id, request.approvalStatus());
+            return ResponseWrapper.success(LastfmArtistResponseDto.from(artist));
+        } catch (Exception e) {
+            return ResponseWrapper.failure(String.format("Failed to update artist {%s} approval status: %s", id, e.getMessage()));
+        }
+    }
 }

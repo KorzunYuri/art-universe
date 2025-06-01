@@ -22,5 +22,6 @@ public interface LastfmArtistService {
     List<LastfmArtist> findAllByNames(List<String> names);
 
     List<LastfmArtist> findAllToGetInfoFor();
-    
+
+    LastfmArtist updateApprovalStatus(Long id, Integer approvalStatusCode);
 }

@@ -4,6 +4,7 @@ import { ExternalLink, ReadonlyAttr } from "@/music-universe/shared/components";
 import { LastfmConfig } from "@/music-universe/sources/lastfm/config/lastfmconfig.ts";
 import { ApprovalToggle } from "@/music-universe/sources/lastfm/components";
 import type { LastfmArtist } from "@/music-universe/sources/lastfm/types";
+import { updateArtistApprovalStatus } from "@/music-universe/sources/lastfm/api/lastfm-artists.ts";
 
 interface LastfmArtistTableRowProps {
     artist: LastfmArtist,
@@ -12,9 +13,9 @@ interface LastfmArtistTableRowProps {
 
 export const LastfmArtistsTableRow = ({artist, onChange}: LastfmArtistTableRowProps) => {
 
-    function onStatusChange(updatedArtist: LastfmArtist, newStatus: number) {
-        updatedArtist.approvalStatus = newStatus;
-        onChange(updatedArtist);
+    function onStatusChange(artistToUpdate: LastfmArtist, newStatus: number) {
+        updateArtistApprovalStatus(artistToUpdate.id, newStatus)
+            .then(onChange);
     }
 
     return (

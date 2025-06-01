@@ -1,8 +1,11 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.impl;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import yurykorzun.art.universe.common.CodedRegistry;
+import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.repository.LastfmArtistRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
@@ -52,5 +55,16 @@ public class LastfmArtistServiceImpl implements LastfmArtistService {
     @Override
     public List<LastfmArtist> findAllToGetInfoFor() {
         return artistRepository.findAllToGetInfoFor();
+    }
+
+    @Override
+    public LastfmArtist updateApprovalStatus(Long id, Integer approvalStatusCode) {
+        ApprovalStatus approvalStatus = CodedRegistry.getByCode(approvalStatusCode, ApprovalStatus.class)
+            .orElseThrow(() -> new IllegalArgumentException(String.format("ApprovalStatus with code %s not found", approvalStatusCode)));
+        LastfmArtist artist = artistRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Artist not found"));
+
+        artist.updateApprovalStatus(approvalStatus);
+        return artistRepository.save(artist);
     }
 }

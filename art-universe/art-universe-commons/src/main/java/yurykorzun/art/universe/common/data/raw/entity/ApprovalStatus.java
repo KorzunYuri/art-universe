@@ -13,7 +13,8 @@ public enum ApprovalStatus implements Coded, TransitionAware<ApiCallStatus> {
 
     PENDING(1),
     APPROVED(2),
-    DECLINED(3);
+    DECLINED(3),
+    PRE_APPROVED(4),;
 
     private final int code;
 

@@ -19,6 +19,13 @@ public abstract class BaseCollectableEntity extends BaseEntity {
     @Builder.Default
     private ApprovalStatus approvalStatus = ApprovalStatus.PENDING;
 
+    public void updateApprovalStatus(ApprovalStatus approvalStatus) {
+        if (approvalStatus == ApprovalStatus.PRE_APPROVED) {
+            throw new IllegalArgumentException("Auto-approved status can be set only on creation");
+        }
+        this.approvalStatus = approvalStatus;
+    }
+
     @Transient
     abstract public CollectableEntityType getType();
 

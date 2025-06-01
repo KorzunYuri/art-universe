@@ -22,3 +22,11 @@ export async function fetchArtists(params: {
 
     return response.data.data;
 }
+
+export async function updateArtistApprovalStatus(id: number, newStatus: number): Promise<LastfmArtist> {
+    const response = await axios.patch(`${LastfmConfig.baseApiUrl}/artists/${id}/approval`, {
+        approvalStatus: newStatus,
+    });
+
+    return response.data.data;
+}
