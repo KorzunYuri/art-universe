@@ -3,7 +3,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.impl;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.client.RestClient;
 import yurykorzun.art.universe.common.data.raw.api.client.service.BaseHttpApiClient;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiClient;
 
@@ -14,15 +14,15 @@ import java.util.Map;
 @Component
 public class LastfmApiClientImpl extends BaseHttpApiClient implements LastfmApiClient {
 
-    private final WebClient webClient;
+    private final RestClient restClient;
 
     private Map<String, String> defaultParamValues;
 
     @Value("${lastfm.apikey}")
     private String apiKey;
 
-    public LastfmApiClientImpl(WebClient.Builder webClientBuilder, @Value("${lastfm.baseUrl}") String baseUrl) {
-        this.webClient = webClientBuilder
+    public LastfmApiClientImpl(RestClient.Builder restClientBuilder, @Value("${lastfm.baseUrl}") String baseUrl) {
+        this.restClient = restClientBuilder
                 .baseUrl(baseUrl)
             .build();
     }
@@ -37,8 +37,8 @@ public class LastfmApiClientImpl extends BaseHttpApiClient implements LastfmApiC
     }
 
     @Override
-    protected WebClient getWebClient() {
-        return this.webClient;
+    protected RestClient getRestClient() {
+        return this.restClient;
     }
 
     @Override

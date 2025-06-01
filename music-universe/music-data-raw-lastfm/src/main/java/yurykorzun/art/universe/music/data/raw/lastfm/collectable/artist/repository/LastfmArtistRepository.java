@@ -1,5 +1,7 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -180,4 +182,5 @@ public interface LastfmArtistRepository extends JpaRepository<LastfmArtist, Long
         return findAllToGetInfoFor(LastfmConstants.HIBERNATE_BATCH_SIZE);
     }
 
+    Page<LastfmArtist> findByNameContainingIgnoreCase(String search, Pageable pageable);
 }

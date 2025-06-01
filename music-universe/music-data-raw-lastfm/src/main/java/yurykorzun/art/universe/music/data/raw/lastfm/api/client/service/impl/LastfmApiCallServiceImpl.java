@@ -8,7 +8,6 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import reactor.core.publisher.Mono;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiCallCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiResponseCreateRequest;
@@ -124,8 +123,7 @@ public class LastfmApiCallServiceImpl implements LastfmApiCallService {
         apiCallRepository.save(call);
 
         try {
-            String response = makeApiCallWithRetry(call)
-                    .block();
+            String response = makeApiCallWithRetry(call);
             responseService.createResponse(createApiResponseCreateDto(call, response));
             call.setStatus(ApiCallStatus.SUCCESSFUL);
         } catch (Exception ex) {
@@ -150,7 +148,7 @@ public class LastfmApiCallServiceImpl implements LastfmApiCallService {
                     multiplierExpression = "${lastfm.client.retry.multiplier}"
             )
     )
-    protected Mono<String> makeApiCallWithRetry(LastfmApiCall call) {
+    protected String makeApiCallWithRetry(LastfmApiCall call) {
         return apiClient.makeApiCall(call);
     }
 }

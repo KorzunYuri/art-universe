@@ -1,5 +1,7 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.impl;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.repository.LastfmArtistRepository;
@@ -35,6 +37,11 @@ public class LastfmArtistServiceImpl implements LastfmArtistService {
     @Override
     public Optional<LastfmArtist> findByName(String name) {
         return artistRepository.findByName(name);
+    }
+
+    @Override
+    public Page<LastfmArtist> findByName(String name, Pageable pageable) {
+        return artistRepository.findByNameContainingIgnoreCase(name, pageable);
     }
 
     @Override

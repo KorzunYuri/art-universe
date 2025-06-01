@@ -2,7 +2,7 @@ package yurykorzun.art.universe.common.data.raw.api.client.service;
 
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.client.RestClient;
 import reactor.core.publisher.Mono;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCall;
 
@@ -12,17 +12,17 @@ import java.util.Map;
 public abstract class BaseHttpApiClient implements ApiClient {
 
     @Override
-    public Mono<String> makeApiCall(ApiCall callDetails) {
-        return getWebClient().get()
+    public String makeApiCall(ApiCall callDetails) {
+        return getRestClient().get()
                 .uri(uriBuilder -> uriBuilder
                         .path(callDetails.getType().getPath())
                         .queryParams(getParamValues(callDetails))
                     .build())
                 .retrieve()
-                .bodyToMono(String.class);
+                .body(String.class);
     }
 
-    protected abstract WebClient getWebClient();
+    protected abstract RestClient getRestClient();
 
     protected Map<String, String> getDefaultParamValues() {
         return Collections.emptyMap();
