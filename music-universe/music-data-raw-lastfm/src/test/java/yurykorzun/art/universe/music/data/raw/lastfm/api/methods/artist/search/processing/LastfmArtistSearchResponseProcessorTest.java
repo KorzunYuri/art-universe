@@ -1,6 +1,7 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.search.processing;
 
 import lombok.AllArgsConstructor;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -31,6 +32,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static yurykorzun.art.universe.music.data.raw.lastfm.common.utils.AssertionUtils.*;
 
+@Tag("integration")
 @Import({
     LastfmArtistSearchResponseProcessor.class,
     LastfmArtistSearchArtistFactory.class,

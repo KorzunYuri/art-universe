@@ -3,6 +3,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptags
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -29,6 +30,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static yurykorzun.art.universe.music.data.raw.lastfm.common.utils.AssertionUtils.*;
 
+@Tag("integration")
 @Import({
     LastfmArtistTopTagsResponseProcessor.class,
     LastfmArtistTopTagsTagFactory.class,

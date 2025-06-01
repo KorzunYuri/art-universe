@@ -69,7 +69,22 @@ subprojects {
     }
 
     tasks.withType(Test).configureEach {
-        useJUnitPlatform()
+        useJUnitPlatform {
+            if (project.hasProperty("excludeIntegrationTests")) {
+                excludeTags 'integration'
+            }
+        }
+    }
+
+    tasks.register('integrationTest', Test) {
+        description = "Runs integration tests"
+        group = "verification"
+
+        useJUnitPlatform {
+            includeTags 'integration'
+        }
+
+        shouldRunAfter test
     }
 
     jacocoTestReport {

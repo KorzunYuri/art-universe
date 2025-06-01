@@ -1,6 +1,7 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.task.service.impl;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -20,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@Tag("integration")
 class LastfmTaskServiceImplTest extends FullContextTest {
 
     @MockitoBean

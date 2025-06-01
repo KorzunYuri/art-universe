@@ -15,6 +15,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Tag("integration")
 public class LastfmTagTopTagResponseProcessorTest extends FullContextTest {
 
     @Autowired

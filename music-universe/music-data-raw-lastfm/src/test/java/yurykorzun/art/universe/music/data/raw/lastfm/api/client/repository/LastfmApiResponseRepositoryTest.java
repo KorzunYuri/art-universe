@@ -1,5 +1,6 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiResponseStatus;
@@ -11,7 +12,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTe
 
 import static org.junit.jupiter.api.Assertions.*;
 
-
+@Tag("integration")
 class LastfmApiResponseRepositoryTest extends JpaOnlyTest {
 
     @Autowired

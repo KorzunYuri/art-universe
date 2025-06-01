@@ -1,5 +1,6 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.service.impl;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -17,6 +18,7 @@ import java.util.stream.IntStream;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@Tag("integration")
 @Import(LastfmTrackServiceImpl.class)
 class LastfmTrackServiceImplTest extends JpaOnlyTest {
 
