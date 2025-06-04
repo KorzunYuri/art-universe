@@ -1,7 +1,7 @@
 buildscript {
     ext {
-        springBootVersion = '2.7.12'
-        lombokVersion = '1.18.24'
+        springBootVersion = '3.4.3'
+        lombokVersion = '1.18.26'
         junitBomVersion = '5.10.0'
         liquibaseVersion = '4.15.0'
         testContainersVersion = '1.20.4'
@@ -36,6 +36,7 @@ allprojects {
 subprojects {
     apply plugin: 'java'
     apply plugin: 'io.spring.dependency-management'
+    apply plugin: 'jacoco'
 
     sourceCompatibility = '17'
     targetCompatibility = '17'
@@ -47,19 +48,20 @@ subprojects {
     }
 
     dependencies {
-        implementation "org.springframework.boot:spring-boot-starter"
-        implementation "org.liquibase:liquibase-core:${liquibaseVersion}"
-
-        runtimeOnly "org.postgresql:postgresql"
-
         compileOnly "org.projectlombok:lombok:${lombokVersion}"
         annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 
+        // tests
         testImplementation platform("org.junit:junit-bom:${junitBomVersion}")
         testImplementation "org.junit.jupiter:junit-jupiter"
 
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
         testImplementation "org.testcontainers:testcontainers:${testContainersVersion}"
-        testImplementation "org.testcontainers:postgresql:${testContainersPostgreVersion}"
+        testImplementation "org.testcontainers:junit-jupiter:${testContainersVersion}"
+
+        testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
+        testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
     }
 
     tasks.matching { it.name in ['jar', 'bootJar'] }.configureEach {
@@ -67,6 +69,29 @@ subprojects {
     }
 
     tasks.withType(Test).configureEach {
-        useJUnitPlatform()
+        useJUnitPlatform {
+            if (project.hasProperty("excludeIntegrationTests")) {
+                excludeTags 'integration'
+            }
+        }
+    }
+
+    tasks.register('integrationTest', Test) {
+        description = "Runs integration tests"
+        group = "verification"
+
+        useJUnitPlatform {
+            includeTags 'integration'
+        }
+
+        shouldRunAfter test
+    }
+
+    jacocoTestReport {
+        dependsOn test // tests are required to run before generating the report
+    }
+
+    test {
+        finalizedBy jacocoTestReport // report is always generated after tests run
     }
 }

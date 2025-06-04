@@ -1,0 +1,25 @@
+package yurykorzun.art.universe.music.data.raw.lastfm.task.entity;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+import yurykorzun.art.universe.common.data.raw.task.entity.Task;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
+
+@Entity(name = "task")
+@SuperBuilder
+@NoArgsConstructor
+@Getter
+public class LastfmTask extends Task {
+
+    @Id
+    @SequenceGenerator(
+            name = "task_seq_gen",
+            sequenceName = "task_seq",
+            allocationSize = LastfmConstants.HIBERNATE_BATCH_SIZE
+    )
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "task_seq_gen")
+    private long id;
+
+}

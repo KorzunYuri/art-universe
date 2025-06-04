@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+
+  postgres:
+    container_name: mu-raw-lastfm-local-db-postgres
+    restart: always
+    shm_size: 128mb
+    build:
+      dockerfile: ../common/postgres.dockerfile
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${PG_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${PG_PASSWORD:-postgres}
+      MURAW_LASTFM_DB_PASSWORD: ${MURAW_LASTFM_DB_PASSWORD}
+    volumes:
+      - mu-raw-lastfm-local-db-postgres-data:/var/lib/postgresql/data
+      - ../common/initdb/templates:/docker-entrypoint-initdb.d
+
+    command: bash -c "envsubst < /docker-entrypoint-initdb.d/init.sql.template > /docker-entrypoint-initdb.d/init.sql && exec docker-entrypoint.sh postgres"
+    ports:
+      - "9999:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  db-adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "9998:8080"
+    container_name: mu-raw-lastfm-local-db-adminer
+
+networks:
+  default:
+    name: mu-raw-lastfm-local-network
+
+volumes:
+  mu-raw-lastfm-local-db-postgres-data:

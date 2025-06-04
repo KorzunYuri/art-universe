@@ -1,0 +1,2 @@
+This environment is not supposed to be run by Spring Boot (although it's possible).
+Files are placed here only for convenience, as prod setup is very similar to the local one at the moment.

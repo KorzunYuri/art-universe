@@ -1,0 +1,1 @@
+ALTER TABLE api_response DROP COLUMN api_call_type;

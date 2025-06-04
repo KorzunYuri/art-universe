@@ -7,17 +7,18 @@ tasks.matching { it.name == 'bootJar' }.configureEach { enabled = true }
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.liquibase:liquibase-core'
+    implementation 'org.springframework.retry:spring-retry'
+    implementation 'org.springframework:spring-aspects'
 
+    implementation 'com.google.guava:guava:33.4.0-jre'
+    implementation 'info.debatty:java-string-similarity:2.0.0'
+
+    implementation "org.liquibase:liquibase-core:${liquibaseVersion}"
     runtimeOnly 'org.postgresql:postgresql'
-
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+    implementation 'io.hypersistence:hypersistence-utils-hibernate-63:3.9.3' // for jsonb persistence
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation "org.testcontainers:testcontainers"
-    testImplementation "org.testcontainers:postgresql"
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    testCompileOnly 'org.projectlombok:lombok'
-    testAnnotationProcessor 'org.projectlombok:lombok'
+    testImplementation "org.testcontainers:postgresql:${testContainersPostgreVersion}"
+
+    implementation 'org.springframework.boot:spring-boot-docker-compose'
 }

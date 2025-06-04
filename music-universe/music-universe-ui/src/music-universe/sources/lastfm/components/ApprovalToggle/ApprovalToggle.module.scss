@@ -1,0 +1,63 @@
+@use 'sass:color';
+@use "sass:map";
+
+$statuses: (
+        yes: (
+                active: #8cd98c,
+                inactive: #d6f5d6
+        ),
+        no: (
+                active: #e38080,
+                inactive: #f5d6d6
+        ),
+        auto: (
+                active: #80aee3,
+                inactive: #d6e4f5
+        )
+);
+
+.toggleContainer {
+    display: flex;
+    justify-content: space-between;
+    min-width: 150px;
+    flex-shrink: 0;
+}
+
+.button {
+    flex: 1;
+    padding: 4px 6px;
+    font-size: 0.9rem;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    background-color: #f7f7f7;
+    color: #333;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
+
+    &:hover:not(:disabled) {
+        filter: brightness(1.05);
+    }
+}
+
+@each $name, $color in $statuses {
+    .#{$name} {
+        background-color: map.get($color, inactive);
+        border-color: color.adjust(
+                        map.get($color, inactive),
+                $lightness: -20%
+        );
+    }
+
+    .active.#{$name} {
+        background-color: map.get($color, active);
+        border-color: color.adjust(
+                        map.get($color, active),
+                $lightness: -20%
+        );
+    }
+}

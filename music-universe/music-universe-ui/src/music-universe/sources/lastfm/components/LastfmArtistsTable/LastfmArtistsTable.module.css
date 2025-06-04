@@ -1,0 +1,19 @@
+.name {
+    flex: 12;
+    text-align: left;
+}
+
+.mbid {
+    flex: 3;
+}
+
+.status {
+    flex: 4;
+    display: flex;
+    justify-content: center;
+}
+
+.count {
+    flex: 3;
+    text-align: right;
+}

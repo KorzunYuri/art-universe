@@ -3,29 +3,96 @@ spring:
     name: music-universe-raw-data-service
   datasource:
     driverClassName: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:9999/music-universe
-    username: muraw_lastfm_dm
-    password: ${DB_MURAW_LASTFM_PASSWORD}
-  hikari:
-    maximum-pool-size: 10
-    minimum-idle: 2
-    pool-name: MusicUniverseHikariPool
+    url: jdbc:postgresql://${MURAW_LASTFM_DB_HOST:localhost}:${MURAW_LASTFM_DB_PORT:5432}/music_universe?currentSchema=mu_raw_lastfm
+    username: mu_raw_lastfm_dm
+    password: '${MURAW_LASTFM_DB_PASSWORD}'
+    hikari:
+      pool-name: MuRawLastFmHikariPool
+      maximum-pool-size: 10
+      minimum-idle: 2
   jpa:
     database: postgresql
     properties:
       hibernate:
+        order_by:
+          default_null_ordering: last
         dialect: org.hibernate.dialect.PostgreSQLDialect
         show-sql: false
         jdbc:
           batch_size: 10
+        order_inserts: true
+        order_updates: true
     hibernate:
       ddl-auto: none
   liquibase:
     change-log: classpath:db/migration/muraw/liquibase/db.changelog.xml
-
+  docker:
+    compose:
+      enabled: false
 server:
-  port: ${MURAW_LASTFM_PORT:8081}
+  port: ${MURAW_LASTFM_PORT:8080}
 
-logging:
-  level:
-    liquibase: DEBUG
+scheduling:
+  lastfm:
+    api:
+      calls:
+        generate:
+          fixedDelaySecs: 60
+        fetch:
+          fixedDelaySecs: 5
+      responses:
+        parse:
+          fixedDelaySecs: 5
+    tasks:
+      poolSize: 3
+      maintenance:
+        cron: "0 0 8 * * *"
+      tag:
+        topTags:
+          cron: "0 0 21 * * *"
+
+lastfm:
+  baseUrl: "http://ws.audioscrobbler.com/2.0/"
+  apikey: ${MURAW_LASTFM_API_KEY}
+  threshold:
+    artist:
+      listenersCount: 1000
+    album:
+      playCount: 10000
+    track:
+      playCount: 10000
+    tag:
+      usageCount: 1000
+  client:
+    callsPerSec: 1.0
+    retry:
+      max-attempts: 3
+      initial-delay-ms: 500
+      multiplier: 1.5
+    methods:
+      artist:
+        getInfo:
+          dueDurationDays: 7
+        getSimilar:
+          dueDurationDays: 28
+          artistMatchThreshold: 0.2
+        topTags:
+          dueDurationDays: 7
+          tagUsageCountThreshold: 10
+        topAlbums:
+          dueDurationDays: 28
+          albumPlayCountThreshold: 10000
+        topTracks:
+          dueDurationDays: 28
+          trackListenersThreshold: 1000
+        search:
+          artistSimilarityThreshold: 0.5
+      tag:
+        topTags:
+          recordsLimit: 2000 # it is known that Lastfm API offset breaks after 2000th record for this method
+          dueDurationDays: 7
+        topArtists:
+          dueDurationDays: 7
+        topTracks:
+          dueDurationDays: 7
+          usageToPageRatio: 50000 # for each N usages of the tag, ONE 50-items api call will be generated

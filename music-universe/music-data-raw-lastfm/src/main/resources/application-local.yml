@@ -1,0 +1,45 @@
+spring:
+  docker:
+    compose:
+      enabled: true
+      file: classpath:docker/compose/local/docker-compose.yml
+  jpa:
+    properties:
+      hibernate:
+        show-sql: true
+        generate_statistics: true
+
+logging:
+  level:
+    liquibase: DEBUG
+    org:
+      hibernate:
+        SQL: DEBUG
+        type:
+          descriptor:
+            sql:
+              BasicBinder: TRACE
+
+scheduling:
+  lastfm:
+    api:
+      calls:
+        fetch:
+          fixedDelaySecs: 10
+      responses:
+        parse:
+          fixedDelaySecs: 10
+    tasks:
+      tag:
+        topTags:
+          cron: "0 * * * * *"
+
+lastfm:
+  client:
+    callsPerSec: 0.5
+    methods:
+      tag:
+        topTags:
+          recordsLimit: 250
+        topArtists:
+          dueDurationDays: 1

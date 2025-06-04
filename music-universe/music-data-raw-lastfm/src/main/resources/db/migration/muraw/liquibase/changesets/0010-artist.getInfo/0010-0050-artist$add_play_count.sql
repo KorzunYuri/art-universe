@@ -1,0 +1,2 @@
+ALTER TABLE artist
+    ADD COLUMN play_count INTEGER DEFAULT -1;

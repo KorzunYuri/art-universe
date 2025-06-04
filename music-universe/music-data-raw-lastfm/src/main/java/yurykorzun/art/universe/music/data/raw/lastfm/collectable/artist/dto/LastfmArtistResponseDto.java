@@ -1,0 +1,27 @@
+package yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto;
+
+import jakarta.annotation.Nullable;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
+
+public record LastfmArtistResponseDto(
+    long id,
+    String name,
+    String url,
+    @Nullable String mbid,
+    Integer approvalStatus,
+    @Nullable Integer playCount,
+    @Nullable Integer listenersCount
+) {
+
+    public static LastfmArtistResponseDto from(LastfmArtist artist) {
+        return new LastfmArtistResponseDto(
+            artist.getId(),
+            artist.getName(),
+            artist.getUrl(),
+            artist.getMbid(),
+            artist.getApprovalStatus().getCode(),
+            artist.getPlayCount(),
+            artist.getListenersCount()
+        );
+    }
+}

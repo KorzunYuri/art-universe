@@ -1,0 +1,15 @@
+.page {
+    /* override text-align: center */
+    text-align: left;
+
+    width: 100%;
+    max-width: 1200px;
+
+    /* center horizontally */
+    margin: 1rem auto;
+
+    /* let content fill all the width */
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
