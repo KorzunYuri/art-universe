@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: music-universe-data-service
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://${MU_DB_HOST:localhost}:${MU_DB_PORT:5432}/music_universe?currentSchema=mu
+    username: mu_dm
+    password: '${MU_DB_PASSWORD_DM}'
+    hikari:
+      pool-name: MuFmHikariPool
+      maximum-pool-size: 10
+      minimum-idle: 2
+  jpa:
+    database: postgresql
+    properties:
+      hibernate:
+        order_by:
+          default_null_ordering: last
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        show-sql: false
+        jdbc:
+          batch_size: 10
+        order_inserts: true
+        order_updates: true
+    hibernate:
+      ddl-auto: none
+  liquibase:
+    change-log: classpath:db/migration/mu/liquibase/db.changelog.xml
+server:
+  port: ${MU_APP_PORT:8080}
