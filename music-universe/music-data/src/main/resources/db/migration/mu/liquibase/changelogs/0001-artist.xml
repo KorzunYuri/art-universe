@@ -7,6 +7,6 @@
     http://www.liquibase.org/xml/ns/dbchangelog-ext
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-    <includeAll path="../changesets/0001-initial" relativeToChangelogFile="true"/>
+    <includeAll path="../changesets/0001-artist" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

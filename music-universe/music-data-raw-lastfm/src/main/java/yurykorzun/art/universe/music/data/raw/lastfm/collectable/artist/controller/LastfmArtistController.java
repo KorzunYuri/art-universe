@@ -1,5 +1,6 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -8,12 +9,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto.LastfmArtistResponseDto;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.dto.ApprovalStatusRequestDto;
 
 @RestController
 @RequestMapping("/api/v1/artists")
+@Slf4j
 public class LastfmArtistController {
 
     private final LastfmArtistService artistService;
@@ -30,11 +31,11 @@ public class LastfmArtistController {
         @PageableDefault(size = 20, sort = "name") Pageable pageable
     ) {
         try {
-            Page<LastfmArtist> page = artistService.findByName(search, pageable);
-            Page<LastfmArtistResponseDto> dtoPage = page.map(LastfmArtistResponseDto::from);
-            return ResponseWrapper.success(dtoPage);
+            Page<LastfmArtistResponseDto> page = artistService.findByName(search, pageable);
+            return ResponseWrapper.success(page);
         } catch (Exception e) {
-            return ResponseWrapper.failure("Failed to fetch artists: " + e.getMessage());
+            log.error("Failed to fetch artists: {}", e.getMessage(), e);
+            return ResponseWrapper.failure("Failed to fetch artists: service error occurred");
         }
     }
 
@@ -44,10 +45,11 @@ public class LastfmArtistController {
         @RequestBody ApprovalStatusRequestDto request
     ) {
         try {
-            LastfmArtist artist = artistService.updateApprovalStatus(id, request.approvalStatus());
-            return ResponseWrapper.success(LastfmArtistResponseDto.from(artist));
+            LastfmArtistResponseDto artist = artistService.updateApprovalStatus(id, request.approvalStatus());
+            return ResponseWrapper.success(artist);
         } catch (Exception e) {
-            return ResponseWrapper.failure(String.format("Failed to update artist {%s} approval status: %s", id, e.getMessage()));
+            log.error("Failed to update approval status: {}", e.getMessage(), e);
+            return ResponseWrapper.failure("Failed to update approval status: service error occurred");
         }
     }
 }

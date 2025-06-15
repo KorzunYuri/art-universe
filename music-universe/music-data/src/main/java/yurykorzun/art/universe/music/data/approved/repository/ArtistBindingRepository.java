@@ -1,0 +1,40 @@
+package yurykorzun.art.universe.music.data.approved.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+import yurykorzun.art.universe.music.data.approved.dto.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.approved.entity.ArtistBinding;
+import yurykorzun.art.universe.music.data.approved.entity.DataSource;
+
+import java.util.List;
+
+@Repository
+public interface ArtistBindingRepository extends JpaRepository<ArtistBinding, Long> {
+
+    /**
+     * Returns bindings for a list of artists from external source.
+     * @param dataSource    data source code
+     * @param externalIds   list of external artists ids
+     * @return list of bindings for artists that are already bound
+     */
+    @Query("""
+        SELECT  ab.externalId   AS externalId,
+                ab.dataSource   AS dataSource,
+                ab.referenceId  AS referenceId,
+                a.name          AS referenceName
+        FROM
+            artist_binding ab
+        JOIN
+            artist a
+                ON  ab.referenceId = a.id
+        WHERE   ab.dataSource = :dataSource
+            AND ab.externalId IN :externalIds
+    """)
+    List<BoundEntityProjection> findBoundArtistsForDataSource(
+        @Param("dataSource")    DataSource dataSource,
+        @Param("externalIds")   List<Long> externalIds
+    );
+
+}

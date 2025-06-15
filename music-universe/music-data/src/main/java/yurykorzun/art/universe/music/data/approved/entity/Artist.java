@@ -1,10 +1,7 @@
 package yurykorzun.art.universe.music.data.approved.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import yurykorzun.art.universe.common.persistence.entity.BaseEntity;
 
@@ -22,9 +19,10 @@ public class Artist extends BaseEntity {
         allocationSize = 50
     )
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "artist_seq_gen")
-    @Setter(value = AccessLevel.NONE)
-    private long id;
+    @Setter(AccessLevel.NONE)
+    private Long id;
 
+    @NonNull
     @Column(name = "name")
     private String name;
 
