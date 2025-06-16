@@ -5,12 +5,12 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
 
-    <changeSet id="0001-0010-artist$initial" author="yurykorzun">
-        <sqlFile path="../changesets/0001-artist/0001-0010-artist$initial.sql" relativeToChangelogFile="true"/>
+    <changeSet id="0002-0010-album$initial" author="yurykorzun">
+        <sqlFile path="../changesets/0002-album/0002-0010-album$initial.sql" relativeToChangelogFile="true"/>
     </changeSet>
 
-    <changeSet id="0001-0020-artist_binding$initial" author="yurykorzun">
-        <sqlFile path="../changesets/0001-artist/0001-0020-artist_binding$initial.sql" relativeToChangelogFile="true"/>
+    <changeSet id="0002-0020-album_binding$initial" author="yurykorzun">
+        <sqlFile path="../changesets/0002-album/0002-0020-album_binding$initial.sql" relativeToChangelogFile="true"/>
     </changeSet>
 
 </databaseChangeLog>

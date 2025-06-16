@@ -1,0 +1,14 @@
+package yurykorzun.art.universe.music.data.approved.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import yurykorzun.art.universe.music.data.approved.entity.Album;
+
+import java.util.Optional;
+
+@Repository
+public interface AlbumRepository extends JpaRepository<Album, Long> {
+    
+    Optional<Album> findByNameAndPrimaryArtistId(String name, Long primaryArtistId);
+    
+}
