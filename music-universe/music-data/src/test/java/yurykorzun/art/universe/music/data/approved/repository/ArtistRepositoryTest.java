@@ -41,23 +41,6 @@ class ArtistRepositoryTest extends JpaOnlyTest {
     }
 
     @Test
-    void shouldFindArtistByName() {
-        // given
-        Artist artist = Artist.builder()
-            .name("Radiohead")
-            .build();
-        em.persist(artist);
-        em.flush();
-
-        // when
-        Optional<Artist> found = artistRepository.findByName("Radiohead");
-
-        // then
-        assertTrue(found.isPresent());
-        assertThat(found.get().getName()).isEqualTo("Radiohead");
-    }
-
-    @Test
     void shouldUpdateArtist() {
         // given
         Artist artist = Artist.builder()

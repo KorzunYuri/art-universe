@@ -37,7 +37,7 @@ public class ArtistControllerTest {
     }
 
     @Test
-    void shouldReturnBoundArtistsSuccessfully() {
+    void whenFindBoundArtists_shouldReturnSuccessResponse() {
         // Given
         DataSource dataSource = DataSource.SPOTIFY;
         List<Long> externalIds = Arrays.asList(123L, 456L);
@@ -55,7 +55,7 @@ public class ArtistControllerTest {
     }
 
     @Test
-    void shouldReturnErrorWhenServiceFails() {
+    void whenFindBoundArtists_withException_shouldReturnFailureResponse() {
         // Given
         DataSource dataSource = DataSource.SPOTIFY;
         List<Long> externalIds = Arrays.asList(123L, 456L);

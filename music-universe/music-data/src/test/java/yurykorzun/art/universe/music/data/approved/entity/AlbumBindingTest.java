@@ -26,31 +26,16 @@ public class AlbumBindingTest {
 
     @Test
     void whenReferenceIdNotSet_shouldFailToCreateAlbumBinding() {
-        assertThrows(NullPointerException.class, () -> 
-            AlbumBinding.builder()
-                .referenceId(null)
-                .dataSource(DataSource.LASTFM)
-                .externalId(123L)
-                .build());
+        assertThrows(NullPointerException.class, () -> AlbumBinding.builder().referenceId(null));
     }
 
     @Test
     void whenDataSourceNotSet_shouldFailToCreateAlbumBinding() {
-        assertThrows(NullPointerException.class, () -> 
-            AlbumBinding.builder()
-                .referenceId(1L)
-                .dataSource(null)
-                .externalId(123L)
-                .build());
+        assertThrows(NullPointerException.class, () -> AlbumBinding.builder().dataSource(null));
     }
 
     @Test
     void whenExternalIdNotSet_shouldFailToCreateAlbumBinding() {
-        assertThrows(NullPointerException.class, () -> 
-            AlbumBinding.builder()
-                .referenceId(1L)
-                .dataSource(DataSource.LASTFM)
-                .externalId(null)
-                .build());
+        assertThrows(NullPointerException.class, () -> AlbumBinding.builder().externalId(null));
     }
 }

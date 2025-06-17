@@ -39,21 +39,18 @@ public class AlbumBindingRepositoryTest extends JpaOnlyTest {
         album1 = Album.builder()
             .name("OK Computer")
             .primaryArtistId(artist.getId())
-            .releaseDate(LocalDate.of(1997, 5, 21))
             .build();
         albumRepository.save(album1);
 
         album2 = Album.builder()
             .name("Kid A")
             .primaryArtistId(artist.getId())
-            .releaseDate(LocalDate.of(2000, 10, 2))
             .build();
         albumRepository.save(album2);
 
         album3 = Album.builder()
             .name("In Rainbows")
             .primaryArtistId(artist.getId())
-            .releaseDate(LocalDate.of(2007, 10, 10))
             .build();
         albumRepository.save(album3);
 

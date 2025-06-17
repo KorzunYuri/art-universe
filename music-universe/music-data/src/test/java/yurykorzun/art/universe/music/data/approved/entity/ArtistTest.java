@@ -20,6 +20,6 @@ public class ArtistTest {
 
     @Test
     void whenNameNotSet_shouldFailToCreateArtist() {
-        assertThrows(NullPointerException.class, () -> Artist.builder().name(null).build());
+        assertThrows(NullPointerException.class, () -> Artist.builder().name(null));
     }
 }

@@ -22,7 +22,6 @@ public class AlbumTest {
         assertEquals(name, album.getName());
         assertEquals(primaryArtistId, album.getPrimaryArtistId());
         assertNull(album.getAlbumGroupId());
-        assertNull(album.getReleaseDate());
     }
 
     @Test
@@ -30,36 +29,25 @@ public class AlbumTest {
         String name = "OK Computer";
         Long primaryArtistId = 1L;
         Long albumGroupId = 2L;
-        LocalDate releaseDate = LocalDate.of(1997, 5, 21);
 
         Album album = Album.builder()
             .name(name)
             .primaryArtistId(primaryArtistId)
             .albumGroupId(albumGroupId)
-            .releaseDate(releaseDate)
             .build();
 
         assertEquals(name, album.getName());
         assertEquals(primaryArtistId, album.getPrimaryArtistId());
         assertEquals(albumGroupId, album.getAlbumGroupId());
-        assertEquals(releaseDate, album.getReleaseDate());
     }
 
     @Test
     void whenNameNotSet_shouldFailToCreateAlbum() {
-        assertThrows(NullPointerException.class, () -> 
-            Album.builder()
-                .name(null)
-                .primaryArtistId(1L)
-                .build());
+        assertThrows(NullPointerException.class, () -> Album.builder().name(null));
     }
 
     @Test
     void whenPrimaryArtistIdNotSet_shouldFailToCreateAlbum() {
-        assertThrows(NullPointerException.class, () -> 
-            Album.builder()
-                .name("OK Computer")
-                .primaryArtistId(null)
-                .build());
+        assertThrows(NullPointerException.class, () -> Album.builder().primaryArtistId(null));
     }
 }

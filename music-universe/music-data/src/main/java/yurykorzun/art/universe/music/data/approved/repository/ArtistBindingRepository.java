@@ -27,8 +27,7 @@ public interface ArtistBindingRepository extends JpaRepository<ArtistBinding, Lo
         FROM
             artist_binding ab
         JOIN
-            artist a
-                ON  ab.referenceId = a.id
+            ab.artist a
         WHERE   ab.dataSource = :dataSource
             AND ab.externalId IN :externalIds
     """)

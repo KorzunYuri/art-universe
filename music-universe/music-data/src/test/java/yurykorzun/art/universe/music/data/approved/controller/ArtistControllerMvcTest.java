@@ -7,17 +7,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 import yurykorzun.art.universe.common.controller.ResponseWrapper;
+import yurykorzun.art.universe.music.data.approved.dto.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.approved.dto.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.approved.entity.DataSource;
 import yurykorzun.art.universe.music.data.approved.service.ArtistService;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -27,40 +28,56 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class ArtistControllerMvcTest {
 
     @Autowired
-    private WebApplicationContext context;
-
-    @Autowired
     private ObjectMapper objectMapper;
 
     @MockitoBean
     private ArtistService artistService;
 
+    @Autowired
     private MockMvc mockMvc;
 
     private List<TestBoundEntityProjectionImpl> mockArtistBindings;
 
     @BeforeEach
     void setup() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
-
-        mockArtistBindings = Arrays.asList(
-            new TestBoundEntityProjectionImpl(123L, DataSource.LASTFM, 321L, "artist1"),
-            new TestBoundEntityProjectionImpl(456L, DataSource.SPOTIFY, 654L, "artist2")
-        );
+        TestBoundEntityProjectionImpl binding1 = new TestBoundEntityProjectionImpl(123L, DataSource.LASTFM, 321L, "artist1");
+        TestBoundEntityProjectionImpl binding2 = new TestBoundEntityProjectionImpl(456L, DataSource.LASTFM, 654L, "artist2");
+        TestBoundEntityProjectionImpl binding3 = new TestBoundEntityProjectionImpl(789L, DataSource.SPOTIFY, 987L, "artist3");
+        mockArtistBindings = List.of(binding1, binding2, binding3);
     }
 
     @Test
-    void shouldReturnBoundArtistsSuccessfully() throws Exception {
+    void whenFindBoundAlbums_withNoResults_shouldReturnEmptyList() throws Exception {
         // Given
-        DataSource dataSource = DataSource.SPOTIFY;
-        List<Long> externalIds = Arrays.asList(123L, 456L);
+        final DataSource dataSource = DataSource.LASTFM;
+        List<BoundEntityProjection> emptyList = Collections.emptyList();
+        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(emptyList));
+        
+        when(artistService.findBoundArtists(eq(dataSource), any()))
+            .thenReturn(emptyList);
+
+        // When/Then
+        mockMvc.perform(get("/api/v1/artists/bound/{dataSource}", dataSource)
+                .param("externalIds", "999,888"))
+            .andExpect(status().isOk())
+            .andExpect(content().json(expectedJson));
+    }
+
+    @Test
+    void whenFindBoundArtists_withMatchingArtists_shouldReturnMatchingOnly() throws Exception {
+        // Given
+        DataSource dataSource = DataSource.LASTFM;
+        List<BoundEntityProjection> expectedArtists = mockArtistBindings.stream()
+            .filter(p -> dataSource.equals(p.getDataSource()))
+            .map(BoundEntityProjection.class::cast)
+            .toList();
+        List<Long> externalIds = expectedArtists.stream().map(BoundEntityProjection::getExternalId).toList();
         final String[] externalIdParams = externalIds.stream()
             .map(String::valueOf)
             .toArray(String[]::new);
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(mockArtistBindings));
+        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(expectedArtists));
 
-        when(artistService.findBoundArtists(dataSource, externalIds))
-            .thenReturn(new ArrayList<>(mockArtistBindings));
+        when(artistService.findBoundArtists(dataSource, externalIds)).thenReturn(expectedArtists);
 
         // When & Then
         mockMvc.perform(get("/api/v1/artists/bound/{dataSource}", dataSource)
@@ -71,7 +88,31 @@ class ArtistControllerMvcTest {
     }
 
     @Test
-    void shouldReturnErrorWhenServiceFails() throws Exception {
+    void whenFindBoundArtists_withSingleMatchingArtist_shouldReturnMatchingOnly() throws Exception {
+        // Given
+        DataSource dataSource = DataSource.SPOTIFY;
+        List<BoundEntityProjection> expectedArtists = mockArtistBindings.stream()
+            .filter(p -> dataSource.equals(p.getDataSource()))
+            .map(BoundEntityProjection.class::cast)
+            .toList();
+        List<Long> externalIds = expectedArtists.stream().map(BoundEntityProjection::getExternalId).toList();
+        final String[] externalIdParams = externalIds.stream()
+            .map(String::valueOf)
+            .toArray(String[]::new);
+        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(expectedArtists));
+
+        when(artistService.findBoundArtists(dataSource, externalIds)).thenReturn(expectedArtists);
+
+        // When & Then
+        mockMvc.perform(get("/api/v1/artists/bound/{dataSource}", dataSource)
+                .param("externalIds", externalIdParams))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(content().json(expectedJson));
+    }
+
+    @Test
+    void shouldReturnError_whenServiceFails() throws Exception {
         // Given
         DataSource dataSource = DataSource.SPOTIFY;
         List<Long> externalIds = Arrays.asList(123L, 456L);

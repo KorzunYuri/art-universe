@@ -41,8 +41,5 @@ public class Album extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "album_group_id", insertable = false, updatable = false)
-    private Album albumGroup;
-
-    @Column(name = "release_date")
-    private LocalDate releaseDate;
+    private Album originalAlbum;
 }

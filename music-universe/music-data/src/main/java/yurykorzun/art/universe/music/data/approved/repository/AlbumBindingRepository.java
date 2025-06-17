@@ -27,8 +27,7 @@ public interface AlbumBindingRepository extends JpaRepository<AlbumBinding, Long
         FROM
             album_binding ab
         JOIN
-            album a
-                ON  ab.referenceId = a.id
+            ab.album a
         WHERE   ab.dataSource = :dataSource
             AND ab.externalId IN :externalIds
     """)

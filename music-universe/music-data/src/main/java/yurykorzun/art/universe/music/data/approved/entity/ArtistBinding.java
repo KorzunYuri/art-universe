@@ -26,6 +26,10 @@ public class ArtistBinding extends BaseEntity {
     @Column(name = "reference_id", nullable = false)
     private Long referenceId;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reference_id", insertable = false, updatable = false)
+    private Artist artist;
+
     @NonNull
     @Column(name = "data_source_id", nullable = false)
     @Convert(converter = DataSourceConverter.class)

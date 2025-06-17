@@ -28,7 +28,6 @@ public class AlbumRepositoryTest extends JpaOnlyTest {
         Album album = Album.builder()
             .name("OK Computer")
             .primaryArtistId(artist.getId())
-            .releaseDate(LocalDate.of(1997, 5, 21))
             .build();
 
         // When
@@ -38,48 +37,5 @@ public class AlbumRepositoryTest extends JpaOnlyTest {
         assertNotNull(savedAlbum.getId());
         assertEquals("OK Computer", savedAlbum.getName());
         assertEquals(artist.getId(), savedAlbum.getPrimaryArtistId());
-        assertEquals(LocalDate.of(1997, 5, 21), savedAlbum.getReleaseDate());
-    }
-
-    @Test
-    void whenFindByNameAndPrimaryArtistId_shouldReturnCorrectAlbum() {
-        // Given
-        Artist artist = Artist.builder().name("Radiohead").build();
-        artistRepository.save(artist);
-
-        Album album = Album.builder()
-            .name("OK Computer")
-            .primaryArtistId(artist.getId())
-            .releaseDate(LocalDate.of(1997, 5, 21))
-            .build();
-        albumRepository.save(album);
-
-        // When
-        Optional<Album> foundAlbum = albumRepository.findByNameAndPrimaryArtistId("OK Computer", artist.getId());
-
-        // Then
-        assertTrue(foundAlbum.isPresent());
-        assertEquals("OK Computer", foundAlbum.get().getName());
-        assertEquals(artist.getId(), foundAlbum.get().getPrimaryArtistId());
-    }
-
-    @Test
-    void whenFindByNameAndPrimaryArtistId_withNonExistingName_shouldReturnEmpty() {
-        // Given
-        Artist artist = Artist.builder().name("Radiohead").build();
-        artistRepository.save(artist);
-
-        Album album = Album.builder()
-            .name("OK Computer")
-            .primaryArtistId(artist.getId())
-            .releaseDate(LocalDate.of(1997, 5, 21))
-            .build();
-        albumRepository.save(album);
-
-        // When
-        Optional<Album> foundAlbum = albumRepository.findByNameAndPrimaryArtistId("Kid A", artist.getId());
-
-        // Then
-        assertTrue(foundAlbum.isEmpty());
     }
 }

@@ -1,9 +1,8 @@
 CREATE TABLE album (
         id                  BIGINT
-    ,   name                TEXT            NOT NULL
+    ,   name                VARCHAR(1024)   NOT NULL
     ,   primary_artist_id   BIGINT          NOT NULL
     ,   album_group_id      BIGINT
-    ,   release_date        DATE
     ,   created_at          TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP
     ,   updated_at          TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP
     ,   CONSTRAINT album_PK

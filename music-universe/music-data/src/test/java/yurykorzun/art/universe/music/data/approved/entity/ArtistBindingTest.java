@@ -29,28 +29,16 @@ public class ArtistBindingTest {
 
     @Test
     void shouldFailToCreateArtistBinding_withNullReferenceId() {
-        // given
-        var builder = ArtistBinding.builder();
-
-        // when + then
-        assertThrows(NullPointerException.class, () -> builder.referenceId(null));
+        assertThrows(NullPointerException.class, () -> ArtistBinding.builder().referenceId(null));
     }
 
     @Test
     void shouldFailToCreateArtistBinding_withNullDataSource() {
-        // given
-        var builder = ArtistBinding.builder();
-
-        // when + then
-        assertThrows(NullPointerException.class, () -> builder.dataSource(null));
+        assertThrows(NullPointerException.class, () -> ArtistBinding.builder().dataSource(null));
     }
 
     @Test
     void shouldFailToCreateArtistBinding_withNullExternalId() {
-        // given
-        var builder = ArtistBinding.builder();
-
-        // when + then
-        assertThrows(NullPointerException.class, () -> builder.externalId(null));
+        assertThrows(NullPointerException.class, () -> ArtistBinding.builder().externalId(null));
     }
 }
