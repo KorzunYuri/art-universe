@@ -8,6 +8,8 @@ import { LastfmConfig } from "@/music-universe/sources/lastfm/config/lastfmconfi
 import type { LastfmArtist } from "@/music-universe/sources/lastfm/types";
 import { bindArtist, unbindArtist } from "@/music-universe/sources/music-data/api/music-data-artists.ts";
 import { updateArtistApprovalStatus } from "@/music-universe/sources/lastfm/api/lastfm-artists.ts";
+// constants
+import { ApprovalStatus } from "@/music-universe/sources/lastfm/constants/approvalStatus";
 // styles
 import commonStyles from "@/music-universe/shared/styles/common.module.scss";
 import sharedTableStyles from "@/music-universe/sources/lastfm/common/LastfmEntityTable.module.scss";
@@ -24,10 +26,21 @@ export const LastfmArtistsTableRow = ({artist, onChange}: LastfmArtistTableRowPr
     const [isBinding, setIsBinding] = useState(false);
     const [isUnbinding, setIsUnbinding] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
+    const [isApproving, setIsApproving] = useState(false);
 
     function onStatusChange(artistToUpdate: LastfmArtist, newStatus: number) {
+        setIsApproving(true);
         updateArtistApprovalStatus(artistToUpdate.id, newStatus)
-            .then(onChange);
+            .then(updatedArtist => {
+                // Preserve the boundArtist information when updating approval status
+                onChange({
+                    ...updatedArtist,
+                    boundArtist: artist.boundArtist
+                });
+            })
+            .finally(() => {
+                setIsApproving(false);
+            });
     }
 
     async function handleBind() {
@@ -35,10 +48,30 @@ export const LastfmArtistsTableRow = ({artist, onChange}: LastfmArtistTableRowPr
         
         setIsBinding(true);
         try {
+            // First, approve the artist if not already approved
+            if (artist.approvalStatus !== ApprovalStatus.APPROVED) {
+                try {
+                    // Explicitly approve the artist on LastFM
+                    const approvedArtist = await updateArtistApprovalStatus(artist.id, ApprovalStatus.APPROVED);
+                    
+                    // Update our local state with the approved artist
+                    artist = {
+                        ...approvedArtist,
+                        boundArtist: artist.boundArtist // Preserve existing binding if any
+                    };
+                } catch (error) {
+                    console.error("Failed to approve artist:", error);
+                    // Continue with binding even if approval fails
+                }
+            }
+            
+            // Then bind the artist
             const result = await bindArtist(artist.id, artistName);
             if (result) {
+                // Update the artist with both the binding and approval status
                 onChange({
                     ...artist,
+                    approvalStatus: ApprovalStatus.APPROVED, // Ensure approval status is set to APPROVED
                     boundArtist: {
                         referenceId: result.referenceId,
                         referenceName: result.referenceName
@@ -89,6 +122,7 @@ export const LastfmArtistsTableRow = ({artist, onChange}: LastfmArtistTableRowPr
                 <ApprovalToggle
                     status={artist.approvalStatus}
                     onChange={(newStatus) => onStatusChange(artist, newStatus)}
+                    disabled={isApproving || isBinding}
                 />
             </div>
 
@@ -100,7 +134,7 @@ export const LastfmArtistsTableRow = ({artist, onChange}: LastfmArtistTableRowPr
                         </span>
                         <button
                             onClick={handleUnbind}
-                            disabled={isUnbinding}
+                            disabled={isUnbinding || isApproving}
                             className={`${artistRowStyles.bindingButton}`}
                         >
                             {isUnbinding ? "..." : "Unbind"}
@@ -117,7 +151,7 @@ export const LastfmArtistsTableRow = ({artist, onChange}: LastfmArtistTableRowPr
                         />
                         <button
                             onClick={handleBind}
-                            disabled={isBinding || !artistName.trim()}
+                            disabled={isBinding || isApproving || !artistName.trim()}
                             className={`${artistRowStyles.bindingButton}`}
                         >
                             {isBinding ? "..." : "Bind"}
