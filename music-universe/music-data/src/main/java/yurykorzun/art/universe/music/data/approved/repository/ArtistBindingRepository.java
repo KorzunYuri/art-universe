@@ -9,6 +9,7 @@ import yurykorzun.art.universe.music.data.approved.entity.ArtistBinding;
 import yurykorzun.art.universe.music.data.approved.entity.DataSource;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ArtistBindingRepository extends JpaRepository<ArtistBinding, Long> {
@@ -35,5 +36,14 @@ public interface ArtistBindingRepository extends JpaRepository<ArtistBinding, Lo
         @Param("dataSource")    DataSource dataSource,
         @Param("externalIds")   List<Long> externalIds
     );
+    
+    /**
+     * Find a binding by data source and external ID
+     * 
+     * @param dataSource The data source
+     * @param externalId The external ID
+     * @return The binding if found
+     */
+    Optional<ArtistBinding> findByDataSourceAndExternalId(DataSource dataSource, Long externalId);
 
 }

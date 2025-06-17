@@ -1,3 +1,16 @@
+.searchBar {
+
+    display: flex;
+
+    .loading {
+        display: inline-block;
+        text-align: center;
+        padding: 0.6em 1.2em;
+        margin-left: auto;
+    }
+}
+
+
 .name {
     flex: 12;
     text-align: left;
@@ -11,6 +24,12 @@
     flex: 4;
     display: flex;
     justify-content: center;
+}
+
+.binding {
+    flex: 8;
+    display: flex;
+    text-align: left;
 }
 
 .count {
