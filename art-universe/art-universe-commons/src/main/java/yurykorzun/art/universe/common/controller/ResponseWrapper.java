@@ -1,10 +1,12 @@
 package yurykorzun.art.universe.common.controller;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+//@JsonInclude(JsonInclude.Include.NON_NULL)
 @Data
 @AllArgsConstructor
 public class ResponseWrapper<T> {
@@ -14,12 +16,20 @@ public class ResponseWrapper<T> {
     private T data;
 
     public static <T> ResponseEntity<ResponseWrapper<T>> success(T data) {
-        return ResponseEntity.ok(new ResponseWrapper<>(true, null, data));
+        return ResponseEntity.ok(successBody(data));
     }
 
-    public static <T> ResponseEntity<ResponseWrapper<T>> failure(String message) {
+    public static <T> ResponseWrapper<T> successBody(T data) {
+        return new ResponseWrapper<>(true, null, data);
+    }
+
+    public static <T> ResponseEntity<ResponseWrapper<T>> failure(String errorMessage) {
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(new ResponseWrapper<>(false, message, null));
+            .body(failureBody(errorMessage));
+    }
+
+    public static <T> ResponseWrapper<T> failureBody(String errorMessage) {
+        return new ResponseWrapper<>(false, errorMessage, null);
     }
 }

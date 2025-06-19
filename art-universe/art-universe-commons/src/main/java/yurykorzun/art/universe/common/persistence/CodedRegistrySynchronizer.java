@@ -1,7 +1,7 @@
-package yurykorzun.art.universe.music.data.raw.lastfm.common;
+package yurykorzun.art.universe.common.persistence;
 
 import jakarta.annotation.PostConstruct;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.common.Coded;

@@ -74,7 +74,8 @@ class LastfmArtistControllerTest {
         List<LastfmArtist> artistList = List.of(artist1, artist2);
         Page<LastfmArtist> artistPage = new PageImpl<>(artistList, pageable, artistList.size());
 
-        when(artistService.findByName(search, pageable)).thenReturn(artistPage);
+        when(artistService.findByName(search, pageable))
+            .thenReturn(artistPage.map(LastfmArtistResponseDto::from));
 
         // when
         ResponseEntity<ResponseWrapper<Page<LastfmArtistResponseDto>>> response = controller.getArtists(search, pageable);
@@ -119,7 +120,8 @@ class LastfmArtistControllerTest {
 
         LastfmArtist artist = EntityCreationHelper.createArtist(b -> b.approvalStatus(newApprovalStatus));
 
-        when(artistService.updateApprovalStatus(artistId, approvalStatusCode)).thenReturn(artist);
+        when(artistService.updateApprovalStatus(artistId, approvalStatusCode))
+            .thenReturn(LastfmArtistResponseDto.from(artist));
 
         ResponseEntity<ResponseWrapper<LastfmArtistResponseDto>> response =
             controller.updateApprovalStatus(artistId, new ApprovalStatusRequestDto(approvalStatusCode));
@@ -143,6 +145,6 @@ class LastfmArtistControllerTest {
             controller.updateApprovalStatus(artistId, new ApprovalStatusRequestDto(999));
 
         assertFalse(response.getBody().isSuccess());
-        assertTrue(response.getBody().getMessage().contains("Failed to update artist"));
+        assertTrue(response.getBody().getMessage().contains("Failed to update approval status"));
     }
 }

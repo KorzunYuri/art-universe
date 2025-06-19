@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
+
+    <changeSet id="0004-0010-track$initial" author="yurykorzun">
+        <sqlFile path="../changesets/0004-track/0004-0010-track$initial.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0004-0020-track_binding$initial" author="yurykorzun">
+        <sqlFile path="../changesets/0004-track/0004-0020-track_binding$initial.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+</databaseChangeLog>

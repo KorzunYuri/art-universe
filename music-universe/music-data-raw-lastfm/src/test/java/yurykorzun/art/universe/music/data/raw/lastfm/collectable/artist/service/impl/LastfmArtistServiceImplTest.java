@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto.LastfmArtistResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.repository.LastfmArtistRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
@@ -102,9 +103,9 @@ class LastfmArtistServiceImplTest {
         when(artistRepository.findById(artistId)).thenReturn(Optional.of(existing));
         when(artistRepository.save(any(LastfmArtist.class))).thenReturn(updated);
 
-        LastfmArtist result = artistService.updateApprovalStatus(artistId, newStatus.getCode());
+        LastfmArtistResponseDto result = artistService.updateApprovalStatus(artistId, newStatus.getCode());
 
-        assertEquals(newStatus, result.getApprovalStatus());
+        assertEquals(newStatus.getCode(), result.approvalStatus());
         verify(artistRepository).save(existing);
     }
 

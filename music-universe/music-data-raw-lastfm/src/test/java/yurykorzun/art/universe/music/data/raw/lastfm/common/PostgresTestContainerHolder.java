@@ -7,7 +7,7 @@ public class PostgresTestContainerHolder {
 
     private PostgresTestContainerHolder() {}
 
-    private static final String POSTGRES_IMAGE_NAME = "postgres:14";
+    private static final String POSTGRES_IMAGE_NAME = "postgres:14-alpine";
 
     @Getter
     static final PostgreSQLContainer<?> container;

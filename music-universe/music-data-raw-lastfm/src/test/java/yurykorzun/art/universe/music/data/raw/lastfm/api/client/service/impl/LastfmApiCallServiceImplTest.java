@@ -52,10 +52,8 @@ class LastfmApiCallServiceImplTest {
                 5.0 // limiter constant
             );
 
-        // spy, for self-injection to refer to the spied object
+        // self-inject a spy
         service = Mockito.spy(rawService);
-
-        // inject self
         ReflectionTestUtils.setField(service, "self", service);
     }
 

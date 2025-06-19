@@ -1,0 +1,24 @@
+plugins {
+    id 'base'
+}
+
+// get command dependent on OS
+def npmCommand = System.getProperty('os.name').toLowerCase().contains('windows') ? 'npm.cmd' : 'npm'
+
+task npmInstall(type: Exec) {
+    workingDir '.'
+    commandLine npmCommand, 'install', '--legacy-peer-deps'
+    ignoreExitValue = true
+}
+
+task npmTest(type: Exec) {
+    workingDir '.'
+    commandLine npmCommand, 'test', '--', '--testPathPattern=LastfmArtistsTableRow.simple.test.tsx'
+    ignoreExitValue = true
+    dependsOn npmInstall
+}
+
+// override standard test task
+tasks.named('test').configure {
+    dependsOn npmTest
+}

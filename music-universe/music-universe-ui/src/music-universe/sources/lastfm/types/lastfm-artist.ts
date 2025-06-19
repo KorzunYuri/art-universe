@@ -6,4 +6,8 @@ export interface LastfmArtist {
     approvalStatus: number
     playCount: number
     listenersCount: number
+    boundArtist?: {
+        referenceId: number
+        referenceName: string
+    }
 }

@@ -35,10 +35,8 @@ class LastfmApiResponseServiceImplTest {
             null
         );
 
-        // spy, for self-injection to refer to the spied object
+        // self-inject a spy
         apiResponseService = Mockito.spy(apiResponseService);
-
-        // inject self
         ReflectionTestUtils.setField(apiResponseService, "self", apiResponseService);
     }
 

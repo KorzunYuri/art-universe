@@ -1,35 +1,30 @@
 import styles from './ApprovalToggle.module.scss'
-
-const PENDING = 1
-const APPROVED = 2
-const DECLINED = 3
-const AUTOAPPROVED = 4
-
-type Status = typeof APPROVED | typeof DECLINED | typeof AUTOAPPROVED
+import { ApprovalStatus, type ApprovalStatusType } from '@/music-universe/sources/lastfm/constants/approvalStatus'
 
 interface Props {
     status: number
     onChange: (newStatus: number) => void
     className?: string
+    disabled?: boolean
 }
 
 const options: {
     label: string
-    value: Status
+    value: ApprovalStatusType
     color: 'yes' | 'no' | 'auto'
-    disabled?: boolean
+    alwaysDisabled?: boolean
 }[] = [
-    { label: 'yes', value: APPROVED, color: 'yes' },
-    { label: 'no', value: DECLINED, color: 'no' },
-    { label: 'auto', value: AUTOAPPROVED, color: 'auto', disabled: true },
+    { label: 'yes', value: ApprovalStatus.APPROVED, color: 'yes' },
+    { label: 'no', value: ApprovalStatus.DECLINED, color: 'no' },
+    { label: 'auto', value: ApprovalStatus.AUTOAPPROVED, color: 'auto', alwaysDisabled: true },
 ]
 
-export function ApprovalToggle({ status, onChange, className = '' }: Props) {
+export function ApprovalToggle({ status, onChange, className = '', disabled = false }: Props) {
 
-    const handleClick = (value: number, disabled?: boolean) => {
-        if (disabled) return
+    const handleClick = (value: number, buttonDisabled?: boolean) => {
+        if (buttonDisabled || disabled) return
         if (value === status) {
-            onChange(PENDING)
+            onChange(ApprovalStatus.PENDING)
         } else {
             onChange(value)
         }
@@ -39,15 +34,15 @@ export function ApprovalToggle({ status, onChange, className = '' }: Props) {
         <div
             className={`${styles.toggleContainer} ${className}`}
         >
-            {options.map(({ label, value, color, disabled }) => (
+            {options.map(({ label, value, color, alwaysDisabled }) => (
                 <button
                     key={value}
                     type="button"
                     className={`${styles.button} ${styles[color]} ${
                         status === value ? styles.active : ''
                     }`}
-                    disabled={disabled}
-                    onClick={() => handleClick(value, disabled)}
+                    disabled={alwaysDisabled || disabled}
+                    onClick={() => handleClick(value, alwaysDisabled)}
                 >
                     {label}
                 </button>
