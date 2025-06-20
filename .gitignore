@@ -42,3 +42,6 @@ bin/
 ### AI ###
 .amazonq
 /knowledge
+
+### project
+*/docker/compose/common/initdb/templates/init.sql

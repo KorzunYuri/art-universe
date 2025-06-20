@@ -26,5 +26,8 @@ spring:
       ddl-auto: none
   liquibase:
     change-log: classpath:db/migration/mu/liquibase/db.changelog.xml
+  docker:
+    compose:
+      enabled: false
 server:
   port: ${MU_APP_PORT:8080}

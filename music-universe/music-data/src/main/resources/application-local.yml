@@ -1,0 +1,25 @@
+spring:
+  docker:
+    compose:
+      enabled: true
+      file: classpath:docker/compose/local/docker-compose.yml
+
+#  jpa:
+#    properties:
+#      hibernate:
+#        show-sql: true
+#        generate_statistics: true
+
+#logging:
+#  level:
+#    liquibase: DEBUG
+#    org:
+#      hibernate:
+#        SQL: DEBUG
+#        type:
+#          descriptor:
+#            sql:
+#              BasicBinder: TRACE
+#        orm:
+#          jdbc:
+#            bind: TRACE
