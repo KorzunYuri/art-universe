@@ -1,0 +1,26 @@
+plugins {
+    id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
+    id 'org.liquibase.gradle'
+}
+
+dependencies {
+    implementation project(':art-universe:art-universe-commons')
+    implementation project(':music-universe:music-data-commons')
+    
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.postgresql:postgresql'
+    implementation "org.liquibase:liquibase-core:${liquibaseVersion}"
+    
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation "org.testcontainers:postgresql:${testContainersPostgreVersion}"
+    testImplementation "org.testcontainers:testcontainers:${testContainersVersion}"
+    testImplementation "org.testcontainers:junit-jupiter:${testContainersVersion}"
+
+    implementation 'org.springframework.boot:spring-boot-docker-compose'
+}

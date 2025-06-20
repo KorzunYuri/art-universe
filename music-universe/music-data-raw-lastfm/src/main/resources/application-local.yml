@@ -2,12 +2,12 @@ spring:
   docker:
     compose:
       enabled: true
-      file: classpath:docker/compose/local/docker-compose.yml
-  jpa:
-    properties:
-      hibernate:
-        show-sql: true
-        generate_statistics: true
+      file: classpath:docker/compose/music-data-raw-lastfm/docker-compose.yml
+#  jpa:
+#    properties:
+#      hibernate:
+#        show-sql: true
+#        generate_statistics: true
 
 logging:
   level:

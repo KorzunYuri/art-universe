@@ -11,3 +11,4 @@ include 'music-universe:music-data-raw-lastfm'
 include 'music-universe:music-data-raw-albumoftheyear'
 include 'music-universe:music-data-raw-musicbrainz'
 include("music-universe:music-universe-ui")
+include 'music-universe:music-quiz'

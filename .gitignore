@@ -44,4 +44,6 @@ bin/
 /knowledge
 
 ### project
-*/docker/compose/common/initdb/templates/init.sql
+**/docker/compose/**/init.sql
+**/docker/compose/**/.env
+**/logs/*.log

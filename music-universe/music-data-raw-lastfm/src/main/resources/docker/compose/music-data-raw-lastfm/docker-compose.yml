@@ -14,6 +14,7 @@ services:
     environment:
       POSTGRES_USER: ${PG_USERNAME:-postgres}
       POSTGRES_PASSWORD: ${PG_PASSWORD:-postgres}
+      # for init.sql template
       MURAW_LASTFM_DB_PASSWORD: ${MURAW_LASTFM_DB_PASSWORD}
     volumes:
       - mu-raw-lastfm-local-db-postgres-data:/var/lib/postgresql/data

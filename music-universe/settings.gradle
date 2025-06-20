@@ -13,3 +13,5 @@ findProject(':music-universe:music-data-raw-albumoftheyear')?.name = 'music-data
 include 'music-universe:music-data-raw-musicbrainz'
 findProject(':music-universe:music-data-raw-musicbrainz')?.name = 'music-data-raw-musicbrainz'
 
+include 'music-universe:music-quiz'
+findProject(':music-universe:music-quiz')?.name = 'music-quiz'
