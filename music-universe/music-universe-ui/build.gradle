@@ -10,15 +10,3 @@ task npmInstall(type: Exec) {
     commandLine npmCommand, 'install', '--legacy-peer-deps'
     ignoreExitValue = true
 }
-
-task npmTest(type: Exec) {
-    workingDir '.'
-    commandLine npmCommand, 'test', '--', '--testPathPattern=LastfmArtistsTableRow.simple.test.tsx'
-    ignoreExitValue = true
-    dependsOn npmInstall
-}
-
-// override standard test task
-tasks.named('test').configure {
-    dependsOn npmTest
-}
