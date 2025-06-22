@@ -74,10 +74,3 @@ Then, to launch the application, execute:
 ```
 ./gradlew :music-universe:music-data-raw-lastfm:bootRun
 ```
-
-### Locally, but 'prod' :)
-
-At the moment 'production' environment is run via Docker Compose as well. 
-* open terminal at _src/main/resources/docker/compose/prod_
-* run `docker compose down --rmi 'all'` to remove previous setup
-* run `docker compose up` (with optional ` -d` flag to run application in detached mode)
