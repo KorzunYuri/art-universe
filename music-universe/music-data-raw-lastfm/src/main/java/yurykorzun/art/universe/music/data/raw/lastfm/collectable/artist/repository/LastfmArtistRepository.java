@@ -1,17 +1,17 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.repository;
 
+import jakarta.annotation.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Repository
 public interface LastfmArtistRepository extends JpaRepository<LastfmArtist, Long> {
@@ -182,5 +182,58 @@ public interface LastfmArtistRepository extends JpaRepository<LastfmArtist, Long
         return findAllToGetInfoFor(LastfmConstants.HIBERNATE_BATCH_SIZE);
     }
 
-    Page<LastfmArtist> findByNameContainingIgnoreCase(String search, Pageable pageable);
+    @Query(value = """
+        SELECT  a
+        FROM    artist a
+        WHERE   1=1
+            AND ((LOWER(a.name)  LIKE LOWER(CONCAT('%', :search, '%'))) OR :search  IS NULL)
+            AND (:minPlayCount          IS NULL     OR a.playCount >= :minPlayCount)
+            AND (:minListenersCount     IS NULL     OR a.listenersCount >= :minListenersCount)
+        """)
+    Page<LastfmArtist> findArtistsWithoutApprovalStatus(
+        @Nullable @Param("search")              String search,
+        @Nullable @Param("minPlayCount")        Long minPlayCount,
+        @Nullable @Param("minListenersCount")   Long minListenersCount,
+        Pageable pageable);
+
+    @Query(value = """
+        SELECT  a
+        FROM    artist a
+        WHERE   1=1
+            AND ((LOWER(a.name)  LIKE LOWER(CONCAT('%', :search, '%'))) OR :search  IS NULL)
+            AND (:minPlayCount          IS NULL     OR a.playCount >= :minPlayCount)
+            AND (:minListenersCount     IS NULL     OR a.listenersCount >= :minListenersCount)
+            AND a.approvalStatus IN (:approvalStatuses)
+        """)
+    Page<LastfmArtist> findArtistsWithApprovalStatus(
+        @Nullable @Param("search")              String search,
+        @Nullable @Param("minPlayCount")        Long minPlayCount,
+        @Nullable @Param("minListenersCount")   Long minListenersCount,
+        @Param("approvalStatuses")              List<ApprovalStatus> approvalStatuses,
+        Pageable pageable);
+
+    /**
+     * A wrapper for findArtists for correct collection parameters resolution.
+     * In general, I faced a couple of bugs here:
+     * <ul>
+     *     <li><a href="https://stackoverflow.com/questions/77881433/org-postgresql-util-psqlexception-error-function-lowerbytea-does-not-exist">
+     *         Hibernate recognizing null String as bytea</a>
+     *          - fixed by changing the order of appearance of statements containing null string</li>
+     *      <li><a href="https://github.com/abstratt/cloudfier/issues/107">Null parameters issue</a>
+     *          - fixed by implementing different signatures, as you may see here</li>
+     * </ul>
+     */
+    default Page<LastfmArtist> findArtists(
+        String search,
+        Long minPlayCount,
+        Long minListenersCount,
+        List<ApprovalStatus> approvalStatuses,
+        Pageable pageable
+    ) {
+        if (approvalStatuses == null || approvalStatuses.isEmpty()) {
+            return findArtistsWithoutApprovalStatus(search, minPlayCount, minListenersCount, pageable);
+        } else {
+            return findArtistsWithApprovalStatus(search, minPlayCount, minListenersCount, approvalStatuses, pageable);
+        }
+    }
 }

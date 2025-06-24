@@ -31,6 +31,18 @@ public class CodedRegistry {
         return Optional.ofNullable(registry.get(code));
     }
 
+    public static <T extends Coded> List<T> getByCodes(Collection<Integer> codes, Class<T> clazz) {
+        if (codes == null) {
+            return Collections.emptyList();
+        }
+        return codes.stream()
+            .map(code -> CodedRegistry.getByCode(code, clazz))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .distinct()
+            .toList();
+    }
+
     /**
      * Returns all registered 'domain' classes.
      */

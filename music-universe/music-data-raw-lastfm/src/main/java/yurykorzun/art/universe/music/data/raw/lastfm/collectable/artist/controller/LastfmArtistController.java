@@ -8,9 +8,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.common.controller.ResponseWrapper;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto.ArtistSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto.LastfmArtistResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.dto.ApprovalStatusRequestDto;
+
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/v1/artists")
@@ -27,11 +30,15 @@ public class LastfmArtistController {
         produces = MediaType.APPLICATION_JSON_VALUE
     )
     public ResponseEntity<ResponseWrapper<Page<LastfmArtistResponseDto>>> getArtists(
-        @RequestParam(defaultValue = "") String search,
+        @RequestParam(required = false) String search,
+        @RequestParam(required = false) Long minPlayCount,
+        @RequestParam(required = false) Long minListenersCount,
+        @RequestParam(required = false) Set<Integer> approvalStatuses,
         @PageableDefault(size = 20, sort = "name") Pageable pageable
     ) {
         try {
-            Page<LastfmArtistResponseDto> page = artistService.findByName(search, pageable);
+            ArtistSearchParams params = new ArtistSearchParams(search, minPlayCount, minListenersCount, approvalStatuses);
+            Page<LastfmArtistResponseDto> page = artistService.findArtists(params, pageable);
             return ResponseWrapper.success(page);
         } catch (Exception e) {
             log.error("Failed to fetch artists: {}", e.getMessage(), e);

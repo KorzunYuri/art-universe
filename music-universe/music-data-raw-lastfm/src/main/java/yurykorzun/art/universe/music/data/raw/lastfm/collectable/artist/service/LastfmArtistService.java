@@ -2,6 +2,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto.ArtistSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto.LastfmArtistResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 
@@ -18,7 +19,7 @@ public interface LastfmArtistService {
 
     Optional<LastfmArtist> findByName(String name);
 
-    Page<LastfmArtistResponseDto> findByName(String name, Pageable pageable);
+    Page<LastfmArtistResponseDto> findArtists(ArtistSearchParams params, Pageable pageable);
 
     List<LastfmArtist> findAllByNames(List<String> names);
 

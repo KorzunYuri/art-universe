@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import yurykorzun.art.universe.common.CodedRegistry;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto.ArtistSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto.LastfmArtistResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.repository.LastfmArtistRepository;
@@ -44,9 +45,19 @@ public class LastfmArtistServiceImpl implements LastfmArtistService {
     }
 
     @Override
-    public Page<LastfmArtistResponseDto> findByName(String name, Pageable pageable) {
-        Page<LastfmArtist> artistsPage = artistRepository.findByNameContainingIgnoreCase(name, pageable);
+    public Page<LastfmArtistResponseDto> findArtists(ArtistSearchParams params, Pageable pageable) {
+        List<ApprovalStatus> approvalStatuses = getApprovalStatusesFromCodes(params);
+        Page<LastfmArtist> artistsPage = artistRepository.findArtists(
+            params.search(),
+            params.minPlayCount(),
+            params.minListenersCount(),
+            approvalStatuses,
+            pageable);
         return artistsPage.map(LastfmArtistResponseDto::from);
+    }
+
+    private static List<ApprovalStatus> getApprovalStatusesFromCodes(ArtistSearchParams params) {
+        return CodedRegistry.getByCodes(params.approvalStatuses(), ApprovalStatus.class);
     }
 
     @Override

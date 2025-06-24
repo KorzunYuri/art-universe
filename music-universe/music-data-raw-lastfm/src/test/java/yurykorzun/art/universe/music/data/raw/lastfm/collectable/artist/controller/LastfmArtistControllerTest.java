@@ -11,17 +11,19 @@ import org.springframework.http.ResponseEntity;
 import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto.ArtistSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto.LastfmArtistResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.dto.ApprovalStatusRequestDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -47,6 +49,10 @@ class LastfmArtistControllerTest {
     void getArtists_shouldReturnDtoPageWrappedInResponse() {
         // given
         String search = "radiohead";
+        Long minPlayCount = 1000L;
+        Long minListenersCount = 500L;
+        Set<Integer> approvalStatuses = new HashSet<>();
+        approvalStatuses.add(ApprovalStatus.APPROVED.getCode());
         Pageable pageable = PageRequest.of(0, 2, Sort.by("name"));
 
         LastfmArtist artist1 = LastfmArtist.builder()
@@ -73,12 +79,15 @@ class LastfmArtistControllerTest {
 
         List<LastfmArtist> artistList = List.of(artist1, artist2);
         Page<LastfmArtist> artistPage = new PageImpl<>(artistList, pageable, artistList.size());
+        Page<LastfmArtistResponseDto> dtoPage = artistPage.map(LastfmArtistResponseDto::from);
 
-        when(artistService.findByName(search, pageable))
-            .thenReturn(artistPage.map(LastfmArtistResponseDto::from));
+        ArtistSearchParams expectedParams = new ArtistSearchParams(search, minPlayCount, minListenersCount, approvalStatuses);
+        when(artistService.findArtists(eq(expectedParams), eq(pageable)))
+            .thenReturn(dtoPage);
 
         // when
-        ResponseEntity<ResponseWrapper<Page<LastfmArtistResponseDto>>> response = controller.getArtists(search, pageable);
+        ResponseEntity<ResponseWrapper<Page<LastfmArtistResponseDto>>> response = 
+            controller.getArtists(search, minPlayCount, minListenersCount, approvalStatuses, pageable);
 
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -96,13 +105,41 @@ class LastfmArtistControllerTest {
     }
 
     @Test
+    void getArtists_shouldHandleNullFilters() {
+        // given
+        Pageable pageable = PageRequest.of(0, 10);
+        
+        LastfmArtist artist = EntityCreationHelper.createArtist();
+        Page<LastfmArtist> artistPage = new PageImpl<>(List.of(artist), pageable, 1);
+        Page<LastfmArtistResponseDto> dtoPage = artistPage.map(LastfmArtistResponseDto::from);
+        
+        when(artistService.findArtists(any(ArtistSearchParams.class), eq(pageable)))
+            .thenReturn(dtoPage);
+
+        // when
+        ResponseEntity<ResponseWrapper<Page<LastfmArtistResponseDto>>> response = 
+            controller.getArtists(null, null, null, null, pageable);
+
+        // then
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        ResponseWrapper<Page<LastfmArtistResponseDto>> body = response.getBody();
+        assertNotNull(body);
+        assertTrue(body.isSuccess());
+        
+        Page<LastfmArtistResponseDto> data = body.getData();
+        assertNotNull(data);
+        assertEquals(1, data.getTotalElements());
+    }
+
+    @Test
     void getArtists_shouldReturnFailureOnException() {
         // given
         Pageable pageable = PageRequest.of(0, 10);
-        when(artistService.findByName(anyString(), any())).thenThrow(new RuntimeException("Fail"));
+        when(artistService.findArtists(any(ArtistSearchParams.class), any())).thenThrow(new RuntimeException("Fail"));
 
         // when
-        ResponseEntity<ResponseWrapper<Page<LastfmArtistResponseDto>>> response = controller.getArtists("abc", pageable);
+        ResponseEntity<ResponseWrapper<Page<LastfmArtistResponseDto>>> response = 
+            controller.getArtists("abc", null, null, null, pageable);
 
         // then
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
@@ -130,8 +167,10 @@ class LastfmArtistControllerTest {
         ResponseWrapper<LastfmArtistResponseDto> body = response.getBody();
         assertNotNull(body);
         assertTrue(body.isSuccess());
-        LastfmArtistResponseDto dto = body.getData();
-        assertEquals(newApprovalStatus.getCode(), dto.approvalStatus());
+
+        LastfmArtistResponseDto data = body.getData();
+        assertNotNull(data);
+        assertEquals(newApprovalStatus.getCode(), data.approvalStatus());
     }
 
 
@@ -144,7 +183,10 @@ class LastfmArtistControllerTest {
         ResponseEntity<ResponseWrapper<LastfmArtistResponseDto>> response =
             controller.updateApprovalStatus(artistId, new ApprovalStatusRequestDto(999));
 
-        assertFalse(response.getBody().isSuccess());
-        assertTrue(response.getBody().getMessage().contains("Failed to update approval status"));
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        ResponseWrapper<LastfmArtistResponseDto> body = response.getBody();
+        assertNotNull(body);
+        assertFalse(body.isSuccess());
+        assertTrue(body.getMessage().contains("Failed to update approval status"));
     }
 }
