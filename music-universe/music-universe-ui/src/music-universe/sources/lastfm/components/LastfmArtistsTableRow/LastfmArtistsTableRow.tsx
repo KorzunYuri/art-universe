@@ -1,7 +1,7 @@
 // hooks
 import { useState } from "react";
 // components
-import { ExternalLink, ReadonlyAttr } from "@/music-universe/shared/components";
+import { EntityBinding, ExternalLink, ReadonlyAttr } from "@/music-universe/shared/components";
 import { ApprovalToggle } from "@/music-universe/sources/lastfm/components";
 // backend services
 import { LastfmConfig } from "@/music-universe/sources/lastfm/config/lastfmconfig.ts";
@@ -11,10 +11,8 @@ import { updateArtistApprovalStatus } from "@/music-universe/sources/lastfm/api/
 // constants
 import { ApprovalStatus } from "@/music-universe/sources/lastfm/constants/approvalStatus";
 // styles
-import commonStyles from "@/music-universe/shared/styles/common.module.scss";
 import sharedTableStyles from "@/music-universe/sources/lastfm/common/LastfmEntityTable.module.scss";
 import artistTableStyles from "../LastfmArtistsTable/LastfmArtistsTable.module.css";
-import artistRowStyles from "./LastfmArtistsTableRow.module.scss"
 
 interface LastfmArtistTableRowProps {
     artist: LastfmArtist,
@@ -22,20 +20,16 @@ interface LastfmArtistTableRowProps {
 }
 
 export const LastfmArtistsTableRow = ({artist, onChange}: LastfmArtistTableRowProps) => {
-    const [artistName, setArtistName] = useState(artist.name);
-    const [isBinding, setIsBinding] = useState(false);
-    const [isUnbinding, setIsUnbinding] = useState(false);
-    const [isEditing, setIsEditing] = useState(false);
     const [isApproving, setIsApproving] = useState(false);
 
     function onStatusChange(artistToUpdate: LastfmArtist, newStatus: number) {
         setIsApproving(true);
         updateArtistApprovalStatus(artistToUpdate.id, newStatus)
             .then(updatedArtist => {
-                // Preserve the boundArtist information when updating approval status
+                // Preserve the boundEntity information when updating approval status
                 onChange({
                     ...updatedArtist,
-                    boundArtist: artist.boundArtist
+                    boundEntity: artist.boundEntity
                 });
             })
             .finally(() => {
@@ -43,68 +37,72 @@ export const LastfmArtistsTableRow = ({artist, onChange}: LastfmArtistTableRowPr
             });
     }
 
-    async function handleBind() {
-        if (!artistName.trim()) return;
+    async function handleBindArtist(artistId: number, name: string) {
+        // First, approve the artist if not already approved
+        let currentArtist = {...artist};
+        let wasApproved = false;
         
-        setIsBinding(true);
-        try {
-            // First, approve the artist if not already approved
-            if (artist.approvalStatus !== ApprovalStatus.APPROVED) {
-                try {
-                    // Explicitly approve the artist on LastFM
-                    const approvedArtist = await updateArtistApprovalStatus(artist.id, ApprovalStatus.APPROVED);
-                    
-                    // Update our local state with the approved artist
-                    artist = {
-                        ...approvedArtist,
-                        boundArtist: artist.boundArtist // Preserve existing binding if any
-                    };
-                } catch (error) {
-                    console.error("Failed to approve artist:", error);
-                    // Continue with binding even if approval fails
-                }
+        if (artist.approvalStatus !== ApprovalStatus.APPROVED) {
+            try {
+                console.log("Artist not approved, approving first...");
+                // Explicitly approve the artist on LastFM
+                const approvedArtist = await updateArtistApprovalStatus(artist.id, ApprovalStatus.APPROVED);
+                
+                // Update our local state with the approved artist
+                currentArtist = {
+                    ...approvedArtist,
+                    boundEntity: artist.boundEntity // Preserve existing binding if any
+                };
+                
+                // Update the parent component with the approved status
+                onChange(currentArtist);
+                wasApproved = true;
+                console.log("Artist approved successfully");
+            } catch (error) {
+                console.error("Failed to approve artist:", error);
+                // Continue with binding even if approval fails
             }
-            
-            // Then bind the artist
-            const result = await bindArtist(artist.id, artistName);
-            if (result) {
-                // Update the artist with both the binding and approval status
+        }
+        
+        // Then bind the artist
+        console.log("Binding artist...");
+        const result = await bindArtist(artistId, name);
+        
+        // If binding was successful and we didn't just approve the artist,
+        // make sure the UI reflects the approved status
+        if (result && !wasApproved && artist.approvalStatus !== ApprovalStatus.APPROVED) {
+            console.log("Binding successful, updating UI to show approved status");
+            // We need to update the UI to show the artist as approved
+            // This is needed because the binding process requires approval,
+            // but we might not have updated the UI if the artist was approved
+            // as part of the binding process on the backend
+            setTimeout(() => {
                 onChange({
                     ...artist,
-                    approvalStatus: ApprovalStatus.APPROVED, // Ensure approval status is set to APPROVED
-                    boundArtist: {
-                        referenceId: result.referenceId,
-                        referenceName: result.referenceName
-                    }
+                    approvalStatus: ApprovalStatus.APPROVED,
+                    boundEntity: result
                 });
-                setIsEditing(false);
-            }
-        } catch (error) {
-            console.error("Failed to bind artist:", error);
-        } finally {
-            setIsBinding(false);
+            }, 0);
         }
+        
+        return result;
     }
 
-    async function handleUnbind() {
-        setIsUnbinding(true);
-        try {
-            const success = await unbindArtist(artist.id);
-            if (success) {
-                // Keep the name in the input field for easy re-binding
-                setArtistName(artist.boundArtist?.referenceName || artist.name);
-                onChange({
-                    ...artist,
-                    boundArtist: undefined
-                });
-                setIsEditing(true);
-            }
-        } catch (error) {
-            console.error("Failed to unbind artist:", error);
-        } finally {
-            setIsUnbinding(false);
+    // Handle the result of binding from the EntityBinding component
+    const handleEntityChange = (updatedEntity: LastfmArtist) => {
+        // If the entity was just bound (boundEntity changed from undefined to defined)
+        if (updatedEntity.boundEntity && !artist.boundEntity) {
+            console.log("Entity was bound, ensuring approval status is updated");
+            // Ensure the approval status is set to APPROVED
+            onChange({
+                ...updatedEntity,
+                approvalStatus: ApprovalStatus.APPROVED
+            });
+        } else {
+            // For other changes, just pass through
+            onChange(updatedEntity);
         }
-    }
+    };
 
     return (
         <div key={artist.id} className={sharedTableStyles.row}>
@@ -122,42 +120,18 @@ export const LastfmArtistsTableRow = ({artist, onChange}: LastfmArtistTableRowPr
                 <ApprovalToggle
                     status={artist.approvalStatus}
                     onChange={(newStatus) => onStatusChange(artist, newStatus)}
-                    disabled={isApproving || isBinding}
+                    disabled={isApproving}
                 />
             </div>
 
             <div className={`${sharedTableStyles.cell}  ${artistTableStyles.binding}`}>
-                {artist.boundArtist && !isEditing ? (
-                    <div className={artistRowStyles.wrapper}>
-                        <span className={`${commonStyles.muLabel} ${artistRowStyles.bindingName} ${sharedTableStyles.approvalYes}`}>
-                            {artist.boundArtist.referenceName}
-                        </span>
-                        <button
-                            onClick={handleUnbind}
-                            disabled={isUnbinding || isApproving}
-                            className={`${artistRowStyles.bindingButton}`}
-                        >
-                            {isUnbinding ? "..." : "Unbind"}
-                        </button>
-                    </div>
-                ) : (
-                    <div className={artistRowStyles.wrapper}>
-                        <input
-                            type="text"
-                            value={artistName}
-                            onChange={(e) => setArtistName(e.target.value)}
-                            className={`${commonStyles.muLabel} ${artistRowStyles.bindingName}`}
-                            placeholder="Artist name"
-                        />
-                        <button
-                            onClick={handleBind}
-                            disabled={isBinding || isApproving || !artistName.trim()}
-                            className={`${artistRowStyles.bindingButton}`}
-                        >
-                            {isBinding ? "..." : "Bind"}
-                        </button>
-                    </div>
-                )}
+                <EntityBinding
+                    entity={artist}
+                    onBind={handleBindArtist}
+                    onUnbind={unbindArtist}
+                    onChange={handleEntityChange}
+                    disabled={isApproving}
+                />
             </div>
 
             <div className={`${sharedTableStyles.cell}  ${artistTableStyles.count}`}>

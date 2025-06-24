@@ -1,0 +1,1 @@
+export { EntityBinding } from './EntityBinding';

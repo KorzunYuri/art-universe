@@ -129,6 +129,8 @@ src/music-universe/
 - `ReadonlyAttr`: Component for displaying read-only attributes
 - `NavigationCard`: Component for navigation links
 - `LabelWithPopup`: Component for labels with tooltip popups
+- `EntityBinding`: Component for binding external entities to internal entities
+- `EntityTable`: Generic table component for displaying and managing entities
 
 ### LastFM Components
 
@@ -180,6 +182,14 @@ src/music-universe/
 3. Artist is bound to Music Data via API call
 4. UI is updated to show binding status
 5. User can unbind artist if needed
+
+### Binding and Approval Interaction
+
+The binding process and approval status are closely related:
+1. When binding an artist, the system ensures it's approved in LastFM
+2. The `LastfmArtistsTableRow` component handles this relationship through the `handleEntityChange` function
+3. When an entity is bound, the component ensures the approval status is updated to reflect this
+4. This separation of concerns keeps the `EntityBinding` component focused on binding functionality while the parent component manages the relationship between binding and approval
 
 ## Styling Approach
 
@@ -304,6 +314,37 @@ Components use conditional rendering for different states:
 - Environment-specific configuration
 - API endpoints configuration in source-specific config files
 - Path aliases for cleaner imports (`@/` for src directory)
+
+## Recent Improvements
+
+### Enhanced Entity Binding System
+
+The binding system has been improved to better handle the relationship between binding and approval:
+
+1. **Separation of Concerns**:
+   - `EntityBinding` component now focuses solely on binding functionality
+   - Parent components (like `LastfmArtistsTableRow`) handle the relationship between binding and approval status
+
+2. **Improved Data Flow**:
+   - When an entity is bound, the parent component ensures the approval status is updated
+   - This is handled through the `handleEntityChange` function in `LastfmArtistsTableRow`
+
+3. **Optimized Loading of Bound Entities**:
+   - `LastfmArtistsTable` now loads bound entities immediately after loading artists
+   - This ensures that binding information is available as soon as possible
+   - Explicit handling of bound/unbound state for all entities
+
+4. **Enhanced UI Feedback**:
+   - Clear visual indication of binding status
+   - Automatic update of approval status when binding changes
+
+### Improved Search and Filtering
+
+The artist table now supports more advanced search and filtering options:
+- Search by name
+- Filter by approval status
+- Filter by minimum play count
+- Filter by minimum listeners count
 
 ## Future Enhancements
 

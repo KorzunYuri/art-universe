@@ -3,17 +3,25 @@ import type {Page} from "@/music-universe/shared/types/page.ts";
 import type {LastfmArtist} from "@/music-universe/sources/lastfm/types/lastfm-artist.ts";
 import axios from 'axios'
 
-export async function fetchArtists(params: {
-    search?: string
-    page?: number
-    size?: number
-    sort?: string
-}): Promise<Page<LastfmArtist>> {
+export interface ArtistSearchParams {
+    search?: string;
+    minPlayCount?: number;
+    minListenersCount?: number;
+    approvalStatuses?: number[];
+    page?: number;
+    size?: number;
+    sort?: string;
+}
+
+export async function fetchArtists(params: ArtistSearchParams): Promise<Page<LastfmArtist>> {
     const response = await axios.get(
         `${LastfmConfig.baseApiUrl}/artists`,
         {
             params: {
                 search: params.search ?? '',
+                minPlayCount: params.minPlayCount,
+                minListenersCount: params.minListenersCount,
+                approvalStatuses: params.approvalStatuses?.join(','),
                 page: params.page ?? 0,
                 size: params.size ?? 20,
                 sort: params.sort ?? 'name,asc',
