@@ -18,6 +18,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.reposito
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.repository.LastfmTagRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.repository.LastfmTrackRepository;
 
 import java.util.function.Consumer;
 
@@ -41,6 +42,7 @@ public class DbConsistencyHelper {
     private final LastfmTagRepository tagRepository;
     private final LastfmArtistRepository artistRepository;
     private final LastfmAlbumRepository albumRepository;
+    private final LastfmTrackRepository trackRepository;
 
     public DbConsistencyHelper(
         LastfmDataSnapshotRepository snapshotRepository,
@@ -48,7 +50,8 @@ public class DbConsistencyHelper {
         LastfmApiResponseRepository apiResponseRepository,
         LastfmTagRepository tagRepository,
         LastfmArtistRepository artistRepository,
-        LastfmAlbumRepository albumRepository
+        LastfmAlbumRepository albumRepository,
+        LastfmTrackRepository trackRepository
     ) {
         this.snapshotRepository = snapshotRepository;
         this.apiCallRepository = apiCallRepository;
@@ -56,9 +59,11 @@ public class DbConsistencyHelper {
         this.tagRepository = tagRepository;
         this.artistRepository = artistRepository;
         this.albumRepository = albumRepository;
+        this.trackRepository = trackRepository;
     }
 
     public void cleanup() {
+        trackRepository.deleteAll();
         artistRepository.deleteAll();
         tagRepository.deleteAll();
         apiResponseRepository.deleteAll();
@@ -200,5 +205,18 @@ public class DbConsistencyHelper {
         Consumer<LastfmTrack.LastfmTrackBuilder<?, ?>> apiCallSetter = builder -> builder
             .apiCall(createAndSaveApiCall());
         return EntityCreationHelper.createTrack(customizer.andThen(apiCallSetter));
+    }
+    
+    public LastfmTrack createAndSaveTrack() {
+        return createAndSaveTrack(builder -> {});
+    }
+    
+    public LastfmTrack createAndSaveTrack(String url) {
+        return createAndSaveTrack(builder -> builder.url(url));
+    }
+    
+    public LastfmTrack createAndSaveTrack(Consumer<LastfmTrack.LastfmTrackBuilder<?, ?>> customizer) {
+        LastfmTrack track = createTrackForPersistence(customizer);
+        return trackRepository.save(track);
     }
 }

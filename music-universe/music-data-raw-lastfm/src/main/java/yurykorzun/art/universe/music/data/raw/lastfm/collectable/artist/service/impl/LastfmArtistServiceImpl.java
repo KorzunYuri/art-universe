@@ -35,7 +35,7 @@ public class LastfmArtistServiceImpl implements LastfmArtistService {
     }
 
     @Override
-    public Optional<LastfmArtist> findById(long id) {
+    public Optional<LastfmArtist> findById(Long id) {
         return artistRepository.findById(id);
     }
 

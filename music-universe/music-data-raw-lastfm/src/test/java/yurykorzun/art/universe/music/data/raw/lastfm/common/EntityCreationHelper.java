@@ -115,6 +115,7 @@ public class EntityCreationHelper {
     public static LastfmTag createTag(Consumer<LastfmTag.LastfmTagBuilder<?, ?>> customizer) {
         LastfmTag.LastfmTagBuilder<?, ?> builder = LastfmTag.builder()
                 .name(UUID.randomUUID().toString())
+                .url(randomString())
                 .apiCall(createApiCall());
         customizer.accept(builder);
         return builder.build();
@@ -135,6 +136,7 @@ public class EntityCreationHelper {
     public static LastfmArtist createArtist(Consumer<LastfmArtist.LastfmArtistBuilder<?, ?>> customizer) {
         LastfmArtist.LastfmArtistBuilder<?, ?> builder = LastfmArtist.builder()
             .name(randomString())
+            .url(randomString())
             .apiCall(createApiCall());
         customizer.accept(builder);
         return builder.build();
@@ -150,6 +152,7 @@ public class EntityCreationHelper {
     public static LastfmAlbum createAlbum(Consumer<LastfmAlbum.LastfmAlbumBuilder<?, ?>> customizer) {
         LastfmAlbum.LastfmAlbumBuilder<?, ?> builder = LastfmAlbum.builder()
             .name(randomString())
+            .url(randomString())
             .apiCall(createApiCall());
         customizer.accept(builder);
         return builder.build();
@@ -174,6 +177,8 @@ public class EntityCreationHelper {
 
     public static LastfmTrack createTrack(Consumer<LastfmTrack.LastfmTrackBuilder<?, ?>> customizer) {
         LastfmTrack.LastfmTrackBuilder<?, ?> builder = LastfmTrack.builder()
+            .apiCall(createApiCall())
+            .url(randomString())
             .name(randomString())
             .mbid(randomString());
         customizer.accept(builder);

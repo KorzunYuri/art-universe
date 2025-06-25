@@ -17,8 +17,9 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptrack
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.track.common.LastfmTrackEntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.LastfmAttributeHistoryService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityRelationService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.service.LastfmTrackService;
@@ -27,10 +28,10 @@ import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static yurykorzun.art.universe.music.data.raw.lastfm.common.utils.AssertionUtils.verifyAndAssertInvocations;
 import static yurykorzun.art.universe.music.data.raw.lastfm.common.utils.AssertionUtils.verifyInvocationsNumberWithCollectionsSizeOnly;
 
@@ -51,6 +52,8 @@ class LastfmArtistTopTracksResponseProcessorTest extends JpaOnlyTest {
     // injections for verifications
     @MockitoBean
     private LastfmTrackService trackService;
+    @MockitoBean
+    private LastfmArtistService artistService;
     @MockitoBean
     private LastfmEntityRelationService entityRelationService;
     @MockitoBean
@@ -78,26 +81,23 @@ class LastfmArtistTopTracksResponseProcessorTest extends JpaOnlyTest {
         ReflectionTestUtils.setField(processor, "trackListenersThreshold", 0); // isolate threshold effect
 
         TestCase testCase = testCaseFromResponse(LastfmApiClientResourceUtil.getApiClientResponse("artist.getTopTracks"));
+        when(artistService.findById(any(Long.class))).thenReturn(Optional.ofNullable(testCase.sourceArtist));
         when(trackService.saveTracks(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         // when
         processor.processResponse(testCase.sourceApiResponse);
 
-        // Verify that artists were searched by names
+        // Verify that tracks were searched by urls
         verifyAndAssertInvocations(
             captor -> verify(trackService).findAllByUrls(captor.capture()),
             List.class,
-            List.of(testCase.expectedTracks.stream().map(dto -> dto.getUrl()).toList()),
+            List.of(testCase.expectedTracks.stream().map(LastfmTrack::getUrl).toList()),
             "trackService.findAllByUrls"
         );
 
-        // Verify that new artists are saved
-        verifyInvocationsNumberWithCollectionsSizeOnly(
-            captor -> verify(trackService).saveTracks(captor.capture()),
-            List.of(expectedCreatedTracksNumber),
-            "trackService.saveTracks"
-        );
-
+        // Verify that tracks are saved twice - once during initial processing and once after setting artist references
+        verify(trackService, times(2)).saveTracks(any());
+        
         // Verify that entity relations were upserted
         verifyInvocationsNumberWithCollectionsSizeOnly(
             captor -> verify(entityRelationService).upsertEntityRelations(captor.capture()),
@@ -116,11 +116,12 @@ class LastfmArtistTopTracksResponseProcessorTest extends JpaOnlyTest {
     @AllArgsConstructor
     private static class TestCase {
         final LastfmApiResponse sourceApiResponse;
+        final LastfmArtist sourceArtist;
         final List<LastfmTrack> expectedTracks;
     }
 
     private TestCase testCaseFromResponse(String apiResponseBody) {
-        BaseLastfmEntity scopeEntity = EntityCreationHelper.createArtist(LastfmApiCallType.TAG_TOP_ARTISTS);
+        LastfmArtist scopeEntity = EntityCreationHelper.createArtist(LastfmApiCallType.TAG_TOP_ARTISTS);
         LastfmApiResponse sourceApiResponse = EntityCreationHelper.createApiResponse(
             apiResponseBody, scopeEntity.getApiCall().getType(), scopeEntity);
 
@@ -133,7 +134,7 @@ class LastfmArtistTopTracksResponseProcessorTest extends JpaOnlyTest {
                 .map(track -> trackFactory.fromDto(track, sourceApiResponse))
                 .toList();
 
-            return new TestCase(sourceApiResponse, expectedTracks);
+            return new TestCase(sourceApiResponse, scopeEntity, expectedTracks);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }

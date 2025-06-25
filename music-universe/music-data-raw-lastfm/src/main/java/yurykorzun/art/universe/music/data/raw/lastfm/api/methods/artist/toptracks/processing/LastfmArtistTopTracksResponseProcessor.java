@@ -1,5 +1,6 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptracks.processing;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -14,11 +15,14 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandlerFactory;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.service.LastfmTrackService;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -27,6 +31,7 @@ public class LastfmArtistTopTracksResponseProcessor extends LastfmApiResponsePro
 
     private final LastfmApiDtoProcessingService dtoProcessingService;
     private final LastfmTrackService trackService;
+    private final LastfmArtistService artistService;
     private final EntityFactory<LastfmTrack, ArtistTopTracksTrackDto> trackEntityFactory;
 
     @Value("${lastfm.client.methods.artist.topTracks.trackListenersThreshold:1000}")
@@ -35,12 +40,14 @@ public class LastfmArtistTopTracksResponseProcessor extends LastfmApiResponsePro
     protected LastfmArtistTopTracksResponseProcessor(
         LastfmApiDtoProcessingService dtoProcessingService,
         LastfmTrackService trackService,
+        LastfmArtistService artistService,
         EntityFactory<LastfmTrack, ArtistTopTracksTrackDto> trackEntityFactory
     ) {
         super(ArtistTopTracksDtoRoot.class);
         
         this.dtoProcessingService = dtoProcessingService;
         this.trackService = trackService;
+        this.artistService = artistService;
         this.trackEntityFactory = trackEntityFactory;
     }
 
@@ -76,12 +83,35 @@ public class LastfmArtistTopTracksResponseProcessor extends LastfmApiResponsePro
         List<String> trackUrls = trackDtos.stream().map(ArtistTopTracksTrackDto::getUrl).toList();
         List<LastfmTrack> existingTracks = trackService.findAllByUrls(trackUrls);
 
+        // Get the artist from the API call
+        LastfmArtist artist = artistService.findById(sourceApiResponse.getApiCall().getEntityId())
+            .orElseThrow(() -> new EntityNotFoundException("Artist not found in API call entity"));
+
+        // Process DTOs and save tracks
         LastfmApiDtoProcessingResult<LastfmTrack> result = dtoProcessingService.processDtosWithRelations(
             trackDtos, existingTracks, sourceApiResponse,
             trackEntityFactory,
             trackAttrHandlers,
             trackService::saveTracks
         );
+        
+        // Set artist reference for each track
+        if (artist != null) {
+            List<LastfmTrack> tracksToUpdate = new ArrayList<>();
+            
+            // Update both existing and newly saved tracks
+            for (LastfmTrack track : result.savedEntities()) {
+                track.setArtist(artist);
+                tracksToUpdate.add(track);
+            }
+            
+            // Save tracks with artist references
+            if (!tracksToUpdate.isEmpty()) {
+                trackService.saveTracks(tracksToUpdate);
+                log.info("updated {} tracks with artist references", tracksToUpdate.size());
+            }
+        }
+        
         log.info("saved {} artist's tracks", result.savedEntities().size());
         log.info("saved {} artist's tracks' attributes", result.savedAttributeValues().size());
         log.info("saved {} artist-track relations", result.savedEntityRelations().size());

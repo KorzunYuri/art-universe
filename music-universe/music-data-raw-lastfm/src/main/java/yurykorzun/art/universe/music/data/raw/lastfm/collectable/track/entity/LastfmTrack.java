@@ -3,6 +3,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 
@@ -42,6 +43,10 @@ public class LastfmTrack extends BaseLastfmEntity {
 
     @Column(name = "play_count")
     private Integer playCount;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "artist_id")
+    private LastfmArtist artist;
 
     @Override
     public LastfmEntityType getType() {

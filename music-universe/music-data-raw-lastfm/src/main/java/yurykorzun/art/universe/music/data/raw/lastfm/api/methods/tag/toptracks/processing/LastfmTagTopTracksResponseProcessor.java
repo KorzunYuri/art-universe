@@ -161,20 +161,36 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
         TagTopTracksDtoRoot dtoRoot, Map<String, LastfmTrack> trackMap, Map<String, LastfmArtist> artistMap, LastfmApiCall sourceApiCall
     ) {
         List<TagTopTracksTrackDto> trackDtos = getTrackDtos(dtoRoot);
-        List<LastfmEntityRelation> relations = trackDtos.stream()
-            .map((dto) -> {
-                LastfmTrack track = trackMap.get(dto.getUniqueKey());
-                LastfmArtist artist = artistMap.get(dto.getArtist().getUniqueKey());
-                return LastfmEntityRelation.builder()
-                        .apiCall(sourceApiCall)
-                        .scopeEntityType(LastfmEntityType.ARTIST)
-                        .scopeEntityId(artist.getId())
-                        .entityType(LastfmEntityType.TRACK)
-                        .entityId(track.getId())
-                    .build();
-            })
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+        List<LastfmEntityRelation> relations = new ArrayList<>();
+        List<LastfmTrack> tracksToUpdate = new ArrayList<>();
+        
+        for (TagTopTracksTrackDto dto : trackDtos) {
+            LastfmTrack track = trackMap.get(dto.getUniqueKey());
+            LastfmArtist artist = artistMap.get(dto.getArtist().getUniqueKey());
+            
+            if (track != null && artist != null) {
+                // Set direct reference to artist
+                track.setArtist(artist);
+                tracksToUpdate.add(track);
+                
+                // Create entity relation
+                relations.add(LastfmEntityRelation.builder()
+                    .apiCall(sourceApiCall)
+                    .scopeEntityType(LastfmEntityType.ARTIST)
+                    .scopeEntityId(artist.getId())
+                    .entityType(LastfmEntityType.TRACK)
+                    .entityId(track.getId())
+                    .build());
+            }
+        }
+        
+        // Save updated tracks with artist references
+        if (!tracksToUpdate.isEmpty()) {
+            trackService.saveTracks(tracksToUpdate);
+            log.info("updated {} tracks with artist references", tracksToUpdate.size());
+        }
+        
+        // Save entity relations
         entityRelationService.upsertEntityRelations(relations);
         log.info("saved {} artist-track relations", relations.size());
     }

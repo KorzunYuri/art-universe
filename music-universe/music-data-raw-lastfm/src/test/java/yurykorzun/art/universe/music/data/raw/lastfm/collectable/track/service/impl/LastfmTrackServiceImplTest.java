@@ -1,39 +1,55 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.service.impl;
 
-import org.junit.jupiter.api.Tag;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import yurykorzun.art.universe.common.CodedRegistry;
+import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.dto.LastfmTrackResponseDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.dto.TrackSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.repository.LastfmTrackRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@Tag("integration")
-@Import(LastfmTrackServiceImpl.class)
-class LastfmTrackServiceImplTest extends JpaOnlyTest {
-
-    @MockitoBean
+@ExtendWith(MockitoExtension.class)
+class LastfmTrackServiceImplTest {
+    
+    @Mock
     private LastfmTrackRepository trackRepository;
 
-    @Autowired
-    private DbConsistencyHelper consistencyHelper;
-
-    @Autowired
+    @InjectMocks
     private LastfmTrackServiceImpl trackService;
 
+    private LastfmTrack createTrack() {
+        return EntityCreationHelper.createTrack();
+    }
+    
+    private LastfmTrack createTrack(String url) {
+        return EntityCreationHelper.createTrack(url);
+    }
+
+    private LastfmTrack createTrack(Consumer<LastfmTrack.LastfmTrackBuilder<?,?>> customizer) {
+        return EntityCreationHelper.createTrack(customizer);
+    }
+
     @Test
-    void givenTrack_whenSaveTrack_thenRepositorySaveIsCalled() {
-        LastfmTrack track = EntityCreationHelper.createTrack();
+    void saveTrack_withValidTrack_shouldCallRepository() {
+        LastfmTrack track = createTrack();
         when(trackRepository.save(track)).thenReturn(track);
 
         LastfmTrack savedTrack = trackService.saveTrack(track);
@@ -44,8 +60,8 @@ class LastfmTrackServiceImplTest extends JpaOnlyTest {
     }
 
     @Test
-    void givenTracks_whenSaveTracks_thenRepositorySaveAllIsCalled() {
-        List<LastfmTrack> tracks = List.of(EntityCreationHelper.createTrack(), EntityCreationHelper.createTrack());
+    void saveTracks_withValidTracks_shouldCallRepository() {
+        List<LastfmTrack> tracks = List.of(createTrack(), createTrack());
         when(trackRepository.saveAll(tracks)).thenReturn(tracks);
 
         List<LastfmTrack> savedTracks = trackService.saveTracks(tracks);
@@ -57,10 +73,12 @@ class LastfmTrackServiceImplTest extends JpaOnlyTest {
     }
 
     @Test
-    void givenUrls_whenFindAllByUrls_thenReturnMatchingTracks() {
+    void findAllByUrls_withValidUrls_shouldCallRepository() {
         final int tracksNumber = 3;
         List<String> urls = IntStream.range(0, tracksNumber).mapToObj(i -> UUID.randomUUID().toString()).toList();
-        List<LastfmTrack> tracks = urls.stream().map(EntityCreationHelper::createTrack).toList();
+        List<LastfmTrack> tracks = urls.stream()
+            .map(this::createTrack)
+            .toList();
         when(trackRepository.findAllByUrlIn(urls)).thenReturn(tracks);
 
         List<LastfmTrack> foundTracks = trackService.findAllByUrls(urls);
@@ -70,5 +88,139 @@ class LastfmTrackServiceImplTest extends JpaOnlyTest {
         assertEquals(tracks, foundTracks);
         verify(trackRepository, times(1)).findAllByUrlIn(urls);
     }
+    
+    @Test
+    void findTracks_shouldCallRepositoryWithCorrectParams() {
+        // Given
+        String search = "test";
+        Long minPlayCount = 1000L;
+        Long minListenersCount = 500L;
+        Long artistId = 1L;
+        Set<Integer> approvalStatusCodes = Set.of(ApprovalStatus.APPROVED.getCode());
+        List<ApprovalStatus> approvalStatuses = CodedRegistry.getByCodes(approvalStatusCodes, ApprovalStatus.class);
+        
+        TrackSearchParams params = new TrackSearchParams(search, minPlayCount, minListenersCount, artistId, approvalStatusCodes);
+        Pageable pageable = PageRequest.of(0, 10);
+        
+        LastfmArtist artist = EntityCreationHelper.createArtist(b -> b.id(artistId));
+        List<LastfmTrack> tracks = List.of(
+            createTrack(b -> b.artist(artist)),
+            createTrack(b -> b.artist(artist))
+        );
+        Page<LastfmTrack> trackPage = new PageImpl<>(tracks, pageable, tracks.size());
+        
+        when(trackRepository.findTracks(
+            eq(search), 
+            eq(minPlayCount), 
+            eq(minListenersCount),
+            eq(artistId),
+            eq(approvalStatuses),
+            eq(pageable)
+        )).thenReturn(trackPage);
+        
+        // When
+        Page<LastfmTrackResponseDto> result = trackService.findTracks(params, pageable);
+        
+        // Then
+        assertNotNull(result);
+        assertEquals(tracks.size(), result.getContent().size());
+        
+        // Verify artist references in DTOs
+        for (LastfmTrackResponseDto dto : result.getContent()) {
+            assertNotNull(dto.artist());
+            assertEquals(artistId, dto.artist().id());
+        }
+        
+        verify(trackRepository).findTracks(
+            eq(search), 
+            eq(minPlayCount), 
+            eq(minListenersCount),
+            eq(artistId),
+            eq(approvalStatuses),
+            eq(pageable)
+        );
+    }
+    
+    @Test
+    void findTracks_withNullParams_shouldCallRepositoryWithNullValues() {
+        // Given
+        TrackSearchParams params = new TrackSearchParams(null, null, null, null, null);
+        Pageable pageable = PageRequest.of(0, 10);
+        List<ApprovalStatus> expectedApprovalStatuses = Collections.emptyList();
 
+        LastfmArtist artist = EntityCreationHelper.createArtist();
+        List<LastfmTrack> tracks = List.of(
+            createTrack(b -> b.artist(artist)),
+            createTrack(b -> b.artist(artist))
+        );
+        Page<LastfmTrack> trackPage = new PageImpl<>(tracks, pageable, tracks.size());
+        
+        when(trackRepository.findTracks(
+            eq(null), 
+            eq(null), 
+            eq(null),
+            eq(null),
+            eq(expectedApprovalStatuses),
+            eq(pageable)
+        )).thenReturn(trackPage);
+        
+        // When
+        Page<LastfmTrackResponseDto> result = trackService.findTracks(params, pageable);
+        
+        // Then
+        assertNotNull(result);
+        assertEquals(tracks.size(), result.getContent().size());
+        
+        // Verify artist references in DTOs
+        for (LastfmTrackResponseDto dto : result.getContent()) {
+            assertNotNull(dto.artist());
+            assertEquals(artist.getId(), dto.artist().id());
+        }
+        
+        verify(trackRepository).findTracks(
+            eq(null), 
+            eq(null), 
+            eq(null),
+            eq(null),
+            eq(expectedApprovalStatuses),
+            eq(pageable)
+        );
+    }
+
+    @Test
+    void updateApprovalStatus_withValidRequest_shouldReturnUpdatedTrack() {
+        long trackId = 42L;
+        ApprovalStatus oldStatus = ApprovalStatus.PENDING;
+        ApprovalStatus newStatus = ApprovalStatus.APPROVED;
+
+        LastfmArtist artist = EntityCreationHelper.createArtist();
+        LastfmTrack existing = createTrack(b -> b.id(trackId).approvalStatus(oldStatus).artist(artist));
+        LastfmTrack updated = createTrack(b -> b.id(trackId).approvalStatus(newStatus).artist(artist));
+
+        when(trackRepository.findById(trackId)).thenReturn(Optional.of(existing));
+        when(trackRepository.save(any(LastfmTrack.class))).thenReturn(updated);
+
+        LastfmTrackResponseDto result = trackService.updateApprovalStatus(trackId, newStatus.getCode());
+
+        assertEquals(newStatus.getCode(), result.approvalStatus());
+        assertNotNull(result.artist());
+        assertEquals(artist.getId(), result.artist().id());
+        verify(trackRepository).save(existing);
+    }
+
+    @Test
+    void updateApprovalStatus_withNonexistingTrack_shouldThrowException() {
+        when(trackRepository.findById(any())).thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class,
+            () -> trackService.updateApprovalStatus(1L, ApprovalStatus.APPROVED.getCode())
+        );
+    }
+
+    @Test
+    void updateApprovalStatus_withInvalidApprovalStatusCode_shouldThrowException() {
+        assertThrows(IllegalArgumentException.class,
+            () -> trackService.updateApprovalStatus(1L, -1)
+        );
+    }
 }
