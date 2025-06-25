@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.Trigger;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbMaintenanceCoordinator;
+import yurykorzun.art.universe.music.data.raw.lastfm.maintenance.service.DbMaintenanceCoordinator;
 
 import java.time.Duration;
 import java.time.Instant;

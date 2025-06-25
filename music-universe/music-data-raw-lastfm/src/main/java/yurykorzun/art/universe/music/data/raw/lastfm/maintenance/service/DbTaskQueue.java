@@ -1,4 +1,4 @@
-package yurykorzun.art.universe.music.data.raw.lastfm.common;
+package yurykorzun.art.universe.music.data.raw.lastfm.maintenance.service;
 
 import lombok.extern.slf4j.Slf4j;
 
