@@ -1,7 +1,8 @@
 import type { Approvable } from "@/music-universe/shared/types/approvable";
 import type { Bindable, BoundEntity } from "@/music-universe/shared/types/bindable";
+import type { LastfmTrackArtistDto } from "@/music-universe/sources/lastfm/types/lastfm-artist.ts";
 
-export interface LastfmTrackArtistDto {
+export interface LastfmTrackDto {
     id:                 number;
     name:               string;
     url:                string;
@@ -11,6 +12,7 @@ export interface LastfmTrackArtistDto {
     listenersCount:     number | null;
 }
 
-export interface LastfmArtist extends LastfmTrackArtistDto, Approvable, Bindable {
+export interface LastfmTrack extends LastfmTrackDto, Approvable, Bindable {
     boundEntity?: BoundEntity;
+    artist?: LastfmTrackArtistDto;
 }

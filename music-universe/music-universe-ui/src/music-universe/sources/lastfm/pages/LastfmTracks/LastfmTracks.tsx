@@ -1,10 +1,11 @@
-import styles from './LastfmTracks.module.css';
+import { LastfmTracksTable } from "@/music-universe/sources/lastfm/components/LastfmTracksTable/LastfmTracksTable";
+import styles from "./LastfmTracks.module.css";
 
-export function LastfmTracks () {
-  return (
-      <div className={styles.container}>
-          <h2>Tracks Page</h2>
-          <p>Here will be tracks-related content</p>
-      </div>
-  );
+export function LastfmTracks() {
+    return (
+        <div className={styles.page}>
+            <h2>Tracks Page</h2>
+            <LastfmTracksTable />
+        </div>
+    );
 }

@@ -1,7 +1,7 @@
 import styles from './ReadonlyAttr.module.css'
 
 interface Props {
-    value: number
+    value: string | number | null
     className?: string
 }
 

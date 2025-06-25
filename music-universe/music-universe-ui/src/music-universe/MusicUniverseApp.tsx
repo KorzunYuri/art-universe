@@ -14,7 +14,7 @@ export default function MusicUniverseApp() {
             ),
         },
         {
-            path: '/lastfm/*',  // "*" позволяет маршрутизировать внутри LastfmApp
+            path: '/lastfm/*',  // "*" allows routing within LastfmApp
             element: <LastfmApp />,
         },
     ]
