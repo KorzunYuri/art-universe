@@ -1,0 +1,1 @@
+export { LastfmTagsTableRow } from './LastfmTagsTableRow';

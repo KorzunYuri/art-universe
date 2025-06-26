@@ -140,6 +140,9 @@ src/music-universe/
 - `LastfmTracksTable`: Container component for displaying and managing LastFM tracks
 - `LastfmTracksTableRow`: Component for rendering a single track row with complex binding logic
 - `LastfmTracksTableHeader`: Component for rendering the tracks table header with sorting
+- `LastfmTagsTable`: Container component for displaying and managing LastFM tags
+- `LastfmTagsTableRow`: Component for rendering a single tag row
+- `LastfmTagsTableHeader`: Component for rendering the tags table header with sorting
 - `ApprovalToggle`: Component for toggling approval status
 
 ### Page Components
@@ -148,6 +151,7 @@ src/music-universe/
 - `LastfmArtists`: Page for managing LastFM artists
 - `LastfmAlbums`: Page for managing LastFM albums
 - `LastfmTracks`: Page for managing LastFM tracks
+- `LastfmTags`: Page for managing LastFM tags
 - `LastfmTags`: Page for managing LastFM tags
 
 ### Custom Hooks
@@ -162,6 +166,8 @@ src/music-universe/
 - `updateArtistApprovalStatus`: Updates artist approval status
 - `fetchTracks`: Fetches paginated tracks from LastFM API
 - `updateTrackApprovalStatus`: Updates track approval status
+- `fetchTags`: Fetches paginated tags from LastFM API
+- `updateTagApprovalStatus`: Updates tag approval status
 
 ### Music Data API
 
@@ -358,6 +364,26 @@ Components use conditional rendering for different states:
 
 ## Recent Improvements
 
+### Tags Management Implementation
+
+Implemented comprehensive tags management functionality:
+
+1. **Tags Table Components**:
+   - `LastfmTagsTable`: Main container component for tags management
+   - `LastfmTagsTableRow`: Individual tag row with approval controls
+   - `LastfmTagsTableHeader`: Sortable table header
+
+2. **Tags API Integration**:
+   - `fetchTags`: Fetches paginated tags from LastFM API with search and filtering
+   - `updateTagApprovalStatus`: Updates tag approval status
+
+3. **Tags Features**:
+   - Search by tag name
+   - Filter by approval status
+   - Sort by name, usage count, and users count
+   - Display usage statistics (usage count and users count)
+   - External links to LastFM tag pages
+
 ### Enhanced Entity Binding System
 
 The binding system has been improved to better handle the relationship between binding and approval:
@@ -413,13 +439,13 @@ Eliminated code duplication by creating shared type definitions:
    - Easier to update API contracts
    - Better TypeScript intellisense and error checking
 
-### Improved Search and Filtering
+### Enhanced Search and Filtering
 
 The tables now support advanced search and filtering options:
 - Search by name
 - Filter by approval status
-- Filter by minimum play count
-- Filter by minimum listeners count
+- Filter by minimum play count (artists and tracks)
+- Filter by minimum listeners count (artists and tracks)
 - Artist-specific track filtering
 
 ## Future Enhancements
