@@ -98,6 +98,12 @@ Used for business logic:
 - `LastfmAlbumService`
 - `LastfmTrackService`
 - `LastfmTagService`
+- 
+### Controller Layer Pattern
+Used for REST API endpoints:
+- `LastfmArtistController`
+- `LastfmTrackController`
+- `LastfmTagController`
 
 ## Key Classes and Their Purposes
 
@@ -178,8 +184,15 @@ The database schema includes:
 ## API Endpoints
 
 - `/api/v1/artists`: Artist-related endpoints
+  - `GET /api/v1/artists`: Search and filter artists with pagination
+  - `PATCH /api/v1/artists/{id}/approval`: Update artist approval status
 - `/api/v1/tracks`: Track-related endpoints
-- `/maintenance/trigger`: Trigger database maintenance
+  - `GET /api/v1/tracks`: Search and filter tracks with pagination
+  - `PATCH /api/v1/tracks/{id}/approval`: Update track approval status
+- `/api/v1/tags`: Tag-related endpoints
+  - `GET /api/v1/tags`: Search and filter tags with pagination
+  - `PATCH /api/v1/tags/{id}/approval`: Update tag approval status
+- `/maintenance/trigger`: Trigger database cleanup
 
 ## Naming Conventions
 
