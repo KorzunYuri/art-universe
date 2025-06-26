@@ -54,7 +54,6 @@ export const LastfmTracksTable = ({ artistId }: LastfmTracksTableProps) => {
             }
             
             const result = await fetchTracks(params)
-            console.log('📊 Tracks data received:', result)
             if (result.content && result.content.length > 0) {
                 console.log('🎵 First track example:', result.content[0])
             }

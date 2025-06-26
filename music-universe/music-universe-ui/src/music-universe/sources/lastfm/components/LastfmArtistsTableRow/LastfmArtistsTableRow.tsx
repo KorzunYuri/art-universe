@@ -6,7 +6,7 @@ import { ApprovalToggle } from "@/music-universe/sources/lastfm/components";
 // backend services
 import { LastfmConfig } from "@/music-universe/sources/lastfm/config/lastfmconfig.ts";
 import type { LastfmArtist } from "@/music-universe/sources/lastfm/types";
-import { bindArtist, unbindArtist } from "@/music-universe/sources/music-data/api/music-data-artists.ts";
+import { bindArtist, unbindArtist, searchArtists } from "@/music-universe/sources/music-data/api/music-data-artists.ts";
 import { updateArtistApprovalStatus } from "@/music-universe/sources/lastfm/api/lastfm-artists.ts";
 // constants
 import { ApprovalStatus } from "@/music-universe/sources/lastfm/constants/approvalStatus";
@@ -130,6 +130,7 @@ export const LastfmArtistsTableRow = ({artist, onChange}: LastfmArtistTableRowPr
                     onBind={handleBindArtist}
                     onUnbind={unbindArtist}
                     onChange={handleEntityChange}
+                    searchFunction={searchArtists}
                     disabled={isApproving}
                 />
             </div>

@@ -14,7 +14,7 @@ $header-bg: #f0f0f0;
 
   border: 1px solid $border-color;
   border-radius: 8px;
-  overflow: hidden;
+  overflow: visible; /* Changed from hidden to visible to allow dropdowns */
   font-family: sans-serif;
 }
 
@@ -33,6 +33,7 @@ $header-bg: #f0f0f0;
   border-bottom: 1px solid color.scale($border-color, $lightness: 20%);
   align-items: center;
   transition: background 0.2s ease;
+  position: relative; /* Add position relative for z-index to work */
 
   &:hover {
     background-color: $row-hover-bg;
@@ -40,6 +41,16 @@ $header-bg: #f0f0f0;
 
   &:last-child {
     border-bottom: none;
+  }
+  
+  /* Add high z-index when row contains active dropdown */
+  &:has(.suggestions) {
+    z-index: 1000;
+  }
+  
+  /* Alternative class-based approach */
+  &.hasActiveDropdown {
+    z-index: 1000;
   }
 }
 

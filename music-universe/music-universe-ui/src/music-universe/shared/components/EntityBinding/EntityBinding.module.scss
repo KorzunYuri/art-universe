@@ -1,10 +1,16 @@
 .wrapper{
     display: flex;
     flex: 1;
+    /* Allow dropdown to overflow */
+    overflow: visible;
+    position: relative;
 }
 
 .bindingName {
     width: 100%;
+    /* Allow dropdown to overflow */
+    overflow: visible;
+    position: relative;
 }
 
 .bindingButton {

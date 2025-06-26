@@ -2,10 +2,42 @@ import axios from 'axios';
 import { MusicDataConfig } from '../config/musicdataconfig';
 import type { BoundEntity, BoundEntityResponse } from '@/music-universe/shared/types/bindable';
 import type { ApiResponse } from '@/music-universe/shared/types/api-response';
+import type { SearchableEntity } from '@/music-universe/shared/components/AutocompleteInput';
 
 export interface TrackBindingRequest {
     name: string;
     artistExternalId: number;
+}
+
+/**
+ * Searches for tracks in Music Data by name
+ * Note: This is a placeholder implementation - the actual API endpoint may not exist yet
+ * 
+ * @param query Search query
+ * @param limit Maximum number of results (default: 10)
+ * @returns List of matching tracks
+ */
+export async function searchTracks(query: string, limit: number = 10): Promise<ApiResponse<SearchableEntity[]>> {
+    try {
+        const response = await axios.get<ApiResponse<SearchableEntity[]>>(
+            `${MusicDataConfig.baseApiUrl}/tracks`,
+            {
+                params: {
+                    search: query,
+                    limit: limit
+                }
+            }
+        );
+        
+        return response.data;
+    } catch (error) {
+        console.error('❌ Error searching tracks:', error);
+        return {
+            success: false,
+            message: 'Failed to search tracks',
+            data: []
+        };
+    }
 }
 
 /**

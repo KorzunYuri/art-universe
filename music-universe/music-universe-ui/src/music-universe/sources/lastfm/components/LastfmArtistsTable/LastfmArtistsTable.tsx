@@ -66,8 +66,7 @@ export const LastfmArtistsTable = () => {
                     // Fetch bound artists from music-data API
                     const boundArtists = await fetchBoundArtists(artistIds)
                     console.log(`✅ Bound artists loaded: ${boundArtists.length} items`)
-                    console.log('📊 Bound artists data:', boundArtists)
-                    
+
                     // Update the artists with bound information
                     const updatedContent = tempData.content.map(artist => {
                         const boundArtist = boundArtists.find(ba => ba.externalId === artist.id)

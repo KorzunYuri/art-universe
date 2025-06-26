@@ -1,7 +1,10 @@
 // hooks
 import { useState } from "react";
+// components
+import { AutocompleteInput, type SearchableEntity } from "@/music-universe/shared/components/AutocompleteInput";
 // types
 import type { Bindable, BoundEntity } from "@/music-universe/shared/types/bindable";
+import type { ApiResponse } from "@/music-universe/shared/types/api-response";
 // styles
 import commonStyles from "@/music-universe/shared/styles/common.module.scss";
 import styles from "./EntityBinding.module.scss";
@@ -11,6 +14,7 @@ interface EntityBindingProps<T extends Bindable> {
     onBind: (entityId: number, name: string) => Promise<BoundEntity | null>;
     onUnbind: (entityId: number) => Promise<boolean>;
     onChange: (entity: T) => void;
+    searchFunction?: (query: string, limit?: number) => Promise<ApiResponse<SearchableEntity[]>>;
     disabled?: boolean;
 }
 
@@ -19,13 +23,13 @@ export function EntityBinding<T extends Bindable>({
     onBind, 
     onUnbind, 
     onChange,
+    searchFunction,
     disabled = false 
 }: EntityBindingProps<T>) {
     const [entityName, setEntityName] = useState(entity.boundEntity?.referenceName || entity.name);
     const [isBinding, setIsBinding] = useState(false);
     const [isUnbinding, setIsUnbinding] = useState(false);
     const [isEditing, setIsEditing] = useState(!entity.boundEntity);
-
     async function handleBind() {
         if (!entityName.trim()) return;
         
@@ -66,6 +70,11 @@ export function EntityBinding<T extends Bindable>({
         }
     }
 
+    const handleEntitySelect = (selectedEntity: SearchableEntity) => {
+        console.log(`🔍 Selected existing entity: ${selectedEntity.name} (ID: ${selectedEntity.id})`);
+        // Note: For now we still use the name for binding, but we have the ID available for future use
+    };
+
     return (
         <div className={styles.wrapper}>
             {entity.boundEntity && !isEditing ? (
@@ -83,13 +92,26 @@ export function EntityBinding<T extends Bindable>({
                 </div>
             ) : (
                 <div className={styles.wrapper}>
-                    <input
-                        type="text"
-                        value={entityName}
-                        onChange={(e) => setEntityName(e.target.value)}
-                        className={`${commonStyles.muLabel} ${styles.bindingName}`}
-                        placeholder="Entity name"
-                    />
+                    {searchFunction ? (
+                        <AutocompleteInput
+                            value={entityName}
+                            onChange={setEntityName}
+                            onSelect={handleEntitySelect}
+                            searchFunction={searchFunction}
+                            placeholder="Entity name"
+                            disabled={disabled}
+                            className={styles.bindingName}
+                        />
+                    ) : (
+                        <input
+                            type="text"
+                            value={entityName}
+                            onChange={(e) => setEntityName(e.target.value)}
+                            className={`${commonStyles.muLabel} ${styles.bindingName}`}
+                            placeholder="Entity name"
+                            disabled={disabled}
+                        />
+                    )}
                     <button
                         onClick={handleBind}
                         disabled={isBinding || disabled || !entityName.trim()}

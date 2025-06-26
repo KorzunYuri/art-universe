@@ -2,11 +2,44 @@ import axios from 'axios';
 import { MusicDataConfig } from '../config/musicdataconfig';
 import type { BoundEntity, BoundEntityResponse } from '@/music-universe/shared/types/bindable';
 import type { ApiResponse } from '@/music-universe/shared/types/api-response';
+import type { SearchableEntity } from '@/music-universe/shared/components/AutocompleteInput';
 
 export interface ArtistBindingRequest {
     name: string;
     description?: string;
     imageUrl?: string;
+}
+
+/**
+ * Searches for artists in Music Data by name
+ * 
+ * @param query Search query
+ * @param limit Maximum number of results (default: 10)
+ * @returns List of matching artists
+ */
+export async function searchArtists(query: string, limit: number = 10): Promise<ApiResponse<SearchableEntity[]>> {
+    try {
+        const url = `${MusicDataConfig.baseApiUrl}/artists/search`;
+        const params = { query: query, limit: limit };
+
+        const response = await axios.get<ApiResponse<SearchableEntity[]>>(url, { params });
+        
+        return response.data;
+    } catch (error) {
+        console.error('❌ Error searching artists:', error);
+        if (axios.isAxiosError(error)) {
+            console.error('❌ Axios error details:', {
+                status: error.response?.status,
+                statusText: error.response?.statusText,
+                data: error.response?.data
+            });
+        }
+        return {
+            success: false,
+            message: 'Failed to search artists',
+            data: []
+        };
+    }
 }
 
 /**
