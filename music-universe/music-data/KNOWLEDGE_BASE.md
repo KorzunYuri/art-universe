@@ -36,6 +36,7 @@ External data sources defined in `DataSource` enum:
 
 ### Artist Management
 - `GET /api/v1/artists/bound/{dataSource}?externalIds=1,2,3` - Get bound artists
+- `GET /api/v1/artists/search?query=search&limit=20` - Search artists by name (limit is optional)
 - `POST /api/v1/artists/bind/{dataSource}/{externalId}` - Bind external artist
 - `DELETE /api/v1/artists/unbind/{dataSource}/{externalId}` - Unbind artist
 
@@ -57,6 +58,8 @@ External data sources defined in `DataSource` enum:
 - `findArtist(DataSource, Long)` - Find single bound artist  
 - `bindArtist(DataSource, Long, ArtistBindingRequestDTO)` - Bind external artist
 - `unbindArtist(DataSource, Long)` - Unbind external artist
+- `searchArtistsByName(String)` - Search artists by name (case insensitive)
+- `searchArtistsByName(String, Integer)` - Search artists by name with limit
 
 ### TrackService
 - `findBoundTracks(DataSource, List<Long>)` - Find multiple bound tracks
@@ -87,6 +90,7 @@ External data sources defined in `DataSource` enum:
 ### Custom Query Methods
 - `ArtistBindingRepository.findBoundArtistsForDataSource()` - Bulk artist lookup
 - `ArtistBindingRepository.findBoundArtistForDataSource()` - Single artist lookup
+- `ArtistRepository.findByNameContainingIgnoreCase(String, int)` - Search artists by name with sorting and limit
 - `TrackBindingRepository.findBoundTracksForDataSource()` - Bulk track lookup
 - `ArtistRepository.findByName()` - Find artist by name
 - `TrackRepository.findByNameAndPrimaryArtistId()` - Find track by name and artist
@@ -148,6 +152,13 @@ External data sources defined in `DataSource` enum:
 1. Artist binding creates internal artist if it doesn't exist
 2. Artist lookup is by name only
 3. Binding updates are allowed (rebinding to different internal entity)
+
+### Search Rules
+1. Artist search is case insensitive
+2. Artist search uses partial matching (LIKE %term%)
+3. Empty or null search terms return empty results
+4. Default limit of 20 results can be overridden with limit parameter
+5. Results are sorted alphabetically by name in ascending order
 
 ### Data Consistency Rules
 1. All entities extend `BaseEntity` with audit timestamps

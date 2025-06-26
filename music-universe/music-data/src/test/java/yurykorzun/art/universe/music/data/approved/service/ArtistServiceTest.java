@@ -6,6 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import yurykorzun.art.universe.music.data.approved.dto.ArtistBindingRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.ArtistSearchResultDTO;
 import yurykorzun.art.universe.music.data.approved.dto.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.approved.dto.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.approved.entity.Artist;
@@ -16,9 +17,13 @@ import yurykorzun.art.universe.music.data.approved.repository.ArtistRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -278,5 +283,165 @@ class ArtistServiceTest {
         assertFalse(result);
         verify(artistBindingRepository).findByDataSourceAndExternalId(dataSource, externalId);
         verify(artistBindingRepository, never()).delete(any());
+    }
+    
+    @Test
+    void searchArtistsByName_shouldReturnMatchingArtists() {
+        // Given
+        String search = "radio";
+        Artist artist1 = Artist.builder().id(1L).name("Radiohead").build();
+        Artist artist2 = Artist.builder().id(2L).name("Radio Moscow").build();
+        List<Artist> artists = List.of(artist1, artist2);
+        
+        List<ArtistSearchResultDTO> expectedResults = List.of(
+            new ArtistSearchResultDTO(1L, "Radiohead"),
+            new ArtistSearchResultDTO(2L, "Radio Moscow")
+        );
+        
+        when(artistRepository.findByNameContainingIgnoreCase(eq(search), anyInt()))
+            .thenReturn(artists);
+            
+        // When
+        List<ArtistSearchResultDTO> result = artistService.searchArtistsByName(search);
+        
+        // Then
+        assertEquals(2, result.size());
+        assertEquals(expectedResults.get(0).getId(), result.get(0).getId());
+        assertEquals(expectedResults.get(0).getName(), result.get(0).getName());
+        assertEquals(expectedResults.get(1).getId(), result.get(1).getId());
+        assertEquals(expectedResults.get(1).getName(), result.get(1).getName());
+        verify(artistRepository).findByNameContainingIgnoreCase(search, 20); // Default limit
+    }
+    
+    @Test
+    void searchArtistsByName_withLimit_shouldLimitResults() {
+        // Given
+        String search = "band";
+        int limit = 3;
+        
+        // Create 5 artists
+        List<Artist> artists = IntStream.rangeClosed(1, 5)
+            .mapToObj(i -> Artist.builder().id((long) i).name("Band " + i).build())
+            .collect(Collectors.toList());
+        
+        when(artistRepository.findByNameContainingIgnoreCase(eq(search), eq(limit)))
+            .thenReturn(artists.subList(0, limit));
+            
+        // When
+        List<ArtistSearchResultDTO> result = artistService.searchArtistsByName(search, limit);
+        
+        // Then
+        assertEquals(limit, result.size());
+        for (int i = 0; i < limit; i++) {
+            assertEquals((long) (i + 1), result.get(i).getId());
+            assertEquals("Band " + (i + 1), result.get(i).getName());
+        }
+        verify(artistRepository).findByNameContainingIgnoreCase(search, limit);
+    }
+    
+    @Test
+    void searchArtistsByName_withDefaultLimit_shouldLimitToDefaultResults() {
+        // Given
+        String search = "band";
+        int defaultLimit = 20;
+        
+        // Create 30 artists (more than default limit of 20)
+        List<Artist> artists = IntStream.rangeClosed(1, 30)
+            .mapToObj(i -> Artist.builder().id((long) i).name("Band " + i).build())
+            .collect(Collectors.toList());
+        
+        when(artistRepository.findByNameContainingIgnoreCase(eq(search), eq(defaultLimit)))
+            .thenReturn(artists.subList(0, defaultLimit));
+            
+        // When
+        List<ArtistSearchResultDTO> result = artistService.searchArtistsByName(search);
+        
+        // Then
+        assertEquals(defaultLimit, result.size());
+        for (int i = 0; i < defaultLimit; i++) {
+            assertEquals((long) (i + 1), result.get(i).getId());
+            assertEquals("Band " + (i + 1), result.get(i).getName());
+        }
+        verify(artistRepository).findByNameContainingIgnoreCase(search, defaultLimit);
+    }
+    
+    @Test
+    void searchArtistsByName_withNullLimit_shouldUseDefaultLimit() {
+        // Given
+        String search = "band";
+        Integer limit = null;
+        int defaultLimit = 20;
+        
+        // Create 30 artists (more than default limit of 20)
+        List<Artist> artists = IntStream.rangeClosed(1, 30)
+            .mapToObj(i -> Artist.builder().id((long) i).name("Band " + i).build())
+            .collect(Collectors.toList());
+        
+        when(artistRepository.findByNameContainingIgnoreCase(eq(search), eq(defaultLimit)))
+            .thenReturn(artists.subList(0, defaultLimit));
+            
+        // When
+        List<ArtistSearchResultDTO> result = artistService.searchArtistsByName(search, limit);
+        
+        // Then
+        assertEquals(defaultLimit, result.size());
+        verify(artistRepository).findByNameContainingIgnoreCase(search, defaultLimit);
+    }
+    
+    @Test
+    void searchArtistsByName_shouldReturnSortedResults() {
+        // Given
+        String search = "band";
+        
+        // Create artists in non-alphabetical order
+        Artist artist1 = Artist.builder().id(1L).name("Band C").build();
+        Artist artist2 = Artist.builder().id(2L).name("Band A").build();
+        Artist artist3 = Artist.builder().id(3L).name("Band B").build();
+        
+        // The repository should return them in alphabetical order due to ORDER BY clause
+        List<Artist> sortedArtists = List.of(
+            artist2, // Band A
+            artist3, // Band B
+            artist1  // Band C
+        );
+        
+        when(artistRepository.findByNameContainingIgnoreCase(eq(search), anyInt()))
+            .thenReturn(sortedArtists);
+            
+        // When
+        List<ArtistSearchResultDTO> result = artistService.searchArtistsByName(search);
+        
+        // Then
+        assertEquals(3, result.size());
+        assertEquals("Band A", result.get(0).getName());
+        assertEquals("Band B", result.get(1).getName());
+        assertEquals("Band C", result.get(2).getName());
+        verify(artistRepository).findByNameContainingIgnoreCase(search, 20);
+    }
+    
+    @Test
+    void searchArtistsByName_withEmptySearchTerm_shouldReturnEmptyList() {
+        // Given
+        String search = "";
+        
+        // When
+        List<ArtistSearchResultDTO> result = artistService.searchArtistsByName(search);
+        
+        // Then
+        assertTrue(result.isEmpty());
+        verify(artistRepository, never()).findByNameContainingIgnoreCase(any(), anyInt());
+    }
+    
+    @Test
+    void searchArtistsByName_withNullSearchTerm_shouldReturnEmptyList() {
+        // Given
+        String search = null;
+        
+        // When
+        List<ArtistSearchResultDTO> result = artistService.searchArtistsByName(search);
+        
+        // Then
+        assertTrue(result.isEmpty());
+        verify(artistRepository, never()).findByNameContainingIgnoreCase(any(), anyInt());
     }
 }

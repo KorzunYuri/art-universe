@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.music.data.approved.dto.ArtistBindingRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.ArtistSearchResultDTO;
 import yurykorzun.art.universe.music.data.approved.dto.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.approved.entity.DataSource;
 import yurykorzun.art.universe.music.data.approved.service.ArtistService;
@@ -31,6 +32,21 @@ public class ArtistController {
             return ResponseWrapper.success(result);
         } catch (Exception e) {
             return ResponseWrapper.failure(String.format("Failed to get bound artists: %s", e.getMessage()));
+        }
+    }
+    
+    @GetMapping("/search")
+    public ResponseEntity<ResponseWrapper<List<ArtistSearchResultDTO>>> searchArtists(
+        @RequestParam String query,
+        @RequestParam(required = false) Integer limit
+    ) {
+        try {
+            List<ArtistSearchResultDTO> result = limit != null 
+                ? artistService.searchArtistsByName(query, limit)
+                : artistService.searchArtistsByName(query);
+            return ResponseWrapper.success(result);
+        } catch (Exception e) {
+            return ResponseWrapper.failure(String.format("Failed to search artists: %s", e.getMessage()));
         }
     }
     

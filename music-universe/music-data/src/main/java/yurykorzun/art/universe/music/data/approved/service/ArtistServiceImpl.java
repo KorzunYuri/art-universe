@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.music.data.approved.dto.ArtistBindingRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.ArtistSearchResultDTO;
 import yurykorzun.art.universe.music.data.approved.dto.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.approved.entity.Artist;
 import yurykorzun.art.universe.music.data.approved.entity.ArtistBinding;
@@ -13,6 +14,7 @@ import yurykorzun.art.universe.music.data.approved.repository.ArtistRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ArtistServiceImpl implements ArtistService {
@@ -95,5 +97,23 @@ public class ArtistServiceImpl implements ArtistService {
         }
         
         return false;
+    }
+    
+    @Override
+    public List<ArtistSearchResultDTO> searchArtistsByName(String search, Integer limit) {
+        if (search == null || search.trim().isEmpty()) {
+            return List.of();
+        }
+        
+        // Apply default limit if null
+        int actualLimit = limit != null ? limit : 20;
+        
+        return artistRepository.findByNameContainingIgnoreCase(search.trim(), actualLimit)
+            .stream()
+            .map(artist -> ArtistSearchResultDTO.builder()
+                .id(artist.getId())
+                .name(artist.getName())
+                .build())
+            .collect(Collectors.toList());
     }
 }

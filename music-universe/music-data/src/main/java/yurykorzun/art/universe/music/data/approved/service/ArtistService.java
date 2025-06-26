@@ -1,6 +1,7 @@
 package yurykorzun.art.universe.music.data.approved.service;
 
 import yurykorzun.art.universe.music.data.approved.dto.ArtistBindingRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.ArtistSearchResultDTO;
 import yurykorzun.art.universe.music.data.approved.dto.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.approved.entity.DataSource;
 
@@ -38,4 +39,24 @@ public interface ArtistService {
      * @return true if the unbinding was successful, false otherwise
      */
     boolean unbindArtist(DataSource dataSource, Long externalId);
+    
+    /**
+     * Searches for artists by name (case insensitive, partial match).
+     *
+     * @param search The search term to look for in artist names
+     * @param limit Maximum number of results to return (default: 20)
+     * @return List of artist DTOs matching the search term
+     */
+    List<ArtistSearchResultDTO> searchArtistsByName(String search, Integer limit);
+    
+    /**
+     * Searches for artists by name (case insensitive, partial match).
+     * Uses default limit of 20 results.
+     *
+     * @param search The search term to look for in artist names
+     * @return List of artist DTOs matching the search term
+     */
+    default List<ArtistSearchResultDTO> searchArtistsByName(String search) {
+        return searchArtistsByName(search, 20);
+    }
 }

@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.music.data.approved.dto.ArtistBindingRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.ArtistSearchResultDTO;
 import yurykorzun.art.universe.music.data.approved.dto.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.approved.dto.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.approved.entity.DataSource;
@@ -78,6 +79,75 @@ class ArtistControllerTest {
         assertEquals(expectedResponse, actualResponse);
 
         verify(artistService).findBoundArtists(dataSource, externalIds);
+    }
+    
+    @Test
+    void searchArtists_shouldReturnSuccessResponse() throws Exception {
+        // Given
+        String query = "radio";
+        ArtistSearchResultDTO artist1 = new ArtistSearchResultDTO(1L, "Radiohead");
+        ArtistSearchResultDTO artist2 = new ArtistSearchResultDTO(2L, "Radio Moscow");
+        List<ArtistSearchResultDTO> expectedArtists = List.of(artist1, artist2);
+        
+        when(artistService.searchArtistsByName(query)).thenReturn(expectedArtists);
+        ResponseEntity<ResponseWrapper<List<ArtistSearchResultDTO>>> expectedResponse = 
+            ResponseWrapper.success(expectedArtists);
+            
+        // When
+        ResponseEntity<ResponseWrapper<List<ArtistSearchResultDTO>>> actualResponse = 
+            artistController.searchArtists(query, null);
+            
+        // Then
+        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
+        assertEquals(expectedResponse, actualResponse);
+        
+        verify(artistService).searchArtistsByName(query);
+    }
+    
+    @Test
+    void searchArtists_withLimit_shouldReturnSuccessResponse() throws Exception {
+        // Given
+        String query = "radio";
+        Integer limit = 5;
+        ArtistSearchResultDTO artist1 = new ArtistSearchResultDTO(1L, "Radiohead");
+        ArtistSearchResultDTO artist2 = new ArtistSearchResultDTO(2L, "Radio Moscow");
+        List<ArtistSearchResultDTO> expectedArtists = List.of(artist1, artist2);
+        
+        when(artistService.searchArtistsByName(query, limit)).thenReturn(expectedArtists);
+        ResponseEntity<ResponseWrapper<List<ArtistSearchResultDTO>>> expectedResponse = 
+            ResponseWrapper.success(expectedArtists);
+            
+        // When
+        ResponseEntity<ResponseWrapper<List<ArtistSearchResultDTO>>> actualResponse = 
+            artistController.searchArtists(query, limit);
+            
+        // Then
+        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
+        assertEquals(expectedResponse, actualResponse);
+        
+        verify(artistService).searchArtistsByName(query, limit);
+    }
+    
+    @Test
+    void searchArtists_whenExceptionThrown_shouldReturnFailureResponse() throws Exception {
+        // Given
+        String query = "radio";
+        String errorMessage = "Test error";
+        
+        when(artistService.searchArtistsByName(query))
+            .thenThrow(new RuntimeException(errorMessage));
+        ResponseEntity<ResponseWrapper<List<ArtistSearchResultDTO>>> expectedResponse =
+            ResponseWrapper.failure(String.format("Failed to search artists: %s", errorMessage));
+            
+        // When
+        ResponseEntity<ResponseWrapper<List<ArtistSearchResultDTO>>> actualResponse = 
+            artistController.searchArtists(query, null);
+            
+        // Then
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
+        assertEquals(expectedResponse, actualResponse);
+        
+        verify(artistService).searchArtistsByName(query);
     }
     
     @Test
