@@ -3,21 +3,20 @@ import { MusicDataConfig } from '../config/musicdataconfig';
 import type { BoundEntity, BoundEntityResponse } from '@/music-universe/shared/types/bindable';
 import type { ApiResponse } from '@/music-universe/shared/types/api-response';
 
-export interface ArtistBindingRequest {
+export interface TrackBindingRequest {
     name: string;
-    description?: string;
-    imageUrl?: string;
+    artistExternalId: number;
 }
 
 /**
- * Fetches bound artists from the music-data API
+ * Fetches bound tracks from the music-data API
  * 
  * @param externalIds List of external IDs to check
- * @returns List of bound artists
+ * @returns List of bound tracks
  */
-export async function fetchBoundArtists(externalIds: number[]): Promise<BoundEntityResponse[]> {
+export async function fetchBoundTracks(externalIds: number[]): Promise<BoundEntityResponse[]> {
     try {
-        const url = `${MusicDataConfig.baseApiUrl}/artists/bound/LASTFM`;
+        const url = `${MusicDataConfig.baseApiUrl}/tracks/bound/LASTFM`;
         const response = await axios.get<ApiResponse<BoundEntityResponse[]>>(
             url,
             {
@@ -28,32 +27,36 @@ export async function fetchBoundArtists(externalIds: number[]): Promise<BoundEnt
         );
 
         if (response.data.success) {
-            console.log(`🎯 Found ${response.data.data.length} bound artists`);
+            console.log(`🎯 Found ${response.data.data.length} bound tracks`);
             return response.data.data;
         } else {
             console.warn(`⚠️ API returned success=false: ${response.data.message}`);
             return [];
         }
     } catch (error) {
-        console.error('❌ Error fetching bound artists:', error);
+        console.error('❌ Error fetching bound tracks:', error);
         return [];
     }
 }
 
 /**
- * Binds an artist from LastFM to an artist in music-data
+ * Binds a track from LastFM to a track in music-data
  * 
- * @param externalId The LastFM artist ID
- * @param artistName The name of the artist
- * @returns The bound artist if successful, null otherwise
+ * @param externalId The LastFM track ID
+ * @param trackName The name of the track
+ * @param artistExternalId The LastFM artist ID
+ * @returns The bound track if successful, null otherwise
  */
-export async function bindArtist(externalId: number, artistName: string): Promise<BoundEntity | null> {
+export async function bindTrack(externalId: number, trackName: string, artistExternalId: number): Promise<BoundEntity | null> {
     try {
-        console.log(`🔗 Binding artist ${externalId} with name "${artistName}"`);
-        const request: ArtistBindingRequest = { name: artistName };
+        console.log(`🔗 Binding track ${externalId} with name "${trackName}" and artist ${artistExternalId}`);
+        const request: TrackBindingRequest = { 
+            name: trackName,
+            artistExternalId: artistExternalId
+        };
         
         const response = await axios.post<ApiResponse<BoundEntityResponse>>(
-            `${MusicDataConfig.baseApiUrl}/artists/bind/LASTFM/${externalId}`,
+            `${MusicDataConfig.baseApiUrl}/tracks/bind/LASTFM/${externalId}`,
             request
         );
         
@@ -66,28 +69,28 @@ export async function bindArtist(externalId: number, artistName: string): Promis
         
         return null;
     } catch (error) {
-        console.error('❌ Error binding artist:', error);
+        console.error('❌ Error binding track:', error);
         return null;
     }
 }
 
 /**
- * Unbinds an artist from LastFM
+ * Unbinds a track from LastFM
  * 
- * @param externalId The LastFM artist ID
+ * @param externalId The LastFM track ID
  * @returns True if successful, false otherwise
  */
-export async function unbindArtist(externalId: number): Promise<boolean> {
+export async function unbindTrack(externalId: number): Promise<boolean> {
     try {
-        console.log(`🔓 Unbinding artist ${externalId}`);
+        console.log(`🔓 Unbinding track ${externalId}`);
         
         const response = await axios.delete<ApiResponse<boolean>>(
-            `${MusicDataConfig.baseApiUrl}/artists/unbind/LASTFM/${externalId}`
+            `${MusicDataConfig.baseApiUrl}/tracks/unbind/LASTFM/${externalId}`
         );
         
         return response.data.success ? response.data.data : false;
     } catch (error) {
-        console.error('❌ Error unbinding artist:', error);
+        console.error('❌ Error unbinding track:', error);
         return false;
     }
 }

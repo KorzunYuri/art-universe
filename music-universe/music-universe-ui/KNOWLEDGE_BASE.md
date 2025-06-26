@@ -137,6 +137,9 @@ src/music-universe/
 - `LastfmArtistsTable`: Container component for displaying and managing LastFM artists
 - `LastfmArtistsTableRow`: Component for rendering a single artist row
 - `LastfmArtistsTableHeader`: Component for rendering the table header with sorting
+- `LastfmTracksTable`: Container component for displaying and managing LastFM tracks
+- `LastfmTracksTableRow`: Component for rendering a single track row with complex binding logic
+- `LastfmTracksTableHeader`: Component for rendering the tracks table header with sorting
 - `ApprovalToggle`: Component for toggling approval status
 
 ### Page Components
@@ -157,12 +160,17 @@ src/music-universe/
 
 - `fetchArtists`: Fetches paginated artists from LastFM API
 - `updateArtistApprovalStatus`: Updates artist approval status
+- `fetchTracks`: Fetches paginated tracks from LastFM API
+- `updateTrackApprovalStatus`: Updates track approval status
 
 ### Music Data API
 
 - `fetchBoundArtists`: Fetches bound artists from Music Data API
 - `bindArtist`: Binds a LastFM artist to a Music Data artist
 - `unbindArtist`: Unbinds a LastFM artist from Music Data
+- `fetchBoundTracks`: Fetches bound tracks from Music Data API
+- `bindTrack`: Binds a LastFM track to a Music Data track (requires artist external ID)
+- `unbindTrack`: Unbinds a LastFM track from Music Data
 
 ## Component Interaction Patterns
 
@@ -175,19 +183,32 @@ src/music-universe/
 5. Binding controls allow binding/unbinding artists to Music Data
 6. Changes are persisted via API calls and local state updates
 
+### Track Management Flow
+
+1. `LastfmTracksTable` fetches paginated tracks from LastFM API
+2. `LastfmTracksTable` fetches bound tracks from Music Data API
+3. `LastfmTracksTableRow` displays track information with complex binding logic:
+   - First ensures artist is approved in LastFM
+   - Then ensures artist is bound to Music Data
+   - Then approves track in LastFM if needed
+   - Finally binds track to Music Data
+4. `ApprovalToggle` allows changing track approval status
+5. `EntityBinding` component handles the complex binding workflow
+
 ### Data Binding Flow
 
-1. User selects an artist to bind
-2. If artist is not approved, it's automatically approved
-3. Artist is bound to Music Data via API call
-4. UI is updated to show binding status
-5. User can unbind artist if needed
+1. User selects an entity to bind
+2. If entity is not approved, it's automatically approved
+3. For tracks: Artist is also approved and bound if needed
+4. Entity is bound to Music Data via API call
+5. UI is updated to show binding status
+6. User can unbind entity if needed
 
 ### Binding and Approval Interaction
 
 The binding process and approval status are closely related:
-1. When binding an artist, the system ensures it's approved in LastFM
-2. The `LastfmArtistsTableRow` component handles this relationship through the `handleEntityChange` function
+1. When binding an entity, the system ensures it's approved in LastFM
+2. The row components handle this relationship through the `handleEntityChange` function
 3. When an entity is bound, the component ensures the approval status is updated to reflect this
 4. This separation of concerns keeps the `EntityBinding` component focused on binding functionality while the parent component manages the relationship between binding and approval
 
@@ -219,24 +240,44 @@ The `PaginatedResource` hook provides:
 - Loading state management
 - Error handling
 
+## Type System and API Standards
+
+### Shared Types
+
+The application uses a standardized type system:
+
+- `ApiResponse<T>`: Standard response wrapper used by all backend modules
+- `BoundEntity`: Interface for bound entity references (referenceId, referenceName)
+- `BoundEntityResponse`: Interface for bound entity API responses (includes externalId, dataSource)
+- `Bindable`: Interface for entities that can be bound to internal entities
+- `Approvable`: Interface for entities that can be approved or declined
+
+### API Request/Response Patterns
+
+All API calls follow consistent patterns:
+- Request DTOs: `{Entity}BindingRequest` interfaces for binding operations
+- Response wrapper: All responses use `ApiResponse<T>` structure
+- Error handling: Consistent error logging and user feedback
+- Loading states: Proper loading indicators during API calls
+
 ## Naming Conventions
 
 1. **Component Files**
    - PascalCase for component names
    - Component name matches file name
-   - Example: `LastfmArtistsTable.tsx`
+   - Example: `LastfmTracksTable.tsx`
 
 2. **Style Files**
    - Component name followed by `.module.css` or `.module.scss`
-   - Example: `LastfmArtistsTable.module.css`
+   - Example: `LastfmTracksTable.module.css`
 
 3. **API Functions**
    - camelCase verb + noun
-   - Example: `fetchArtists`, `bindArtist`
+   - Example: `fetchTracks`, `bindTrack`
 
 4. **Type Definitions**
    - PascalCase for interface and type names
-   - Example: `LastfmArtist`, `PaginatedResourceOptions`
+   - Example: `LastfmTrack`, `PaginatedResourceOptions`
 
 5. **Constants**
    - UPPER_CASE for constant values
@@ -323,14 +364,14 @@ The binding system has been improved to better handle the relationship between b
 
 1. **Separation of Concerns**:
    - `EntityBinding` component now focuses solely on binding functionality
-   - Parent components (like `LastfmArtistsTableRow`) handle the relationship between binding and approval status
+   - Parent components (like row components) handle the relationship between binding and approval status
 
 2. **Improved Data Flow**:
    - When an entity is bound, the parent component ensures the approval status is updated
-   - This is handled through the `handleEntityChange` function in `LastfmArtistsTableRow`
+   - This is handled through the `handleEntityChange` function in row components
 
 3. **Optimized Loading of Bound Entities**:
-   - `LastfmArtistsTable` now loads bound entities immediately after loading artists
+   - Table components now load bound entities immediately after loading main entities
    - This ensures that binding information is available as soon as possible
    - Explicit handling of bound/unbound state for all entities
 
@@ -338,21 +379,58 @@ The binding system has been improved to better handle the relationship between b
    - Clear visual indication of binding status
    - Automatic update of approval status when binding changes
 
+### Track Binding Implementation
+
+Implemented comprehensive track binding functionality:
+
+1. **Complex Binding Logic**: Track binding requires:
+   - Artist approval in LastFM (if not already approved)
+   - Artist binding to Music Data (if not already bound)
+   - Track approval in LastFM (if not already approved)
+   - Track binding to Music Data with artist reference
+
+2. **API Integration**: 
+   - `TrackBindingRequest` includes track name and artist external ID
+   - Follows same patterns as artist binding
+   - Proper error handling and state management
+
+3. **UI Components**:
+   - Added binding column to tracks table
+   - Complex binding workflow in `LastfmTracksTableRow`
+   - Consistent styling and user experience
+
+### Type System Standardization
+
+Eliminated code duplication by creating shared type definitions:
+
+1. **Shared API Types**:
+   - `ApiResponse<T>` moved to shared types
+   - `BoundEntityResponse` replaces duplicate `BoundArtist`/`BoundTrack` interfaces
+   - Consistent type usage across all API clients
+
+2. **Improved Maintainability**:
+   - Single source of truth for common interfaces
+   - Easier to update API contracts
+   - Better TypeScript intellisense and error checking
+
 ### Improved Search and Filtering
 
-The artist table now supports more advanced search and filtering options:
+The tables now support advanced search and filtering options:
 - Search by name
 - Filter by approval status
 - Filter by minimum play count
 - Filter by minimum listeners count
+- Artist-specific track filtering
 
 ## Future Enhancements
 
 Based on the project files and knowledge base:
 
-1. Implement track management for LastFM
-2. Add album management for LastFM
+1. Implement album management for LastFM
+2. Add support for other data sources (MusicBrainz, AlbumOfTheYear)
 3. Implement tag management and category binding
-4. Add support for other data sources (MusicBrainz, AlbumOfTheYear)
-5. Implement dimension and category management
-6. Add track binding functionality
+4. Add dimension and category management
+5. Implement quiz-specific approval workflow
+6. Add bulk operations for entity management
+7. Implement advanced filtering and search capabilities
+8. Add data export/import functionality

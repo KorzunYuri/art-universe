@@ -1,5 +1,5 @@
 // hooks
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 // components
 import {
     LastfmTracksTableHeader,
@@ -10,6 +10,7 @@ import type { LastfmTrack } from '@/music-universe/sources/lastfm/types/lastfm-t
 import type { Page } from '@/music-universe/shared/types/page'
 // api
 import { fetchTracks, type TrackSearchParams } from '@/music-universe/sources/lastfm/api/lastfm-tracks'
+import { fetchBoundTracks } from '@/music-universe/sources/music-data/api/music-data-tracks'
 // styles
 import commonStyles from '@/music-universe/shared/styles/common.module.scss'
 import styles from './LastfmTracksTable.module.css'
@@ -28,10 +29,15 @@ export const LastfmTracksTable = ({ artistId }: LastfmTracksTableProps) => {
     // Data state
     const [data, setData] = useState<Page<LastfmTrack> | null>(null)
     const [loading, setLoading] = useState(false)
+    const [loadingBoundTracks, setLoadingBoundTracks] = useState(false)
     const [page, setPage] = useState(0)
     const [sort, setSort] = useState('name,asc')
     const pageSize = 20
     
+    // Refs for optimization
+    const skipNextFetchRef = useRef(false)
+    const previousContentRef = useRef<LastfmTrack[]>([])
+
     // Load tracks with current search parameters
     const loadTracks = async () => {
         setLoading(true)
@@ -53,10 +59,103 @@ export const LastfmTracksTable = ({ artistId }: LastfmTracksTableProps) => {
                 console.log('🎵 First track example:', result.content[0])
             }
             setData(result)
+            
+            // load bindings straight away
+            // save result in a local variable to not trigger rerender
+            const tempData = result;
+            
+            if (tempData && tempData.content.length > 0) {
+                console.log('🔄 Directly loading bound tracks after tracks load')
+                setLoadingBoundTracks(true)
+                try {
+                    // Extract all track IDs
+                    const trackIds = tempData.content.map(track => track.id)
+                    console.log(`📋 Requesting bindings for ${trackIds.length} tracks: ${trackIds.join(', ')}`)
+                    
+                    // Fetch bound tracks from music-data API
+                    const boundTracks = await fetchBoundTracks(trackIds)
+                    console.log(`✅ Bound tracks loaded: ${boundTracks.length} items`)
+                    
+                    // Update the tracks with bound information
+                    const updatedContent = tempData.content.map(track => {
+                        const boundTrack = boundTracks.find(bt => bt.externalId === track.id)
+                        if (boundTrack) {
+                            return {
+                                ...track,
+                                boundEntity: {
+                                    referenceId: boundTrack.referenceId,
+                                    referenceName: boundTrack.referenceName
+                                }
+                            }
+                        }
+                        // explicitly set boundEntity for non-bound tracks
+                        return {
+                            ...track,
+                            boundEntity: undefined
+                        }
+                    })
+                    
+                    console.log('📝 Updating tracks with binding information')
+                    // set a flag to skip loadBoundTracks in the upcoming rerender
+                    skipNextFetchRef.current = true
+                    previousContentRef.current = [...updatedContent]
+                    setData({ ...tempData, content: updatedContent })
+                } catch (error) {
+                    console.error('❌ Error loading bound tracks:', error)
+                } finally {
+                    setLoadingBoundTracks(false)
+                }
+            }
         } catch (error) {
             console.error('❌ Error loading tracks:', error)
         } finally {
             setLoading(false)
+        }
+    }
+
+    // Load bound tracks for the current page
+    const loadBoundTracks = async () => {
+        if (!data || data.content.length === 0) {
+            console.log('⚠️ No tracks data to load bindings for')
+            return
+        }
+        
+        console.log('🔍 Loading bound tracks...')
+        setLoadingBoundTracks(true)
+        try {
+            // Extract all track IDs
+            const trackIds = data.content.map(track => track.id)
+            console.log(`📋 Requesting bindings for ${trackIds.length} tracks`)
+            
+            // Fetch bound tracks from music-data API
+            const boundTracks = await fetchBoundTracks(trackIds)
+            console.log(`✅ Bound tracks loaded: ${boundTracks.length} items`)
+            
+            // Update the tracks with bound information
+            const updatedContent = data.content.map(track => {
+                const boundTrack = boundTracks.find(bt => bt.externalId === track.id)
+                if (boundTrack) {
+                    return {
+                        ...track,
+                        boundEntity: {
+                            referenceId: boundTrack.referenceId,
+                            referenceName: boundTrack.referenceName
+                        }
+                    }
+                }
+                // explicitly set boundEntity for non-bound tracks
+                return {
+                    ...track,
+                    boundEntity: undefined
+                }
+            })
+            
+            console.log('📝 Updating tracks with binding information')
+            setData({ ...data, content: updatedContent })
+        } catch (error) {
+            console.error('❌ Error loading bound tracks:', error)
+        } finally {
+            setLoadingBoundTracks(false)
         }
     }
 
@@ -66,11 +165,55 @@ export const LastfmTracksTable = ({ artistId }: LastfmTracksTableProps) => {
         loadTracks()
     }, [page, sort, artistId])
 
+    // Load bound tracks when track data changes
+    useEffect(() => {
+        console.log('🔄 Effect triggered: data content changed')
+        if (!data || data.content.length === 0) return
+        
+        // Skip fetch if we just updated a track through the UI
+        if (skipNextFetchRef.current) {
+            console.log('⏭️ Skipping bound tracks fetch (skipNextFetchRef is true)')
+            skipNextFetchRef.current = false
+            return
+        }
+        
+        // Skip fetch if only boundEntity property changed
+        if (previousContentRef.current.length === data.content.length) {
+            console.log('🔍 Checking if only boundEntity changed...')
+            const onlyBoundEntityChanged = data.content.every((track, index) => {
+                const prevTrack = previousContentRef.current[index]
+                // If IDs don't match, content has changed
+                if (prevTrack.id !== track.id) return false
+                
+                // If any property other than boundEntity changed, content has changed
+                const trackWithoutBound = { ...track }
+                const prevTrackWithoutBound = { ...prevTrack }
+                delete trackWithoutBound.boundEntity
+                delete prevTrackWithoutBound.boundEntity
+                
+                return JSON.stringify(trackWithoutBound) === JSON.stringify(prevTrackWithoutBound)
+            })
+            
+            if (onlyBoundEntityChanged) {
+                console.log('⏭️ Skipping bound tracks fetch (only boundEntity changed)')
+                previousContentRef.current = [...data.content]
+                return
+            }
+        }
+        
+        console.log('📝 Updating previousContentRef and loading bound tracks')
+        previousContentRef.current = [...data.content]
+        loadBoundTracks()
+    }, [data?.content])
+
     // Handle track changes from child components
     const onTrackChanged = (updated: LastfmTrack) => {
         if (!data) return
         
         console.log(`🔄 Track changed: (${updated.name})`)
+        
+        // Set flag to skip next fetch when we update a track through the UI
+        skipNextFetchRef.current = true
         
         const newContent = data.content.map(t => t.id === updated.id ? updated : t)
         setData({ ...data, content: newContent })
@@ -102,6 +245,8 @@ export const LastfmTracksTable = ({ artistId }: LastfmTracksTableProps) => {
     // Handle refresh button
     const handleRefresh = () => {
         console.log('🔄 Refresh button clicked')
+        skipNextFetchRef.current = false
+        previousContentRef.current = []
         loadTracks()
     }
 
@@ -156,6 +301,10 @@ export const LastfmTracksTable = ({ artistId }: LastfmTracksTableProps) => {
                         </select>
                     </div>
                     
+                    <div className={`${styles.searchField} ${styles.bindingField}`}>
+                        {/* Binding field is not searchable */}
+                    </div>
+                    
                     <div className={`${styles.searchField} ${styles.countField}`}>
                         <input
                             type="text"
@@ -178,14 +327,14 @@ export const LastfmTracksTable = ({ artistId }: LastfmTracksTableProps) => {
                 </div>
                 
                 <div className={styles.searchActions}>
-                    <button type="submit" disabled={loading}>
+                    <button type="submit" disabled={loading || loadingBoundTracks}>
                         Search
                     </button>
-                    <button type="button" onClick={handleRefresh} disabled={loading}>
+                    <button type="button" onClick={handleRefresh} disabled={loading || loadingBoundTracks}>
                         Refresh
                     </button>
                     
-                    {loading && (
+                    {(loading || loadingBoundTracks) && (
                         <div className={styles.loading}>Loading...</div>
                     )}
                 </div>

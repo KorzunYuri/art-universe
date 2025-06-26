@@ -7,6 +7,16 @@ export interface BoundEntity {
 }
 
 /**
+ * Interface for bound entity from API response
+ */
+export interface BoundEntityResponse {
+    externalId: number;
+    dataSource: string;
+    referenceId: number;
+    referenceName: string;
+}
+
+/**
  * Interface for entities that can be bound to internal entities
  */
 export interface Bindable {
