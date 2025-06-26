@@ -34,6 +34,11 @@ public class ArtistServiceImpl implements ArtistService {
     }
     
     @Override
+    public BoundEntityProjection findArtist(DataSource dataSource, Long externalId) {
+        return bindingsRepository.findBoundArtistForDataSource(dataSource, externalId);
+    }
+    
+    @Override
     @Transactional
     public BoundEntityProjection bindArtist(DataSource dataSource, Long externalId, ArtistBindingRequestDTO request) {
         // Create or find the artist

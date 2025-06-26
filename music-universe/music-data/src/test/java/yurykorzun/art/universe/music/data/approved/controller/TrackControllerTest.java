@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.music.data.approved.dto.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.approved.dto.TestBoundEntityProjectionImpl;
+import yurykorzun.art.universe.music.data.approved.dto.TrackBindingRequestDTO;
 import yurykorzun.art.universe.music.data.approved.entity.DataSource;
 import yurykorzun.art.universe.music.data.approved.service.TrackService;
 
@@ -104,5 +105,110 @@ public class TrackControllerTest {
         assertEquals(expectedResponse, actualResponse);
 
         verify(trackService).findBoundTracks(eq(dataSource), any());
+    }
+
+    @Test
+    void bindTrack_shouldReturnSuccessResponse() throws Exception {
+        // Given
+        DataSource dataSource = DataSource.LASTFM;
+        Long externalId = 1L;
+        String trackName = "Test Track";
+        Long artistExternalId = 100L;
+        
+        TrackBindingRequestDTO request = TrackBindingRequestDTO.builder()
+            .name(trackName)
+            .artistExternalId(artistExternalId)
+            .build();
+        
+        TestBoundEntityProjectionImpl projection = new TestBoundEntityProjectionImpl(
+            externalId, dataSource, 101L, trackName
+        );
+        ResponseEntity<ResponseWrapper<BoundEntityProjection>> expectedResponse = ResponseWrapper.success(projection);
+        
+        when(trackService.bindTrack(eq(dataSource), eq(externalId), any(TrackBindingRequestDTO.class)))
+            .thenReturn(projection);
+
+        // When
+        ResponseEntity<ResponseWrapper<BoundEntityProjection>> actualResponse =
+            trackController.bindTrack(dataSource, externalId, request);
+
+        // Then
+        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
+        assertEquals(expectedResponse, actualResponse);
+        
+        verify(trackService).bindTrack(eq(dataSource), eq(externalId), any(TrackBindingRequestDTO.class));
+    }
+    
+    @Test
+    void bindTrack_whenExceptionThrown_shouldReturnFailureResponse() throws Exception {
+        // Given
+        DataSource dataSource = DataSource.LASTFM;
+        Long externalId = 1L;
+        String trackName = "Test Track";
+        Long artistExternalId = 100L;
+        String errorMessage = "Test error";
+        
+        TrackBindingRequestDTO request = TrackBindingRequestDTO.builder()
+            .name(trackName)
+            .artistExternalId(artistExternalId)
+            .build();
+        ResponseEntity<ResponseWrapper<BoundEntityProjection>> expectedResponse =
+            ResponseWrapper.failure(String.format("Failed to bind track: %s", errorMessage));
+        
+        when(trackService.bindTrack(eq(dataSource), eq(externalId), any(TrackBindingRequestDTO.class)))
+            .thenThrow(new RuntimeException(errorMessage));
+
+        // When
+        ResponseEntity<ResponseWrapper<BoundEntityProjection>> actualResponse =
+            trackController.bindTrack(dataSource, externalId, request);
+
+        // Then
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
+        assertEquals(expectedResponse, actualResponse);
+        
+        verify(trackService).bindTrack(eq(dataSource), eq(externalId), any(TrackBindingRequestDTO.class));
+    }
+    
+    @Test
+    void unbindTrack_shouldReturnSuccessResponse() throws Exception {
+        // Given
+        DataSource dataSource = DataSource.LASTFM;
+        Long externalId = 1L;
+        
+        when(trackService.unbindTrack(dataSource, externalId)).thenReturn(true);
+        ResponseEntity<ResponseWrapper<Boolean>> expectedResponse = ResponseWrapper.success(true);
+
+        // When
+        ResponseEntity<ResponseWrapper<Boolean>> actualResponse =
+            trackController.unbindTrack(dataSource, externalId);
+
+        // Then
+        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
+        assertEquals(expectedResponse, actualResponse);
+        
+        verify(trackService).unbindTrack(dataSource, externalId);
+    }
+    
+    @Test
+    void unbindTrack_whenExceptionThrown_shouldReturnFailureResponse() throws Exception {
+        // Given
+        DataSource dataSource = DataSource.LASTFM;
+        Long externalId = 1L;
+        String errorMessage = "Test error";
+
+        when(trackService.unbindTrack(dataSource, externalId))
+            .thenThrow(new RuntimeException(errorMessage));
+        ResponseEntity<ResponseWrapper<Boolean>> expectedResponse =
+            ResponseWrapper.failure(String.format("Failed to unbind track: %s", errorMessage));
+
+        // When
+        ResponseEntity<ResponseWrapper<Boolean>> actualResponse =
+            trackController.unbindTrack(dataSource, externalId);
+
+        // Then
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
+        assertEquals(expectedResponse, actualResponse);
+        
+        verify(trackService).unbindTrack(dataSource, externalId);
     }
 }

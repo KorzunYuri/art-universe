@@ -11,6 +11,15 @@ public interface ArtistService {
     List<BoundEntityProjection> findBoundArtists(DataSource dataSource, List<Long> externalIds);
     
     /**
+     * Finds a single bound artist by data source and external ID.
+     *
+     * @param dataSource The external data source
+     * @param externalId The ID of the artist in the external system
+     * @return The bound artist information, or null if not found
+     */
+    BoundEntityProjection findArtist(DataSource dataSource, Long externalId);
+    
+    /**
      * Binds an external artist to an artist in the system.
      * If the artist doesn't exist, it will be created.
      *

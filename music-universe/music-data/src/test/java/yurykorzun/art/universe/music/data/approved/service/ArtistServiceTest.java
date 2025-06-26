@@ -54,7 +54,43 @@ class ArtistServiceTest {
         assertEquals(expectedResult, result);
         verify(artistBindingRepository).findBoundArtistsForDataSource(dataSource, externalIds);
     }
+    @Test
+    void findArtist_shouldReturnSingleBoundArtist() {
+        // Given
+        DataSource dataSource = DataSource.LASTFM;
+        Long externalId = 1L;
+        
+        TestBoundEntityProjectionImpl projection = new TestBoundEntityProjectionImpl(
+            externalId, dataSource, 101L, "Test Artist"
+        );
+        
+        when(artistBindingRepository.findBoundArtistForDataSource(dataSource, externalId))
+            .thenReturn(projection);
 
+        // When
+        BoundEntityProjection result = artistService.findArtist(dataSource, externalId);
+
+        // Then
+        assertEquals(projection, result);
+        verify(artistBindingRepository).findBoundArtistForDataSource(dataSource, externalId);
+    }
+
+    @Test
+    void findArtist_whenNotFound_shouldReturnNull() {
+        // Given
+        DataSource dataSource = DataSource.LASTFM;
+        Long externalId = 1L;
+        
+        when(artistBindingRepository.findBoundArtistForDataSource(dataSource, externalId))
+            .thenReturn(null);
+
+        // When
+        BoundEntityProjection result = artistService.findArtist(dataSource, externalId);
+
+        // Then
+        assertNull(result);
+        verify(artistBindingRepository).findBoundArtistForDataSource(dataSource, externalId);
+    }
     @Test
     void bindArtist_whenArtistExists_shouldCreateBinding() {
         // Given

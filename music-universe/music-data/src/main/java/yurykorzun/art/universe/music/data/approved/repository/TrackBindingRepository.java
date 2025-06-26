@@ -9,6 +9,7 @@ import yurykorzun.art.universe.music.data.approved.entity.TrackBinding;
 import yurykorzun.art.universe.music.data.approved.entity.DataSource;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TrackBindingRepository extends JpaRepository<TrackBinding, Long> {
@@ -35,5 +36,14 @@ public interface TrackBindingRepository extends JpaRepository<TrackBinding, Long
         @Param("dataSource")    DataSource dataSource,
         @Param("externalIds")   List<Long> externalIds
     );
+    
+    /**
+     * Find a binding by data source and external ID
+     * 
+     * @param dataSource The data source
+     * @param externalId The external ID
+     * @return The binding if found
+     */
+    Optional<TrackBinding> findByDataSourceAndExternalId(DataSource dataSource, Long externalId);
 
 }

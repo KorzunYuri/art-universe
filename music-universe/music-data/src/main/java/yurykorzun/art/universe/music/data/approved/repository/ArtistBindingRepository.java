@@ -38,6 +38,29 @@ public interface ArtistBindingRepository extends JpaRepository<ArtistBinding, Lo
     );
     
     /**
+     * Returns binding for a single artist from external source.
+     * @param dataSource    data source code
+     * @param externalId    external artist id
+     * @return binding for artist if it exists, null otherwise
+     */
+    @Query("""
+        SELECT  ab.externalId   AS externalId,
+                ab.dataSource   AS dataSource,
+                ab.referenceId  AS referenceId,
+                a.name          AS referenceName
+        FROM
+            artist_binding ab
+        JOIN
+            ab.artist a
+        WHERE   ab.dataSource = :dataSource
+            AND ab.externalId = :externalId
+    """)
+    BoundEntityProjection findBoundArtistForDataSource(
+        @Param("dataSource")    DataSource dataSource,
+        @Param("externalId")    Long externalId
+    );
+    
+    /**
      * Find a binding by data source and external ID
      * 
      * @param dataSource The data source

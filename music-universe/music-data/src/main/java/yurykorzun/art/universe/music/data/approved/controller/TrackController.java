@@ -1,9 +1,11 @@
 package yurykorzun.art.universe.music.data.approved.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.music.data.approved.dto.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.approved.dto.TrackBindingRequestDTO;
 import yurykorzun.art.universe.music.data.approved.entity.DataSource;
 import yurykorzun.art.universe.music.data.approved.service.TrackService;
 
@@ -29,6 +31,33 @@ public class TrackController {
             return ResponseWrapper.success(result);
         } catch (Exception e) {
             return ResponseWrapper.failure(String.format("Failed to get bound tracks: %s", e.getMessage()));
+        }
+    }
+    
+    @PostMapping("/bind/{dataSource}/{externalId}")
+    public ResponseEntity<ResponseWrapper<BoundEntityProjection>> bindTrack(
+        @PathVariable DataSource dataSource,
+        @PathVariable Long externalId,
+        @Valid @RequestBody TrackBindingRequestDTO request
+    ) {
+        try {
+            BoundEntityProjection result = trackService.bindTrack(dataSource, externalId, request);
+            return ResponseWrapper.success(result);
+        } catch (Exception e) {
+            return ResponseWrapper.failure(String.format("Failed to bind track: %s", e.getMessage()));
+        }
+    }
+    
+    @DeleteMapping("/unbind/{dataSource}/{externalId}")
+    public ResponseEntity<ResponseWrapper<Boolean>> unbindTrack(
+        @PathVariable DataSource dataSource,
+        @PathVariable Long externalId
+    ) {
+        try {
+            boolean result = trackService.unbindTrack(dataSource, externalId);
+            return ResponseWrapper.success(result);
+        } catch (Exception e) {
+            return ResponseWrapper.failure(String.format("Failed to unbind track: %s", e.getMessage()));
         }
     }
 }
