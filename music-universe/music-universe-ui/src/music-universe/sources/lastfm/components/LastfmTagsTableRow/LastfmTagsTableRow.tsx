@@ -7,7 +7,7 @@ import { ApprovalToggle } from "@/music-universe/sources/lastfm/components";
 import type { LastfmTag } from "@/music-universe/sources/lastfm/types/lastfm-tag";
 import { updateTagApprovalStatus } from "@/music-universe/sources/lastfm/api/lastfm-tags.ts";
 // styles
-import sharedTableStyles from "@/music-universe/sources/lastfm/common/LastfmEntityTable.module.scss";
+import sharedTableStyles from "@/music-universe/shared/components/EntityTable/EntityTableStyles.module.scss";
 import tagTableStyles from "../LastfmTagsTable/LastfmTagsTable.module.css";
 
 interface LastfmTagTableRowProps {
