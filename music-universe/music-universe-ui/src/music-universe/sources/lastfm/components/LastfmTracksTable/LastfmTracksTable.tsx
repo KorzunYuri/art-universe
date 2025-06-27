@@ -10,7 +10,7 @@ import type { LastfmTrack } from '@/music-universe/sources/lastfm/types/lastfm-t
 import type { Page } from '@/music-universe/shared/types/page'
 // api
 import { fetchTracks, type TrackSearchParams } from '@/music-universe/sources/lastfm/api/lastfm-tracks'
-import { fetchBoundTracks } from '@/music-universe/sources/music-data/api/music-data-tracks'
+import { fetchBoundTracks } from '@/music-universe/music-data/api/music-data-tracks'
 // styles
 import commonStyles from '@/music-universe/shared/styles/common.module.scss'
 import styles from './LastfmTracksTable.module.css'

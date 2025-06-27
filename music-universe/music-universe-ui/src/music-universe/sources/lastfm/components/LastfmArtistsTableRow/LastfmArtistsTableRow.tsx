@@ -6,12 +6,12 @@ import { ApprovalToggle } from "@/music-universe/sources/lastfm/components";
 // backend services
 import { LastfmConfig } from "@/music-universe/sources/lastfm/config/lastfmconfig.ts";
 import type { LastfmArtist } from "@/music-universe/sources/lastfm/types";
-import { bindArtist, unbindArtist, searchArtists } from "@/music-universe/sources/music-data/api/music-data-artists.ts";
+import { bindArtist, unbindArtist, searchArtists } from "@/music-universe/music-data/api/music-data-artists.ts";
 import { updateArtistApprovalStatus } from "@/music-universe/sources/lastfm/api/lastfm-artists.ts";
 // constants
 import { ApprovalStatus } from "@/music-universe/sources/lastfm/constants/approvalStatus";
 // styles
-import sharedTableStyles from "@/music-universe/sources/lastfm/common/LastfmEntityTable.module.scss";
+import sharedTableStyles from "@/music-universe/shared/components/EntityTable/EntityTableStyles.module.scss";
 import artistTableStyles from "../LastfmArtistsTable/LastfmArtistsTable.module.css";
 
 interface LastfmArtistTableRowProps {

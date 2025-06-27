@@ -10,7 +10,7 @@ import type { LastfmArtist } from '@/music-universe/sources/lastfm/types'
 import type { Page } from '@/music-universe/shared/types/page'
 // api
 import { fetchArtists, type ArtistSearchParams } from '@/music-universe/sources/lastfm/api/lastfm-artists'
-import { fetchBoundArtists } from '@/music-universe/sources/music-data/api/music-data-artists'
+import { fetchBoundArtists } from '@/music-universe/music-data/api/music-data-artists'
 // styles
 import commonStyles from '@/music-universe/shared/styles/common.module.scss'
 import styles from './LastfmArtistsTable.module.css'
