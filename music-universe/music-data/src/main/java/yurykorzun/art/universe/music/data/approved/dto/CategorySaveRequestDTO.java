@@ -1,20 +1,23 @@
 package yurykorzun.art.universe.music.data.approved.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
+@NoArgsConstructor
 @AllArgsConstructor
-public class TestCategoryHierarchyProjectionImpl implements CategoryHierarchyProjection {
+public class CategorySaveRequestDTO {
+    
     private Long id;
+    
+    @NotBlank(message = "Category name is required")
     private String name;
+    
     private Long dimensionId;
-    private Long effectiveDimensionId;
+    
     private Long parentId;
-    private Integer hierarchyLevel;
-    private String dimensionName;
-    private String effectiveDimensionName;
-    private String parentName;
 }

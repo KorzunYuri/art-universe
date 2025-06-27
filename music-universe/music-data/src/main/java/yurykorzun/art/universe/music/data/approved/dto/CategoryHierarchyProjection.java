@@ -11,4 +11,6 @@ public interface CategoryHierarchyProjection {
     Long getParentId();
     Integer getHierarchyLevel();
     String getDimensionName();
+    String getEffectiveDimensionName();
+    String getParentName();
 }
