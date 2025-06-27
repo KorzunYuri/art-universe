@@ -39,6 +39,7 @@ export const AutocompleteInput = ({
     const inputRef = useRef<HTMLInputElement>(null);
     const suggestionsRef = useRef<HTMLDivElement>(null);
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const skipNextSearchRef = useRef(false);
 
     // Add/remove class to parent row when dropdown is active
     useEffect(() => {
@@ -74,12 +75,20 @@ export const AutocompleteInput = ({
             return;
         }
 
+        // Skip search if this is a programmatic change (after selection)
+        if (skipNextSearchRef.current) {
+            console.log('⏭️ Skipping search due to programmatic change');
+            skipNextSearchRef.current = false;
+            return;
+        }
+
         if (value.trim().length < 2) {
             setSuggestions([]);
             setShowSuggestions(false);
             return;
         }
 
+        console.log('🔍 Starting search for:', value.trim());
         timeoutRef.current = setTimeout(async () => {
             setLoading(true);
             try {
@@ -129,6 +138,10 @@ export const AutocompleteInput = ({
 
     // Handle suggestion click
     const handleSuggestionClick = (entity: SearchableEntity) => {
+        // Set flag to skip next search since this is a programmatic change
+        skipNextSearchRef.current = true;
+        // Update the input value with selected entity name
+        onChange(entity.name);
         onSelect(entity);
         setShowSuggestions(false);
         setSelectedIndex(-1);
@@ -204,13 +217,6 @@ export const AutocompleteInput = ({
             {loading && (
                 <div className={styles.loadingIndicator}>
                     <span>...</span>
-                </div>
-            )}
-
-            {/* Debug info - only in development */}
-            {process.env.NODE_ENV === 'development' && (
-                <div style={{ fontSize: '10px', color: 'gray' }}>
-                    Debug: suggestions={suggestions.length}, show={showSuggestions.toString()}
                 </div>
             )}
 
