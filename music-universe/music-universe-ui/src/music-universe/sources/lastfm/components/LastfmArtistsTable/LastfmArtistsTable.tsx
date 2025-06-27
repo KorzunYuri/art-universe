@@ -1,5 +1,5 @@
 // hooks
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 // components
 import {
     LastfmArtistsTableHeader,
@@ -29,12 +29,8 @@ export const LastfmArtistsTable = () => {
     const [page, setPage] = useState(0)
     const [sort, setSort] = useState('name,asc')
     const pageSize = 20
-    
-    // Refs for optimization
-    const skipNextFetchRef = useRef(false)
-    const previousContentRef = useRef<LastfmArtist[]>([])
 
-    // Load artists with current search parameters
+    // Load artists with current search parameters and their bound entities
     const loadArtists = async () => {
         setLoading(true)
         try {
@@ -48,19 +44,16 @@ export const LastfmArtistsTable = () => {
                 sort
             }
             
+            console.log('🔄 Loading artists...')
             const result = await fetchArtists(params)
-            setData(result)
             
-            // load bindings straight away
-            // save result in a local variable to not trigger rerender
-            const tempData = result;
-            
-            if (tempData && tempData.content.length > 0) {
-                console.log('🔄 Directly loading bound artists after artists load')
+            // Load bound artists immediately in the same function to avoid useEffect cycles
+            if (result && result.content.length > 0) {
+                console.log('🔄 Loading bound artists immediately after artists load')
                 setLoadingBoundArtists(true)
                 try {
                     // Extract all artist IDs
-                    const artistIds = tempData.content.map(artist => artist.id)
+                    const artistIds = result.content.map(artist => artist.id)
                     console.log(`📋 Requesting bindings for ${artistIds.length} artists: ${artistIds.join(', ')}`)
                     
                     // Fetch bound artists from music-data API
@@ -68,7 +61,7 @@ export const LastfmArtistsTable = () => {
                     console.log(`✅ Bound artists loaded: ${boundArtists.length} items`)
 
                     // Update the artists with bound information
-                    const updatedContent = tempData.content.map(artist => {
+                    const updatedContent = result.content.map(artist => {
                         const boundArtist = boundArtists.find(ba => ba.externalId === artist.id)
                         if (boundArtist) {
                             return {
@@ -86,67 +79,23 @@ export const LastfmArtistsTable = () => {
                         }
                     })
                     
-                    console.log('📝 Updating artists with binding information')
-                    // set a flag to skip loadBoundArtists in the upcoming rerender
-                    skipNextFetchRef.current = true
-                    previousContentRef.current = [...updatedContent]
-                    setData({ ...tempData, content: updatedContent })
+                    console.log('📝 Setting final data with bound artists')
+                    setData({ ...result, content: updatedContent })
                 } catch (error) {
                     console.error('❌ Error loading bound artists:', error)
+                    // Set data without bound artists if binding fails
+                    setData(result)
                 } finally {
                     setLoadingBoundArtists(false)
                 }
+            } else {
+                // Set data even if no content
+                setData(result)
             }
         } catch (error) {
             console.error('❌ Error loading artists:', error)
         } finally {
             setLoading(false)
-        }
-    }
-
-    // Load bound artists for the current page
-    const loadBoundArtists = async () => {
-        if (!data || data.content.length === 0) {
-            console.log('⚠️ No artists data to load bindings for')
-            return
-        }
-        
-        console.log('🔍 Loading bound artists...')
-        setLoadingBoundArtists(true)
-        try {
-            // Extract all artist IDs
-            const artistIds = data.content.map(artist => artist.id)
-            console.log(`📋 Requesting bindings for ${artistIds.length} artists}`)
-            
-            // Fetch bound artists from music-data API
-            const boundArtists = await fetchBoundArtists(artistIds)
-            console.log(`✅ Bound artists loaded: ${boundArtists.length} items`)
-            
-            // Update the artists with bound information
-            const updatedContent = data.content.map(artist => {
-                const boundArtist = boundArtists.find(ba => ba.externalId === artist.id)
-                if (boundArtist) {
-                    return {
-                        ...artist,
-                        boundEntity: {
-                            referenceId: boundArtist.referenceId,
-                            referenceName: boundArtist.referenceName
-                        }
-                    }
-                }
-                // explicitly set boundEntity for non-bound artists
-                return {
-                    ...artist,
-                    boundEntity: undefined
-                }
-            })
-            
-            console.log('📝 Updating artists with binding information')
-            setData({ ...data, content: updatedContent })
-        } catch (error) {
-            console.error('❌ Error loading bound artists:', error)
-        } finally {
-            setLoadingBoundArtists(false)
         }
     }
 
@@ -156,55 +105,11 @@ export const LastfmArtistsTable = () => {
         loadArtists()
     }, [page, sort])
 
-    // Load bound artists when artist data changes
-    useEffect(() => {
-        console.log('🔄 Effect triggered: data content changed')
-        if (!data || data.content.length === 0) return
-        
-        // Skip fetch if we just updated an artist through the UI
-        if (skipNextFetchRef.current) {
-            console.log('⏭️ Skipping bound artists fetch (skipNextFetchRef is true)')
-            skipNextFetchRef.current = false
-            return
-        }
-        
-        // Skip fetch if only boundEntity property changed
-        if (previousContentRef.current.length === data.content.length) {
-            console.log('🔍 Checking if only boundEntity changed...')
-            const onlyBoundEntityChanged = data.content.every((artist, index) => {
-                const prevArtist = previousContentRef.current[index]
-                // If IDs don't match, content has changed
-                if (prevArtist.id !== artist.id) return false
-                
-                // If any property other than boundEntity changed, content has changed
-                const artistWithoutBound = { ...artist }
-                const prevArtistWithoutBound = { ...prevArtist }
-                delete artistWithoutBound.boundEntity
-                delete prevArtistWithoutBound.boundEntity
-                
-                return JSON.stringify(artistWithoutBound) === JSON.stringify(prevArtistWithoutBound)
-            })
-            
-            if (onlyBoundEntityChanged) {
-                console.log('⏭️ Skipping bound artists fetch (only boundEntity changed)')
-                previousContentRef.current = [...data.content]
-                return
-            }
-        }
-        
-        console.log('📝 Updating previousContentRef and loading bound artists')
-        previousContentRef.current = [...data.content]
-        loadBoundArtists()
-    }, [data?.content])
-
     // Handle artist changes from child components
     const onArtistChanged = (updated: LastfmArtist) => {
         if (!data) return
         
         console.log(`🔄 Artist changed: (${updated.name})`)
-        
-        // Set flag to skip next fetch when we update an artist through the UI
-        skipNextFetchRef.current = true
         
         const newContent = data.content.map(a => a.id === updated.id ? updated : a)
         setData({ ...data, content: newContent })
@@ -236,8 +141,6 @@ export const LastfmArtistsTable = () => {
     // Handle refresh button
     const handleRefresh = () => {
         console.log('🔄 Refresh button clicked')
-        skipNextFetchRef.current = false
-        previousContentRef.current = []
         loadArtists()
     }
 
