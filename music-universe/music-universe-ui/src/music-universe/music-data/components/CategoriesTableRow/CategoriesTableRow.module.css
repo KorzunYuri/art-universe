@@ -1,0 +1,19 @@
+.name {
+    flex: 2;
+    text-align: left;
+}
+
+.parent {
+    flex: 2;
+    text-align: left;
+}
+
+.dimension {
+    flex: 2;
+    text-align: left;
+}
+
+.effectiveDimension {
+    flex: 2;
+    text-align: left;
+}

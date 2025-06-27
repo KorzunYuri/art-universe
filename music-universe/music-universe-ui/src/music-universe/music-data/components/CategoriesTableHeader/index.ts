@@ -1,0 +1,1 @@
+export { CategoriesTableHeader } from './CategoriesTableHeader';

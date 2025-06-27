@@ -1,0 +1,24 @@
+.container {
+    display: flex;
+    background-color: #f0f0f0;
+    font-weight: bold;
+    padding: 0.25em;
+    border-bottom: 1px solid #ccc;
+}
+
+.name {
+    flex: 2;
+    cursor: pointer;
+}
+
+.parent {
+    flex: 2;
+}
+
+.dimension {
+    flex: 2;
+}
+
+.effectiveDimension {
+    flex: 2;
+}
