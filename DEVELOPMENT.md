@@ -9,7 +9,6 @@
 
 ### Testing Archetypes
 - **JpaOnlyTest** - Persistence layer testing with TestContainers
-- **FullContextTest** - Integration testing with full Spring Boot context
 - **@MockitoBean** instead of @MockBean
 - Integration tests tagged with "integration"
 
