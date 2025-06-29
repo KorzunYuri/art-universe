@@ -4,6 +4,9 @@ plugins {
     id 'org.liquibase.gradle'
 }
 
+tasks.matching { it.name == 'jar' }.configureEach { enabled = true }
+tasks.matching { it.name == 'bootJar' }.configureEach { enabled = true }
+
 dependencies {
     implementation project(':art-universe:art-universe-commons')
     implementation project(':music-universe:music-data-commons')

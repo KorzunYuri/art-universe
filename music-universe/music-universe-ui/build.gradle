@@ -5,8 +5,59 @@ plugins {
 // get command dependent on OS
 def npmCommand = System.getProperty('os.name').toLowerCase().contains('windows') ? 'npm.cmd' : 'npm'
 
+// Configure Gradle to handle symlinks properly on Windows
+if (System.getProperty('os.name').toLowerCase().contains('windows')) {
+    tasks.withType(AbstractCopyTask).configureEach {
+        includeEmptyDirs = false
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
+}
+
 task npmInstall(type: Exec) {
+    description = 'Install npm dependencies'
     workingDir '.'
     commandLine npmCommand, 'install', '--legacy-peer-deps'
-    ignoreExitValue = true
+    inputs.file 'package.json'
+    inputs.file 'package-lock.json'
+    // Don't track node_modules as output to avoid symlink issues
+    outputs.upToDateWhen {
+        file('node_modules').exists() && file('package-lock.json').lastModified() <= file('node_modules').lastModified()
+    }
+    ignoreExitValue = false
+    
+    doFirst {
+        println "Installing npm dependencies..."
+    }
 }
+
+task npmBuild(type: Exec) {
+    description = 'Build React application'
+    dependsOn npmInstall
+    workingDir '.'
+    commandLine npmCommand, 'run', 'build'
+    inputs.dir 'src'
+    inputs.file 'package.json'
+    inputs.file 'vite.config.ts'
+    inputs.file 'tsconfig.json'
+    inputs.file 'tsconfig.app.json'
+    inputs.file 'index.html'
+    outputs.dir 'dist'
+    ignoreExitValue = false
+    
+    doFirst {
+        println "Building React application..."
+    }
+}
+
+task npmClean(type: Delete) {
+    description = 'Clean npm build artifacts'
+    delete 'dist'
+}
+
+// Integrate with Gradle lifecycle
+clean.dependsOn npmClean
+build.dependsOn npmBuild
+assemble.dependsOn npmBuild
+
+// Disable default jar task since this is a frontend module
+jar.enabled = false

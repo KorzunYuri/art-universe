@@ -1,0 +1,93 @@
+version: '3.8'
+
+services:
+  # Applications
+  music-data-raw-lastfm:
+    container_name: prod__mu-data-raw-lastfm__app
+    build:
+      context: ../../../music-universe/music-data-raw-lastfm
+      dockerfile: Dockerfile
+    env_file:
+      - ./music-data-raw-lastfm.env
+      - ./music-data-raw-lastfm.secrets.env
+#    environment:
+#      # Use host.docker.internal to access host machine from container
+#      MURAW_LASTFM_DB_HOST: host.docker.internal
+    ports:
+      - "${MURAW_LASTFM_APP_EXTERNAL_PORT}:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - mu__network
+
+  music-data:
+    container_name: prod__mu-data__app
+    build:
+      context: ../../../music-universe/music-data
+      dockerfile: Dockerfile
+    env_file:
+      - ./music-data.env
+      - ./music-data.secrets.env
+#    environment:
+#      MU_DATA_DB_HOST: host.docker.internal
+    ports:
+      - "${MU_DATA_APP_EXTERNAL_PORT}:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - mu__network
+
+  music-quiz:
+    container_name: prod__mu-quiz__app
+    build:
+      context: ../../../music-universe/music-quiz
+      dockerfile: Dockerfile
+    env_file:
+      - ./music-quiz.env
+      - ./music-quiz.secrets.env
+#    environment:
+#      MU_QUIZ_DB_HOST: host.docker.internal
+    ports:
+      - "${MU_QUIZ_APP_EXTERNAL_PORT}:8080"
+    depends_on:
+      - music-data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - mu__network
+
+  # UI
+  music-universe-ui:
+    container_name: prod__mu-ui__app
+    build:
+      context: ../../../music-universe/music-universe-ui
+      dockerfile: Dockerfile
+      args:
+        - VITE_MURAW_LASTFM_APP_HOST=${MURAW_LASTFM_APP_HOST}
+        - VITE_MURAW_LASTFM_APP_EXTERNAL_PORT=${MURAW_LASTFM_APP_EXTERNAL_PORT}
+        - VITE_MU_DATA_APP_HOST=${MU_DATA_APP_HOST}
+        - VITE_MU_DATA_APP_EXTERNAL_PORT=${MU_DATA_APP_EXTERNAL_PORT}
+        - VITE_MU_QUIZ_APP_HOST=${MU_QUIZ_APP_HOST}
+        - VITE_MU_QUIZ_APP_EXTERNAL_PORT=${MU_QUIZ_APP_EXTERNAL_PORT}
+    env_file:
+      - ./music-universe-ui.env
+    ports:
+      - "${MU_UI_EXTERNAL_PORT}:80"
+    networks:
+      - mu__network
+
+  # Admin tools
+  db-adminer:
+    container_name: prod__mu__db-adminer
+    image: adminer
+    restart: always
+    env_file:
+      - ./common.env
+    ports:
+      - "${DB_ADMINER_PORT}:8080"
+    networks:
+      - mu__network
+
+networks:
+  mu__network:
+    name: prod__mu__network

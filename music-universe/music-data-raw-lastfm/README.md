@@ -21,7 +21,6 @@ Application requires the following parameters to run:
 |---------------------------|---------------------------------------------------|--------------|---------------|
 | MURAW_LASTFM_DB_PASSWORD  | Password of the main user of Lastfm schema        | Yes          |               |
 | MURAW_LASTFM_DB_HOST      | Database host                                     | No           | localhost     |
-| MURAW_LASTFM_DB_PORT      | Database port                                     | No           | 5432          |
 | MURAW_LASTFM_API_KEY      | API key obtained from Lastfm for public API calls | Yes          |               |
 | MURAW_LASTFM_PORT         | Port to run the app's web server on               | No           | 8080          |
 | SPRING_PROFILES_ACTIVE    | Spring active profile                             | No           |               |

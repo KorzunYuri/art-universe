@@ -30,7 +30,7 @@ export interface CategorySearchParams {
 export async function fetchCategories(params: CategorySearchParams): Promise<Page<Category>> {
     try {
         const response = await axios.get<ApiResponse<Page<Category>>>(
-            `${MusicDataConfig.baseApiUrl}/categories`,
+            `${MusicDataConfig.baseApiUrl}/categories/search`,
             {
                 params: {
                     search: params.search ?? '',

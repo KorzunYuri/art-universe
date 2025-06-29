@@ -2,7 +2,7 @@ spring:
   docker:
     compose:
       enabled: true
-      file: classpath:docker/compose/music-data-raw-lastfm/docker-compose.yml
+      file: classpath:docker/compose/dev__music-data-raw-lastfm/docker-compose.yml
 #  jpa:
 #    properties:
 #      hibernate:

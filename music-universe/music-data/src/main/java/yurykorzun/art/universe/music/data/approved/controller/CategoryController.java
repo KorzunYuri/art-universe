@@ -22,11 +22,11 @@ public class CategoryController {
 
     @GetMapping("/search")
     public ResponseEntity<ResponseWrapper<Page<CategoryHierarchyProjection>>> searchCategories(
-        @RequestParam(required = false) String search,
+        @RequestParam(required = false) String query,
         Pageable pageable
     ) {
         try {
-            Page<CategoryHierarchyProjection> categories = categoryService.searchCategories(search, pageable);
+            Page<CategoryHierarchyProjection> categories = categoryService.searchCategories(query, pageable);
             return ResponseWrapper.success(categories);
         } catch (Exception e) {
             return ResponseWrapper.failure(String.format("Failed to search categories: %s", e.getMessage()));

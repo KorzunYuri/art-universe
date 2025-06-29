@@ -47,3 +47,7 @@ bin/
 **/docker/compose/**/init.sql
 **/docker/compose/**/.env
 **/logs/*.log
+**/*.env
+!env/docker/local/*.env
+!env/docker/prod/*.env
+**/*.secrets.env

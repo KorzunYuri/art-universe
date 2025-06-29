@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  postgres:
+    container_name: dev-mu-data-db-postgres
+    restart: always
+    shm_size: 128mb
+    build:
+      dockerfile: ../common/postgres.dockerfile
+      context: ../common
+    env_file:
+      - ${PROJECT_ROOT}/env/docker/local/music-data.env
+      - ${PROJECT_ROOT}/env/docker/local/music-data.secrets.env
+      - ${PROJECT_ROOT}/env/docker/local/music-quiz.env
+      - ${PROJECT_ROOT}/env/docker/local/music-quiz.secrets.env
+      - ${PROJECT_ROOT}/music-universe/music-data/dev.override.env
+      - ${PROJECT_ROOT}/music-universe/music-quiz/dev.override.env
+#    environment:
+#      POSTGRES_USER: ${PG_USERNAME:-postgres}
+#      POSTGRES_PASSWORD: ${PG_PASSWORD:-postgres}
+#      MU_DATA_DB_PASSWORD_DM: ${MU_DATA_DB_PASSWORD_DM}
+#      MU_QUIZ_DB_PASSWORD_DM: ${MU_QUIZ_DB_PASSWORD_DM}
+    volumes:
+      - db-postgres-data:/var/lib/postgresql/data
+      - ../common/initdb/templates:/docker-entrypoint-initdb.d
+    command: bash -c "envsubst < /docker-entrypoint-initdb.d/init.sql.template > /docker-entrypoint-initdb.d/init.sql && exec docker-entrypoint.sh postgres"
+    ports:
+      - "${MU_DATA_DB_PORT}:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  db-adminer:
+    container_name: dev__mu-data__db-adminer
+    image: adminer
+    restart: always
+    ports:
+      - "${DB_ADMINER_PORT}:8080"
+
+networks:
+  default:
+    name: mu-shared-network
+
+volumes:
+  db-postgres-data:
+    name: local__mu-data__db-postgres-data
