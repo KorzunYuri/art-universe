@@ -1,14 +1,10 @@
 rootProject.name = 'art-universe'
 
 include 'art-universe:art-universe-commons'
-include 'art-universe:art-universe-messaging-impl-kafka'
+//include 'art-universe:art-universe-messaging-impl-kafka'
 
 include 'music-universe'
-include 'music-universe:music-data-commons'
 include 'music-universe:music-data'
-include 'music-universe:music-data-raw'
-include 'music-universe:music-data-raw-lastfm'
-include 'music-universe:music-data-raw-albumoftheyear'
-include 'music-universe:music-data-raw-musicbrainz'
-include("music-universe:music-universe-ui")
 include 'music-universe:music-quiz'
+include 'music-universe:music-data-raw-lastfm'
+include 'music-universe:music-universe-ui'

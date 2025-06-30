@@ -107,7 +107,6 @@ Use `scripts/run-module-dev.sh/.bat <module-path>` to run individual modules:
 - `music-data-raw-lastfm` - LastFM API data collection
 - `music-data` - Curated data management and binding
 - `music-quiz` - Quiz generation from approved data
-- `music-data-commons` - Shared music domain classes
 
 ### Frontend Module
 - `music-universe-ui` - React application for data management

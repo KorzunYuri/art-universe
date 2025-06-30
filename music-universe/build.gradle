@@ -6,6 +6,5 @@ subprojects {
 
 configure(subprojects.findAll{ it.name.contains("data-raw")}) {
     dependencies {
-        implementation project(":music-universe:music-data-commons")
     }
 }

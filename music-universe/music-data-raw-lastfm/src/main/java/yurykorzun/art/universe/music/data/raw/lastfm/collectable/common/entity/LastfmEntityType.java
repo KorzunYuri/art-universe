@@ -8,12 +8,11 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.entity.La
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmSpecific;
 
 import java.util.Arrays;
 
 @Getter
-public enum LastfmEntityType implements LastfmSpecific, Coded, CollectableEntityType {
+public enum LastfmEntityType implements Coded, CollectableEntityType {
 
     ARTIST(1,   LastfmArtist.class),
     ALBUM(2,    LastfmAlbum.class),
@@ -36,11 +35,6 @@ public enum LastfmEntityType implements LastfmSpecific, Coded, CollectableEntity
     @Override
     public String getName() {
         return name();
-    }
-
-    @Override
-    public String getTypeName() {
-        return "entity_type";
     }
 
     static {

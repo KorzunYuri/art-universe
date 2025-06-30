@@ -16,7 +16,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.d
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmSpecific;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -24,7 +23,7 @@ import java.util.*;
 import static yurykorzun.art.universe.music.data.raw.lastfm.api.LastfmApiConstants.*;
 
 @Getter
-public enum LastfmApiCallType implements ApiCallType, LastfmSpecific {
+public enum LastfmApiCallType implements ApiCallType {
 
         TAG_TOP_TAGS(
             1,
@@ -141,11 +140,6 @@ public enum LastfmApiCallType implements ApiCallType, LastfmSpecific {
     @Override
     public Collection<String> getOptionalParams() {
         return Set.copyOf(this.optionalParameters);
-    }
-
-    @Override
-    public String getTypeName() {
-        return "api_call";
     }
 
     @Override
