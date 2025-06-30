@@ -5,7 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.music.data.approved.dto.ArtistBindingRequestDTO;
-import yurykorzun.art.universe.music.data.approved.dto.ArtistSearchResultDTO;
+import yurykorzun.art.universe.music.data.approved.dto.LookupResultDTO;
 import yurykorzun.art.universe.music.data.approved.dto.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.approved.entity.DataSource;
 import yurykorzun.art.universe.music.data.approved.service.ArtistService;
@@ -35,18 +35,18 @@ public class ArtistController {
         }
     }
     
-    @GetMapping("/search")
-    public ResponseEntity<ResponseWrapper<List<ArtistSearchResultDTO>>> searchArtists(
-        @RequestParam String query,
+    @GetMapping("/lookup")
+    public ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> lookupArtists(
+        @RequestParam String name,
         @RequestParam(required = false) Integer limit
     ) {
         try {
-            List<ArtistSearchResultDTO> result = limit != null 
-                ? artistService.searchArtistsByName(query, limit)
-                : artistService.searchArtistsByName(query);
+            List<LookupResultDTO> result = limit != null
+                ? artistService.searchArtistsByName(name, limit)
+                : artistService.searchArtistsByName(name);
             return ResponseWrapper.success(result);
         } catch (Exception e) {
-            return ResponseWrapper.failure(String.format("Failed to search artists: %s", e.getMessage()));
+            return ResponseWrapper.failure(String.format("Failed to lookup artists: %s", e.getMessage()));
         }
     }
     

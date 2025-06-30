@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ArtistSearchResultDTO {
+public class LookupResultDTO {
     private Long id;
     private String name;
 }

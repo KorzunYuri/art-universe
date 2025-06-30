@@ -6,7 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import yurykorzun.art.universe.music.data.approved.dto.ArtistBindingRequestDTO;
-import yurykorzun.art.universe.music.data.approved.dto.ArtistSearchResultDTO;
+import yurykorzun.art.universe.music.data.approved.dto.LookupResultDTO;
 import yurykorzun.art.universe.music.data.approved.dto.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.approved.dto.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.approved.entity.Artist;
@@ -293,16 +293,16 @@ class ArtistServiceTest {
         Artist artist2 = Artist.builder().id(2L).name("Radio Moscow").build();
         List<Artist> artists = List.of(artist1, artist2);
         
-        List<ArtistSearchResultDTO> expectedResults = List.of(
-            new ArtistSearchResultDTO(1L, "Radiohead"),
-            new ArtistSearchResultDTO(2L, "Radio Moscow")
+        List<LookupResultDTO> expectedResults = List.of(
+            new LookupResultDTO(1L, "Radiohead"),
+            new LookupResultDTO(2L, "Radio Moscow")
         );
         
         when(artistRepository.findByNameContainingIgnoreCase(eq(search), anyInt()))
             .thenReturn(artists);
             
         // When
-        List<ArtistSearchResultDTO> result = artistService.searchArtistsByName(search);
+        List<LookupResultDTO> result = artistService.searchArtistsByName(search);
         
         // Then
         assertEquals(2, result.size());
@@ -328,7 +328,7 @@ class ArtistServiceTest {
             .thenReturn(artists.subList(0, limit));
             
         // When
-        List<ArtistSearchResultDTO> result = artistService.searchArtistsByName(search, limit);
+        List<LookupResultDTO> result = artistService.searchArtistsByName(search, limit);
         
         // Then
         assertEquals(limit, result.size());
@@ -354,7 +354,7 @@ class ArtistServiceTest {
             .thenReturn(artists.subList(0, defaultLimit));
             
         // When
-        List<ArtistSearchResultDTO> result = artistService.searchArtistsByName(search);
+        List<LookupResultDTO> result = artistService.searchArtistsByName(search);
         
         // Then
         assertEquals(defaultLimit, result.size());
@@ -381,7 +381,7 @@ class ArtistServiceTest {
             .thenReturn(artists.subList(0, defaultLimit));
             
         // When
-        List<ArtistSearchResultDTO> result = artistService.searchArtistsByName(search, limit);
+        List<LookupResultDTO> result = artistService.searchArtistsByName(search, limit);
         
         // Then
         assertEquals(defaultLimit, result.size());
@@ -409,7 +409,7 @@ class ArtistServiceTest {
             .thenReturn(sortedArtists);
             
         // When
-        List<ArtistSearchResultDTO> result = artistService.searchArtistsByName(search);
+        List<LookupResultDTO> result = artistService.searchArtistsByName(search);
         
         // Then
         assertEquals(3, result.size());
@@ -425,7 +425,7 @@ class ArtistServiceTest {
         String search = "";
         
         // When
-        List<ArtistSearchResultDTO> result = artistService.searchArtistsByName(search);
+        List<LookupResultDTO> result = artistService.searchArtistsByName(search);
         
         // Then
         assertTrue(result.isEmpty());
@@ -438,7 +438,7 @@ class ArtistServiceTest {
         String search = null;
         
         // When
-        List<ArtistSearchResultDTO> result = artistService.searchArtistsByName(search);
+        List<LookupResultDTO> result = artistService.searchArtistsByName(search);
         
         // Then
         assertTrue(result.isEmpty());

@@ -23,21 +23,23 @@ Central data management service for approved music data. Manages curated entitie
 - Projection interfaces for optimized queries
 - Search functionality with pagination and sorting
 
-## REST API Endpoints
+## API Conventions
 
-### Artist Management
-- `GET /api/v1/artists/bound/{dataSource}?externalIds=1,2,3` - Get bound artists
-- `GET /api/v1/artists/search?query=name&limit=20` - Search artists by name
-- `POST /api/v1/artists/bind/{dataSource}/{externalId}` - Bind external artist
-- `DELETE /api/v1/artists/unbind/{dataSource}/{externalId}` - Unbind artist
+### Search vs Lookup Endpoints
+- **`GET /{entities}/search`** - Full-featured search with pagination, sorting, and detailed results
+  - Returns `Page<DetailedDTO>` with hierarchy information
+  - Supports complex filtering and sorting
+  - Used for management interfaces
+  
+- **`GET /{entities}/lookup`** - Lightweight search for dropdown lists and autocomplete
+  - Returns `List<LookupResultDTO>` with only id and name
+  - Default limit of 20 results, configurable via `limit` parameter
+  - Used for form dropdowns and quick selection
 
-### Track Management  
-- `GET /api/v1/tracks/bound/{dataSource}?externalIds=1,2,3` - Get bound tracks
-- `POST /api/v1/tracks/bind/{dataSource}/{externalId}` - Bind external track
-- `DELETE /api/v1/tracks/unbind/{dataSource}/{externalId}` - Unbind track
-
-### Album Management
-- `GET /api/v1/albums/bound/{dataSource}?externalIds=1,2,3` - Get bound albums
+### Binding
+- **`POST /{entities}/bind/{dataSource}/{externalId}`**
+- **`DELETE /{entities}/unbind/{dataSource}/{externalId}`** - Unbind
+- **`GET /{entities}/bound/{dataSource}?externalIds=1,2,3`** - Get bound entities for the external entities from a specific data source.
 
 ## Business Rules
 

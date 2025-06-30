@@ -9,7 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.music.data.approved.dto.ArtistBindingRequestDTO;
-import yurykorzun.art.universe.music.data.approved.dto.ArtistSearchResultDTO;
+import yurykorzun.art.universe.music.data.approved.dto.LookupResultDTO;
 import yurykorzun.art.universe.music.data.approved.dto.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.approved.dto.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.approved.entity.DataSource;
@@ -82,72 +82,72 @@ class ArtistControllerTest {
     }
     
     @Test
-    void searchArtists_shouldReturnSuccessResponse() throws Exception {
+    void lookupArtists_shouldReturnSuccessResponse() throws Exception {
         // Given
-        String query = "radio";
-        ArtistSearchResultDTO artist1 = new ArtistSearchResultDTO(1L, "Radiohead");
-        ArtistSearchResultDTO artist2 = new ArtistSearchResultDTO(2L, "Radio Moscow");
-        List<ArtistSearchResultDTO> expectedArtists = List.of(artist1, artist2);
+        String name = "radio";
+        LookupResultDTO artist1 = new LookupResultDTO(1L, "Radiohead");
+        LookupResultDTO artist2 = new LookupResultDTO(2L, "Radio Moscow");
+        List<LookupResultDTO> expectedArtists = List.of(artist1, artist2);
         
-        when(artistService.searchArtistsByName(query)).thenReturn(expectedArtists);
-        ResponseEntity<ResponseWrapper<List<ArtistSearchResultDTO>>> expectedResponse = 
+        when(artistService.searchArtistsByName(name)).thenReturn(expectedArtists);
+        ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> expectedResponse =
             ResponseWrapper.success(expectedArtists);
             
         // When
-        ResponseEntity<ResponseWrapper<List<ArtistSearchResultDTO>>> actualResponse = 
-            artistController.searchArtists(query, null);
+        ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> actualResponse =
+            artistController.lookupArtists(name, null);
             
         // Then
         assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
         assertEquals(expectedResponse, actualResponse);
         
-        verify(artistService).searchArtistsByName(query);
+        verify(artistService).searchArtistsByName(name);
     }
     
     @Test
-    void searchArtists_withLimit_shouldReturnSuccessResponse() throws Exception {
+    void lookupArtists_withLimit_shouldReturnSuccessResponse() throws Exception {
         // Given
-        String query = "radio";
+        String name = "radio";
         Integer limit = 5;
-        ArtistSearchResultDTO artist1 = new ArtistSearchResultDTO(1L, "Radiohead");
-        ArtistSearchResultDTO artist2 = new ArtistSearchResultDTO(2L, "Radio Moscow");
-        List<ArtistSearchResultDTO> expectedArtists = List.of(artist1, artist2);
+        LookupResultDTO artist1 = new LookupResultDTO(1L, "Radiohead");
+        LookupResultDTO artist2 = new LookupResultDTO(2L, "Radio Moscow");
+        List<LookupResultDTO> expectedArtists = List.of(artist1, artist2);
         
-        when(artistService.searchArtistsByName(query, limit)).thenReturn(expectedArtists);
-        ResponseEntity<ResponseWrapper<List<ArtistSearchResultDTO>>> expectedResponse = 
+        when(artistService.searchArtistsByName(name, limit)).thenReturn(expectedArtists);
+        ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> expectedResponse =
             ResponseWrapper.success(expectedArtists);
             
         // When
-        ResponseEntity<ResponseWrapper<List<ArtistSearchResultDTO>>> actualResponse = 
-            artistController.searchArtists(query, limit);
+        ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> actualResponse =
+            artistController.lookupArtists(name, limit);
             
         // Then
         assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
         assertEquals(expectedResponse, actualResponse);
         
-        verify(artistService).searchArtistsByName(query, limit);
+        verify(artistService).searchArtistsByName(name, limit);
     }
     
     @Test
-    void searchArtists_whenExceptionThrown_shouldReturnFailureResponse() throws Exception {
+    void lookupArtists_whenExceptionThrown_shouldReturnFailureResponse() throws Exception {
         // Given
-        String query = "radio";
+        String name = "radio";
         String errorMessage = "Test error";
         
-        when(artistService.searchArtistsByName(query))
+        when(artistService.searchArtistsByName(name))
             .thenThrow(new RuntimeException(errorMessage));
-        ResponseEntity<ResponseWrapper<List<ArtistSearchResultDTO>>> expectedResponse =
-            ResponseWrapper.failure(String.format("Failed to search artists: %s", errorMessage));
+        ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> expectedResponse =
+            ResponseWrapper.failure(String.format("Failed to lookup artists: %s", errorMessage));
             
         // When
-        ResponseEntity<ResponseWrapper<List<ArtistSearchResultDTO>>> actualResponse = 
-            artistController.searchArtists(query, null);
+        ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> actualResponse =
+            artistController.lookupArtists(name, null);
             
         // Then
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
         assertEquals(expectedResponse, actualResponse);
         
-        verify(artistService).searchArtistsByName(query);
+        verify(artistService).searchArtistsByName(name);
     }
     
     @Test

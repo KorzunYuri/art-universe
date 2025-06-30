@@ -8,7 +8,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import yurykorzun.art.universe.common.controller.ResponseWrapper;
-import yurykorzun.art.universe.music.data.approved.dto.ArtistSearchResultDTO;
+import yurykorzun.art.universe.music.data.approved.dto.LookupResultDTO;
 import yurykorzun.art.universe.music.data.approved.dto.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.approved.dto.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.approved.entity.DataSource;
@@ -135,41 +135,41 @@ class ArtistControllerMvcTest {
     }
     
     @Test
-    void whenSearchArtists_shouldReturnMatchingArtists() throws Exception {
+    void whenLookupArtists_shouldReturnMatchingArtists() throws Exception {
         // Given
         String searchQuery = "radio";
-        ArtistSearchResultDTO artist1 = new ArtistSearchResultDTO(1L, "Radiohead");
-        ArtistSearchResultDTO artist2 = new ArtistSearchResultDTO(2L, "Radio Moscow");
-        List<ArtistSearchResultDTO> expectedArtists = List.of(artist1, artist2);
+        LookupResultDTO artist1 = new LookupResultDTO(1L, "Radiohead");
+        LookupResultDTO artist2 = new LookupResultDTO(2L, "Radio Moscow");
+        List<LookupResultDTO> expectedArtists = List.of(artist1, artist2);
         
         String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(expectedArtists));
         
         when(artistService.searchArtistsByName(searchQuery)).thenReturn(expectedArtists);
         
         // When & Then
-        mockMvc.perform(get("/api/v1/artists/search")
-                .param("query", searchQuery))
+        mockMvc.perform(get("/api/v1/artists/lookup")
+                .param("name", searchQuery))
             .andDo(print())
             .andExpect(status().isOk())
             .andExpect(content().json(expectedJson));
     }
     
     @Test
-    void whenSearchArtists_withLimit_shouldReturnLimitedResults() throws Exception {
+    void whenLookupArtists_withLimit_shouldReturnLimitedResults() throws Exception {
         // Given
         String searchQuery = "radio";
         Integer limit = 5;
-        ArtistSearchResultDTO artist1 = new ArtistSearchResultDTO(1L, "Radiohead");
-        ArtistSearchResultDTO artist2 = new ArtistSearchResultDTO(2L, "Radio Moscow");
-        List<ArtistSearchResultDTO> expectedArtists = List.of(artist1, artist2);
+        LookupResultDTO artist1 = new LookupResultDTO(1L, "Radiohead");
+        LookupResultDTO artist2 = new LookupResultDTO(2L, "Radio Moscow");
+        List<LookupResultDTO> expectedArtists = List.of(artist1, artist2);
         
         String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(expectedArtists));
         
         when(artistService.searchArtistsByName(searchQuery, limit)).thenReturn(expectedArtists);
         
         // When & Then
-        mockMvc.perform(get("/api/v1/artists/search")
-                .param("query", searchQuery)
+        mockMvc.perform(get("/api/v1/artists/lookup")
+                .param("name", searchQuery)
                 .param("limit", limit.toString()))
             .andDo(print())
             .andExpect(status().isOk())
@@ -177,35 +177,35 @@ class ArtistControllerMvcTest {
     }
     
     @Test
-    void whenSearchArtists_withNoResults_shouldReturnEmptyList() throws Exception {
+    void whenLookupArtists_withNoResults_shouldReturnEmptyList() throws Exception {
         // Given
         String searchQuery = "nonexistent";
-        List<ArtistSearchResultDTO> emptyList = Collections.emptyList();
+        List<LookupResultDTO> emptyList = Collections.emptyList();
         String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(emptyList));
         
         when(artistService.searchArtistsByName(searchQuery)).thenReturn(emptyList);
         
         // When & Then
-        mockMvc.perform(get("/api/v1/artists/search")
-                .param("query", searchQuery))
+        mockMvc.perform(get("/api/v1/artists/lookup")
+                .param("name", searchQuery))
             .andExpect(status().isOk())
             .andExpect(content().json(expectedJson));
     }
     
     @Test
-    void whenSearchArtists_withError_shouldReturnFailureResponse() throws Exception {
+    void whenLookupArtists_withError_shouldReturnFailureResponse() throws Exception {
         // Given
         String searchQuery = "radio";
         String errorMessage = "Search error occurred";
         String expectedJson = objectMapper.writeValueAsString(
-            ResponseWrapper.failureBody(String.format("Failed to search artists: %s", errorMessage)));
+            ResponseWrapper.failureBody(String.format("Failed to lookup artists: %s", errorMessage)));
         
         when(artistService.searchArtistsByName(searchQuery))
             .thenThrow(new RuntimeException(errorMessage));
         
         // When & Then
-        mockMvc.perform(get("/api/v1/artists/search")
-                .param("query", searchQuery))
+        mockMvc.perform(get("/api/v1/artists/lookup")
+                .param("name", searchQuery))
             .andExpect(status().isInternalServerError())
             .andExpect(content().json(expectedJson));
     }
