@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.music.data.approved.dto.CategoryHierarchyProjection;
 import yurykorzun.art.universe.music.data.approved.dto.LookupResultDTO;
 import yurykorzun.art.universe.music.data.approved.dto.CategorySaveRequestDTO;
-import yurykorzun.art.universe.music.data.approved.dto.BindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.CategoryBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.CategoryCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.approved.entity.Category;
@@ -124,7 +124,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
-    public BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, BindToExistingRequestDTO request) {
+    public BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, CategoryBindToExistingRequestDTO request) {
         // Validate that the category exists
         Category category = categoryRepository.findById(request.getCategoryId())
             .orElseThrow(() -> new EntityNotFoundException("Category not found with id: " + request.getCategoryId()));

@@ -9,7 +9,7 @@ import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.music.data.approved.dto.CategoryHierarchyProjection;
 import yurykorzun.art.universe.music.data.approved.dto.LookupResultDTO;
 import yurykorzun.art.universe.music.data.approved.dto.CategorySaveRequestDTO;
-import yurykorzun.art.universe.music.data.approved.dto.BindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.CategoryBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.CategoryCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.approved.entity.DataSource;
@@ -98,7 +98,7 @@ public class CategoryController {
     public ResponseEntity<ResponseWrapper<BoundEntityProjection>> bindToExisting(
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId,
-        @Valid @RequestBody BindToExistingRequestDTO request
+        @Valid @RequestBody CategoryBindToExistingRequestDTO request
     ) {
         try {
             BoundEntityProjection result = categoryService.bindToExisting(dataSource, externalId, request);

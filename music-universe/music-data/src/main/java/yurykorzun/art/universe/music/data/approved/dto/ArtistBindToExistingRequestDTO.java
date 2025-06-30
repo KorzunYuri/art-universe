@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class BindToExistingRequestDTO {
+public class ArtistBindToExistingRequestDTO {
     
-    @NotNull(message = "Category ID is required")
-    private Long categoryId;
+    @NotNull(message = "Artist ID is required")
+    private Long artistId;
 }

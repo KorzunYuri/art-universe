@@ -15,7 +15,7 @@ import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.music.data.approved.dto.CategoryHierarchyProjection;
 import yurykorzun.art.universe.music.data.approved.dto.LookupResultDTO;
 import yurykorzun.art.universe.music.data.approved.dto.CategorySaveRequestDTO;
-import yurykorzun.art.universe.music.data.approved.dto.BindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.CategoryBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.CategoryCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.approved.dto.TestCategoryHierarchyProjectionImpl;
@@ -309,7 +309,7 @@ class CategoryControllerTest {
         Long externalId = 1L;
         Long categoryId = 101L;
         
-        BindToExistingRequestDTO request = BindToExistingRequestDTO.builder()
+        CategoryBindToExistingRequestDTO request = CategoryBindToExistingRequestDTO.builder()
             .categoryId(categoryId)
             .build();
         
@@ -340,7 +340,7 @@ class CategoryControllerTest {
         Long categoryId = 101L;
         String errorMessage = "Test error";
         
-        BindToExistingRequestDTO request = BindToExistingRequestDTO.builder()
+        CategoryBindToExistingRequestDTO request = CategoryBindToExistingRequestDTO.builder()
             .categoryId(categoryId)
             .build();
         ResponseEntity<ResponseWrapper<BoundEntityProjection>> expectedResponse =

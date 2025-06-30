@@ -4,7 +4,8 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.common.controller.ResponseWrapper;
-import yurykorzun.art.universe.music.data.approved.dto.ArtistBindingRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.ArtistBindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.ArtistCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.LookupResultDTO;
 import yurykorzun.art.universe.music.data.approved.dto.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.approved.entity.DataSource;
@@ -50,17 +51,31 @@ public class ArtistController {
         }
     }
     
-    @PostMapping("/bind/{dataSource}/{externalId}")
-    public ResponseEntity<ResponseWrapper<BoundEntityProjection>> bindArtist(
+    @PostMapping("/bind/existing/{dataSource}/{externalId}")
+    public ResponseEntity<ResponseWrapper<BoundEntityProjection>> bindToExisting(
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId,
-        @Valid @RequestBody ArtistBindingRequestDTO request
+        @Valid @RequestBody ArtistBindToExistingRequestDTO request
     ) {
         try {
-            BoundEntityProjection result = artistService.bindArtist(dataSource, externalId, request);
+            BoundEntityProjection result = artistService.bindToExisting(dataSource, externalId, request);
             return ResponseWrapper.success(result);
         } catch (Exception e) {
-            return ResponseWrapper.failure(String.format("Failed to bind artist: %s", e.getMessage()));
+            return ResponseWrapper.failure(String.format("Failed to bind artist to existing: %s", e.getMessage()));
+        }
+    }
+    
+    @PostMapping("/bind/new/{dataSource}/{externalId}")
+    public ResponseEntity<ResponseWrapper<BoundEntityProjection>> createAndBind(
+        @PathVariable DataSource dataSource,
+        @PathVariable Long externalId,
+        @Valid @RequestBody ArtistCreateAndBindRequestDTO request
+    ) {
+        try {
+            BoundEntityProjection result = artistService.createAndBind(dataSource, externalId, request);
+            return ResponseWrapper.success(result);
+        } catch (Exception e) {
+            return ResponseWrapper.failure(String.format("Failed to create and bind artist: %s", e.getMessage()));
         }
     }
     

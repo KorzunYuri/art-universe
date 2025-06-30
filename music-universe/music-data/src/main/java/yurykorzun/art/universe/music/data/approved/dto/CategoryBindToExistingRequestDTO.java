@@ -1,6 +1,6 @@
 package yurykorzun.art.universe.music.data.approved.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ArtistBindingRequestDTO {
+public class CategoryBindToExistingRequestDTO {
     
-    @NotBlank(message = "Artist name is required")
-    private String name;
+    @NotNull(message = "Category ID is required")
+    private Long categoryId;
 }

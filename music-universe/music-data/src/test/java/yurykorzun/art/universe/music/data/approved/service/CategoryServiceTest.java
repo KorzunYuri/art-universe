@@ -7,7 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import yurykorzun.art.universe.music.data.approved.dto.LookupResultDTO;
-import yurykorzun.art.universe.music.data.approved.dto.BindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.CategoryBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.CategoryCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.approved.dto.TestBoundEntityProjectionImpl;
@@ -26,7 +26,6 @@ import java.util.stream.IntStream;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -116,7 +115,7 @@ class CategoryServiceTest {
             .name("Rock")
             .build();
         
-        BindToExistingRequestDTO request = BindToExistingRequestDTO.builder()
+        CategoryBindToExistingRequestDTO request = CategoryBindToExistingRequestDTO.builder()
             .categoryId(categoryId)
             .build();
         
@@ -157,7 +156,7 @@ class CategoryServiceTest {
         Long externalId = 1L;
         Long categoryId = 101L;
         
-        BindToExistingRequestDTO request = BindToExistingRequestDTO.builder()
+        CategoryBindToExistingRequestDTO request = CategoryBindToExistingRequestDTO.builder()
             .categoryId(categoryId)
             .build();
         
@@ -191,7 +190,7 @@ class CategoryServiceTest {
             .referenceId(oldCategoryId)
             .build();
         
-        BindToExistingRequestDTO request = BindToExistingRequestDTO.builder()
+        CategoryBindToExistingRequestDTO request = CategoryBindToExistingRequestDTO.builder()
             .categoryId(categoryId)
             .build();
         

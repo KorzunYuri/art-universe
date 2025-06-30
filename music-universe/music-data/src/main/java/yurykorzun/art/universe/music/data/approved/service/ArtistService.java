@@ -1,7 +1,8 @@
 package yurykorzun.art.universe.music.data.approved.service;
 
-import yurykorzun.art.universe.music.data.approved.dto.ArtistBindingRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.LookupResultDTO;
+import yurykorzun.art.universe.music.data.approved.dto.ArtistBindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.ArtistCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.approved.entity.DataSource;
 
@@ -19,17 +20,26 @@ public interface ArtistService {
      * @return The bound artist information, or null if not found
      */
     BoundEntityProjection findArtist(DataSource dataSource, Long externalId);
-    
+
     /**
-     * Binds an external artist to an artist in the system.
-     * If the artist doesn't exist, it will be created.
-     *
+     * Bind an external artist to an existing artist in the system
+     * 
      * @param dataSource The external data source
      * @param externalId The ID of the artist in the external system
-     * @param request    The binding request containing artist information
+     * @param request The binding request containing artist ID
      * @return The created binding information
      */
-    BoundEntityProjection bindArtist(DataSource dataSource, Long externalId, ArtistBindingRequestDTO request);
+    BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, ArtistBindToExistingRequestDTO request);
+    
+    /**
+     * Create a new artist and bind an external artist to it
+     * 
+     * @param dataSource The external data source
+     * @param externalId The ID of the artist in the external system
+     * @param request The binding request containing artist information
+     * @return The created binding information
+     */
+    BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, ArtistCreateAndBindRequestDTO request);
     
     /**
      * Unbinds an external artist from the system.

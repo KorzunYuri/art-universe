@@ -3,8 +3,9 @@ package yurykorzun.art.universe.music.data.approved.service;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import yurykorzun.art.universe.music.data.approved.dto.ArtistBindingRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.LookupResultDTO;
+import yurykorzun.art.universe.music.data.approved.dto.ArtistBindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.ArtistCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.approved.entity.Artist;
 import yurykorzun.art.universe.music.data.approved.entity.ArtistBinding;
@@ -42,15 +43,10 @@ public class ArtistServiceImpl implements ArtistService {
     
     @Override
     @Transactional
-    public BoundEntityProjection bindArtist(DataSource dataSource, Long externalId, ArtistBindingRequestDTO request) {
-        // Create or find the artist
-        Artist artist = artistRepository.findByName(request.getName())
-            .orElseGet(() -> {
-                Artist newArtist = Artist.builder()
-                    .name(request.getName())
-                    .build();
-                return artistRepository.save(newArtist);
-            });
+    public BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, ArtistBindToExistingRequestDTO request) {
+        // Validate that the artist exists
+        Artist artist = artistRepository.findById(request.getArtistId())
+            .orElseThrow(() -> new EntityNotFoundException("Artist not found with id: " + request.getArtistId()));
         
         // Check if binding already exists
         Optional<ArtistBinding> existingBinding = bindingsRepository.findByDataSourceAndExternalId(dataSource, externalId);
@@ -62,12 +58,6 @@ public class ArtistServiceImpl implements ArtistService {
                 binding.setReferenceId(artist.getId());
                 bindingsRepository.save(binding);
             }
-            
-            // Return the updated binding
-            return bindingsRepository.findBoundArtistsForDataSource(dataSource, List.of(externalId))
-                .stream()
-                .findFirst()
-                .orElseThrow(() -> new EntityNotFoundException("Binding not found after update"));
         } else {
             // Create new binding
             ArtistBinding binding = ArtistBinding.builder()
@@ -77,15 +67,49 @@ public class ArtistServiceImpl implements ArtistService {
                 .build();
             
             bindingsRepository.save(binding);
-            
-            // Return the created binding
-            return bindingsRepository.findBoundArtistsForDataSource(dataSource, List.of(externalId))
-                .stream()
-                .findFirst()
-                .orElseThrow(() -> new EntityNotFoundException("Binding not found after creation"));
         }
+        
+        // Return the binding information
+        return bindingsRepository.findBoundArtistForDataSource(dataSource, externalId);
     }
-    
+
+    @Override
+    @Transactional
+    public BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, ArtistCreateAndBindRequestDTO request) {
+        artistRepository.findByName(request.getName())
+            .ifPresent(artist -> {
+                throw new IllegalArgumentException(String.format("Artist with name %s already exists", artist.getName()));
+            });
+
+        // Create new artist
+        Artist artist = Artist.builder()
+            .name(request.getName())
+            .build();
+        
+        Artist savedArtist = artistRepository.save(artist);
+        
+        // Check if binding already exists
+        Optional<ArtistBinding> existingBinding = bindingsRepository.findByDataSourceAndExternalId(dataSource, externalId);
+        
+        if (existingBinding.isPresent()) {
+            // Update existing binding
+            ArtistBinding binding = existingBinding.get();
+            binding.setReferenceId(savedArtist.getId());
+            bindingsRepository.save(binding);
+        } else {
+            // Create new binding
+            ArtistBinding binding = ArtistBinding.builder()
+                .dataSource(dataSource)
+                .externalId(externalId)
+                .referenceId(savedArtist.getId())
+                .build();
+            
+            bindingsRepository.save(binding);
+        }
+        
+        // Return the binding information
+        return bindingsRepository.findBoundArtistForDataSource(dataSource, externalId);
+    }    
     @Override
     @Transactional
     public boolean unbindArtist(DataSource dataSource, Long externalId) {

@@ -8,7 +8,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import yurykorzun.art.universe.common.controller.ResponseWrapper;
-import yurykorzun.art.universe.music.data.approved.dto.ArtistBindingRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.ArtistBindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.ArtistCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.LookupResultDTO;
 import yurykorzun.art.universe.music.data.approved.dto.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.approved.dto.TestBoundEntityProjectionImpl;
@@ -18,8 +19,6 @@ import yurykorzun.art.universe.music.data.approved.service.ArtistService;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -151,33 +150,100 @@ class ArtistControllerTest {
     }
     
     @Test
-    void bindArtist_shouldReturnSuccessResponse() throws Exception {
+    void bindToExisting_shouldReturnSuccessResponse() throws Exception {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
-        String artistName = "Test Artist";
+        Long artistId = 101L;
         
-        ArtistBindingRequestDTO request = ArtistBindingRequestDTO.builder()
+        ArtistBindToExistingRequestDTO request = ArtistBindToExistingRequestDTO.builder()
+            .artistId(artistId)
+            .build();
+        
+        TestBoundEntityProjectionImpl projection = new TestBoundEntityProjectionImpl(
+            externalId, dataSource, artistId, "Radiohead"
+        );
+        ResponseEntity<ResponseWrapper<BoundEntityProjection>> expectedResponse = 
+            ResponseWrapper.success(projection);
+        
+        when(artistService.bindToExisting(dataSource, externalId, request))
+            .thenReturn(projection);
+
+        // When
+        ResponseEntity<ResponseWrapper<BoundEntityProjection>> actualResponse =
+            artistController.bindToExisting(dataSource, externalId, request);
+
+        // Then
+        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
+        assertEquals(expectedResponse, actualResponse);
+        
+        verify(artistService).bindToExisting(dataSource, externalId, request);
+    }
+    
+    @Test
+    void bindToExisting_whenExceptionThrown_shouldReturnFailureResponse() throws Exception {
+        // Given
+        DataSource dataSource = DataSource.LASTFM;
+        Long externalId = 1L;
+        Long artistId = 101L;
+        String errorMessage = "Test error";
+        
+        ArtistBindToExistingRequestDTO request = ArtistBindToExistingRequestDTO.builder()
+            .artistId(artistId)
+            .build();
+        ResponseEntity<ResponseWrapper<BoundEntityProjection>> expectedResponse =
+            ResponseWrapper.failure(String.format("Failed to bind artist to existing: %s", errorMessage));
+        
+        when(artistService.bindToExisting(dataSource, externalId, request))
+            .thenThrow(new RuntimeException(errorMessage));
+
+        // When
+        ResponseEntity<ResponseWrapper<BoundEntityProjection>> actualResponse =
+            artistController.bindToExisting(dataSource, externalId, request);
+
+        // Then
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
+        assertEquals(expectedResponse, actualResponse);
+        
+        verify(artistService).bindToExisting(dataSource, externalId, request);
+    }
+    
+    @Test
+    void createAndBind_shouldReturnSuccessResponse() throws Exception {
+        // Given
+        DataSource dataSource = DataSource.LASTFM;
+        Long externalId = 1L;
+        String artistName = "New Artist";
+        
+        ArtistCreateAndBindRequestDTO request = ArtistCreateAndBindRequestDTO.builder()
             .name(artistName)
             .build();
         
         TestBoundEntityProjectionImpl projection = new TestBoundEntityProjectionImpl(
             externalId, dataSource, 101L, artistName
         );
-        ResponseEntity<ResponseWrapper<BoundEntityProjection>> expectedResponse = ResponseWrapper.success(projection);
+        ResponseEntity<ResponseWrapper<BoundEntityProjection>> expectedResponse = 
+            ResponseWrapper.success(projection);
         
-        when(artistService.bindArtist(eq(dataSource), eq(externalId), any(ArtistBindingRequestDTO.class)))
+        when(artistService.createAndBind(dataSource, externalId, request))
             .thenReturn(projection);
 
         // When
         ResponseEntity<ResponseWrapper<BoundEntityProjection>> actualResponse =
-            artistController.bindArtist(dataSource, externalId, request);
+            artistController.createAndBind(dataSource, externalId, request);
 
         // Then
         assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
         assertEquals(expectedResponse, actualResponse);
         
-        verify(artistService).bindArtist(eq(dataSource), eq(externalId), any(ArtistBindingRequestDTO.class));
+        verify(artistService).createAndBind(dataSource, externalId, request);
+    }
+    
+    @Test
+    void createAndBind_whenExceptionThrown_shouldReturnFailureResponse() throws Exception {
+        // Given
+        DataSource dataSource = DataSource.LASTFM;
+        Long externalId = 1L;
     }
     
     @Test
@@ -188,24 +254,24 @@ class ArtistControllerTest {
         String artistName = "Test Artist";
         String errorMessage = "Test error";
         
-        ArtistBindingRequestDTO request = ArtistBindingRequestDTO.builder()
+        ArtistCreateAndBindRequestDTO request = ArtistCreateAndBindRequestDTO.builder()
             .name(artistName)
             .build();
         ResponseEntity<ResponseWrapper<BoundEntityProjection>> expectedResponse =
-            ResponseWrapper.failure(String.format("Failed to bind artist: %s", errorMessage));
+            ResponseWrapper.failure(String.format("Failed to create and bind artist: %s", errorMessage));
         
-        when(artistService.bindArtist(eq(dataSource), eq(externalId), any(ArtistBindingRequestDTO.class)))
+        when(artistService.createAndBind(dataSource, externalId, request))
             .thenThrow(new RuntimeException(errorMessage));
 
         // When
         ResponseEntity<ResponseWrapper<BoundEntityProjection>> actualResponse =
-            artistController.bindArtist(dataSource, externalId, request);
+            artistController.createAndBind(dataSource, externalId, request);
 
         // Then
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
         assertEquals(expectedResponse, actualResponse);
         
-        verify(artistService).bindArtist(eq(dataSource), eq(externalId), any(ArtistBindingRequestDTO.class));
+        verify(artistService).createAndBind(dataSource, externalId, request);
     }
     
     @Test

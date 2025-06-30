@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class BindToExistingRequestDTOTest {
+class CategoryBindToExistingRequestDTOTest {
 
     @Test
     void shouldCreateValidDTO_whenCategoryIdIsSet() {
@@ -12,7 +12,7 @@ class BindToExistingRequestDTOTest {
         Long categoryId = 1L;
         
         // When
-        BindToExistingRequestDTO dto = BindToExistingRequestDTO.builder()
+        CategoryBindToExistingRequestDTO dto = CategoryBindToExistingRequestDTO.builder()
             .categoryId(categoryId)
             .build();
         
@@ -26,7 +26,7 @@ class BindToExistingRequestDTOTest {
         Long categoryId = 123L;
         
         // When
-        BindToExistingRequestDTO dto = BindToExistingRequestDTO.builder()
+        CategoryBindToExistingRequestDTO dto = CategoryBindToExistingRequestDTO.builder()
             .categoryId(categoryId)
             .build();
         
@@ -37,7 +37,7 @@ class BindToExistingRequestDTOTest {
     @Test
     void shouldCreateDTOWithNoArgsConstructor() {
         // When
-        BindToExistingRequestDTO dto = new BindToExistingRequestDTO();
+        CategoryBindToExistingRequestDTO dto = new CategoryBindToExistingRequestDTO();
         dto.setCategoryId(456L);
         
         // Then
@@ -50,7 +50,7 @@ class BindToExistingRequestDTOTest {
         Long categoryId = 789L;
         
         // When
-        BindToExistingRequestDTO dto = new BindToExistingRequestDTO(categoryId);
+        CategoryBindToExistingRequestDTO dto = new CategoryBindToExistingRequestDTO(categoryId);
         
         // Then
         assertEquals(categoryId, dto.getCategoryId());

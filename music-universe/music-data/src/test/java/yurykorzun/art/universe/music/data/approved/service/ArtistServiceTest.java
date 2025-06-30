@@ -1,12 +1,14 @@
 package yurykorzun.art.universe.music.data.approved.service;
 
 import org.junit.jupiter.api.Test;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import yurykorzun.art.universe.music.data.approved.dto.ArtistBindingRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.LookupResultDTO;
+import yurykorzun.art.universe.music.data.approved.dto.ArtistBindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.ArtistCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.approved.dto.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.approved.entity.Artist;
@@ -96,150 +98,6 @@ class ArtistServiceTest {
         assertNull(result);
         verify(artistBindingRepository).findBoundArtistForDataSource(dataSource, externalId);
     }
-    @Test
-    void bindArtist_whenArtistExists_shouldCreateBinding() {
-        // Given
-        DataSource dataSource = DataSource.LASTFM;
-        Long externalId = 1L;
-        String artistName = "Test Artist";
-        
-        Artist existingArtist = Artist.builder()
-            .id(101L)
-            .name(artistName)
-            .build();
-        
-        ArtistBindingRequestDTO request = ArtistBindingRequestDTO.builder()
-            .name(artistName)
-            .build();
-        
-        ArtistBinding binding = ArtistBinding.builder()
-            .id(1L)
-            .dataSource(dataSource)
-            .externalId(externalId)
-            .referenceId(existingArtist.getId())
-            .build();
-        
-        TestBoundEntityProjectionImpl expectedResult = new TestBoundEntityProjectionImpl(
-            externalId, dataSource, existingArtist.getId(), artistName
-        );
-        
-        when(artistRepository.findByName(artistName)).thenReturn(Optional.of(existingArtist));
-        when(artistBindingRepository.findByDataSourceAndExternalId(dataSource, externalId))
-            .thenReturn(Optional.empty());
-        when(artistBindingRepository.save(any(ArtistBinding.class))).thenReturn(binding);
-        when(artistBindingRepository.findBoundArtistsForDataSource(dataSource, List.of(externalId)))
-            .thenReturn(List.of(expectedResult));
-
-        // When
-        BoundEntityProjection result = artistService.bindArtist(dataSource, externalId, request);
-
-        // Then
-        assertEquals(expectedResult, result);
-        
-        verify(artistRepository).findByName(artistName);
-        verify(artistBindingRepository).findByDataSourceAndExternalId(dataSource, externalId);
-        verify(artistBindingRepository).save(any(ArtistBinding.class));
-        verify(artistBindingRepository).findBoundArtistsForDataSource(dataSource, List.of(externalId));
-    }
-    
-    @Test
-    void bindArtist_whenArtistDoesNotExist_shouldCreateArtistAndBinding() {
-        // Given
-        DataSource dataSource = DataSource.LASTFM;
-        Long externalId = 1L;
-        String artistName = "New Artist";
-        
-        Artist newArtist = Artist.builder()
-            .id(101L)
-            .name(artistName)
-            .build();
-        
-        ArtistBindingRequestDTO request = ArtistBindingRequestDTO.builder()
-            .name(artistName)
-            .build();
-        
-        ArtistBinding binding = ArtistBinding.builder()
-            .id(1L)
-            .dataSource(dataSource)
-            .externalId(externalId)
-            .referenceId(newArtist.getId())
-            .build();
-        
-        TestBoundEntityProjectionImpl expectedResult = new TestBoundEntityProjectionImpl(
-            externalId, dataSource, newArtist.getId(), artistName
-        );
-        
-        when(artistRepository.findByName(artistName)).thenReturn(Optional.empty());
-        when(artistRepository.save(any(Artist.class))).thenReturn(newArtist);
-        when(artistBindingRepository.findByDataSourceAndExternalId(dataSource, externalId))
-            .thenReturn(Optional.empty());
-        when(artistBindingRepository.save(any(ArtistBinding.class))).thenReturn(binding);
-        when(artistBindingRepository.findBoundArtistsForDataSource(dataSource, List.of(externalId)))
-            .thenReturn(List.of(expectedResult));
-
-        // When
-        BoundEntityProjection result = artistService.bindArtist(dataSource, externalId, request);
-
-        // Then
-        assertEquals(expectedResult, result);
-        
-        verify(artistRepository).findByName(artistName);
-        verify(artistRepository).save(any(Artist.class));
-        verify(artistBindingRepository).findByDataSourceAndExternalId(dataSource, externalId);
-        verify(artistBindingRepository).save(any(ArtistBinding.class));
-        verify(artistBindingRepository).findBoundArtistsForDataSource(dataSource, List.of(externalId));
-    }
-    
-    @Test
-    void bindArtist_whenBindingExists_shouldUpdateBinding() {
-        // Given
-        DataSource dataSource = DataSource.LASTFM;
-        Long externalId = 1L;
-        String artistName = "Test Artist";
-        
-        Artist existingArtist = Artist.builder()
-            .id(101L)
-            .name(artistName)
-            .build();
-        
-        Artist oldArtist = Artist.builder()
-            .id(102L)
-            .name("Old Artist")
-            .build();
-        
-        ArtistBinding existingBinding = ArtistBinding.builder()
-            .id(1L)
-            .dataSource(dataSource)
-            .externalId(externalId)
-            .referenceId(oldArtist.getId())
-            .build();
-        
-        ArtistBindingRequestDTO request = ArtistBindingRequestDTO.builder()
-            .name(artistName)
-            .build();
-        
-        TestBoundEntityProjectionImpl expectedResult = new TestBoundEntityProjectionImpl(
-            externalId, dataSource, existingArtist.getId(), artistName
-        );
-        
-        when(artistRepository.findByName(artistName)).thenReturn(Optional.of(existingArtist));
-        when(artistBindingRepository.findByDataSourceAndExternalId(dataSource, externalId))
-            .thenReturn(Optional.of(existingBinding));
-        when(artistBindingRepository.save(any(ArtistBinding.class))).thenReturn(existingBinding);
-        when(artistBindingRepository.findBoundArtistsForDataSource(dataSource, List.of(externalId)))
-            .thenReturn(List.of(expectedResult));
-
-        // When
-        BoundEntityProjection result = artistService.bindArtist(dataSource, externalId, request);
-
-        // Then
-        assertEquals(expectedResult, result);
-        
-        verify(artistRepository).findByName(artistName);
-        verify(artistBindingRepository).findByDataSourceAndExternalId(dataSource, externalId);
-        verify(artistBindingRepository).save(existingBinding);
-        verify(artistBindingRepository).findBoundArtistsForDataSource(dataSource, List.of(externalId));
-    }
     
     @Test
     void unbindArtist_whenBindingExists_shouldDeleteBinding() {
@@ -265,24 +123,6 @@ class ArtistServiceTest {
         assertTrue(result);
         verify(artistBindingRepository).findByDataSourceAndExternalId(dataSource, externalId);
         verify(artistBindingRepository).delete(existingBinding);
-    }
-    
-    @Test
-    void unbindArtist_whenBindingDoesNotExist_shouldReturnFalse() {
-        // Given
-        DataSource dataSource = DataSource.LASTFM;
-        Long externalId = 1L;
-        
-        when(artistBindingRepository.findByDataSourceAndExternalId(dataSource, externalId))
-            .thenReturn(Optional.empty());
-
-        // When
-        boolean result = artistService.unbindArtist(dataSource, externalId);
-
-        // Then
-        assertFalse(result);
-        verify(artistBindingRepository).findByDataSourceAndExternalId(dataSource, externalId);
-        verify(artistBindingRepository, never()).delete(any());
     }
     
     @Test
@@ -443,5 +283,258 @@ class ArtistServiceTest {
         // Then
         assertTrue(result.isEmpty());
         verify(artistRepository, never()).findByNameContainingIgnoreCase(any(), anyInt());
+    }
+    
+    @Test
+    void bindToExisting_whenArtistExists_shouldCreateBinding() {
+        // Given
+        DataSource dataSource = DataSource.LASTFM;
+        Long externalId = 1L;
+        Long artistId = 101L;
+        
+        Artist existingArtist = Artist.builder()
+            .id(artistId)
+            .name("Radiohead")
+            .build();
+        
+        ArtistBindToExistingRequestDTO request = ArtistBindToExistingRequestDTO.builder()
+            .artistId(artistId)
+            .build();
+        
+        ArtistBinding binding = ArtistBinding.builder()
+            .id(1L)
+            .dataSource(dataSource)
+            .externalId(externalId)
+            .referenceId(artistId)
+            .build();
+        
+        TestBoundEntityProjectionImpl expectedResult = new TestBoundEntityProjectionImpl(
+            externalId, dataSource, artistId, "Radiohead"
+        );
+        
+        when(artistRepository.findById(artistId)).thenReturn(Optional.of(existingArtist));
+        when(artistBindingRepository.findByDataSourceAndExternalId(dataSource, externalId))
+            .thenReturn(Optional.empty());
+        when(artistBindingRepository.save(any(ArtistBinding.class))).thenReturn(binding);
+        when(artistBindingRepository.findBoundArtistForDataSource(dataSource, externalId))
+            .thenReturn(expectedResult);
+
+        // When
+        BoundEntityProjection result = artistService.bindToExisting(dataSource, externalId, request);
+
+        // Then
+        assertEquals(expectedResult, result);
+        
+        verify(artistRepository).findById(artistId);
+        verify(artistBindingRepository).findByDataSourceAndExternalId(dataSource, externalId);
+        verify(artistBindingRepository).save(any(ArtistBinding.class));
+        verify(artistBindingRepository).findBoundArtistForDataSource(dataSource, externalId);
+    }
+
+    @Test
+    void bindToExisting_whenArtistDoesNotExist_shouldThrowException() {
+        // Given
+        DataSource dataSource = DataSource.LASTFM;
+        Long externalId = 1L;
+        Long artistId = 101L;
+        
+        ArtistBindToExistingRequestDTO request = ArtistBindToExistingRequestDTO.builder()
+            .artistId(artistId)
+            .build();
+        
+        when(artistRepository.findById(artistId)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThrows(EntityNotFoundException.class, () -> 
+            artistService.bindToExisting(dataSource, externalId, request));
+        
+        verify(artistRepository).findById(artistId);
+        verify(artistBindingRepository, never()).save(any());
+    }
+
+    @Test
+    void bindToExisting_whenBindingExists_shouldUpdateBinding() {
+        // Given
+        DataSource dataSource = DataSource.LASTFM;
+        Long externalId = 1L;
+        Long artistId = 101L;
+        Long oldArtistId = 102L;
+        
+        Artist existingArtist = Artist.builder()
+            .id(artistId)
+            .name("Radiohead")
+            .build();
+        
+        ArtistBinding existingBinding = ArtistBinding.builder()
+            .id(1L)
+            .dataSource(dataSource)
+            .externalId(externalId)
+            .referenceId(oldArtistId)
+            .build();
+        
+        ArtistBindToExistingRequestDTO request = ArtistBindToExistingRequestDTO.builder()
+            .artistId(artistId)
+            .build();
+        
+        TestBoundEntityProjectionImpl expectedResult = new TestBoundEntityProjectionImpl(
+            externalId, dataSource, artistId, "Radiohead"
+        );
+        
+        when(artistRepository.findById(artistId)).thenReturn(Optional.of(existingArtist));
+        when(artistBindingRepository.findByDataSourceAndExternalId(dataSource, externalId))
+            .thenReturn(Optional.of(existingBinding));
+        when(artistBindingRepository.save(existingBinding)).thenReturn(existingBinding);
+        when(artistBindingRepository.findBoundArtistForDataSource(dataSource, externalId))
+            .thenReturn(expectedResult);
+
+        // When
+        BoundEntityProjection result = artistService.bindToExisting(dataSource, externalId, request);
+
+        // Then
+        assertEquals(expectedResult, result);
+        assertEquals(artistId, existingBinding.getReferenceId());
+        
+        verify(artistRepository).findById(artistId);
+        verify(artistBindingRepository).findByDataSourceAndExternalId(dataSource, externalId);
+        verify(artistBindingRepository).save(existingBinding);
+        verify(artistBindingRepository).findBoundArtistForDataSource(dataSource, externalId);
+    }
+
+    @Test
+    void createAndBind_shouldCreateArtistAndBinding() {
+        // Given
+        DataSource dataSource = DataSource.LASTFM;
+        Long externalId = 1L;
+        String artistName = "New Artist";
+        
+        Artist newArtist = Artist.builder()
+            .id(101L)
+            .name(artistName)
+            .build();
+        
+        ArtistCreateAndBindRequestDTO request = ArtistCreateAndBindRequestDTO.builder()
+            .name(artistName)
+            .build();
+        
+        ArtistBinding binding = ArtistBinding.builder()
+            .id(1L)
+            .dataSource(dataSource)
+            .externalId(externalId)
+            .referenceId(newArtist.getId())
+            .build();
+        
+        TestBoundEntityProjectionImpl expectedResult = new TestBoundEntityProjectionImpl(
+            externalId, dataSource, newArtist.getId(), artistName
+        );
+        
+        when(artistRepository.save(any(Artist.class))).thenReturn(newArtist);
+        when(artistBindingRepository.findByDataSourceAndExternalId(dataSource, externalId))
+            .thenReturn(Optional.empty());
+        when(artistBindingRepository.save(any(ArtistBinding.class))).thenReturn(binding);
+        when(artistBindingRepository.findBoundArtistForDataSource(dataSource, externalId))
+            .thenReturn(expectedResult);
+
+        // When
+        BoundEntityProjection result = artistService.createAndBind(dataSource, externalId, request);
+
+        // Then
+        assertEquals(expectedResult, result);
+        
+        verify(artistRepository).save(any(Artist.class));
+        verify(artistBindingRepository).findByDataSourceAndExternalId(dataSource, externalId);
+        verify(artistBindingRepository).save(any(ArtistBinding.class));
+        verify(artistBindingRepository).findBoundArtistForDataSource(dataSource, externalId);
+    }
+
+    @Test
+    void createAndBind_whenBindingExists_shouldUpdateBinding() {
+        // Given
+        DataSource dataSource = DataSource.LASTFM;
+        Long externalId = 1L;
+        String artistName = "New Artist";
+        
+        Artist newArtist = Artist.builder()
+            .id(101L)
+            .name(artistName)
+            .build();
+        
+        ArtistBinding existingBinding = ArtistBinding.builder()
+            .id(1L)
+            .dataSource(dataSource)
+            .externalId(externalId)
+            .referenceId(999L) // Old reference
+            .build();
+        
+        ArtistCreateAndBindRequestDTO request = ArtistCreateAndBindRequestDTO.builder()
+            .name(artistName)
+            .build();
+        
+        TestBoundEntityProjectionImpl expectedResult = new TestBoundEntityProjectionImpl(
+            externalId, dataSource, newArtist.getId(), artistName
+        );
+        
+        when(artistRepository.save(any(Artist.class))).thenReturn(newArtist);
+        when(artistBindingRepository.findByDataSourceAndExternalId(dataSource, externalId))
+            .thenReturn(Optional.of(existingBinding));
+        when(artistBindingRepository.save(existingBinding)).thenReturn(existingBinding);
+        when(artistBindingRepository.findBoundArtistForDataSource(dataSource, externalId))
+            .thenReturn(expectedResult);
+
+        // When
+        BoundEntityProjection result = artistService.createAndBind(dataSource, externalId, request);
+
+        // Then
+        assertEquals(expectedResult, result);
+        assertEquals(newArtist.getId(), existingBinding.getReferenceId());
+        
+        verify(artistRepository).save(any(Artist.class));
+        verify(artistBindingRepository).findByDataSourceAndExternalId(dataSource, externalId);
+        verify(artistBindingRepository).save(existingBinding);
+        verify(artistBindingRepository).findBoundArtistForDataSource(dataSource, externalId);
+    }
+    @Test
+    void createAndBind_whenArtistWithNameExists_shouldThrowException() {
+        // Given
+        DataSource dataSource = DataSource.LASTFM;
+        Long externalId = 1L;
+        String artistName = "Existing Artist";
+        
+        Artist existingArtist = Artist.builder()
+            .id(999L)
+            .name(artistName)
+            .build();
+        
+        ArtistCreateAndBindRequestDTO request = ArtistCreateAndBindRequestDTO.builder()
+            .name(artistName)
+            .build();
+        
+        when(artistRepository.findByName(artistName)).thenReturn(Optional.of(existingArtist));
+
+        // When & Then
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> 
+            artistService.createAndBind(dataSource, externalId, request));
+        
+        assertEquals("Artist with name Existing Artist already exists", exception.getMessage());
+        
+        verify(artistRepository).findByName(artistName);
+        verify(artistRepository, never()).save(any(Artist.class));
+        verify(artistBindingRepository, never()).save(any(ArtistBinding.class));
+    }
+    @Test
+    void unbindArtist_whenBindingDoesNotExist_shouldReturnFalse() {
+        // Given
+        DataSource dataSource = DataSource.LASTFM;
+        Long externalId = 1L;
+
+        when(artistBindingRepository.findByDataSourceAndExternalId(dataSource, externalId))
+            .thenReturn(Optional.empty());
+
+        // When
+        boolean result = artistService.unbindArtist(dataSource, externalId);
+
+        // Then
+        assertFalse(result);
+        verify(artistBindingRepository).findByDataSourceAndExternalId(dataSource, externalId);
+        verify(artistBindingRepository, never()).delete(any());
     }
 }
