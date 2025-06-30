@@ -37,7 +37,8 @@ Central data management service for approved music data. Manages curated entitie
   - Used for form dropdowns and quick selection
 
 ### Binding
-- **`POST /{entities}/bind/{dataSource}/{externalId}`**
+- **`POST /{entities}/bind/existing/{dataSource}/{externalId}`** - Bind external entity to existing entity
+- **`POST /{entities}/bind/new/{dataSource}/{externalId}`** - Create new entity from an external entity and bind them
 - **`DELETE /{entities}/unbind/{dataSource}/{externalId}`** - Unbind
 - **`GET /{entities}/bound/{dataSource}?externalIds=1,2,3`** - Get bound entities for the external entities from a specific data source.
 

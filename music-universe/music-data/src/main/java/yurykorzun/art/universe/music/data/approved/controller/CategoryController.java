@@ -9,6 +9,10 @@ import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.music.data.approved.dto.CategoryHierarchyProjection;
 import yurykorzun.art.universe.music.data.approved.dto.LookupResultDTO;
 import yurykorzun.art.universe.music.data.approved.dto.CategorySaveRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.BindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.CategoryCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.approved.entity.DataSource;
 import yurykorzun.art.universe.music.data.approved.service.CategoryService;
 
 import java.util.List;
@@ -74,6 +78,60 @@ public class CategoryController {
             }
         } catch (Exception e) {
             return ResponseWrapper.failure(String.format("Failed to delete category: %s", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/bound/{dataSource}")
+    public ResponseEntity<ResponseWrapper<List<BoundEntityProjection>>> findBoundCategories(
+        @PathVariable DataSource dataSource,
+        @RequestParam List<Long> externalIds
+    ) {
+        try {
+            List<BoundEntityProjection> result = categoryService.findBoundCategories(dataSource, externalIds);
+            return ResponseWrapper.success(result);
+        } catch (Exception e) {
+            return ResponseWrapper.failure(String.format("Failed to get bound categories: %s", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/bind/existing/{dataSource}/{externalId}")
+    public ResponseEntity<ResponseWrapper<BoundEntityProjection>> bindToExisting(
+        @PathVariable DataSource dataSource,
+        @PathVariable Long externalId,
+        @Valid @RequestBody BindToExistingRequestDTO request
+    ) {
+        try {
+            BoundEntityProjection result = categoryService.bindToExisting(dataSource, externalId, request);
+            return ResponseWrapper.success(result);
+        } catch (Exception e) {
+            return ResponseWrapper.failure(String.format("Failed to bind category to existing: %s", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/bind/new/{dataSource}/{externalId}")
+    public ResponseEntity<ResponseWrapper<BoundEntityProjection>> createAndBind(
+        @PathVariable DataSource dataSource,
+        @PathVariable Long externalId,
+        @Valid @RequestBody CategoryCreateAndBindRequestDTO request
+    ) {
+        try {
+            BoundEntityProjection result = categoryService.createAndBind(dataSource, externalId, request);
+            return ResponseWrapper.success(result);
+        } catch (Exception e) {
+            return ResponseWrapper.failure(String.format("Failed to create and bind category: %s", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/unbind/{dataSource}/{externalId}")
+    public ResponseEntity<ResponseWrapper<Boolean>> unbindCategory(
+        @PathVariable DataSource dataSource,
+        @PathVariable Long externalId
+    ) {
+        try {
+            boolean result = categoryService.unbindCategory(dataSource, externalId);
+            return ResponseWrapper.success(result);
+        } catch (Exception e) {
+            return ResponseWrapper.failure(String.format("Failed to unbind category: %s", e.getMessage()));
         }
     }
 }

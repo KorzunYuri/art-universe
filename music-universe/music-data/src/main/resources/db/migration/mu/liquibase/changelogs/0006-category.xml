@@ -9,4 +9,8 @@
         <sqlFile path="../changesets/0006-category/0006-0010-category$initial.sql" relativeToChangelogFile="true"/>
     </changeSet>
 
+    <changeSet id="0006-0020-category_binding$initial" author="yurykorzun">
+        <sqlFile path="../changesets/0006-category/0006-0020-category_binding$initial.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
 </databaseChangeLog>

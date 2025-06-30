@@ -15,7 +15,12 @@ import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.music.data.approved.dto.CategoryHierarchyProjection;
 import yurykorzun.art.universe.music.data.approved.dto.LookupResultDTO;
 import yurykorzun.art.universe.music.data.approved.dto.CategorySaveRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.BindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.CategoryCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.approved.dto.TestCategoryHierarchyProjectionImpl;
+import yurykorzun.art.universe.music.data.approved.dto.TestBoundEntityProjectionImpl;
+import yurykorzun.art.universe.music.data.approved.entity.DataSource;
 import yurykorzun.art.universe.music.data.approved.service.CategoryService;
 
 import java.util.Arrays;
@@ -247,5 +252,208 @@ class CategoryControllerTest {
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
         assertEquals(expectedResponse, actualResponse);
         verify(categoryService).deleteCategory(id);
+    }
+
+    @Test
+    void findBoundCategories_shouldReturnSuccessResponse() {
+        // Given
+        DataSource dataSource = DataSource.LASTFM;
+        List<Long> externalIds = List.of(1L, 2L);
+        
+        TestBoundEntityProjectionImpl projection = new TestBoundEntityProjectionImpl(
+            1L, dataSource, 101L, "Rock"
+        );
+        List<BoundEntityProjection> expectedBindings = List.of(projection);
+        
+        when(categoryService.findBoundCategories(dataSource, externalIds))
+            .thenReturn(expectedBindings);
+        ResponseEntity<ResponseWrapper<List<BoundEntityProjection>>> expectedResponse =
+            ResponseWrapper.success(expectedBindings);
+
+        // When
+        ResponseEntity<ResponseWrapper<List<BoundEntityProjection>>> actualResponse =
+            categoryController.findBoundCategories(dataSource, externalIds);
+
+        // Then
+        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
+        assertEquals(expectedResponse, actualResponse);
+        verify(categoryService).findBoundCategories(dataSource, externalIds);
+    }
+
+    @Test
+    void findBoundCategories_whenExceptionThrown_shouldReturnFailureResponse() {
+        // Given
+        DataSource dataSource = DataSource.LASTFM;
+        List<Long> externalIds = List.of(1L, 2L);
+        String errorMessage = "Test error";
+        
+        when(categoryService.findBoundCategories(dataSource, externalIds))
+            .thenThrow(new RuntimeException(errorMessage));
+        ResponseEntity<ResponseWrapper<List<BoundEntityProjection>>> expectedResponse =
+            ResponseWrapper.failure(String.format("Failed to get bound categories: %s", errorMessage));
+
+        // When
+        ResponseEntity<ResponseWrapper<List<BoundEntityProjection>>> actualResponse =
+            categoryController.findBoundCategories(dataSource, externalIds);
+
+        // Then
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
+        assertEquals(expectedResponse, actualResponse);
+        verify(categoryService).findBoundCategories(dataSource, externalIds);
+    }
+
+    @Test
+    void bindToExisting_shouldReturnSuccessResponse() {
+        // Given
+        DataSource dataSource = DataSource.LASTFM;
+        Long externalId = 1L;
+        Long categoryId = 101L;
+        
+        BindToExistingRequestDTO request = BindToExistingRequestDTO.builder()
+            .categoryId(categoryId)
+            .build();
+        
+        TestBoundEntityProjectionImpl projection = new TestBoundEntityProjectionImpl(
+            externalId, dataSource, categoryId, "Rock"
+        );
+        ResponseEntity<ResponseWrapper<BoundEntityProjection>> expectedResponse = 
+            ResponseWrapper.success(projection);
+        
+        when(categoryService.bindToExisting(dataSource, externalId, request))
+            .thenReturn(projection);
+
+        // When
+        ResponseEntity<ResponseWrapper<BoundEntityProjection>> actualResponse =
+            categoryController.bindToExisting(dataSource, externalId, request);
+
+        // Then
+        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
+        assertEquals(expectedResponse, actualResponse);
+        verify(categoryService).bindToExisting(dataSource, externalId, request);
+    }
+
+    @Test
+    void bindToExisting_whenExceptionThrown_shouldReturnFailureResponse() {
+        // Given
+        DataSource dataSource = DataSource.LASTFM;
+        Long externalId = 1L;
+        Long categoryId = 101L;
+        String errorMessage = "Test error";
+        
+        BindToExistingRequestDTO request = BindToExistingRequestDTO.builder()
+            .categoryId(categoryId)
+            .build();
+        ResponseEntity<ResponseWrapper<BoundEntityProjection>> expectedResponse =
+            ResponseWrapper.failure(String.format("Failed to bind category to existing: %s", errorMessage));
+        
+        when(categoryService.bindToExisting(dataSource, externalId, request))
+            .thenThrow(new RuntimeException(errorMessage));
+
+        // When
+        ResponseEntity<ResponseWrapper<BoundEntityProjection>> actualResponse =
+            categoryController.bindToExisting(dataSource, externalId, request);
+
+        // Then
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
+        assertEquals(expectedResponse, actualResponse);
+        verify(categoryService).bindToExisting(dataSource, externalId, request);
+    }
+
+    @Test
+    void createAndBind_shouldReturnSuccessResponse() {
+        // Given
+        DataSource dataSource = DataSource.LASTFM;
+        Long externalId = 1L;
+        String categoryName = "New Genre";
+        
+        CategoryCreateAndBindRequestDTO request = CategoryCreateAndBindRequestDTO.builder()
+            .name(categoryName)
+            .build();
+        
+        TestBoundEntityProjectionImpl projection = new TestBoundEntityProjectionImpl(
+            externalId, dataSource, 101L, categoryName
+        );
+        ResponseEntity<ResponseWrapper<BoundEntityProjection>> expectedResponse = 
+            ResponseWrapper.success(projection);
+        
+        when(categoryService.createAndBind(dataSource, externalId, request))
+            .thenReturn(projection);
+
+        // When
+        ResponseEntity<ResponseWrapper<BoundEntityProjection>> actualResponse =
+            categoryController.createAndBind(dataSource, externalId, request);
+
+        // Then
+        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
+        assertEquals(expectedResponse, actualResponse);
+        verify(categoryService).createAndBind(dataSource, externalId, request);
+    }
+
+    @Test
+    void createAndBind_whenExceptionThrown_shouldReturnFailureResponse() {
+        // Given
+        DataSource dataSource = DataSource.LASTFM;
+        Long externalId = 1L;
+        String categoryName = "New Genre";
+        String errorMessage = "Test error";
+        
+        CategoryCreateAndBindRequestDTO request = CategoryCreateAndBindRequestDTO.builder()
+            .name(categoryName)
+            .build();
+        ResponseEntity<ResponseWrapper<BoundEntityProjection>> expectedResponse =
+            ResponseWrapper.failure(String.format("Failed to create and bind category: %s", errorMessage));
+        
+        when(categoryService.createAndBind(dataSource, externalId, request))
+            .thenThrow(new RuntimeException(errorMessage));
+
+        // When
+        ResponseEntity<ResponseWrapper<BoundEntityProjection>> actualResponse =
+            categoryController.createAndBind(dataSource, externalId, request);
+
+        // Then
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
+        assertEquals(expectedResponse, actualResponse);
+        verify(categoryService).createAndBind(dataSource, externalId, request);
+    }
+
+    @Test
+    void unbindCategory_shouldReturnSuccessResponse() {
+        // Given
+        DataSource dataSource = DataSource.LASTFM;
+        Long externalId = 1L;
+        
+        when(categoryService.unbindCategory(dataSource, externalId)).thenReturn(true);
+        ResponseEntity<ResponseWrapper<Boolean>> expectedResponse = ResponseWrapper.success(true);
+
+        // When
+        ResponseEntity<ResponseWrapper<Boolean>> actualResponse =
+            categoryController.unbindCategory(dataSource, externalId);
+
+        // Then
+        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
+        assertEquals(expectedResponse, actualResponse);
+        verify(categoryService).unbindCategory(dataSource, externalId);
+    }
+
+    @Test
+    void unbindCategory_whenExceptionThrown_shouldReturnFailureResponse() {
+        // Given
+        DataSource dataSource = DataSource.LASTFM;
+        Long externalId = 1L;
+        String errorMessage = "Test error";
+
+        when(categoryService.unbindCategory(dataSource, externalId))
+            .thenThrow(new RuntimeException(errorMessage));
+        ResponseEntity<ResponseWrapper<Boolean>> expectedResponse =
+            ResponseWrapper.failure(String.format("Failed to unbind category: %s", errorMessage));
+
+        // When
+        ResponseEntity<ResponseWrapper<Boolean>> actualResponse =
+            categoryController.unbindCategory(dataSource, externalId);
+
+        // Then
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
+        assertEquals(expectedResponse, actualResponse);
+        verify(categoryService).unbindCategory(dataSource, externalId);
     }
 }

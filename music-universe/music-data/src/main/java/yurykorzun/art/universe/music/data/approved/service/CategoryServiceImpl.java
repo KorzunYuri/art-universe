@@ -8,24 +8,34 @@ import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.music.data.approved.dto.CategoryHierarchyProjection;
 import yurykorzun.art.universe.music.data.approved.dto.LookupResultDTO;
 import yurykorzun.art.universe.music.data.approved.dto.CategorySaveRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.BindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.CategoryCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.approved.entity.Category;
+import yurykorzun.art.universe.music.data.approved.entity.CategoryBinding;
+import yurykorzun.art.universe.music.data.approved.entity.DataSource;
 import yurykorzun.art.universe.music.data.approved.repository.CategoryRepository;
+import yurykorzun.art.universe.music.data.approved.repository.CategoryBindingRepository;
 import yurykorzun.art.universe.music.data.approved.repository.DimensionRepository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final CategoryBindingRepository categoryBindingRepository;
     private final DimensionRepository dimensionRepository;
 
     public CategoryServiceImpl(
         CategoryRepository categoryRepository,
+        CategoryBindingRepository categoryBindingRepository,
         DimensionRepository dimensionRepository
     ) {
         this.categoryRepository = categoryRepository;
+        this.categoryBindingRepository = categoryBindingRepository;
         this.dimensionRepository = dimensionRepository;
     }
 
@@ -99,6 +109,94 @@ public class CategoryServiceImpl implements CategoryService {
             categoryRepository.deleteById(id);
             return true;
         }
+        return false;
+    }
+
+    @Override
+    public List<BoundEntityProjection> findBoundCategories(DataSource dataSource, List<Long> externalIds) {
+        return categoryBindingRepository.findBoundCategoriesForDataSource(dataSource, externalIds);
+    }
+
+    @Override
+    public BoundEntityProjection findCategory(DataSource dataSource, Long externalId) {
+        return categoryBindingRepository.findBoundCategoryForDataSource(dataSource, externalId);
+    }
+
+    @Override
+    @Transactional
+    public BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, BindToExistingRequestDTO request) {
+        // Validate that the category exists
+        Category category = categoryRepository.findById(request.getCategoryId())
+            .orElseThrow(() -> new EntityNotFoundException("Category not found with id: " + request.getCategoryId()));
+        
+        // Check if binding already exists
+        Optional<CategoryBinding> existingBinding = categoryBindingRepository.findByDataSourceAndExternalId(dataSource, externalId);
+        
+        if (existingBinding.isPresent()) {
+            // Update existing binding if needed
+            CategoryBinding binding = existingBinding.get();
+            if (!binding.getReferenceId().equals(category.getId())) {
+                binding.setReferenceId(category.getId());
+                categoryBindingRepository.save(binding);
+            }
+        } else {
+            // Create new binding
+            CategoryBinding binding = CategoryBinding.builder()
+                .dataSource(dataSource)
+                .externalId(externalId)
+                .referenceId(category.getId())
+                .build();
+            
+            categoryBindingRepository.save(binding);
+        }
+        
+        // Return the binding information
+        return categoryBindingRepository.findBoundCategoryForDataSource(dataSource, externalId);
+    }
+
+    @Override
+    @Transactional
+    public BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, CategoryCreateAndBindRequestDTO request) {
+        // Create new category
+        Category category = Category.builder()
+            .name(request.getName())
+            .build();
+        
+        Category savedCategory = categoryRepository.save(category);
+        
+        // Check if binding already exists
+        Optional<CategoryBinding> existingBinding = categoryBindingRepository.findByDataSourceAndExternalId(dataSource, externalId);
+        
+        if (existingBinding.isPresent()) {
+            // Update existing binding
+            CategoryBinding binding = existingBinding.get();
+            binding.setReferenceId(savedCategory.getId());
+            categoryBindingRepository.save(binding);
+        } else {
+            // Create new binding
+            CategoryBinding binding = CategoryBinding.builder()
+                .dataSource(dataSource)
+                .externalId(externalId)
+                .referenceId(savedCategory.getId())
+                .build();
+            
+            categoryBindingRepository.save(binding);
+        }
+        
+        // Return the binding information
+        return categoryBindingRepository.findBoundCategoryForDataSource(dataSource, externalId);
+    }
+
+    @Override
+    @Transactional
+    public boolean unbindCategory(DataSource dataSource, Long externalId) {
+        Optional<CategoryBinding> binding = categoryBindingRepository.findByDataSourceAndExternalId(dataSource, externalId);
+        
+        if (binding.isPresent()) {
+            categoryBindingRepository.delete(binding.get());
+            return true;
+        }
+        
         return false;
     }
 }
