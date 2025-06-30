@@ -6,7 +6,7 @@ import { ApprovalToggle } from "@/music-universe/sources/lastfm/components";
 // backend services
 import { LastfmConfig } from "@/music-universe/sources/lastfm/config/lastfmconfig.ts";
 import type { LastfmArtist } from "@/music-universe/sources/lastfm/types";
-import { bindArtist, unbindArtist, lookupArtists } from "@/music-universe/music-data/api/music-data-artists.ts";
+import { bindArtistToExisting, createAndBindArtist, unbindArtist, lookupArtists } from "@/music-universe/music-data/api/music-data-artists.ts";
 import { updateArtistApprovalStatus } from "@/music-universe/sources/lastfm/api/lastfm-artists.ts";
 // constants
 import { ApprovalStatus } from "@/music-universe/sources/lastfm/constants/approvalStatus";
@@ -37,59 +37,43 @@ export const LastfmArtistsTableRow = ({artist, onChange}: LastfmArtistTableRowPr
             });
     }
 
-    async function handleBindArtist(artistId: number, name: string) {
-        // First, approve the artist if not already approved
-        let currentArtist = {...artist};
-        let wasApproved = false;
-        
-        if (artist.approvalStatus !== ApprovalStatus.APPROVED) {
-            try {
-                console.log("Artist not approved, approving first...");
-                // Explicitly approve the artist on LastFM
-                const approvedArtist = await updateArtistApprovalStatus(artist.id, ApprovalStatus.APPROVED);
-                
-                // Update our local state with the approved artist
-                currentArtist = {
-                    ...approvedArtist,
-                    boundEntity: artist.boundEntity // Preserve existing binding if any
-                };
-                
-                // Update the parent component with the approved status
-                onChange(currentArtist);
-                wasApproved = true;
-                console.log("Artist approved successfully");
-            } catch (error) {
-                console.error("Failed to approve artist:", error);
-                // Continue with binding even if approval fails
-            }
+    async function handleBeforeBind(artistToApprove: LastfmArtist): Promise<boolean> {
+
+        if (artistToApprove.approvalStatus === ApprovalStatus.APPROVED) {
+            return true;
         }
-        
-        // Then bind the artist
-        console.log("Binding artist...");
-        const result = await bindArtist(artistId, name);
-        
-        // If binding was successful and we didn't just approve the artist,
-        // make sure the UI reflects the approved status
-        if (result && !wasApproved && artist.approvalStatus !== ApprovalStatus.APPROVED) {
-            console.log("Binding successful, updating UI to show approved status");
-            // We need to update the UI to show the artist as approved
-            // This is needed because the binding process requires approval,
-            // but we might not have updated the UI if the artist was approved
-            // as part of the binding process on the backend
-            setTimeout(() => {
-                onChange({
-                    ...artist,
-                    approvalStatus: ApprovalStatus.APPROVED,
-                    boundEntity: result
-                });
-            }, 0);
+
+        // Approve the artist if not already approved
+        try {
+            console.log("Artist not approved, approving first...");
+            const approvedArtist = await updateArtistApprovalStatus(artistToApprove.id, ApprovalStatus.APPROVED);
+
+            // Update the UI with approved artist
+            onChange({
+                ...approvedArtist,
+                boundEntity: artist.boundEntity
+            });
+
+            console.log("Artist approved successfully");
+            return true;
+        } catch (error) {
+            console.error("Failed to approve artist:", error);
+            return false;
         }
-        
-        return result;
+    }
+
+    async function handleBindToExisting(artistId: number, targetArtistId: number) {
+        console.log("Binding to existing artist...");
+        return await bindArtistToExisting(artistId, targetArtistId);
+    }
+
+    async function handleCreateAndBind(artistId: number, name: string) {
+        console.log("Creating and binding new artist...");
+        return await createAndBindArtist(artistId, name);
     }
 
     // Handle the result of binding from the EntityBinding component
-    const handleEntityChange = (updatedEntity: LastfmArtist) => {
+    const handleAfterBind = (updatedEntity: LastfmArtist) => {
         // If the entity was just bound (boundEntity changed from undefined to defined)
         if (updatedEntity.boundEntity && !artist.boundEntity) {
             console.log("Entity was bound, ensuring approval status is updated");
@@ -127,9 +111,11 @@ export const LastfmArtistsTableRow = ({artist, onChange}: LastfmArtistTableRowPr
             <div className={`${sharedTableStyles.cell}  ${artistTableStyles.binding}`}>
                 <EntityBinding
                     entity={artist}
-                    onBind={handleBindArtist}
+                    onBindToExisting={handleBindToExisting}
+                    onCreateAndBind={handleCreateAndBind}
                     onUnbind={unbindArtist}
-                    onChange={handleEntityChange}
+                    onBeforeBind={handleBeforeBind}
+                    onAfterBind={handleAfterBind}
                     lookupFunction={lookupArtists}
                     disabled={isApproving}
                 />

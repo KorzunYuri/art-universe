@@ -4,10 +4,12 @@ import type { BoundEntity, BoundEntityResponse } from '@/music-universe/shared/t
 import type { ApiResponse } from '@/music-universe/shared/types/api-response';
 import type { LookupEntity } from '@/music-universe/shared/components/AutocompleteInput';
 
-export interface ArtistBindingRequest {
+export interface ArtistBindToExistingRequest {
+    artistId: number;
+}
+
+export interface ArtistCreateAndBindRequest {
     name: string;
-    description?: string;
-    imageUrl?: string;
 }
 
 /**
@@ -74,19 +76,19 @@ export async function fetchBoundArtists(externalIds: number[]): Promise<BoundEnt
 }
 
 /**
- * Binds an artist from LastFM to an artist in music-data
+ * Binds an artist from LastFM to an existing artist in music-data
  * 
  * @param externalId The LastFM artist ID
- * @param artistName The name of the artist
+ * @param artistId The existing artist ID in music-data
  * @returns The bound artist if successful, null otherwise
  */
-export async function bindArtist(externalId: number, artistName: string): Promise<BoundEntity | null> {
+export async function bindArtistToExisting(externalId: number, artistId: number): Promise<BoundEntity | null> {
     try {
-        console.log(`🔗 Binding artist ${externalId} with name "${artistName}"`);
-        const request: ArtistBindingRequest = { name: artistName };
+        console.log(`🔗 Binding artist ${externalId} to existing artist ${artistId}`);
+        const request: ArtistBindToExistingRequest = { artistId };
         
         const response = await axios.post<ApiResponse<BoundEntityResponse>>(
-            `${MusicDataConfig.baseApiUrl}/artists/bind/LASTFM/${externalId}`,
+            `${MusicDataConfig.baseApiUrl}/artists/bind/existing/LASTFM/${externalId}`,
             request
         );
         
@@ -99,7 +101,38 @@ export async function bindArtist(externalId: number, artistName: string): Promis
         
         return null;
     } catch (error) {
-        console.error('❌ Error binding artist:', error);
+        console.error('❌ Error binding artist to existing:', error);
+        return null;
+    }
+}
+
+/**
+ * Creates a new artist and binds it to LastFM artist
+ * 
+ * @param externalId The LastFM artist ID
+ * @param artistName The name of the new artist
+ * @returns The bound artist if successful, null otherwise
+ */
+export async function createAndBindArtist(externalId: number, artistName: string): Promise<BoundEntity | null> {
+    try {
+        console.log(`🔗 Creating and binding new artist ${externalId} with name "${artistName}"`);
+        const request: ArtistCreateAndBindRequest = { name: artistName };
+        
+        const response = await axios.post<ApiResponse<BoundEntityResponse>>(
+            `${MusicDataConfig.baseApiUrl}/artists/bind/new/LASTFM/${externalId}`,
+            request
+        );
+        
+        if (response.data.success && response.data.data) {
+            return {
+                referenceId: response.data.data.referenceId,
+                referenceName: response.data.data.referenceName
+            };
+        }
+        
+        return null;
+    } catch (error) {
+        console.error('❌ Error creating and binding artist:', error);
         return null;
     }
 }
