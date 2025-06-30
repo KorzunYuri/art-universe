@@ -2,7 +2,7 @@ import axios from 'axios';
 import { MusicDataConfig } from '../config/musicdataconfig';
 import type { BoundEntity, BoundEntityResponse } from '@/music-universe/shared/types/bindable';
 import type { ApiResponse } from '@/music-universe/shared/types/api-response';
-import type { SearchableEntity } from '@/music-universe/shared/components/AutocompleteInput';
+import type { LookupEntity } from '@/music-universe/shared/components/AutocompleteInput';
 
 export interface ArtistBindingRequest {
     name: string;
@@ -17,16 +17,16 @@ export interface ArtistBindingRequest {
  * @param limit Maximum number of results (default: 10)
  * @returns List of matching artists
  */
-export async function searchArtists(query: string, limit: number = 10): Promise<ApiResponse<SearchableEntity[]>> {
+export async function lookupArtists(query: string, limit: number = 10): Promise<ApiResponse<LookupEntity[]>> {
     try {
-        const url = `${MusicDataConfig.baseApiUrl}/artists/search`;
-        const params = { query: query, limit: limit };
+        const url = `${MusicDataConfig.baseApiUrl}/artists/lookup`;
+        const params = { name: query, limit: limit };
 
-        const response = await axios.get<ApiResponse<SearchableEntity[]>>(url, { params });
+        const response = await axios.get<ApiResponse<LookupEntity[]>>(url, { params });
         
         return response.data;
     } catch (error) {
-        console.error('❌ Error searching artists:', error);
+        console.error('❌ Error looking up artists:', error);
         if (axios.isAxiosError(error)) {
             console.error('❌ Axios error details:', {
                 status: error.response?.status,
@@ -36,7 +36,7 @@ export async function searchArtists(query: string, limit: number = 10): Promise<
         }
         return {
             success: false,
-            message: 'Failed to search artists',
+            message: 'Failed to look up artists',
             data: []
         };
     }

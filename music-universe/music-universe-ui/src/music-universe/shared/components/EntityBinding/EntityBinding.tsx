@@ -1,7 +1,7 @@
 // hooks
 import { useState } from "react";
 // components
-import { AutocompleteInput, type SearchableEntity } from "@/music-universe/shared/components/AutocompleteInput";
+import { AutocompleteInput, type LookupEntity } from "@/music-universe/shared/components/AutocompleteInput";
 // types
 import type { Bindable, BoundEntity } from "@/music-universe/shared/types/bindable";
 import type { ApiResponse } from "@/music-universe/shared/types/api-response";
@@ -14,7 +14,7 @@ interface EntityBindingProps<T extends Bindable> {
     onBind: (entityId: number, name: string) => Promise<BoundEntity | null>;
     onUnbind: (entityId: number) => Promise<boolean>;
     onChange: (entity: T) => void;
-    searchFunction?: (query: string, limit?: number) => Promise<ApiResponse<SearchableEntity[]>>;
+    lookupFunction?: (query: string, limit?: number) => Promise<ApiResponse<LookupEntity[]>>;
     disabled?: boolean;
 }
 
@@ -23,7 +23,7 @@ export function EntityBinding<T extends Bindable>({
     onBind, 
     onUnbind, 
     onChange,
-    searchFunction,
+    lookupFunction,
     disabled = false 
 }: EntityBindingProps<T>) {
     const [entityName, setEntityName] = useState(entity.boundEntity?.referenceName || entity.name);
@@ -70,7 +70,7 @@ export function EntityBinding<T extends Bindable>({
         }
     }
 
-    const handleEntitySelect = (selectedEntity: SearchableEntity) => {
+    const handleEntitySelect = (selectedEntity: LookupEntity) => {
         console.log(`🔍 Selected existing entity: ${selectedEntity.name} (ID: ${selectedEntity.id})`);
         // Note: For now we still use the name for binding, but we have the ID available for future use
     };
@@ -92,12 +92,12 @@ export function EntityBinding<T extends Bindable>({
                 </div>
             ) : (
                 <div className={styles.wrapper}>
-                    {searchFunction ? (
+                    {lookupFunction ? (
                         <AutocompleteInput
                             value={entityName}
                             onChange={setEntityName}
                             onSelect={handleEntitySelect}
-                            searchFunction={searchFunction}
+                            lookupFunction={lookupFunction}
                             placeholder="Entity name"
                             disabled={disabled}
                             className={styles.bindingName}

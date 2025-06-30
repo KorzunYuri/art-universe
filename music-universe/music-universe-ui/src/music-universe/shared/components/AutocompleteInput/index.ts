@@ -1,1 +1,1 @@
-export { AutocompleteInput, type SearchableEntity } from './AutocompleteInput';
+export { AutocompleteInput, type LookupEntity } from './AutocompleteInput';

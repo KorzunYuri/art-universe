@@ -6,7 +6,7 @@ import type { ApiResponse } from '@/music-universe/shared/types/api-response';
 import commonStyles from '@/music-universe/shared/styles/common.module.scss';
 import styles from './AutocompleteInput.module.scss';
 
-export interface SearchableEntity {
+export interface LookupEntity {
     id: number;
     name: string;
 }
@@ -14,8 +14,8 @@ export interface SearchableEntity {
 export interface AutocompleteInputProps {
     value: string;
     onChange: (value: string) => void;
-    onSelect: (entity: SearchableEntity) => void;
-    searchFunction: (query: string, limit: number) => Promise<ApiResponse<SearchableEntity[]>>;
+    onSelect: (entity: LookupEntity) => void;
+    lookupFunction: (query: string, limit: number) => Promise<ApiResponse<LookupEntity[]>>;
     placeholder?: string;
     disabled?: boolean;
     className?: string;
@@ -25,12 +25,12 @@ export const AutocompleteInput = ({
     value,
     onChange,
     onSelect,
-    searchFunction,
+    lookupFunction,
     placeholder = "Search...",
     disabled = false,
     className = ''
 }: AutocompleteInputProps) => {
-    const [suggestions, setSuggestions] = useState<SearchableEntity[]>([]);
+    const [suggestions, setSuggestions] = useState<LookupEntity[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [loading, setLoading] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(-1);
@@ -39,7 +39,7 @@ export const AutocompleteInput = ({
     const inputRef = useRef<HTMLInputElement>(null);
     const suggestionsRef = useRef<HTMLDivElement>(null);
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-    const skipNextSearchRef = useRef(false);
+    const skipNextLookupRef = useRef(false);
 
     // Add/remove class to parent row when dropdown is active
     useEffect(() => {
@@ -76,9 +76,9 @@ export const AutocompleteInput = ({
         }
 
         // Skip search if this is a programmatic change (after selection)
-        if (skipNextSearchRef.current) {
+        if (skipNextLookupRef.current) {
             console.log('⏭️ Skipping search due to programmatic change');
-            skipNextSearchRef.current = false;
+            skipNextLookupRef.current = false;
             return;
         }
 
@@ -92,7 +92,7 @@ export const AutocompleteInput = ({
         timeoutRef.current = setTimeout(async () => {
             setLoading(true);
             try {
-                const response = await searchFunction(value.trim(), 10);
+                const response = await lookupFunction(value.trim(), 10);
                 if (response.success && response.data) {
                     setSuggestions(response.data);
                     setShowSuggestions(response.data.length > 0);
@@ -115,7 +115,7 @@ export const AutocompleteInput = ({
                 clearTimeout(timeoutRef.current);
             }
         };
-    }, [value, searchFunction, hasBeenFocused]);
+    }, [value, lookupFunction, hasBeenFocused]);
 
     // Handle input change
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -137,9 +137,9 @@ export const AutocompleteInput = ({
     };
 
     // Handle suggestion click
-    const handleSuggestionClick = (entity: SearchableEntity) => {
+    const handleSuggestionClick = (entity: LookupEntity) => {
         // Set flag to skip next search since this is a programmatic change
-        skipNextSearchRef.current = true;
+        skipNextLookupRef.current = true;
         // Update the input value with selected entity name
         onChange(entity.name);
         onSelect(entity);
