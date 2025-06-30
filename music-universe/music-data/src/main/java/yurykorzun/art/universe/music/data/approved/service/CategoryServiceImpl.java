@@ -6,10 +6,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.music.data.approved.dto.CategoryHierarchyProjection;
+import yurykorzun.art.universe.music.data.approved.dto.LookupResultDTO;
 import yurykorzun.art.universe.music.data.approved.dto.CategorySaveRequestDTO;
 import yurykorzun.art.universe.music.data.approved.entity.Category;
 import yurykorzun.art.universe.music.data.approved.repository.CategoryRepository;
 import yurykorzun.art.universe.music.data.approved.repository.DimensionRepository;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
@@ -28,6 +32,24 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public Page<CategoryHierarchyProjection> searchCategories(String search, Pageable pageable) {
         return categoryRepository.searchCategories(search, pageable);
+    }
+
+    @Override
+    public List<LookupResultDTO> lookupCategories(String name, Integer limit) {
+        if (name == null || name.trim().isEmpty()) {
+            return List.of();
+        }
+        
+        // Apply default limit if null
+        int actualLimit = limit != null ? limit : 20;
+        
+        return categoryRepository.findByNameContainingIgnoreCase(name.trim(), actualLimit)
+            .stream()
+            .map(category -> LookupResultDTO.builder()
+                .id(category.getId())
+                .name(category.getName())
+                .build())
+            .collect(Collectors.toList());
     }
 
     @Override

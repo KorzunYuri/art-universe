@@ -184,4 +184,16 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
             ch.id = :id
     """)
     Optional<CategoryHierarchyProjection> findByIdWithHierarchy(@Param("id") Long id);
+    
+    /**
+     * Find categories by name containing the search term (case insensitive)
+     * with sorting by name in ascending order and limiting results
+     * 
+     * @param searchTerm The search term to look for in category names
+     * @param limit Maximum number of results to return
+     * @return List of categories matching the search term, sorted by name
+     */
+    @Query(value = "SELECT c.* FROM category c WHERE LOWER(c.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) ORDER BY c.name ASC LIMIT :limit", 
+           nativeQuery = true)
+    List<Category> findByNameContainingIgnoreCase(@Param("searchTerm") String searchTerm, @Param("limit") int limit);
 }

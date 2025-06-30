@@ -7,8 +7,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.music.data.approved.dto.CategoryHierarchyProjection;
+import yurykorzun.art.universe.music.data.approved.dto.LookupResultDTO;
 import yurykorzun.art.universe.music.data.approved.dto.CategorySaveRequestDTO;
 import yurykorzun.art.universe.music.data.approved.service.CategoryService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/categories")
@@ -30,6 +33,21 @@ public class CategoryController {
             return ResponseWrapper.success(categories);
         } catch (Exception e) {
             return ResponseWrapper.failure(String.format("Failed to search categories: %s", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/lookup")
+    public ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> lookupCategories(
+        @RequestParam String name,
+        @RequestParam(required = false) Integer limit
+    ) {
+        try {
+            List<LookupResultDTO> categories = limit != null
+                ? categoryService.lookupCategories(name, limit)
+                : categoryService.lookupCategories(name);
+            return ResponseWrapper.success(categories);
+        } catch (Exception e) {
+            return ResponseWrapper.failure(String.format("Failed to lookup categories: %s", e.getMessage()));
         }
     }
 

@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.music.data.approved.dto.CategoryHierarchyProjection;
+import yurykorzun.art.universe.music.data.approved.dto.LookupResultDTO;
 import yurykorzun.art.universe.music.data.approved.dto.CategorySaveRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.TestCategoryHierarchyProjectionImpl;
 import yurykorzun.art.universe.music.data.approved.service.CategoryService;
@@ -79,6 +80,71 @@ class CategoryControllerTest {
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
         assertEquals(expectedResponse, actualResponse);
         verify(categoryService).searchCategories(search, pageable);
+    }
+
+    @Test
+    void lookupCategories_shouldReturnSuccessResponse() {
+        // Given
+        String name = "rock";
+        LookupResultDTO category1 = new LookupResultDTO(1L, "Rock");
+        LookupResultDTO category2 = new LookupResultDTO(2L, "Alternative Rock");
+        List<LookupResultDTO> expectedCategories = Arrays.asList(category1, category2);
+        
+        when(categoryService.lookupCategories(name)).thenReturn(expectedCategories);
+        ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> expectedResponse = 
+            ResponseWrapper.success(expectedCategories);
+
+        // When
+        ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> actualResponse = 
+            categoryController.lookupCategories(name, null);
+
+        // Then
+        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
+        assertEquals(expectedResponse, actualResponse);
+        verify(categoryService).lookupCategories(name);
+    }
+
+    @Test
+    void lookupCategories_withLimit_shouldReturnSuccessResponse() {
+        // Given
+        String name = "rock";
+        Integer limit = 5;
+        LookupResultDTO category1 = new LookupResultDTO(1L, "Rock");
+        LookupResultDTO category2 = new LookupResultDTO(2L, "Alternative Rock");
+        List<LookupResultDTO> expectedCategories = Arrays.asList(category1, category2);
+        
+        when(categoryService.lookupCategories(name, limit)).thenReturn(expectedCategories);
+        ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> expectedResponse = 
+            ResponseWrapper.success(expectedCategories);
+
+        // When
+        ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> actualResponse = 
+            categoryController.lookupCategories(name, limit);
+
+        // Then
+        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
+        assertEquals(expectedResponse, actualResponse);
+        verify(categoryService).lookupCategories(name, limit);
+    }
+
+    @Test
+    void lookupCategories_whenExceptionThrown_shouldReturnFailureResponse() {
+        // Given
+        String name = "rock";
+        String errorMessage = "Test error";
+        
+        when(categoryService.lookupCategories(name)).thenThrow(new RuntimeException(errorMessage));
+        ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> expectedResponse = 
+            ResponseWrapper.failure(String.format("Failed to lookup categories: %s", errorMessage));
+
+        // When
+        ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> actualResponse = 
+            categoryController.lookupCategories(name, null);
+
+        // Then
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
+        assertEquals(expectedResponse, actualResponse);
+        verify(categoryService).lookupCategories(name);
     }
 
     @Test
