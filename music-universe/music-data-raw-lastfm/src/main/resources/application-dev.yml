@@ -9,16 +9,16 @@ spring:
 #        show-sql: true
 #        generate_statistics: true
 
-logging:
-  level:
-    liquibase: DEBUG
-    org:
-      hibernate:
-        SQL: DEBUG
-        type:
-          descriptor:
-            sql:
-              BasicBinder: TRACE
+#logging:
+#  level:
+#    liquibase: DEBUG
+#    org:
+#      hibernate:
+#        SQL: DEBUG
+#        type:
+#          descriptor:
+#            sql:
+#              BasicBinder: TRACE
 
 scheduling:
   lastfm:
