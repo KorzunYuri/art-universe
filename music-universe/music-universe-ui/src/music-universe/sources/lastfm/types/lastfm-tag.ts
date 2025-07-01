@@ -1,4 +1,5 @@
 import type { Approvable } from "@/music-universe/shared/types/approvable";
+import type { Bindable, BoundEntity } from "@/music-universe/shared/types/bindable";
 
 export interface LastfmTagDto {
     id: number;
@@ -9,5 +10,6 @@ export interface LastfmTagDto {
     usageUsersCount: number | null;
 }
 
-export interface LastfmTag extends LastfmTagDto, Approvable {
+export interface LastfmTag extends LastfmTagDto, Approvable, Bindable {
+    boundEntity?: BoundEntity;
 }

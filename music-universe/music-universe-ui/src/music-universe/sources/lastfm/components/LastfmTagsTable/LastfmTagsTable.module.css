@@ -60,6 +60,10 @@
     flex: 4;
 }
 
+.bindingField {
+    flex: 8;
+}
+
 /* Table cell styles */
 .name {
     flex: 12;
@@ -70,6 +74,12 @@
     flex: 4;
     display: flex;
     justify-content: center;
+}
+
+.binding {
+    flex: 8;
+    display: flex;
+    text-align: left;
 }
 
 .count {

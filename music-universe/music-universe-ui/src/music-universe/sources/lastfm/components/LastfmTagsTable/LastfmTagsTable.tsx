@@ -10,6 +10,7 @@ import type { LastfmTag } from '@/music-universe/sources/lastfm/types/lastfm-tag
 import type { Page } from '@/music-universe/shared/types/page'
 // api
 import { fetchTags, type TagSearchParams } from '@/music-universe/sources/lastfm/api/lastfm-tags'
+import { fetchBoundCategories } from '@/music-universe/music-data/api/music-data-categories'
 // styles
 import commonStyles from '@/music-universe/shared/styles/common.module.scss'
 import styles from './LastfmTagsTable.module.css'
@@ -22,11 +23,12 @@ export const LastfmTagsTable = () => {
     // Data state
     const [data, setData] = useState<Page<LastfmTag> | null>(null)
     const [loading, setLoading] = useState(false)
+    const [loadingBoundTags, setLoadingBoundTags] = useState(false)
     const [page, setPage] = useState(0)
     const [sort, setSort] = useState('name,asc')
     const pageSize = 20
 
-    // Load tags with current search parameters
+    // Load tags with current search parameters and their bound entities
     const loadTags = async () => {
         setLoading(true)
         try {
@@ -38,8 +40,54 @@ export const LastfmTagsTable = () => {
                 sort
             }
             
+            console.log('🔄 Loading tags...')
             const result = await fetchTags(params)
-            setData(result)
+            
+            // Load bound tags immediately in the same function to avoid useEffect cycles
+            if (result && result.content.length > 0) {
+                console.log('🔄 Loading bound tags immediately after tags load')
+                setLoadingBoundTags(true)
+                try {
+                    // Extract all tag IDs
+                    const tagIds = result.content.map(tag => tag.id)
+                    console.log(`📋 Requesting bindings for ${tagIds.length} tags: ${tagIds.join(', ')}`)
+                    
+                    // Fetch bound tags from music-data API
+                    const boundTags = await fetchBoundCategories('LASTFM', tagIds)
+                    console.log(`✅ Bound tags loaded: ${boundTags.length} items`)
+
+                    // Update the tags with bound information
+                    const updatedContent = result.content.map(tag => {
+                        const boundTag = boundTags.find(bt => bt.externalId === tag.id)
+                        if (boundTag) {
+                            return {
+                                ...tag,
+                                boundEntity: {
+                                    referenceId: boundTag.referenceId,
+                                    referenceName: boundTag.referenceName
+                                }
+                            }
+                        }
+                        // explicitly set boundEntity for non-bound tags
+                        return {
+                            ...tag,
+                            boundEntity: undefined
+                        }
+                    })
+                    
+                    console.log('📝 Setting final data with bound tags')
+                    setData({ ...result, content: updatedContent })
+                } catch (error) {
+                    console.error('❌ Error loading bound tags:', error)
+                    // Set data without bound tags if binding fails
+                    setData(result)
+                } finally {
+                    setLoadingBoundTags(false)
+                }
+            } else {
+                // Set data even if no content
+                setData(result)
+            }
         } catch (error) {
             console.error('❌ Error loading tags:', error)
         } finally {
@@ -123,17 +171,21 @@ export const LastfmTagsTable = () => {
                             <option value="2,4">Approved & Auto-approved</option>
                         </select>
                     </div>
+                    
+                    <div className={`${styles.searchField} ${styles.bindingField}`}>
+                        {/* Binding field is not searchable */}
+                    </div>
                 </div>
                 
                 <div className={styles.searchActions}>
-                    <button type="submit" disabled={loading}>
+                    <button type="submit" disabled={loading || loadingBoundTags}>
                         Search
                     </button>
-                    <button type="button" onClick={handleRefresh} disabled={loading}>
+                    <button type="button" onClick={handleRefresh} disabled={loading || loadingBoundTags}>
                         Refresh
                     </button>
                     
-                    {loading && (
+                    {(loading || loadingBoundTags) && (
                         <div className={styles.loading}>Loading...</div>
                     )}
                 </div>
