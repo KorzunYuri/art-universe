@@ -20,24 +20,41 @@ React application providing management interface for Art Universe music data. Al
 - `PaginatedResource` - Custom hook for API data management
 
 ### Page Components
+
+#### Lastfm
+
 - `LastfmArtists` - Manage LastFM artists with binding to Music Data
 - `LastfmTracks` - Manage LastFM tracks with complex binding workflow
 - `LastfmTags` - Manage LastFM tags with approval controls
 - Navigation between different data sources and entity types
 
+#### Approved entities (belong to music-data module)
+
+- `Categories` - for associating artists, albums & tracks with categories
+- `Dimensions` - categories' dimensions. Any category belongs to one dimension only and inherits dimension from its parent.
+- `Artists` - future development
+- `Albums` - future development
+- `Tracks` - future development
+
 ## Data Flow Patterns
 
-### Artist Management
-1. Load paginated artists from LastFM API
-2. Load bound artists from Music Data API
-3. Display with approval controls and binding status
-4. Handle approval changes and binding operations
+### Retrieval flow
+1. Load paginated entities from LastFM API
+2. Load bound entities from Music Data API
+3. (future) load binding statuses from Music Quiz API
 
-### Track Management (Complex Binding)
-1. Ensure artist is approved in LastFM
-2. Ensure artist is bound to Music Data
-3. Approve track in LastFM if needed
-4. Bind track to Music Data with artist reference
+### Data source scoped approval flow (e.g. Lastfm)
+1. Update entity status in data source related API (e.g. Lastfm)
+
+### Music Data scoped approval flow
+1. Ensure containing entity is approved in data source related API (e.g. Lastfm)
+2. Ensure containing entity is bound to Music Data
+3. Ensure managed entity is approved in data source API
+4. Ensure managed entity is bound to Music Data
+
+### Music Quiz approval flow (future)
+1. repeat Music Data approval flow
+2. update entity approval status in Music Quiz
 
 ### Approval System
 - **PENDING** (1) - Default state from external APIs
@@ -52,9 +69,8 @@ React application providing management interface for Art Universe music data. Al
 - `updateArtistApprovalStatus`, `updateTrackApprovalStatus`, `updateTagApprovalStatus` - Approval management
 
 ### Music Data API Client
-- `fetchBoundArtists`, `fetchBoundTracks` - Get binding information
-- `bindArtist`, `bindTrack` - Create bindings to internal entities
-- `unbindArtist`, `unbindTrack` - Remove bindings
+
+Watch **[Music Data docs](../music-data/KNOWLEDGE_BASE.md#api-conventions)**
 
 ## Technology Stack
 
