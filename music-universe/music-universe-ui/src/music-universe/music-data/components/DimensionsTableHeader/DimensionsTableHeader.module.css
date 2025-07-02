@@ -10,3 +10,8 @@
     flex: 1;
     cursor: pointer;
 }
+
+.actions {
+    flex: 0 0 100px;
+    text-align: center;
+}

@@ -16,6 +16,11 @@ export interface DimensionSearchParams {
     sort?: string;
 }
 
+export interface DimensionSaveRequest {
+    id?: number;
+    name: string;
+}
+
 /**
  * Fetches dimensions from the Music Data API
  * 
@@ -72,5 +77,52 @@ export async function lookupDimensions(query: string, limit: number = 10): Promi
             message: 'Failed to look up dimensions',
             data: []
         };
+    }
+}
+
+/**
+ * Saves a dimension (create or update)
+ * 
+ * @param dimension Dimension data to save
+ * @returns The saved dimension if successful, null otherwise
+ */
+export async function saveDimension(dimension: DimensionSaveRequest): Promise<Dimension | null> {
+    try {
+        console.log(`💾 Saving dimension:`, dimension);
+        
+        const response = await axios.post<ApiResponse<Dimension>>(
+            `${MusicDataConfig.baseApiUrl}/dimensions`,
+            dimension
+        );
+        
+        if (response.data.success && response.data.data) {
+            return response.data.data;
+        }
+        
+        return null;
+    } catch (error) {
+        console.error('❌ Error saving dimension:', error);
+        return null;
+    }
+}
+
+/**
+ * Deletes a dimension
+ * 
+ * @param dimensionId The dimension ID to delete
+ * @returns True if successful, false otherwise
+ */
+export async function deleteDimension(dimensionId: number): Promise<boolean> {
+    try {
+        console.log(`🗑️ Deleting dimension ${dimensionId}`);
+        
+        const response = await axios.delete<ApiResponse<boolean>>(
+            `${MusicDataConfig.baseApiUrl}/dimensions/${dimensionId}`
+        );
+        
+        return response.data.success ? response.data.data : false;
+    } catch (error) {
+        console.error('❌ Error deleting dimension:', error);
+        return false;
     }
 }

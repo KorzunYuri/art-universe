@@ -2,12 +2,13 @@
 import { useEffect, useState } from 'react'
 // types
 import type { Page } from '@/music-universe/shared/types/page'
-import type { Dimension, DimensionSearchParams } from '@/music-universe/music-data/api/music-data-dimensions'
+import type { Dimension, DimensionSearchParams, DimensionSaveRequest } from '@/music-universe/music-data/api/music-data-dimensions'
 // api
-import { fetchDimensions } from '@/music-universe/music-data/api/music-data-dimensions'
+import { fetchDimensions, saveDimension } from '@/music-universe/music-data/api/music-data-dimensions'
 // components
 import { DimensionsTableHeader } from '../DimensionsTableHeader'
 import { DimensionsTableRow } from '../DimensionsTableRow'
+import { EditableText } from '@/music-universe/shared/components'
 // styles
 import commonStyles from '@/music-universe/shared/styles/common.module.scss'
 import styles from './DimensionsTable.module.css'
@@ -22,6 +23,10 @@ export const DimensionsTable = () => {
     const [page, setPage] = useState(0)
     const [sort, setSort] = useState('name,asc')
     const pageSize = 20
+
+    // New dimension state
+    const [newDimensionName, setNewDimensionName] = useState('')
+    const [isCreating, setIsCreating] = useState(false)
 
     // Load dimensions with current search parameters
     const loadDimensions = async () => {
@@ -88,6 +93,31 @@ export const DimensionsTable = () => {
         loadDimensions()
     }
 
+    // Handle creating new dimension
+    const handleCreateDimension = async () => {
+        if (!newDimensionName.trim()) return
+
+        setIsCreating(true)
+        try {
+            const saveRequest: DimensionSaveRequest = {
+                name: newDimensionName.trim()
+            }
+
+            const savedDimension = await saveDimension(saveRequest)
+            if (savedDimension) {
+                console.log('✅ New dimension created successfully')
+                setNewDimensionName('') // Clear input
+                loadDimensions() // Refresh table
+            } else {
+                console.error('❌ Failed to create dimension')
+            }
+        } catch (error) {
+            console.error('❌ Error creating dimension:', error)
+        } finally {
+            setIsCreating(false)
+        }
+    }
+
     return (
         <div className={styles.container}>
             <form onSubmit={handleSearch} className={styles.searchForm}>
@@ -116,6 +146,27 @@ export const DimensionsTable = () => {
                     )}
                 </div>
             </form>
+
+            {/* New dimension creation row */}
+            <div className={styles.createRow}>
+                <div className={styles.createField}>
+                    <EditableText
+                        value={newDimensionName}
+                        onChange={setNewDimensionName}
+                        placeholder="New dimension name..."
+                        disabled={isCreating}
+                    />
+                </div>
+                <div className={styles.createActions}>
+                    <button
+                        onClick={handleCreateDimension}
+                        disabled={isCreating || !newDimensionName.trim()}
+                        className={styles.addButton}
+                    >
+                        {isCreating ? "..." : "Add"}
+                    </button>
+                </div>
+            </div>
 
             {!loading && data && (
                 <>

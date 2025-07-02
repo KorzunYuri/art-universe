@@ -1,7 +1,11 @@
+// hooks
+import { useState, useEffect } from "react";
 // components
-import { ReadonlyAttr } from "@/music-universe/shared/components";
+import { EditableText } from "@/music-universe/shared/components";
 // types
-import type { Dimension } from "@/music-universe/music-data/api/music-data-dimensions";
+import type { Dimension, DimensionSaveRequest } from "@/music-universe/music-data/api/music-data-dimensions";
+// api
+import { saveDimension } from "@/music-universe/music-data/api/music-data-dimensions";
 // styles
 import sharedStyles from "@/music-universe/shared/components/EntityTable/EntityTableStyles.module.scss";
 import styles from "./DimensionsTableRow.module.css";
@@ -11,11 +15,89 @@ interface DimensionsTableRowProps {
     onChange: (dimension: Dimension) => void;
 }
 
-export const DimensionsTableRow = ({ dimension }: DimensionsTableRowProps) => {
+export const DimensionsTableRow = ({ dimension, onChange }: DimensionsTableRowProps) => {
+    const [editedName, setEditedName] = useState(dimension.name);
+    const [isDirty, setIsDirty] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+
+    console.log('🏗️ DimensionsTableRow render:', { 
+        dimensionId: dimension.id, 
+        dimensionName: dimension.name, 
+        editedName, 
+        isDirty, 
+        isSaving 
+    });
+
+    // Sync with external dimension changes
+    useEffect(() => {
+        console.log('🔄 DimensionsTableRow useEffect (dimension.name change):', { 
+            oldEditedName: editedName, 
+            newDimensionName: dimension.name 
+        });
+        setEditedName(dimension.name);
+        setIsDirty(false);
+    }, [dimension.name]);
+
+    const handleSave = async () => {
+        console.log('💾 DimensionsTableRow handleSave called:', { isDirty, editedName: editedName.trim() });
+        if (!isDirty || !editedName.trim()) return;
+
+        setIsSaving(true);
+        try {
+            const saveRequest: DimensionSaveRequest = {
+                id: dimension.id,
+                name: editedName.trim()
+            };
+
+            console.log('📤 DimensionsTableRow sending save request:', saveRequest);
+            const savedDimension = await saveDimension(saveRequest);
+            if (savedDimension) {
+                console.log('✅ Dimension saved successfully:', savedDimension);
+                onChange(savedDimension);
+            } else {
+                console.error('❌ Failed to save dimension');
+                // Reset to original value on failure
+                setEditedName(dimension.name);
+            }
+        } catch (error) {
+            console.error('❌ Error saving dimension:', error);
+            // Reset to original value on error
+            setEditedName(dimension.name);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleNameChange = (newName: string) => {
+        console.log('📝 DimensionsTableRow handleNameChange:', { newName, originalName: dimension.name });
+        setEditedName(newName);
+    };
+
+    const handleDirtyChange = (newIsDirty: boolean) => {
+        console.log('🔔 DimensionsTableRow handleDirtyChange:', { newIsDirty, currentIsDirty: isDirty });
+        setIsDirty(newIsDirty);
+    };
+
     return (
         <div className={sharedStyles.row}>
             <div className={`${sharedStyles.cell} ${styles.name}`}>
-                <ReadonlyAttr value={dimension.name} />
+                <EditableText
+                    value={dimension.name}
+                    onChange={handleNameChange}
+                    onDirtyChange={handleDirtyChange}
+                    placeholder="Dimension name"
+                    disabled={isSaving}
+                />
+            </div>
+            
+            <div className={`${sharedStyles.cell} ${styles.actions}`}>
+                <button
+                    onClick={handleSave}
+                    disabled={!isDirty || isSaving || !editedName.trim()}
+                    className={styles.saveButton}
+                >
+                    {isSaving ? "..." : "Save"}
+                </button>
             </div>
         </div>
     );

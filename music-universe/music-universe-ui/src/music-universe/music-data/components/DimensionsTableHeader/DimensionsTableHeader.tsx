@@ -30,6 +30,9 @@ export const DimensionsTableHeader = ({ sort, setSort }: Props) => {
             <div className={`${sharedStyles.cell} ${styles.name}`} onClick={() => toggleSort('name')}>
                 {renderLabel('Name', 'name')}
             </div>
+            <div className={`${sharedStyles.cell} ${styles.actions}`}>
+                Actions
+            </div>
         </div>
     )
 }
