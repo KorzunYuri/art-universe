@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.music.data.approved.dto.DimensionDto;
+import yurykorzun.art.universe.music.data.approved.dto.DimensionSaveRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.LookupResultDTO;
 import yurykorzun.art.universe.music.data.approved.service.DimensionService;
 
@@ -141,5 +142,107 @@ class DimensionControllerTest {
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
         assertEquals(expectedResponse, actualResponse);
         verify(dimensionService).lookupDimensions(name);
+    }
+
+    @Test
+    void saveDimension_shouldReturnSuccessResponse() {
+        // Given
+        DimensionSaveRequestDTO request = DimensionSaveRequestDTO.builder()
+            .name("New Genre")
+            .build();
+        
+        DimensionDto savedDimension = DimensionDto.builder()
+            .id(1L)
+            .name("New Genre")
+            .build();
+        
+        when(dimensionService.saveDimension(request)).thenReturn(savedDimension);
+        ResponseEntity<ResponseWrapper<DimensionDto>> expectedResponse = 
+            ResponseWrapper.success(savedDimension);
+
+        // When
+        ResponseEntity<ResponseWrapper<DimensionDto>> actualResponse = 
+            dimensionController.saveDimension(request);
+
+        // Then
+        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
+        assertEquals(expectedResponse, actualResponse);
+        verify(dimensionService).saveDimension(request);
+    }
+
+    @Test
+    void saveDimension_whenExceptionThrown_shouldReturnFailureResponse() {
+        // Given
+        DimensionSaveRequestDTO request = DimensionSaveRequestDTO.builder()
+            .name("New Genre")
+            .build();
+        String errorMessage = "Test error";
+        
+        when(dimensionService.saveDimension(request)).thenThrow(new RuntimeException(errorMessage));
+        ResponseEntity<ResponseWrapper<DimensionDto>> expectedResponse = 
+            ResponseWrapper.failure(String.format("Failed to save dimension: %s", errorMessage));
+
+        // When
+        ResponseEntity<ResponseWrapper<DimensionDto>> actualResponse = 
+            dimensionController.saveDimension(request);
+
+        // Then
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
+        assertEquals(expectedResponse, actualResponse);
+        verify(dimensionService).saveDimension(request);
+    }
+
+    @Test
+    void deleteDimension_whenFound_shouldReturnSuccessResponse() {
+        // Given
+        Long id = 1L;
+        
+        when(dimensionService.deleteDimension(id)).thenReturn(true);
+        ResponseEntity<ResponseWrapper<Boolean>> expectedResponse = ResponseWrapper.success(true);
+
+        // When
+        ResponseEntity<ResponseWrapper<Boolean>> actualResponse = dimensionController.deleteDimension(id);
+
+        // Then
+        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
+        assertEquals(expectedResponse, actualResponse);
+        verify(dimensionService).deleteDimension(id);
+    }
+
+    @Test
+    void deleteDimension_whenNotFound_shouldReturnFailureResponse() {
+        // Given
+        Long id = 1L;
+        
+        when(dimensionService.deleteDimension(id)).thenReturn(false);
+        ResponseEntity<ResponseWrapper<Boolean>> expectedResponse = 
+            ResponseWrapper.failure("Dimension not found with id: " + id);
+
+        // When
+        ResponseEntity<ResponseWrapper<Boolean>> actualResponse = dimensionController.deleteDimension(id);
+
+        // Then
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
+        assertEquals(expectedResponse, actualResponse);
+        verify(dimensionService).deleteDimension(id);
+    }
+
+    @Test
+    void deleteDimension_whenExceptionThrown_shouldReturnFailureResponse() {
+        // Given
+        Long id = 1L;
+        String errorMessage = "Test error";
+        
+        when(dimensionService.deleteDimension(id)).thenThrow(new RuntimeException(errorMessage));
+        ResponseEntity<ResponseWrapper<Boolean>> expectedResponse = 
+            ResponseWrapper.failure(String.format("Failed to delete dimension: %s", errorMessage));
+
+        // When
+        ResponseEntity<ResponseWrapper<Boolean>> actualResponse = dimensionController.deleteDimension(id);
+
+        // Then
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
+        assertEquals(expectedResponse, actualResponse);
+        verify(dimensionService).deleteDimension(id);
     }
 }

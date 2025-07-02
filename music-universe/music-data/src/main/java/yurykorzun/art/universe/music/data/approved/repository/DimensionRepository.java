@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import yurykorzun.art.universe.music.data.approved.entity.Dimension;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface DimensionRepository extends JpaRepository<Dimension, Long> {
@@ -37,4 +38,12 @@ public interface DimensionRepository extends JpaRepository<Dimension, Long> {
     @Query(value = "SELECT d.* FROM dimension d WHERE LOWER(d.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) ORDER BY d.name ASC LIMIT :limit", 
            nativeQuery = true)
     List<Dimension> findByNameContainingIgnoreCase(@Param("searchTerm") String searchTerm, @Param("limit") int limit);
+    
+    /**
+     * Find dimension by exact name (case insensitive)
+     * 
+     * @param name The dimension name to search for
+     * @return Optional containing the dimension if found
+     */
+    Optional<Dimension> findByNameIgnoreCase(String name);
 }

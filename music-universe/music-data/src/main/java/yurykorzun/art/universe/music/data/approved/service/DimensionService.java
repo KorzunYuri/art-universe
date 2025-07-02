@@ -3,6 +3,7 @@ package yurykorzun.art.universe.music.data.approved.service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import yurykorzun.art.universe.music.data.approved.dto.DimensionDto;
+import yurykorzun.art.universe.music.data.approved.dto.DimensionSaveRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.LookupResultDTO;
 
 import java.util.List;
@@ -37,4 +38,20 @@ public interface DimensionService {
     default List<LookupResultDTO> lookupDimensions(String name) {
         return lookupDimensions(name, 20);
     }
+    
+    /**
+     * Save a dimension (create new or update existing)
+     * 
+     * @param request The dimension save request DTO
+     * @return The saved dimension DTO
+     */
+    DimensionDto saveDimension(DimensionSaveRequestDTO request);
+    
+    /**
+     * Delete a dimension by ID
+     * 
+     * @param id The dimension ID to delete
+     * @return true if deleted, false if not found
+     */
+    boolean deleteDimension(Long id);
 }
