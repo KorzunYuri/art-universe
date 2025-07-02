@@ -88,7 +88,7 @@ export async function lookupDimensions(query: string, limit: number = 10): Promi
  */
 export async function saveDimension(dimension: DimensionSaveRequest): Promise<Dimension | null> {
     try {
-        console.log(`💾 Saving dimension:`, dimension);
+        console.log(`💾 Saving dimension:`, dimension.name);
         
         const response = await axios.post<ApiResponse<Dimension>>(
             `${MusicDataConfig.baseApiUrl}/dimensions`,

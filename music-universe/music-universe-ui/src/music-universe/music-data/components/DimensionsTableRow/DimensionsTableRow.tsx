@@ -20,20 +20,8 @@ export const DimensionsTableRow = ({ dimension, onChange }: DimensionsTableRowPr
     const [isDirty, setIsDirty] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
-    console.log('🏗️ DimensionsTableRow render:', { 
-        dimensionId: dimension.id, 
-        dimensionName: dimension.name, 
-        editedName, 
-        isDirty, 
-        isSaving 
-    });
-
     // Sync with external dimension changes
     useEffect(() => {
-        console.log('🔄 DimensionsTableRow useEffect (dimension.name change):', { 
-            oldEditedName: editedName, 
-            newDimensionName: dimension.name 
-        });
         setEditedName(dimension.name);
         setIsDirty(false);
     }, [dimension.name]);
@@ -49,10 +37,9 @@ export const DimensionsTableRow = ({ dimension, onChange }: DimensionsTableRowPr
                 name: editedName.trim()
             };
 
-            console.log('📤 DimensionsTableRow sending save request:', saveRequest);
             const savedDimension = await saveDimension(saveRequest);
             if (savedDimension) {
-                console.log('✅ Dimension saved successfully:', savedDimension);
+                console.log('✅ Dimension saved successfully:', savedDimension.id);
                 onChange(savedDimension);
             } else {
                 console.error('❌ Failed to save dimension');
@@ -69,12 +56,10 @@ export const DimensionsTableRow = ({ dimension, onChange }: DimensionsTableRowPr
     };
 
     const handleNameChange = (newName: string) => {
-        console.log('📝 DimensionsTableRow handleNameChange:', { newName, originalName: dimension.name });
         setEditedName(newName);
     };
 
     const handleDirtyChange = (newIsDirty: boolean) => {
-        console.log('🔔 DimensionsTableRow handleDirtyChange:', { newIsDirty, currentIsDirty: isDirty });
         setIsDirty(newIsDirty);
     };
 

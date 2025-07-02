@@ -50,7 +50,6 @@ export const DimensionsTable = () => {
 
     // Load dimensions when search parameters or pagination changes
     useEffect(() => {
-        console.log('🔄 Effect triggered: page or sort changed')
         loadDimensions()
     }, [page, sort])
 

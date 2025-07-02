@@ -25,11 +25,8 @@ export const EditableText = ({
     const [originalValue, setOriginalValue] = useState(value);
     const [isDirty, setIsDirty] = useState(false);
 
-    console.log('🔧 EditableText render:', { value, internalValue, originalValue, isDirty, placeholder });
-
     // Update internal value when external value changes
     useEffect(() => {
-        console.log('🔄 EditableText useEffect (value change):', { oldValue: internalValue, newValue: value });
         setInternalValue(value);
         setOriginalValue(value);
         setIsDirty(false);
@@ -37,7 +34,6 @@ export const EditableText = ({
 
     // Notify parent about dirty state changes
     useEffect(() => {
-        console.log('🔔 EditableText useEffect (dirty change):', { isDirty });
         if (onDirtyChange) {
             onDirtyChange(isDirty);
         }
@@ -46,13 +42,7 @@ export const EditableText = ({
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = e.target.value;
         const isValueDirty = newValue !== originalValue;
-        console.log('✏️ EditableText handleChange:', { 
-            newValue, 
-            originalValue, 
-            isValueDirty,
-            comparison: `"${newValue}" !== "${originalValue}"`
-        });
-        
+
         setInternalValue(newValue);
         setIsDirty(isValueDirty);
         onChange(newValue);
@@ -60,7 +50,6 @@ export const EditableText = ({
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Escape') {
-            console.log('⎋ EditableText Escape pressed - resetting to original value:', originalValue);
             // Reset to original value
             setInternalValue(originalValue);
             setIsDirty(false);

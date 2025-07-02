@@ -34,8 +34,8 @@ export interface CategoryCreateAndBindRequest {
 export interface CategorySaveRequest {
     id?: number;
     name: string;
-    dimensionId?: number;
-    parentId?: number;
+    dimensionId?: number | null;
+    parentId?: number | null;
 }
 
 /**
@@ -223,7 +223,7 @@ export async function unbindCategory(dataSource: string, externalId: number): Pr
  */
 export async function saveCategory(category: CategorySaveRequest): Promise<Category | null> {
     try {
-        console.log(`💾 Saving category:`, category);
+        console.log(`💾 Saving category:`, category.name);
         
         const response = await axios.post<ApiResponse<Category>>(
             `${MusicDataConfig.baseApiUrl}/categories`,
