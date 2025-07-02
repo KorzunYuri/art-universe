@@ -1,0 +1,8 @@
+.editableText {
+    width: 100%;
+    
+    &.dirty {
+        border-color: #ffa500;
+        background-color: #fff8dc;
+    }
+}
