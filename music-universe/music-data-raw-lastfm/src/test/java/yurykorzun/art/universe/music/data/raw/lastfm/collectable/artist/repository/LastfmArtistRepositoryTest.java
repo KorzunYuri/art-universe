@@ -60,7 +60,7 @@ class LastfmArtistRepositoryTest extends JpaOnlyTest {
     }
 
     @Test
-    void testArtistSave() {
+    void save_shouldSaveArtist_whenValidDataProvided() {
         final String name = "Queen";
         final String url = "https://www.last.fm/music/Queen";
         final String mbid = "cc197bad-dc9c-440d-a5b5-d52ba2e14234";
@@ -83,7 +83,7 @@ class LastfmArtistRepositoryTest extends JpaOnlyTest {
     }
 
     @Test
-    void testArtistSaveAll() {
+    void saveAll_shouldSaveAllArtists_whenValidDataProvided() {
         LastfmArtist artist1 = consistencyHelper.createAndSaveArtist(builder -> builder.name("Queen"));
         LastfmArtist artist2 = consistencyHelper.createAndSaveArtist(builder -> builder.name("Deep purple"));
 

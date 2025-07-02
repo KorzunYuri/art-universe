@@ -14,7 +14,7 @@ public class ArtistSearchDtoMappingTest {
     private ObjectMapper mapper = new ObjectMapper();
 
     @Test
-    void givenArtistSearchResponse_whenParsed_thenParsedCorrectly () throws IOException {
+    void parse_shouldParseCorrectly_whenArtistSearchResponseProvided() throws IOException {
 
         String responseJsonString = LastfmApiClientResourceUtil.getApiClientResponse("artist.search");
         ArtistSearchDtoRoot dtoRoot = mapper.readValue(responseJsonString, ArtistSearchDtoRoot.class);

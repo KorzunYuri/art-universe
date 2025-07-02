@@ -55,7 +55,7 @@ class LastfmTagTopTagResponseProcessorTest extends JpaOnlyTest {
     private static final int ATTRIBUTES_NUMBER = SCD2_ATTRIBUTES_NUMBER + SNAPSHOT_ATTRIBUTES_NUMBER;
 
     @Test
-    void givenTagTopTagsResponse_whenProcessed_newRecordsAreCreated() throws IOException {
+    void process_shouldCreateNewRecords_whenTagTopTagsResponseProvided() throws IOException {
 
         // given
         String dtoResponseString = LastfmApiClientResourceUtil.getApiClientResponse("tag.getTopTags");
@@ -94,7 +94,7 @@ class LastfmTagTopTagResponseProcessorTest extends JpaOnlyTest {
     }
 
     @Test
-    void givenTagTopTagsResponse_whenProcessedWithExistingTags_thenAllTagsAreSaved() throws IOException {
+    void tagTopTagsResponse_shouldSaveAllTags_whenProcessedWithExistingTags() throws IOException {
 
         // given
         String dtoResponseString = LastfmApiClientResourceUtil.getApiClientResponse("tag.getTopTags");
@@ -137,7 +137,7 @@ class LastfmTagTopTagResponseProcessorTest extends JpaOnlyTest {
     }
 
     @Test
-    void givenEmptyTagTopTagsResponse_whenProcessed_thenNoRecordsAreCreated() throws IOException {
+    void emptyTagTopTagsResponse_shouldNotCreateNewRecords_whenProcessed() throws IOException {
 
         // given
         String emptyResponseString = """

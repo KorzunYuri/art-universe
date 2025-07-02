@@ -15,7 +15,7 @@ public class ArtistGetSimilarDtoMappingTest {
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
-    void givenArtistGetSimilarDto_whenParsed_thenParsedCorrectly() throws IOException {
+    void parse_shouldParseCorrectly_whenArtistGetSimilarDtoProvided() throws IOException {
         String responseJsonString = LastfmApiClientResourceUtil.getApiClientResponse("artist.getSimilar");
         ArtistGetSimilarDtoRoot dtoRoot = mapper.readValue(responseJsonString, ArtistGetSimilarDtoRoot.class);
 

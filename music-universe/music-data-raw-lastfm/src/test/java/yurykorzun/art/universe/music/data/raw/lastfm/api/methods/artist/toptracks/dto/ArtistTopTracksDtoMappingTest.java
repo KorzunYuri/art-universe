@@ -14,7 +14,7 @@ class ArtistTopTracksDtoMappingTest {
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
-    void givenArtistTopTracksResponse_whenParsed_thenParsedCorrectly() throws IOException {
+    void parse_shouldParseCorrectly_whenArtistTopTracksResponseProvided() throws IOException {
 
         String responseJsonString = LastfmApiClientResourceUtil.getApiClientResponse("artist.getTopTracks");
         ArtistTopTracksDtoRoot dtoRoot = mapper.readValue(responseJsonString, ArtistTopTracksDtoRoot.class);

@@ -26,7 +26,7 @@ class LastfmApiCallRepositoryTest extends JpaOnlyTest {
     private static LastfmApiCallType DEFAULT_API_CALL_TYPE = LastfmApiCallType.TAG_TOP_TAGS;
 
     @Test
-    void testApiCallCreation() {
+    void save_shouldCreateApiCall_whenValidDataProvided() {
         LastfmApiCall created = LastfmApiCall.builder()
                 .dataSnapshotId(consistencyHelper.createAndSaveDataSnapshot(DEFAULT_API_CALL_TYPE).getId())
                 .type(DEFAULT_API_CALL_TYPE)
@@ -44,7 +44,7 @@ class LastfmApiCallRepositoryTest extends JpaOnlyTest {
     }
 
     @Test
-    void testApiCallStatusUpdate() {
+    void setStatus_shouldUpdateStatus_whenValidTransitionProvided() {
         LastfmApiCall created = LastfmApiCall.builder()
                 .dataSnapshotId(consistencyHelper.createAndSaveDataSnapshot(DEFAULT_API_CALL_TYPE).getId())
                 .type(DEFAULT_API_CALL_TYPE)

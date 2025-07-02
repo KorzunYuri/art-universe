@@ -31,7 +31,7 @@ class LastfmApiResponseRepositoryTest extends JpaOnlyTest {
     }
 
     @Test
-    void testApiResponseCreation() {
+    void save_shouldCreateApiResponse_whenValidDataProvided() {
         LastfmApiCall dummyApiCall = consistencyHelper.createAndSaveApiCall();
         LastfmApiResponse created = responseForApiCall(dummyApiCall);
         LastfmApiResponse saved = apiResponseRepository.save(created);
@@ -42,7 +42,7 @@ class LastfmApiResponseRepositoryTest extends JpaOnlyTest {
     }
 
     @Test
-    void testApiResponseStatusUpdate() {
+    void setStatus_shouldUpdateStatus_whenValidTransitionProvided() {
 
         LastfmApiCall dummyApiCall = consistencyHelper.createAndSaveApiCall();
         LastfmApiResponse created = responseForApiCall(dummyApiCall);
@@ -58,7 +58,7 @@ class LastfmApiResponseRepositoryTest extends JpaOnlyTest {
     }
 
     @Test
-    void testApiResponseDuplicationPrevention() {
+    void save_shouldPreventDuplication_whenSameApiCallProvided() {
         LastfmApiCall dummyApiCall = consistencyHelper.createAndSaveApiCall();
         LastfmApiResponse created = responseForApiCall(dummyApiCall);
         LastfmApiResponse saved = apiResponseRepository.save(created);

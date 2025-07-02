@@ -48,7 +48,7 @@ class LastfmEntityRelationServiceImplTest extends JpaOnlyTest {
     }
 
     @Test
-    void givenNewEntityRelation_whenPersistedTwice_thenNotDuplicated() {
+    void newEntityRelation_shouldNotBeDuplicated_whenPersistedTwice() {
         //  given new entity relation
         BaseLastfmEntity scopeEntity = consistencyHelper.createAndSaveDummyEntity();
         BaseLastfmEntity entity = consistencyHelper.createAndSaveDummyEntity();
@@ -76,7 +76,7 @@ class LastfmEntityRelationServiceImplTest extends JpaOnlyTest {
     }
 
     @Test
-    void givenBatchOfEntityRelations_whenPersistedTwice_thenNotDuplicated() {
+    void batchOfEntityRelations_shouldNotBeDuplicated_whenPersistedTwice() {
         // given N different relations
         List<LastfmEntityRelation> relations = new ArrayList<>();
         for (int i = 0; i < 3; i++) {

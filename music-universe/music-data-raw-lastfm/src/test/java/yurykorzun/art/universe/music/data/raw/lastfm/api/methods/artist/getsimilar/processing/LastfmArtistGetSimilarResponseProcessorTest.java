@@ -56,7 +56,7 @@ class LastfmArtistGetSimilarResponseProcessorTest extends JpaOnlyTest {
     private static final int ATTRIBUTES_NUMBER = SCD2_ATTRIBUTES_NUMBER + SNAPSHOT_ATTRIBUTES_NUMBER;
 
     @Test
-    void givenArtistGetSimilarResponse_whenProcessed_newRecordsAreCreated() throws IOException {
+    void process_shouldCreateNewRecords_whenArtistGetSimilarResponseProvided() throws IOException {
 
         // given
         String dtoResponseString = LastfmApiClientResourceUtil.getApiClientResponse("artist.getSimilar");

@@ -151,7 +151,7 @@ public class LastfmArtistApiCallGeneratorTest extends JpaOnlyTest {
 
     @ParameterizedTest(name = "[{index}]getApiCallType({1})")
     @MethodSource("parametersProvider")
-    void testGetApiCallType_returnsExpectedType(
+    void getApiCallType_shouldReturnExpectedType(
         Class<? extends LastfmArtistApiCallsGenerator>  generatorClass,
         LastfmApiCallType                               expectedApiCallType,
         List<ExpectedAttributeSnapshotInfo>             ignoredAttrSnapshots
@@ -165,7 +165,7 @@ public class LastfmArtistApiCallGeneratorTest extends JpaOnlyTest {
 
     @ParameterizedTest(name = "[{index}] createApiCalls for {0}")
     @MethodSource("parametersProvider")
-    void givenArtist_whenCreateApiCallsCalled_createsSnapshotsAndApiCalls(
+    void createApiCalls_shouldCreateSnapshotsAndApiCalls_whenArtistProvided(
         Class<? extends LastfmArtistApiCallsGenerator>  generatorClass,
         LastfmApiCallType                               ignoredApiCallType,
         List<ExpectedAttributeSnapshotInfo>             expectedAttrSnapshots

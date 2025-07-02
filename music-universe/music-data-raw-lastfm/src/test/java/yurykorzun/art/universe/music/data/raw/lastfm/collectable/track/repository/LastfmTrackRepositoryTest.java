@@ -107,7 +107,7 @@ class LastfmTrackRepositoryTest extends JpaOnlyTest {
     }
 
     @Test
-    void testTrackSave() {
+    void save_shouldSaveTrack_whenValidDataProvided() {
         final String name = "Smells Like Teen Spirit";
         final int duration = 301;
         final String url = "https://www.last.fm/music/Nirvana/_/Smells+Like+Teen+Spirit";
@@ -133,7 +133,7 @@ class LastfmTrackRepositoryTest extends JpaOnlyTest {
     }
 
     @Test
-    void testTrackSaveAll() {
+    void saveAll_shouldSaveAllTracks_whenValidDataProvided() {
         LastfmTrack track1 = createTrack();
         LastfmTrack track2 = createTrack();
 
@@ -154,7 +154,7 @@ class LastfmTrackRepositoryTest extends JpaOnlyTest {
     }
 
     @Test
-    void testTrackFindAllByUrlIn() {
+    void findAllByUrlIn_shouldFindAllTracks_whenUrlsProvided() {
         final int totalTracks = 5;
         final int tracksToRetrieve = 2;
         List<String> urls = IntStream.range(0, totalTracks).mapToObj(i -> UUID.randomUUID().toString()).toList();

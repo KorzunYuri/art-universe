@@ -59,7 +59,7 @@ class LastfmArtistSearchResponseProcessorTest extends JpaOnlyTest {
     private static final int ATTRIBUTES_NUMBER = SCD2_ATTRIBUTES_NUMBER + SNAPSHOT_ATTRIBUTES_NUMBER;
 
     @Test
-    void givenArtistSearchApiResponseAndEmptyDb_whenProcessed_thenNewEntitiesCreated() throws IOException {
+    void process_shouldCreateNewEntities_whenArtistSearchApiResponseAndEmptyDatabaseProvided() throws IOException {
         String responseBody = LastfmApiClientResourceUtil.getApiClientResponse("artist.search");
         TestCase testCase = createTestCase("PUP", responseBody);
 

@@ -71,14 +71,14 @@ class LastfmTagTopArtistsApiCallGeneratorTest extends JpaOnlyTest {
     }
 
     @Test
-    void testGetApiCallType_returnsTagTopArtists() {
+    void getApiCallType_shouldReturnTagTopArtists() {
         LastfmApiCallType type = generator.getApiCallType();
         assertNotNull(type, "Generator api call type must not be null");
         assertEquals(LastfmApiCallType.TAG_TOP_ARTISTS, type, "Generator api call type must be TAG_TOP_ARTISTS");
     }
 
     @Test
-    void givenUnexpiredTags_whenCreateApiCallsCalled_createsSnapshotsAndTagTopArtistsApiCalls() {
+    void createApiCalls_shouldCreateSnapshotsAndTagTopArtistsApiCalls_whenUnexpiredTagsProvided() {
         LastfmApiCall apiCall = createTagSourceApiCall(true);
         List<LastfmTag> unprocessedTags = IntStream.range(0, UNPROCESSED_TAGS_COUNT)
             .mapToObj(i -> {

@@ -14,7 +14,7 @@ public class TagTopTracksDtoMappingTest {
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
-    public void givenTagTopTagsResponse_whenParsed_thenParsedCorrectly() throws IOException {
+    public void parse_shouldParseCorrectly_whenTagTopTagsResponseProvided() throws IOException {
         String responseJsonString = LastfmApiClientResourceUtil.getApiClientResponse("tag.getTopTracks");
 
 

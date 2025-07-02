@@ -15,7 +15,7 @@ public class TagTopArtistsDtoMappingTest {
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
-    public void givenTagTopTagsResponse_whenParsed_thenParsedCorrectly() throws IOException {
+    void parse_shouldParseCorrectly_whenTagTopTagsResponseProvided() throws IOException {
         String responseJsonString = LastfmApiClientResourceUtil.getApiClientResponse("tag.getTopArtists");
         TagTopArtistsDtoRoot root = mapper.readValue(responseJsonString, TagTopArtistsDtoRoot.class);
 

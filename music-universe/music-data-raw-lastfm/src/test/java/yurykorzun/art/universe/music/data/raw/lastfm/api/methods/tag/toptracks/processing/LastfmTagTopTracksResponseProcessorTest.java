@@ -65,7 +65,7 @@ class LastfmTagTopTracksResponseProcessorTest extends JpaOnlyTest {
     private static final int ARTIST_ATTRS_NUMBER = ARTIST_SCD2_ATTRS_NUMBER + ARTIST_SNAPSHOT_ATTRS_NUMBER;
 
     @Test
-    void givenEmptyDatabase_whenProcessedTagTopTracksResponse_newRecordsAreCreated() throws Exception {
+    void process_shouldCreateNewRecords_whenTagTopTracksResponseAndEmptyDatabaseProvided() throws Exception {
 
         TestCase testCase = testCaseFromResponse(TEST_DTO_ROOT);
 

@@ -23,7 +23,7 @@ class LastfmEntityRelationRepositoryTest extends JpaOnlyTest {
     private DbConsistencyHelper consistencyHelper;
 
     @Test
-    void givenNewEntityRelation_whenPersistedTwice_thenNotDuplicated() {
+    void newEntityRelation_shouldNotBeDuplicated_whenPersistedTwice() {
         //  given new entity relation
         BaseLastfmEntity scopeEntity = consistencyHelper.createAndSaveDummyEntity();
         BaseLastfmEntity entity = consistencyHelper.createAndSaveDummyEntity();

@@ -58,7 +58,7 @@ class LastfmApiResponseServiceImplTest {
     }
 
     @Test
-    void testApiCallCreation() {
+    void create_shouldCreateApiResponse_whenValidDataProvided() {
         // given
         long id = 1L;
         LastfmApiResponseCreateRequest request = validCreateResponseRequestSupplier().get();
@@ -74,7 +74,7 @@ class LastfmApiResponseServiceImplTest {
     }
 
     @Test
-    void testApiCallStatusUpdate() {
+    void updateStatus_shouldUpdateStatus_whenValidTransitionProvided() {
         // given
         long id = 1L;
         LastfmApiResponse apiResponse = getMockResponse(validCreateResponseRequestSupplier().get(), id);

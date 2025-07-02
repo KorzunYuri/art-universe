@@ -28,7 +28,7 @@ class LastfmDataSnapshotRepositoryTest extends JpaOnlyTest {
     private DbConsistencyHelper consistencyHelper;
 
     @Test
-    void givenNewDataSnapshot_whenPersisted_thenSavesCorrectValues() {
+    void save_shouldSaveCorrectValues_whenNewDataSnapshotPersisted() {
         //  given
         final LocalDate dataDate = LocalDate.now();
         LastfmDataSnapshot snapshot = new LastfmDataSnapshot(LastfmApiCallType.TAG_TOP_TAGS, dataDate);
@@ -47,7 +47,7 @@ class LastfmDataSnapshotRepositoryTest extends JpaOnlyTest {
     }
 
     @Test
-    void givenExistingDataSnapshotForType_whenRequested_thenRetrieved() {
+    void findByApiCallType_shouldRetrieveSnapshot_whenExistingDataSnapshotForTypeRequested() {
         //  given
         final LocalDate dataDate = LocalDate.now();
         LastfmApiCallType apiCallType = LastfmApiCallType.TAG_TOP_TAGS;
@@ -62,7 +62,7 @@ class LastfmDataSnapshotRepositoryTest extends JpaOnlyTest {
     }
 
     @Test
-    void givenExistingDataSnapshotForEntity_whenRequested_thenRetrieved() {
+    void findByApiCallTypeAndEntityTypeAndEntityId_shouldRetrieveSnapshot_whenExistingDataSnapshotForEntityRequested() {
         //  given
         final LocalDate dataDate = LocalDate.now();
         LastfmApiCallType apiCallType = LastfmApiCallType.TAG_TOP_ARTISTS;
@@ -79,7 +79,7 @@ class LastfmDataSnapshotRepositoryTest extends JpaOnlyTest {
     }
 
     @Test
-    void givenPersistedDataSnapshot_whenIncrementCreated_thenIncrementsCorrectly() {
+    void incrementCreated_shouldIncrementCorrectly_whenPersistedDataSnapshotUpdated() {
         //  given
         final LocalDate dataDate = LocalDate.now();
         LastfmDataSnapshot snapshot = new LastfmDataSnapshot(LastfmApiCallType.TAG_TOP_TAGS, dataDate);
@@ -98,7 +98,7 @@ class LastfmDataSnapshotRepositoryTest extends JpaOnlyTest {
     }
 
     @Test
-    void givenPersistedDataSnapshot_whenIncrementCompleted_thenIncrementsCorrectly() {
+    void incrementCompleted_shouldIncrementCorrectly_whenPersistedDataSnapshotUpdated() {
         //  given
         final LocalDate dataDate = LocalDate.now();
         LastfmDataSnapshot snapshot = new LastfmDataSnapshot(LastfmApiCallType.TAG_TOP_TAGS, dataDate);
@@ -117,7 +117,7 @@ class LastfmDataSnapshotRepositoryTest extends JpaOnlyTest {
     }
 
     @Test
-    void givenPersistedDataSnapshot_whenIncrementParsed_thenIncrementsCorrectly() {
+    void incrementParsed_shouldIncrementCorrectly_whenPersistedDataSnapshotUpdated() {
         // given
         final LocalDate dataDate = LocalDate.now();
         LastfmDataSnapshot snapshot = new LastfmDataSnapshot(LastfmApiCallType.TAG_TOP_TAGS, dataDate);
@@ -137,7 +137,7 @@ class LastfmDataSnapshotRepositoryTest extends JpaOnlyTest {
 
 
     @Test
-    void givenPersistedDataSnapshot_whenIncrementCreatedByNumber_thenIncrementsCorrectly() {
+    void incrementCreatedByNumber_shouldIncrementCorrectly_whenPersistedDataSnapshotUpdated() {
         //  given
         final LocalDate dataDate = LocalDate.now();
         LastfmDataSnapshot snapshot = new LastfmDataSnapshot(LastfmApiCallType.TAG_TOP_TAGS, dataDate);
@@ -156,7 +156,7 @@ class LastfmDataSnapshotRepositoryTest extends JpaOnlyTest {
     }
 
     @Test
-    void givenPersistedDataSnapshot_whenIncrementCompletedByNumber_thenIncrementsCorrectly() {
+    void incrementCompletedByNumber_shouldIncrementCorrectly_whenPersistedDataSnapshotUpdated() {
         //  given
         final LocalDate dataDate = LocalDate.now();
         LastfmDataSnapshot snapshot = new LastfmDataSnapshot(LastfmApiCallType.TAG_TOP_TAGS, dataDate);
@@ -175,7 +175,7 @@ class LastfmDataSnapshotRepositoryTest extends JpaOnlyTest {
     }
 
     @Test
-    void givenPersistedDataSnapshot_whenIncrementParsedByNumber_thenIncrementsCorrectly() {
+    void incrementParsedByNumber_shouldIncrementCorrectly_whenPersistedDataSnapshotUpdated() {
         // given
         final LocalDate dataDate = LocalDate.now();
         LastfmDataSnapshot snapshot = new LastfmDataSnapshot(LastfmApiCallType.TAG_TOP_TAGS, dataDate);

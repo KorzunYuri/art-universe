@@ -60,7 +60,7 @@ class LastfmArtistTopTagsResponseProcessorTest extends JpaOnlyTest {
     private static final int ATTRIBUTES_NUMBER = SCD2_ATTRIBUTES_NUMBER + SNAPSHOT_ATTRIBUTES_NUMBER;
 
     @Test
-    void givenArtistTopTagsResponse_whenProcessed_newRecordsAreCreated() throws IOException {
+    void process_shouldCreateNewRecords_whenArtistTopTagsResponseProvided() throws IOException {
 
         // given
         String dtoResponseString = LastfmApiClientResourceUtil.getApiClientResponse("artist.getTopTags");

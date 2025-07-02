@@ -54,7 +54,7 @@ public class LastfmAttributeHistoryServiceImplTest extends JpaOnlyTest {
     private static final LastfmAttribute SNAPSHOT_ATTRIBUTE = LastfmAttribute.RANK;
 
     @Test
-    void givenEmptuDb_whenUpsertedAttrValue_thenRecordIsSaved() {
+    void emptyDb_shouldSaveRecord_whenAttributeValueUpserted() {
         LastfmAttributeHistoryRecord candidate = initAttrValueBuilder(
                 consistencyHelper.createAndSaveDummyEntity(),
                 consistencyHelper.createAndSaveDummyEntity(),
@@ -69,7 +69,7 @@ public class LastfmAttributeHistoryServiceImplTest extends JpaOnlyTest {
     }
 
     @Test
-    void givenSCD2AttrValue_whenUpsertedTwice_thenNotDuplicated() {
+    void scd2AttributeValue_shouldNotBeDuplicated_whenUpsertedTwice() {
         LastfmAttributeHistoryRecord candidate = initAttrValueBuilder(
                 consistencyHelper.createAndSaveDummyEntity(),
                 consistencyHelper.createAndSaveDummyEntity(),
@@ -84,7 +84,7 @@ public class LastfmAttributeHistoryServiceImplTest extends JpaOnlyTest {
     }
 
     @Test
-    void givenSnapshotAttrValue_whenUpsertedWithNewValueButSameSnapshotId_thenNotDuplicated() {
+    void snapshotAttributeValue_shouldNotBeDuplicated_whenUpsertedWithNewValueButSameSnapshotId() {
         BaseLastfmEntity entity = consistencyHelper.createAndSaveDummyEntity();
         BaseLastfmEntity scopeEntity = consistencyHelper.createAndSaveDummyEntity();
         LastfmApiCall apiCall = consistencyHelper.createAndSaveApiCall();
@@ -105,7 +105,7 @@ public class LastfmAttributeHistoryServiceImplTest extends JpaOnlyTest {
     }
 
     @Test
-    void givenSnapshotAttrValue_whenUpsertedTwiceWithTheDifferentSnapshotId_thenExpireOldAndSaveNew() {
+    void snapshotAttributeValue_shouldExpireOldAndSaveNew_whenUpsertedTwiceWithDifferentSnapshotId() {
         BaseLastfmEntity entity = consistencyHelper.createAndSaveDummyEntity();
         BaseLastfmEntity scopeEntity = consistencyHelper.createAndSaveDummyEntity();
         LastfmAttributeHistoryRecord candidate = initAttrValueBuilder(entity, scopeEntity, consistencyHelper.createAndSaveApiCall())
@@ -134,7 +134,7 @@ public class LastfmAttributeHistoryServiceImplTest extends JpaOnlyTest {
     }
 
     @Test
-    void givenSCD2AttrValue_whenUpsertedNewValue_thenExpireOldAndSaveNew() {
+    void scd2AttributeValue_shouldExpireOldAndSaveNew_whenUpsertedWithNewValue() {
         BaseLastfmEntity entity = consistencyHelper.createAndSaveDummyEntity();
         BaseLastfmEntity scopeEntity = consistencyHelper.createAndSaveDummyEntity();
         LastfmAttributeHistoryRecord candidate = initAttrValueBuilder(entity, scopeEntity, consistencyHelper.createAndSaveApiCall())
@@ -162,7 +162,7 @@ public class LastfmAttributeHistoryServiceImplTest extends JpaOnlyTest {
     }
 
     @Test
-    void givenEmptyTable_whenUpsertCandidateValues_thenAllCandidatesAreProcessed() {
+    void emptyTable_shouldProcessAllCandidates_whenCandidateValuesUpserted() {
         LastfmAttributeHistoryRecord candidate1 = initAttrValueBuilder(
                 consistencyHelper.createAndSaveDummyEntity(),
                 consistencyHelper.createAndSaveDummyEntity(),

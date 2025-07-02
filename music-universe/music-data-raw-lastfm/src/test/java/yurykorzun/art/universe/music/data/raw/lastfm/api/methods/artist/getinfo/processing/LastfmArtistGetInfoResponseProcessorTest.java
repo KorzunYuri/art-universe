@@ -78,7 +78,7 @@ class LastfmArtistGetInfoResponseProcessorTest extends JpaOnlyTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    void givenExistingApprovedArtist_whenProcessedArtistGetInfoResponse_newRecordsAreCreated() throws Exception {
+    void process_shouldCreateNewRecords_whenArtistGetInfoResponseAndExistingApprovedArtistProvided() throws Exception {
 
         String responseJsonString = LastfmApiClientResourceUtil.getApiClientResponse("artist.getInfo");
         TestCase testCase = testCaseFromResponse(responseJsonString, true);
@@ -128,7 +128,7 @@ class LastfmArtistGetInfoResponseProcessorTest extends JpaOnlyTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    void givenExistingUnapprovedArtist_whenProcessedArtistGetInfoResponse_newRecordsAreCreated() throws Exception {
+    void process_shouldCreateNewRecords_whenArtistGetInfoResponseAndExistingUnapprovedArtistProvided() throws Exception {
 
         String responseJsonString = LastfmApiClientResourceUtil.getApiClientResponse("artist.getInfo");
         TestCase testCase = testCaseFromResponse(responseJsonString, false);

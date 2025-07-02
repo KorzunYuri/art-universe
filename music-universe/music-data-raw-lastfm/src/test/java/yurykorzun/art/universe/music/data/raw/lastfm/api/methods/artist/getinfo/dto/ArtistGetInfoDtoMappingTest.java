@@ -16,7 +16,7 @@ public class ArtistGetInfoDtoMappingTest {
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
-    public void givenArtistGetInfoResponse_whenParsed_thenParsedCorrectly() throws IOException {
+    void parse_shouldParseCorrectly_whenArtistGetInfoResponseProvided() throws IOException {
         String responseJsonString = LastfmApiClientResourceUtil.getApiClientResponse("artist.getInfo");
 
         ArtistGetInfoDtoRoot root = mapper.readValue(responseJsonString, ArtistGetInfoDtoRoot.class);

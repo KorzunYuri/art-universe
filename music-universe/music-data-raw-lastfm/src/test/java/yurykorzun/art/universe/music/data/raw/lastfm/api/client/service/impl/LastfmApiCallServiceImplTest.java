@@ -68,7 +68,7 @@ class LastfmApiCallServiceImplTest {
     }
 
     @Test
-    void testApiCallCreation() {
+    void create_shouldCreateApiCall_whenValidDataProvided() {
         // given
         LastfmApiCallCreateRequest request = validCreateRequestSupplier().get();
         LastfmApiCall apiCall = LastfmApiCall.builder()
@@ -87,7 +87,7 @@ class LastfmApiCallServiceImplTest {
     }
 
     @Test
-    void testApiCallStatusUpdate() {
+    void updateStatus_shouldUpdateStatus_whenValidTransitionProvided() {
         // given
         long id = 1L;
         LastfmApiCall apiCall = LastfmApiCall.builder()

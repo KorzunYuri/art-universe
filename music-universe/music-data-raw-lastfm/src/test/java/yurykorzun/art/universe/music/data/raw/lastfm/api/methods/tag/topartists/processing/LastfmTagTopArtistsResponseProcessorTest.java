@@ -58,7 +58,7 @@ class LastfmTagTopArtistsResponseProcessorTest extends JpaOnlyTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    void givenTagTopArtistsResponse_whenProcessed_newRecordsAreCreated() throws Exception {
+    void process_shouldCreateNewRecords_whenTagTopArtistsResponseProvided() throws Exception {
 
         final int expectedCreatedArtistsNumber = TEST_DTO_ENTITIES_NUMBER;
         final int expectedCreatedAttrValuesNumber = expectedCreatedArtistsNumber * ATTRIBUTES_NUMBER;

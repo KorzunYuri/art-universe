@@ -43,7 +43,7 @@ class LastfmEntityServiceImplTest extends JpaOnlyTest {
     private LastfmTagRepository tagRepository;
 
     @Test
-    void givenManyEntitiesAndNoApiCalls_whenUnprocessedRequested_limitsResultToBatchSize() {
+    void unprocessedRequested_shouldLimitResultToBatchSize_whenManyEntitiesAndNoApiCallsProvided() {
         // given
         final int tagsNumber = HIBERNATE_BATCH_SIZE * 2;
         final LastfmApiCallType whateverCallType = LastfmApiCallType.TAG_TOP_ARTISTS;
@@ -58,7 +58,7 @@ class LastfmEntityServiceImplTest extends JpaOnlyTest {
     }
 
     @Test
-    void givenManyEntitiesAndSomeApiCalls_whenUnprocessedRequested_limitsResultToBatchSize() {
+    void unprocessedRequested_shouldLimitResultToBatchSize_whenManyEntitiesAndSomeApiCallsProvided() {
         // given
         final int approvedTagsNumber = HIBERNATE_BATCH_SIZE * 2;
         final int processedTagsNumber = HIBERNATE_BATCH_SIZE + 1;
@@ -78,7 +78,7 @@ class LastfmEntityServiceImplTest extends JpaOnlyTest {
     }
 
     @Test
-    void givenEntityWithExistingCall_whenUnprocessedRequested_ignoresEntity() {
+    void unprocessedRequested_shouldIgnoreEntity_whenEntityWithExistingCallProvided() {
         // given
         final LastfmApiCallType apiCallType = LastfmApiCallType.TAG_TOP_ARTISTS;
         LastfmApiCall tagsApiCall = consistencyHelper.createAndSaveApiCall(LastfmApiCallType.TAG_TOP_TAGS);
@@ -96,7 +96,7 @@ class LastfmEntityServiceImplTest extends JpaOnlyTest {
     }
 
     @Test
-    void givenApprovedEntityWithPendingCall_whenUnprocessedRequested_ignoresEntity() {
+    void unprocessedRequested_shouldIgnoreEntity_whenApprovedEntityWithPendingCallProvided() {
         // given
         final LastfmApiCallType apiCallType = LastfmApiCallType.TAG_TOP_ARTISTS;
         LastfmApiCall tagsApiCall = consistencyHelper.createAndSaveApiCall(LastfmApiCallType.TAG_TOP_TAGS);
@@ -114,7 +114,7 @@ class LastfmEntityServiceImplTest extends JpaOnlyTest {
     }
 
     @Test
-    void givenApprovedEntityWithPendingCallOfWrongType_whenUnprocessedRequested_returnsEntity() {
+    void unprocessedRequested_shouldReturnEntity_whenApprovedEntityWithPendingCallOfWrongTypeProvided() {
         // given
         LastfmApiCall tagsApiCall = consistencyHelper.createAndSaveApiCall(LastfmApiCallType.TAG_TOP_TAGS);
         final LastfmApiCallType correctApiCallType = LastfmApiCallType.TAG_TOP_ARTISTS;
@@ -134,7 +134,7 @@ class LastfmEntityServiceImplTest extends JpaOnlyTest {
     }
 
     @Test
-    void givenNonApprovedEntityWithPendingCall_whenUnprocessedRequested_returnsEntity() {
+    void unprocessedRequested_shouldReturnEntity_whenNonApprovedEntityWithPendingCallProvided() {
         // given
         final LastfmApiCallType apiCallType = LastfmApiCallType.TAG_TOP_ARTISTS;
         LastfmApiCall tagsApiCall = consistencyHelper.createAndSaveApiCall(LastfmApiCallType.TAG_TOP_TAGS);

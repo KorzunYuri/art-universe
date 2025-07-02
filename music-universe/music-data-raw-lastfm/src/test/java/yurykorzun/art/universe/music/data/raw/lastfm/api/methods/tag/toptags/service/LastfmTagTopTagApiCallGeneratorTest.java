@@ -59,7 +59,7 @@ class LastfmTagTopTagApiCallGeneratorTest extends JpaOnlyTest {
         ReflectionTestUtils.setField(generator, "dueDurationDays", 1);
     }
 
-    void testApiCallCreation(int existingApiCallsNumber) {
+    void create_shouldCreateApiCall_whenValidDataProvided(int existingApiCallsNumber) {
         // mock snapshot
         final long mockSnapshotId = 1L;
         LastfmDataSnapshot existingSnapshot = new LastfmDataSnapshot(generator.getApiCallType(), LocalDate.now());
@@ -112,24 +112,24 @@ class LastfmTagTopTagApiCallGeneratorTest extends JpaOnlyTest {
     }
 
     @Test
-    void testGetApiCallType_returnsTagTopTags() {
+    void getApiCallType_shouldReturnTagTopTags() {
         LastfmApiCallType type = generator.getApiCallType();
         assertNotNull(type, "Generator type must not be null");
         assertEquals(LastfmApiCallType.TAG_TOP_TAGS, type, "Generator type must be TAG_TOP_TAGS");
     }
 
     @Test
-    void testCreateApiCalls_whenNoSnapshot_thenSnapshotsAndApiCallsAreCreated() {
-        testApiCallCreation(0);
+    void createApiCalls_shouldSnapshotsAndApiCallsAreCreated_whenNoSnapshot() {
+        create_shouldCreateApiCall_whenValidDataProvided(0);
     }
 
     @Test
-    void testCreateApiCalls_whenSnapshotAndApiCallsExist_thenNoRecordsAreCreated() {
-        testApiCallCreation(ALL_API_CALLS_NUMBER);
+    void createApiCalls_shouldNoRecordsAreCreated_whenSnapshotAndApiCallsExist() {
+        create_shouldCreateApiCall_whenValidDataProvided(ALL_API_CALLS_NUMBER);
     }
 
     @Test
-    void testCreateApiCalls_whenSomeApiCallsExist_thenMissingApiCallsAreCreated() {
-        testApiCallCreation(2);
+    void createApiCalls_shouldMissingApiCallsAreCreated_whenSomeApiCallsExist() {
+        create_shouldCreateApiCall_whenValidDataProvided(2);
     }
 }

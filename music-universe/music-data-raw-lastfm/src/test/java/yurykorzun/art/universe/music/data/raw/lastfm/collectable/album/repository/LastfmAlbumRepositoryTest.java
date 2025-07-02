@@ -23,7 +23,7 @@ class LastfmAlbumRepositoryTest extends JpaOnlyTest {
     private DbConsistencyHelper consistencyHelper;
 
     @Test
-    void testSaveAlbum() {
+    void save_shouldSaveAlbum_whenValidDataProvided() {
         final String name = "album";
         final String description = "description";
         final String url = "url";
@@ -56,7 +56,7 @@ class LastfmAlbumRepositoryTest extends JpaOnlyTest {
     }
 
     @Test
-    void testSaveAlbums() {
+    void save_shouldSaveAlbums_whenValidDataProvided() {
         LastfmAlbum album1 = consistencyHelper.createAlbumForPersistence();
         LastfmAlbum album2 = consistencyHelper.createAlbumForPersistence();
 

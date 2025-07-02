@@ -72,7 +72,7 @@ class LastfmArtistTopTracksResponseProcessorTest extends JpaOnlyTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    void givenArtistTopTracksResponse_whenProcessed_newRecordsAreCreated() throws Exception {
+    void process_shouldCreateNewRecords_whenArtistTopTracksResponseProvided() throws Exception {
 
         // given
         final int expectedCreatedTracksNumber = TEST_DTO_ENTITIES_NUMBER;

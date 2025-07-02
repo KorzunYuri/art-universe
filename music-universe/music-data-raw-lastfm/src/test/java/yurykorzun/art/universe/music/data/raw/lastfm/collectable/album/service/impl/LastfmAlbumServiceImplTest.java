@@ -39,7 +39,7 @@ class LastfmAlbumServiceImplTest extends JpaOnlyTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    void givenAlbums_whenFindAllByUrls_shouldCallRepository() {
+    void findAllByUrls_shouldCallRepository_whenAlbumsProvided() {
         // given
         final int albumsNumber = 2;
         List<LastfmAlbum> albums = buildAlbums(albumsNumber);
@@ -59,7 +59,7 @@ class LastfmAlbumServiceImplTest extends JpaOnlyTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    void givenAlbums_whenSaveAlbums_shouldCallRepository() {
+    void saveAlbums_shouldCallRepository_whenAlbumsProvided() {
         // given
         List<LastfmAlbum> albumsToSave = buildAlbums(2);
 

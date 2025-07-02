@@ -7,9 +7,14 @@
 - Enums implement `Coded` interface for database storage
 - Entity relationships managed through JPA annotations
 
-### Testing Archetypes
-- **JpaOnlyTest** - Persistence layer testing with TestContainers
-- **@MockitoBean** instead of @MockBean
+### Testing Conventions
+- **Method Naming**: `method_shouldBehavior_whenCondition()`, camel case
+- **JpaOnlyTest** - test archetype for persistence layer testing with TestContainers
+- **@MockitoBean** is used instead of @MockBean for Spring Boot tests
+- **Unit Tests** - Use `@ExtendWith(MockitoExtension.class)` with `@Mock` and `@InjectMocks`
+- **MVC Tests** - Use `@WebMvcTest` with `@MockitoBean` for service dependencies
+- **JSON Assertions**: Build `expectedJson` with `ObjectMapper` instead of `jsonPath()` assertions
+- **Response Validation**: Assert `ResponseWrapper` structure in unit tests
 - Integration tests tagged with "integration"
 
 ### API Standards
