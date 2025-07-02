@@ -5,24 +5,18 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import yurykorzun.art.universe.common.controller.ResponseWrapper;
-import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.dto.ApprovalStatusRequestDto;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.LastfmTagResponseDto;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.TagSearchParams;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.EntityTagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.service.LastfmTagService;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
 
-import java.util.HashSet;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,151 +28,121 @@ class LastfmTagControllerTest {
     @InjectMocks
     private LastfmTagController controller;
 
-    private void compareDtoAgainstEntity(LastfmTagResponseDto dto, LastfmTag entity) {
-        assertEquals(entity.getId(), dto.id());
-        assertEquals(entity.getName(), dto.name());
-        assertEquals(entity.getUrl(), dto.url());
-        assertEquals(entity.getUsageCount(), dto.usageCount());
-        assertEquals(entity.getUsageUsersCount(), dto.usageUsersCount());
-    }
-
     @Test
-    void getTags_shouldReturnDtoPageWrappedInResponse() {
-        // given
-        String search = "rock";
-        Set<Integer> approvalStatuses = new HashSet<>();
-        approvalStatuses.add(ApprovalStatus.APPROVED.getCode());
-        Pageable pageable = PageRequest.of(0, 2, Sort.by("name"));
+    void getEntityTags_shouldReturnTagsForValidEntityTypeName() {
+        // Given
+        Long entityId = 456L;
+        LastfmEntityType entityType = LastfmEntityType.TRACK;
+        String entityTypeParam = entityType.getName();
+        
+        List<EntityTagDto> tags = List.of(new EntityTagDto(3L, "electronic"));
+        
+        when(tagService.findTagsByEntity(entityType, entityId)).thenReturn(tags);
 
-        LastfmTag tag1 = LastfmTag.builder()
-            .id(1L)
-            .name("Rock")
-            .url("https://example.com/rock")
-            .approvalStatus(ApprovalStatus.APPROVED)
-            .usageCount(1000)
-            .usageUsersCount(500)
-            .apiCall(EntityCreationHelper.createApiCall())
-            .build();
+        // When
+        ResponseEntity<ResponseWrapper<List<EntityTagDto>>> response =
+            controller.getEntityTags(entityTypeParam, entityId);
 
-        LastfmTag tag2 = LastfmTag.builder()
-            .id(2L)
-            .name("Rock Alternative")
-            .url("https://example.com/rock-alternative")
-            .approvalStatus(ApprovalStatus.PENDING)
-            .usageCount(null)
-            .usageUsersCount(null)
-            .apiCall(EntityCreationHelper.createApiCall())
-            .build();
-
-        List<LastfmTag> tagList = List.of(tag1, tag2);
-        Page<LastfmTag> tagPage = new PageImpl<>(tagList, pageable, tagList.size());
-        Page<LastfmTagResponseDto> dtoPage = tagPage.map(LastfmTagResponseDto::from);
-
-        TagSearchParams expectedParams = new TagSearchParams(search, approvalStatuses);
-        when(tagService.findTags(eq(expectedParams), eq(pageable)))
-            .thenReturn(dtoPage);
-
-        // when
-        ResponseEntity<ResponseWrapper<Page<LastfmTagResponseDto>>> response = 
-            controller.getTags(search, approvalStatuses, pageable);
-
-        // then
+        // Then
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        ResponseWrapper<Page<LastfmTagResponseDto>> body = response.getBody();
+        ResponseWrapper<List<EntityTagDto>> body = response.getBody();
         assertNotNull(body);
         assertTrue(body.isSuccess());
 
-        Page<LastfmTagResponseDto> data = body.getData();
+        List<EntityTagDto> data = body.getData();
         assertNotNull(data);
-        assertEquals(2, data.getTotalElements());
-
-        for (int i = 0; i < tagList.size(); i++) {
-            compareDtoAgainstEntity(data.getContent().get(i), tagList.get(i));
-        }
+        assertEquals(1, data.size());
+        assertEquals(3L, data.get(0).id());
+        assertEquals("electronic", data.get(0).name());
     }
 
     @Test
-    void getTags_shouldHandleNullFilters() {
-        // given
-        Pageable pageable = PageRequest.of(0, 10);
+    void getEntityTags_shouldReturnEmptyListWhenNoTagsFound() {
+        // Given
+        Long entityId = 789L;
+        LastfmEntityType entityType = LastfmEntityType.ALBUM;
+        String entityTypeParam = entityType.getName();
         
-        LastfmTag tag = EntityCreationHelper.createTag();
-        Page<LastfmTag> tagPage = new PageImpl<>(List.of(tag), pageable, 1);
-        Page<LastfmTagResponseDto> dtoPage = tagPage.map(LastfmTagResponseDto::from);
-        
-        when(tagService.findTags(any(TagSearchParams.class), eq(pageable)))
-            .thenReturn(dtoPage);
+        when(tagService.findTagsByEntity(entityType, entityId)).thenReturn(Collections.emptyList());
 
-        // when
-        ResponseEntity<ResponseWrapper<Page<LastfmTagResponseDto>>> response = 
-            controller.getTags(null, null, pageable);
+        // When
+        ResponseEntity<ResponseWrapper<List<EntityTagDto>>> response =
+            controller.getEntityTags(entityTypeParam, entityId);
 
-        // then
+        // Then
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        ResponseWrapper<Page<LastfmTagResponseDto>> body = response.getBody();
+        ResponseWrapper<List<EntityTagDto>> body = response.getBody();
         assertNotNull(body);
         assertTrue(body.isSuccess());
-        
-        Page<LastfmTagResponseDto> data = body.getData();
+
+        List<EntityTagDto> data = body.getData();
         assertNotNull(data);
-        assertEquals(1, data.getTotalElements());
+        assertEquals(0, data.size());
     }
 
     @Test
-    void getTags_shouldReturnFailureOnException() {
-        // given
-        Pageable pageable = PageRequest.of(0, 10);
-        when(tagService.findTags(any(TagSearchParams.class), any())).thenThrow(new RuntimeException("Fail"));
+    void getEntityTags_shouldReturnErrorForInvalidEntityTypeName() {
+        // Given
+        Long entityId = 123L;
+        String entityTypeParam = "INVALID";
 
-        // when
-        ResponseEntity<ResponseWrapper<Page<LastfmTagResponseDto>>> response = 
-            controller.getTags("abc", null, pageable);
+        // When
+        ResponseEntity<ResponseWrapper<List<EntityTagDto>>> response = 
+            controller.getEntityTags(entityTypeParam, entityId);
 
-        // then
+        // Then
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        ResponseWrapper<?> body = response.getBody();
+        ResponseWrapper<List<EntityTagDto>> body = response.getBody();
         assertNotNull(body);
         assertFalse(body.isSuccess());
-        assertTrue(body.getMessage().contains("Failed to fetch tags"));
+        assertTrue(body.getMessage().contains("Invalid entity type: Unknown entity type: INVALID"));
     }
 
     @Test
-    void updateApprovalStatus_withValidRequest_shouldReturnUpdatedTag() {
-        Long tagId = 1L;
-        ApprovalStatus newApprovalStatus = ApprovalStatus.APPROVED;
-        int approvalStatusCode = newApprovalStatus.getCode();
+    void getEntityTags_shouldHandleCaseInsensitiveEntityTypeName() {
+        // Given
+        Long entityId = 123L;
+        LastfmEntityType entityType = LastfmEntityType.ARTIST;
+        String entityTypeParam = entityType.getName().toLowerCase();
+        
+        List<EntityTagDto> tags = List.of(new EntityTagDto(1L, "rock"));
+        
+        when(tagService.findTagsByEntity(entityType, entityId)).thenReturn(tags);
 
-        LastfmTag tag = EntityCreationHelper.createTag(b -> b.approvalStatus(newApprovalStatus));
+        // When
+        ResponseEntity<ResponseWrapper<List<EntityTagDto>>> response =
+            controller.getEntityTags(entityTypeParam, entityId);
 
-        when(tagService.updateApprovalStatus(tagId, approvalStatusCode))
-            .thenReturn(LastfmTagResponseDto.from(tag));
-
-        ResponseEntity<ResponseWrapper<LastfmTagResponseDto>> response =
-            controller.updateApprovalStatus(tagId, new ApprovalStatusRequestDto(approvalStatusCode));
-
+        // Then
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        ResponseWrapper<LastfmTagResponseDto> body = response.getBody();
+        ResponseWrapper<List<EntityTagDto>> body = response.getBody();
         assertNotNull(body);
         assertTrue(body.isSuccess());
 
-        LastfmTagResponseDto data = body.getData();
+        List<EntityTagDto> data = body.getData();
         assertNotNull(data);
-        assertEquals(newApprovalStatus.getCode(), data.approvalStatus());
+        assertEquals(1, data.size());
     }
 
     @Test
-    void updateApprovalStatus_shouldHandleServiceException() {
-        Long tagId = 1L;
-        when(tagService.updateApprovalStatus(anyLong(), anyInt()))
-            .thenThrow(new IllegalArgumentException("Invalid status"));
+    void getEntityTags_shouldReturnErrorWhenServiceThrowsException() {
+        // Given
+        Long entityId = 123L;
+        LastfmEntityType entityType = LastfmEntityType.ARTIST;
+        String entityTypeParam = entityType.getName();
+        
+        when(tagService.findTagsByEntity(entityType, entityId))
+            .thenThrow(new RuntimeException("Database error"));
 
-        ResponseEntity<ResponseWrapper<LastfmTagResponseDto>> response =
-            controller.updateApprovalStatus(tagId, new ApprovalStatusRequestDto(999));
+        // When
+        ResponseEntity<ResponseWrapper<List<EntityTagDto>>> response =
+            controller.getEntityTags(entityTypeParam, entityId);
 
+        // Then
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        ResponseWrapper<LastfmTagResponseDto> body = response.getBody();
+        ResponseWrapper<List<EntityTagDto>> body = response.getBody();
         assertNotNull(body);
         assertFalse(body.isSuccess());
-        assertTrue(body.getMessage().contains("Failed to update approval status"));
+        assertTrue(body.getMessage().contains("Failed to fetch entity tags: service error occurred"));
     }
 }

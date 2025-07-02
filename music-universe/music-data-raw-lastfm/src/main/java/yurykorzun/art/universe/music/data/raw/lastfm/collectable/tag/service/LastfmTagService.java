@@ -2,6 +2,8 @@ package yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.service;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.EntityTagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.LastfmTagResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.TagSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
@@ -13,4 +15,5 @@ public interface LastfmTagService {
     List<LastfmTag> saveTags(List<LastfmTag> tags);
     Page<LastfmTagResponseDto> findTags(TagSearchParams params, Pageable pageable);
     LastfmTagResponseDto updateApprovalStatus(Long id, Integer approvalStatusCode);
+    List<EntityTagDto> findTagsByEntity(LastfmEntityType entityType, Long entityId);
 }

@@ -9,10 +9,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.dto.ApprovalStatusRequestDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.EntityTagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.LastfmTagResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.TagSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.service.LastfmTagService;
 
+import java.util.List;
 import java.util.Set;
 
 @RestController
@@ -55,6 +58,36 @@ public class LastfmTagController {
         } catch (Exception e) {
             log.error("Failed to update approval status: {}", e.getMessage(), e);
             return ResponseWrapper.failure("Failed to update approval status: service error occurred");
+        }
+    }
+
+    @GetMapping("/entity/{entityType}/{entityId}")
+    public ResponseEntity<ResponseWrapper<List<EntityTagDto>>> getEntityTags(
+        @PathVariable String entityType,
+        @PathVariable Long entityId
+    ) {
+        try {
+            // Parse entity type from string or integer
+            LastfmEntityType parsedEntityType = parseEntityType(entityType);
+            
+            List<EntityTagDto> tags = tagService.findTagsByEntity(parsedEntityType, entityId);
+            return ResponseWrapper.success(tags);
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid entity type: {}", e.getMessage(), e);
+            return ResponseWrapper.failure("Invalid entity type: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("Failed to fetch entity tags: {}", e.getMessage(), e);
+            return ResponseWrapper.failure("Failed to fetch entity tags: service error occurred");
+        }
+    }
+
+    private LastfmEntityType parseEntityType(String entityTypeStr) {
+        // Try to parse as string (name)
+        try {
+            return LastfmEntityType.valueOf(entityTypeStr.toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalArgumentException("Unknown entity type: " + entityTypeStr +
+                ". Expected one of: ARTIST, ALBUM, TRACK, TAG or their numeric codes (1, 2, 3, 4)");
         }
     }
 }

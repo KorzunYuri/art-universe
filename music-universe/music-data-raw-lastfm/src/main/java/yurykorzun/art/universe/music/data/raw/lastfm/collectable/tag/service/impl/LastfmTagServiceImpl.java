@@ -6,6 +6,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import yurykorzun.art.universe.common.CodedRegistry;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.EntityTagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.LastfmTagResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.TagSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
@@ -58,5 +60,13 @@ public class LastfmTagServiceImpl implements LastfmTagService {
         tag.updateApprovalStatus(approvalStatus);
         LastfmTag updated = tagRepository.save(tag);
         return LastfmTagResponseDto.from(updated);
+    }
+    
+    @Override
+    public List<EntityTagDto> findTagsByEntity(LastfmEntityType entityType, Long entityId) {
+        List<LastfmTag> tags = tagRepository.findTagsByEntity(entityType, entityId);
+        return tags.stream()
+            .map(EntityTagDto::from)
+            .toList();
     }
 }
