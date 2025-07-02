@@ -65,6 +65,11 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional
     public CategoryHierarchyProjection saveCategory(CategorySaveRequestDTO request) {
+        // Validate that category cannot be parent of itself
+        if (request.getId() != null && request.getParentId() != null && request.getId().equals(request.getParentId())) {
+            throw new IllegalArgumentException("Category cannot be parent of itself");
+        }
+        
         // Validate dimension if provided
         if (request.getDimensionId() != null) {
             dimensionRepository.findById(request.getDimensionId())

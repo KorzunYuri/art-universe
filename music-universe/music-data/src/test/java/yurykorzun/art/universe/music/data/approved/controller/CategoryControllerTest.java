@@ -201,6 +201,30 @@ class CategoryControllerTest {
     }
 
     @Test
+    void saveCategory_whenSelfParentValidationFails_shouldReturnFailureResponse() {
+        // Given
+        CategorySaveRequestDTO request = CategorySaveRequestDTO.builder()
+            .id(1L)
+            .name("Test Category")
+            .parentId(1L) // Same as ID - self-parent
+            .build();
+        String errorMessage = "Category cannot be parent of itself";
+        
+        when(categoryService.saveCategory(request)).thenThrow(new IllegalArgumentException(errorMessage));
+        ResponseEntity<ResponseWrapper<CategoryHierarchyProjection>> expectedResponse = 
+            ResponseWrapper.failure(String.format("Failed to save category: %s", errorMessage));
+
+        // When
+        ResponseEntity<ResponseWrapper<CategoryHierarchyProjection>> actualResponse = 
+            categoryController.saveCategory(request);
+
+        // Then
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
+        assertEquals(expectedResponse, actualResponse);
+        verify(categoryService).saveCategory(request);
+    }
+
+    @Test
     void deleteCategory_whenFound_shouldReturnSuccessResponse() {
         // Given
         Long id = 1L;

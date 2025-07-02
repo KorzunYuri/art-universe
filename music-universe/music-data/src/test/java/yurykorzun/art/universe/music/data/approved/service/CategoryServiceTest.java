@@ -7,6 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import yurykorzun.art.universe.music.data.approved.dto.LookupResultDTO;
+import yurykorzun.art.universe.music.data.approved.dto.CategorySaveRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.CategoryBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.CategoryCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.BoundEntityProjection;
@@ -502,5 +503,26 @@ class CategoryServiceTest {
         // Then
         assertTrue(result.isEmpty());
         verify(categoryRepository).findByNameContainingIgnoreCase(searchTerm, 20);
+    }
+
+    @Test
+    void saveCategory_whenCategoryIsParentOfItself_shouldThrowException() {
+        // Given
+        Long categoryId = 1L;
+        CategorySaveRequestDTO request = CategorySaveRequestDTO.builder()
+            .id(categoryId)
+            .name("Test Category")
+            .parentId(categoryId) // Same as ID - self-parent
+            .build();
+
+        // When & Then
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> 
+            categoryService.saveCategory(request));
+        
+        assertEquals("Category cannot be parent of itself", exception.getMessage());
+        
+        // Verify no repository calls were made
+        verify(categoryRepository, never()).save(any());
+        verify(dimensionRepository, never()).findById(any());
     }
 }
