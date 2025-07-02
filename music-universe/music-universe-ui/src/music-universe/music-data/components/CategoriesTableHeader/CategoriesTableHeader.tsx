@@ -39,6 +39,9 @@ export const CategoriesTableHeader = ({ sort, setSort }: Props) => {
             <div className={`${sharedStyles.cell} ${styles.effectiveDimension}`}>
                 Effective Dimension
             </div>
+            <div className={`${sharedStyles.cell} ${styles.actions}`}>
+                Actions
+            </div>
         </div>
     )
 }

@@ -22,3 +22,8 @@
 .effectiveDimension {
     flex: 2;
 }
+
+.actions {
+    flex: 0 0 100px;
+    text-align: center;
+}
