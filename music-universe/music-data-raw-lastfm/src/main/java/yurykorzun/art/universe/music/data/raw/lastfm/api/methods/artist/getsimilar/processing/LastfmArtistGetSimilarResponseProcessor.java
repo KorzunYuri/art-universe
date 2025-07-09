@@ -137,6 +137,7 @@ public class LastfmArtistGetSimilarResponseProcessor extends LastfmApiResponsePr
                 .build())
             .toList();
         attributeHistoryService.upsertCandidateValues(records);
+        log.info("saved {} artist-artist attribute records", records.size());
     }
 
     /**

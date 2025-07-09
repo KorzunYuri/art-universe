@@ -158,8 +158,6 @@ class LastfmArtistGetInfoResponseProcessorTest extends JpaOnlyTest {
         
         // Verify artist-tag relations were created
         verifyArtistTagCount(savedArtist.get(), expectedTagsCount);
-
-
         
         // Verify similar artist relations were created
         verifyArtistSimilarCount(savedArtist.get(), expectedSimilarArtistsCount);

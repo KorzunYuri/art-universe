@@ -71,7 +71,7 @@ public interface LastfmAttributeHistoryRecordRepository extends JpaRepository<La
     }
     
     /**
-     * Find all attribute history records for a specific entity and attribute
+     * Find all attribute history records for a specific entity and attribute (non-scoped)
      */
     @Query(value = """
             SELECT  ah
@@ -87,5 +87,26 @@ public interface LastfmAttributeHistoryRecordRepository extends JpaRepository<La
         @Param("attribute")     LastfmAttribute attribute,
         @Param("entityType")    LastfmEntityType entityType,
         @Param("entityId")      Long entityId
+    );
+    
+    /**
+     * Find all attribute history records for a specific entity and attribute with scope
+     */
+    @Query(value = """
+            SELECT  ah
+            FROM    attribute_history ah
+            WHERE   1=1
+                AND ah.attribute        = :attribute
+                AND ah.entityType       = :entityType
+                AND ah.entityId         = :entityId
+                AND ah.scopeEntityType  = :scopeEntityType
+                AND ah.scopeEntityId    = :scopeEntityId
+        """)
+    List<LastfmAttributeHistoryRecord> findAttributeValuesForEntityWithScope(
+        @Param("attribute")         LastfmAttribute attribute,
+        @Param("entityType")        LastfmEntityType entityType,
+        @Param("entityId")          Long entityId,
+        @Param("scopeEntityType")   LastfmEntityType scopeEntityType,
+        @Param("scopeEntityId")     Long scopeEntityId
     );
 }
