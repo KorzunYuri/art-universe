@@ -1,7 +1,6 @@
-package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.testing;
+package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common;
 
 import org.springframework.stereotype.Component;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttributeHistoryRecord;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repository.LastfmAttributeHistoryRecordRepository;

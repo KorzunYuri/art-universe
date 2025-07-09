@@ -109,4 +109,19 @@ public interface LastfmAttributeHistoryRecordRepository extends JpaRepository<La
         @Param("scopeEntityType")   LastfmEntityType scopeEntityType,
         @Param("scopeEntityId")     Long scopeEntityId
     );
+    
+    /**
+     * Find all attribute history records for a specific entity
+     */
+    @Query(value = """
+            SELECT  ah
+            FROM    attribute_history ah
+            WHERE   1=1
+                AND ah.entityType   = :entityType
+                AND ah.entityId     = :entityId
+        """)
+    List<LastfmAttributeHistoryRecord> findByEntityTypeAndEntityId(
+        @Param("entityType")    LastfmEntityType entityType,
+        @Param("entityId")      Long entityId
+    );
 }
