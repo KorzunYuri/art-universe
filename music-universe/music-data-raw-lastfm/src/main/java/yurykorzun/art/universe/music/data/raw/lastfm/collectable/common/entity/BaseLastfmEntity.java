@@ -3,10 +3,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import lombok.experimental.SuperBuilder;
-import yurykorzun.art.universe.common.data.raw.entity.BaseCollectableEntity;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.UniquenessSupport;
 
 import java.util.Objects;
@@ -18,21 +15,16 @@ import java.util.Objects;
 @SuperBuilder
 @NoArgsConstructor
 @Getter
-public abstract class BaseLastfmEntity extends BaseCollectableEntity implements UniquenessSupport {
+public abstract class BaseLastfmEntity extends BaseLastfmCollectable implements UniquenessSupport {
 
     // TODO drop sequences created automatically
     public abstract long getId();
 
-    @Override
+    @Transient
     public abstract LastfmEntityType getType();
 
     @Column(name = "name")
     protected String name;
-
-    @NonNull
-    @JoinColumn(name = "api_call_id")
-    @ManyToOne(fetch = FetchType.LAZY)
-    protected LastfmApiCall apiCall;
 
     @Override
     public boolean equals(Object o) {
