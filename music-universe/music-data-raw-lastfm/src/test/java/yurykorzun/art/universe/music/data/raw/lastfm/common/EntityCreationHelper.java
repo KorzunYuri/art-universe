@@ -11,7 +11,10 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.L
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityRelationType;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.entity.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.UUID;
@@ -185,4 +188,102 @@ public class EntityCreationHelper {
         return builder.build();
     }
 
+    // Relationship entity creation methods
+
+    public static LastfmArtistTag createArtistTag() {
+        return createArtistTag(builder -> {});
+    }
+
+    public static LastfmArtistTag createArtistTag(Consumer<LastfmArtistTag.LastfmArtistTagBuilder<?, ?>> customizer) {
+        LastfmArtistTag.LastfmArtistTagBuilder<?, ?> builder = LastfmArtistTag.builder()
+            .artist(createArtist())
+            .tag(createTag())
+            .apiCall(createApiCall())
+            .usageCount(100);
+        customizer.accept(builder);
+        return builder.build();
+    }
+
+    public static LastfmArtistsRelation createArtistsRelation() {
+        return createArtistsRelation(builder -> {});
+    }
+
+    public static LastfmArtistsRelation createArtistsRelation(Consumer<LastfmArtistsRelation.LastfmArtistsRelationBuilder<?, ?>> customizer) {
+        LastfmArtistsRelation.LastfmArtistsRelationBuilder<?, ?> builder = LastfmArtistsRelation.builder()
+            .sourceArtist(createArtist())
+            .targetArtist(createArtist())
+            .apiCall(createApiCall())
+            .relationType(LastfmEntityRelationType.SIMILARITY)
+            .matchScore(BigDecimal.valueOf(0.85));
+        customizer.accept(builder);
+        return builder.build();
+    }
+
+    public static LastfmArtistAlbum createArtistAlbum() {
+        return createArtistAlbum(builder -> {});
+    }
+
+    public static LastfmArtistAlbum createArtistAlbum(Consumer<LastfmArtistAlbum.LastfmArtistAlbumBuilder<?, ?>> customizer) {
+        LastfmArtistAlbum.LastfmArtistAlbumBuilder<?, ?> builder = LastfmArtistAlbum.builder()
+            .artist(createArtist())
+            .album(createAlbum())
+            .apiCall(createApiCall());
+        customizer.accept(builder);
+        return builder.build();
+    }
+
+    public static LastfmArtistTrack createArtistTrack() {
+        return createArtistTrack(builder -> {});
+    }
+
+    public static LastfmArtistTrack createArtistTrack(Consumer<LastfmArtistTrack.LastfmArtistTrackBuilder<?, ?>> customizer) {
+        LastfmArtistTrack.LastfmArtistTrackBuilder<?, ?> builder = LastfmArtistTrack.builder()
+            .artist(createArtist())
+            .track(createTrack())
+            .apiCall(createApiCall());
+        customizer.accept(builder);
+        return builder.build();
+    }
+
+    public static LastfmAlbumTag createAlbumTag() {
+        return createAlbumTag(builder -> {});
+    }
+
+    public static LastfmAlbumTag createAlbumTag(Consumer<LastfmAlbumTag.LastfmAlbumTagBuilder<?, ?>> customizer) {
+        LastfmAlbumTag.LastfmAlbumTagBuilder<?, ?> builder = LastfmAlbumTag.builder()
+            .album(createAlbum())
+            .tag(createTag())
+            .apiCall(createApiCall())
+            .usageCount(50);
+        customizer.accept(builder);
+        return builder.build();
+    }
+
+    public static LastfmTrackTag createTrackTag() {
+        return createTrackTag(builder -> {});
+    }
+
+    public static LastfmTrackTag createTrackTag(Consumer<LastfmTrackTag.LastfmTrackTagBuilder<?, ?>> customizer) {
+        LastfmTrackTag.LastfmTrackTagBuilder<?, ?> builder = LastfmTrackTag.builder()
+            .track(createTrack())
+            .tag(createTag())
+            .apiCall(createApiCall())
+            .usageCount(25);
+        customizer.accept(builder);
+        return builder.build();
+    }
+
+    public static LastfmAlbumTrack createAlbumTrack() {
+        return createAlbumTrack(builder -> {});
+    }
+
+    public static LastfmAlbumTrack createAlbumTrack(Consumer<LastfmAlbumTrack.LastfmAlbumTrackBuilder<?, ?>> customizer) {
+        LastfmAlbumTrack.LastfmAlbumTrackBuilder<?, ?> builder = LastfmAlbumTrack.builder()
+            .album(createAlbum())
+            .track(createTrack())
+            .apiCall(createApiCall())
+            .position(1);
+        customizer.accept(builder);
+        return builder.build();
+    }
 }

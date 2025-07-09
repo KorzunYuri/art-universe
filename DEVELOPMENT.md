@@ -6,6 +6,7 @@
 - All entities extend `BaseEntity` with audit timestamps
 - Enums implement `Coded` interface for database storage
 - Entity relationships managed through JPA annotations
+- Liquibase migrations written in SQL
 
 ### Testing Conventions
 - **Method Naming**: `method_shouldBehavior_whenCondition()`, camel case
