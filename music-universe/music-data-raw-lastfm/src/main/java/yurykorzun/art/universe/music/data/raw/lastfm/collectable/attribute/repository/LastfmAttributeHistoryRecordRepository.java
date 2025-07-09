@@ -11,10 +11,14 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.L
 import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Repository
 public interface LastfmAttributeHistoryRecordRepository extends JpaRepository<LastfmAttributeHistoryRecord, Long> {
 
+    /**
+     * Returns all attribute values by uniting scoped and non-scoped selections.
+     */
     @Query(value = """
         SELECT r
         FROM attribute_history r
@@ -65,4 +69,23 @@ public interface LastfmAttributeHistoryRecordRepository extends JpaRepository<La
             expirationDate
         );
     }
+    
+    /**
+     * Find all attribute history records for a specific entity and attribute
+     */
+    @Query(value = """
+            SELECT  ah
+            FROM    attribute_history ah
+            WHERE   1=1
+                AND ah.attribute    = :attribute
+                AND ah.entityType   = :entityType
+                AND ah.entityId     = :entityId
+                AND ah.scopeEntityType  IS NULL
+                AND ah.scopeEntityId    IS NULL
+        """)
+    List<LastfmAttributeHistoryRecord> findAttributeValuesForEntity(
+        @Param("attribute")     LastfmAttribute attribute,
+        @Param("entityType")    LastfmEntityType entityType,
+        @Param("entityId")      Long entityId
+    );
 }

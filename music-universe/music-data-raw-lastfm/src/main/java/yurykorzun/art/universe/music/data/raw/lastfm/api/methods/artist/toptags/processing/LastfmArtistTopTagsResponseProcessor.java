@@ -20,6 +20,9 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processi
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttributeHistoryRecord;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.LastfmAttributeHistoryService;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.entity.LastfmArtistTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.service.LastfmArtistTagService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
@@ -36,6 +39,7 @@ public class LastfmArtistTopTagsResponseProcessor extends LastfmApiResponseProce
     private final LastfmTagService tagService;
     private final LastfmArtistService artistService;
     private final LastfmArtistTagService artistTagService;
+    private final LastfmAttributeHistoryService attributeHistoryService;
     private final LastfmApiDtoProcessingService dtoProcessingService;
     private final EntityFactory<LastfmTag, ArtistTopTagsTagDto> tagEntityFactory;
 
@@ -56,6 +60,7 @@ public class LastfmArtistTopTagsResponseProcessor extends LastfmApiResponseProce
         LastfmTagService tagService,
         LastfmArtistService artistService,
         LastfmArtistTagService artistTagService,
+        LastfmAttributeHistoryService attributeHistoryService,
         EntityFactory<LastfmTag, ArtistTopTagsTagDto> tagEntityFactory,
         LastfmApiDtoProcessingService dtoProcessingService
     ) {
@@ -64,6 +69,7 @@ public class LastfmArtistTopTagsResponseProcessor extends LastfmApiResponseProce
         this.tagService = tagService;
         this.artistService = artistService;
         this.artistTagService = artistTagService;
+        this.attributeHistoryService = attributeHistoryService;
         this.tagEntityFactory = tagEntityFactory;
         this.dtoProcessingService = dtoProcessingService;
     }
@@ -131,5 +137,18 @@ public class LastfmArtistTopTagsResponseProcessor extends LastfmApiResponseProce
             .collect(Collectors.toList());
         artistTagService.upsertAll(relations);
         log.info("saved {} artist-tag relations", relations.size());
+
+        List<LastfmAttributeHistoryRecord> records = relations.stream()
+            .map(relation -> LastfmAttributeHistoryRecord.builder()
+                .apiCallId(sourceApiCall.getId())
+                .scopeEntityType(LastfmEntityType.ARTIST)
+                .scopeEntityId(relation.getArtist().getId())
+                .entityType(LastfmEntityType.TAG)
+                .entityId(relation.getTag().getId())
+                .attribute(LastfmAttribute.USAGE_COUNT)
+                .intValue(relation.getUsageCount())
+                .build())
+            .toList();
+        attributeHistoryService.upsertCandidateValues(records);
     }
 }

@@ -19,7 +19,10 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processi
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttributeHistoryRecord;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.LastfmAttributeHistoryService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityRelationType;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.entity.LastfmArtistsRelation;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.service.LastfmArtistsRelationService;
 
@@ -36,6 +39,7 @@ public class LastfmArtistGetSimilarResponseProcessor extends LastfmApiResponsePr
     private final LastfmApiDtoProcessingService dtoProcessingService;
     private final EntityFactory<LastfmArtist, ArtistGetSimilarArtistDto> artistFactory;
     private final LastfmArtistsRelationService artistsRelationService;
+    private final LastfmAttributeHistoryService attributeHistoryService;
 
     // TODO provide default value to injected values
     // TODO implement on-the-fly value management
@@ -56,7 +60,8 @@ public class LastfmArtistGetSimilarResponseProcessor extends LastfmApiResponsePr
         LastfmArtistService artistService,
         LastfmApiDtoProcessingService dtoProcessingService,
         EntityFactory<LastfmArtist, ArtistGetSimilarArtistDto> artistFactory,
-        LastfmArtistsRelationService artistsRelationService
+        LastfmArtistsRelationService artistsRelationService,
+        LastfmAttributeHistoryService attributeHistoryService
     ) {
         super(ArtistGetSimilarDtoRoot.class);
 
@@ -64,6 +69,7 @@ public class LastfmArtistGetSimilarResponseProcessor extends LastfmApiResponsePr
         this.dtoProcessingService = dtoProcessingService;
         this.artistFactory = artistFactory;
         this.artistsRelationService = artistsRelationService;
+        this.attributeHistoryService = attributeHistoryService;
     }
 
     @Override
@@ -118,6 +124,19 @@ public class LastfmArtistGetSimilarResponseProcessor extends LastfmApiResponsePr
             .collect(Collectors.toList());
         artistsRelationService.upsertAll(relations);
         log.info("saved {} artist-artist relations", relations.size());
+
+        List<LastfmAttributeHistoryRecord> records = relations.stream()
+            .map(relation -> LastfmAttributeHistoryRecord.builder()
+                .apiCallId(sourceApiCall.getId())
+                .scopeEntityType(LastfmEntityType.ARTIST)
+                .scopeEntityId(relation.getSourceArtist().getId())
+                .entityType(LastfmEntityType.ARTIST)
+                .entityId(relation.getTargetArtist().getId())
+                .attribute(LastfmAttribute.MATCH_COEFF)
+                .intValue(relation.getMatchScore().multiply(new BigDecimal(100)).intValue())
+                .build())
+            .toList();
+        attributeHistoryService.upsertCandidateValues(records);
     }
 
     /**
