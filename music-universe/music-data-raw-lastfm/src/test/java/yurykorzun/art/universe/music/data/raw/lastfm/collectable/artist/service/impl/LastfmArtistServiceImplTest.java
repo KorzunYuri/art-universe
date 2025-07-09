@@ -54,11 +54,11 @@ class LastfmArtistServiceImplTest {
     }
 
     @Test
-    void saveArtist_withValidArtist_shouldCallRepository() {
+    void save_withValid_shouldCallRepository() {
         LastfmArtist artist = createArtist();
         when(artistRepository.save(artist)).thenReturn(artist);
 
-        LastfmArtist savedArtist = artistService.saveArtist(artist);
+        LastfmArtist savedArtist = artistService.save(artist);
 
         assertNotNull(savedArtist);
         assertEquals(artist, savedArtist);
@@ -66,11 +66,11 @@ class LastfmArtistServiceImplTest {
     }
 
     @Test
-    void saveArtists_withValidArtists_shouldCallRepository() {
+    void saveAll_withValidAll_shouldCallRepository() {
         List<LastfmArtist> artists = List.of(createArtist(), createArtist());
         when(artistRepository.saveAll(artists)).thenReturn(artists);
 
-        List<LastfmArtist> savedArtists = artistService.saveArtists(artists);
+        List<LastfmArtist> savedArtists = artistService.saveAll(artists);
 
         assertNotNull(savedArtists);
         assertEquals(artists.size(), savedArtists.size());
@@ -130,7 +130,7 @@ class LastfmArtistServiceImplTest {
     }
     
     @Test
-    void findArtists_shouldCallRepositoryWithCorrectParams() {
+    void findAll_shouldCallRepositoryWithCorrectParams() {
         // Given
         String search = "test";
         Long minPlayCount = 1000L;
@@ -153,7 +153,7 @@ class LastfmArtistServiceImplTest {
         )).thenReturn(artistPage);
         
         // When
-        Page<LastfmArtistResponseDto> result = artistService.findArtists(params, pageable);
+        Page<LastfmArtistResponseDto> result = artistService.findAll(params, pageable);
         
         // Then
         assertNotNull(result);
@@ -168,7 +168,7 @@ class LastfmArtistServiceImplTest {
     }
     
     @Test
-    void findArtists_withNullParams_shouldCallRepositoryWithNullValues() {
+    void findAll_withNullParams_shouldCallRepositoryWithNullValues() {
         // Given
         ArtistSearchParams params = new ArtistSearchParams(null, null, null, null);
         Pageable pageable = PageRequest.of(0, 10);
@@ -186,7 +186,7 @@ class LastfmArtistServiceImplTest {
         )).thenReturn(artistPage);
         
         // When
-        Page<LastfmArtistResponseDto> result = artistService.findArtists(params, pageable);
+        Page<LastfmArtistResponseDto> result = artistService.findAll(params, pageable);
         
         // Then
         assertNotNull(result);

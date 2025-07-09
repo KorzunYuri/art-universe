@@ -2,12 +2,12 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptags
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AllArgsConstructor;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
@@ -15,26 +15,36 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptags.
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.LastfmAttributeHistoryService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityRelationService;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.repository.LastfmArtistRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.impl.LastfmArtistServiceImpl;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttributeHistoryRecord;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repository.LastfmAttributeHistoryRecordRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repository.LastfmAttributeTypeSynchronizer;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.impl.LastfmAttributeHistoryServiceImpl;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.entity.LastfmArtistTag;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.repository.LastfmArtistTagRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.service.LastfmArtistTagServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.service.LastfmTagService;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.repository.LastfmTagRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.service.impl.LastfmTagServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
 
 import java.io.IOException;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-import static yurykorzun.art.universe.music.data.raw.lastfm.common.utils.AssertionUtils.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("integration")
 @Import({
     LastfmArtistTopTagsResponseProcessor.class,
     LastfmArtistTopTagsTagFactory.class,
     LastfmApiDtoProcessingService.class,
+    LastfmTagServiceImpl.class,
+    LastfmArtistServiceImpl.class,
+    LastfmAttributeHistoryServiceImpl.class,
+    LastfmArtistTagServiceImpl.class,
+    LastfmAttributeTypeSynchronizer.class
 })
 class LastfmArtistTopTagsResponseProcessorTest extends JpaOnlyTest {
 
@@ -44,89 +54,155 @@ class LastfmArtistTopTagsResponseProcessorTest extends JpaOnlyTest {
     @Autowired
     private LastfmArtistTopTagsResponseProcessor processor;
 
-    // injections for verifications
-    @MockitoBean
-    private LastfmTagService tagService;
-    @MockitoBean
-    private LastfmArtistService artistService;
-    @MockitoBean
-    private LastfmEntityRelationService entityRelationService;
-    @MockitoBean
-    private LastfmAttributeHistoryService attributeHistoryService;
+    @Autowired
+    private LastfmTagRepository tagRepository;
 
-    // the variables below depend on currently supported attributes and should change along with processor implementation
-    private static final int SCD2_ATTRIBUTES_NUMBER = 1;
-    private static final int SNAPSHOT_ATTRIBUTES_NUMBER = 2;
-    private static final int ATTRIBUTES_NUMBER = SCD2_ATTRIBUTES_NUMBER + SNAPSHOT_ATTRIBUTES_NUMBER;
+    @Autowired
+    private LastfmArtistRepository artistRepository;
+
+    @Autowired
+    private LastfmAttributeHistoryRecordRepository attributeHistoryRepository;
+
+    @Autowired
+    private LastfmArtistTagRepository artistTagRepository;
+
+    @BeforeEach
+    public void setUp() {
+        consistencyHelper.cleanup();
+    }
+
+    @AfterEach
+    public void cleanDatabase() {
+        consistencyHelper.cleanup();
+    }
 
     @Test
     void process_shouldCreateNewRecords_whenArtistTopTagsResponseProvided() throws IOException {
-
         // given
-        String dtoResponseString = LastfmApiClientResourceUtil.getApiClientResponse("artist.getTopTags");
-        TestCase testCase = testCaseFromResponse(dtoResponseString);
-
-        ReflectionTestUtils.setField(processor, "tagUsageCountThreshold", 0); // isolate threshold effect
-
-        when(tagService.saveTags(any())).thenAnswer(invocation -> invocation.getArgument(0));
-        when(attributeHistoryService.upsertCandidateValues(any())).thenAnswer(invocation -> invocation.getArgument(0));
-
+        String responseBody = LastfmApiClientResourceUtil.getApiClientResponse("artist.getTopTags");
+        ArtistTopTagsDtoRoot dtoRoot = parseResponse(responseBody);
+        
+        // Create source artist
+        LastfmArtist sourceArtist = consistencyHelper.createAndSaveArtist(builder -> 
+            builder.name(dtoRoot.getTopTagsObject().getArtist().getName())
+        );
+        
+        // Create API response
+        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
+            responseBody, LastfmApiCallType.ARTIST_TOP_TAGS, sourceArtist);
+        
+        // Set threshold to 0 to process all tags
+        ReflectionTestUtils.setField(processor, "tagUsageCountThreshold", 0);
+        
+        // Record initial state
+        long initialTagCount = tagRepository.count();
+        long initialAttributeCount = attributeHistoryRepository.count();
+        long initialArtistTagCount = artistTagRepository.count();
+        
         // when
-        processor.processResponse(testCase.sourceApiResponse);
-
+        processor.processResponse(apiResponse);
+        
         // then
-        final int expectedTagsNumber = 28;
-        final int expectedAttrValuesNumber = ATTRIBUTES_NUMBER * expectedTagsNumber;
-
-        // verify tags are saved
-        verifyInvocationsNumberWithCollectionsSizeOnly(
-            captor -> verify(tagService, times(1)).saveTags(captor.capture()),
-            List.of(expectedTagsNumber),
-            "artistService.findByName"
-        );
-
-        // verify attribute values are saved
-        verifyInvocationsNumberWithCollectionsSizeOnly(
-            captor -> verify(attributeHistoryService, times(1)).upsertCandidateValues(captor.capture()),
-            List.of(expectedAttrValuesNumber),
-            "attributeHistoryService.upsertCandidateValues"
-        );
-
+        // Verify new tags were created
+        int expectedTagsCount = dtoRoot.getTopTagsObject().getTags().size();
+        assertEquals(initialTagCount + expectedTagsCount, tagRepository.count(), 
+            "New tags should be created");
+        
+        // Verify attribute history records were created
+        assertTrue(attributeHistoryRepository.count() > initialAttributeCount, 
+            "New attribute history records should be created");
+        
+        // Verify artist-tag relations were created
+        assertEquals(initialArtistTagCount + expectedTagsCount, artistTagRepository.count(), 
+            "Artist-tag relations should be created");
+        
+        // Verify tag properties
+        List<LastfmTag> savedTags = tagRepository.findAll();
+        for (LastfmTag tag : savedTags) {
+            assertNotNull(tag.getName(), "Tag name should be set");
+            assertNotNull(tag.getUrl(), "Tag URL should be set");
+        }
+        
+        // Verify relation properties
+        List<LastfmArtistTag> relations = artistTagRepository.findAll();
+        for (LastfmArtistTag relation : relations) {
+            assertEquals(sourceArtist.getId(), relation.getArtist().getId(), 
+                "Relation should reference the source artist");
+            assertNotNull(relation.getTag(), "Relation should reference a tag");
+            assertNotNull(relation.getUsageCount(), "Relation should have usage count set");
+        }
     }
 
-    /**
-     * Base test case for artist processor
-     */
-    @AllArgsConstructor
-    private static class TestCase {
-        LastfmApiResponse sourceApiResponse;
-        LastfmArtist artist;
-        List<LastfmTag> expectedTags;
+    @Test
+    void process_shouldFilterTagsByUsageCount_whenThresholdIsSet() throws IOException {
+        // given
+        String responseBody = LastfmApiClientResourceUtil.getApiClientResponse("artist.getTopTags");
+        ArtistTopTagsDtoRoot dtoRoot = parseResponse(responseBody);
+        
+        // Create source artist
+        LastfmArtist sourceArtist = consistencyHelper.createAndSaveArtist(builder -> 
+            builder.name(dtoRoot.getTopTagsObject().getArtist().getName())
+        );
+        
+        // Create API response
+        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
+            responseBody, LastfmApiCallType.ARTIST_TOP_TAGS, sourceArtist);
+        
+        // Set high threshold to filter some tags
+        int threshold = 100; // Set threshold to filter out some tags
+        ReflectionTestUtils.setField(processor, "tagUsageCountThreshold", threshold);
+        
+        // Record initial state
+        long initialTagCount = tagRepository.count();
+        
+        // Count how many tags should pass the threshold
+        long expectedTagsCount = dtoRoot.getTopTagsObject().getTags().stream()
+            .filter(tag -> tag.getUsageCount() >= threshold)
+            .count();
+        
+        // when
+        processor.processResponse(apiResponse);
+        
+        // then
+        // Verify only tags above threshold were processed
+        assertEquals(initialTagCount + expectedTagsCount, tagRepository.count(), 
+            "Only tags above threshold should be created");
+        
+        // Verify all created relations have usage count above threshold
+        List<LastfmArtistTag> relations = artistTagRepository.findAll();
+        for (LastfmArtistTag relation : relations) {
+            assertTrue(relation.getUsageCount() >= threshold, 
+                "All created relations should have usage count above threshold");
+        }
     }
 
-    private TestCase testCaseFromResponse(String responseString) {
-        final ArtistTopTagsDtoRoot dtoRoot;
+    @Test
+    void process_shouldThrowException_whenSourceArtistNotFound() throws IOException {
+        // given
+        String responseBody = LastfmApiClientResourceUtil.getApiClientResponse("artist.getTopTags");
+        
+        // Create source artist first (needed for API call creation)
+        LastfmArtist sourceArtist = consistencyHelper.createAndSaveArtist();
+        
+        // Create API response with the artist
+        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
+            responseBody, LastfmApiCallType.ARTIST_TOP_TAGS, sourceArtist);
+        
+        // Now delete the artist to simulate non-existent artist
+        artistRepository.delete(sourceArtist);
+        
+        // when/then
+        assertThrows(jakarta.persistence.EntityNotFoundException.class, () -> {
+            processor.processResponse(apiResponse);
+        }, "Should throw EntityNotFoundException when source artist not found");
+    }
+
+    private ArtistTopTagsDtoRoot parseResponse(String responseString) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            dtoRoot = objectMapper.readValue(responseString, ArtistTopTagsDtoRoot.class);
+            return objectMapper.readValue(responseString, ArtistTopTagsDtoRoot.class);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Failed to parse response", e);
         }
-
-        LastfmArtist artist = consistencyHelper.createAndSaveArtist(
-            builder -> builder
-                .name(dtoRoot.getTopTagsObject().getArtist().getName())
-        );
-
-        LastfmApiResponse sourceApiResponse = consistencyHelper.createAndSaveApiResponse(
-            responseString, LastfmApiCallType.ARTIST_TOP_TAGS, artist);
-
-        LastfmArtistTopTagsTagFactory tagFactory = new LastfmArtistTopTagsTagFactory();
-        List<LastfmTag> expectedTags = dtoRoot.getTopTagsObject().getTags().stream()
-            .map(dto -> tagFactory.fromDto(dto, sourceApiResponse))
-            .toList();
-
-        return new TestCase(sourceApiResponse, artist, expectedTags);
     }
-
 }

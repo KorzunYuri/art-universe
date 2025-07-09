@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiResponseStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiResponseCreateRequest;
@@ -68,33 +69,63 @@ public class LastfmApiResponseServiceImpl implements LastfmApiResponseService {
     }
 
     @Override
-    public void triggerResponsesProcessing() {
+    public void processResponses() {
         List<LastfmApiResponse> unprocessed = repository.findAllPending();
         log.info("unprocessed API responses left: {}", unprocessed.size());
-        // TODO handle concurrent processing by several Processors, then process responses in parallel
-        // TODO send responses to Processor not in parallel but in batches
-        unprocessed.forEach(self::processResponse);
+        
+        // Process each response in a separate transaction
+        for (LastfmApiResponse response : unprocessed) {
+            try {
+                self.processResponse(response);
+            } catch (Exception e) {
+                // one error doesn't prevent the other responses from being parsed
+                log.error("Failed to process response with ID {}: {}", response.getId(), e.getMessage(), e);
+            }
+        }
     }
 
-    @Transactional
-    protected void processResponse(LastfmApiResponse r) {
+    /**
+     * Process each response in a separate transaction
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void processResponse(LastfmApiResponse response) {
         LastfmApiResponseProcessor<?> processor = LastfmApiResponseProcessorsRegistry.get(
-                r.getApiCall().getType().getResponseDtoClass());
+                response.getApiCall().getType().getResponseDtoClass());
+        
         if (processor == null) {
+            log.warn("No processor found for response type: {}", response.getApiCall().getType());
+            response.setStatus(ApiResponseStatus.PROCESSING_ERROR);
+            response.setUpdatedAt(Instant.now());
+            repository.save(response);
             return;
         }
 
         try {
-            log.info("start processing API response from method {}", processor.getApiCallType().getMethod());
-            processor.process(r);
-            r.setStatus(ApiResponseStatus.COMPLETED);
+            log.info("Start processing API response ID {} from method {}", 
+                response.getId(), processor.getApiCallType().getMethod());
+            
+            response.setStatus(ApiResponseStatus.PROCESSING);
+            repository.save(response);
+            
+            processor.process(response);
+            
+            response.setStatus(ApiResponseStatus.COMPLETED);
+            log.info("Successfully processed API response ID {} from method {}", 
+                response.getId(), processor.getApiCallType().getMethod());
+                
         } catch (IOException e) {
-            r.setStatus(ApiResponseStatus.PROCESSING_ERROR);
+            log.error("Processing error for API response ID {} from method {}: {}", 
+                response.getId(), processor.getApiCallType().getMethod(), e.getMessage(), e);
+            response.setStatus(ApiResponseStatus.PROCESSING_ERROR);
+        } catch (Exception e) {
+            log.error("Unexpected error for API response ID {} from method {}: {}", 
+                response.getId(), processor.getApiCallType().getMethod(), e.getMessage(), e);
+            response.setStatus(ApiResponseStatus.PROCESSING_ERROR);
+            throw e; // propagate for transaction rollback
         } finally {
-            log.info("finished processing API response from method {}", processor.getApiCallType().getMethod());
+            response.setUpdatedAt(Instant.now());
+            repository.save(response);
         }
-        r.setUpdatedAt(Instant.now());
-        repository.save(r);
     }
 
     private static LastfmApiResponse dtoToApiResponse(LastfmApiResponseCreateRequest dto) {

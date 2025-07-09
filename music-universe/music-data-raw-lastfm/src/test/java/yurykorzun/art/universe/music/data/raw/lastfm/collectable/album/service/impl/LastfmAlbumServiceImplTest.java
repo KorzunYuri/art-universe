@@ -59,12 +59,12 @@ class LastfmAlbumServiceImplTest extends JpaOnlyTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    void saveAlbums_shouldCallRepository_whenAlbumsProvided() {
+    void saveAll_shouldCallRepository_whenAllProvided() {
         // given
         List<LastfmAlbum> albumsToSave = buildAlbums(2);
 
         // when
-        albumService.saveAlbums(albumsToSave);
+        albumService.saveAll(albumsToSave);
 
         // then
         AssertionUtils.verifyAndAssertInvocations(

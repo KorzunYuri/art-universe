@@ -12,7 +12,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiCal
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmApiCallRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallPrioritizer;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiClient;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiResponseService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
@@ -33,8 +32,6 @@ class LastfmApiCallServiceImplTest {
     @Mock
     private LastfmApiResponseService apiResponseService;
     @Mock
-    private LastfmApiCallPrioritizer apiCallPrioritizer;
-    @Mock
     private LastfmApiClient apiClient;
 
     private LastfmApiCallServiceImpl service;
@@ -46,7 +43,6 @@ class LastfmApiCallServiceImplTest {
             new LastfmApiCallServiceImpl(
                 apiCallRepository,
                 apiResponseService,
-                apiCallPrioritizer,
                 apiClient,
                 null,   // self
                 5.0 // limiter constant

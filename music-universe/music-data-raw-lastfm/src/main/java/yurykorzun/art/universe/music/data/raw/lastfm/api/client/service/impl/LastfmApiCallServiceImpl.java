@@ -14,7 +14,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiRes
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmApiCallRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallPrioritizer;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiClient;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiResponseService;
@@ -28,7 +27,6 @@ public class LastfmApiCallServiceImpl implements LastfmApiCallService {
 
     private final LastfmApiCallRepository apiCallRepository;
     private final LastfmApiResponseService responseService;
-    private final LastfmApiCallPrioritizer apiCallPrioritizer;
     private final LastfmApiClient apiClient;
     private final LastfmApiCallServiceImpl self;
 
@@ -37,14 +35,12 @@ public class LastfmApiCallServiceImpl implements LastfmApiCallService {
     public LastfmApiCallServiceImpl(
             LastfmApiCallRepository apiCallRepository,
             LastfmApiResponseService responseService,
-            LastfmApiCallPrioritizer apiCallPrioritizer,
             LastfmApiClient apiClient,
             @Lazy LastfmApiCallServiceImpl self,
             @Value("${lastfm.client.callsPerSec}") double apiClientCallsPerSec
     ) {
         this.apiCallRepository = apiCallRepository;
         this.responseService = responseService;
-        this.apiCallPrioritizer = apiCallPrioritizer;
         this.apiClient = apiClient;
         this.self = self;
 
@@ -108,7 +104,6 @@ public class LastfmApiCallServiceImpl implements LastfmApiCallService {
     public void triggerApiCalls() {
         //   TODO design complex priority logic to fit LastFm API calls rate limit
         Collection<LastfmApiCall> apiCalls = apiCallRepository.findAllUnprocessedUnexpired();
-        apiCalls = apiCallPrioritizer.prioritizeApiCalls(apiCalls);
         apiCalls.forEach(apiCall -> {
             log.info("initiating API call of type {} for entity {}", apiCall.getType(), apiCall.getEntityId());
             rateLimiter.acquire();

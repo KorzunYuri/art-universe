@@ -20,7 +20,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -97,7 +96,7 @@ class LastfmTrackControllerTest {
         Page<LastfmTrackResponseDto> dtoPage = trackPage.map(LastfmTrackResponseDto::from);
 
         TrackSearchParams expectedParams = new TrackSearchParams(search, minPlayCount, minListenersCount, artistId, approvalStatuses);
-        when(trackService.findTracks(any(TrackSearchParams.class), eq(pageable)))
+        when(trackService.findAll(any(TrackSearchParams.class), eq(pageable)))
             .thenReturn(dtoPage);
 
         // when
@@ -130,7 +129,7 @@ class LastfmTrackControllerTest {
             assertEquals(entity.getArtist().getName(), dto.artist().name());
         }
 
-        verify(trackService).findTracks(expectedParams, pageable);
+        verify(trackService).findAll(expectedParams, pageable);
     }
     @Test
     void getTracks_shouldHandleNullFilters() {
@@ -141,7 +140,7 @@ class LastfmTrackControllerTest {
         Page<LastfmTrack> trackPage = new PageImpl<>(List.of(track), pageable, 1);
         Page<LastfmTrackResponseDto> dtoPage = trackPage.map(LastfmTrackResponseDto::from);
         
-        when(trackService.findTracks(any(TrackSearchParams.class), eq(pageable)))
+        when(trackService.findAll(any(TrackSearchParams.class), eq(pageable)))
             .thenReturn(dtoPage);
 
         // when
@@ -163,7 +162,7 @@ class LastfmTrackControllerTest {
     void getTracks_shouldReturnFailureOnException() {
         // given
         Pageable pageable = PageRequest.of(0, 10);
-        when(trackService.findTracks(any(TrackSearchParams.class), any())).thenThrow(new RuntimeException("Fail"));
+        when(trackService.findAll(any(TrackSearchParams.class), any())).thenThrow(new RuntimeException("Fail"));
 
         // when
         ResponseEntity<ResponseWrapper<Page<LastfmTrackResponseDto>>> response = 

@@ -39,7 +39,7 @@ public class LastfmTagController {
     ) {
         try {
             TagSearchParams params = new TagSearchParams(search, approvalStatuses);
-            Page<LastfmTagResponseDto> page = tagService.findTags(params, pageable);
+            Page<LastfmTagResponseDto> page = tagService.findAll(params, pageable);
             return ResponseWrapper.success(page);
         } catch (Exception e) {
             log.error("Failed to fetch tags: {}", e.getMessage(), e);
@@ -70,7 +70,7 @@ public class LastfmTagController {
             // Parse entity type from string or integer
             LastfmEntityType parsedEntityType = parseEntityType(entityType);
             
-            List<EntityTagDto> tags = tagService.findTagsByEntity(parsedEntityType, entityId);
+            List<EntityTagDto> tags = tagService.findAllByEntity(parsedEntityType, entityId);
             return ResponseWrapper.success(tags);
         } catch (IllegalArgumentException e) {
             log.error("Invalid entity type: {}", e.getMessage(), e);

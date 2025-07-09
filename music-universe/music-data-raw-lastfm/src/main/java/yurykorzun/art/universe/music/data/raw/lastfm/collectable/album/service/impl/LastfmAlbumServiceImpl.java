@@ -22,7 +22,12 @@ public class LastfmAlbumServiceImpl implements LastfmAlbumService {
     }
 
     @Override
-    public List<LastfmAlbum> saveAlbums(List<LastfmAlbum> lastfmAlbums) {
+    public List<LastfmAlbum> findEntitiesByUniqueKeys(List<String> uniqueKeys) {
+        return findAllByUrls(uniqueKeys);
+    }
+
+    @Override
+    public List<LastfmAlbum> saveAll(List<LastfmAlbum> lastfmAlbums) {
         return lastfmAlbumRepository.saveAll(lastfmAlbums);
     }
 

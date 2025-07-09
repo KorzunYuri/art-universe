@@ -9,14 +9,18 @@
 - Liquibase migrations written in SQL
 
 ### Testing Conventions
-- **Method Naming**: `method_shouldBehavior_whenCondition()`, camel case
+- **Method Naming**:
+  - normal tests: `method_shouldBehavior_whenCondition()`, camel case
+  - MVC tests: `HTTPMETHOD_path_shouldBehaviour_whenCondition()`, camel case
 - **JpaOnlyTest** - test archetype for persistence layer testing with TestContainers
 - **@MockitoBean** is used instead of @MockBean for Spring Boot tests
 - **Unit Tests** - Use `@ExtendWith(MockitoExtension.class)` with `@Mock` and `@InjectMocks`
 - **MVC Tests** - Use `@WebMvcTest` with `@MockitoBean` for service dependencies
 - **JSON Assertions**: Build `expectedJson` with `ObjectMapper` instead of `jsonPath()` assertions
 - **Response Validation**: Assert `ResponseWrapper` structure in unit tests
-- Integration tests tagged with "integration"
+- Integration tests tagged with "integration".
+- Test report is placed in {module_root}/build/reports/tests/test/index.html
+- Reports for each test class are placed in {module_root}/build/reports/tests/test/classes
 
 ### API Standards
 - REST endpoints follow `/api/v1/{entity}` pattern

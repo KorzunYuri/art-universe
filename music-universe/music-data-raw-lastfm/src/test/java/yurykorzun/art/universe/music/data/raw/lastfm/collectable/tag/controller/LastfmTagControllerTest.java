@@ -12,7 +12,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.L
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.EntityTagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.service.LastfmTagService;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -37,7 +36,7 @@ class LastfmTagControllerTest {
         
         List<EntityTagDto> tags = List.of(new EntityTagDto(3L, "electronic"));
         
-        when(tagService.findTagsByEntity(entityType, entityId)).thenReturn(tags);
+        when(tagService.findAllByEntity(entityType, entityId)).thenReturn(tags);
 
         // When
         ResponseEntity<ResponseWrapper<List<EntityTagDto>>> response =
@@ -63,7 +62,7 @@ class LastfmTagControllerTest {
         LastfmEntityType entityType = LastfmEntityType.ALBUM;
         String entityTypeParam = entityType.getName();
         
-        when(tagService.findTagsByEntity(entityType, entityId)).thenReturn(Collections.emptyList());
+        when(tagService.findAllByEntity(entityType, entityId)).thenReturn(Collections.emptyList());
 
         // When
         ResponseEntity<ResponseWrapper<List<EntityTagDto>>> response =
@@ -107,7 +106,7 @@ class LastfmTagControllerTest {
         
         List<EntityTagDto> tags = List.of(new EntityTagDto(1L, "rock"));
         
-        when(tagService.findTagsByEntity(entityType, entityId)).thenReturn(tags);
+        when(tagService.findAllByEntity(entityType, entityId)).thenReturn(tags);
 
         // When
         ResponseEntity<ResponseWrapper<List<EntityTagDto>>> response =
@@ -131,7 +130,7 @@ class LastfmTagControllerTest {
         LastfmEntityType entityType = LastfmEntityType.ARTIST;
         String entityTypeParam = entityType.getName();
         
-        when(tagService.findTagsByEntity(entityType, entityId))
+        when(tagService.findAllByEntity(entityType, entityId))
             .thenThrow(new RuntimeException("Database error"));
 
         // When

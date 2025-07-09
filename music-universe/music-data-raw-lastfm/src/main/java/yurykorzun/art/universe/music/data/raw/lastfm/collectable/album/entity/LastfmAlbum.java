@@ -46,6 +46,7 @@ public class LastfmAlbum extends BaseLastfmEntity {
     @Column(name = "publish_ts")
     private LocalDateTime publishTs;
 
+    @Deprecated
     @Column(name = "description")
     @Convert(converter = GzipBase64StringConverter.class)
     private String description;

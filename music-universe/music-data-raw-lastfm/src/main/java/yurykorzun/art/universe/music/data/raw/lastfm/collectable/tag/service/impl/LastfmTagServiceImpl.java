@@ -15,6 +15,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.repository.
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.service.LastfmTagService;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class LastfmTagServiceImpl implements LastfmTagService {
@@ -31,12 +32,22 @@ public class LastfmTagServiceImpl implements LastfmTagService {
     }
 
     @Override
-    public List<LastfmTag> saveTags(List<LastfmTag> tags) {
+    public List<LastfmTag> findEntitiesByUniqueKeys(List<String> uniqueKeys) {
+        return tagRepository.findAllByNameIn(uniqueKeys);
+    }
+
+    @Override
+    public List<LastfmTag> saveAll(List<LastfmTag> tags) {
         return tagRepository.saveAll(tags);
     }
-    
+
     @Override
-    public Page<LastfmTagResponseDto> findTags(TagSearchParams params, Pageable pageable) {
+    public Optional<LastfmTag> findById(Long id) {
+        return tagRepository.findById(id);
+    }
+
+    @Override
+    public Page<LastfmTagResponseDto> findAll(TagSearchParams params, Pageable pageable) {
         List<ApprovalStatus> approvalStatuses = getApprovalStatusesFromCodes(params);
         Page<LastfmTag> tagsPage = tagRepository.findTags(
             params.search(),
@@ -63,8 +74,16 @@ public class LastfmTagServiceImpl implements LastfmTagService {
     }
     
     @Override
-    public List<EntityTagDto> findTagsByEntity(LastfmEntityType entityType, Long entityId) {
+    public List<EntityTagDto> findAllByEntity(LastfmEntityType entityType, Long entityId) {
         List<LastfmTag> tags = tagRepository.findTagsByEntity(entityType, entityId);
+        return tags.stream()
+            .map(EntityTagDto::from)
+            .toList();
+    }
+    
+    @Override
+    public List<EntityTagDto> findAllByEntityOrderByUsageCount(LastfmEntityType entityType, Long entityId) {
+        List<LastfmTag> tags = tagRepository.findTagsByEntityOrderByUsageCount(entityType, entityId);
         return tags.stream()
             .map(EntityTagDto::from)
             .toList();

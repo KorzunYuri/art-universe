@@ -23,7 +23,7 @@ public class LastfmApiResponseProcessingScheduler {
         scheduler = "dataCollectionScheduler")
     public void triggerResponsesProcessing() {
         log.info("start API responses processing");
-        apiResponseService.triggerResponsesProcessing();
+        apiResponseService.processResponses();
         log.info("finished API responses processing");
     }
 

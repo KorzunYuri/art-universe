@@ -83,7 +83,7 @@ class LastfmArtistControllerMvcTest {
         Page<LastfmArtist> artistsPage = new PageImpl<>(mockArtists, defaultPageable, mockArtists.size());
         Page<LastfmArtistResponseDto> pageResponse = artistsPage.map(LastfmArtistResponseDto::from);
         
-        when(artistService.findArtists(any(ArtistSearchParams.class), any(Pageable.class)))
+        when(artistService.findAll(any(ArtistSearchParams.class), any(Pageable.class)))
             .thenReturn(pageResponse);
 
         String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(pageResponse));
@@ -104,7 +104,7 @@ class LastfmArtistControllerMvcTest {
         Page<LastfmArtist> artistsPage = new PageImpl<>(mockArtists, defaultPageable, mockArtists.size());
         Page<LastfmArtistResponseDto> pageResponse = artistsPage.map(LastfmArtistResponseDto::from);
         
-        when(artistService.findArtists(any(ArtistSearchParams.class), any(Pageable.class)))
+        when(artistService.findAll(any(ArtistSearchParams.class), any(Pageable.class)))
             .thenReturn(pageResponse);
 
         String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(pageResponse));
@@ -121,7 +121,7 @@ class LastfmArtistControllerMvcTest {
         // Given
         String errorMessage = "Failed to fetch artists: service error occurred";
         
-        when(artistService.findArtists(any(ArtistSearchParams.class), any(Pageable.class)))
+        when(artistService.findAll(any(ArtistSearchParams.class), any(Pageable.class)))
             .thenThrow(new RuntimeException("Test exception"));
 
         String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.failureBody(errorMessage));

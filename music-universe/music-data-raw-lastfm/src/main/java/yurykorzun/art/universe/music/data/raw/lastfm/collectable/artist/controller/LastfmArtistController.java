@@ -38,7 +38,7 @@ public class LastfmArtistController {
     ) {
         try {
             ArtistSearchParams params = new ArtistSearchParams(search, minPlayCount, minListenersCount, approvalStatuses);
-            Page<LastfmArtistResponseDto> page = artistService.findArtists(params, pageable);
+            Page<LastfmArtistResponseDto> page = artistService.findAll(params, pageable);
             return ResponseWrapper.success(page);
         } catch (Exception e) {
             log.error("Failed to fetch artists: {}", e.getMessage(), e);

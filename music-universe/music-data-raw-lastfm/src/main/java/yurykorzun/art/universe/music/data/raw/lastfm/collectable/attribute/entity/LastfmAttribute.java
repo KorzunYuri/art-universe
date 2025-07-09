@@ -21,9 +21,9 @@ public enum LastfmAttribute implements Coded {
             DataType.INTEGER,
             HistoryType.SCD2,
             List.of(LastfmEntityType.TAG))
-    ,   REACH(
+    ,   USAGE_COUNT(
             2,
-            "Reach",
+            "Usage count",
             "Number of users that used entity",
             DataType.INTEGER,
             HistoryType.SCD2,
@@ -56,14 +56,14 @@ public enum LastfmAttribute implements Coded {
             DataType.INTEGER,
             HistoryType.SCD2,
             List.of(LastfmEntityType.TRACK))
-    ,   IS_STREAMABLE(
+    ,   @Deprecated IS_STREAMABLE(
             7,
             "streamable",
             "Is streamable",
             DataType.BOOLEAN,
             HistoryType.SCD2,
             List.of(LastfmEntityType.TRACK, LastfmEntityType.ARTIST))
-    ,   IS_ON_TOUR(
+    ,   @Deprecated IS_ON_TOUR(
             8,
             "on_tour",
             "Artist is on tour",

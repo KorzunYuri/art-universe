@@ -39,7 +39,7 @@ class LastfmTagControllerMvcTest {
         
         List<EntityTagDto> tags = List.of(new EntityTagDto(3L, "electronic"));
         
-        when(tagService.findTagsByEntity(entityType, entityId)).thenReturn(tags);
+        when(tagService.findAllByEntity(entityType, entityId)).thenReturn(tags);
 
         String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(tags));
 
@@ -57,7 +57,7 @@ class LastfmTagControllerMvcTest {
         Long entityId = 789L;
         LastfmEntityType entityType = LastfmEntityType.ALBUM; // code = 2
         
-        when(tagService.findTagsByEntity(entityType, entityId)).thenReturn(Collections.emptyList());
+        when(tagService.findAllByEntity(entityType, entityId)).thenReturn(Collections.emptyList());
 
         String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(Collections.emptyList()));
 
@@ -91,7 +91,7 @@ class LastfmTagControllerMvcTest {
         
         List<EntityTagDto> tags = List.of(new EntityTagDto(1L, "rock"));
         
-        when(tagService.findTagsByEntity(entityType, entityId)).thenReturn(tags);
+        when(tagService.findAllByEntity(entityType, entityId)).thenReturn(tags);
 
         String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(tags));
 
@@ -109,7 +109,7 @@ class LastfmTagControllerMvcTest {
         Long entityId = 123L;
         LastfmEntityType entityType = LastfmEntityType.ARTIST;
         
-        when(tagService.findTagsByEntity(entityType, entityId))
+        when(tagService.findAllByEntity(entityType, entityId))
             .thenThrow(new RuntimeException("Database error"));
 
         String errorMessage = "Failed to fetch entity tags: service error occurred";

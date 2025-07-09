@@ -82,7 +82,7 @@ class LastfmArtistControllerTest {
         Page<LastfmArtistResponseDto> dtoPage = artistPage.map(LastfmArtistResponseDto::from);
 
         ArtistSearchParams expectedParams = new ArtistSearchParams(search, minPlayCount, minListenersCount, approvalStatuses);
-        when(artistService.findArtists(eq(expectedParams), eq(pageable)))
+        when(artistService.findAll(eq(expectedParams), eq(pageable)))
             .thenReturn(dtoPage);
 
         // when
@@ -113,7 +113,7 @@ class LastfmArtistControllerTest {
         Page<LastfmArtist> artistPage = new PageImpl<>(List.of(artist), pageable, 1);
         Page<LastfmArtistResponseDto> dtoPage = artistPage.map(LastfmArtistResponseDto::from);
         
-        when(artistService.findArtists(any(ArtistSearchParams.class), eq(pageable)))
+        when(artistService.findAll(any(ArtistSearchParams.class), eq(pageable)))
             .thenReturn(dtoPage);
 
         // when
@@ -135,7 +135,7 @@ class LastfmArtistControllerTest {
     void getArtists_shouldReturnFailureOnException() {
         // given
         Pageable pageable = PageRequest.of(0, 10);
-        when(artistService.findArtists(any(ArtistSearchParams.class), any())).thenThrow(new RuntimeException("Fail"));
+        when(artistService.findAll(any(ArtistSearchParams.class), any())).thenThrow(new RuntimeException("Fail"));
 
         // when
         ResponseEntity<ResponseWrapper<Page<LastfmArtistResponseDto>>> response = 

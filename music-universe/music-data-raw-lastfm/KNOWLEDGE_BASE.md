@@ -9,7 +9,7 @@ Spring Boot application that collects data about tags, artists, albums, and trac
 ## Key Components
 
 ### API Client Layer
-- `LastfmApiClient` - HTTP client for LastFM API with rate limiting
+- `LastfmApiClientImpl` - HTTP client for LastFM API with rate limiting
 - `LastfmApiCall` / `LastfmApiResponse` - API call tracking entities
 - `LastfmApiCallGenerator` - Generates API calls based on entity state
 

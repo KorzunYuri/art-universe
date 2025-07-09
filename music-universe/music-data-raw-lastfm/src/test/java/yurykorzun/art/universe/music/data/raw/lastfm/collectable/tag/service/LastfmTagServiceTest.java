@@ -29,7 +29,7 @@ class LastfmTagServiceTest {
     private LastfmTagServiceImpl tagService;
 
     @Test
-    void findTagsByEntity_shouldReturnEntityTagDtos() {
+    void findAllByEntity_shouldReturnEntityTagDtos() {
         // Given
         Long entityId = 123L;
         LastfmEntityType entityType = LastfmEntityType.ARTIST;
@@ -46,7 +46,7 @@ class LastfmTagServiceTest {
         when(tagRepository.findTagsByEntity(entityType, entityId)).thenReturn(tags);
 
         // When
-        List<EntityTagDto> result = tagService.findTagsByEntity(entityType, entityId);
+        List<EntityTagDto> result = tagService.findAllByEntity(entityType, entityId);
 
         // Then
         assertNotNull(result);
@@ -62,7 +62,7 @@ class LastfmTagServiceTest {
     }
 
     @Test
-    void findTagsByEntity_shouldReturnEmptyListWhenNoTagsFound() {
+    void findAllByEntity_shouldReturnEmptyListWhenNoAllFound() {
         // Given
         Long entityId = 123L;
         LastfmEntityType entityType = LastfmEntityType.ARTIST;
@@ -70,7 +70,7 @@ class LastfmTagServiceTest {
         when(tagRepository.findTagsByEntity(entityType, entityId)).thenReturn(Collections.emptyList());
 
         // When
-        List<EntityTagDto> result = tagService.findTagsByEntity(entityType, entityId);
+        List<EntityTagDto> result = tagService.findAllByEntity(entityType, entityId);
 
         // Then
         assertNotNull(result);
@@ -80,7 +80,7 @@ class LastfmTagServiceTest {
     }
 
     @Test
-    void findTagsByEntity_shouldHandleDifferentEntityTypes() {
+    void findAllByEntity_shouldHandleDifferentEntityTypes() {
         // Given
         Long entityId = 456L;
         LastfmEntityType entityType = LastfmEntityType.TRACK;
@@ -92,7 +92,7 @@ class LastfmTagServiceTest {
         when(tagRepository.findTagsByEntity(entityType, entityId)).thenReturn(List.of(tag));
 
         // When
-        List<EntityTagDto> result = tagService.findTagsByEntity(entityType, entityId);
+        List<EntityTagDto> result = tagService.findAllByEntity(entityType, entityId);
 
         // Then
         assertNotNull(result);

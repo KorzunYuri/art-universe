@@ -1,6 +1,6 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.album.common.processing;
 
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.album.common.dto.AlbumDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.entity.LastfmAlbum;
@@ -8,10 +8,10 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.entity.La
 public class LastfmAlbumEntityFactory<D extends AlbumDto> implements EntityFactory<LastfmAlbum, D> {
 
     @Override
-    public LastfmAlbum fromDto(D dto, LastfmApiResponse response) {
+    public LastfmAlbum fromDto(D dto, LastfmApiCall sourceApiCall) {
         // set mandatory attrs
         LastfmAlbum.LastfmAlbumBuilder<?, ?> builder = LastfmAlbum.builder()
-            .apiCall(response.getApiCall())
+            .apiCall(sourceApiCall)
             .name(dto.getName())
             .url(dto.getUrl())
         ;

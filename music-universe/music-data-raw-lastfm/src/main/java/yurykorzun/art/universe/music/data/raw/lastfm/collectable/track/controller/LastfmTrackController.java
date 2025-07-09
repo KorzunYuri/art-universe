@@ -7,9 +7,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import yurykorzun.art.universe.common.CodedRegistry;
 import yurykorzun.art.universe.common.controller.ResponseWrapper;
-import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.dto.ApprovalStatusRequestDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.dto.LastfmTrackResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.dto.TrackSearchParams;
@@ -48,7 +46,7 @@ public class LastfmTrackController {
                     approvalStatuses
             );
             
-            Page<LastfmTrackResponseDto> tracks = trackService.findTracks(params, pageable);
+            Page<LastfmTrackResponseDto> tracks = trackService.findAll(params, pageable);
             return ResponseWrapper.success(tracks);
         } catch (Exception e) {
             log.error("Failed to fetch tracks: {}", e.getMessage(), e);

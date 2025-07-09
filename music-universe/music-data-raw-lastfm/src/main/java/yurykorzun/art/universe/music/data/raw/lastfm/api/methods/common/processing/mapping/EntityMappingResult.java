@@ -10,18 +10,18 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 
 /**
- * A wrapper around EntityMappings map. Translates some basic {@link Map} methods and holds info about source apiCall.
+ * Map of {@link }EntityMapping} with DTO unique keys as keys. Translates some basic {@link Map} methods and holds info about source apiCall.
  * @param <E>   entity
  * @param <D>   DTO
  */
-public class EntityMappings<E extends BaseLastfmEntity, D extends EntityDto> {
+public class EntityMappingResult<E extends BaseLastfmEntity, D extends EntityDto<E>> {
     
     private final Map<String, EntityMapping<E, D>> mappings;
 
     @Getter
     private final LastfmApiCall sourceApiCall;
 
-    public EntityMappings(Map<String, EntityMapping<E, D>> mappings, LastfmApiCall sourceApiCall) {
+    public EntityMappingResult(Map<String, EntityMapping<E, D>> mappings, LastfmApiCall sourceApiCall) {
         this.mappings = mappings;
         this.sourceApiCall = sourceApiCall;
     }

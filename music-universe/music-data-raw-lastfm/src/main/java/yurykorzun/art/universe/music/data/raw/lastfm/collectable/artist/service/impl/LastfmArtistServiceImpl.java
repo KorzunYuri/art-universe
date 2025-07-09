@@ -25,12 +25,12 @@ public class LastfmArtistServiceImpl implements LastfmArtistService {
     }
 
     @Override
-    public LastfmArtist saveArtist(LastfmArtist artist) {
+    public LastfmArtist save(LastfmArtist artist) {
         return artistRepository.save(artist);
     }
 
     @Override
-    public List<LastfmArtist> saveArtists(List<LastfmArtist> artists) {
+    public List<LastfmArtist> saveAll(List<LastfmArtist> artists) {
         return artistRepository.saveAll(artists);
     }
 
@@ -45,7 +45,7 @@ public class LastfmArtistServiceImpl implements LastfmArtistService {
     }
 
     @Override
-    public Page<LastfmArtistResponseDto> findArtists(ArtistSearchParams params, Pageable pageable) {
+    public Page<LastfmArtistResponseDto> findAll(ArtistSearchParams params, Pageable pageable) {
         List<ApprovalStatus> approvalStatuses = getApprovalStatusesFromCodes(params);
         Page<LastfmArtist> artistsPage = artistRepository.findArtists(
             params.search(),
@@ -56,8 +56,9 @@ public class LastfmArtistServiceImpl implements LastfmArtistService {
         return artistsPage.map(LastfmArtistResponseDto::from);
     }
 
-    private static List<ApprovalStatus> getApprovalStatusesFromCodes(ArtistSearchParams params) {
-        return CodedRegistry.getByCodes(params.approvalStatuses(), ApprovalStatus.class);
+    @Override
+    public List<LastfmArtist> findEntitiesByUniqueKeys(List<String> uniqueKeys) {
+        return findAllByNames(uniqueKeys);
     }
 
     @Override
@@ -80,5 +81,9 @@ public class LastfmArtistServiceImpl implements LastfmArtistService {
         artist.updateApprovalStatus(approvalStatus);
         LastfmArtist updated = artistRepository.save(artist);
         return LastfmArtistResponseDto.from(updated);
+    }
+
+    private static List<ApprovalStatus> getApprovalStatusesFromCodes(ArtistSearchParams params) {
+        return CodedRegistry.getByCodes(params.approvalStatuses(), ApprovalStatus.class);
     }
 }

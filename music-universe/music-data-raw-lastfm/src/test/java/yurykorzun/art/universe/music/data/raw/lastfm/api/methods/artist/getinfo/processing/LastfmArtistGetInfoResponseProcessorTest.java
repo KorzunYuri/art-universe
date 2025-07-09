@@ -2,37 +2,40 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getinfo
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AllArgsConstructor;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getinfo.dto.ArtistGetInfoArtistTagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getinfo.dto.ArtistGetInfoDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.common.LastfmTagEntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.LastfmAttributeHistoryService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityRelationService;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.repository.LastfmArtistRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.impl.LastfmArtistServiceImpl;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttributeHistoryRecord;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repository.LastfmAttributeHistoryRecordRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repository.LastfmAttributeTypeSynchronizer;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.impl.LastfmAttributeHistoryServiceImpl;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.entity.LastfmArtistTag;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.repository.LastfmArtistTagRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.repository.LastfmArtistsRelationRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.service.LastfmArtistTagServiceImpl;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.service.LastfmArtistsRelationServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.service.LastfmTagService;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.repository.LastfmTagRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.service.impl.LastfmTagServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
 
 import java.util.List;
 import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-import static yurykorzun.art.universe.music.data.raw.lastfm.common.utils.AssertionUtils.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("integration")
 @Import({
@@ -41,6 +44,12 @@ import static yurykorzun.art.universe.music.data.raw.lastfm.common.utils.Asserti
     LastfmArtistGetInfoSimilarArtistFactory.class,
     LastfmArtistGetInfoTagFactory.class,
     LastfmApiDtoProcessingService.class,
+    LastfmArtistServiceImpl.class,
+    LastfmTagServiceImpl.class,
+    LastfmArtistsRelationServiceImpl.class,
+    LastfmArtistTagServiceImpl.class,
+    LastfmAttributeHistoryServiceImpl.class,
+    LastfmAttributeTypeSynchronizer.class
 })
 class LastfmArtistGetInfoResponseProcessorTest extends JpaOnlyTest {
 
@@ -50,26 +59,25 @@ class LastfmArtistGetInfoResponseProcessorTest extends JpaOnlyTest {
     @Autowired
     private LastfmArtistGetInfoResponseProcessor processor;
 
-    // beans for invocations verification
-    @MockitoBean
-    private LastfmEntityRelationService entityRelationService;
-    @MockitoBean
-    private LastfmAttributeHistoryService attributeHistoryService;
-    @MockitoBean
-    private LastfmArtistService artistService;
-    @MockitoBean
-    private LastfmTagService tagService;
+    @Autowired
+    private LastfmArtistRepository artistRepository;
 
-    // the variables below depend on currently supported attributes and should change along with processor implementation
-    private static final int ARTIST_SCD2_ATTRS_NUMBER = 6;
-    private static final int ARTIST_SNAPSHOT_ATTRS_NUMBER = 0;
-    private static final int ARTIST_ATTRS_NUMBER = ARTIST_SCD2_ATTRS_NUMBER + ARTIST_SNAPSHOT_ATTRS_NUMBER;
-    private static final int TAG_SCD2_ATTRS_NUMBER = 1;
-    private static final int TAG_SNAPSHOT_ATTRS_NUMBER = 0;
-    private static final int TAG_ATTRS_NUMBER = TAG_SCD2_ATTRS_NUMBER + TAG_SNAPSHOT_ATTRS_NUMBER;
-    private static final int SIMILAR_ARTIST_SCD2_ATTRS_NUMBER = 1;
-    private static final int SIMILAR_ARTIST_SNAPSHOT_ATTRS_NUMBER = 0;
-    private static final int SIMILAR_ARTIST_ATTRS_NUMBER = SIMILAR_ARTIST_SCD2_ATTRS_NUMBER + SIMILAR_ARTIST_SNAPSHOT_ATTRS_NUMBER;
+    @Autowired
+    private LastfmTagRepository tagRepository;
+
+    @Autowired
+    private LastfmArtistTagRepository artistTagRepository;
+
+    @Autowired
+    private LastfmArtistsRelationRepository artistsRelationRepository;
+
+    @Autowired
+    private LastfmAttributeHistoryRecordRepository attributeHistoryRepository;
+
+    @BeforeEach
+    public void setUp() {
+        consistencyHelper.cleanup();
+    }
 
     @AfterEach
     public void cleanDatabase() {
@@ -77,140 +85,104 @@ class LastfmArtistGetInfoResponseProcessorTest extends JpaOnlyTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
-    void process_shouldCreateNewRecords_whenArtistGetInfoResponseAndExistingApprovedArtistProvided() throws Exception {
-
+    void process_shouldCreateNewRecords_whenArtistGetInfoResponseAndNoExistingArtistProvided() throws Exception {
+        // given
         String responseJsonString = LastfmApiClientResourceUtil.getApiClientResponse("artist.getInfo");
-        TestCase testCase = testCaseFromResponse(responseJsonString, true);
-
-        // expected values
-        final int newArtistAttrValuesNumber = ARTIST_ATTRS_NUMBER;
-        final int newTagsNumber = testCase.expectedTags.size();
-        final int newTagAttrValuesNumber = newTagsNumber * TAG_ATTRS_NUMBER;
-
-        when(artistService.findByName(eq(testCase.expectedArtist.getName()))).thenReturn(Optional.of(testCase.expectedArtist));
-        when(artistService.saveArtists(any())).thenAnswer(invocation -> invocation.getArguments()[0]);
-        when(tagService.saveTags(any())).thenAnswer(invocation -> invocation.getArguments()[0]);
-        when(attributeHistoryService.upsertCandidateValue(any())).thenAnswer(invocation -> invocation.getArguments()[0]);
-
-        processor.processResponse(testCase.sourceApiResponse);
-
-        // Verify that similar artists were searched
-        verify(artistService, never()).findAllByNames(any());
-
-        // Verify that base artist and similar artists were saved
-        verifyAndAssertInvocations(
-            captor -> verify(artistService, times(1)).saveArtists(captor.capture()),
-            List.class,
-            List.of(List.of(testCase.expectedArtist)),
-            "artistService.saveArtists");
-
-        // Verify that new tags were saved
-        verifyAndAssertInvocations(
-            captor -> verify(tagService, times(1)).saveTags(captor.capture()),
-            List.class,
-            List.of(testCase.expectedTags),
-            "tagService.saveTags");
-
-        // verify that attribute values were saved
-        verifyInvocationsNumberWithCollectionsSizeOnly(
-            captor -> verify(attributeHistoryService, times(2)).upsertCandidateValues(captor.capture()),
-            List.of(newArtistAttrValuesNumber, newTagAttrValuesNumber),
-            "attributeHistoryService.upsertCandidateValues");
-
-        // verify that entity relations were saved
-        verifyInvocationsNumberWithCollectionsSizeOnly(
-            captor -> verify(entityRelationService, times(1)).upsertEntityRelations(captor.capture()),
-            List.of(newTagsNumber),
-            "entityRelationService.upsertEntityRelations");
-
+        ArtistGetInfoDtoRoot dtoRoot = parseResponse(responseJsonString);
+        String artistName = dtoRoot.getArtist().getName();
+        
+        // Create API response
+        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
+            responseJsonString, LastfmApiCallType.ARTIST_GET_INFO);
+        
+        // when
+        processor.processResponse(apiResponse);
+        
+        // then
+        // Verify artist was created
+        Optional<LastfmArtist> savedArtist = artistRepository.findByName(artistName);
+        assertTrue(savedArtist.isPresent(), "Artist should be saved to database");
+        
+        // Verify tags were created
+        int expectedTagsCount = dtoRoot.getArtist().getTagsObject().getTags().size();
+        List<LastfmTag> savedTags = tagRepository.findAll();
+        assertEquals(expectedTagsCount, savedTags.size(), "All tags should be saved to database");
+        
+        // Verify artist-tag relations were created
+        List<LastfmArtistTag> artistTagRelations = artistTagRepository.findAll();
+        assertEquals(expectedTagsCount, artistTagRelations.size(), "Artist-tag relations should be created");
+        
+        // Verify attribute history records were created
+        List<LastfmAttributeHistoryRecord> attributeRecords = attributeHistoryRepository.findAll();
+        assertFalse(attributeRecords.isEmpty(), "Attribute history records should be created");
+        
+        // Check specific artist attributes
+        LastfmArtist artist = savedArtist.get();
+        assertEquals(artistName, artist.getName(), "Artist name should match");
+        assertNotNull(artist.getUrl(), "Artist URL should be set");
+        assertNotNull(artist.getListenersCount(), "Artist listeners count should be set");
+        assertNotNull(artist.getPlayCount(), "Artist play count should be set");
     }
 
     @Test
-    @SuppressWarnings("unchecked")
-    void process_shouldCreateNewRecords_whenArtistGetInfoResponseAndExistingUnapprovedArtistProvided() throws Exception {
-
+    void process_shouldUpdateExistingArtist_whenArtistGetInfoResponseAndExistingArtistProvided() throws Exception {
+        // given
         String responseJsonString = LastfmApiClientResourceUtil.getApiClientResponse("artist.getInfo");
-        TestCase testCase = testCaseFromResponse(responseJsonString, false);
-
-        // expected values
-        final int newArtistAttrValuesNumber = ARTIST_ATTRS_NUMBER;
-        final int newTagsNumber = testCase.expectedTags.size();
-        final int newTagAttrValuesNumber = newTagsNumber * TAG_ATTRS_NUMBER;
-
-        when(artistService.findByName(eq(testCase.expectedArtist.getName()))).thenReturn(Optional.of(testCase.expectedArtist));
-        when(artistService.saveArtists(any())).thenAnswer(invocation -> invocation.getArguments()[0]);
-        when(tagService.saveTags(any())).thenAnswer(invocation -> invocation.getArguments()[0]);
-        when(attributeHistoryService.upsertCandidateValue(any())).thenAnswer(invocation -> invocation.getArguments()[0]);
-
-        processor.processResponse(testCase.sourceApiResponse);
-
-        // Verify that similar artists were not searched, because base artist is not approved
-        verify(artistService, never()).findAllByNames(any());
-
-        // Verify that base artist and similar artists were saved
-        verifyAndAssertInvocations(
-            captor -> verify(artistService, times(1)).saveArtists(captor.capture()),
-            List.class,
-            List.of(List.of(testCase.expectedArtist)),
-            "artistService.saveArtists");
-
-        // Verify that new tags were saved
-        verifyAndAssertInvocations(
-            captor -> verify(tagService, times(1)).saveTags(captor.capture()),
-            List.class,
-            List.of(testCase.expectedTags),
-            "tagService.saveTags");
-
-        // verify that attribute values were saved
-        verifyInvocationsNumberWithCollectionsSizeOnly(
-            captor -> verify(attributeHistoryService, times(2)).upsertCandidateValues(captor.capture()),
-            List.of(newArtistAttrValuesNumber, newTagAttrValuesNumber),
-            "attributeHistoryService.upsertCandidateValues");
-
-        // verify that entity relations were saved
-        verifyInvocationsNumberWithCollectionsSizeOnly(
-            captor -> verify(entityRelationService, times(1)).upsertEntityRelations(captor.capture()),
-            List.of(newTagsNumber),
-            "entityRelationService.upsertEntityRelations");
-
+        ArtistGetInfoDtoRoot dtoRoot = parseResponse(responseJsonString);
+        String artistName = dtoRoot.getArtist().getName();
+        
+        // Create existing artist with minimal data
+        LastfmArtist existingArtist = consistencyHelper.createAndSaveArtist(builder -> 
+            builder.name(artistName)
+                   .url("http://old-url.com")
+                   .listenersCount(100)
+                   .playCount(200)
+                   .approvalStatus(ApprovalStatus.APPROVED)
+        );
+        
+        // Create API response
+        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
+            responseJsonString, LastfmApiCallType.ARTIST_GET_INFO, existingArtist);
+        
+        // Record initial state
+        long initialTagCount = tagRepository.count();
+        long initialArtistTagCount = artistTagRepository.count();
+        long initialAttributeCount = attributeHistoryRepository.count();
+        
+        // when
+        processor.processResponse(apiResponse);
+        
+        // then
+        // Verify artist was updated
+        Optional<LastfmArtist> updatedArtist = artistRepository.findById(existingArtist.getId());
+        assertTrue(updatedArtist.isPresent(), "Artist should still exist in database");
+        
+        // Verify artist data was updated
+        LastfmArtist artist = updatedArtist.get();
+        assertEquals(artistName, artist.getName(), "Artist name should remain the same");
+        assertNotEquals("http://old-url.com", artist.getUrl(), "Artist URL should be updated");
+        assertNotEquals(100, artist.getListenersCount(), "Artist listeners count should be updated");
+        assertNotEquals(200, artist.getPlayCount(), "Artist play count should be updated");
+        
+        // Verify new tags were created
+        int expectedTagsCount = dtoRoot.getArtist().getTagsObject().getTags().size();
+        assertTrue(tagRepository.count() > initialTagCount, "New tags should be added to database");
+        
+        // Verify new artist-tag relations were created
+        assertTrue(artistTagRepository.count() > initialArtistTagCount, 
+            "New artist-tag relations should be created");
+        
+        // Verify new attribute history records were created
+        assertTrue(attributeHistoryRepository.count() > initialAttributeCount, 
+            "New attribute history records should be created");
     }
 
-    /**
-     * Base test case for artist processor
-     */
-    @AllArgsConstructor
-    private static class TestCase {
-        LastfmApiResponse sourceApiResponse;
-        LastfmArtist expectedArtist;
-        List<LastfmTag> expectedTags;
-    }
-
-    private TestCase testCaseFromResponse(String responseString, boolean isApproved) {
-
-        final ArtistGetInfoDtoRoot dtoRoot;
+    private ArtistGetInfoDtoRoot parseResponse(String responseString) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            dtoRoot = objectMapper.readValue(responseString, ArtistGetInfoDtoRoot.class);
+            return objectMapper.readValue(responseString, ArtistGetInfoDtoRoot.class);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Failed to parse response", e);
         }
-
-        LastfmArtist expectedArtist = EntityCreationHelper.createArtist(
-            builder -> builder
-                .name(dtoRoot.getArtist().getName()) // for processor to find the record
-                .approvalStatus(isApproved ? ApprovalStatus.APPROVED : ApprovalStatus.PENDING) // affect processor's logic
-        );
-
-        LastfmApiResponse sourceApiResponse = EntityCreationHelper.createApiResponse(
-            responseString, LastfmApiCallType.ARTIST_GET_INFO, expectedArtist);
-
-        LastfmTagEntityFactory<ArtistGetInfoArtistTagDto> tagFactory = new LastfmTagEntityFactory<>();
-        List<LastfmTag> expectedTags = dtoRoot.getArtist().getTagsObject().getTags().stream()
-            .map(dto -> tagFactory.fromDto(dto, sourceApiResponse))
-            .toList();
-
-        return new TestCase(sourceApiResponse, expectedArtist, expectedTags);
     }
-
 }

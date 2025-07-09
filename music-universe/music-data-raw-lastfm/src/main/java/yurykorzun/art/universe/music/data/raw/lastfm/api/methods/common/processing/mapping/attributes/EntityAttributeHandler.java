@@ -14,7 +14,7 @@ import java.util.Objects;
  * @param <T>   value type, transient & irrelevant for class logic
  * @param <D>   dto
  */
-public abstract class EntityAttributeHandler<E extends BaseLastfmEntity, T, D extends EntityDto> {
+public abstract class EntityAttributeHandler<E extends BaseLastfmEntity, T, D extends EntityDto<E>> {
 
     public abstract LastfmAttribute getAttribute();
 

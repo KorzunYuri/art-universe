@@ -35,6 +35,7 @@ public class LastfmTrack extends BaseLastfmEntity {
     @Column(name = "duration")
     private Integer duration;
 
+    @Deprecated
     @Column(name = "is_streamable")
     private Boolean isStreamable;
 

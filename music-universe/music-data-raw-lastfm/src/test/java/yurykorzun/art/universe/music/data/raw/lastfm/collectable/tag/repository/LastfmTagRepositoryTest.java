@@ -4,9 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityRelation;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.repository.LastfmEntityRelationRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.repository.LastfmArtistTagRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
@@ -21,7 +20,7 @@ class LastfmTagRepositoryTest extends JpaOnlyTest {
     private LastfmTagRepository tagRepository;
 
     @Autowired
-    private LastfmEntityRelationRepository entityRelationRepository;
+    private LastfmArtistTagRepository artistTagRepository;
 
     @Autowired
     private DbConsistencyHelper dbHelper;
@@ -37,65 +36,14 @@ class LastfmTagRepositoryTest extends JpaOnlyTest {
         LastfmArtist artist = dbHelper.createAndSaveArtist();
         
         // Create tags with names that will test alphabetical ordering
-        LastfmTag tagZebra = dbHelper.createAndSaveTag();
-        LastfmTag tagApple = dbHelper.createAndSaveTag();
-        LastfmTag tagBanana = dbHelper.createAndSaveTag();
-
-        // Update tag names
-        tagZebra = tagRepository.save(LastfmTag.builder()
-            .id(tagZebra.getId())
-            .name("zebra")
-            .url(tagZebra.getUrl())
-            .apiCall(tagZebra.getApiCall())
-            .approvalStatus(tagZebra.getApprovalStatus())
-            .createdAt(tagZebra.getCreatedAt())
-            .updatedAt(tagZebra.getUpdatedAt())
-            .build());
-            
-        tagApple = tagRepository.save(LastfmTag.builder()
-            .id(tagApple.getId())
-            .name("apple")
-            .url(tagApple.getUrl())
-            .apiCall(tagApple.getApiCall())
-            .approvalStatus(tagApple.getApprovalStatus())
-            .createdAt(tagApple.getCreatedAt())
-            .updatedAt(tagApple.getUpdatedAt())
-            .build());
-            
-        tagBanana = tagRepository.save(LastfmTag.builder()
-            .id(tagBanana.getId())
-            .name("banana")
-            .url(tagBanana.getUrl())
-            .apiCall(tagBanana.getApiCall())
-            .approvalStatus(tagBanana.getApprovalStatus())
-            .createdAt(tagBanana.getCreatedAt())
-            .updatedAt(tagBanana.getUpdatedAt())
-            .build());
+        LastfmTag tagZebra = dbHelper.createAndSaveTag(builder -> builder.name("zebra"));
+        LastfmTag tagApple = dbHelper.createAndSaveTag(builder -> builder.name("apple"));
+        LastfmTag tagBanana = dbHelper.createAndSaveTag(builder -> builder.name("banana"));
 
         // Create entity relations
-        entityRelationRepository.save(LastfmEntityRelation.builder()
-            .scopeEntityType(LastfmEntityType.ARTIST)
-            .scopeEntityId(artist.getId())
-            .entityType(LastfmEntityType.TAG)
-            .entityId(tagZebra.getId())
-            .apiCall(dbHelper.createAndSaveApiCall())
-            .build());
-            
-        entityRelationRepository.save(LastfmEntityRelation.builder()
-            .scopeEntityType(LastfmEntityType.ARTIST)
-            .scopeEntityId(artist.getId())
-            .entityType(LastfmEntityType.TAG)
-            .entityId(tagApple.getId())
-            .apiCall(dbHelper.createAndSaveApiCall())
-            .build());
-            
-        entityRelationRepository.save(LastfmEntityRelation.builder()
-            .scopeEntityType(LastfmEntityType.ARTIST)
-            .scopeEntityId(artist.getId())
-            .entityType(LastfmEntityType.TAG)
-            .entityId(tagBanana.getId())
-            .apiCall(dbHelper.createAndSaveApiCall())
-            .build());
+        dbHelper.createAndSaveArtistTag(artist, tagZebra);
+        dbHelper.createAndSaveArtistTag(artist, tagApple);
+        dbHelper.createAndSaveArtistTag(artist, tagBanana);
 
         // When
         List<LastfmTag> result = tagRepository.findTagsByEntity(LastfmEntityType.ARTIST, artist.getId());
@@ -137,23 +85,9 @@ class LastfmTagRepositoryTest extends JpaOnlyTest {
         LastfmTag tag1 = dbHelper.createAndSaveTag();
         LastfmTag tag2 = dbHelper.createAndSaveTag();
 
-        // Create relation for artist1 with tag1
-        entityRelationRepository.save(LastfmEntityRelation.builder()
-            .scopeEntityType(LastfmEntityType.ARTIST)
-            .scopeEntityId(artist1.getId())
-            .entityType(LastfmEntityType.TAG)
-            .entityId(tag1.getId())
-            .apiCall(dbHelper.createAndSaveApiCall())
-            .build());
-            
-        // Create relation for artist2 with tag2
-        entityRelationRepository.save(LastfmEntityRelation.builder()
-            .scopeEntityType(LastfmEntityType.ARTIST)
-            .scopeEntityId(artist2.getId())
-            .entityType(LastfmEntityType.TAG)
-            .entityId(tag2.getId())
-            .apiCall(dbHelper.createAndSaveApiCall())
-            .build());
+        // create entity relations
+        dbHelper.createAndSaveArtistTag(artist1, tag1);
+        dbHelper.createAndSaveArtistTag(artist2, tag2);
 
         // When
         List<LastfmTag> result1 = tagRepository.findTagsByEntity(LastfmEntityType.ARTIST, artist1.getId());
