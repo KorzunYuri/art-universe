@@ -9,37 +9,46 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.util.ReflectionTestUtils;
+import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.LastfmApiConstants;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.search.dto.ArtistSearchDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.testing.LastfmApiResponseProcessorTestHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.repository.LastfmArtistRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.impl.LastfmArtistServiceImpl;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttributeHistoryRecord;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repository.LastfmAttributeHistoryRecordRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repository.LastfmAttributeTypeSynchronizer;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.impl.LastfmAttributeHistoryServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.utils.StringUtils;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("integration")
 @Import({
+    // processing
     LastfmArtistSearchResponseProcessor.class,
     LastfmArtistSearchArtistFactory.class,
     LastfmApiDtoProcessingService.class,
+    // entities
     LastfmArtistServiceImpl.class,
+    // attributes
     LastfmAttributeHistoryServiceImpl.class,
-    LastfmAttributeTypeSynchronizer.class
+    LastfmAttributeTypeSynchronizer.class,
+    // helpers
+    LastfmApiResponseProcessorTestHelper.class
 })
 class LastfmArtistSearchResponseProcessorTest extends JpaOnlyTest {
 
@@ -57,10 +66,22 @@ class LastfmArtistSearchResponseProcessorTest extends JpaOnlyTest {
 
     @Autowired
     private EntityManager entityManager;
+    
+    @Autowired
+    private LastfmApiResponseProcessorTestHelper testHelper;
+
+    private static final String TEST_RESPONSE_KEY = "artist.search";
+    private static final String SEARCH_STRING = "PUP";
+    private String responseJsonString;
+    private ArtistSearchDtoRoot dtoRoot;
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws IOException {
         consistencyHelper.cleanup();
+        
+        // Load test data once for all tests
+        responseJsonString = LastfmApiClientResourceUtil.getApiClientResponse(TEST_RESPONSE_KEY);
+        dtoRoot = parseResponse(responseJsonString);
     }
 
     @AfterEach
@@ -68,33 +89,52 @@ class LastfmArtistSearchResponseProcessorTest extends JpaOnlyTest {
         consistencyHelper.cleanup();
     }
 
-    @Test
-    void process_shouldCreateNewEntities_whenArtistSearchApiResponseAndEmptyDatabaseProvided() throws IOException {
-        // given
-        String responseBody = LastfmApiClientResourceUtil.getApiClientResponse("artist.search");
-        String searchString = "PUP";
-        
+    /**
+     * Helper method to parse JSON response into DTO
+     */
+    private ArtistSearchDtoRoot parseResponse(String responseString) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.readValue(responseString, ArtistSearchDtoRoot.class);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to parse response", e);
+        }
+    }
+
+    /**
+     * Helper method to create API response for testing
+     */
+    private LastfmApiResponse createApiResponse() {
         // Create API call with search parameter
         LastfmApiCall sourceApiCall = consistencyHelper.createAndSaveApiCall(builder -> builder
             .type(LastfmApiCallType.ARTIST_SEARCH)
-            .params(Map.of(LastfmApiConstants.PARAM_NAME_ARTIST, searchString))
+            .params(Map.of(LastfmApiConstants.PARAM_NAME_ARTIST, SEARCH_STRING))
         );
         
         // Create API response
-        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(responseBody, sourceApiCall);
+        return consistencyHelper.createAndSaveApiResponse(responseJsonString, sourceApiCall);
+    }
 
-        entityManager.flush();
+    @Test
+    void process_shouldCreateNewEntities_whenArtistSearchApiResponseAndEmptyDatabaseProvided() throws IOException {
+        // given
+        // Create API response
+        LastfmApiResponse apiResponse = createApiResponse();
         
         // Set threshold to 0 to process all artists
         ReflectionTestUtils.setField(processor, "artistSimilarityThreshold", 0.0);
         
-        // Parse response to get expected count
-        ArtistSearchDtoRoot dtoRoot = parseResponse(responseBody);
+        // Calculate expected counts
         int expectedArtistsCount = dtoRoot.getRootObject().getMatches().getArtists().size();
         
         // Record initial state
         long initialArtistCount = artistRepository.count();
         long initialAttributeCount = attributeHistoryRepository.count();
+        
+        // Calculate expected attribute count
+        // Each artist has 3 attributes (MBID, URL, LISTENERS_COUNT) from artistAttrHandlers
+        int expectedAttributesPerArtist = 3;
+        int expectedTotalAttributeCount = expectedArtistsCount * expectedAttributesPerArtist;
         
         // when
         processor.processResponse(apiResponse);
@@ -105,35 +145,42 @@ class LastfmArtistSearchResponseProcessorTest extends JpaOnlyTest {
             "New artists should be created");
         
         // Verify attribute history records were created
-        assertTrue(attributeHistoryRepository.count() > initialAttributeCount, 
-            "New attribute history records should be created");
+        assertEquals(initialAttributeCount + expectedTotalAttributeCount, attributeHistoryRepository.count(), 
+            "Expected number of attribute history records should be created");
         
         // Verify artists have expected attributes
         List<LastfmArtist> savedArtists = artistRepository.findAll();
         for (LastfmArtist artist : savedArtists) {
             assertNotNull(artist.getName(), "Artist name should be set");
-            // URL is one of the attributes that should be set
-            List<LastfmAttributeHistoryRecord> artistAttributes = attributeHistoryRepository.findAll().stream()
-                .filter(attr -> attr.getEntityId() == artist.getId())
-                .toList();
-            assertFalse(artistAttributes.isEmpty(), "Artist should have attributes");
+            
+            // Find corresponding artist in the DTO
+            var artistDto = dtoRoot.getRootObject().getMatches().getArtists().stream()
+                .filter(dto -> dto.getName().equals(artist.getName()))
+                .findFirst();
+            
+            if (artistDto.isPresent()) {
+                // Verify attributes if this is one of the artists from the response
+                if (artistDto.get().getMbid() != null && !artistDto.get().getMbid().isEmpty()) {
+                    assertEquals(artistDto.get().getMbid(), artist.getMbid(), "Artist MBID should match");
+                    testHelper.verifyStringAttribute(artist, LastfmAttribute.MBID, artistDto.get().getMbid());
+                }
+                
+                assertEquals(artistDto.get().getUrl(), artist.getUrl(), "Artist URL should match");
+                testHelper.verifyStringAttribute(artist, LastfmAttribute.URL, artistDto.get().getUrl());
+                
+                assertEquals(artistDto.get().getListenersCount(), artist.getListenersCount(),
+                    "Artist listeners count should match");
+                testHelper.verifyIntAttribute(artist, LastfmAttribute.LISTENERS_COUNT,
+                    artistDto.get().getListenersCount());
+            }
         }
     }
 
     @Test
     void process_shouldFilterArtistsByThreshold_whenThresholdIsSet() throws IOException {
         // given
-        String responseBody = LastfmApiClientResourceUtil.getApiClientResponse("artist.search");
-        String searchString = "PUP";
-        
-        // Create API call with search parameter
-        LastfmApiCall sourceApiCall = consistencyHelper.createAndSaveApiCall(builder -> builder
-            .type(LastfmApiCallType.ARTIST_SEARCH)
-            .params(Map.of(LastfmApiConstants.PARAM_NAME_ARTIST, searchString))
-        );
-        
         // Create API response
-        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(responseBody, sourceApiCall);
+        LastfmApiResponse apiResponse = createApiResponse();
         
         // Set high threshold to filter most artists
         double threshold = 0.8;
@@ -141,40 +188,40 @@ class LastfmArtistSearchResponseProcessorTest extends JpaOnlyTest {
         
         // Record initial state
         long initialArtistCount = artistRepository.count();
-
-        entityManager.flush();
+        long initialAttributeCount = attributeHistoryRepository.count();
+        
+        // Calculate expected counts
+        long expectedArtistsCount = dtoRoot.getRootObject().getMatches().getArtists().stream()
+            .filter(artist -> StringUtils.getSimilarity(artist.getName(), SEARCH_STRING) > threshold)
+            .count();
+        
+        // Calculate expected attribute count
+        int expectedAttributesPerArtist = 3; // MBID, URL, LISTENERS_COUNT
+        long expectedTotalAttributeCount = expectedArtistsCount * expectedAttributesPerArtist;
         
         // when
         processor.processResponse(apiResponse);
         
         // then
-        // Verify only a few artists were created (those with high similarity)
-        long newArtistsCount = artistRepository.count() - initialArtistCount;
-        assertTrue(newArtistsCount > 0, "Some artists should be created");
+        // Verify only artists above threshold were created
+        assertEquals(initialArtistCount + expectedArtistsCount, artistRepository.count(), 
+            "Only artists above threshold should be created");
         
-        // Parse response to get total count
-        ArtistSearchDtoRoot dtoRoot = parseResponse(responseBody);
-        int totalArtistsInResponse = dtoRoot.getRootObject().getMatches().getArtists().size();
+        // Verify attribute history records were created
+        assertEquals(initialAttributeCount + expectedTotalAttributeCount, attributeHistoryRepository.count(), 
+            "Expected number of attribute history records should be created");
         
         // Verify filtering worked
-        assertTrue(newArtistsCount < totalArtistsInResponse, 
+        int totalArtistsInResponse = dtoRoot.getRootObject().getMatches().getArtists().size();
+        assertTrue(expectedArtistsCount < totalArtistsInResponse, 
             "Number of created artists should be less than total artists in response due to filtering");
     }
 
     @Test
     void process_shouldCreateNoEntities_whenNoArtistsPassThreshold() throws IOException {
         // given
-        String responseBody = LastfmApiClientResourceUtil.getApiClientResponse("artist.search");
-        String searchString = "PUP";
-        
-        // Create API call with search parameter
-        LastfmApiCall sourceApiCall = consistencyHelper.createAndSaveApiCall(builder -> builder
-            .type(LastfmApiCallType.ARTIST_SEARCH)
-            .params(Map.of(LastfmApiConstants.PARAM_NAME_ARTIST, searchString))
-        );
-        
         // Create API response
-        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(responseBody, sourceApiCall);
+        LastfmApiResponse apiResponse = createApiResponse();
         
         // Set extremely high threshold so no artists pass
         ReflectionTestUtils.setField(processor, "artistSimilarityThreshold", 1.0);
@@ -195,13 +242,110 @@ class LastfmArtistSearchResponseProcessorTest extends JpaOnlyTest {
         assertEquals(initialAttributeCount, attributeHistoryRepository.count(), 
             "No new attribute records should be created when threshold is too high");
     }
-
-    private ArtistSearchDtoRoot parseResponse(String responseString) {
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            return objectMapper.readValue(responseString, ArtistSearchDtoRoot.class);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to parse response", e);
-        }
+    
+    @Test
+    void process_shouldBeIdempotent_whenProcessingSameResponseTwice() throws Exception {
+        // given
+        // Create API response
+        LastfmApiResponse apiResponse = createApiResponse();
+        
+        // Set threshold to 0 to process all artists
+        ReflectionTestUtils.setField(processor, "artistSimilarityThreshold", 0.0);
+        
+        // when
+        processor.processResponse(apiResponse);
+        
+        // Record counts after first processing
+        long artistCount = artistRepository.count();
+        long attributeCount = attributeHistoryRepository.count();
+        
+        // Process again
+        processor.processResponse(apiResponse);
+        
+        // then
+        // Verify counts remain the same
+        assertEquals(artistCount, artistRepository.count(), 
+            "Artist count should remain the same after second processing");
+        assertEquals(attributeCount, attributeHistoryRepository.count(),
+            "Attribute history record count should remain the same after second processing");
+    }
+    
+    @Test
+    void process_shouldPreserveApprovalStatus_whenUpdatingExistingArtists() throws Exception {
+        // given
+        // Create one artist with APPROVED status that matches one in the response
+        LastfmArtist approvedArtist = consistencyHelper.createAndSaveArtist(builder -> 
+            builder.name("PUP") // This name exists in the test response
+                   .approvalStatus(ApprovalStatus.APPROVED)
+        );
+        
+        // Create API response
+        LastfmApiResponse apiResponse = createApiResponse();
+        
+        // Set threshold to 0 to process all artists
+        ReflectionTestUtils.setField(processor, "artistSimilarityThreshold", 0.0);
+        
+        // when
+        processor.processResponse(apiResponse);
+        
+        // then
+        // Verify the artist was updated but approval status preserved
+        Optional<LastfmArtist> updatedArtist = artistRepository.findById(approvedArtist.getId());
+        assertTrue(updatedArtist.isPresent(), "Artist should still exist in database");
+        assertEquals(ApprovalStatus.APPROVED, updatedArtist.get().getApprovalStatus(), 
+            "Approval status should be preserved");
+    }
+    
+    @Test
+    void process_shouldHandleErrorGracefully_whenResponseIsInvalid() {
+        // given
+        // Create API call with search parameter
+        LastfmApiCall sourceApiCall = consistencyHelper.createAndSaveApiCall(builder -> builder
+            .type(LastfmApiCallType.ARTIST_SEARCH)
+            .params(Map.of(LastfmApiConstants.PARAM_NAME_ARTIST, SEARCH_STRING))
+        );
+        
+        // Create invalid API response
+        String invalidJson = "{\"results\": {\"invalid\": true}}";
+        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
+            invalidJson, sourceApiCall);
+        
+        // when/then
+        assertThrows(RuntimeException.class, () -> processor.processResponse(apiResponse),
+            "Should throw exception when processing invalid response");
+        
+        // Verify no entities were created
+        assertEquals(0, artistRepository.count(), "No artists should be created");
+        assertEquals(0, attributeHistoryRepository.count(), "No attribute history records should be created");
+    }
+    
+    @Test
+    void process_shouldHandleEmptyArtistMatches_whenResponseHasNoArtists() throws Exception {
+        // given
+        // Create a modified response with empty artists list
+        ObjectMapper objectMapper = new ObjectMapper();
+        ArtistSearchDtoRoot modifiedDtoRoot = objectMapper.readValue(responseJsonString, ArtistSearchDtoRoot.class);
+        modifiedDtoRoot.getRootObject().getMatches().setArtists(List.of()); // Set empty artists list
+        String modifiedResponse = objectMapper.writeValueAsString(modifiedDtoRoot);
+        
+        // Create API call with search parameter
+        LastfmApiCall sourceApiCall = consistencyHelper.createAndSaveApiCall(builder -> builder
+            .type(LastfmApiCallType.ARTIST_SEARCH)
+            .params(Map.of(LastfmApiConstants.PARAM_NAME_ARTIST, SEARCH_STRING))
+        );
+        
+        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
+            modifiedResponse, sourceApiCall);
+        
+        // Set threshold to 0 to process all artists
+        ReflectionTestUtils.setField(processor, "artistSimilarityThreshold", 0.0);
+        
+        // when
+        processor.processResponse(apiResponse);
+        
+        // then
+        // Verify no new artists or attributes were created
+        assertEquals(0, artistRepository.count(), "No artists should be created");
+        assertEquals(0, attributeHistoryRepository.count(), "No attribute history records should be created");
     }
 }
