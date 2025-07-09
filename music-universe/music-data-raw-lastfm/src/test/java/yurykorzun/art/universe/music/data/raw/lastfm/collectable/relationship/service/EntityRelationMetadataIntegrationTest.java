@@ -147,9 +147,9 @@ class EntityRelationMetadataIntegrationTest extends JpaOnlyTest {
         
         // When & Then - should handle converter without errors
         assertDoesNotThrow(() -> {
-            List<LastfmArtistTag> result = artistTagService.upsertAll(List.of(sampleEntity));
+            artistTagService.upsertAll(List.of(sampleEntity));
             entityManager.flush();
-            assertEquals(1, result.size());
+            assertEquals(1, artistTagRepository.count());
         }, "Should handle fields with @Convert annotation");
     }
 

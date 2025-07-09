@@ -79,10 +79,9 @@ class EntityRelationServiceImplementationsTest extends JpaOnlyTest {
         entityManager.flush();
 
         // When
-        List<LastfmArtistTag> result = artistTagService.upsertAll(List.of(artistTag));
+        artistTagService.upsertAll(List.of(artistTag));
 
         // Then
-        assertEquals(1, result.size());
         assertEquals(1, artistTagRepository.count());
         
         LastfmArtistTag saved = artistTagRepository.findAll().get(0);
@@ -107,10 +106,9 @@ class EntityRelationServiceImplementationsTest extends JpaOnlyTest {
         entityManager.flush();
 
         // When
-        List<LastfmArtistsRelation> result = artistsRelationService.upsertAll(List.of(artistsRelation));
+        artistsRelationService.upsertAll(List.of(artistsRelation));
 
         // Then
-        assertEquals(1, result.size());
         assertEquals(1, artistsRelationRepository.count());
         
         LastfmArtistsRelation saved = artistsRelationRepository.findAll().get(0);
@@ -134,10 +132,9 @@ class EntityRelationServiceImplementationsTest extends JpaOnlyTest {
         entityManager.flush();
 
         // When
-        List<LastfmArtistAlbum> result = artistAlbumService.upsertAll(List.of(artistAlbum));
+        artistAlbumService.upsertAll(List.of(artistAlbum));
 
         // Then
-        assertEquals(1, result.size());
         assertEquals(1, artistAlbumRepository.count());
         
         LastfmArtistAlbum saved = artistAlbumRepository.findAll().get(0);

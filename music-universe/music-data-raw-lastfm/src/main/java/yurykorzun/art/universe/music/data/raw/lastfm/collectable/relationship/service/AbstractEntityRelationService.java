@@ -37,9 +37,9 @@ public abstract class AbstractEntityRelationService<T extends BaseLastfmEntityRe
                 metadata.getConflictColumns());
     }
 
-    public List<T> upsertAll(List<T> entities) {
+    public void upsertAll(List<T> entities) {
         if (entities.isEmpty()) {
-            return entities;
+            return;
         }
 
         String sql = buildUpsertSql(entities.get(0));
@@ -50,7 +50,6 @@ public abstract class AbstractEntityRelationService<T extends BaseLastfmEntityRe
                 .toList();
 
         jdbcTemplate.batchUpdate(sql, batchArgs);
-        return entities;
     }
 
     /**

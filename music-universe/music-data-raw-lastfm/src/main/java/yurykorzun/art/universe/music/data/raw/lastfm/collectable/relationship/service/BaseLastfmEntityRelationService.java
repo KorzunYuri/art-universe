@@ -9,6 +9,6 @@ import java.util.List;
 public interface BaseLastfmEntityRelationService<R extends BaseLastfmEntityRelation<? extends BaseLastfmEntity, ? extends BaseLastfmEntity>> {
 
     @Transactional
-    List<R> upsertAll(List<R> relations);
+    void upsertAll(List<R> relations);
 
 }

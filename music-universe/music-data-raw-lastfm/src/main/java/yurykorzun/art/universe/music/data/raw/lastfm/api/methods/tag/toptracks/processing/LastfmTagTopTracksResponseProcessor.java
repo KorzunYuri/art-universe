@@ -146,7 +146,6 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
         return result;
     }
 
-
     private void bindTracksToArtists(
         LastfmApiDtoProcessingResult<LastfmTrack, TagTopTracksTrackDto> trackMappingResult,
         LastfmApiDtoProcessingResult<LastfmArtist, TagTopTracksTrackArtistDto> artistMappingResult,
@@ -174,8 +173,8 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
             })
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
-        List<LastfmArtistTrack> lastfmArtistTracks = artistTrackService.upsertAll(relations);
-        log.info("saved {} artist-track relations", lastfmArtistTracks.size());
+        artistTrackService.upsertAll(relations);
+        log.info("saved {} artist-track relations", relations.size());
     }
 
     private List<TagTopTracksTrackDto> getTrackDtos(TagTopTracksDtoRoot dtoRoot) {
