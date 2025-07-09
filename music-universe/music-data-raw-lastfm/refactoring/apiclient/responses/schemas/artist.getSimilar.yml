@@ -1,0 +1,82 @@
+# LastFM API Response Schema: artist.getSimilar
+# Purpose: Get artists similar to a specific artist
+
+response_structure:
+  root_key: "similarartists"
+  
+  main_entity:
+    type: "artist_collection"
+    description: "Collection of artists similar to the requested artist"
+
+  attributes:
+    - name: "@attr.artist"
+      type: "string"
+      required: true
+      description: "Name of the source artist for similarity"
+
+  nested_entities:
+    artists:
+      path: "artist"
+      type: "array"
+      entity_type: "artist"
+      fields:
+        - name: "name"
+          type: "string"
+          required: true
+          description: "Similar artist name"
+        - name: "mbid"
+          type: "string"
+          required: false
+          description: "MusicBrainz ID"
+        - name: "match"
+          type: "string"  # Note: comes as string (e.g., "0.123456")
+          required: true
+          description: "Similarity match score (0.0 to 1.0)"
+        - name: "url"
+          type: "string"
+          required: true
+          description: "LastFM URL for the similar artist"
+        - name: "streamable"
+          type: "string"
+          required: false
+          description: "Whether artist is streamable (0/1)"
+
+    images:
+      path: "artist[].image"
+      type: "array"
+      entity_type: "image"
+      processing: ignored
+      fields:
+        - name: "#text"
+          type: "string"
+          required: true
+          description: "Image URL"
+        - name: "size"
+          type: "string"
+          required: true
+          description: "Image size (small, medium, large, extralarge, mega)"
+
+processing_notes:
+  - "Extract similar artist entities"
+  - "Create bidirectional similarity relationships"
+  - "Use match score as relationship weight"
+  - "Filter by minimum match threshold"
+  - "Create or update artist entities if they don't exist"
+
+thresholds:
+  - field: "match"
+    min_value: 0.2
+    description: "Minimum similarity match score for processing"
+
+relationship_creation:
+  - type: "artist_similar"
+    source: "@attr.artist"
+    target: "similar_artists"
+    weight_field: "match"
+    bidirectional: true
+    description: "Create similarity relationships with match scores"
+
+special_handling:
+  - "Convert match score from string to float"
+  - "Handle cases where source artist might not exist in database"
+  - "Ensure bidirectional relationships are created properly"

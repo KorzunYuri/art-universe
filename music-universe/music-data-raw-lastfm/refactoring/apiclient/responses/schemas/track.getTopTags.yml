@@ -1,0 +1,64 @@
+# LastFM API Response Schema: track.getTopTags
+# Purpose: Get top tags for a specific track
+
+response_structure:
+  root_key: "toptags"
+  
+  main_entity:
+    type: "tag_collection"
+    description: "Collection of tags associated with a track"
+
+  attributes:
+    - name: "@attr.artist"
+      type: "string"
+      required: false
+      description: "Artist name (if present in attributes)"
+      processing: ignored
+    - name: "@attr.track"
+      type: "string"
+      required: false
+      description: "Track name (if present in attributes)"
+      processing: ignored
+
+  nested_entities:
+    tags:
+      path: "tag"
+      type: "array"
+      entity_type: "tag"
+      fields:
+        - name: "name"
+          type: "string"
+          required: true
+          description: "Tag name"
+        - name: "url"
+          type: "string"
+          required: true
+          description: "LastFM URL for the tag"
+        - name: "count"
+          type: "integer"
+          required: true
+          description: "Usage count for this tag on this track"
+
+processing_notes:
+  - "Extract tag entities and create track-tag relationships"
+  - "Use count field to determine tag relevance/weight"
+  - "Filter tags based on usage count threshold"
+  - "Create or update existing tag entities"
+
+thresholds:
+  - field: "count"
+    min_value: 10
+    description: "Minimum tag usage count for processing"
+
+relationship_creation:
+  - type: "track_tag"
+    source: "track_entity_id"
+    target: "tags"
+    weight_field: "count"
+    description: "Create track-tag relationships with usage counts"
+
+special_handling:
+  - "Ensure track entity exists before creating tag relationships"
+  - "Handle cases where tag might already exist"
+  - "Use count as relationship weight for tag importance"
+  - "Track entity ID should be provided from the API call context"

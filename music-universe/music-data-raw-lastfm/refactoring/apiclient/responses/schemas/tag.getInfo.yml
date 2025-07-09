@@ -1,0 +1,57 @@
+# LastFM API Response Schema: tag.getInfo
+# Purpose: Get detailed information about a specific tag
+
+response_structure:
+  root_key: "tag"
+  
+  main_entity:
+    type: "tag"
+    fields:
+      - name: "name"
+        type: "string"
+        required: true
+        description: "Tag name"
+      - name: "total"
+        type: "integer"
+        required: true
+        description: "Total usage count of the tag"
+      - name: "reach"
+        type: "integer"
+        required: true
+        description: "Number of unique users who have used this tag"
+
+  nested_entities:
+    wiki:
+      path: "wiki"
+      type: "object"
+      processing: ignored
+      fields:
+        - name: "published"
+          type: "string"
+          required: false
+          description: "Wiki publication date"
+          processing: ignored
+        - name: "summary"
+          type: "string"
+          required: false
+          description: "Short tag description"
+          processing: ignored
+        - name: "content"
+          type: "string"
+          required: false
+          description: "Full tag description"
+          processing: ignored
+
+processing_notes:
+  - "Extract tag entity with usage statistics"
+  - "Use total and reach to determine tag importance"
+  - "Filter tags by minimum usage threshold"
+
+thresholds:
+  - field: "total"
+    min_value: 1000
+    description: "Minimum total usage count for tag processing"
+
+special_handling:
+  - "Use reach and total for tag popularity scoring"
+  - "Handle cases where wiki information might be missing"

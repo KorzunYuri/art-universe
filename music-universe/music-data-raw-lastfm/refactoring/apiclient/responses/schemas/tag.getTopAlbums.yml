@@ -1,0 +1,114 @@
+# LastFM API Response Schema: tag.getTopAlbums
+# Purpose: Get top albums for a specific tag
+
+response_structure:
+  root_key: "albums"
+  
+  main_entity:
+    type: "album_collection"
+    description: "Collection of top albums for a tag"
+
+  attributes:
+    - name: "@attr.tag"
+      type: "string"
+      required: true
+      description: "Tag name"
+      processing: ignored
+    - name: "@attr.page"
+      type: "string"
+      required: false
+      description: "Current page number"
+      processing: ignored
+    - name: "@attr.perPage"
+      type: "string"
+      required: false
+      description: "Items per page"
+      processing: ignored
+    - name: "@attr.totalPages"
+      type: "string"
+      required: false
+      description: "Total pages available"
+      processing: ignored
+    - name: "@attr.total"
+      type: "string"
+      required: false
+      description: "Total albums count"
+      processing: ignored
+
+  nested_entities:
+    albums:
+      path: "album"
+      type: "array"
+      entity_type: "album"
+      fields:
+        - name: "name"
+          type: "string"
+          required: true
+          description: "Album name"
+        - name: "mbid"
+          type: "string"
+          required: false
+          description: "MusicBrainz ID"
+        - name: "url"
+          type: "string"
+          required: true
+          description: "LastFM URL for the album"
+        - name: "@attr.rank"
+          type: "string"
+          required: false
+          description: "Album rank in tag's top albums"
+
+    artist_info:
+      path: "album[].artist"
+      type: "object"
+      fields:
+        - name: "name"
+          type: "string"
+          required: true
+          description: "Artist name"
+        - name: "mbid"
+          type: "string"
+          required: false
+          description: "Artist MusicBrainz ID"
+        - name: "url"
+          type: "string"
+          required: true
+          description: "Artist LastFM URL"
+
+    images:
+      path: "album[].image"
+      type: "array"
+      entity_type: "image"
+      processing: ignored
+      fields:
+        - name: "#text"
+          type: "string"
+          required: true
+          description: "Image URL"
+        - name: "size"
+          type: "string"
+          required: true
+          description: "Image size (small, medium, large, extralarge, mega)"
+
+processing_notes:
+  - "Extract album entities with artist relationships"
+  - "Create tag-album relationships"
+  - "Use rank to determine album importance within tag"
+  - "Create or update album and artist entities"
+  - "Ensure tag entity exists before creating relationships"
+
+relationship_creation:
+  - type: "tag_album"
+    source: "@attr.tag"
+    target: "albums"
+    weight_field: "@attr.rank"
+    description: "Create tag-album relationships with ranking"
+  - type: "artist_album"
+    source: "album.artist"
+    target: "album"
+    description: "Create artist-album relationships"
+
+special_handling:
+  - "Handle pagination attributes for potential follow-up calls"
+  - "Use rank for relationship weight (lower rank = higher importance)"
+  - "Ensure both tag and artist entities exist before creating album relationships"
