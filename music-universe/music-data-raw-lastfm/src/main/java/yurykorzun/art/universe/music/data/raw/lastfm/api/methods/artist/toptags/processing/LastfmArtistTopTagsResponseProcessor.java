@@ -146,7 +146,7 @@ public class LastfmArtistTopTagsResponseProcessor extends LastfmApiResponseProce
                 .entityType(LastfmEntityType.TAG)
                 .entityId(relation.getTag().getId())
                 .attribute(LastfmAttribute.USAGE_COUNT)
-                .intValue(relation.getUsageCount())
+                .numericValue(Long.valueOf(relation.getUsageCount()))
                 .build())
             .toList();
         attributeHistoryService.upsertCandidateValues(records);

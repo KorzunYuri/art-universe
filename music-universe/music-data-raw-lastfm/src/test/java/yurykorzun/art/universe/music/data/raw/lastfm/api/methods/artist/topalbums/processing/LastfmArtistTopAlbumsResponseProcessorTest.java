@@ -168,7 +168,7 @@ class LastfmArtistTopAlbumsResponseProcessorTest extends JpaOnlyTest {
             if (albumDto != null) {
                 // Verify attributes using the test helper
                 testHelper.verifyStringAttribute(album, LastfmAttribute.URL, albumDto.getUrl());
-                testHelper.verifyIntAttribute(album, LastfmAttribute.PLAY_COUNT, albumDto.getPlayCount());
+                testHelper.verifyNumericAttribute(album, LastfmAttribute.PLAY_COUNT, albumDto.getPlayCount());
                 
                 if (albumDto.getMbid() != null && !albumDto.getMbid().isEmpty()) {
                     testHelper.verifyStringAttribute(album, LastfmAttribute.MBID, albumDto.getMbid());
@@ -251,10 +251,10 @@ class LastfmArtistTopAlbumsResponseProcessorTest extends JpaOnlyTest {
         List<LastfmAlbum> savedAlbums = albumRepository.findAll();
         for (LastfmAlbum album : savedAlbums) {
             // Verify play count attribute using the test helper
-            List<Integer> playCountValues = attributeHistoryRepository.findAttributeValuesForEntity(
+            List<Long> playCountValues = attributeHistoryRepository.findAttributeValuesForEntity(
                 LastfmAttribute.PLAY_COUNT, album.getType(), album.getId())
                 .stream()
-                .map(record -> record.getIntValue())
+                .map(record -> record.getNumericValue())
                 .toList();
                 
             if (!playCountValues.isEmpty()) {

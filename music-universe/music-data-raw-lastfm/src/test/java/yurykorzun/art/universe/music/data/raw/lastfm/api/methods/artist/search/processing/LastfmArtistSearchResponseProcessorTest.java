@@ -170,7 +170,7 @@ class LastfmArtistSearchResponseProcessorTest extends JpaOnlyTest {
                 
                 assertEquals(artistDto.get().getListenersCount(), artist.getListenersCount(),
                     "Artist listeners count should match");
-                testHelper.verifyIntAttribute(artist, LastfmAttribute.LISTENERS_COUNT,
+                testHelper.verifyNumericAttribute(artist, LastfmAttribute.LISTENERS_COUNT,
                     artistDto.get().getListenersCount());
             }
         }

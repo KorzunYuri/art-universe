@@ -12,6 +12,6 @@ public class StatsDto {
     private int listeners;
 
     @JsonProperty("playcount")
-    private int playCount;
+    private long playCount;
 
 }

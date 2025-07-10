@@ -60,7 +60,7 @@ public class LastfmAttributeHistoryServiceImplTest extends JpaOnlyTest {
                 consistencyHelper.createAndSaveDummyEntity(),
                 consistencyHelper.createAndSaveApiCall())
             .attribute(SCD2_ATTRIBUTE)
-            .intValue(42)
+            .numericValue(42L)
             .build();
         LastfmAttributeHistoryRecord result = service.upsertCandidateValue(candidate);
         assertNotNull(result);
@@ -75,7 +75,7 @@ public class LastfmAttributeHistoryServiceImplTest extends JpaOnlyTest {
                 consistencyHelper.createAndSaveDummyEntity(),
                 consistencyHelper.createAndSaveApiCall())
             .attribute(SCD2_ATTRIBUTE)
-            .intValue(42)
+            .numericValue(42L)
             .build();
         LastfmAttributeHistoryRecord saved = service.upsertCandidateValue(candidate);
         LastfmAttributeHistoryRecord result = service.upsertCandidateValue(candidate);
@@ -90,13 +90,13 @@ public class LastfmAttributeHistoryServiceImplTest extends JpaOnlyTest {
         LastfmApiCall apiCall = consistencyHelper.createAndSaveApiCall();
         LastfmAttributeHistoryRecord candidate = initAttrValueBuilder(entity, scopeEntity, apiCall)
             .attribute(SNAPSHOT_ATTRIBUTE)
-            .intValue(42)
+            .numericValue(42L)
             .build();
         LastfmAttributeHistoryRecord saved = service.upsertCandidateValue(candidate);
         LastfmAttributeHistoryRecord newValueForSameSnapshot = initAttrValueBuilder(entity, scopeEntity, apiCall)
             .attribute(SNAPSHOT_ATTRIBUTE)
             .validFrom(candidate.getValidFrom().plusDays(1))
-            .intValue(111)
+            .numericValue(111L)
             .build();
 
         LastfmAttributeHistoryRecord result = service.upsertCandidateValue(newValueForSameSnapshot);
@@ -110,13 +110,13 @@ public class LastfmAttributeHistoryServiceImplTest extends JpaOnlyTest {
         BaseLastfmEntity scopeEntity = consistencyHelper.createAndSaveDummyEntity();
         LastfmAttributeHistoryRecord candidate = initAttrValueBuilder(entity, scopeEntity, consistencyHelper.createAndSaveApiCall())
             .attribute(SNAPSHOT_ATTRIBUTE)
-            .intValue(42)
+            .numericValue(42L)
             .build();
         service.upsertCandidateValue(candidate);
 
         LastfmAttributeHistoryRecord newValueForSameSnapshot = initAttrValueBuilder(entity, scopeEntity, consistencyHelper.createAndSaveApiCall())
             .attribute(candidate.getAttribute())
-            .intValue(candidate.getIntValue())
+            .numericValue(candidate.getNumericValue())
             .validFrom(candidate.getValidFrom().plusDays(1))
             .build();
         LastfmAttributeHistoryRecord result = service.upsertCandidateValue(newValueForSameSnapshot);
@@ -139,12 +139,12 @@ public class LastfmAttributeHistoryServiceImplTest extends JpaOnlyTest {
         BaseLastfmEntity scopeEntity = consistencyHelper.createAndSaveDummyEntity();
         LastfmAttributeHistoryRecord candidate = initAttrValueBuilder(entity, scopeEntity, consistencyHelper.createAndSaveApiCall())
             .attribute(SCD2_ATTRIBUTE)
-            .intValue(42)
+            .numericValue(42L)
             .build();
         LastfmAttributeHistoryRecord initial = service.upsertCandidateValue(candidate);
         LastfmAttributeHistoryRecord candidateUpdated = initAttrValueBuilder(entity, scopeEntity, consistencyHelper.createAndSaveApiCall())
             .attribute(candidate.getAttribute())
-            .intValue(111)
+            .numericValue(111L)
             .validFrom(candidate.getValidFrom().plusDays(1))
             .build();
         LastfmAttributeHistoryRecord result = service.upsertCandidateValue(candidateUpdated);
@@ -168,7 +168,7 @@ public class LastfmAttributeHistoryServiceImplTest extends JpaOnlyTest {
                 consistencyHelper.createAndSaveDummyEntity(),
                 consistencyHelper.createAndSaveApiCall())
             .attribute(SCD2_ATTRIBUTE)
-            .intValue(42)
+            .numericValue(42L)
             .build();
         LastfmAttributeHistoryRecord candidate2 = initAttrValueBuilder(
                 consistencyHelper.createAndSaveDummyEntity(),

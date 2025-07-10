@@ -133,7 +133,7 @@ public class LastfmArtistGetSimilarResponseProcessor extends LastfmApiResponsePr
                 .entityType(LastfmEntityType.ARTIST)
                 .entityId(relation.getTargetArtist().getId())
                 .attribute(LastfmAttribute.MATCH_COEFF)
-                .intValue(relation.getMatchScore().multiply(new BigDecimal(100)).intValue())
+                .numericValue((long) relation.getMatchScore().multiply(new BigDecimal(100)).intValue())
                 .build())
             .toList();
         attributeHistoryService.upsertCandidateValues(records);

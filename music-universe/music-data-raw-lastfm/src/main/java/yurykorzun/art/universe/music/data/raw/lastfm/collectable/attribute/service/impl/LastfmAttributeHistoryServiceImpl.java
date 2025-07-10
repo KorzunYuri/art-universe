@@ -83,7 +83,7 @@ public class LastfmAttributeHistoryServiceImpl implements LastfmAttributeHistory
 
     private static boolean valueHasChanged(LastfmAttributeHistoryRecord candidate, LastfmAttributeHistoryRecord existing) {
         return !(   Objects.equals(existing.getStringValue(),   candidate.getStringValue())
-                &&  Objects.equals(existing.getIntValue(),      candidate.getIntValue()));
+                &&  Objects.equals(existing.getNumericValue(),      candidate.getNumericValue()));
     }
 
     private static boolean shouldSaveNonChangedValue(LastfmAttributeHistoryRecord candidate, LastfmAttributeHistoryRecord existing) {

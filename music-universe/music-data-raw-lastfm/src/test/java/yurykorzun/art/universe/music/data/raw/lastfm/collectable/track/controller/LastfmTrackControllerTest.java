@@ -73,7 +73,7 @@ class LastfmTrackControllerTest {
             .url("https://example.com/track1")
             .mbid("mbid1")
             .approvalStatus(ApprovalStatus.APPROVED)
-            .playCount(1000)
+            .playCount(1000L)
             .listenersCount(500)
             .artist(artist)
             .apiCall(EntityCreationHelper.createApiCall())

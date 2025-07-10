@@ -31,8 +31,8 @@ public interface LastfmArtistRepository extends JpaRepository<LastfmArtist, Long
     @Query(value = """
             WITH top_tags AS (
                 SELECT
-                        ah.entity_id as tag_id
-                    ,   ah.int_value as tag_rank
+                        ah.entity_id        as tag_id
+                    ,   ah.numeric_value    as tag_rank
                 FROM
                     attribute_history ah
                 JOIN
@@ -51,8 +51,8 @@ public interface LastfmArtistRepository extends JpaRepository<LastfmArtist, Long
                 SELECT
                         top_tags.tag_id
                     ,   top_tags.tag_rank
-                    ,   artist_rank.entity_id   as artist_id
-                    ,   artist_rank.int_value   as artist_rank
+                    ,   artist_rank.entity_id       as artist_id
+                    ,   artist_rank.numeric_value   as artist_rank
                 FROM
                     top_tags
                 JOIN
@@ -69,7 +69,7 @@ public interface LastfmArtistRepository extends JpaRepository<LastfmArtist, Long
                         a.id    as id
                     ,   1       as priority_1
                     ,   0       as priority_2
-                FROM    
+                FROM
                     artist a
                 LEFT JOIN 
                     api_call ac

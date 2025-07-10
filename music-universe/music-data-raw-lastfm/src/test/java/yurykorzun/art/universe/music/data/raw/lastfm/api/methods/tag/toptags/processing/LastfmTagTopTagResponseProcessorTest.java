@@ -136,16 +136,16 @@ class LastfmTagTopTagResponseProcessorTest extends JpaOnlyTest {
                 .orElseThrow(() -> new IllegalArgumentException("Saved tag doesn't correspond to any DTO"));
 
             // Verify attributes using the test helper - just verify they exist, not exact values
-            List<Integer> usageCountValues = attributeHistoryRepository.findAttributeValuesForEntity(
+            List<Long> usageCountValues = attributeHistoryRepository.findAttributeValuesForEntity(
                 LastfmAttribute.USAGE_COUNT, tag.getType(), tag.getId())
                 .stream()
-                .map(record -> record.getIntValue())
+                .map(record -> record.getNumericValue())
                 .toList();
 
-            List<Integer> reachValues = attributeHistoryRepository.findAttributeValuesForEntity(
+            List<Long> reachValues = attributeHistoryRepository.findAttributeValuesForEntity(
                 LastfmAttribute.RELATIONS_COUNT, tag.getType(), tag.getId())
                 .stream()
-                .map(record -> record.getIntValue())
+                .map(record -> record.getNumericValue())
                 .toList();
 
             assertFalse(usageCountValues.isEmpty(), "Tag should have usage count attribute");
@@ -193,16 +193,16 @@ class LastfmTagTopTagResponseProcessorTest extends JpaOnlyTest {
             LastfmTag tag = tags.get(0);
             
             // Verify attributes using the test helper - just verify they exist, not exact values
-            List<Integer> usageCountValues = attributeHistoryRepository.findAttributeValuesForEntity(
+            List<Long> usageCountValues = attributeHistoryRepository.findAttributeValuesForEntity(
                 LastfmAttribute.USAGE_COUNT, tag.getType(), tag.getId())
                 .stream()
-                .map(record -> record.getIntValue())
+                .map(record -> record.getNumericValue())
                 .toList();
             
-            List<Integer> reachValues = attributeHistoryRepository.findAttributeValuesForEntity(
+            List<Long> reachValues = attributeHistoryRepository.findAttributeValuesForEntity(
                 LastfmAttribute.RELATIONS_COUNT, tag.getType(), tag.getId())
                 .stream()
-                .map(record -> record.getIntValue())
+                .map(record -> record.getNumericValue())
                 .toList();
             
             assertFalse(usageCountValues.isEmpty(), "Tag should have usage count attribute");

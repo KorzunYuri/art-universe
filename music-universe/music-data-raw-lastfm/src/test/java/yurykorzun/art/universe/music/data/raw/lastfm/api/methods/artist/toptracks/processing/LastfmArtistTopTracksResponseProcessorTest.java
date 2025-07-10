@@ -168,8 +168,8 @@ class LastfmArtistTopTracksResponseProcessorTest extends JpaOnlyTest {
 
             // Verify attributes using the test helper
             testHelper.verifyStringAttribute(track, LastfmAttribute.URL, trackDto.getUrl());
-            testHelper.verifyIntAttribute(track, LastfmAttribute.LISTENERS_COUNT, trackDto.getListenersCount());
-            testHelper.verifyIntAttribute(track, LastfmAttribute.PLAY_COUNT, trackDto.getPlayCount());
+            testHelper.verifyNumericAttribute(track, LastfmAttribute.LISTENERS_COUNT, trackDto.getListenersCount());
+            testHelper.verifyNumericAttribute(track, LastfmAttribute.PLAY_COUNT, trackDto.getPlayCount());
 
             if (trackDto.getMbid() != null && !trackDto.getMbid().isEmpty()) {
                 testHelper.verifyStringAttribute(track, LastfmAttribute.MBID, trackDto.getMbid());
@@ -220,10 +220,10 @@ class LastfmArtistTopTracksResponseProcessorTest extends JpaOnlyTest {
         List<LastfmTrack> savedTracks = trackRepository.findAll();
         for (LastfmTrack track : savedTracks) {
             // Get listeners count attribute
-            List<Integer> listenersCountValues = attributeHistoryRepository.findAttributeValuesForEntity(
+            List<Long> listenersCountValues = attributeHistoryRepository.findAttributeValuesForEntity(
                 LastfmAttribute.LISTENERS_COUNT, track.getType(), track.getId())
                 .stream()
-                .map(record -> record.getIntValue())
+                .map(record -> record.getNumericValue())
                 .toList();
                 
             if (!listenersCountValues.isEmpty()) {

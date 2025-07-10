@@ -37,19 +37,19 @@ class LastfmArtistRepositoryTest extends JpaOnlyTest {
         // Create test data
         radiohead = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("Radiohead")
-            .playCount(10000)
+            .playCount(10000L)
             .listenersCount(5000)
             .approvalStatus(ApprovalStatus.APPROVED));
             
         radioMoscow = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("Radio Moscow")
-            .playCount(5000)
+            .playCount(5000L)
             .listenersCount(2000)
             .approvalStatus(ApprovalStatus.PENDING));
             
         metallica = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("Metallica")
-            .playCount(20000)
+            .playCount(20000L)
             .listenersCount(10000)
             .approvalStatus(ApprovalStatus.APPROVED));
     }

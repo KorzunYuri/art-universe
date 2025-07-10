@@ -61,7 +61,7 @@ class LastfmArtistControllerTest {
             .url("https://example.com/radiohead")
             .mbid("mbid1")
             .approvalStatus(ApprovalStatus.APPROVED)
-            .playCount(1000)
+            .playCount(1000L)
             .listenersCount(500)
             .apiCall(mock(LastfmApiCall.class))
             .build();

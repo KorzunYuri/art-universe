@@ -186,8 +186,8 @@ class LastfmArtistGetInfoResponseProcessorTest extends JpaOnlyTest {
         // Verify specific attribute history records using the test helper
         testHelper.verifyStringAttribute(artist, LastfmAttribute.MBID, artistDto.getMbid());
         testHelper.verifyStringAttribute(artist, LastfmAttribute.URL, artistDto.getUrl());
-        testHelper.verifyIntAttribute(artist, LastfmAttribute.LISTENERS_COUNT, artistDto.getStats().getListeners());
-        testHelper.verifyIntAttribute(artist, LastfmAttribute.PLAY_COUNT, artistDto.getStats().getPlayCount());
+        testHelper.verifyNumericAttribute(artist, LastfmAttribute.LISTENERS_COUNT, artistDto.getStats().getListeners());
+        testHelper.verifyNumericAttribute(artist, LastfmAttribute.PLAY_COUNT, artistDto.getStats().getPlayCount());
     }
 
     @Test
@@ -201,7 +201,7 @@ class LastfmArtistGetInfoResponseProcessorTest extends JpaOnlyTest {
             builder.name(artistName)
                    .url("http://old-url.com")
                    .listenersCount(100)
-                   .playCount(200)
+                   .playCount(200L)
                    .approvalStatus(ApprovalStatus.APPROVED)
         );
         

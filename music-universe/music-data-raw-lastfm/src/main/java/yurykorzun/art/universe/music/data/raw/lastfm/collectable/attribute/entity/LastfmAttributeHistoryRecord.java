@@ -59,8 +59,8 @@ public class LastfmAttributeHistoryRecord {
     @Column(name = "string_value")
     private String stringValue;
 
-    @Column(name = "int_value")
-    private Integer intValue;
+    @Column(name = "numeric_value")
+    private Long numericValue;
 
     @NonNull
     @Builder.Default
@@ -87,7 +87,7 @@ public class LastfmAttributeHistoryRecord {
                 &&  Objects.equals(scopeEntityId,   other.scopeEntityId)
                 &&  attribute   == other.attribute
                 &&  Objects.equals(stringValue, other.stringValue)
-                &&  Objects.equals(intValue, other.intValue);
+                &&  Objects.equals(numericValue, other.numericValue);
     }
 
     @Override

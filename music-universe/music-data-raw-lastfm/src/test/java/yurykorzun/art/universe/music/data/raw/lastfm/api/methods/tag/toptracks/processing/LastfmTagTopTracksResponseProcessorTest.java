@@ -170,7 +170,7 @@ class LastfmTagTopTracksResponseProcessorTest extends JpaOnlyTest {
 
             // Verify attributes using the test helper
             testHelper.verifyStringAttribute(track, LastfmAttribute.URL, trackDto.getUrl());
-            testHelper.verifyIntAttribute(track, LastfmAttribute.DURATION, trackDto.getDuration());
+            testHelper.verifyNumericAttribute(track, LastfmAttribute.DURATION, trackDto.getDuration());
 
             if (trackDto.getMbid() != null && !trackDto.getMbid().isEmpty()) {
                 testHelper.verifyStringAttribute(track, LastfmAttribute.MBID, trackDto.getMbid());

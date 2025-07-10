@@ -60,8 +60,8 @@ public class LastfmApiResponseProcessorTestHelper {
      * @param attribute The attribute to verify
      * @param expectedValue The expected integer value
      */
-    public void verifyIntAttribute(BaseLastfmEntity entity, LastfmAttribute attribute, int expectedValue) {
-        verifyIntAttribute(entity.getType(), entity.getId(), attribute, expectedValue);
+    public void verifyNumericAttribute(BaseLastfmEntity entity, LastfmAttribute attribute, long expectedValue) {
+        verifyNumericAttribute(entity.getType(), entity.getId(), attribute, expectedValue);
     }
 
     /**
@@ -72,12 +72,12 @@ public class LastfmApiResponseProcessorTestHelper {
      * @param attribute The attribute to verify
      * @param expectedValue The expected integer value
      */
-    public void verifyIntAttribute(LastfmEntityType entityType, Long entityId, LastfmAttribute attribute, int expectedValue) {
+    public void verifyNumericAttribute(LastfmEntityType entityType, Long entityId, LastfmAttribute attribute, long expectedValue) {
         List<LastfmAttributeHistoryRecord> records = attributeHistoryRepository.findAttributeValuesForEntity(
             attribute, entityType, entityId);
         
         assertFalse(records.isEmpty(), "Should have attribute history record for " + attribute.name());
-        assertEquals(expectedValue, records.get(0).getIntValue(), 
+        assertEquals(expectedValue, records.get(0).getNumericValue(),
             attribute.name() + " attribute value should match");
     }
 
@@ -89,7 +89,7 @@ public class LastfmApiResponseProcessorTestHelper {
      * @param expectedValue The expected boolean value
      */
     public void verifyBooleanAttribute(BaseLastfmEntity entity, LastfmAttribute attribute, boolean expectedValue) {
-        verifyIntAttribute(entity, attribute, expectedValue ? 1 : 0);
+        verifyNumericAttribute(entity, attribute, expectedValue ? 1 : 0);
     }
     
     /**
@@ -126,7 +126,7 @@ public class LastfmApiResponseProcessorTestHelper {
         
         assertFalse(records.isEmpty(), 
             "Should have scoped attribute history record for " + attribute.name());
-        assertEquals(expectedValue, records.get(0).getIntValue(), 
+        assertEquals(expectedValue, records.get(0).getNumericValue(),
             attribute.name() + " scoped attribute value should match");
     }
     

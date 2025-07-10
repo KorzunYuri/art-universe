@@ -11,7 +11,7 @@ public record LastfmTrackResponseDto(
     @Nullable String mbid,
     Integer approvalStatus,
     @Nullable Integer listenersCount,
-    @Nullable Integer playCount,
+    @Nullable Long playCount,
     @Nullable LastfmArtistResponseDto artist
 ) {
 

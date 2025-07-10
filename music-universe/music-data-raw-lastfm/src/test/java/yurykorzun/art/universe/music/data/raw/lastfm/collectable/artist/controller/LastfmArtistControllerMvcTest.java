@@ -51,7 +51,7 @@ class LastfmArtistControllerMvcTest {
             .mbid("mbid-123")
             .url("http://test.com")
             .approvalStatus(ApprovalStatus.PENDING)
-            .playCount(1000)
+            .playCount(1000L)
             .listenersCount(500)
             .apiCall(EntityCreationHelper.createApiCall())
             .build();
@@ -62,7 +62,7 @@ class LastfmArtistControllerMvcTest {
             .mbid("mbid-456")
             .url("http://another.com")
             .approvalStatus(ApprovalStatus.APPROVED)
-            .playCount(2000)
+            .playCount(2000L)
             .listenersCount(1000)
             .apiCall(EntityCreationHelper.createApiCall())
             .build();

@@ -18,7 +18,7 @@ class LastfmTrackResponseDtoTest {
         String name = "Test Track";
         String url = "https://example.com/track";
         String mbid = "track-mbid-123";
-        Integer playCount = 1000;
+        Long playCount = 1000L;
         Integer listenersCount = 500;
         
         LastfmArtist artist = EntityCreationHelper.createArtist(builder -> builder
@@ -93,16 +93,16 @@ class LastfmTrackResponseDtoTest {
     void recordMethods_shouldWorkCorrectly() {
         // Given
         LastfmArtistResponseDto artistDto = new LastfmArtistResponseDto(
-            1L, "Artist", "https://artist.com", "artist-mbid", 2, 1000, 500);
+            1L, "Artist", "https://artist.com", "artist-mbid", 2, 1000L, 500);
             
         LastfmTrackResponseDto dto1 = new LastfmTrackResponseDto(
-            1L, "Track", "https://track.com", "track-mbid", 2, 500, 1000, artistDto);
+            1L, "Track", "https://track.com", "track-mbid", 2, 500, 1000L, artistDto);
             
         LastfmTrackResponseDto dto2 = new LastfmTrackResponseDto(
-            1L, "Track", "https://track.com", "track-mbid", 2, 500, 1000, artistDto);
+            1L, "Track", "https://track.com", "track-mbid", 2, 500, 1000L, artistDto);
             
         LastfmTrackResponseDto dto3 = new LastfmTrackResponseDto(
-            2L, "Different", "https://other.com", "other-mbid", 1, 200, 400, null);
+            2L, "Different", "https://other.com", "other-mbid", 1, 200, 400L, null);
         
         // Then
         assertEquals(dto1, dto2, "Equal DTOs should be equal");

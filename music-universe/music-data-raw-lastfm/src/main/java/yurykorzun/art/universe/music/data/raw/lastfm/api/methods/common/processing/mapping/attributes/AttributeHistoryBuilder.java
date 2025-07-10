@@ -47,11 +47,16 @@ public class AttributeHistoryBuilder {
             case STRING:
                 builder.stringValue((String) handler.extractFrom(mapping));
                 break;
-            case INTEGER:
-                builder.intValue((Integer) handler.extractFrom(mapping));
+            case NUMERIC:
+                Object numericValue = handler.extractFrom(mapping);
+                if (numericValue instanceof Integer) {
+                    builder.numericValue(((Integer) numericValue).longValue());
+                } else {
+                    builder.numericValue((Long) numericValue);
+                }
                 break;
             case BOOLEAN:
-                builder.intValue((boolean) handler.extractFrom(mapping) ? 1 : 0);
+                builder.numericValue((boolean) handler.extractFrom(mapping) ? 1L : 0);
                 break;
         }
         return builder.build();

@@ -45,7 +45,7 @@ public class LastfmArtist extends BaseLastfmEntity {
     private Integer listenersCount;
 
     @Column(name = "play_count")
-    private Integer playCount;
+    private Long playCount;
 
     @Override
     public LastfmEntityType getType() {
