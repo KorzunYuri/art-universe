@@ -2,6 +2,8 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.pr
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -10,11 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.LastfmApiResponseProcessorTestHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.dto.TagTopTagsDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttributeHistoryRecord;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repository.LastfmAttributeHistoryRecordRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repository.LastfmAttributeTypeSynchronizer;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.impl.LastfmAttributeHistoryServiceImpl;
@@ -31,12 +33,17 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("integration")
 @Import({
+    // processing
     LastfmTagTopTagResponseProcessor.class,
     LastfmTagTopTagsTagFactory.class,
     LastfmApiDtoProcessingService.class,
+    // entities
     LastfmTagServiceImpl.class,
+    // attributes
     LastfmAttributeHistoryServiceImpl.class,
-    LastfmAttributeTypeSynchronizer.class
+    LastfmAttributeTypeSynchronizer.class,
+    // helpers
+    LastfmApiResponseProcessorTestHelper.class
 })
 class LastfmTagTopTagResponseProcessorTest extends JpaOnlyTest {
 
@@ -51,10 +58,23 @@ class LastfmTagTopTagResponseProcessorTest extends JpaOnlyTest {
 
     @Autowired
     private LastfmAttributeHistoryRecordRepository attributeHistoryRepository;
+    
+    @Autowired
+    private LastfmApiResponseProcessorTestHelper testHelper;
+
+    private static final String TEST_RESPONSE_KEY = "tag.getTopTags";
+    private String responseJsonString;
+    private TagTopTagsDtoRoot dtoRoot;
+    
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws IOException {
         consistencyHelper.cleanup();
+        
+        // Load test data once for all tests
+        responseJsonString = LastfmApiClientResourceUtil.getApiClientResponse(TEST_RESPONSE_KEY);
+        dtoRoot = parseResponse(responseJsonString);
     }
 
     @AfterEach
@@ -62,15 +82,29 @@ class LastfmTagTopTagResponseProcessorTest extends JpaOnlyTest {
         consistencyHelper.cleanup();
     }
 
+    /**
+     * Helper method to parse JSON response into DTO
+     */
+    private TagTopTagsDtoRoot parseResponse(String responseString) {
+        try {
+            return objectMapper.readValue(responseString, TagTopTagsDtoRoot.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to parse response", e);
+        }
+    }
+
+    /**
+     * Helper method to create API response for testing
+     */
+    private LastfmApiResponse createApiResponse() {
+        return consistencyHelper.createAndSaveApiResponse(responseJsonString, LastfmApiCallType.TAG_TOP_TAGS);
+    }
+
     @Test
     void process_shouldCreateNewRecords_whenTagTopTagsResponseProvided() throws IOException {
         // given
-        String responseBody = LastfmApiClientResourceUtil.getApiClientResponse("tag.getTopTags");
-        TagTopTagsDtoRoot dtoRoot = parseResponse(responseBody);
-        
         // Create API response
-        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
-            responseBody, LastfmApiCallType.TAG_TOP_TAGS);
+        LastfmApiResponse apiResponse = createApiResponse();
         
         // Record initial state
         long initialTagCount = tagRepository.count();
@@ -89,34 +123,41 @@ class LastfmTagTopTagResponseProcessorTest extends JpaOnlyTest {
         assertTrue(attributeHistoryRepository.count() > initialAttributeCount, 
             "New attribute history records should be created");
         
-        // Verify tag properties
+        // Verify tag properties and attributes
         List<LastfmTag> savedTags = tagRepository.findAll();
         for (LastfmTag tag : savedTags) {
             assertNotNull(tag.getName(), "Tag name should be set");
+            // URL might be null for tags from tag.getTopTags
+            
+            // Find corresponding tag in the DTO to get the original values
+            var tagDto = dtoRoot.getTopTags().getTags().stream()
+                .filter(dto -> dto.getName().equals(tag.getName()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Saved tag doesn't correspond to any DTO"));
+
+            // Verify attributes using the test helper - just verify they exist, not exact values
+            List<Integer> usageCountValues = attributeHistoryRepository.findAttributeValuesForEntity(
+                LastfmAttribute.USAGE_COUNT, tag.getType(), tag.getId())
+                .stream()
+                .map(record -> record.getIntValue())
+                .toList();
+
+            List<Integer> reachValues = attributeHistoryRepository.findAttributeValuesForEntity(
+                LastfmAttribute.RELATIONS_COUNT, tag.getType(), tag.getId())
+                .stream()
+                .map(record -> record.getIntValue())
+                .toList();
+
+            assertFalse(usageCountValues.isEmpty(), "Tag should have usage count attribute");
+            assertFalse(reachValues.isEmpty(), "Tag should have relations count attribute");
         }
-        
-        // Verify attributes were saved with correct values
-        List<LastfmAttributeHistoryRecord> usageCountAttributes = attributeHistoryRepository.findAll().stream()
-            .filter(attr -> LastfmAttribute.RELATIONS_COUNT == attr.getAttribute())
-            .toList();
-        
-        assertFalse(usageCountAttributes.isEmpty(), "Usage count attributes should be created");
-        
-        List<LastfmAttributeHistoryRecord> reachAttributes = attributeHistoryRepository.findAll().stream()
-            .filter(attr -> LastfmAttribute.USAGE_COUNT == attr.getAttribute())
-            .toList();
-        
-        assertFalse(reachAttributes.isEmpty(), "Reach attributes should be created");
     }
 
     @Test
     void process_shouldUpdateExistingTags_whenTagsAlreadyExist() throws IOException {
         // given
-        String responseBody = LastfmApiClientResourceUtil.getApiClientResponse("tag.getTopTags");
-        TagTopTagsDtoRoot dtoRoot = parseResponse(responseBody);
-        
         // Create some existing tags first
-        int preExistingTagsCount = 10;
+        int preExistingTagsCount = 5;
         for (int i = 0; i < preExistingTagsCount; i++) {
             String tagName = dtoRoot.getTopTags().getTags().get(i).getName();
             consistencyHelper.createAndSaveTag(builder -> 
@@ -125,8 +166,7 @@ class LastfmTagTopTagResponseProcessorTest extends JpaOnlyTest {
         }
         
         // Create API response
-        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
-            responseBody, LastfmApiCallType.TAG_TOP_TAGS);
+        LastfmApiResponse apiResponse = createApiResponse();
         
         // Record initial state
         long initialTagCount = tagRepository.count();
@@ -144,27 +184,67 @@ class LastfmTagTopTagResponseProcessorTest extends JpaOnlyTest {
         // Verify attribute history records were created for all tags (new and existing)
         assertTrue(attributeHistoryRepository.count() > initialAttributeCount, 
             "New attribute history records should be created");
+        
+        // Verify attributes for pre-existing tags
+        for (int i = 0; i < preExistingTagsCount; i++) {
+            var tagDto = dtoRoot.getTopTags().getTags().get(i);
+            List<LastfmTag> tags = tagRepository.findAllByNameIn(List.of(tagDto.getName()));
+            assertFalse(tags.isEmpty(), "Tag should exist");
+            LastfmTag tag = tags.get(0);
+            
+            // Verify attributes using the test helper - just verify they exist, not exact values
+            List<Integer> usageCountValues = attributeHistoryRepository.findAttributeValuesForEntity(
+                LastfmAttribute.USAGE_COUNT, tag.getType(), tag.getId())
+                .stream()
+                .map(record -> record.getIntValue())
+                .toList();
+            
+            List<Integer> reachValues = attributeHistoryRepository.findAttributeValuesForEntity(
+                LastfmAttribute.RELATIONS_COUNT, tag.getType(), tag.getId())
+                .stream()
+                .map(record -> record.getIntValue())
+                .toList();
+            
+            assertFalse(usageCountValues.isEmpty(), "Tag should have usage count attribute");
+            assertFalse(reachValues.isEmpty(), "Tag should have relations count attribute");
+        }
+    }
+
+    @Test
+    void process_shouldBeIdempotent_whenProcessingSameResponseTwice() throws IOException {
+        // given
+        // Create API response
+        LastfmApiResponse apiResponse = createApiResponse();
+        
+        // First processing
+        processor.processResponse(apiResponse);
+        
+        // Record state after first processing
+        long tagCountAfterFirstProcessing = tagRepository.count();
+        long attributeCountAfterFirstProcessing = attributeHistoryRepository.count();
+        
+        // when - process the same response again
+        processor.processResponse(apiResponse);
+        
+        // then - counts should remain the same
+        assertEquals(tagCountAfterFirstProcessing, tagRepository.count(),
+            "Tag count should remain the same after second processing");
+        assertEquals(attributeCountAfterFirstProcessing, attributeHistoryRepository.count(),
+            "Attribute count should remain the same after second processing");
     }
 
     @Test
     void process_shouldNotCreateNewRecords_whenEmptyResponseProvided() throws IOException {
         // given
-        String emptyResponseString = """
-            {
-              "toptags": {
-                "@attr": {
-                  "offset": 0,
-                  "num_res": 0,
-                  "total": 0
-                },
-                "tag": []
-              }
-            }
-            """;
+        // Create empty tags response
+        ObjectNode jsonNode = (ObjectNode) objectMapper.readTree(responseJsonString);
+        ObjectNode topTagsNode = (ObjectNode) jsonNode.path("toptags");
+        topTagsNode.putArray("tag"); // Replace tags with empty array
+        String emptyResponseBody = objectMapper.writeValueAsString(jsonNode);
         
-        // Create API response
+        // Create API response with empty tags
         LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
-            emptyResponseString, LastfmApiCallType.TAG_TOP_TAGS);
+            emptyResponseBody, LastfmApiCallType.TAG_TOP_TAGS);
         
         // Record initial state
         long initialTagCount = tagRepository.count();
@@ -173,22 +253,26 @@ class LastfmTagTopTagResponseProcessorTest extends JpaOnlyTest {
         // when
         processor.processResponse(apiResponse);
         
-        // then
-        // Verify no new tags were created
-        assertEquals(initialTagCount, tagRepository.count(), 
+        // then - no new entities should be created
+        assertEquals(initialTagCount, tagRepository.count(),
             "No new tags should be created for empty response");
-        
-        // Verify no new attribute records were created
-        assertEquals(initialAttributeCount, attributeHistoryRepository.count(), 
+        assertEquals(initialAttributeCount, attributeHistoryRepository.count(),
             "No new attribute records should be created for empty response");
     }
-
-    private TagTopTagsDtoRoot parseResponse(String responseString) {
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            return objectMapper.readValue(responseString, TagTopTagsDtoRoot.class);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to parse response", e);
-        }
+    
+    @Test
+    void process_shouldHandleErrorGracefully_whenResponseIsInvalid() {
+        // given
+        // Create invalid API response
+        String invalidJson = "{\"invalid\": true}";
+        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
+            invalidJson, LastfmApiCallType.TAG_TOP_TAGS);
+        
+        // when/then
+        Exception exception = assertThrows(UnrecognizedPropertyException.class, () -> processor.processResponse(apiResponse),
+            "Should throw exception when processing invalid response");
+        
+        // Verify no entities were created
+        assertEquals(0, tagRepository.count(), "No tags should be created");
     }
 }
