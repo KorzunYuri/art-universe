@@ -21,7 +21,6 @@ public class LastfmApiDtoProcessor<E extends BaseLastfmEntity, D extends EntityD
      * <ul>
      *     <li>new/updated entities (with new ids)</li>
      *     <li>new attribute_history records</li>
-     *     <li>list of generated entity_relations <b>WITHOUT IDS</b></li>
      * </ul>
      * @param dtos              list of incoming DTOs, result of API response parsing
      * @param existingEntities  list of existing entities
@@ -35,7 +34,6 @@ public class LastfmApiDtoProcessor<E extends BaseLastfmEntity, D extends EntityD
      * <ul>
      *     <li><b>only saved</b> (new / updated) entities</li>
      *     <li><b>only saved</b> (new / updated) attribute values</li>
-     *     <li><b>ALL</b> created entity_relations</li>
      * </ul>
      */
     public LastfmApiDtoProcessingResult<E, D> process(

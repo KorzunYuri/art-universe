@@ -114,15 +114,13 @@ public interface LastfmArtistRepository extends JpaRepository<LastfmArtist, Long
                 FROM
                     top_artists ta
                 JOIN
-                    entity_relation rel
+                    artist_artist rel
                         ON      1=1
-                            AND rel.scope_entity_type   =   1       -- artist
-                            AND rel.scope_entity_id     =   ta.artist_id
-                            AND rel.entity_type         =   1       -- artist
+                            AND rel.source_artist_id     =   ta.artist_id
                 JOIN
                     artist a
                         ON      1=1
-                            AND a.id = rel.entity_id
+                            AND a.id = rel.target_artist_id
                 LEFT JOIN 
                     api_call ac
                         ON  1=1

@@ -39,9 +39,9 @@ Spring Boot application that collects data about tags, artists, albums, and trac
 ## Database Schema
 
 - **Entities**: `artist`, `album`, `track`, `tag`
+- **Relations**: `artist_artist`, `artist_album`, `artist_track`, `artist_tag`, `album_track`, `album_tag`, `track_tag`
 - **API Tracking**: `api_call`, `api_response`
 - **Attributes**: `attribute_history`, `attribute_snapshot`
-- **Relationships**: `entity_relation`
 
 ## Configuration
 
