@@ -2,6 +2,8 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -10,11 +12,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.LastfmApiResponseProcessorTestHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.TagTopArtistsDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.repository.LastfmArtistRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.impl.LastfmArtistServiceImpl;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repository.LastfmAttributeHistoryRecordRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repository.LastfmAttributeTypeSynchronizer;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.impl.LastfmAttributeHistoryServiceImpl;
@@ -34,14 +38,20 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("integration")
 @Import({
+    // processing
     LastfmTagTopArtistsResponseProcessor.class,
     LastfmTagTopArtistsArtistFactory.class,
     LastfmApiDtoProcessingService.class,
+    // entities
     LastfmArtistServiceImpl.class,
     LastfmTagServiceImpl.class,
+    // attributes
     LastfmAttributeHistoryServiceImpl.class,
+    LastfmAttributeTypeSynchronizer.class,
+    // relations
     LastfmArtistTagServiceImpl.class,
-    LastfmAttributeTypeSynchronizer.class
+    // helpers
+    LastfmApiResponseProcessorTestHelper.class
 })
 class LastfmTagTopArtistsResponseProcessorTest extends JpaOnlyTest {
 
@@ -62,10 +72,19 @@ class LastfmTagTopArtistsResponseProcessorTest extends JpaOnlyTest {
 
     @Autowired
     private LastfmArtistTagRepository artistTagRepository;
+    
+    @Autowired
+    private LastfmApiResponseProcessorTestHelper testHelper;
+
+    private TagTopArtistsDtoRoot dtoRoot;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws IOException {
         consistencyHelper.cleanup();
+        
+        // Parse test data once for all tests
+        dtoRoot = parseResponse(TEST_DTO_ROOT);
     }
 
     @AfterEach
@@ -73,18 +92,32 @@ class LastfmTagTopArtistsResponseProcessorTest extends JpaOnlyTest {
         consistencyHelper.cleanup();
     }
 
+    /**
+     * Helper method to parse JSON response into DTO
+     */
+    private TagTopArtistsDtoRoot parseResponse(String responseString) {
+        try {
+            return objectMapper.readValue(responseString, TagTopArtistsDtoRoot.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to parse response", e);
+        }
+    }
+
+    /**
+     * Helper method to create API response for testing
+     */
+    private LastfmApiResponse createApiResponse(LastfmTag tag) {
+        return consistencyHelper.createAndSaveApiResponse(TEST_DTO_ROOT, LastfmApiCallType.TAG_TOP_ARTISTS, tag);
+    }
+
     @Test
     void process_shouldCreateNewRecords_whenTagTopArtistsResponseProvided() throws IOException {
         // given
-        String responseBody = TEST_DTO_ROOT;
-        TagTopArtistsDtoRoot dtoRoot = parseResponse(responseBody);
-        
         // Create source tag
         LastfmTag sourceTag = consistencyHelper.createAndSaveTag();
         
         // Create API response
-        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
-            responseBody, LastfmApiCallType.TAG_TOP_ARTISTS, sourceTag);
+        LastfmApiResponse apiResponse = createApiResponse(sourceTag);
         
         // Record initial state
         long initialArtistCount = artistRepository.count();
@@ -108,11 +141,24 @@ class LastfmTagTopArtistsResponseProcessorTest extends JpaOnlyTest {
         assertEquals(initialArtistTagCount + expectedArtistsCount, artistTagRepository.count(), 
             "Artist-tag relations should be created");
         
-        // Verify artist properties
+        // Verify artist properties and attributes
         List<LastfmArtist> savedArtists = artistRepository.findAll();
         for (LastfmArtist artist : savedArtists) {
             assertNotNull(artist.getName(), "Artist name should be set");
             assertNotNull(artist.getUrl(), "Artist URL should be set");
+            
+            // Find corresponding artist in the DTO to get the original values
+            var artistDto = dtoRoot.getTopArtists().getArtists().stream()
+                .filter(dto -> dto.getName().equals(artist.getName()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Saved artist doesn't correspond to any DTO"));
+
+            // Verify attributes using the test helper
+            testHelper.verifyStringAttribute(artist, LastfmAttribute.URL, artistDto.getUrl());
+
+            if (artistDto.getMbid() != null && !artistDto.getMbid().isEmpty()) {
+                testHelper.verifyStringAttribute(artist, LastfmAttribute.MBID, artistDto.getMbid());
+            }
         }
         
         // Verify relation properties
@@ -125,16 +171,42 @@ class LastfmTagTopArtistsResponseProcessorTest extends JpaOnlyTest {
     }
 
     @Test
+    void process_shouldBeIdempotent_whenProcessingSameResponseTwice() throws IOException {
+        // given
+        // Create source tag
+        LastfmTag sourceTag = consistencyHelper.createAndSaveTag();
+        
+        // Create API response
+        LastfmApiResponse apiResponse = createApiResponse(sourceTag);
+        
+        // First processing
+        processor.processResponse(apiResponse);
+        
+        // Record state after first processing
+        long artistCountAfterFirstProcessing = artistRepository.count();
+        long attributeCountAfterFirstProcessing = attributeHistoryRepository.count();
+        long relationCountAfterFirstProcessing = artistTagRepository.count();
+        
+        // when - process the same response again
+        processor.processResponse(apiResponse);
+        
+        // then - counts should remain the same
+        assertEquals(artistCountAfterFirstProcessing, artistRepository.count(),
+            "Artist count should remain the same after second processing");
+        assertEquals(attributeCountAfterFirstProcessing, attributeHistoryRepository.count(),
+            "Attribute count should remain the same after second processing");
+        assertEquals(relationCountAfterFirstProcessing, artistTagRepository.count(),
+            "Relation count should remain the same after second processing");
+    }
+
+    @Test
     void process_shouldThrowException_whenSourceTagNotFound() throws IOException {
         // given
-        String responseBody = TEST_DTO_ROOT;
-        
         // Create source tag first (needed for API call creation)
         LastfmTag sourceTag = consistencyHelper.createAndSaveTag();
         
         // Create API response with the tag
-        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
-            responseBody, LastfmApiCallType.TAG_TOP_ARTISTS, sourceTag);
+        LastfmApiResponse apiResponse = createApiResponse(sourceTag);
         
         // Now delete the tag to simulate non-existent tag
         tagRepository.delete(sourceTag);
@@ -144,14 +216,55 @@ class LastfmTagTopArtistsResponseProcessorTest extends JpaOnlyTest {
             processor.processResponse(apiResponse);
         }, "Should throw EntityNotFoundException when source tag not found");
     }
-
-    private TagTopArtistsDtoRoot parseResponse(String responseString) {
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            return objectMapper.readValue(responseString, TagTopArtistsDtoRoot.class);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to parse response", e);
-        }
+    
+    @Test
+    void process_shouldHandleEmptyArtistsList() throws IOException {
+        // given
+        // Create empty artists response
+        ObjectNode jsonNode = (ObjectNode) objectMapper.readTree(TEST_DTO_ROOT);
+        ObjectNode topArtistsNode = (ObjectNode) jsonNode.path("topartists");
+        topArtistsNode.putArray("artist"); // Replace artists with empty array
+        String emptyResponseBody = objectMapper.writeValueAsString(jsonNode);
+        
+        // Create source tag
+        LastfmTag sourceTag = consistencyHelper.createAndSaveTag();
+        
+        // Create API response with empty artists
+        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
+            emptyResponseBody, LastfmApiCallType.TAG_TOP_ARTISTS, sourceTag);
+        
+        // Record initial state
+        long initialArtistCount = artistRepository.count();
+        long initialRelationCount = artistTagRepository.count();
+        
+        // when
+        processor.processResponse(apiResponse);
+        
+        // then - no new entities should be created
+        assertEquals(initialArtistCount, artistRepository.count(),
+            "No new artists should be created for empty response");
+        assertEquals(initialRelationCount, artistTagRepository.count(),
+            "No new relations should be created for empty response");
+    }
+    
+    @Test
+    void process_shouldHandleErrorGracefully_whenResponseIsInvalid() {
+        // given
+        // Create source tag
+        LastfmTag sourceTag = consistencyHelper.createAndSaveTag();
+        
+        // Create invalid API response
+        String invalidJson = "{\"invalid\": true}";
+        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
+            invalidJson, LastfmApiCallType.TAG_TOP_ARTISTS, sourceTag);
+        
+        // when/then
+        Exception exception = assertThrows(UnrecognizedPropertyException.class, () -> processor.processResponse(apiResponse),
+            "Should throw exception when processing invalid response");
+        
+        // Verify no entities were created
+        assertEquals(1, tagRepository.count(), "Only source tag should exist");
+        assertEquals(0, artistRepository.count(), "No artists should be created");
     }
 
     // "image" array is ignored but is left here to make it realistic
