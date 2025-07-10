@@ -42,6 +42,168 @@ Spring Boot application that collects data about tags, artists, albums, and trac
 - **Relations**: `artist_artist`, `artist_album`, `artist_track`, `artist_tag`, `album_track`, `album_tag`, `track_tag`
 - **API Tracking**: `api_call`, `api_response`
 - **Attributes**: `attribute_history`, `attribute_snapshot`
+- 
+### Entities
+
+#### 1. LastfmArtist
+**Existing fields:**
+- `id` (BIGSERIAL)
+- `name` (VARCHAR(1024))
+- `mbid` (VARCHAR(36))
+- `url` (VARCHAR(1024))
+- `listenersCount` (INTEGER)
+- `playCount` (INTEGER)
+- `approvalStatus` (SMALLINT)
+- `apiCall` (FK to api_call)
+
+**Fields to add:**
+- None - entity is complete based on our needs
+
+**Fields to ignore and remove in the end:**
+- isStreamable
+- isOnTour
+
+#### 2. LastfmAlbum
+**Existing fields:**
+- `id` (BIGSERIAL)
+- `name` (VARCHAR(1024))
+- `mbid` (VARCHAR(36))
+- `url` (VARCHAR(4096))
+- `playCount` (INTEGER)
+- `listenersCount` (INTEGER)
+- `publishTs` (TIMESTAMP)
+- `description` (TEXT)
+- `approvalStatus` (SMALLINT)
+- `apiCall` (FK to api_call)
+
+**Fields to add:**
+- None - entity is complete based on our needs
+
+- **Fields to ignore and remove in the end:**
+- description
+
+#### 3. LastfmTrack
+**Existing fields:**
+- `id` (BIGSERIAL)
+- `name` (VARCHAR(2048))
+- `mbid` (VARCHAR(36))
+- `url` (VARCHAR(8192))
+- `duration` (INTEGER)
+- `listenersCount` (INTEGER)
+- `playCount` (INTEGER)
+- `artist` (FK to artist)
+- `approvalStatus` (SMALLINT)
+- `apiCall` (FK to api_call)
+
+**Fields to add:**
+- None - entity is complete based on our needs
+
+**Fields to ignore and remove in the end:**
+- isStreamable
+
+#### 4. LastfmTag
+**Existing fields:**
+- `id` (BIGSERIAL)
+- `name` (VARCHAR(1024))
+- `url` (VARCHAR(1024))
+- `usageCount` (INTEGER)
+- `usageUsersCount` (INTEGER)
+- `approvalStatus` (SMALLINT)
+- `apiCall` (FK to api_call)
+
+**Fields to add:**
+- None - entity is complete based on our needs
+
+### Relationship Entities
+
+#### ArtistArtist
+**Fields:**
+- `id` (BIGSERIAL)
+- `sourceArtistId` (BIGINT FK to artist)
+- `targetArtistId` (BIGINT FK to artist)
+- `matchScore` (DECIMAL(5,4)) - similarity coefficient from artist.getSimilar
+- `approvalStatus` (SMALLINT)
+- `apiCall` (FK to api_call)
+- `createdAt` (TIMESTAMP)
+- `updatedAt` (TIMESTAMP)
+
+**Unique constraint:** (sourceArtistId, targetArtistId)
+
+#### ArtistAlbum
+**Fields:**
+- `id` (BIGSERIAL)
+- `artistId` (BIGINT FK to artist)
+- `albumId` (BIGINT FK to album)
+- `approvalStatus` (SMALLINT)
+- `apiCall` (FK to api_call)
+- `createdAt` (TIMESTAMP)
+- `updatedAt` (TIMESTAMP)
+
+**Unique constraint:** (artistId, albumId)
+
+#### ArtistTrack
+**Fields:**
+- `id` (BIGSERIAL)
+- `artistId` (BIGINT FK to artist)
+- `trackId` (BIGINT FK to track)
+- `approvalStatus` (SMALLINT)
+- `apiCall` (FK to api_call)
+- `createdAt` (TIMESTAMP)
+- `updatedAt` (TIMESTAMP)
+
+**Unique constraint:** (artistId, trackId)
+
+#### ArtistTag
+**Fields:**
+- `id` (BIGSERIAL)
+- `artistId` (BIGINT FK to artist)
+- `tagId` (BIGINT FK to tag)
+- `usageCount` (INTEGER) - from artist.getTopTags count field
+- `approvalStatus` (SMALLINT)
+- `apiCall` (FK to api_call)
+- `createdAt` (TIMESTAMP)
+- `updatedAt` (TIMESTAMP)
+
+**Unique constraint:** (artistId, tagId)
+
+#### AlbumTrack
+**Fields:**
+- `id` (BIGSERIAL)
+- `albumId` (BIGINT FK to album)
+- `trackId` (BIGINT FK to track)
+- `position` (INTEGER) - track position in album from album.getInfo tracks @attr.rank
+- `approvalStatus` (SMALLINT)
+- `apiCall` (FK to api_call)
+- `createdAt` (TIMESTAMP)
+- `updatedAt` (TIMESTAMP)
+
+**Unique constraint:** (albumId, trackId)
+
+#### AlbumTag
+**Fields:**
+- `id` (BIGSERIAL)
+- `albumId` (BIGINT FK to album)
+- `tagId` (BIGINT FK to tag)
+- `usageCount` (INTEGER) - from album.getTopTags count field
+- `approvalStatus` (SMALLINT)
+- `apiCall` (FK to api_call)
+- `createdAt` (TIMESTAMP)
+- `updatedAt` (TIMESTAMP)
+
+**Unique constraint:** (albumId, tagId)
+
+#### TrackTag
+**Fields:**
+- `id` (BIGSERIAL)
+- `trackId` (BIGINT FK to track)
+- `tagId` (BIGINT FK to tag)
+- `usageCount` (INTEGER) - from track.getTopTags count field
+- `approvalStatus` (SMALLINT)
+- `apiCall` (FK to api_call)
+- `createdAt` (TIMESTAMP)
+- `updatedAt` (TIMESTAMP)
+
+**Unique constraint:** (trackId, tagId)
 
 ## Configuration
 
@@ -74,10 +236,10 @@ Spring Boot application that collects data about tags, artists, albums, and trac
 
 1. **API Call Generation** - Based on entity state, business logic per-method and last api call due dates
 2. **API Execution** - Rate-limited calls to LastFM API
-3. **Response Processing** - Parse JSON responses into DTOs
-4. **Entity Mapping** - Convert DTOs to domain entities
-5. **Attribute Extraction** - Detect and apply changed attributes (+ SCD2)
-6. **Relationship Creation** - Link related entities
+3. **Response Processing** - Parse JSON responses into DTOs and update entities, relations and attribute history
+   1. **Entity Mapping** - Convert DTOs to domain entities
+   1. **Relationship Creation** - Link related entities
+   1. **Attribute Extraction** - Detect and apply changed attributes (+ SCD2)
 
 ## Integration Points
 
