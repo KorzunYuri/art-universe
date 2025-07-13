@@ -14,7 +14,8 @@ services:
 #      # Use host.docker.internal to access host machine from container
 #      MURAW_LASTFM_DB_HOST: host.docker.internal
     ports:
-      - "${MURAW_LASTFM_APP_EXTERNAL_PORT}:8080"
+      - "${MURAW_LASTFM_APP_EXTERNAL_PORT}:${MURAW_LASTFM_APP_INTERNAL_PORT}"
+      - "${MURAW_LASTFM_ACTUATOR_EXTERNAL_PORT}:${MURAW_LASTFM_ACTUATOR_INTERNAL_PORT}"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
@@ -31,7 +32,8 @@ services:
 #    environment:
 #      MU_DATA_DB_HOST: host.docker.internal
     ports:
-      - "${MU_DATA_APP_EXTERNAL_PORT}:8080"
+      - "${MU_DATA_APP_EXTERNAL_PORT}:${MU_DATA_APP_INTERNAL_PORT}"
+      - "${MU_DATA_ACTUATOR_EXTERNAL_PORT}:${MU_DATA_ACTUATOR_INTERNAL_PORT}"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
@@ -48,7 +50,8 @@ services:
 #    environment:
 #      MU_QUIZ_DB_HOST: host.docker.internal
     ports:
-      - "${MU_QUIZ_APP_EXTERNAL_PORT}:8080"
+      - "${MU_QUIZ_APP_EXTERNAL_PORT}:${MU_QUIZ_APP_INTERNAL_PORT}"
+      - "${MU_QUIZ_ACTUATOR_EXTERNAL_PORT}:${MU_QUIZ_ACTUATOR_INTERNAL_PORT}"
     depends_on:
       - music-data
     extra_hosts:
