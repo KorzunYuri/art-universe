@@ -1,12 +1,14 @@
 import { ApprovalStatus } from '@/music-universe/sources/lastfm/constants/approvalStatus';
 import styles from './EntityTagItem.module.scss';
 
-export enum TagRelationStatus {
-  NOT_APPROVED = 1,  // Серый - артист или тег не одобрены в LastFM
-  NOT_BOUND = 2,     // Оранжевый - артист или тег не привязаны к music-data
-  PENDING = 3,       // Желтый - артист и тег одобрены и привязаны, связь не одобрена
-  APPROVED = 4       // Зеленый - связь одобрена
-}
+export const TagRelationStatus = {
+  NOT_APPROVED: 1,  // Серый - артист или тег не одобрены в LastFM
+  NOT_BOUND: 2,     // Оранжевый - артист или тег не привязаны к music-data
+  PENDING: 3,       // Желтый - артист и тег одобрены и привязаны, связь не одобрена
+  APPROVED: 4       // Зеленый - связь одобрена
+} as const;
+
+export type TagRelationStatus = typeof TagRelationStatus[keyof typeof TagRelationStatus];
 
 export interface EntityTagItemProps {
   id: number;
@@ -15,7 +17,7 @@ export interface EntityTagItemProps {
   entityApprovalStatus: number;
   isBound: boolean;
   usageCount: number;
-  relationStatus: TagRelationStatus;
+  relationStatus: number;
   isSourceBound?: boolean;
   isTargetBound?: boolean;
   tagPageUrl?: string;
@@ -29,6 +31,7 @@ export const EntityTagItem = ({
   name,
   tagApprovalStatus,
   entityApprovalStatus,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   isBound,
   usageCount,
   relationStatus,

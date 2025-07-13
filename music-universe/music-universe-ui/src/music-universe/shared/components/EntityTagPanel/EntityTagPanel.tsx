@@ -31,6 +31,7 @@ export const EntityTagPanel = ({
   entityId,
   entityApprovalStatus,
   tagPageBaseUrl,
+  // onClose prop is defined but not currently used in the component
   onClose
 }: EntityTagPanelProps) => {
   const [tags, setTags] = useState<TagWithRelation[]>([]);
