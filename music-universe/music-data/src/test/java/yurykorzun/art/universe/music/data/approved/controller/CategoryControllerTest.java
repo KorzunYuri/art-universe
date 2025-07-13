@@ -17,6 +17,8 @@ import yurykorzun.art.universe.music.data.approved.dto.LookupResultDTO;
 import yurykorzun.art.universe.music.data.approved.dto.CategorySaveRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.CategoryBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.CategoryCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.CategoryBatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.CategoryBatchLookupResponseDTO;
 import yurykorzun.art.universe.music.data.approved.dto.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.approved.dto.TestCategoryHierarchyProjectionImpl;
 import yurykorzun.art.universe.music.data.approved.dto.TestBoundEntityProjectionImpl;
@@ -24,7 +26,9 @@ import yurykorzun.art.universe.music.data.approved.entity.DataSource;
 import yurykorzun.art.universe.music.data.approved.service.CategoryService;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
@@ -479,5 +483,72 @@ class CategoryControllerTest {
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
         assertEquals(expectedResponse, actualResponse);
         verify(categoryService).unbindCategory(dataSource, externalId);
+    }
+    
+    @Test
+    void batchLookupCategories_shouldReturnSuccessResponse() {
+        // Given
+        List<String> names = List.of("rock", "jazz");
+        Integer limit = 10;
+        
+        CategoryBatchLookupRequestDTO request = CategoryBatchLookupRequestDTO.builder()
+            .names(names)
+            .limit(limit)
+            .build();
+        
+        Map<String, List<LookupResultDTO>> resultMap = new HashMap<>();
+        resultMap.put("rock", List.of(
+            new LookupResultDTO(1L, "Rock"),
+            new LookupResultDTO(2L, "Alternative Rock")
+        ));
+        resultMap.put("jazz", List.of(
+            new LookupResultDTO(3L, "Jazz")
+        ));
+        
+        CategoryBatchLookupResponseDTO expectedResponse = CategoryBatchLookupResponseDTO.builder()
+            .results(resultMap)
+            .build();
+        
+        when(categoryService.batchLookupCategories(request)).thenReturn(expectedResponse);
+        
+        // When
+        ResponseEntity<ResponseWrapper<CategoryBatchLookupResponseDTO>> actualResponse =
+            categoryController.batchLookupCategories(request);
+        
+        // Then
+        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
+        assertEquals(ResponseWrapper.successBody(expectedResponse), actualResponse.getBody());
+        
+        verify(categoryService).batchLookupCategories(request);
+    }
+    
+    @Test
+    void batchLookupCategories_whenExceptionThrown_shouldReturnFailureResponse() {
+        // Given
+        List<String> names = List.of("rock", "jazz");
+        Integer limit = 10;
+        String errorMessage = "Test error";
+        
+        CategoryBatchLookupRequestDTO request = CategoryBatchLookupRequestDTO.builder()
+            .names(names)
+            .limit(limit)
+            .build();
+        
+        when(categoryService.batchLookupCategories(request))
+            .thenThrow(new RuntimeException(errorMessage));
+        
+        ResponseEntity<ResponseWrapper<CategoryBatchLookupResponseDTO>> expectedResponse =
+            ResponseWrapper.failure(String.format("Failed to batch lookup categories: %s", errorMessage));
+        
+        // When
+        ResponseEntity<ResponseWrapper<CategoryBatchLookupResponseDTO>> actualResponse =
+            categoryController.batchLookupCategories(request);
+        
+        // Then
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
+        assertEquals(expectedResponse.getBody().isSuccess(), actualResponse.getBody().isSuccess());
+        assertEquals(expectedResponse.getBody().getMessage(), actualResponse.getBody().getMessage());
+        
+        verify(categoryService).batchLookupCategories(request);
     }
 }

@@ -11,6 +11,8 @@ import yurykorzun.art.universe.music.data.approved.dto.LookupResultDTO;
 import yurykorzun.art.universe.music.data.approved.dto.CategorySaveRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.CategoryBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.CategoryCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.CategoryBatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.CategoryBatchLookupResponseDTO;
 import yurykorzun.art.universe.music.data.approved.dto.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.approved.entity.DataSource;
 import yurykorzun.art.universe.music.data.approved.service.CategoryService;
@@ -52,6 +54,18 @@ public class CategoryController {
             return ResponseWrapper.success(categories);
         } catch (Exception e) {
             return ResponseWrapper.failure(String.format("Failed to lookup categories: %s", e.getMessage()));
+        }
+    }
+    
+    @PostMapping("/lookup/batch")
+    public ResponseEntity<ResponseWrapper<CategoryBatchLookupResponseDTO>> batchLookupCategories(
+        @Valid @RequestBody CategoryBatchLookupRequestDTO request
+    ) {
+        try {
+            CategoryBatchLookupResponseDTO result = categoryService.batchLookupCategories(request);
+            return ResponseWrapper.success(result);
+        } catch (Exception e) {
+            return ResponseWrapper.failure(String.format("Failed to batch lookup categories: %s", e.getMessage()));
         }
     }
 

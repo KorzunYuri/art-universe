@@ -1,6 +1,8 @@
 package yurykorzun.art.universe.music.data.approved.service;
 
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.Query;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -10,6 +12,8 @@ import yurykorzun.art.universe.music.data.approved.dto.LookupResultDTO;
 import yurykorzun.art.universe.music.data.approved.dto.CategorySaveRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.CategoryBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.CategoryCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.CategoryBatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.CategoryBatchLookupResponseDTO;
 import yurykorzun.art.universe.music.data.approved.dto.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.approved.entity.Category;
 import yurykorzun.art.universe.music.data.approved.entity.CategoryBinding;
@@ -18,7 +22,10 @@ import yurykorzun.art.universe.music.data.approved.repository.CategoryRepository
 import yurykorzun.art.universe.music.data.approved.repository.CategoryBindingRepository;
 import yurykorzun.art.universe.music.data.approved.repository.DimensionRepository;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -28,15 +35,18 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryBindingRepository categoryBindingRepository;
     private final DimensionRepository dimensionRepository;
+    private final EntityManager entityManager;
 
     public CategoryServiceImpl(
         CategoryRepository categoryRepository,
         CategoryBindingRepository categoryBindingRepository,
-        DimensionRepository dimensionRepository
+        DimensionRepository dimensionRepository,
+        EntityManager entityManager
     ) {
         this.categoryRepository = categoryRepository;
         this.categoryBindingRepository = categoryBindingRepository;
         this.dimensionRepository = dimensionRepository;
+        this.entityManager = entityManager;
     }
 
     @Override
@@ -203,5 +213,79 @@ public class CategoryServiceImpl implements CategoryService {
         }
         
         return false;
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public CategoryBatchLookupResponseDTO batchLookupCategories(CategoryBatchLookupRequestDTO request) {
+        if (request.getNames() == null || request.getNames().isEmpty()) {
+            return CategoryBatchLookupResponseDTO.builder().build();
+        }
+        
+        // Apply default limit if null
+        int actualLimit = request.getLimit() != null ? request.getLimit() : 20;
+        
+        // Filter and prepare search terms
+        List<String> searchTerms = request.getNames().stream()
+            .filter(term -> term != null && !term.trim().isEmpty())
+            .map(String::trim)
+            .toList();
+        
+        if (searchTerms.isEmpty()) {
+            return CategoryBatchLookupResponseDTO.builder().build();
+        }
+        
+        // Dynamically build SQL query with UNION ALL
+        StringBuilder sqlBuilder = new StringBuilder();
+        
+        for (int i = 0; i < searchTerms.size(); i++) {
+            if (i > 0) {
+                sqlBuilder.append("\nUNION ALL\n");
+            }
+            
+            sqlBuilder.append("""
+                SELECT * FROM (
+                    SELECT c.id, c.name, c.created_at, c.updated_at, ? as search_term
+                    FROM category c
+                    WHERE LOWER(c.name) LIKE LOWER(CONCAT('%', ?, '%'))
+                    ORDER BY c.name ASC
+                    LIMIT ?
+                ) AS result
+            """);
+        }
+        
+        // Create query and set parameters
+        Query query = entityManager.createNativeQuery(sqlBuilder.toString());
+        
+        int paramIndex = 1;
+        for (String searchTerm : searchTerms) {
+            query.setParameter(paramIndex++, searchTerm); // For search_term column
+            query.setParameter(paramIndex++, searchTerm); // For WHERE clause
+            query.setParameter(paramIndex++, actualLimit); // For LIMIT
+        }
+        
+        // Execute the query
+        @SuppressWarnings("unchecked")
+        List<Object[]> results = query.getResultList();
+        
+        // Process results into the response DTO
+        Map<String, List<LookupResultDTO>> resultMap = new HashMap<>();
+        
+        for (Object[] row : results) {
+            Long id = ((Number) row[0]).longValue();
+            String name = (String) row[1];
+            String searchTerm = (String) row[4];
+            
+            LookupResultDTO dto = LookupResultDTO.builder()
+                .id(id)
+                .name(name)
+                .build();
+            
+            resultMap.computeIfAbsent(searchTerm, k -> new ArrayList<>()).add(dto);
+        }
+        
+        return CategoryBatchLookupResponseDTO.builder()
+            .results(resultMap)
+            .build();
     }
 }

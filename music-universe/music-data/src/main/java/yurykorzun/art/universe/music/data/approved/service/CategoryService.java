@@ -7,6 +7,8 @@ import yurykorzun.art.universe.music.data.approved.dto.LookupResultDTO;
 import yurykorzun.art.universe.music.data.approved.dto.CategorySaveRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.CategoryBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.CategoryCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.CategoryBatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.CategoryBatchLookupResponseDTO;
 import yurykorzun.art.universe.music.data.approved.dto.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.approved.entity.DataSource;
 
@@ -42,6 +44,14 @@ public interface CategoryService {
     default List<LookupResultDTO> lookupCategories(String name) {
         return lookupCategories(name, 20);
     }
+    
+    /**
+     * Batch lookup categories by multiple names
+     * 
+     * @param request The batch lookup request containing category names and optional limit
+     * @return Map of category names to lists of matching categories
+     */
+    CategoryBatchLookupResponseDTO batchLookupCategories(CategoryBatchLookupRequestDTO request);
     
     /**
      * Save a category (create new or update existing)

@@ -1,6 +1,8 @@
 package yurykorzun.art.universe.music.data.approved.service;
 
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.Query;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -10,6 +12,8 @@ import yurykorzun.art.universe.music.data.approved.dto.LookupResultDTO;
 import yurykorzun.art.universe.music.data.approved.dto.CategorySaveRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.CategoryBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.CategoryCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.CategoryBatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.CategoryBatchLookupResponseDTO;
 import yurykorzun.art.universe.music.data.approved.dto.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.approved.dto.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.approved.entity.Category;
@@ -19,14 +23,16 @@ import yurykorzun.art.universe.music.data.approved.repository.CategoryRepository
 import yurykorzun.art.universe.music.data.approved.repository.CategoryBindingRepository;
 import yurykorzun.art.universe.music.data.approved.repository.DimensionRepository;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -40,6 +46,12 @@ class CategoryServiceTest {
 
     @Mock
     private DimensionRepository dimensionRepository;
+    
+    @Mock
+    private EntityManager entityManager;
+    
+    @Mock
+    private Query query;
 
     @InjectMocks
     private CategoryServiceImpl categoryService;
@@ -524,5 +536,153 @@ class CategoryServiceTest {
         // Verify no repository calls were made
         verify(categoryRepository, never()).save(any());
         verify(dimensionRepository, never()).findById(any());
+    }
+    
+    @Test
+    void batchLookupCategories_shouldReturnResultsForMultipleSearchTerms() {
+        // Given
+        List<String> searchTerms = List.of("rock", "jazz");
+        int limit = 10;
+        
+        CategoryBatchLookupRequestDTO request = CategoryBatchLookupRequestDTO.builder()
+            .names(searchTerms)
+            .limit(limit)
+            .build();
+        
+        // Mock the dynamic SQL query execution
+        List<Object[]> queryResults = new ArrayList<>();
+        // Results for "rock"
+        queryResults.add(new Object[]{1L, "Rock", null, null, "rock"});
+        queryResults.add(new Object[]{2L, "Alternative Rock", null, null, "rock"});
+        // Results for "jazz"
+        queryResults.add(new Object[]{3L, "Jazz", null, null, "jazz"});
+        
+        // Set up EntityManager and Query mocks
+        when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+        when(query.setParameter(anyInt(), any())).thenReturn(query);
+        when(query.getResultList()).thenReturn(queryResults);
+        
+        // When
+        CategoryBatchLookupResponseDTO result = categoryService.batchLookupCategories(request);
+        
+        // Then
+        assertNotNull(result);
+        assertNotNull(result.getResults());
+        assertEquals(2, result.getResults().size());
+        
+        // Check "rock" results
+        List<LookupResultDTO> rockResults = result.getResults().get("rock");
+        assertNotNull(rockResults);
+        assertEquals(2, rockResults.size());
+        assertEquals("Rock", rockResults.get(0).getName());
+        assertEquals("Alternative Rock", rockResults.get(1).getName());
+        
+        // Check "jazz" results
+        List<LookupResultDTO> jazzResults = result.getResults().get("jazz");
+        assertNotNull(jazzResults);
+        assertEquals(1, jazzResults.size());
+        assertEquals("Jazz", jazzResults.get(0).getName());
+        
+        // Verify EntityManager and Query interactions
+        verify(entityManager).createNativeQuery(anyString());
+        // 6 parameters: 2 search terms * (1 for search_term column + 1 for WHERE clause + 1 for LIMIT)
+        verify(query, times(6)).setParameter(anyInt(), any());
+        verify(query).getResultList();
+    }
+    
+    @Test
+    void batchLookupCategories_withNullNames_shouldReturnEmptyResults() {
+        // Given
+        CategoryBatchLookupRequestDTO request = CategoryBatchLookupRequestDTO.builder()
+            .names(null)
+            .limit(10)
+            .build();
+        
+        // When
+        CategoryBatchLookupResponseDTO result = categoryService.batchLookupCategories(request);
+        
+        // Then
+        assertNotNull(result);
+        assertNotNull(result.getResults());
+        assertTrue(result.getResults().isEmpty());
+        verify(entityManager, never()).createNativeQuery(anyString());
+    }
+    
+    @Test
+    void batchLookupCategories_withEmptyNames_shouldReturnEmptyResults() {
+        // Given
+        CategoryBatchLookupRequestDTO request = CategoryBatchLookupRequestDTO.builder()
+            .names(List.of())
+            .limit(10)
+            .build();
+        
+        // When
+        CategoryBatchLookupResponseDTO result = categoryService.batchLookupCategories(request);
+        
+        // Then
+        assertNotNull(result);
+        assertNotNull(result.getResults());
+        assertTrue(result.getResults().isEmpty());
+        verify(entityManager, never()).createNativeQuery(anyString());
+    }
+    
+    @Test
+    void batchLookupCategories_withNullLimit_shouldUseDefaultLimit() {
+        // Given
+        List<String> searchTerms = List.of("rock");
+        Integer limit = null;
+        int defaultLimit = 20;
+        
+        CategoryBatchLookupRequestDTO request = CategoryBatchLookupRequestDTO.builder()
+            .names(searchTerms)
+            .limit(limit)
+            .build();
+        
+        List<Object[]> queryResults = new ArrayList<>();
+        queryResults.add(new Object[]{1L, "Rock", null, null, "rock"});
+        
+        // Set up EntityManager and Query mocks
+        when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+        when(query.setParameter(anyInt(), any())).thenReturn(query);
+        when(query.getResultList()).thenReturn(queryResults);
+        
+        // When
+        categoryService.batchLookupCategories(request);
+        
+        // Then
+        verify(entityManager).createNativeQuery(anyString());
+        // Verify that the third parameter (index 3) is the default limit
+        verify(query).setParameter(eq(3), eq(defaultLimit));
+    }
+    
+    @Test
+    void batchLookupCategories_withBlankSearchTerms_shouldFilterThemOut() {
+        // Given
+        List<String> searchTerms = Arrays.asList("rock", "", "  ", null);
+        int limit = 10;
+        
+        CategoryBatchLookupRequestDTO request = CategoryBatchLookupRequestDTO.builder()
+            .names(searchTerms)
+            .limit(limit)
+            .build();
+        
+        List<Object[]> queryResults = new ArrayList<>();
+        queryResults.add(new Object[]{1L, "Rock", null, null, "rock"});
+        
+        // Set up EntityManager and Query mocks
+        when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+        when(query.setParameter(anyInt(), any())).thenReturn(query);
+        when(query.getResultList()).thenReturn(queryResults);
+        
+        // When
+        CategoryBatchLookupResponseDTO result = categoryService.batchLookupCategories(request);
+        
+        // Then
+        assertNotNull(result);
+        assertEquals(1, result.getResults().size());
+        assertTrue(result.getResults().containsKey("rock"));
+        
+        // Verify that only one search term was used (3 parameters: search_term, WHERE clause, LIMIT)
+        verify(query, times(3)).setParameter(anyInt(), any());
     }
 }
