@@ -17,6 +17,7 @@ public class TargetEntityBindingDTO {
     private String targetEntityName;
     private Long targetInternalId; // Internal entity ID if bound
     private boolean targetEntityBound; // Whether target entity is bound
-    private boolean relationBound; // Whether relation between source and target entities is bound
-    private Long relationId; // Relation ID if bound
+    private boolean internalRelationBound; // Whether internal relation between source and target entities exists
+    private boolean externalRelationBound; // Whether external relation is bound to the internal relation
+    private Long internalRelationId; // Relation ID if bound
 }

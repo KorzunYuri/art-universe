@@ -397,28 +397,61 @@ class RelationServiceIntegrationTest extends JpaOnlyTest {
         assertThat(result.getTargetEntityType()).isEqualTo(targetEntityType);
         assertThat(result.getTargetBindings()).hasSize(3);
         
-        // Check first target binding (should be bound)
+        // Check first target binding (should be bound both internally and externally)
         TargetEntityBindingDTO binding1 = result.getTargetBindings().get(0);
         assertThat(binding1.getTargetExternalId()).isEqualTo(789L);
         assertThat(binding1.getTargetEntityName()).isEqualTo("Category 1");
         assertThat(binding1.isTargetEntityBound()).isTrue();
-        assertThat(binding1.isRelationBound()).isTrue();
-        assertThat(binding1.getRelationId()).isNotNull();
+        assertThat(binding1.isInternalRelationBound()).isTrue();
+        assertThat(binding1.isExternalRelationBound()).isTrue();
+        assertThat(binding1.getInternalRelationId()).isNotNull();
         
-        // Check second target binding (not related)
+        // Check second target binding (bound entity but no relation)
         TargetEntityBindingDTO binding2 = result.getTargetBindings().get(1);
         assertThat(binding2.getTargetExternalId()).isEqualTo(101L);
         assertThat(binding2.getTargetEntityName()).isEqualTo("Category 2");
         assertThat(binding2.isTargetEntityBound()).isTrue();
-        assertThat(binding2.isRelationBound()).isFalse();
-        assertThat(binding2.getRelationId()).isNull();
+        assertThat(binding2.isInternalRelationBound()).isFalse();
+        assertThat(binding2.isExternalRelationBound()).isFalse();
+        assertThat(binding2.getInternalRelationId()).isNull();
         
         // Check third target binding (doesn't exist)
         TargetEntityBindingDTO binding3 = result.getTargetBindings().get(2);
         assertThat(binding3.getTargetExternalId()).isEqualTo(999L);
         assertThat(binding3.isTargetEntityBound()).isFalse();
-        assertThat(binding3.isRelationBound()).isFalse();
-        assertThat(binding3.getRelationId()).isNull();
+        assertThat(binding3.isInternalRelationBound()).isFalse();
+        assertThat(binding3.isExternalRelationBound()).isFalse();
+        assertThat(binding3.getInternalRelationId()).isNull();
+    }
+    
+    @Test
+    void findBoundExternalRelations_withInternalRelationButNoExternalBinding_shouldShowCorrectStatus() {
+        // Given
+        DataSource dataSource = DataSource.LASTFM;
+        EntityType sourceEntityType = EntityType.ARTIST;
+        Long sourceExternalEntityId = 123L;
+        EntityType targetEntityType = EntityType.CATEGORY;
+        List<Long> targetExternalEntityIds = Arrays.asList(789L);
+        
+        // Create internal relation without external binding
+        relationService.createInternalRelation(
+            sourceEntityType, artist1.getId(), targetEntityType, category1.getId());
+        
+        // When
+        RelationBindingStatusDTO result = relationService.findBoundExternalRelations(
+            dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityIds);
+        
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getTargetBindings()).hasSize(1);
+        
+        // Check binding status - should have internal relation but no external binding
+        TargetEntityBindingDTO binding = result.getTargetBindings().get(0);
+        assertThat(binding.getTargetExternalId()).isEqualTo(789L);
+        assertThat(binding.isTargetEntityBound()).isTrue();
+        assertThat(binding.isInternalRelationBound()).isTrue();
+        assertThat(binding.isExternalRelationBound()).isFalse();
+        assertThat(binding.getInternalRelationId()).isNotNull();
     }
     
     @Test

@@ -15,6 +15,8 @@ import yurykorzun.art.universe.music.data.approved.entity.EntityType;
 import yurykorzun.art.universe.music.data.approved.relation.RelationBindingEntity;
 import yurykorzun.art.universe.music.data.approved.relation.RelationEntity;
 import yurykorzun.art.universe.music.data.approved.relation.RelationRegistry;
+import yurykorzun.art.universe.music.data.approved.relation.metadata.EntityMetadata;
+import yurykorzun.art.universe.music.data.approved.relation.metadata.RelationMetadata;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -61,40 +63,30 @@ public class RelationServiceImpl implements RelationService {
                 String.format("External %s with ID %d is not bound", targetEntityType.getName(), targetExternalEntityId));
         }
         
-        // Determine the order of entities in the relation
-        boolean isSourceFirst = relationRegistry.isFirstEntityInRelation(sourceEntityType, targetEntityType);
-        EntityType firstEntityType = isSourceFirst ? sourceEntityType : targetEntityType;
-        EntityType secondEntityType = isSourceFirst ? targetEntityType : sourceEntityType;
-        Long firstEntityId = isSourceFirst ? sourceInternalId : targetInternalId;
-        Long secondEntityId = isSourceFirst ? targetInternalId : sourceInternalId;
+        // Create relation metadata
+        RelationMetadata metadata = createRelationMetadata(sourceEntityType, targetEntityType);
         
-        // Get the relation entity class
-        Class<? extends RelationEntity> relationEntityClass = 
-            relationRegistry.getRelationEntityClass(firstEntityType, secondEntityType);
+        // Find or create relation
+        Long relationId = findOrCreateRelation(
+            metadata,
+            sourceInternalId,
+            targetInternalId
+        );
         
-        // Find existing relation or create a new one
-        Long relationId = findOrCreateRelation(relationEntityClass, firstEntityType, firstEntityId, secondEntityType, secondEntityId);
-        
-        // Get the relation binding entity class
-        Class<? extends RelationBindingEntity> bindingEntityClass = 
-            relationRegistry.getRelationBindingEntityClass(firstEntityType, secondEntityType);
-        
-        // Check if binding exists
+        // Find existing binding or create a new one
         Optional<? extends RelationBindingEntity> existingBinding = findExistingBinding(
-            bindingEntityClass, dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId);
+            metadata, dataSource, sourceExternalEntityId, targetExternalEntityId);
         
-        RelationBindingEntity binding;
         if (existingBinding.isPresent()) {
             // Update binding if it already exists
-            binding = existingBinding.get();
+            RelationBindingEntity binding = existingBinding.get();
             binding.setReferenceId(relationId);
             entityManager.merge(binding);
         } else {
             // Create a new binding
-            binding = createBinding(
-                bindingEntityClass, dataSource, relationId, 
-                sourceEntityType, sourceExternalEntityId, 
-                targetEntityType, targetExternalEntityId);
+            createBinding(
+                metadata, dataSource, relationId, 
+                sourceExternalEntityId, targetExternalEntityId);
         }
         
         // Get entity names
@@ -123,18 +115,12 @@ public class RelationServiceImpl implements RelationService {
         EntityType targetEntityType, 
         Long targetExternalEntityId
     ) {
-        // Determine the order of entities in the relation
-        boolean isSourceFirst = relationRegistry.isFirstEntityInRelation(sourceEntityType, targetEntityType);
-        EntityType firstEntityType = isSourceFirst ? sourceEntityType : targetEntityType;
-        EntityType secondEntityType = isSourceFirst ? targetEntityType : sourceEntityType;
-        
-        // Get the relation binding entity class
-        Class<? extends RelationBindingEntity> bindingEntityClass = 
-            relationRegistry.getRelationBindingEntityClass(firstEntityType, secondEntityType);
+        // Create relation metadata
+        RelationMetadata metadata = createRelationMetadata(sourceEntityType, targetEntityType);
         
         // Find existing binding
         Optional<? extends RelationBindingEntity> existingBinding = findExistingBinding(
-            bindingEntityClass, dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId);
+            metadata, dataSource, sourceExternalEntityId, targetExternalEntityId);
         
         if (existingBinding.isPresent()) {
             // Remove binding
@@ -190,17 +176,28 @@ public class RelationServiceImpl implements RelationService {
                 .collect(Collectors.toList())
         );
         
+        // Create relation metadata
+        RelationMetadata metadata = createRelationMetadata(sourceEntityType, targetEntityType);
+        
         // 5. Build result
         for (Long targetExternalId : targetExternalEntityIds) {
             EntityInfo targetInfo = targetEntitiesInfo.getOrDefault(targetExternalId, 
                 new EntityInfo(null, "Unknown", false));
             
-            boolean relationBound = false;
+            boolean isInternalRelationBound = false;
+            boolean isExternalRelationBound = false;
             Long relationId = null;
             
             if (targetInfo.isBound) {
                 relationId = relationMap.get(targetInfo.internalId);
-                relationBound = relationId != null;
+                isInternalRelationBound = relationId != null;
+                
+                // Check if external relation is bound
+                if (isInternalRelationBound) {
+                    Optional<? extends RelationBindingEntity> existingBinding = findExistingBinding(
+                        metadata, dataSource, sourceExternalEntityId, targetExternalId);
+                    isExternalRelationBound = existingBinding.isPresent();
+                }
             }
             
             result.getTargetBindings().add(TargetEntityBindingDTO.builder()
@@ -208,8 +205,9 @@ public class RelationServiceImpl implements RelationService {
                 .targetEntityName(targetInfo.name)
                 .targetInternalId(targetInfo.internalId)
                 .targetEntityBound(targetInfo.isBound)
-                .relationBound(relationBound)
-                .relationId(relationId)
+                .internalRelationBound(isInternalRelationBound)
+                .externalRelationBound(isExternalRelationBound)
+                .internalRelationId(relationId)
                 .build());
         }
         
@@ -223,17 +221,8 @@ public class RelationServiceImpl implements RelationService {
         Long sourceEntityId, 
         EntityType targetEntityType
     ) {
-        // Determine the order of entities in the relation
-        boolean isSourceFirst = relationRegistry.isFirstEntityInRelation(sourceEntityType, targetEntityType);
-        EntityType firstEntityType = isSourceFirst ? sourceEntityType : targetEntityType;
-        EntityType secondEntityType = isSourceFirst ? targetEntityType : sourceEntityType;
-        
-        // Get relation table name
-        String relationTableName = relationRegistry.getRelationTableName(firstEntityType, secondEntityType);
-        
-        // Form field names based on entity order
-        String sourceIdField = isSourceFirst ? firstEntityType.getName() + "_id" : secondEntityType.getName() + "_id";
-        String targetIdField = isSourceFirst ? secondEntityType.getName() + "_id" : firstEntityType.getName() + "_id";
+        // Create relation metadata
+        RelationMetadata metadata = createRelationMetadata(sourceEntityType, targetEntityType);
         
         // Form SQL query
         String sql = """
@@ -242,10 +231,10 @@ public class RelationServiceImpl implements RelationService {
             JOIN %s t ON r.%s = t.id 
             WHERE r.%s = ?1
             """.formatted(
-                relationTableName,
+                metadata.getRelationTableName(),
                 targetEntityType.getName(),
-                targetIdField,
-                sourceIdField
+                metadata.getTargetIdField(),
+                metadata.getSourceIdField()
             );
         
         // Execute query
@@ -283,19 +272,11 @@ public class RelationServiceImpl implements RelationService {
         validateEntityExists(sourceEntityType, sourceEntityId);
         validateEntityExists(targetEntityType, targetEntityId);
         
-        // Determine the order of entities in the relation
-        boolean isSourceFirst = relationRegistry.isFirstEntityInRelation(sourceEntityType, targetEntityType);
-        EntityType firstEntityType = isSourceFirst ? sourceEntityType : targetEntityType;
-        EntityType secondEntityType = isSourceFirst ? targetEntityType : sourceEntityType;
-        Long firstEntityId = isSourceFirst ? sourceEntityId : targetEntityId;
-        Long secondEntityId = isSourceFirst ? targetEntityId : sourceEntityId;
-        
-        // Get the relation entity class
-        Class<? extends RelationEntity> relationEntityClass = 
-            relationRegistry.getRelationEntityClass(firstEntityType, secondEntityType);
+        // Create relation metadata
+        RelationMetadata metadata = createRelationMetadata(sourceEntityType, targetEntityType);
         
         // Create or find the relation
-        return findOrCreateRelation(relationEntityClass, firstEntityType, firstEntityId, secondEntityType, secondEntityId);
+        return findOrCreateRelation(metadata, sourceEntityId, targetEntityId);
     }
     
     @Override
@@ -306,29 +287,26 @@ public class RelationServiceImpl implements RelationService {
         EntityType targetEntityType,
         Long targetEntityId
     ) {
-        // Determine the order of entities in the relation
-        boolean isSourceFirst = relationRegistry.isFirstEntityInRelation(sourceEntityType, targetEntityType);
-        EntityType firstEntityType = isSourceFirst ? sourceEntityType : targetEntityType;
-        EntityType secondEntityType = isSourceFirst ? targetEntityType : sourceEntityType;
-        Long firstEntityId = isSourceFirst ? sourceEntityId : targetEntityId;
-        Long secondEntityId = isSourceFirst ? targetEntityId : sourceEntityId;
-        
-        // Get relation table name
-        String tableName = firstEntityType.getName() + "_" + secondEntityType.getName();
+        // Create relation metadata
+        RelationMetadata metadata = createRelationMetadata(sourceEntityType, targetEntityType);
         
         // Form SQL query to find the relation
         String findSql = """
             SELECT id 
             FROM %s 
-            WHERE %s_id = ?1 
-                AND %s_id = ?2
-            """.formatted(tableName, firstEntityType.getName(), secondEntityType.getName());
+            WHERE %s = ?1 
+                AND %s = ?2
+            """.formatted(
+                metadata.getRelationTableName(), 
+                metadata.getSourceIdField(), 
+                metadata.getTargetIdField()
+            );
         
         try {
             // Find the relation
             Number relationId = (Number) entityManager.createNativeQuery(findSql)
-                .setParameter(1, firstEntityId)
-                .setParameter(2, secondEntityId)
+                .setParameter(1, sourceEntityId)
+                .setParameter(2, targetEntityId)
                 .getSingleResult();
             
             // Delete the relation
@@ -372,6 +350,17 @@ public class RelationServiceImpl implements RelationService {
     // Helper methods
     
     /**
+     * Creates relation metadata for the given entity types.
+     * 
+     * @param sourceEntityType Source entity type
+     * @param targetEntityType Target entity type
+     * @return Relation metadata
+     */
+    private RelationMetadata createRelationMetadata(EntityType sourceEntityType, EntityType targetEntityType) {
+        return new RelationMetadata(sourceEntityType, targetEntityType, relationRegistry);
+    }
+    
+    /**
      * Helper class to store entity information
      */
     private static class EntityInfo {
@@ -403,8 +392,7 @@ public class RelationServiceImpl implements RelationService {
             return Collections.emptyMap();
         }
         
-        String tableName = entityType.getName();
-        String bindingTableName = tableName + "_binding";
+        EntityMetadata metadata = new EntityMetadata(entityType);
         
         // Create placeholders for IN clause
         String placeholders = externalIds.stream()
@@ -424,7 +412,7 @@ public class RelationServiceImpl implements RelationService {
             WHERE 
                 b.data_source_id = ? 
                 AND b.external_id IN (%s)
-            """.formatted(bindingTableName, tableName, placeholders);
+            """.formatted(metadata.getBindingTableName(), metadata.getTableName(), placeholders);
         
         try {
             // Execute query
@@ -472,17 +460,8 @@ public class RelationServiceImpl implements RelationService {
             return Collections.emptyMap();
         }
         
-        // Determine the order of entities in the relation
-        boolean isSourceFirst = relationRegistry.isFirstEntityInRelation(sourceEntityType, targetEntityType);
-        EntityType firstEntityType = isSourceFirst ? sourceEntityType : targetEntityType;
-        EntityType secondEntityType = isSourceFirst ? targetEntityType : sourceEntityType;
-        
-        // Get relation table name
-        String tableName = firstEntityType.getName() + "_" + secondEntityType.getName();
-        
-        // Form field names based on entity order
-        String sourceIdField = isSourceFirst ? firstEntityType.getName() + "_id" : secondEntityType.getName() + "_id";
-        String targetIdField = isSourceFirst ? secondEntityType.getName() + "_id" : firstEntityType.getName() + "_id";
+        // Create relation metadata
+        RelationMetadata metadata = createRelationMetadata(sourceEntityType, targetEntityType);
         
         // Create placeholders for IN clause
         String placeholders = targetInternalIds.stream()
@@ -500,10 +479,10 @@ public class RelationServiceImpl implements RelationService {
                 %s = ? 
                 AND %s IN (%s)
             """.formatted(
-                targetIdField,
-                tableName,
-                sourceIdField,
-                targetIdField,
+                metadata.getTargetIdField(),
+                metadata.getRelationTableName(),
+                metadata.getSourceIdField(),
+                metadata.getTargetIdField(),
                 placeholders
             );
         
@@ -542,13 +521,14 @@ public class RelationServiceImpl implements RelationService {
      * @return Internal ID or null if entity is not found
      */
     private Long findInternalEntityId(DataSource dataSource, EntityType entityType, Long externalId) {
-        String tableName = entityType.getName() + "_binding";
+        EntityMetadata metadata = new EntityMetadata(entityType);
+        
         String query = """
             SELECT reference_id 
             FROM %s 
             WHERE data_source_id = ?1 
                 AND external_id = ?2
-            """.formatted(tableName);
+            """.formatted(metadata.getBindingTableName());
         
         try {
             return ((Number) entityManager.createNativeQuery(query)
@@ -565,31 +545,34 @@ public class RelationServiceImpl implements RelationService {
     /**
      * Finds or creates a relation between entities using direct SQL
      * 
-     * @param relationEntityClass Relation entity class
-     * @param firstEntityType First entity type
-     * @param firstEntityId First entity ID
-     * @param secondEntityType Second entity type
-     * @param secondEntityId Second entity ID
+     * @param metadata Relation metadata
+     * @param sourceEntityId Source entity ID
+     * @param targetEntityId Target entity ID
      * @return Relation ID
      */
     private Long findOrCreateRelation(
-        Class<? extends RelationEntity> relationEntityClass,
-        EntityType firstEntityType,
-        Long firstEntityId,
-        EntityType secondEntityType,
-        Long secondEntityId
+        RelationMetadata metadata,
+        Long sourceEntityId,
+        Long targetEntityId
     ) {
+        // Get first and second entity IDs based on relation order
+        Long firstEntityId = metadata.getFirstEntityId(sourceEntityId, targetEntityId);
+        Long secondEntityId = metadata.getSecondEntityId(sourceEntityId, targetEntityId);
+        
         // Find existing relation
-        String tableName = firstEntityType.getName() + "_" + secondEntityType.getName();
         String query = """
             SELECT 
                 id 
             FROM 
                 %s 
             WHERE 
-                %s_id = ?1 
-                AND %s_id = ?2
-            """.formatted(tableName, firstEntityType.getName(), secondEntityType.getName());
+                %s = ?1 
+                AND %s = ?2
+            """.formatted(
+                metadata.getRelationTableName(), 
+                metadata.getFirstEntityMetadata().getIdFieldName(), 
+                metadata.getSecondEntityMetadata().getIdFieldName()
+            );
         
         try {
             Number id = (Number) entityManager.createNativeQuery(query)
@@ -604,8 +587,8 @@ public class RelationServiceImpl implements RelationService {
                 String insertSql = """
                     INSERT INTO %s (
                         id, 
-                        %s_id, 
-                        %s_id, 
+                        %s, 
+                        %s, 
                         created_at, 
                         updated_at
                     ) 
@@ -617,7 +600,12 @@ public class RelationServiceImpl implements RelationService {
                         now()
                     ) 
                     RETURNING id
-                    """.formatted(tableName, firstEntityType.getName(), secondEntityType.getName(), tableName);
+                    """.formatted(
+                        metadata.getRelationTableName(), 
+                        metadata.getFirstEntityMetadata().getIdFieldName(), 
+                        metadata.getSecondEntityMetadata().getIdFieldName(), 
+                        metadata.getRelationTableName()
+                    );
                 
                 // Execute insert and get generated ID
                 Number id = (Number) entityManager.createNativeQuery(insertSql)
@@ -637,36 +625,21 @@ public class RelationServiceImpl implements RelationService {
     /**
      * Finds existing relation binding
      * 
-     * @param bindingEntityClass Relation binding entity class
+     * @param metadata Relation metadata
      * @param dataSource Data source
-     * @param sourceEntityType Source entity type
      * @param sourceExternalEntityId External source entity ID
-     * @param targetEntityType Target entity type
      * @param targetExternalEntityId External target entity ID
      * @return Optional containing the found binding
      */
     private Optional<? extends RelationBindingEntity> findExistingBinding(
-        Class<? extends RelationBindingEntity> bindingEntityClass,
+        RelationMetadata metadata,
         DataSource dataSource,
-        EntityType sourceEntityType,
         Long sourceExternalEntityId,
-        EntityType targetEntityType,
         Long targetExternalEntityId
     ) {
-        boolean isSourceFirst = relationRegistry.isFirstEntityInRelation(sourceEntityType, targetEntityType);
-        
-        // Define table and field names based on entity types
-        String tableName = isSourceFirst 
-            ? sourceEntityType.getName() + "_" + targetEntityType.getName() + "_binding"
-            : targetEntityType.getName() + "_" + sourceEntityType.getName() + "_binding";
-        
-        String firstEntityField = isSourceFirst 
-            ? "external_" + sourceEntityType.getName() + "_id"
-            : "external_" + targetEntityType.getName() + "_id";
-        
-        String secondEntityField = isSourceFirst 
-            ? "external_" + targetEntityType.getName() + "_id"
-            : "external_" + sourceEntityType.getName() + "_id";
+        // Get first and second external entity IDs based on relation order
+        Long firstExternalEntityId = metadata.getFirstExternalEntityId(sourceExternalEntityId, targetExternalEntityId);
+        Long secondExternalEntityId = metadata.getSecondExternalEntityId(sourceExternalEntityId, targetExternalEntityId);
         
         // Form SQL query
         String sql = """
@@ -675,18 +648,22 @@ public class RelationServiceImpl implements RelationService {
             WHERE data_source_id = ?1
                 AND %s = ?2
                 AND %s = ?3
-            """.formatted(tableName, firstEntityField, secondEntityField);
+            """.formatted(
+                metadata.getRelationBindingTableName(), 
+                metadata.getFirstEntityMetadata().getExternalIdFieldName(), 
+                metadata.getSecondEntityMetadata().getExternalIdFieldName()
+            );
         
         try {
             // Execute query
             Long id = ((Number) entityManager.createNativeQuery(sql)
                 .setParameter(1, dataSource.getCode())
-                .setParameter(2, isSourceFirst ? sourceExternalEntityId : targetExternalEntityId)
-                .setParameter(3, isSourceFirst ? targetExternalEntityId : sourceExternalEntityId)
+                .setParameter(2, firstExternalEntityId)
+                .setParameter(3, secondExternalEntityId)
                 .getSingleResult()).longValue();
             
             // Load entity by ID
-            return Optional.of(entityManager.find(bindingEntityClass, id));
+            return Optional.of(entityManager.find(metadata.getRelationBindingEntityClass(), id));
         } catch (NoResultException e) {
             return Optional.empty();
         }
@@ -695,35 +672,24 @@ public class RelationServiceImpl implements RelationService {
     /**
      * Creates a new relation binding using direct SQL
      * 
-     * @param bindingEntityClass Relation binding entity class
+     * @param metadata Relation metadata
      * @param dataSource Data source
      * @param relationId Relation ID
-     * @param sourceEntityType Source entity type
      * @param sourceExternalEntityId External source entity ID
-     * @param targetEntityType Target entity type
      * @param targetExternalEntityId External target entity ID
      * @return Created binding
      */
     private RelationBindingEntity createBinding(
-        Class<? extends RelationBindingEntity> bindingEntityClass,
+        RelationMetadata metadata,
         DataSource dataSource,
         Long relationId,
-        EntityType sourceEntityType,
         Long sourceExternalEntityId,
-        EntityType targetEntityType,
         Long targetExternalEntityId
     ) {
         try {
-            boolean isSourceFirst = relationRegistry.isFirstEntityInRelation(sourceEntityType, targetEntityType);
-            EntityType firstEntityType = isSourceFirst ? sourceEntityType : targetEntityType;
-            EntityType secondEntityType = isSourceFirst ? targetEntityType : sourceEntityType;
-            
-            // Determine external IDs based on entity order
-            Long externalFirstEntityId = isSourceFirst ? sourceExternalEntityId : targetExternalEntityId;
-            Long externalSecondEntityId = isSourceFirst ? targetExternalEntityId : sourceExternalEntityId;
-            
-            // Get table name
-            String tableName = firstEntityType.getName() + "_" + secondEntityType.getName() + "_binding";
+            // Get first and second external entity IDs based on relation order
+            Long firstExternalEntityId = metadata.getFirstExternalEntityId(sourceExternalEntityId, targetExternalEntityId);
+            Long secondExternalEntityId = metadata.getSecondExternalEntityId(sourceExternalEntityId, targetExternalEntityId);
             
             // Create SQL for insertion with sequence for id
             String sql = """
@@ -731,8 +697,8 @@ public class RelationServiceImpl implements RelationService {
                     id, 
                     reference_id, 
                     data_source_id, 
-                    external_%s_id, 
-                    external_%s_id, 
+                    %s, 
+                    %s, 
                     created_at, 
                     updated_at
                 ) 
@@ -746,18 +712,23 @@ public class RelationServiceImpl implements RelationService {
                     now()
                 ) 
                 RETURNING id
-                """.formatted(tableName, firstEntityType.getName(), secondEntityType.getName(), tableName);
+                """.formatted(
+                    metadata.getRelationBindingTableName(), 
+                    metadata.getFirstEntityMetadata().getExternalIdFieldName(), 
+                    metadata.getSecondEntityMetadata().getExternalIdFieldName(), 
+                    metadata.getRelationBindingTableName()
+                );
             
             // Execute insert and get generated ID
             Number id = (Number) entityManager.createNativeQuery(sql)
                 .setParameter(1, relationId)
                 .setParameter(2, dataSource.getCode())
-                .setParameter(3, externalFirstEntityId)
-                .setParameter(4, externalSecondEntityId)
+                .setParameter(3, firstExternalEntityId)
+                .setParameter(4, secondExternalEntityId)
                 .getSingleResult();
             
             // Fetch the created binding using native SQL
-            return entityManager.find(bindingEntityClass, id.longValue());
+            return entityManager.find(metadata.getRelationBindingEntityClass(), id.longValue());
         } catch (Exception e) {
             throw new RuntimeException("Failed to create binding", e);
         }
@@ -772,11 +743,13 @@ public class RelationServiceImpl implements RelationService {
      */
     private String getEntityName(EntityType entityType, Long entityId) {
         try {
+            EntityMetadata metadata = new EntityMetadata(entityType);
+            
             String query = """
                 SELECT name 
                 FROM %s 
                 WHERE id = ?1
-                """.formatted(entityType.getName());
+                """.formatted(metadata.getTableName());
             return (String) entityManager.createNativeQuery(query)
                 .setParameter(1, entityId)
                 .getSingleResult();
@@ -794,11 +767,13 @@ public class RelationServiceImpl implements RelationService {
      */
     private void validateEntityExists(EntityType entityType, Long entityId) {
         try {
+            EntityMetadata metadata = new EntityMetadata(entityType);
+            
             String query = """
                 SELECT COUNT(*) 
                 FROM %s 
                 WHERE id = ?1
-                """.formatted(entityType.getName());
+                """.formatted(metadata.getTableName());
             
             Number count = (Number) entityManager.createNativeQuery(query)
                 .setParameter(1, entityId)
