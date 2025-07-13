@@ -1,0 +1,73 @@
+.tagItem {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  margin: 2px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  max-width: 200px;
+  
+  &:hover {
+    filter: brightness(0.95);
+  }
+}
+
+.tagName {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tagCount {
+  margin-left: 4px;
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+.processingIndicator {
+  margin-left: 4px;
+  font-size: 0.75rem;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.3; }
+  50% { opacity: 1; }
+  100% { opacity: 0.3; }
+}
+
+.disabled {
+  background-color: transparent;
+  border: 1px solid #dee2e6;
+  color: #6c757d;
+  cursor: not-allowed;
+  
+  &:hover {
+    filter: none;
+  }
+}
+
+.not-bound {
+  background-color: #ffe0cc;
+  border: 1px solid #ffb380;
+  color: #994d00;
+}
+
+.pending {
+  background-color: #fff3cd;
+  border: 1px solid #ffeeba;
+  color: #856404;
+}
+
+.approved {
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+  color: #155724;
+}
+
+.processing {
+  opacity: 0.7;
+  cursor: wait;
+}

@@ -1,0 +1,44 @@
+.tagPanel {
+  background-color: #f8f9fa;
+  border-top: 1px solid #dee2e6;
+  width: 100%;
+}
+
+.tagContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.refreshButton {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: #6c757d;
+  
+  &:hover {
+    background-color: #e9ecef;
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.tagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  flex: 1;
+}
+
+.loading, .noTags {
+  padding: 10px;
+  text-align: center;
+  color: #6c757d;
+}

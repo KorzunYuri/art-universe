@@ -17,6 +17,7 @@ interface EntityBindingProps<T extends Bindable> {
     onBeforeBind: (entity: T) => Promise<boolean>;
     onAfterBind: (entity: T) => void;
     lookupFunction?: (query: string, limit?: number) => Promise<ApiResponse<LookupEntity[]>>;
+    preloadedOptions?: LookupEntity[];
     disabled?: boolean;
 }
 
@@ -28,6 +29,7 @@ export function EntityBinding<T extends Bindable>({
     onBeforeBind,
     onAfterBind,
     lookupFunction,
+    preloadedOptions = [],
     disabled = false 
 }: EntityBindingProps<T>) {
     const [entityName, setEntityName] = useState(entity.boundEntity?.referenceName || entity.name);
@@ -141,6 +143,7 @@ export function EntityBinding<T extends Bindable>({
                             placeholder="Entity name"
                             disabled={disabled}
                             className={styles.bindingName}
+                            preloadedOptions={preloadedOptions}
                         />
                     ) : (
                         <input

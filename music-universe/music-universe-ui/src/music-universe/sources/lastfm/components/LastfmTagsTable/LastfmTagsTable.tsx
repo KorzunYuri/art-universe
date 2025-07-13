@@ -15,9 +15,13 @@ import { fetchBoundCategories } from '@/music-universe/music-data/api/music-data
 import commonStyles from '@/music-universe/shared/styles/common.module.scss'
 import styles from './LastfmTagsTable.module.css'
 
-export const LastfmTagsTable = () => {
+interface LastfmTagsTableProps {
+    initialSearch?: string;
+}
+
+export const LastfmTagsTable = ({ initialSearch = '' }: LastfmTagsTableProps) => {
     // Search state
-    const [searchName, setSearchName] = useState('')
+    const [searchName, setSearchName] = useState(initialSearch)
     const [approvalStatuses, setApprovalStatuses] = useState<number[] | undefined>(undefined)
     
     // Data state
@@ -100,6 +104,14 @@ export const LastfmTagsTable = () => {
         console.log('🔄 Effect triggered: page or sort changed')
         loadTags()
     }, [page, sort])
+    
+    // Auto-search when initialSearch is provided
+    useEffect(() => {
+        if (initialSearch) {
+            console.log('🔍 Auto-searching with initialSearch:', initialSearch)
+            loadTags()
+        }
+    }, [initialSearch])
 
     // Handle tag changes from child components
     const onTagChanged = (updated: LastfmTag) => {

@@ -48,3 +48,60 @@ export async function updateTagApprovalStatus(id: number, newStatus: number): Pr
 
     return response.data.data;
 }
+
+/**
+ * DTO for tags associated with a specific entity
+ */
+export interface EntityTagDto {
+    id: number;
+    name: string;
+    approvalStatus: number;
+    tagApprovalStatus: number;
+    entityApprovalStatus: number;
+    usageCount: number | null;
+}
+
+/**
+ * Search parameters for entity tags
+ */
+export interface EntityTagSearchParams {
+    minUsageCount?: number;
+    approvalStatuses?: number[];
+}
+
+/**
+ * Fetches tags associated with a specific entity from the LastFM API
+ * 
+ * @param entityType Type of entity (ARTIST, ALBUM, TRACK)
+ * @param entityId ID of the entity
+ * @param params Search parameters
+ * @returns List of EntityTagDto objects
+ */
+export async function fetchEntityTags(
+    entityType: string,
+    entityId: number,
+    params?: EntityTagSearchParams
+): Promise<EntityTagDto[]> {
+    try {
+        const response = await axios.get(
+            `${LastfmConfig.baseApiUrl}/tags/entity/${entityType}/${entityId}`,
+            {
+                params: {
+                    minUsageCount: params?.minUsageCount,
+                    approvalStatuses: params?.approvalStatuses?.join(','),
+                },
+            }
+        );
+
+        if (response.data.success) {
+            console.log(`✅ Fetched ${response.data.data.length} tags for ${entityType} ${entityId}`);
+            return response.data.data;
+        } else {
+            console.warn(`⚠️ API returned success=false: ${response.data.message}`);
+            return [];
+        }
+    } catch (error) {
+        console.error(`❌ Error fetching tags for ${entityType} ${entityId}:`, error);
+        return [];
+    }
+}
