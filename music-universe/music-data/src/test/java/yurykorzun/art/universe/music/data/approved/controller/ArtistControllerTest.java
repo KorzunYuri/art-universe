@@ -8,6 +8,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import yurykorzun.art.universe.common.controller.ResponseWrapper;
+import yurykorzun.art.universe.music.data.approved.dto.ArtistBatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.ArtistBatchLookupResponseDTO;
 import yurykorzun.art.universe.music.data.approved.dto.ArtistBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.ArtistCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.LookupResultDTO;
@@ -16,7 +18,9 @@ import yurykorzun.art.universe.music.data.approved.dto.TestBoundEntityProjection
 import yurykorzun.art.universe.music.data.approved.entity.DataSource;
 import yurykorzun.art.universe.music.data.approved.service.ArtistService;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -240,13 +244,6 @@ class ArtistControllerTest {
     }
     
     @Test
-    void createAndBind_whenExceptionThrown_shouldReturnFailureResponse() throws Exception {
-        // Given
-        DataSource dataSource = DataSource.LASTFM;
-        Long externalId = 1L;
-    }
-    
-    @Test
     void bindArtist_whenExceptionThrown_shouldReturnFailureResponse() throws Exception {
         // Given
         DataSource dataSource = DataSource.LASTFM;
@@ -315,5 +312,72 @@ class ArtistControllerTest {
         assertEquals(expectedResponse, actualResponse);
         
         verify(artistService).unbindArtist(dataSource, externalId);
+    }
+    
+    @Test
+    void batchLookupArtists_shouldReturnSuccessResponse() {
+        // Given
+        List<String> searchTerms = List.of("radio", "queen");
+        Integer limit = 10;
+        
+        ArtistBatchLookupRequestDTO request = ArtistBatchLookupRequestDTO.builder()
+            .searchTerms(searchTerms)
+            .limit(limit)
+            .build();
+        
+        Map<String, List<LookupResultDTO>> resultMap = new HashMap<>();
+        resultMap.put("radio", List.of(
+            new LookupResultDTO(1L, "Radiohead"),
+            new LookupResultDTO(2L, "Radio Moscow")
+        ));
+        resultMap.put("queen", List.of(
+            new LookupResultDTO(3L, "Queen")
+        ));
+        
+        ArtistBatchLookupResponseDTO expectedResponse = ArtistBatchLookupResponseDTO.builder()
+            .results(resultMap)
+            .build();
+        
+        when(artistService.batchLookupArtists(request)).thenReturn(expectedResponse);
+        
+        // When
+        ResponseEntity<ResponseWrapper<ArtistBatchLookupResponseDTO>> actualResponse =
+            artistController.batchLookupArtists(request);
+        
+        // Then
+        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
+        assertEquals(ResponseWrapper.successBody(expectedResponse), actualResponse.getBody());
+        
+        verify(artistService).batchLookupArtists(request);
+    }
+    
+    @Test
+    void batchLookupArtists_whenExceptionThrown_shouldReturnFailureResponse() {
+        // Given
+        List<String> searchTerms = List.of("radio", "queen");
+        Integer limit = 10;
+        String errorMessage = "Test error";
+        
+        ArtistBatchLookupRequestDTO request = ArtistBatchLookupRequestDTO.builder()
+            .searchTerms(searchTerms)
+            .limit(limit)
+            .build();
+        
+        when(artistService.batchLookupArtists(request))
+            .thenThrow(new RuntimeException(errorMessage));
+        
+        ResponseEntity<ResponseWrapper<ArtistBatchLookupResponseDTO>> expectedResponse =
+            ResponseWrapper.failure(String.format("Failed to batch lookup artists: %s", errorMessage));
+        
+        // When
+        ResponseEntity<ResponseWrapper<ArtistBatchLookupResponseDTO>> actualResponse =
+            artistController.batchLookupArtists(request);
+        
+        // Then
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
+        assertEquals(expectedResponse.getBody().isSuccess(), actualResponse.getBody().isSuccess());
+        assertEquals(expectedResponse.getBody().getMessage(), actualResponse.getBody().getMessage());
+        
+        verify(artistService).batchLookupArtists(request);
     }
 }

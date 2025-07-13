@@ -1,11 +1,15 @@
 package yurykorzun.art.universe.music.data.approved.service;
 
-import org.junit.jupiter.api.Test;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.Query;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import yurykorzun.art.universe.music.data.approved.dto.ArtistBatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.ArtistBatchLookupResponseDTO;
 import yurykorzun.art.universe.music.data.approved.dto.LookupResultDTO;
 import yurykorzun.art.universe.music.data.approved.dto.ArtistBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.ArtistCreateAndBindRequestDTO;
@@ -17,15 +21,15 @@ import yurykorzun.art.universe.music.data.approved.entity.DataSource;
 import yurykorzun.art.universe.music.data.approved.repository.ArtistBindingRepository;
 import yurykorzun.art.universe.music.data.approved.repository.ArtistRepository;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,10 +40,16 @@ class ArtistServiceTest {
 
     @Mock
     private ArtistBindingRepository artistBindingRepository;
+    
+    @Mock
+    private EntityManager entityManager;
+    
+    @Mock
+    private Query query;
 
     @InjectMocks
     private ArtistServiceImpl artistService;
-
+    
     @Test
     void findBoundArtists_shouldReturnListOfBoundArtists() {
         // Given
@@ -536,5 +546,151 @@ class ArtistServiceTest {
         assertFalse(result);
         verify(artistBindingRepository).findByDataSourceAndExternalId(dataSource, externalId);
         verify(artistBindingRepository, never()).delete(any());
+    }
+    
+    @Test
+    void batchLookupArtists_shouldReturnResultsForMultipleSearchTerms() {
+        // Given
+        List<String> searchTerms = List.of("radio", "queen");
+        int limit = 10;
+        
+        ArtistBatchLookupRequestDTO request = ArtistBatchLookupRequestDTO.builder()
+            .searchTerms(searchTerms)
+            .limit(limit)
+            .build();
+        
+        // Mock the dynamic SQL query execution
+        List<Object[]> queryResults = new ArrayList<>();
+        // Results for "radio"
+        queryResults.add(new Object[]{1L, "Radiohead", null, null, "radio"});
+        queryResults.add(new Object[]{2L, "Radio Moscow", null, null, "radio"});
+        // Results for "queen"
+        queryResults.add(new Object[]{3L, "Queen", null, null, "queen"});
+        
+        // Set up EntityManager and Query mocks
+        when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+        when(query.setParameter(anyInt(), any())).thenReturn(query);
+        when(query.getResultList()).thenReturn(queryResults);
+        
+        // When
+        ArtistBatchLookupResponseDTO result = artistService.batchLookupArtists(request);
+        
+        // Then
+        assertNotNull(result);
+        assertNotNull(result.getResults());
+        assertEquals(2, result.getResults().size());
+        
+        // Check "radio" results
+        List<LookupResultDTO> radioResults = result.getResults().get("radio");
+        assertNotNull(radioResults);
+        assertEquals(2, radioResults.size());
+        assertEquals("Radiohead", radioResults.get(0).getName());
+        assertEquals("Radio Moscow", radioResults.get(1).getName());
+        
+        // Check "queen" results
+        List<LookupResultDTO> queenResults = result.getResults().get("queen");
+        assertNotNull(queenResults);
+        assertEquals(1, queenResults.size());
+        assertEquals("Queen", queenResults.get(0).getName());
+        
+        // Verify EntityManager and Query interactions
+        verify(entityManager).createNativeQuery(anyString());
+        // 6 parameters: 2 search terms * (1 for search_term column + 1 for WHERE clause + 1 for LIMIT)
+        verify(query, times(6)).setParameter(anyInt(), any());
+        verify(query).getResultList();
+    }
+    
+    @Test
+    void batchLookupArtists_withNullSearchTerms_shouldReturnEmptyResults() {
+        // Given
+        ArtistBatchLookupRequestDTO request = ArtistBatchLookupRequestDTO.builder()
+            .searchTerms(null)
+            .limit(10)
+            .build();
+        
+        // When
+        ArtistBatchLookupResponseDTO result = artistService.batchLookupArtists(request);
+        
+        // Then
+        assertNotNull(result);
+        assertTrue(result.getResults().isEmpty());
+        verify(entityManager, never()).createNativeQuery(anyString());
+    }
+    
+    @Test
+    void batchLookupArtists_withEmptySearchTerms_shouldReturnEmptyResults() {
+        // Given
+        ArtistBatchLookupRequestDTO request = ArtistBatchLookupRequestDTO.builder()
+            .searchTerms(List.of())
+            .limit(10)
+            .build();
+        
+        // When
+        ArtistBatchLookupResponseDTO result = artistService.batchLookupArtists(request);
+        
+        // Then
+        assertNotNull(result);
+        assertTrue(result.getResults().isEmpty());
+        verify(entityManager, never()).createNativeQuery(anyString());
+    }
+    
+    @Test
+    void batchLookupArtists_withNullLimit_shouldUseDefaultLimit() {
+        // Given
+        List<String> searchTerms = List.of("radio");
+        Integer limit = null;
+        int defaultLimit = 20;
+        
+        ArtistBatchLookupRequestDTO request = ArtistBatchLookupRequestDTO.builder()
+            .searchTerms(searchTerms)
+            .limit(limit)
+            .build();
+        
+        List<Object[]> queryResults = new ArrayList<>();
+        queryResults.add(new Object[]{1L, "Radiohead", null, null, "radio"});
+        
+        // Set up EntityManager and Query mocks
+        when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+        when(query.setParameter(anyInt(), any())).thenReturn(query);
+        when(query.getResultList()).thenReturn(queryResults);
+        
+        // When
+        artistService.batchLookupArtists(request);
+        
+        // Then
+        verify(entityManager).createNativeQuery(anyString());
+        // Verify that the third parameter (index 3) is the default limit
+        verify(query).setParameter(eq(3), eq(defaultLimit));
+    }
+    
+    @Test
+    void batchLookupArtists_withBlankSearchTerms_shouldFilterThemOut() {
+        // Given
+        List<String> searchTerms = Arrays.asList("radio", "", "  ", null);
+        int limit = 10;
+        
+        ArtistBatchLookupRequestDTO request = ArtistBatchLookupRequestDTO.builder()
+            .searchTerms(searchTerms)
+            .limit(limit)
+            .build();
+        
+        List<Object[]> queryResults = new ArrayList<>();
+        queryResults.add(new Object[]{1L, "Radiohead", null, null, "radio"});
+        
+        // Set up EntityManager and Query mocks
+        when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+        when(query.setParameter(anyInt(), any())).thenReturn(query);
+        when(query.getResultList()).thenReturn(queryResults);
+        
+        // When
+        ArtistBatchLookupResponseDTO result = artistService.batchLookupArtists(request);
+        
+        // Then
+        assertNotNull(result);
+        assertEquals(1, result.getResults().size());
+        assertTrue(result.getResults().containsKey("radio"));
+        
+        // Verify that only one search term was used (3 parameters: search_term, WHERE clause, LIMIT)
+        verify(query, times(3)).setParameter(anyInt(), any());
     }
 }

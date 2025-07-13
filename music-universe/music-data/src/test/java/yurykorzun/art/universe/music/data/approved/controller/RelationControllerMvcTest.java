@@ -173,7 +173,7 @@ class RelationControllerMvcTest {
         EntityType sourceEntityType = EntityType.ARTIST;
         Long sourceExternalEntityId = 123L;
         EntityType targetEntityType = EntityType.CATEGORY;
-        List<Long> targetExternalEntityIds = Arrays.asList(456L, 789L);
+        List<Long> ids = Arrays.asList(456L, 789L);
 
         RelationBindingStatusDTO status = RelationBindingStatusDTO.builder()
             .sourceExternalId(sourceExternalEntityId)
@@ -184,7 +184,7 @@ class RelationControllerMvcTest {
             .targetEntityType(targetEntityType)
             .targetBindings(Arrays.asList(
                 TargetEntityBindingDTO.builder()
-                    .targetExternalId(456L)
+                    .targetExternalId(ids.get(0))
                     .targetEntityName("Category 1")
                     .targetInternalId(2L)
                     .targetEntityBound(true)
@@ -192,7 +192,7 @@ class RelationControllerMvcTest {
                     .relationId(10L)
                     .build(),
                 TargetEntityBindingDTO.builder()
-                    .targetExternalId(789L)
+                    .targetExternalId(ids.get(1))
                     .targetEntityName("Category 2")
                     .targetInternalId(3L)
                     .targetEntityBound(true)
@@ -211,7 +211,7 @@ class RelationControllerMvcTest {
         // When & Then
         mockMvc.perform(get("/api/v1/relations/bound/{dataSource}/{sourceEntityType}/{sourceExternalEntityId}/{targetEntityType}",
                 dataSource.name(), sourceEntityType.getName(), sourceExternalEntityId, targetEntityType.getName())
-                .param("targetExternalEntityIds", "456", "789"))
+                .param("ids", String.valueOf(ids.get(0)), String.valueOf(ids.get(1))))
             .andDo(print())
             .andExpect(status().isOk())
             .andExpect(content().json(expectedJson));
@@ -240,7 +240,7 @@ class RelationControllerMvcTest {
         // When & Then
         mockMvc.perform(get("/api/v1/relations/bound/{dataSource}/{sourceEntityType}/{sourceExternalEntityId}/{targetEntityType}",
                 dataSource.name(), sourceEntityType.getName(), sourceExternalEntityId, targetEntityType.getName())
-                .param("targetExternalEntityIds", "456", "789"))
+                .param("ids", "456", "789"))
             .andDo(print())
             .andExpect(status().isInternalServerError())
             .andExpect(content().json(expectedJson));

@@ -4,6 +4,8 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.common.controller.ResponseWrapper;
+import yurykorzun.art.universe.music.data.approved.dto.ArtistBatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.ArtistBatchLookupResponseDTO;
 import yurykorzun.art.universe.music.data.approved.dto.ArtistBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.ArtistCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.LookupResultDTO;
@@ -48,6 +50,18 @@ public class ArtistController {
             return ResponseWrapper.success(result);
         } catch (Exception e) {
             return ResponseWrapper.failure(String.format("Failed to lookup artists: %s", e.getMessage()));
+        }
+    }
+    
+    @PostMapping("/lookup/batch")
+    public ResponseEntity<ResponseWrapper<ArtistBatchLookupResponseDTO>> batchLookupArtists(
+        @Valid @RequestBody ArtistBatchLookupRequestDTO request
+    ) {
+        try {
+            ArtistBatchLookupResponseDTO result = artistService.batchLookupArtists(request);
+            return ResponseWrapper.success(result);
+        } catch (Exception e) {
+            return ResponseWrapper.failure(String.format("Failed to batch lookup artists: %s", e.getMessage()));
         }
     }
     

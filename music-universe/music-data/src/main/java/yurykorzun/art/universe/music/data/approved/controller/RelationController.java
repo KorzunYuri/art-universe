@@ -95,7 +95,7 @@ public class RelationController {
         @PathVariable EntityType sourceEntityType,
         @PathVariable Long sourceExternalEntityId,
         @PathVariable EntityType targetEntityType,
-        @RequestParam(required = false) List<Long> targetExternalEntityIds
+        @RequestParam(name = "ids", required = false) List<Long> targetExternalEntityIds
     ) {
         try {
             RelationBindingStatusDTO result = relationService.findBoundExternalRelations(
