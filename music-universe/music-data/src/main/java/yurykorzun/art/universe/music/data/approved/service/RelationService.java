@@ -2,7 +2,7 @@ package yurykorzun.art.universe.music.data.approved.service;
 
 import yurykorzun.art.universe.music.data.approved.dto.EntityDTO;
 import yurykorzun.art.universe.music.data.approved.dto.RelationBindingDTO;
-import yurykorzun.art.universe.music.data.approved.dto.RelationPair;
+import yurykorzun.art.universe.music.data.approved.dto.RelationBindingStatusDTO;
 import yurykorzun.art.universe.music.data.approved.entity.DataSource;
 import yurykorzun.art.universe.music.data.approved.entity.EntityType;
 
@@ -22,7 +22,7 @@ public interface RelationService {
      * @param targetExternalEntityId External target entity ID
      * @return DTO with binding information
      */
-    RelationBindingDTO bindRelation(
+    RelationBindingDTO bindExternalRelation(
         DataSource dataSource, 
         EntityType sourceEntityType, 
         Long sourceExternalEntityId, 
@@ -40,7 +40,7 @@ public interface RelationService {
      * @param targetExternalEntityId External target entity ID
      * @return true if unbinding was successful, false otherwise
      */
-    boolean unbindRelation(
+    boolean unbindExternalRelation(
         DataSource dataSource, 
         EntityType sourceEntityType, 
         Long sourceExternalEntityId, 
@@ -49,19 +49,21 @@ public interface RelationService {
     );
     
     /**
-     * Finds bound relations by a list of external ID pairs
+     * Finds binding status for a source entity and a list of target entities
      * 
      * @param dataSource Data source
      * @param sourceEntityType Source entity type
+     * @param sourceExternalEntityId External source entity ID
      * @param targetEntityType Target entity type
-     * @param pairs List of external entity ID pairs
-     * @return List of DTOs with binding information
+     * @param targetExternalEntityIds List of external target entity IDs
+     * @return DTO with binding status information
      */
-    List<RelationBindingDTO> findBoundRelations(
+    RelationBindingStatusDTO findBoundExternalRelations(
         DataSource dataSource, 
         EntityType sourceEntityType, 
+        Long sourceExternalEntityId, 
         EntityType targetEntityType, 
-        List<RelationPair> pairs
+        List<Long> targetExternalEntityIds
     );
     
     /**
@@ -87,7 +89,7 @@ public interface RelationService {
      * @param targetEntityId Target entity ID
      * @return ID of the created relation
      */
-    Long createRelation(
+    Long createInternalRelation(
         EntityType sourceEntityType,
         Long sourceEntityId,
         EntityType targetEntityType,
@@ -103,7 +105,7 @@ public interface RelationService {
      * @param targetEntityId Target entity ID
      * @return true if deletion was successful, false otherwise
      */
-    boolean deleteRelation(
+    boolean deleteInternalRelation(
         EntityType sourceEntityType,
         Long sourceEntityId,
         EntityType targetEntityType,
@@ -116,5 +118,5 @@ public interface RelationService {
      * @param relationId Relation ID
      * @return true if deletion was successful, false otherwise
      */
-    boolean deleteRelationById(Long relationId);
+    boolean deleteInternalRelationById(Long relationId);
 }

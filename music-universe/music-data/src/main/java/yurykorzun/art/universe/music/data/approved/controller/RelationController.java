@@ -5,13 +5,12 @@ import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.music.data.approved.dto.EntityDTO;
 import yurykorzun.art.universe.music.data.approved.dto.RelationBindingDTO;
-import yurykorzun.art.universe.music.data.approved.dto.RelationPair;
+import yurykorzun.art.universe.music.data.approved.dto.RelationBindingStatusDTO;
 import yurykorzun.art.universe.music.data.approved.entity.DataSource;
 import yurykorzun.art.universe.music.data.approved.entity.EntityType;
 import yurykorzun.art.universe.music.data.approved.service.RelationService;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Controller for working with entity relations
@@ -45,7 +44,7 @@ public class RelationController {
         @PathVariable Long targetExternalEntityId
     ) {
         try {
-            RelationBindingDTO result = relationService.bindRelation(
+            RelationBindingDTO result = relationService.bindExternalRelation(
                 dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId);
             return ResponseWrapper.success(result);
         } catch (Exception e) {
@@ -72,7 +71,7 @@ public class RelationController {
         @PathVariable Long targetExternalEntityId
     ) {
         try {
-            boolean result = relationService.unbindRelation(
+            boolean result = relationService.unbindExternalRelation(
                 dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId);
             return ResponseWrapper.success(result);
         } catch (Exception e) {
@@ -81,28 +80,26 @@ public class RelationController {
     }
 
     /**
-     * Finds bound relations by a list of external ID pairs
+     * Finds binding status for a source entity and a list of target entities
      * 
      * @param dataSource Data source
      * @param sourceEntityType Source entity type
+     * @param sourceExternalEntityId External source entity ID
      * @param targetEntityType Target entity type
-     * @param pairs List of external entity ID pairs in format "sourceId-targetId"
-     * @return List of DTOs with binding information
+     * @param targetExternalEntityIds List of external target entity IDs
+     * @return DTO with binding status information
      */
-    @GetMapping("/bound/{dataSource}/{sourceEntityType}/{targetEntityType}")
-    public ResponseEntity<ResponseWrapper<List<RelationBindingDTO>>> findBoundExternalRelations(
+    @GetMapping("/bound/{dataSource}/{sourceEntityType}/{sourceExternalEntityId}/{targetEntityType}")
+    public ResponseEntity<ResponseWrapper<RelationBindingStatusDTO>> findBoundExternalRelations(
         @PathVariable DataSource dataSource,
         @PathVariable EntityType sourceEntityType,
+        @PathVariable Long sourceExternalEntityId,
         @PathVariable EntityType targetEntityType,
-        @RequestParam List<String> pairs
+        @RequestParam(required = false) List<Long> targetExternalEntityIds
     ) {
         try {
-            List<RelationPair> relationPairs = pairs.stream()
-                .map(RelationPair::fromString)
-                .collect(Collectors.toList());
-                
-            List<RelationBindingDTO> result = relationService.findBoundRelations(
-                dataSource, sourceEntityType, targetEntityType, relationPairs);
+            RelationBindingStatusDTO result = relationService.findBoundExternalRelations(
+                dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityIds);
             return ResponseWrapper.success(result);
         } catch (Exception e) {
             return ResponseWrapper.failure(String.format("Failed to get bound relations: %s", e.getMessage()));
@@ -149,7 +146,7 @@ public class RelationController {
         @PathVariable Long targetEntityId
     ) {
         try {
-            Long relationId = relationService.createRelation(
+            Long relationId = relationService.createInternalRelation(
                 sourceEntityType, sourceEntityId, targetEntityType, targetEntityId);
             return ResponseWrapper.success(relationId);
         } catch (Exception e) {
@@ -174,7 +171,7 @@ public class RelationController {
         @PathVariable Long targetEntityId
     ) {
         try {
-            boolean result = relationService.deleteRelation(
+            boolean result = relationService.deleteInternalRelation(
                 sourceEntityType, sourceEntityId, targetEntityType, targetEntityId);
             return ResponseWrapper.success(result);
         } catch (Exception e) {
@@ -193,7 +190,7 @@ public class RelationController {
         @PathVariable Long relationId
     ) {
         try {
-            boolean result = relationService.deleteRelationById(relationId);
+            boolean result = relationService.deleteInternalRelationById(relationId);
             return ResponseWrapper.success(result);
         } catch (Exception e) {
             return ResponseWrapper.failure(String.format("Failed to delete relation: %s", e.getMessage()));
