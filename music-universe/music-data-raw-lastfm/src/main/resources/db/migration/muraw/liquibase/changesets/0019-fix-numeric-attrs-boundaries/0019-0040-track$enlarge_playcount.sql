@@ -1,0 +1,1 @@
+ALTER TABLE track ALTER COLUMN play_count TYPE BIGINT;

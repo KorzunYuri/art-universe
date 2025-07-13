@@ -58,7 +58,7 @@ class LastfmApiResponseServiceImplTest {
     }
 
     @Test
-    void create_shouldCreateApiResponse_whenValidDataProvided() {
+    void createResponse_shouldCreateApiResponse_whenValidDataProvided() {
         // given
         long id = 1L;
         LastfmApiResponseCreateRequest request = validCreateResponseRequestSupplier().get();

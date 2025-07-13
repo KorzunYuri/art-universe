@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <include file="../changesets/0017-relationship-entities/0017-0010-create-artist-relation-table.sql" relativeToChangelogFile="true"/>
+    <include file="../changesets/0017-relationship-entities/0017-0020-create-artist-album-table.sql" relativeToChangelogFile="true"/>
+    <include file="../changesets/0017-relationship-entities/0017-0030-create-artist-track-table.sql" relativeToChangelogFile="true"/>
+    <include file="../changesets/0017-relationship-entities/0017-0040-create-artist-tag-table.sql" relativeToChangelogFile="true"/>
+    <include file="../changesets/0017-relationship-entities/0017-0050-create-album-tag-table.sql" relativeToChangelogFile="true"/>
+    <include file="../changesets/0017-relationship-entities/0017-0060-create-album-track-table.sql" relativeToChangelogFile="true"/>
+    <include file="../changesets/0017-relationship-entities/0017-0070-create-track-tag-table.sql" relativeToChangelogFile="true"/>
+
+</databaseChangeLog>

@@ -64,6 +64,7 @@ services:
       - ./music-data-raw-lastfm.secrets.env
     ports:
       - "${MURAW_LASTFM_APP_EXTERNAL_PORT}:${MURAW_LASTFM_APP_INTERNAL_PORT}"
+      - "${MURAW_LASTFM_ACTUATOR_EXTERNAL_PORT}:${MURAW_LASTFM_ACTUATOR_INTERNAL_PORT}"
     depends_on:
       postgres-lastfm:
         condition: service_healthy
@@ -81,6 +82,7 @@ services:
       - ./music-data.secrets.env
     ports:
       - "${MU_DATA_APP_EXTERNAL_PORT}:${MU_DATA_APP_INTERNAL_PORT}"
+      - "${MU_DATA_ACTUATOR_EXTERNAL_PORT}:${MU_DATA_ACTUATOR_INTERNAL_PORT}"
     depends_on:
       postgres-music-data:
         condition: service_healthy
@@ -98,6 +100,7 @@ services:
       - ./music-quiz.secrets.env
     ports:
       - "${MU_QUIZ_APP_EXTERNAL_PORT}:${MU_QUIZ_APP_INTERNAL_PORT}"
+      - "${MU_QUIZ_ACTUATOR_EXTERNAL_PORT}:${MU_QUIZ_ACTUATOR_INTERNAL_PORT}"
     depends_on:
       music-data:
         condition: service_started

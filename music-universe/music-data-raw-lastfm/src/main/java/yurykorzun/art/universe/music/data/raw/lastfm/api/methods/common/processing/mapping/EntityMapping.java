@@ -8,7 +8,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.B
 
 /**
  * <p>Helper class holding objects that participate in inserting & updating entities with DTOs involved.</p>
- * <p>Is held by {@link EntityMappings}</p>
+ * <p>Is held by {@link EntityMappingResult}</p>
  * <p>Presence of <b>oldEntity</b> indicates that entity exists.</p>
  * <ul>
  *     <li>For existing entities, <b>newVersion</b> is initialized with entity from db then updated if needed</li>
@@ -21,7 +21,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.B
 @RequiredArgsConstructor
 @Getter
 @Setter
-public class EntityMapping<E extends BaseLastfmEntity, D extends EntityDto> {
+public class EntityMapping<E extends BaseLastfmEntity, D extends EntityDto<E>> {
 
     private final D dto;
 

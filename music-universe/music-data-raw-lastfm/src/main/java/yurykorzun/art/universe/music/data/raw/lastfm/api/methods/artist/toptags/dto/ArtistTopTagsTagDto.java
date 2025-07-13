@@ -5,21 +5,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.EntityDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.common.dto.TagDto;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public class ArtistTopTagsTagDto extends TagDto implements EntityDto {
+public class ArtistTopTagsTagDto extends TagDto {
 
     @JsonProperty("url")
     private String url;
 
     @JsonProperty("count")
     private int usageCount;
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Integer rank;
-
 }

@@ -12,6 +12,17 @@ export interface ArtistCreateAndBindRequest {
     name: string;
 }
 
+export interface ArtistBatchLookupRequestDTO {
+    names: string[];
+    limit?: number;
+}
+
+export interface ArtistBatchLookupResponseDTO {
+    results: {
+        [name: string]: LookupEntity[];
+    };
+}
+
 /**
  * Searches for artists in Music Data by name
  * 
@@ -40,6 +51,47 @@ export async function lookupArtists(query: string, limit: number = 10): Promise<
             success: false,
             message: 'Failed to look up artists',
             data: []
+        };
+    }
+}
+
+/**
+ * Performs batch lookup of artists by multiple names
+ * 
+ * @param names Array of artist names to look up
+ * @param limit Maximum number of results for each name (default: 10)
+ * @returns Object with lookup results grouped by artist names
+ */
+export async function batchLookupArtists(names: string[], limit: number = 10): Promise<ApiResponse<ArtistBatchLookupResponseDTO>> {
+    try {
+        const url = `${MusicDataConfig.baseApiUrl}/artists/lookup/batch`;
+        const request: ArtistBatchLookupRequestDTO = { 
+            names, 
+            limit 
+        };
+
+        console.log(`🔍 Batch looking up ${names.length} artists`);
+        const response = await axios.post<ApiResponse<ArtistBatchLookupResponseDTO>>(url, request);
+        
+        if (response.data.success) {
+            const resultCount = Object.keys(response.data.data.results).length;
+            console.log(`✅ Batch lookup successful: found matches for ${resultCount} artists`);
+        }
+        
+        return response.data;
+    } catch (error) {
+        console.error('❌ Error batch looking up artists:', error);
+        if (axios.isAxiosError(error)) {
+            console.error('❌ Axios error details:', {
+                status: error.response?.status,
+                statusText: error.response?.statusText,
+                data: error.response?.data
+            });
+        }
+        return {
+            success: false,
+            message: 'Failed to batch lookup artists',
+            data: { results: {} }
         };
     }
 }

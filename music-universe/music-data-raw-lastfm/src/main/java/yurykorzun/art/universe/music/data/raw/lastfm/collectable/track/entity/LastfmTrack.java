@@ -35,6 +35,7 @@ public class LastfmTrack extends BaseLastfmEntity {
     @Column(name = "duration")
     private Integer duration;
 
+    @Deprecated
     @Column(name = "is_streamable")
     private Boolean isStreamable;
 
@@ -42,7 +43,7 @@ public class LastfmTrack extends BaseLastfmEntity {
     private Integer listenersCount;
 
     @Column(name = "play_count")
-    private Integer playCount;
+    private Long playCount;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "artist_id")

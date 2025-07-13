@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <include file="../changesets/0018-entity-relations-migration/0018-0010-create-temporary-indexes.sql" relativeToChangelogFile="true"/>
+
+    <include file="../changesets/0018-entity-relations-migration/0018-0020-migrate-artists-relations.sql" relativeToChangelogFile="true"/>
+    <include file="../changesets/0018-entity-relations-migration/0018-0030-migrate-artist-tag.sql" relativeToChangelogFile="true"/>
+    <include file="../changesets/0018-entity-relations-migration/0018-0040-migrate-artist-album.sql" relativeToChangelogFile="true"/>
+    <include file="../changesets/0018-entity-relations-migration/0018-0050-migrate-artist-track.sql" relativeToChangelogFile="true"/>
+    <include file="../changesets/0018-entity-relations-migration/0018-0060-migrate-track-tag.sql" relativeToChangelogFile="true"/>
+
+    <include file="../changesets/0018-entity-relations-migration/0018-0070-drop-temporary-indexes.sql" relativeToChangelogFile="true"/>
+    <include file="../changesets/0018-entity-relations-migration/0018-0080-drop-entity-relations.sql" relativeToChangelogFile="true"/>
+    <include file="../changesets/0018-entity-relations-migration/0018-0100-cleanup-rank-attribute.sql" relativeToChangelogFile="true"/>
+
+    <include file="../changesets/0018-entity-relations-migration/0018-0200-update-cleanup-entity-function.sql" relativeToChangelogFile="true"/>
+
+</databaseChangeLog>

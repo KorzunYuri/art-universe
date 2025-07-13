@@ -38,14 +38,15 @@ public class LastfmAlbum extends BaseLastfmEntity {
     private String url;
 
     @Column(name = "play_count")
-    private int playCount;
+    private Long playCount;
 
     @Column(name = "listeners_count")
-    private int listenersCount;
+    private Integer listenersCount;
 
     @Column(name = "publish_ts")
     private LocalDateTime publishTs;
 
+    @Deprecated
     @Column(name = "description")
     @Convert(converter = GzipBase64StringConverter.class)
     private String description;

@@ -13,7 +13,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.repositor
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.service.LastfmTrackService;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class LastfmTrackServiceImpl implements LastfmTrackService {
@@ -25,12 +24,12 @@ public class LastfmTrackServiceImpl implements LastfmTrackService {
     }
 
     @Override
-    public LastfmTrack saveTrack(LastfmTrack lastfmTrack) {
+    public LastfmTrack save(LastfmTrack lastfmTrack) {
         return trackRepository.save(lastfmTrack);
     }
 
     @Override
-    public List<LastfmTrack> saveTracks(List<LastfmTrack> lastfmTracks) {
+    public List<LastfmTrack> saveAll(List<LastfmTrack> lastfmTracks) {
         return trackRepository.saveAll(lastfmTracks);
     }
 
@@ -38,9 +37,14 @@ public class LastfmTrackServiceImpl implements LastfmTrackService {
     public List<LastfmTrack> findAllByUrls(List<String> urls) {
         return trackRepository.findAllByUrlIn(urls);
     }
-    
+
     @Override
-    public Page<LastfmTrackResponseDto> findTracks(TrackSearchParams params, Pageable pageable) {
+    public List<LastfmTrack> findEntitiesByUniqueKeys(List<String> uniqueKeys) {
+        return findAllByUrls(uniqueKeys);
+    }
+
+    @Override
+    public Page<LastfmTrackResponseDto> findAll(TrackSearchParams params, Pageable pageable) {
         List<ApprovalStatus> approvalStatuses = getApprovalStatusesFromCodes(params);
         Page<LastfmTrack> tracksPage = trackRepository.findTracks(
                 params.search(),

@@ -8,7 +8,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.LastfmApiConstants;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.dto.ArtistDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.search.dto.ArtistSearchArtistDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.search.dto.ArtistSearchDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingResult;
@@ -44,8 +43,7 @@ public class LastfmArtistSearchResponseProcessor extends LastfmApiResponseProces
         artistAttrHandlers = List.of(
             factory.createHandler(LastfmAttribute.MBID,  false, "mbid"),
             factory.createHandler(LastfmAttribute.URL, false, "url"),
-            factory.createHandler(LastfmAttribute.LISTENERS_COUNT, false, "listenersCount"),
-            factory.createHandler(LastfmAttribute.IS_STREAMABLE,  false, "isStreamable", (dto) -> 1 == dto.getStreamable())
+            factory.createHandler(LastfmAttribute.LISTENERS_COUNT, false, "listenersCount")
         );
     }
 
@@ -76,14 +74,13 @@ public class LastfmArtistSearchResponseProcessor extends LastfmApiResponseProces
         LastfmApiCall sourceApiCall = sourceApiResponse.getApiCall();
         String searchString = sourceApiCall.getParams().get(LastfmApiConstants.PARAM_NAME_ARTIST);
         List<ArtistSearchArtistDto> dtos = filterArtistsForSaving(dtoRoot.getRootObject().getMatches().getArtists(), searchString);
-        List<String> names = dtos.stream().map(ArtistDto::getName).toList();
-        List<LastfmArtist> existingEntities = artistService.findAllByNames(names);
 
-        LastfmApiDtoProcessingResult<LastfmArtist> result = dtoProcessingService.processDtosWithoutRelations(
-            dtos, existingEntities, sourceApiResponse,
+        LastfmApiDtoProcessingResult<LastfmArtist, ArtistSearchArtistDto> result = dtoProcessingService.process(
+            sourceApiCall,
+            dtos,
             artistFactory,
             artistAttrHandlers,
-            artistService::saveArtists
+            artistService
         );
 
         log.info("Saved {} found artists", result.savedEntities().size());

@@ -33,9 +33,11 @@ public class LastfmArtist extends BaseLastfmEntity {
     @Column(name = "url")
     private String url;
 
+    @Deprecated
     @Column(name = "is_streamable")
     private Boolean isStreamable;
 
+    @Deprecated
     @Column(name = "is_on_tour")
     private Boolean isOnTour;
 
@@ -43,7 +45,7 @@ public class LastfmArtist extends BaseLastfmEntity {
     private Integer listenersCount;
 
     @Column(name = "play_count")
-    private Integer playCount;
+    private Long playCount;
 
     @Override
     public LastfmEntityType getType() {

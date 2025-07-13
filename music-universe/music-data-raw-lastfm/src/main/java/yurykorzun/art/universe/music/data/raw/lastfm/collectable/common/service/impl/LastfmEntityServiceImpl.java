@@ -6,9 +6,9 @@ import jakarta.persistence.criteria.*;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
-import yurykorzun.art.universe.common.data.raw.entity.BaseCollectableEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityQueryConfig;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityService;
@@ -27,13 +27,13 @@ public class LastfmEntityServiceImpl implements LastfmEntityService {
     }
 
     @Override
-    public <E extends BaseCollectableEntity> List<E> findAllUnprocessed(LastfmEntityType entityType, LastfmApiCallType apiCallType) {
+    public <E extends BaseLastfmEntity> List<E> findAllUnprocessed(LastfmEntityType entityType, LastfmApiCallType apiCallType) {
         return findAllUnprocessed(entityType, apiCallType, LastfmEntityQueryConfig.builder().build());
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <E extends BaseCollectableEntity> List<E> findAllUnprocessed(
+    public <E extends BaseLastfmEntity> List<E> findAllUnprocessed(
         LastfmEntityType entityType, LastfmApiCallType apiCallType, LastfmEntityQueryConfig config
     ) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
@@ -96,7 +96,7 @@ public class LastfmEntityServiceImpl implements LastfmEntityService {
      * Builder ORDER expression based on {@link LastfmEntityQueryConfig} provided by caller.
      * Number values will be wrapped in Coalesce function to support natural priority.
      */
-    private <E extends BaseCollectableEntity> List<Order> buildOrders(
+    private <E extends BaseLastfmEntity> List<Order> buildOrders(
         LastfmEntityQueryConfig config,
         Root<E> entityRoot,
         CriteriaBuilder cb

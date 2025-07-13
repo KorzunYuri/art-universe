@@ -28,7 +28,7 @@ class LastfmAlbumRepositoryTest extends JpaOnlyTest {
         final String description = "description";
         final String url = "url";
         final String mbid = "mbid";
-        final int playCount = 1;
+        final long playCount = 1;
         final int listenersCount = 1;
         final LocalDateTime publishTs = LocalDateTime.now();
 

@@ -1,7 +1,7 @@
 // hooks
 import { useState } from "react";
 // components
-import { EntityBinding, ExternalLink, ReadonlyAttr } from "@/music-universe/shared/components";
+import { EntityBinding, ExternalLink, ReadonlyAttr, EntityTagPanel } from "@/music-universe/shared/components";
 import { ApprovalToggle } from "@/music-universe/sources/lastfm/components";
 // backend services
 import { LastfmConfig } from "@/music-universe/sources/lastfm/config/lastfmconfig.ts";
@@ -10,17 +10,22 @@ import { bindArtistToExisting, createAndBindArtist, unbindArtist, lookupArtists 
 import { updateArtistApprovalStatus } from "@/music-universe/sources/lastfm/api/lastfm-artists.ts";
 // constants
 import { ApprovalStatus } from "@/music-universe/sources/lastfm/constants/approvalStatus";
+// types
+import type { LookupEntity } from "@/music-universe/shared/components/AutocompleteInput";
 // styles
 import sharedTableStyles from "@/music-universe/shared/components/EntityTable/EntityTableStyles.module.scss";
 import artistTableStyles from "../LastfmArtistsTable/LastfmArtistsTable.module.css";
+import styles from "./LastfmArtistsTableRow.module.scss";
 
 interface LastfmArtistTableRowProps {
     artist: LastfmArtist,
-    onChange: (artist: LastfmArtist) => void
+    onChange: (artist: LastfmArtist) => void,
+    preloadedLookupData?: LookupEntity[]
 }
 
-export const LastfmArtistsTableRow = ({artist, onChange}: LastfmArtistTableRowProps) => {
+export const LastfmArtistsTableRow = ({artist, onChange, preloadedLookupData = []}: LastfmArtistTableRowProps) => {
     const [isApproving, setIsApproving] = useState(false);
+    const [isTagPanelOpen, setIsTagPanelOpen] = useState(false);
 
     function onStatusChange(artistToUpdate: LastfmArtist, newStatus: number) {
         setIsApproving(true);
@@ -88,46 +93,69 @@ export const LastfmArtistsTableRow = ({artist, onChange}: LastfmArtistTableRowPr
         }
     };
 
+    const toggleTagPanel = () => {
+        setIsTagPanelOpen(!isTagPanelOpen);
+    };
+
     return (
-        <div key={artist.id} className={sharedTableStyles.row}>
-            <div className={`${sharedTableStyles.cell}  ${artistTableStyles.name}`}>
-                {artist.url && <ExternalLink href={artist.url} label={artist.name}/>}
-            </div>
+        <>
+            <div 
+                key={artist.id} 
+                className={`${sharedTableStyles.row} ${isTagPanelOpen ? styles.activeRow : ''}`}
+                onClick={toggleTagPanel}
+            >
+                <div className={`${sharedTableStyles.cell}  ${artistTableStyles.name}`}>
+                    {artist.url && <ExternalLink href={artist.url} label={artist.name}/>}
+                </div>
 
-            <div className={`${sharedTableStyles.cell}  ${artistTableStyles.mbid}`}>
-                {artist.mbid && <ExternalLink
-                        href={`${LastfmConfig.mbBaseUrls.artist}${artist.mbid}`}
-                        label="MusicBrainz"/>}
-            </div>
+                <div className={`${sharedTableStyles.cell}  ${artistTableStyles.mbid}`}>
+                    {artist.mbid && <ExternalLink
+                            href={`${LastfmConfig.mbBaseUrls.artist}${artist.mbid}`}
+                            label="MusicBrainz"/>}
+                </div>
 
-            <div className={`${sharedTableStyles.cell}  ${artistTableStyles.status}`}>
-                <ApprovalToggle
-                    status={artist.approvalStatus}
-                    onChange={(newStatus) => onStatusChange(artist, newStatus)}
-                    disabled={isApproving}
-                />
-            </div>
+                <div className={`${sharedTableStyles.cell}  ${artistTableStyles.status}`} onClick={(e) => e.stopPropagation()}>
+                    <ApprovalToggle
+                        status={artist.approvalStatus}
+                        onChange={(newStatus) => onStatusChange(artist, newStatus)}
+                        disabled={isApproving}
+                    />
+                </div>
 
-            <div className={`${sharedTableStyles.cell}  ${artistTableStyles.binding}`}>
-                <EntityBinding
-                    entity={artist}
-                    onBindToExisting={handleBindToExisting}
-                    onCreateAndBind={handleCreateAndBind}
-                    onUnbind={unbindArtist}
-                    onBeforeBind={handleBeforeBind}
-                    onAfterBind={handleAfterBind}
-                    lookupFunction={lookupArtists}
-                    disabled={isApproving}
-                />
-            </div>
+                <div className={`${sharedTableStyles.cell}  ${artistTableStyles.binding}`} onClick={(e) => e.stopPropagation()}>
+                    <EntityBinding
+                        entity={artist}
+                        onBindToExisting={handleBindToExisting}
+                        onCreateAndBind={handleCreateAndBind}
+                        onUnbind={unbindArtist}
+                        onBeforeBind={handleBeforeBind}
+                        onAfterBind={handleAfterBind}
+                        lookupFunction={lookupArtists}
+                        preloadedOptions={preloadedLookupData}
+                        disabled={isApproving}
+                    />
+                </div>
 
-            <div className={`${sharedTableStyles.cell}  ${artistTableStyles.count}`}>
-                <ReadonlyAttr value={artist.playCount}/>
-            </div>
+                <div className={`${sharedTableStyles.cell}  ${artistTableStyles.count}`}>
+                    <ReadonlyAttr value={artist.playCount}/>
+                </div>
 
-            <div className={`${sharedTableStyles.cell}  ${artistTableStyles.count}`}>
-                <ReadonlyAttr value={artist.listenersCount}/>
+                <div className={`${sharedTableStyles.cell}  ${artistTableStyles.count}`}>
+                    <ReadonlyAttr value={artist.listenersCount}/>
+                </div>
             </div>
-        </div>
+            
+            {isTagPanelOpen && (
+                <div className={styles.tagPanelContainer}>
+                    <EntityTagPanel
+                        entityType="ARTIST"
+                        entityId={artist.id}
+                        entityApprovalStatus={artist.approvalStatus}
+                        tagPageBaseUrl="/lastfm/tags/"
+                        onClose={() => setIsTagPanelOpen(false)}
+                    />
+                </div>
+            )}
+        </>
     );
 };

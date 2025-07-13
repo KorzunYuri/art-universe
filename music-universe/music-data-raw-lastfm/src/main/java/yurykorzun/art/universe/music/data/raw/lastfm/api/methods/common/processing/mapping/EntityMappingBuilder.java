@@ -1,6 +1,6 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping;
 
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.EntityDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
@@ -10,12 +10,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class EntityMappingBuilder<E extends BaseLastfmEntity, D extends EntityDto> {
+public class EntityMappingBuilder {
 
-    public EntityMappings<E, D> buildMapping(
+    public static <E extends BaseLastfmEntity, D extends EntityDto<E>> EntityMappingResult<E, D> buildMapping(
         List<D> dtos,
         List<E> existingEntities,
-        LastfmApiResponse apiResponse,
+        LastfmApiCall sourceApiCall,
         EntityFactory<E, D> entityFactory,
         List<EntityAttributeHandler<E, ?, D>> attrHandlers
     ) {
@@ -27,7 +27,7 @@ public class EntityMappingBuilder<E extends BaseLastfmEntity, D extends EntityDt
                 (existing, replacement) -> existing,
                 HashMap::new
             ));
-        EntityMappings<E, D> mappings = new EntityMappings<>(map, apiResponse.getApiCall());
+        EntityMappingResult<E, D> mappings = new EntityMappingResult<>(map, sourceApiCall);
 
         // update mappings with existing entities
         existingEntities.forEach(entity -> {
@@ -41,7 +41,7 @@ public class EntityMappingBuilder<E extends BaseLastfmEntity, D extends EntityDt
         // update mappings with new entities
         mappings.forEach((key, mapping) -> {
             if (mapping.getNewEntity() == null) {
-                mapping.setNewEntity(entityFactory.fromDto(mapping.getDto(), apiResponse));
+                mapping.setNewEntity(entityFactory.fromDto(mapping.getDto(), sourceApiCall));
                 mapping.setNew(true);
                 mapping.setShouldBeSaved(true);
             }

@@ -8,9 +8,10 @@ import java.io.IOException;
 public abstract class BaseApiResponseProcessor <T extends ApiResponse> {
 
     public abstract ApiCallType getApiCallType();
-    protected abstract void processResponse(T response) throws IOException;
 
-    public final void process(T sourceApiResponse) throws IOException {
+    protected abstract void processResponse(T sourceApiResponse) throws IOException;
+
+    public void process(T sourceApiResponse) throws IOException {
         validateResponse(sourceApiResponse);
         processResponse(sourceApiResponse);
     }

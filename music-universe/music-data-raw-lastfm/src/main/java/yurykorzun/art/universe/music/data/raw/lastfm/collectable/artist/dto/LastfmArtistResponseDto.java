@@ -9,7 +9,7 @@ public record LastfmArtistResponseDto(
     String url,
     @Nullable String mbid,
     Integer approvalStatus,
-    @Nullable Integer playCount,
+    @Nullable Long playCount,
     @Nullable Integer listenersCount
 ) {
 

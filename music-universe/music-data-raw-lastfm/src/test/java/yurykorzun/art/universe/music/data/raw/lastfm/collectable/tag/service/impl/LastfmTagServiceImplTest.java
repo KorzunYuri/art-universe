@@ -42,11 +42,11 @@ class LastfmTagServiceImplTest {
     }
 
     @Test
-    void saveTags_withValidTags_shouldCallRepository() {
+    void saveAll_withValidAll_shouldCallRepository() {
         List<LastfmTag> tags = List.of(createTag(), createTag());
         when(tagRepository.saveAll(tags)).thenReturn(tags);
 
-        List<LastfmTag> savedTags = tagService.saveTags(tags);
+        List<LastfmTag> savedTags = tagService.saveAll(tags);
 
         assertNotNull(savedTags);
         assertEquals(tags.size(), savedTags.size());
@@ -72,7 +72,7 @@ class LastfmTagServiceImplTest {
     }
     
     @Test
-    void findTags_shouldCallRepositoryWithCorrectParams() {
+    void findAll_shouldCallRepositoryWithCorrectParams() {
         // Given
         String search = "test";
         Set<Integer> approvalStatusCodes = Set.of(ApprovalStatus.APPROVED.getCode());
@@ -91,7 +91,7 @@ class LastfmTagServiceImplTest {
         )).thenReturn(tagPage);
         
         // When
-        Page<LastfmTagResponseDto> result = tagService.findTags(params, pageable);
+        Page<LastfmTagResponseDto> result = tagService.findAll(params, pageable);
         
         // Then
         assertNotNull(result);
@@ -104,7 +104,7 @@ class LastfmTagServiceImplTest {
     }
     
     @Test
-    void findTags_withNullParams_shouldCallRepositoryWithNullValues() {
+    void findAll_withNullParams_shouldCallRepositoryWithNullValues() {
         // Given
         TagSearchParams params = new TagSearchParams(null, null);
         Pageable pageable = PageRequest.of(0, 10);
@@ -120,7 +120,7 @@ class LastfmTagServiceImplTest {
         )).thenReturn(tagPage);
         
         // When
-        Page<LastfmTagResponseDto> result = tagService.findTags(params, pageable);
+        Page<LastfmTagResponseDto> result = tagService.findAll(params, pageable);
         
         // Then
         assertNotNull(result);

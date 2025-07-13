@@ -31,8 +31,8 @@ public interface LastfmArtistRepository extends JpaRepository<LastfmArtist, Long
     @Query(value = """
             WITH top_tags AS (
                 SELECT
-                        ah.entity_id as tag_id
-                    ,   ah.int_value as tag_rank
+                        ah.entity_id        as tag_id
+                    ,   ah.numeric_value    as tag_rank
                 FROM
                     attribute_history ah
                 JOIN
@@ -51,8 +51,8 @@ public interface LastfmArtistRepository extends JpaRepository<LastfmArtist, Long
                 SELECT
                         top_tags.tag_id
                     ,   top_tags.tag_rank
-                    ,   artist_rank.entity_id   as artist_id
-                    ,   artist_rank.int_value   as artist_rank
+                    ,   artist_rank.entity_id       as artist_id
+                    ,   artist_rank.numeric_value   as artist_rank
                 FROM
                     top_tags
                 JOIN
@@ -69,7 +69,7 @@ public interface LastfmArtistRepository extends JpaRepository<LastfmArtist, Long
                         a.id    as id
                     ,   1       as priority_1
                     ,   0       as priority_2
-                FROM    
+                FROM
                     artist a
                 LEFT JOIN 
                     api_call ac
@@ -114,15 +114,13 @@ public interface LastfmArtistRepository extends JpaRepository<LastfmArtist, Long
                 FROM
                     top_artists ta
                 JOIN
-                    entity_relation rel
+                    artist_artist rel
                         ON      1=1
-                            AND rel.scope_entity_type   =   1       -- artist
-                            AND rel.scope_entity_id     =   ta.artist_id
-                            AND rel.entity_type         =   1       -- artist
+                            AND rel.source_artist_id     =   ta.artist_id
                 JOIN
                     artist a
                         ON      1=1
-                            AND a.id = rel.entity_id
+                            AND a.id = rel.target_artist_id
                 LEFT JOIN 
                     api_call ac
                         ON  1=1

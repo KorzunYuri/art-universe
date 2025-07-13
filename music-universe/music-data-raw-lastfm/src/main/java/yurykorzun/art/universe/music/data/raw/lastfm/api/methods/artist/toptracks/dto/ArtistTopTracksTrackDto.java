@@ -17,7 +17,7 @@ public class ArtistTopTracksTrackDto extends TrackDto {
     private int streamable;
 
     @JsonProperty("playcount")
-    private int playCount;
+    private long playCount;
 
     @JsonProperty("listeners")
     private int listenersCount;

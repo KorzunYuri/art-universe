@@ -21,7 +21,7 @@ import java.util.function.Function;
  * @param <D>   DTO
  */
 @Slf4j
-public class DefaultEntityAttributeHandler<E extends BaseLastfmEntity, T, D extends EntityDto>
+public class DefaultEntityAttributeHandler<E extends BaseLastfmEntity, T, D extends EntityDto<E>>
     extends EntityAttributeHandler<E, T, D> {
 
     @Getter
@@ -39,7 +39,7 @@ public class DefaultEntityAttributeHandler<E extends BaseLastfmEntity, T, D exte
         throw new UnsupportedOperationException(message);
     };
 
-    public static <E extends BaseLastfmEntity, T, D extends EntityDto> DefaultEntityAttributeHandler<E, T, D> forEmbeddedAttribute(
+    public static <E extends BaseLastfmEntity, T, D extends EntityDto<E>> DefaultEntityAttributeHandler<E, T, D> forEmbeddedAttribute(
         LastfmAttribute attribute,
         boolean isAttributeScoped,
         Function<E, T> entityValueExtractor,
@@ -53,7 +53,7 @@ public class DefaultEntityAttributeHandler<E extends BaseLastfmEntity, T, D exte
             dtoValueExtractor);
     }
 
-    public static <E extends BaseLastfmEntity, T, D extends EntityDto> DefaultEntityAttributeHandler<E, T, D> forExternalAttribute(
+    public static <E extends BaseLastfmEntity, T, D extends EntityDto<E>> DefaultEntityAttributeHandler<E, T, D> forExternalAttribute(
         LastfmAttribute attribute,
         boolean isAttributeScoped,
         Function<D, T> dtoValueExtractor

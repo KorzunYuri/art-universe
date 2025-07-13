@@ -1,5 +1,7 @@
 package yurykorzun.art.universe.music.data.approved.service;
 
+import yurykorzun.art.universe.music.data.approved.dto.ArtistBatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.ArtistBatchLookupResponseDTO;
 import yurykorzun.art.universe.music.data.approved.dto.LookupResultDTO;
 import yurykorzun.art.universe.music.data.approved.dto.ArtistBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.approved.dto.ArtistCreateAndBindRequestDTO;
@@ -69,4 +71,13 @@ public interface ArtistService {
     default List<LookupResultDTO> searchArtistsByName(String search) {
         return searchArtistsByName(search, 20);
     }
+    
+    /**
+     * Batch lookup of artists by multiple search terms.
+     * Each search term will have its own limited result set.
+     *
+     * @param request The batch lookup request containing search terms and limit
+     * @return A map of search terms to lists of matching artists
+     */
+    ArtistBatchLookupResponseDTO batchLookupArtists(ArtistBatchLookupRequestDTO request);
 }

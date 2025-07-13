@@ -21,7 +21,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
@@ -56,7 +55,7 @@ class LastfmTrackControllerMvcTest {
             .mbid("mbid-123")
             .url("http://test.com/track")
             .approvalStatus(ApprovalStatus.PENDING)
-            .playCount(1000)
+            .playCount(1000L)
             .listenersCount(500)
             .artist(mockArtist)
             .apiCall(EntityCreationHelper.createApiCall())
@@ -68,7 +67,7 @@ class LastfmTrackControllerMvcTest {
             .mbid("mbid-456")
             .url("http://another.com/track")
             .approvalStatus(ApprovalStatus.APPROVED)
-            .playCount(2000)
+            .playCount(2000L)
             .listenersCount(1000)
             .artist(mockArtist)
             .apiCall(EntityCreationHelper.createApiCall())
@@ -91,7 +90,7 @@ class LastfmTrackControllerMvcTest {
         Page<LastfmTrack> tracksPage = new PageImpl<>(mockTracks, defaultPageable, mockTracks.size());
         Page<LastfmTrackResponseDto> pageResponse = tracksPage.map(LastfmTrackResponseDto::from);
         
-        when(trackService.findTracks(any(TrackSearchParams.class), any(Pageable.class)))
+        when(trackService.findAll(any(TrackSearchParams.class), any(Pageable.class)))
             .thenReturn(pageResponse);
 
         String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(pageResponse));
@@ -113,7 +112,7 @@ class LastfmTrackControllerMvcTest {
         Page<LastfmTrack> tracksPage = new PageImpl<>(mockTracks, defaultPageable, mockTracks.size());
         Page<LastfmTrackResponseDto> pageResponse = tracksPage.map(LastfmTrackResponseDto::from);
         
-        when(trackService.findTracks(any(TrackSearchParams.class), any(Pageable.class)))
+        when(trackService.findAll(any(TrackSearchParams.class), any(Pageable.class)))
             .thenReturn(pageResponse);
 
         String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(pageResponse));
@@ -130,7 +129,7 @@ class LastfmTrackControllerMvcTest {
         // Given
         String errorMessage = "Failed to fetch tracks: service error occurred";
         
-        when(trackService.findTracks(any(TrackSearchParams.class), any(Pageable.class)))
+        when(trackService.findAll(any(TrackSearchParams.class), any(Pageable.class)))
             .thenThrow(new RuntimeException("Test exception"));
 
         String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.failureBody(errorMessage));

@@ -48,11 +48,11 @@ class LastfmTrackServiceImplTest {
     }
 
     @Test
-    void saveTrack_withValidTrack_shouldCallRepository() {
+    void save_withValidTrack_shouldCallRepository() {
         LastfmTrack track = createTrack();
         when(trackRepository.save(track)).thenReturn(track);
 
-        LastfmTrack savedTrack = trackService.saveTrack(track);
+        LastfmTrack savedTrack = trackService.save(track);
 
         assertNotNull(savedTrack);
         assertEquals(track, savedTrack);
@@ -60,11 +60,11 @@ class LastfmTrackServiceImplTest {
     }
 
     @Test
-    void saveTracks_withValidTracks_shouldCallRepository() {
+    void saveAll_withValidTracks_shouldCallRepository() {
         List<LastfmTrack> tracks = List.of(createTrack(), createTrack());
         when(trackRepository.saveAll(tracks)).thenReturn(tracks);
 
-        List<LastfmTrack> savedTracks = trackService.saveTracks(tracks);
+        List<LastfmTrack> savedTracks = trackService.saveAll(tracks);
 
         assertNotNull(savedTracks);
         assertEquals(tracks.size(), savedTracks.size());
@@ -90,7 +90,7 @@ class LastfmTrackServiceImplTest {
     }
     
     @Test
-    void findTracks_shouldCallRepositoryWithCorrectParams() {
+    void findAll_WithCorrectParams_shouldCallRepository() {
         // Given
         String search = "test";
         Long minPlayCount = 1000L;
@@ -119,7 +119,7 @@ class LastfmTrackServiceImplTest {
         )).thenReturn(trackPage);
         
         // When
-        Page<LastfmTrackResponseDto> result = trackService.findTracks(params, pageable);
+        Page<LastfmTrackResponseDto> result = trackService.findAll(params, pageable);
         
         // Then
         assertNotNull(result);
@@ -142,7 +142,7 @@ class LastfmTrackServiceImplTest {
     }
     
     @Test
-    void findTracks_withNullParams_shouldCallRepositoryWithNullValues() {
+    void findAll_withNullParams_shouldCallRepositoryWithNullValues() {
         // Given
         TrackSearchParams params = new TrackSearchParams(null, null, null, null, null);
         Pageable pageable = PageRequest.of(0, 10);
@@ -165,7 +165,7 @@ class LastfmTrackServiceImplTest {
         )).thenReturn(trackPage);
         
         // When
-        Page<LastfmTrackResponseDto> result = trackService.findTracks(params, pageable);
+        Page<LastfmTrackResponseDto> result = trackService.findAll(params, pageable);
         
         // Then
         assertNotNull(result);

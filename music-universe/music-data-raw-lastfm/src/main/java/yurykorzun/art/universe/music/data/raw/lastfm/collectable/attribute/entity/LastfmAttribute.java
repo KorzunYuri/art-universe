@@ -18,14 +18,14 @@ public enum LastfmAttribute implements Coded {
             1,
             "Relations number",
             "Number of entities associated with entity",
-            DataType.INTEGER,
+            DataType.NUMERIC,
             HistoryType.SCD2,
             List.of(LastfmEntityType.TAG))
-    ,   REACH(
+    ,   USAGE_COUNT(
             2,
-            "Reach",
+            "Usage count",
             "Number of users that used entity",
-            DataType.INTEGER,
+            DataType.NUMERIC,
             HistoryType.SCD2,
             List.of(LastfmEntityType.TAG))
     ,   URL(
@@ -39,7 +39,7 @@ public enum LastfmAttribute implements Coded {
             4,
             "rank",
             "Rank of the entity, global or scoped",
-            DataType.INTEGER,
+            DataType.NUMERIC,
             HistoryType.SNAPSHOT,
             List.of(LastfmEntityType.values()))
     ,   MBID(
@@ -53,17 +53,17 @@ public enum LastfmAttribute implements Coded {
             6,
             "duration",
             "Track duration",
-            DataType.INTEGER,
+            DataType.NUMERIC,
             HistoryType.SCD2,
             List.of(LastfmEntityType.TRACK))
-    ,   IS_STREAMABLE(
+    ,   @Deprecated IS_STREAMABLE(
             7,
             "streamable",
             "Is streamable",
             DataType.BOOLEAN,
             HistoryType.SCD2,
             List.of(LastfmEntityType.TRACK, LastfmEntityType.ARTIST))
-    ,   IS_ON_TOUR(
+    ,   @Deprecated IS_ON_TOUR(
             8,
             "on_tour",
             "Artist is on tour",
@@ -74,21 +74,21 @@ public enum LastfmAttribute implements Coded {
             9,
             "listeners_count",
             "Number of listeners",
-            DataType.INTEGER,
+            DataType.NUMERIC,
             HistoryType.SCD2,
             List.of(LastfmEntityType.values()))
     ,   PLAY_COUNT(
             10,
             "play_count",
             "How many times track(s) were scrobbled",
-            DataType.INTEGER,
+            DataType.NUMERIC,
             HistoryType.SCD2,
             List.of(LastfmEntityType.values()))
     ,   MATCH_COEFF(
             11,
             "match_coeff",
             "Represents how much two entities are similar to each other, %",
-            DataType.INTEGER, // float values much be converted to integer to save space
+            DataType.NUMERIC, // float values much be converted to integer to save space
             HistoryType.SCD2,
             List.of(LastfmEntityType.values()))
     ;
@@ -123,7 +123,7 @@ public enum LastfmAttribute implements Coded {
     @AllArgsConstructor
     public enum DataType implements Coded {
             STRING(1)
-        ,   INTEGER(2)
+        ,   NUMERIC(2)
         ,   BOOLEAN(3)
         ;
 

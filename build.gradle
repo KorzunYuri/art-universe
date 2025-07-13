@@ -1,6 +1,7 @@
 buildscript {
     ext {
         springBootVersion = '3.4.3'
+        openapiVersion = '2.8.6'
         lombokVersion = '1.18.26'
         junitBomVersion = '5.10.0'
         liquibaseVersion = '4.15.0'
@@ -21,9 +22,9 @@ buildscript {
 }
 
 plugins {
-    id 'io.spring.dependency-management' version "${springDependenciesPluginVersion}" apply false
-    id 'org.springframework.boot' version "${springBootVersion}" apply false
-    id 'org.liquibase.gradle' version "${liquibasePluginVersion}" apply false
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE' apply false
+    id 'org.springframework.boot' version '3.4.3' apply false
+    id 'org.liquibase.gradle' version '2.0.4' apply false
 }
 
 allprojects {
@@ -31,22 +32,18 @@ allprojects {
     version = '0.0.1-SNAPSHOT'
     repositories {
         mavenCentral()
+        // add Spring repositories for milestones and new versions
+        maven { url 'https://repo.spring.io/milestone' }
+        maven { url 'https://repo.spring.io/snapshot' }
     }
 }
 
 subprojects {
     apply plugin: 'java'
-    apply plugin: 'io.spring.dependency-management'
     apply plugin: 'jacoco'
 
     sourceCompatibility = '17'
     targetCompatibility = '17'
-
-    dependencyManagement {
-        imports {
-            mavenBom "org.springframework.boot:spring-boot-dependencies:${springBootVersion}"
-        }
-    }
 
     dependencies {
         compileOnly "org.projectlombok:lombok:${lombokVersion}"
@@ -58,12 +55,9 @@ subprojects {
         // tests
         testImplementation platform("org.junit:junit-bom:${junitBomVersion}")
         testImplementation "org.junit.jupiter:junit-jupiter"
-
         testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-
         testImplementation "org.testcontainers:testcontainers:${testContainersVersion}"
         testImplementation "org.testcontainers:junit-jupiter:${testContainersVersion}"
-
         testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
         testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
     }
@@ -92,10 +86,10 @@ subprojects {
     }
 
     jacocoTestReport {
-        dependsOn test // tests are required to run before generating the report
+        dependsOn test // tests are required to run before generating the jacoco report
     }
 
     test {
-        finalizedBy jacocoTestReport // report is always generated after tests run
+        finalizedBy jacocoTestReport  // report is always generated after tests run
     }
 }

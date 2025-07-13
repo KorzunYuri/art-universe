@@ -4,40 +4,50 @@ This directory contains cross-platform scripts for managing Docker environments 
 
 ## Scripts
 
-### deploy-local.sh / deploy-local.bat
-Deploys the local development environment with all services running in Docker containers with local databases.
+### deploy.sh / deploy.bat
+Deploys the specified environment (local or production).
 
 **Usage:**
 ```bash
 # Unix/Linux/macOS/WSL/Git Bash
-./env/docker/deploy-local.sh
+./env/docker/deploy.sh local
+./env/docker/deploy.sh prod
 
 # Windows Command Prompt
-env\docker\deploy-local.bat
+env\docker\deploy.bat local
+env\docker\deploy.bat prod
 ```
 
-### deploy-prod.sh / deploy-prod.bat
-Deploys the production environment where applications run in Docker containers but connect to external databases on the host machine.
+### stop.sh / stop.bat
+Stops containers for the specified environment without removing them.
 
 **Usage:**
 ```bash
 # Unix/Linux/macOS/WSL/Git Bash
-./env/docker/deploy-prod.sh
+./env/docker/stop.sh local
+./env/docker/stop.sh prod
+./env/docker/stop.sh all
 
 # Windows Command Prompt
-env\docker\deploy-prod.bat
+env\docker\stop.bat local
+env\docker\stop.bat prod
+env\docker\stop.bat all
 ```
 
 ### cleanup.sh / cleanup.bat
-Stops and removes all Art Universe containers, images, and volumes.
+Stops and removes containers, images, and networks for the specified environment.
 
 **Usage:**
 ```bash
 # Unix/Linux/macOS/WSL/Git Bash
-./env/docker/cleanup.sh
+./env/docker/cleanup.sh local
+./env/docker/cleanup.sh prod
+./env/docker/cleanup.sh all
 
 # Windows Command Prompt
-env\docker\cleanup.bat
+env\docker\cleanup.bat local
+env\docker\cleanup.bat prod
+env\docker\cleanup.bat all
 ```
 
 ## Cross-Platform Compatibility
@@ -72,13 +82,10 @@ This separation ensures that music-data and music-quiz services don't have knowl
 
 After successful deployment, the following services will be available:
 
-| Service | Local Port | Description |
-|---------|------------|-------------|
-| LastFM Raw Data | 8081 | Raw data collection from LastFM API |
-| Music Data | 8082 | Curated music data management |
-| Music Quiz | 8083 | Quiz generation service |
-| UI | 3000 | React frontend application |
-| Adminer | 9980 | Database administration tool |
+| Environment | LastFM Raw | Music Data | Music Quiz | UI | Adminer |
+|-------------|------------|------------|------------|----|---------| 
+| **Local**   | :9081      | :9082      | :9083      | :4000 | :9980 |
+| **Production** | :8081   | :8082      | :8083      | :3000 | :8880 |
 
 ## Troubleshooting
 

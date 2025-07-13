@@ -8,14 +8,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 
 import java.util.Collection;
 import java.util.List;
 
 @Repository
-public interface LastfmTagRepository extends JpaRepository<LastfmTag, Long> {
+public interface LastfmTagRepository extends JpaRepository<LastfmTag, Long>, LastfmTagRepositoryCustom {
 
     List<LastfmTag> findAllByNameIn(Collection<String> names);
 
@@ -40,33 +39,6 @@ public interface LastfmTagRepository extends JpaRepository<LastfmTag, Long> {
         @Nullable @Param("search") String search,
         @Param("approvalStatuses") List<ApprovalStatus> approvalStatuses,
         Pageable pageable);
-
-    /**
-     * Find tags associated with a specific entity through entity_relation table.
-     * Tags are ordered alphabetically by name.
-     */
-    @Query(value = """
-        SELECT  t
-        FROM    tag t
-        JOIN    entity_relation er
-            ON      er.entityType   = :tagEntityType
-                AND er.entityId     = t.id
-        WHERE   er.scopeEntityType  = :entityType
-            AND er.scopeEntityId    = :entityId
-        ORDER BY t.name ASC
-        """)
-    List<LastfmTag> findTagsByEntity(
-        @Param("entityType") LastfmEntityType entityType,
-        @Param("entityId") Long entityId,
-        @Param("tagEntityType") LastfmEntityType tagEntityType
-    );
-
-    /**
-     * A wrapper for findTagsByEntity that automatically sets the tag entity type.
-     */
-    default List<LastfmTag> findTagsByEntity(LastfmEntityType entityType, Long entityId) {
-        return findTagsByEntity(entityType, entityId, LastfmEntityType.TAG);
-    }
 
     /**
      * A wrapper for findTags for correct collection parameters resolution.

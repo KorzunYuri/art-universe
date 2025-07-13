@@ -6,7 +6,6 @@ import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.dto.ArtistDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getinfo.dto.*;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingResult;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
@@ -14,21 +13,19 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandlerFactory;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.common.dto.TagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityRelation;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityRelationService;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityRelationType;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.entity.LastfmArtistTag;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.entity.LastfmArtistsRelation;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.service.LastfmArtistTagService;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.service.LastfmArtistsRelationService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.service.LastfmTagService;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Component
@@ -37,31 +34,35 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
 
     private final LastfmArtistService artistService;
     private final LastfmTagService tagService;
-    private final LastfmApiDtoProcessingService dtoProcessingService;
-    private final LastfmEntityRelationService entityRelationService;
+    private final LastfmArtistsRelationService artistsRelationService;
+    private final LastfmArtistTagService artistTagService;
 
     private final EntityFactory<LastfmArtist, ArtistGetInfoArtistDto> artistFactory;
     private final EntityFactory<LastfmArtist, ArtistGetInfoSimilarArtistDto> similarArtistFactory;
     private final EntityFactory<LastfmTag, ArtistGetInfoArtistTagDto> tagFactory;
 
+    private final LastfmApiDtoProcessingService dtoProcessingService;
+
     protected LastfmArtistGetInfoResponseProcessor(
         LastfmArtistService artistService,
         LastfmTagService tagService,
-        LastfmApiDtoProcessingService dtoProcessingService,
-        LastfmEntityRelationService entityRelationService,
+        LastfmArtistsRelationService artistsRelationService,
+        LastfmArtistTagService artistTagService,
         EntityFactory<LastfmArtist, ArtistGetInfoArtistDto> artistFactory,
         EntityFactory<LastfmArtist, ArtistGetInfoSimilarArtistDto> similarArtistFactory,
-        EntityFactory<LastfmTag, ArtistGetInfoArtistTagDto> tagFactory
+        EntityFactory<LastfmTag, ArtistGetInfoArtistTagDto> tagFactory,
+        LastfmApiDtoProcessingService dtoProcessingService
     ) {
         super(ArtistGetInfoDtoRoot.class);
 
         this.artistService = artistService;
+        this.artistsRelationService = artistsRelationService;
         this.tagService = tagService;
-        this.dtoProcessingService = dtoProcessingService;
-        this.entityRelationService = entityRelationService;
+        this.artistTagService = artistTagService;
         this.artistFactory = artistFactory;
         this.similarArtistFactory = similarArtistFactory;
         this.tagFactory = tagFactory;
+        this.dtoProcessingService = dtoProcessingService;
     }
 
     private static final List<EntityAttributeHandler<LastfmArtist, ?, ArtistGetInfoArtistDto>> artistAttrHandlers;
@@ -71,10 +72,6 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
         artistAttrHandlers = List.of(
             factory.createHandler(LastfmAttribute.MBID, false, "mbid"),
             factory.createHandler(LastfmAttribute.URL, false, "url"),
-            factory.createHandler(LastfmAttribute.IS_STREAMABLE, false, "isStreamable",
-                (dto) -> 1 == dto.getStreamable()),
-            factory.createHandler(LastfmAttribute.IS_ON_TOUR, false, "isOnTour",
-                (dto) -> 1 == dto.getOnTour()),
             factory.createHandler(LastfmAttribute.LISTENERS_COUNT, false, "listenersCount",
                 (dto) -> dto.getStats().getListeners()),
             factory.createHandler(LastfmAttribute.PLAY_COUNT, false, "playCount",
@@ -101,109 +98,108 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
     protected void processResponse(LastfmApiResponse sourceApiResponse) throws IOException {
         
         ArtistGetInfoDtoRoot dtoRoot = parseResponse(sourceApiResponse);
+        LastfmApiCall sourceApiCall = sourceApiResponse.getApiCall();
 
-        // update source artists
-        LastfmArtist artist = updateArtist(dtoRoot, sourceApiResponse);
+        // Step 1. Update source artist
+        LastfmArtist artist = updateArtist(dtoRoot, sourceApiCall);
+
+        // Step 2. Create similar artists and relations between artists
+        var artistsBindingResult = updateSimilarArtists(dtoRoot, sourceApiCall);
+
+        // Step 3.
+        bindArtistsToArtist(artistsBindingResult, artist, sourceApiCall);
 
         // update artist's tags
-        Map<String, LastfmTag> tagMap = updateTags(dtoRoot, sourceApiResponse);
+        var tagsBindingResult = updateTags(dtoRoot, sourceApiCall);
 
         // bind artist's tags to artist
-        bindTagsToArtist(artist, tagMap, sourceApiResponse.getApiCall());
+        bindTagsToArtist(tagsBindingResult, artist, sourceApiCall);
     }
 
-    private LastfmArtist updateArtist(ArtistGetInfoDtoRoot dtoRoot, LastfmApiResponse sourceApiResponse) {
+    private LastfmArtist updateArtist(ArtistGetInfoDtoRoot dtoRoot, LastfmApiCall sourceApiCall) {
 
         ArtistGetInfoArtistDto dto = dtoRoot.getArtist();
-        Optional<LastfmArtist> artist = artistService.findByName(dto.getName());
 
-        LastfmApiDtoProcessingResult<LastfmArtist> result = dtoProcessingService.processDtosWithoutRelations(
-            List.of(dto), artist.stream().toList(), sourceApiResponse,
+        LastfmApiDtoProcessingResult<LastfmArtist, ArtistGetInfoArtistDto> result = dtoProcessingService.process(
+            sourceApiCall,
+            List.of(dto),
             artistFactory,
             artistAttrHandlers,
-            artistService::saveArtists
+            artistService
         );
         log.info("saved artist {}", dto.getName());
         log.info("saved {} artists' attributes", result.savedAttributeValues().size());
 
-        if (result.savedEntities().size() == 1) {
-            return result.savedEntities().get(0);
-        } else if (artist.isPresent()) {
-            return artist.get();
-        } else {
-            throw new IllegalArgumentException(String.format("Artist %s neither existed in DB nor was created", dto.getName()));
+        if (result.savedEntities().size() != 1) {
+            throw new IllegalArgumentException(String.format("Expected 1 artists to be saved, got %s", result.savedEntities().size()));
         }
+        return result.savedEntities().get(0);
     }
 
-    private Map<String, LastfmArtist> updateSimilarArtists(ArtistGetInfoDtoRoot dtoRoot, LastfmApiResponse sourceApiResponse) {
+    private LastfmApiDtoProcessingResult<LastfmArtist, ArtistGetInfoSimilarArtistDto> updateSimilarArtists(ArtistGetInfoDtoRoot dtoRoot, LastfmApiCall sourceApiCall) {
 
         List<ArtistGetInfoSimilarArtistDto> artistDtos = dtoRoot.getArtist().getSimilarArtistsObject().getArtists();
-        List<String> artistNames = artistDtos.stream().map(ArtistDto::getName).toList();
-        List<LastfmArtist> existingArtists = artistService.findAllByNames(artistNames);
 
-        LastfmApiDtoProcessingResult<LastfmArtist> result = dtoProcessingService.processDtosWithoutRelations(
-            artistDtos, existingArtists, sourceApiResponse,
+        LastfmApiDtoProcessingResult<LastfmArtist, ArtistGetInfoSimilarArtistDto> result = dtoProcessingService.process(
+            sourceApiCall,
+            artistDtos,
             similarArtistFactory,
             similarArtistAttrHandlers,
-            artistService::saveArtists
+            artistService
         );
         log.info("saved {} artist's similar artists", result.savedEntities().size());
         log.info("saved {} artist's similar artists' attributes", result.savedAttributeValues().size());
 
-        //  merge existing and new artists to eliminate the second call to database for artists
-        Map<String, LastfmArtist> artistMap = existingArtists.stream()
-            .collect(Collectors.toMap(LastfmArtist::getUniqueKey, Function.identity()));
-        result.savedEntities().forEach(a -> artistMap.putIfAbsent(a.getUniqueKey(), a));
-
-        return artistMap;
+        return result;
     }
 
-    private Map<String, LastfmTag> updateTags(ArtistGetInfoDtoRoot dtoRoot, LastfmApiResponse sourceApiResponse) {
+    private LastfmApiDtoProcessingResult<LastfmTag, ArtistGetInfoArtistTagDto> updateTags(ArtistGetInfoDtoRoot dtoRoot, LastfmApiCall sourceApiCall) {
 
         List<ArtistGetInfoArtistTagDto> dtos = dtoRoot.getArtist().getTagsObject().getTags();
-        List<String> tagNames = dtos.stream().map(TagDto::getName).toList();
-        List<LastfmTag> existingTags = tagService.findAllByNameIn(tagNames);
 
-        LastfmApiDtoProcessingResult<LastfmTag> result = dtoProcessingService.processDtosWithoutRelations(
-            dtos, existingTags, sourceApiResponse,
-            tagFactory, tagAttrHandlers, tagService::saveTags
+        LastfmApiDtoProcessingResult<LastfmTag, ArtistGetInfoArtistTagDto> result = dtoProcessingService.process(
+            sourceApiCall,
+            dtos,
+            tagFactory,
+            tagAttrHandlers,
+            tagService
         );
         log.info("saved {} tags", result.savedEntities().size());
         log.info("saved {} tags' attributes", result.savedAttributeValues().size());
 
-        //  merge existing and new artists to eliminate the second call to database for artists
-        Map<String, LastfmTag> tagsMap = existingTags.stream()
-            .collect(Collectors.toMap(LastfmTag::getUniqueKey, Function.identity()));
-        result.savedEntities().forEach(a -> tagsMap.putIfAbsent(a.getUniqueKey(), a));
-
-        return tagsMap;
+        return result;
     }
 
-    private void bindArtistsToArtist(LastfmArtist artist, Map<String, LastfmArtist> artistMap, LastfmApiCall sourceApiCall) {
-        List<LastfmEntityRelation> relations = artistMap.values().stream()
-            .map((similarArtist) -> LastfmEntityRelation.builder()
+    private void bindArtistsToArtist(
+        LastfmApiDtoProcessingResult<LastfmArtist, ArtistGetInfoSimilarArtistDto> artistsMappingResult,
+        LastfmArtist artist,
+        LastfmApiCall sourceApiCall
+    ) {
+        List<LastfmArtistsRelation> relations = artistsMappingResult.savedEntities().stream()
+            .map((similarArtist) -> LastfmArtistsRelation.builder()
                     .apiCall(sourceApiCall)
-                    .scopeEntityType(LastfmEntityType.ARTIST)
-                    .scopeEntityId(artist.getId())
-                    .entityType(LastfmEntityType.ARTIST)
-                    .entityId(similarArtist.getId())
+                    .sourceArtist(similarArtist)
+                    .targetArtist(artist)
+                    .relationType(LastfmEntityRelationType.SIMILARITY)
                 .build())
             .collect(Collectors.toList());
-        entityRelationService.upsertEntityRelations(relations);
+        artistsRelationService.upsertAll(relations);
         log.info("saved {} artist-artist relations", relations.size());
     }
 
-    private void bindTagsToArtist(LastfmArtist artist, Map<String, LastfmTag> tagMap, LastfmApiCall sourceApiCall) {
-        List<LastfmEntityRelation> relations = tagMap.values().stream()
-            .map((tag) -> LastfmEntityRelation.builder()
-                    .apiCall(sourceApiCall)
-                    .scopeEntityType(LastfmEntityType.TAG)
-                    .scopeEntityId(tag.getId())
-                    .entityType(LastfmEntityType.ARTIST)
-                    .entityId(artist.getId())
+    private void bindTagsToArtist(
+        LastfmApiDtoProcessingResult<LastfmTag, ArtistGetInfoArtistTagDto> tagsMappingResult,
+        LastfmArtist artist,
+        LastfmApiCall sourceApiCall
+    ) {
+        List<LastfmArtistTag> relations = tagsMappingResult.savedEntities().stream()
+            .map((tag) -> LastfmArtistTag.builder()
+                .apiCall(sourceApiCall)
+                .artist(artist)
+                .tag(tag)
                 .build())
             .collect(Collectors.toList());
-        entityRelationService.upsertEntityRelations(relations);
+        artistTagService.upsertAll(relations);
         log.info("saved {} tag-artist relations", relations.size());
     }
 
