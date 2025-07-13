@@ -8,9 +8,10 @@ import {
 // types
 import type { LastfmArtist } from '@/music-universe/sources/lastfm/types'
 import type { Page } from '@/music-universe/shared/types/page'
+import type { LookupEntity } from '@/music-universe/shared/components/AutocompleteInput'
 // api
 import { fetchArtists, type ArtistSearchParams } from '@/music-universe/sources/lastfm/api/lastfm-artists'
-import { fetchBoundArtists } from '@/music-universe/music-data/api/music-data-artists'
+import { fetchBoundArtists, batchLookupArtists } from '@/music-universe/music-data/api/music-data-artists'
 // styles
 import commonStyles from '@/music-universe/shared/styles/common.module.scss'
 import styles from './LastfmArtistsTable.module.css'
@@ -29,6 +30,9 @@ export const LastfmArtistsTable = () => {
     const [page, setPage] = useState(0)
     const [sort, setSort] = useState('name,asc')
     const pageSize = 20
+    
+    // Preloaded lookup data for artists
+    const [preloadedLookupData, setPreloadedLookupData] = useState<{[name: string]: LookupEntity[]}>({})
 
     // Load artists with current search parameters and their bound entities
     const loadArtists = async () => {
@@ -49,7 +53,7 @@ export const LastfmArtistsTable = () => {
             
             // Load bound artists immediately in the same function to avoid useEffect cycles
             if (result && result.content.length > 0) {
-                console.log('🔄 Loading bound artists immediately after artists load')
+                console.log('🔄 Loading bound artists and preloading lookup data...')
                 setLoadingBoundArtists(true)
                 try {
                     // Extract all artist IDs
@@ -59,6 +63,21 @@ export const LastfmArtistsTable = () => {
                     // Fetch bound artists from music-data API
                     const boundArtists = await fetchBoundArtists(artistIds)
                     console.log(`✅ Bound artists loaded: ${boundArtists.length} items`)
+                    
+                    // Collect artist names for batch lookup
+                    const artistNames = result.content.map(artist => artist.name)
+                    
+                    // Perform batch lookup for all artists
+                    console.log(`🔍 Performing batch lookup for ${artistNames.length} artists`)
+                    const lookupResponse = await batchLookupArtists(artistNames)
+                    
+                    if (lookupResponse.success) {
+                        console.log(`✅ Batch lookup successful with ${Object.keys(lookupResponse.data.results).length} results`)
+                        setPreloadedLookupData(lookupResponse.data.results)
+                    } else {
+                        console.error('❌ Batch lookup failed:', lookupResponse.message)
+                        setPreloadedLookupData({})
+                    }
 
                     // Update the artists with bound information
                     const updatedContent = result.content.map(artist => {
@@ -246,6 +265,7 @@ export const LastfmArtistsTable = () => {
                                 key={artist.id}
                                 artist={artist}
                                 onChange={onArtistChanged}
+                                preloadedLookupData={preloadedLookupData[artist.name] || []}
                             />
                         ))}
                     </div>

@@ -19,6 +19,7 @@ export interface AutocompleteInputProps {
     placeholder?: string;
     disabled?: boolean;
     className?: string;
+    preloadedOptions?: LookupEntity[]; // Preloaded options for dropdown
 }
 
 export const AutocompleteInput = ({
@@ -28,18 +29,28 @@ export const AutocompleteInput = ({
     lookupFunction,
     placeholder = "Search...",
     disabled = false,
-    className = ''
+    className = '',
+    preloadedOptions = []
 }: AutocompleteInputProps) => {
     const [suggestions, setSuggestions] = useState<LookupEntity[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [loading, setLoading] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(-1);
-    const [hasBeenFocused, setHasBeenFocused] = useState(false);
+    const [initialSearchDone, setInitialSearchDone] = useState(false);
+    const [lastSearchValue, setLastSearchValue] = useState('');
     
     const inputRef = useRef<HTMLInputElement>(null);
     const suggestionsRef = useRef<HTMLDivElement>(null);
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
     const skipNextLookupRef = useRef(false);
+    const hasPreloadedOptionsRef = useRef(false);
+
+    // Set flag if preloadedOptions is provided (even if empty)
+    useEffect(() => {
+        if (preloadedOptions !== undefined) {
+            hasPreloadedOptionsRef.current = true;
+        }
+    }, [preloadedOptions]);
 
     // Add/remove class to parent row when dropdown is active
     useEffect(() => {
@@ -47,7 +58,7 @@ export const AutocompleteInput = ({
         if (!inputElement) return;
 
         // Find the parent row element
-        let parentRow = inputElement.closest('.row') as HTMLElement;
+        const parentRow = inputElement.closest('.row') as HTMLElement;
         if (!parentRow) return;
 
         if (showSuggestions && suggestions.length > 0) {
@@ -64,15 +75,80 @@ export const AutocompleteInput = ({
         };
     }, [showSuggestions, suggestions.length]);
 
+    // Initial search on component mount if value is provided
+    useEffect(() => {
+        if (initialSearchDone || !value || value.trim().length < 2) return;
+
+        const performInitialSearch = async () => {
+            console.log('🔍 Performing initial search for:', value.trim());
+            setLoading(true);
+            try {
+                // If we have preloadedOptions (even if empty array), use them
+                if (hasPreloadedOptionsRef.current) {
+                    const filteredOptions = preloadedOptions.filter(option => 
+                        option.name.toLowerCase().includes(value.trim().toLowerCase())
+                    );
+                    
+                    if (filteredOptions.length > 0) {
+                        console.log('✅ Found matches in preloaded options');
+                        setSuggestions(filteredOptions);
+                        
+                        // Check for exact match
+                        const exactMatch = filteredOptions.find(
+                            entity => entity.name.toLowerCase() === value.trim().toLowerCase()
+                        );
+                        
+                        if (exactMatch) {
+                            console.log('✅ Found exact match in preloaded options:', exactMatch.name);
+                            // Set flag to skip next search since this is a programmatic change
+                            skipNextLookupRef.current = true;
+                            // Select the exact match
+                            onSelect(exactMatch);
+                        }
+                    } else {
+                        console.log('⏭️ No matches in preloaded options, but skipping API call');
+                        setSuggestions([]);
+                    }
+                    
+                    // Mark as done even if no matches were found
+                    setInitialSearchDone(true);
+                    setLoading(false);
+                    return;
+                }
+                
+                // Fall back to API lookup only if preloadedOptions is undefined
+                const response = await lookupFunction(value.trim(), 10);
+                if (response.success && response.data) {
+                    setSuggestions(response.data);
+                    
+                    // Check for exact match
+                    const exactMatch = response.data.find(
+                        entity => entity.name.toLowerCase() === value.trim().toLowerCase()
+                    );
+                    
+                    if (exactMatch) {
+                        console.log('✅ Found exact match on initial search:', exactMatch.name);
+                        // Set flag to skip next search since this is a programmatic change
+                        skipNextLookupRef.current = true;
+                        // Select the exact match
+                        onSelect(exactMatch);
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Initial search error:', error);
+            } finally {
+                setLoading(false);
+                setInitialSearchDone(true);
+            }
+        };
+
+        performInitialSearch();
+    }, [value, lookupFunction, onSelect, initialSearchDone, preloadedOptions]);
+
     // Debounced search
     useEffect(() => {
         if (timeoutRef.current) {
             clearTimeout(timeoutRef.current);
-        }
-
-        // Don't search until user has focused the input at least once
-        if (!hasBeenFocused) {
-            return;
         }
 
         // Skip search if this is a programmatic change (after selection)
@@ -88,8 +164,35 @@ export const AutocompleteInput = ({
             return;
         }
 
-        console.log('🔍 Starting search for:', value.trim());
+        // Skip if value hasn't changed since last search
+        if (value.trim() === lastSearchValue) {
+            return;
+        }
+
         timeoutRef.current = setTimeout(async () => {
+            setLastSearchValue(value.trim());
+            
+            // If we have preloadedOptions (even if empty array), use them
+            if (hasPreloadedOptionsRef.current) {
+                const filteredOptions = preloadedOptions.filter(option => 
+                    option.name.toLowerCase().includes(value.trim().toLowerCase())
+                );
+                
+                if (filteredOptions.length > 0) {
+                    console.log('✅ Found matches in preloaded options');
+                    setSuggestions(filteredOptions);
+                    setShowSuggestions(filteredOptions.length > 0);
+                    setSelectedIndex(-1);
+                    return;
+                } else {
+                    console.log('⏭️ No matches in preloaded options, but skipping API call');
+                    setSuggestions([]);
+                    setShowSuggestions(false);
+                    return;
+                }
+            }
+            
+            // Fall back to API lookup only if preloadedOptions is undefined
             setLoading(true);
             try {
                 const response = await lookupFunction(value.trim(), 10);
@@ -115,7 +218,7 @@ export const AutocompleteInput = ({
                 clearTimeout(timeoutRef.current);
             }
         };
-    }, [value, lookupFunction, hasBeenFocused]);
+    }, [value, lookupFunction, initialSearchDone, preloadedOptions, lastSearchValue]);
 
     // Handle input change
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -204,7 +307,6 @@ export const AutocompleteInput = ({
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
                 onFocus={() => {
-                    setHasBeenFocused(true);
                     if (suggestions.length > 0) {
                         setShowSuggestions(true);
                     }

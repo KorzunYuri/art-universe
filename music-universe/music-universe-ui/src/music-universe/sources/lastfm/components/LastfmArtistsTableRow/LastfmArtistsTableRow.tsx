@@ -10,13 +10,16 @@ import { bindArtistToExisting, createAndBindArtist, unbindArtist, lookupArtists 
 import { updateArtistApprovalStatus } from "@/music-universe/sources/lastfm/api/lastfm-artists.ts";
 // constants
 import { ApprovalStatus } from "@/music-universe/sources/lastfm/constants/approvalStatus";
+// types
+import type { LookupEntity } from "@/music-universe/shared/components/AutocompleteInput";
 // styles
 import sharedTableStyles from "@/music-universe/shared/components/EntityTable/EntityTableStyles.module.scss";
 import artistTableStyles from "../LastfmArtistsTable/LastfmArtistsTable.module.css";
 
 interface LastfmArtistTableRowProps {
     artist: LastfmArtist,
-    onChange: (artist: LastfmArtist) => void
+    onChange: (artist: LastfmArtist) => void,
+    preloadedLookupData?: LookupEntity[]
 }
 
 export const LastfmArtistsTableRow = ({artist, onChange}: LastfmArtistTableRowProps) => {
@@ -108,18 +111,19 @@ export const LastfmArtistsTableRow = ({artist, onChange}: LastfmArtistTableRowPr
                 />
             </div>
 
-            <div className={`${sharedTableStyles.cell}  ${artistTableStyles.binding}`}>
-                <EntityBinding
-                    entity={artist}
-                    onBindToExisting={handleBindToExisting}
-                    onCreateAndBind={handleCreateAndBind}
-                    onUnbind={unbindArtist}
-                    onBeforeBind={handleBeforeBind}
-                    onAfterBind={handleAfterBind}
-                    lookupFunction={lookupArtists}
-                    disabled={isApproving}
-                />
-            </div>
+                <div className={`${sharedTableStyles.cell}  ${artistTableStyles.binding}`} onClick={(e) => e.stopPropagation()}>
+                    <EntityBinding
+                        entity={artist}
+                        onBindToExisting={handleBindToExisting}
+                        onCreateAndBind={handleCreateAndBind}
+                        onUnbind={unbindArtist}
+                        onBeforeBind={handleBeforeBind}
+                        onAfterBind={handleAfterBind}
+                        lookupFunction={lookupArtists}
+                        preloadedOptions={preloadedLookupData}
+                        disabled={isApproving}
+                    />
+                </div>
 
             <div className={`${sharedTableStyles.cell}  ${artistTableStyles.count}`}>
                 <ReadonlyAttr value={artist.playCount}/>
