@@ -4,12 +4,12 @@ import jakarta.persistence.Converter;
 import yurykorzun.art.universe.common.CodedConverter;
 
 /**
- * JPA converter for DataSource enum
+ * JPA converter for EntityType enum
  */
 @Converter(autoApply = true)
-public class DataSourceConverter extends CodedConverter<DataSource> {
+public class EntityTypeConverter extends CodedConverter<EntityType> {
 
-    public DataSourceConverter() {
-        super(DataSource.class);
+    public EntityTypeConverter() {
+        super(EntityType.class);
     }
 }

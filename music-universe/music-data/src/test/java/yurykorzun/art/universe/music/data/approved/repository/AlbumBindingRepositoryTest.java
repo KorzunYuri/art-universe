@@ -7,7 +7,6 @@ import yurykorzun.art.universe.music.data.approved.common.archetypes.JpaOnlyTest
 import yurykorzun.art.universe.music.data.approved.dto.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.approved.entity.*;
 
-import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 

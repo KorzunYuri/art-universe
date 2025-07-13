@@ -1,0 +1,698 @@
+package yurykorzun.art.universe.music.data.approved.service;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.criteria.*;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import yurykorzun.art.universe.music.data.approved.dto.EntityDTO;
+import yurykorzun.art.universe.music.data.approved.dto.RelationBindingDTO;
+import yurykorzun.art.universe.music.data.approved.dto.RelationPair;
+import yurykorzun.art.universe.music.data.approved.entity.DataSource;
+import yurykorzun.art.universe.music.data.approved.entity.EntityType;
+import yurykorzun.art.universe.music.data.approved.relation.RelationBindingEntity;
+import yurykorzun.art.universe.music.data.approved.relation.RelationEntity;
+import yurykorzun.art.universe.music.data.approved.relation.RelationRegistry;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Implementation of the service for working with entity relations
+ */
+@Service
+public class RelationServiceImpl implements RelationService {
+
+    private final EntityManager entityManager;
+    private final RelationRegistry relationRegistry;
+
+    public RelationServiceImpl(EntityManager entityManager, RelationRegistry relationRegistry) {
+        this.entityManager = entityManager;
+        this.relationRegistry = relationRegistry;
+    }
+
+    @Override
+    @Transactional
+    public RelationBindingDTO bindRelation(
+        DataSource dataSource, 
+        EntityType sourceEntityType, 
+        Long sourceExternalEntityId, 
+        EntityType targetEntityType, 
+        Long targetExternalEntityId
+    ) {
+        // Check that external entities are bound
+        Long sourceInternalId = findInternalEntityId(dataSource, sourceEntityType, sourceExternalEntityId);
+        Long targetInternalId = findInternalEntityId(dataSource, targetEntityType, targetExternalEntityId);
+        
+        if (sourceInternalId == null) {
+            throw new EntityNotFoundException(
+                String.format("External %s with ID %d is not bound", sourceEntityType.getName(), sourceExternalEntityId));
+        }
+        
+        if (targetInternalId == null) {
+            throw new EntityNotFoundException(
+                String.format("External %s with ID %d is not bound", targetEntityType.getName(), targetExternalEntityId));
+        }
+        
+        // Determine the order of entities in the relation
+        boolean isSourceFirst = relationRegistry.isFirstEntityInRelation(sourceEntityType, targetEntityType);
+        EntityType firstEntityType = isSourceFirst ? sourceEntityType : targetEntityType;
+        EntityType secondEntityType = isSourceFirst ? targetEntityType : sourceEntityType;
+        Long firstEntityId = isSourceFirst ? sourceInternalId : targetInternalId;
+        Long secondEntityId = isSourceFirst ? targetInternalId : sourceInternalId;
+        
+        // Get the relation entity class
+        Class<? extends RelationEntity> relationEntityClass = 
+            relationRegistry.getRelationEntityClass(firstEntityType, secondEntityType);
+        
+        // Find existing relation or create a new one
+        Long relationId = findOrCreateRelation(relationEntityClass, firstEntityType, firstEntityId, secondEntityType, secondEntityId);
+        
+        // Get the relation binding entity class
+        Class<? extends RelationBindingEntity> bindingEntityClass = 
+            relationRegistry.getRelationBindingEntityClass(firstEntityType, secondEntityType);
+        
+        // Check if binding exists
+        Optional<? extends RelationBindingEntity> existingBinding = findExistingBinding(
+            bindingEntityClass, dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId);
+        
+        RelationBindingEntity binding;
+        if (existingBinding.isPresent()) {
+            // Update binding if it already exists
+            binding = existingBinding.get();
+            binding.setReferenceId(relationId);
+            entityManager.merge(binding);
+        } else {
+            // Create a new binding
+            binding = createBinding(
+                bindingEntityClass, dataSource, relationId, 
+                sourceEntityType, sourceExternalEntityId, 
+                targetEntityType, targetExternalEntityId);
+        }
+        
+        // Get entity names
+        String sourceEntityName = getEntityName(sourceEntityType, sourceInternalId);
+        String targetEntityName = getEntityName(targetEntityType, targetInternalId);
+        
+        // Create DTO
+        return RelationBindingDTO.builder()
+            .sourceExternalId(sourceExternalEntityId)
+            .targetExternalId(targetExternalEntityId)
+            .dataSource(dataSource)
+            .relationId(relationId)
+            .sourceEntityName(sourceEntityName)
+            .targetEntityName(targetEntityName)
+            .sourceEntityType(sourceEntityType)
+            .targetEntityType(targetEntityType)
+            .build();
+    }
+
+    @Override
+    @Transactional
+    public boolean unbindRelation(
+        DataSource dataSource, 
+        EntityType sourceEntityType, 
+        Long sourceExternalEntityId, 
+        EntityType targetEntityType, 
+        Long targetExternalEntityId
+    ) {
+        // Determine the order of entities in the relation
+        boolean isSourceFirst = relationRegistry.isFirstEntityInRelation(sourceEntityType, targetEntityType);
+        EntityType firstEntityType = isSourceFirst ? sourceEntityType : targetEntityType;
+        EntityType secondEntityType = isSourceFirst ? targetEntityType : sourceEntityType;
+        
+        // Get the relation binding entity class
+        Class<? extends RelationBindingEntity> bindingEntityClass = 
+            relationRegistry.getRelationBindingEntityClass(firstEntityType, secondEntityType);
+        
+        // Find existing binding
+        Optional<? extends RelationBindingEntity> existingBinding = findExistingBinding(
+            bindingEntityClass, dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId);
+        
+        if (existingBinding.isPresent()) {
+            // Remove binding
+            entityManager.remove(existingBinding.get());
+            return true;
+        }
+        
+        return false;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<RelationBindingDTO> findBoundRelations(
+        DataSource dataSource, 
+        EntityType sourceEntityType, 
+        EntityType targetEntityType, 
+        List<RelationPair> pairs
+    ) {
+        if (pairs.isEmpty()) {
+            return List.of();
+        }
+        
+        // Determine the order of entities in the relation
+        boolean isSourceFirst = relationRegistry.isFirstEntityInRelation(sourceEntityType, targetEntityType);
+        EntityType firstEntityType = isSourceFirst ? sourceEntityType : targetEntityType;
+        EntityType secondEntityType = isSourceFirst ? targetEntityType : sourceEntityType;
+        
+        // Get the relation binding entity class
+        Class<? extends RelationBindingEntity> bindingEntityClass = 
+            relationRegistry.getRelationBindingEntityClass(firstEntityType, secondEntityType);
+        
+        // Формируем имена таблицы и полей
+        String tableName = firstEntityType.getName() + "_" + secondEntityType.getName() + "_binding";
+        String firstEntityField = "external_" + firstEntityType.getName() + "_id";
+        String secondEntityField = "external_" + secondEntityType.getName() + "_id";
+        
+        // Создаем условия для пар ID
+        StringBuilder conditions = new StringBuilder();
+        for (int i = 0; i < pairs.size(); i++) {
+            RelationPair pair = pairs.get(i);
+            Long sourceId = pair.getSourceId();
+            Long targetId = pair.getTargetId();
+            
+            if (i > 0) {
+                conditions.append(" OR ");
+            }
+            
+            if (isSourceFirst) {
+                conditions.append("(").append(firstEntityField).append(" = ").append(sourceId)
+                    .append(" AND ").append(secondEntityField).append(" = ").append(targetId).append(")");
+            } else {
+                conditions.append("(").append(firstEntityField).append(" = ").append(targetId)
+                    .append(" AND ").append(secondEntityField).append(" = ").append(sourceId).append(")");
+            }
+        }
+        
+        // Формируем SQL-запрос
+        String sql = """
+            SELECT 
+                b.id, 
+                b.reference_id, 
+                b.data_source_id, 
+                b.%s, 
+                b.%s, 
+                r.%s_id, 
+                r.%s_id 
+            FROM 
+                %s b 
+            JOIN 
+                %s r ON b.reference_id = r.id 
+            WHERE 
+                b.data_source_id = ? 
+                AND (%s)
+            """.formatted(
+                firstEntityField, 
+                secondEntityField, 
+                firstEntityType.getName(), 
+                secondEntityType.getName(), 
+                tableName, 
+                firstEntityType.getName() + "_" + secondEntityType.getName(), 
+                conditions
+            );
+        
+        // Выполняем запрос
+        List<Object[]> results = entityManager.createNativeQuery(sql)
+            .setParameter(1, dataSource.getCode())
+            .getResultList();
+        
+        // Преобразуем результаты в DTO
+        List<RelationBindingDTO> dtos = new ArrayList<>();
+        for (Object[] row : results) {
+            Long bindingId = ((Number) row[0]).longValue();
+            Long relationId = ((Number) row[1]).longValue();
+            Long externalFirstId = ((Number) row[3]).longValue();
+            Long externalSecondId = ((Number) row[4]).longValue();
+            Long internalFirstId = ((Number) row[5]).longValue();
+            Long internalSecondId = ((Number) row[6]).longValue();
+            
+            Long sourceExternalId;
+            Long targetExternalId;
+            
+            if (isSourceFirst) {
+                sourceExternalId = externalFirstId;
+                targetExternalId = externalSecondId;
+            } else {
+                sourceExternalId = externalSecondId;
+                targetExternalId = externalFirstId;
+            }
+            
+            // Получаем имена сущностей
+            String sourceEntityName = getEntityName(sourceEntityType, isSourceFirst ? internalFirstId : internalSecondId);
+            String targetEntityName = getEntityName(targetEntityType, isSourceFirst ? internalSecondId : internalFirstId);
+            
+            dtos.add(RelationBindingDTO.builder()
+                .sourceExternalId(sourceExternalId)
+                .targetExternalId(targetExternalId)
+                .dataSource(dataSource)
+                .relationId(relationId)
+                .sourceEntityName(sourceEntityName)
+                .targetEntityName(targetEntityName)
+                .sourceEntityType(sourceEntityType)
+                .targetEntityType(targetEntityType)
+                .build());
+        }
+        
+        return dtos;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<EntityDTO> getRelatedEntities(
+        EntityType sourceEntityType, 
+        Long sourceEntityId, 
+        EntityType targetEntityType
+    ) {
+        // Determine the order of entities in the relation
+        boolean isSourceFirst = relationRegistry.isFirstEntityInRelation(sourceEntityType, targetEntityType);
+        EntityType firstEntityType = isSourceFirst ? sourceEntityType : targetEntityType;
+        EntityType secondEntityType = isSourceFirst ? targetEntityType : sourceEntityType;
+        
+        // Get relation table name
+        String relationTableName = relationRegistry.getRelationTableName(firstEntityType, secondEntityType);
+        
+        // Form field names based on entity order
+        String sourceIdField = isSourceFirst ? firstEntityType.getName() + "_id" : secondEntityType.getName() + "_id";
+        String targetIdField = isSourceFirst ? secondEntityType.getName() + "_id" : firstEntityType.getName() + "_id";
+        
+        // Form SQL query
+        String sql = """
+            SELECT t.id, t.name 
+            FROM %s r 
+            JOIN %s t ON r.%s = t.id 
+            WHERE r.%s = :sourceId
+            """.formatted(
+                relationTableName,
+                targetEntityType.getName(),
+                targetIdField,
+                sourceIdField
+            );
+        
+        // Execute query
+        List<Object[]> results;
+        try {
+            results = entityManager.createNativeQuery(sql)
+                .setParameter("sourceId", sourceEntityId)
+                .getResultList();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get related entities", e);
+        }
+        
+        // Convert results to DTOs
+        List<EntityDTO> entities = new ArrayList<>();
+        for (Object[] row : results) {
+            entities.add(EntityDTO.builder()
+                .id(((Number) row[0]).longValue())
+                .name((String) row[1])
+                .entityType(targetEntityType)
+                .build());
+        }
+        
+        return entities;
+    }
+    
+    @Override
+    @Transactional
+    public Long createRelation(
+        EntityType sourceEntityType,
+        Long sourceEntityId,
+        EntityType targetEntityType,
+        Long targetEntityId
+    ) {
+        // Validate that entities exist
+        validateEntityExists(sourceEntityType, sourceEntityId);
+        validateEntityExists(targetEntityType, targetEntityId);
+        
+        // Determine the order of entities in the relation
+        boolean isSourceFirst = relationRegistry.isFirstEntityInRelation(sourceEntityType, targetEntityType);
+        EntityType firstEntityType = isSourceFirst ? sourceEntityType : targetEntityType;
+        EntityType secondEntityType = isSourceFirst ? targetEntityType : sourceEntityType;
+        Long firstEntityId = isSourceFirst ? sourceEntityId : targetEntityId;
+        Long secondEntityId = isSourceFirst ? targetEntityId : sourceEntityId;
+        
+        // Get the relation entity class
+        Class<? extends RelationEntity> relationEntityClass = 
+            relationRegistry.getRelationEntityClass(firstEntityType, secondEntityType);
+        
+        // Create or find the relation
+        return findOrCreateRelation(relationEntityClass, firstEntityType, firstEntityId, secondEntityType, secondEntityId);
+    }
+    
+    @Override
+    @Transactional
+    public boolean deleteRelation(
+        EntityType sourceEntityType,
+        Long sourceEntityId,
+        EntityType targetEntityType,
+        Long targetEntityId
+    ) {
+        // Determine the order of entities in the relation
+        boolean isSourceFirst = relationRegistry.isFirstEntityInRelation(sourceEntityType, targetEntityType);
+        EntityType firstEntityType = isSourceFirst ? sourceEntityType : targetEntityType;
+        EntityType secondEntityType = isSourceFirst ? targetEntityType : sourceEntityType;
+        Long firstEntityId = isSourceFirst ? sourceEntityId : targetEntityId;
+        Long secondEntityId = isSourceFirst ? targetEntityId : sourceEntityId;
+        
+        // Get relation table name
+        String tableName = firstEntityType.getName() + "_" + secondEntityType.getName();
+        
+        // Form SQL query to find the relation
+        String findSql = """
+            SELECT id 
+            FROM %s 
+            WHERE %s_id = ?1 
+                AND %s_id = ?2
+            """.formatted(tableName, firstEntityType.getName(), secondEntityType.getName());
+        
+        try {
+            // Find the relation
+            Number relationId = (Number) entityManager.createNativeQuery(findSql)
+                .setParameter(1, firstEntityId)
+                .setParameter(2, secondEntityId)
+                .getSingleResult();
+            
+            // Delete the relation
+            return deleteRelationById(relationId.longValue());
+        } catch (NoResultException e) {
+            // Relation not found
+            return false;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to delete relation", e);
+        }
+    }
+    
+    @Override
+    @Transactional
+    public boolean deleteRelationById(Long relationId) {
+        if (relationId == null) {
+            return false;
+        }
+        
+        try {
+            // Find all relation entity classes
+            for (Class<? extends RelationEntity> relationEntityClass : relationRegistry.getAllRelationEntityClasses()) {
+                try {
+                    // Try to find and delete the relation
+                    RelationEntity relation = entityManager.find(relationEntityClass, relationId);
+                    if (relation != null) {
+                        entityManager.remove(relation);
+                        return true;
+                    }
+                } catch (Exception ignored) {
+                    // Continue to the next relation entity class
+                }
+            }
+            
+            return false;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to delete relation by ID", e);
+        }
+    }
+    
+    // Helper methods
+    
+    /**
+     * Finds internal entity ID by external ID and entity type
+     * 
+     * @param dataSource Data source
+     * @param entityType Entity type
+     * @param externalId External ID
+     * @return Internal ID or null if entity is not found
+     */
+    private Long findInternalEntityId(DataSource dataSource, EntityType entityType, Long externalId) {
+        String tableName = entityType.getName() + "_binding";
+        String query = """
+            SELECT reference_id 
+            FROM %s 
+            WHERE data_source_id = ?1 
+                AND external_id = ?2
+            """.formatted(tableName);
+        
+        try {
+            return ((Number) entityManager.createNativeQuery(query)
+                .setParameter(1, dataSource.getCode())
+                .setParameter(2, externalId)
+                .getSingleResult()).longValue();
+        } catch (NoResultException e) {
+            return null;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to find internal entity ID", e);
+        }
+    }
+    
+    /**
+     * Finds or creates a relation between entities using direct SQL
+     * 
+     * @param relationEntityClass Relation entity class
+     * @param firstEntityType First entity type
+     * @param firstEntityId First entity ID
+     * @param secondEntityType Second entity type
+     * @param secondEntityId Second entity ID
+     * @return Relation ID
+     */
+    private Long findOrCreateRelation(
+        Class<? extends RelationEntity> relationEntityClass,
+        EntityType firstEntityType,
+        Long firstEntityId,
+        EntityType secondEntityType,
+        Long secondEntityId
+    ) {
+        // Find existing relation
+        String tableName = firstEntityType.getName() + "_" + secondEntityType.getName();
+        String query = """
+            SELECT 
+                id 
+            FROM 
+                %s 
+            WHERE 
+                %s_id = ?1 
+                AND %s_id = ?2
+            """.formatted(tableName, firstEntityType.getName(), secondEntityType.getName());
+        
+        try {
+            Number id = (Number) entityManager.createNativeQuery(query)
+                .setParameter(1, firstEntityId)
+                .setParameter(2, secondEntityId)
+                .getSingleResult();
+            return id.longValue();
+        } catch (NoResultException e) {
+            // Relation not found, create a new one
+            try {
+                // Create SQL for insertion with sequence for id
+                String insertSql = """
+                    INSERT INTO %s (
+                        id, 
+                        %s_id, 
+                        %s_id, 
+                        created_at, 
+                        updated_at
+                    ) 
+                    VALUES (
+                        nextval('%s_seq'), 
+                        ?1, 
+                        ?2, 
+                        now(), 
+                        now()
+                    ) 
+                    RETURNING id
+                    """.formatted(tableName, firstEntityType.getName(), secondEntityType.getName(), tableName);
+                
+                // Execute insert and get generated ID
+                Number id = (Number) entityManager.createNativeQuery(insertSql)
+                    .setParameter(1, firstEntityId)
+                    .setParameter(2, secondEntityId)
+                    .getSingleResult();
+                
+                return id.longValue();
+            } catch (Exception ex) {
+                throw new RuntimeException("Failed to create relation", ex);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to find relation", e);
+        }
+    }
+    
+    /**
+     * Finds existing relation binding
+     * 
+     * @param bindingEntityClass Relation binding entity class
+     * @param dataSource Data source
+     * @param sourceEntityType Source entity type
+     * @param sourceExternalEntityId External source entity ID
+     * @param targetEntityType Target entity type
+     * @param targetExternalEntityId External target entity ID
+     * @return Optional containing the found binding
+     */
+    private Optional<? extends RelationBindingEntity> findExistingBinding(
+        Class<? extends RelationBindingEntity> bindingEntityClass,
+        DataSource dataSource,
+        EntityType sourceEntityType,
+        Long sourceExternalEntityId,
+        EntityType targetEntityType,
+        Long targetExternalEntityId
+    ) {
+        boolean isSourceFirst = relationRegistry.isFirstEntityInRelation(sourceEntityType, targetEntityType);
+        
+        // Определяем имена таблицы и полей на основе типов сущностей
+        String tableName = isSourceFirst 
+            ? sourceEntityType.getName() + "_" + targetEntityType.getName() + "_binding"
+            : targetEntityType.getName() + "_" + sourceEntityType.getName() + "_binding";
+        
+        String firstEntityField = isSourceFirst 
+            ? "external_" + sourceEntityType.getName() + "_id"
+            : "external_" + targetEntityType.getName() + "_id";
+        
+        String secondEntityField = isSourceFirst 
+            ? "external_" + targetEntityType.getName() + "_id"
+            : "external_" + sourceEntityType.getName() + "_id";
+        
+        // Формируем SQL-запрос
+        String sql = """
+            SELECT id 
+            FROM %s 
+            WHERE data_source_id = ?1
+                AND %s = ?2
+                AND %s = ?3
+            """.formatted(tableName, firstEntityField, secondEntityField);
+        
+        try {
+            // Выполняем запрос
+            Long id = ((Number) entityManager.createNativeQuery(sql)
+                .setParameter(1, dataSource.getCode())
+                .setParameter(2, isSourceFirst ? sourceExternalEntityId : targetExternalEntityId)
+                .setParameter(3, isSourceFirst ? targetExternalEntityId : sourceExternalEntityId)
+                .getSingleResult()).longValue();
+            
+            // Загружаем сущность по ID
+            return Optional.of(entityManager.find(bindingEntityClass, id));
+        } catch (NoResultException e) {
+            return Optional.empty();
+        }
+    }
+    
+    /**
+     * Creates a new relation binding using direct SQL
+     * 
+     * @param bindingEntityClass Relation binding entity class
+     * @param dataSource Data source
+     * @param relationId Relation ID
+     * @param sourceEntityType Source entity type
+     * @param sourceExternalEntityId External source entity ID
+     * @param targetEntityType Target entity type
+     * @param targetExternalEntityId External target entity ID
+     * @return Created binding
+     */
+    private RelationBindingEntity createBinding(
+        Class<? extends RelationBindingEntity> bindingEntityClass,
+        DataSource dataSource,
+        Long relationId,
+        EntityType sourceEntityType,
+        Long sourceExternalEntityId,
+        EntityType targetEntityType,
+        Long targetExternalEntityId
+    ) {
+        try {
+            boolean isSourceFirst = relationRegistry.isFirstEntityInRelation(sourceEntityType, targetEntityType);
+            EntityType firstEntityType = isSourceFirst ? sourceEntityType : targetEntityType;
+            EntityType secondEntityType = isSourceFirst ? targetEntityType : sourceEntityType;
+            
+            // Determine external IDs based on entity order
+            Long externalFirstEntityId = isSourceFirst ? sourceExternalEntityId : targetExternalEntityId;
+            Long externalSecondEntityId = isSourceFirst ? targetExternalEntityId : sourceExternalEntityId;
+            
+            // Get table name
+            String tableName = firstEntityType.getName() + "_" + secondEntityType.getName() + "_binding";
+            
+            // Create SQL for insertion with sequence for id
+            String sql = """
+                INSERT INTO %s (
+                    id, 
+                    reference_id, 
+                    data_source_id, 
+                    external_%s_id, 
+                    external_%s_id, 
+                    created_at, 
+                    updated_at
+                ) 
+                VALUES (
+                    nextval('%s_seq'), 
+                    ?1, 
+                    ?2, 
+                    ?3, 
+                    ?4, 
+                    now(), 
+                    now()
+                ) 
+                RETURNING id
+                """.formatted(tableName, firstEntityType.getName(), secondEntityType.getName(), tableName);
+            
+            // Execute insert and get generated ID
+            Number id = (Number) entityManager.createNativeQuery(sql)
+                .setParameter(1, relationId)
+                .setParameter(2, dataSource.getCode())
+                .setParameter(3, externalFirstEntityId)
+                .setParameter(4, externalSecondEntityId)
+                .getSingleResult();
+            
+            // Fetch the created binding using native SQL
+            return entityManager.find(bindingEntityClass, id.longValue());
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create binding", e);
+        }
+    }
+    
+    /**
+     * Gets entity name by type and ID
+     * 
+     * @param entityType Entity type
+     * @param entityId Entity ID
+     * @return Entity name
+     */
+    private String getEntityName(EntityType entityType, Long entityId) {
+        try {
+            String query = """
+                SELECT name 
+                FROM %s 
+                WHERE id = :id
+                """.formatted(entityType.getName());
+            return (String) entityManager.createNativeQuery(query)
+                .setParameter("id", entityId)
+                .getSingleResult();
+        } catch (Exception e) {
+            return "Unknown";
+        }
+    }
+    
+    /**
+     * Validates that an entity exists
+     * 
+     * @param entityType Entity type
+     * @param entityId Entity ID
+     * @throws EntityNotFoundException if entity does not exist
+     */
+    private void validateEntityExists(EntityType entityType, Long entityId) {
+        try {
+            String query = """
+                SELECT COUNT(*) 
+                FROM %s 
+                WHERE id = :id
+                """.formatted(entityType.getName());
+            
+            Number count = (Number) entityManager.createNativeQuery(query)
+                .setParameter("id", entityId)
+                .getSingleResult();
+            
+            if (count.intValue() == 0) {
+                throw new EntityNotFoundException(
+                    String.format("%s with ID %d not found", entityType.getName(), entityId));
+            }
+        } catch (EntityNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException(
+                String.format("Failed to validate existence of %s with ID %d", entityType.getName(), entityId), e);
+        }
+    }
+}
