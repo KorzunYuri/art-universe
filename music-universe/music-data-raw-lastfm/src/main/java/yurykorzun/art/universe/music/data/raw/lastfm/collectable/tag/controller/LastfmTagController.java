@@ -11,6 +11,7 @@ import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.dto.ApprovalStatusRequestDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.EntityTagDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.EntityTagSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.LastfmTagResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.TagSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.service.LastfmTagService;
@@ -64,13 +65,20 @@ public class LastfmTagController {
     @GetMapping("/entity/{entityType}/{entityId}")
     public ResponseEntity<ResponseWrapper<List<EntityTagDto>>> getEntityTags(
         @PathVariable String entityType,
-        @PathVariable Long entityId
+        @PathVariable Long entityId,
+        @RequestParam(required = false) Integer minUsageCount,
+        @RequestParam(required = false) Set<Integer> approvalStatuses,
+        @PageableDefault(size = 100, sort = "name") Pageable pageable
     ) {
         try {
-            // Parse entity type from string or integer
+            // Parse entity type from string
             LastfmEntityType parsedEntityType = parseEntityType(entityType);
             
-            List<EntityTagDto> tags = tagService.findAllByEntity(parsedEntityType, entityId);
+            // Create search params
+            EntityTagSearchParams searchParams = new EntityTagSearchParams(minUsageCount, approvalStatuses);
+            
+            // Get tags with pagination and filtering
+            List<EntityTagDto> tags = tagService.findAllByEntity(parsedEntityType, entityId, searchParams, pageable);
             return ResponseWrapper.success(tags);
         } catch (IllegalArgumentException e) {
             log.error("Invalid entity type: {}", e.getMessage(), e);

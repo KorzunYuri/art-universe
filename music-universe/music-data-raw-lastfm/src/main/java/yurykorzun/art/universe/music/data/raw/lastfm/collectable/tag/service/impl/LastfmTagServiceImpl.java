@@ -8,6 +8,7 @@ import yurykorzun.art.universe.common.CodedRegistry;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.EntityTagDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.EntityTagSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.LastfmTagResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.TagSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
@@ -74,18 +75,20 @@ public class LastfmTagServiceImpl implements LastfmTagService {
     }
     
     @Override
-    public List<EntityTagDto> findAllByEntity(LastfmEntityType entityType, Long entityId) {
-        List<LastfmTag> tags = tagRepository.findTagsByEntity(entityType, entityId);
-        return tags.stream()
-            .map(EntityTagDto::from)
-            .toList();
-    }
-    
-    @Override
-    public List<EntityTagDto> findAllByEntityOrderByUsageCount(LastfmEntityType entityType, Long entityId) {
-        List<LastfmTag> tags = tagRepository.findTagsByEntityOrderByUsageCount(entityType, entityId);
-        return tags.stream()
-            .map(EntityTagDto::from)
-            .toList();
+    public List<EntityTagDto> findAllByEntity(LastfmEntityType entityType, Long entityId, 
+                                             EntityTagSearchParams searchParams, Pageable pageable) {
+        List<ApprovalStatus> approvalStatuses = null;
+        if (searchParams != null && searchParams.approvalStatuses() != null) {
+            approvalStatuses = CodedRegistry.getByCodes(searchParams.approvalStatuses(), ApprovalStatus.class);
+        }
+        
+        // Repository now returns EntityTagDto directly
+        return tagRepository.findTagsByEntityWithFilters(
+            entityType, 
+            entityId, 
+            searchParams != null ? searchParams.minUsageCount() : null,
+            approvalStatuses,
+            pageable
+        );
     }
 }

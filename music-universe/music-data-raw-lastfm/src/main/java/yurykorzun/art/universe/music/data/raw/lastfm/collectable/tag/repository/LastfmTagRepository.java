@@ -8,14 +8,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 
 import java.util.Collection;
 import java.util.List;
 
 @Repository
-public interface LastfmTagRepository extends JpaRepository<LastfmTag, Long> {
+public interface LastfmTagRepository extends JpaRepository<LastfmTag, Long>, LastfmTagRepositoryCustom {
 
     List<LastfmTag> findAllByNameIn(Collection<String> names);
 
@@ -58,112 +57,5 @@ public interface LastfmTagRepository extends JpaRepository<LastfmTag, Long> {
         } else {
             return findTagsWithApprovalStatus(search, approvalStatuses, pageable);
         }
-    }
-
-    /**
-     * Find tags associated with an artist.
-     * Tags are ordered alphabetically by name.
-     */
-    @Query(value = """
-        SELECT  t
-        FROM    tag t
-        JOIN    artist_tag at
-            ON  t.id = at.tag.id
-        WHERE   at.artist.id = :artistId
-        ORDER BY t.name ASC
-        """)
-    List<LastfmTag> findTagsByArtist(@Param("artistId") Long artistId);
-
-    /**
-     * Find tags associated with an album.
-     * Tags are ordered alphabetically by name.
-     */
-    @Query(value = """
-        SELECT  t
-        FROM    tag t
-        JOIN    album_tag at
-            ON  t.id = at.tag.id
-        WHERE   at.album.id = :albumId
-        ORDER BY t.name ASC
-        """)
-    List<LastfmTag> findTagsByAlbum(@Param("albumId") Long albumId);
-
-    /**
-     * Find tags associated with a track.
-     * Tags are ordered alphabetically by name.
-     */
-    @Query(value = """
-        SELECT  t
-        FROM    tag t
-        JOIN    track_tag tt
-            ON  t.id = tt.tag.id
-        WHERE   tt.track.id = :trackId
-        ORDER BY t.name ASC
-        """)
-    List<LastfmTag> findTagsByTrack(@Param("trackId") Long trackId);
-
-    /**
-     * Find tags associated with an artist, ordered by usage count.
-     */
-    @Query(value = """
-        SELECT  t
-        FROM    tag t
-        JOIN    artist_tag at
-            ON  t.id = at.tag.id
-        WHERE   at.artist.id = :artistId
-        ORDER BY at.usageCount DESC
-        """)
-    List<LastfmTag> findTagsByArtistOrderByUsageCount(@Param("artistId") Long artistId);
-
-    /**
-     * Find tags associated with an album, ordered by usage count.
-     */
-    @Query(value = """
-        SELECT  t
-        FROM    tag t
-        JOIN    album_tag at
-            ON  t.id = at.tag.id
-        WHERE   at.album.id = :albumId
-        ORDER BY at.usageCount DESC
-        """)
-    List<LastfmTag> findTagsByAlbumOrderByUsageCount(@Param("albumId") Long albumId);
-
-    /**
-     * Find tags associated with a track, ordered by usage count.
-     */
-    @Query(value = """
-        SELECT  t
-        FROM    tag t
-        JOIN    track_tag tt
-            ON  t.id = tt.tag.id
-        WHERE   tt.track.id = :trackId
-        ORDER BY tt.usageCount DESC
-        """)
-    List<LastfmTag> findTagsByTrackOrderByUsageCount(@Param("trackId") Long trackId);
-
-    /**
-     * Find tags associated with a specific entity through the appropriate relationship table.
-     * Tags are ordered alphabetically by name.
-     */
-    default List<LastfmTag> findTagsByEntity(LastfmEntityType entityType, Long entityId) {
-        return switch (entityType) {
-            case ARTIST -> findTagsByArtist(entityId);
-            case ALBUM -> findTagsByAlbum(entityId);
-            case TRACK -> findTagsByTrack(entityId);
-            default -> List.of();
-        };
-    }
-
-    /**
-     * Find tags associated with a specific entity through the appropriate relationship table.
-     * Tags are ordered by usage count.
-     */
-    default List<LastfmTag> findTagsByEntityOrderByUsageCount(LastfmEntityType entityType, Long entityId) {
-        return switch (entityType) {
-            case ARTIST -> findTagsByArtistOrderByUsageCount(entityId);
-            case ALBUM -> findTagsByAlbumOrderByUsageCount(entityId);
-            case TRACK -> findTagsByTrackOrderByUsageCount(entityId);
-            default -> List.of();
-        };
     }
 }
