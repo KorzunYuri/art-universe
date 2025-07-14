@@ -16,6 +16,14 @@ import java.util.Optional;
 public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     /**
+     * Find a category by its exact name
+     * 
+     * @param name The exact name of the category
+     * @return The category if found
+     */
+    Optional<Category> findByName(String name);
+
+    /**
      * Search categories with hierarchy information and pagination
      * 
      * @param search Optional search term (case insensitive, partial match)

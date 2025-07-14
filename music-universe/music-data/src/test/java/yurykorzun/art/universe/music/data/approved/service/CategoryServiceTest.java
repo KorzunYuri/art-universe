@@ -258,6 +258,7 @@ class CategoryServiceTest {
             externalId, dataSource, newCategory.getId(), categoryName
         );
         
+        when(categoryRepository.findByName(categoryName)).thenReturn(Optional.empty());
         when(categoryRepository.save(any(Category.class))).thenReturn(newCategory);
         when(categoryBindingRepository.findByDataSourceAndExternalId(dataSource, externalId))
             .thenReturn(Optional.empty());
@@ -271,12 +272,42 @@ class CategoryServiceTest {
         // Then
         assertEquals(expectedResult, result);
         
+        verify(categoryRepository).findByName(categoryName);
         verify(categoryRepository).save(any(Category.class));
         verify(categoryBindingRepository).findByDataSourceAndExternalId(dataSource, externalId);
         verify(categoryBindingRepository).save(any(CategoryBinding.class));
         verify(categoryBindingRepository).findBoundCategoryForDataSource(dataSource, externalId);
     }
 
+    @Test
+    void createAndBind_whenCategoryWithNameExists_shouldThrowException() {
+        // Given
+        DataSource dataSource = DataSource.LASTFM;
+        Long externalId = 1L;
+        String categoryName = "Existing Category";
+        
+        Category existingCategory = Category.builder()
+            .id(999L)
+            .name(categoryName)
+            .build();
+        
+        CategoryCreateAndBindRequestDTO request = CategoryCreateAndBindRequestDTO.builder()
+            .name(categoryName)
+            .build();
+        
+        when(categoryRepository.findByName(categoryName)).thenReturn(Optional.of(existingCategory));
+
+        // When & Then
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> 
+            categoryService.createAndBind(dataSource, externalId, request));
+        
+        assertEquals("Category with name Existing Category already exists", exception.getMessage());
+        
+        verify(categoryRepository).findByName(categoryName);
+        verify(categoryRepository, never()).save(any(Category.class));
+        verify(categoryBindingRepository, never()).save(any(CategoryBinding.class));
+    }
+    
     @Test
     void createAndBind_whenBindingExists_shouldUpdateBinding() {
         // Given
@@ -304,6 +335,7 @@ class CategoryServiceTest {
             externalId, dataSource, newCategory.getId(), categoryName
         );
         
+        when(categoryRepository.findByName(categoryName)).thenReturn(Optional.empty());
         when(categoryRepository.save(any(Category.class))).thenReturn(newCategory);
         when(categoryBindingRepository.findByDataSourceAndExternalId(dataSource, externalId))
             .thenReturn(Optional.of(existingBinding));
@@ -318,6 +350,7 @@ class CategoryServiceTest {
         assertEquals(expectedResult, result);
         assertEquals(newCategory.getId(), existingBinding.getReferenceId());
         
+        verify(categoryRepository).findByName(categoryName);
         verify(categoryRepository).save(any(Category.class));
         verify(categoryBindingRepository).findByDataSourceAndExternalId(dataSource, externalId);
         verify(categoryBindingRepository).save(existingBinding);

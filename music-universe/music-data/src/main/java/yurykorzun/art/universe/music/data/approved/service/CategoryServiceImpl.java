@@ -172,6 +172,12 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional
     public BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, CategoryCreateAndBindRequestDTO request) {
+        // Check if category with the same name already exists
+        categoryRepository.findByName(request.getName())
+            .ifPresent(category -> {
+                throw new IllegalArgumentException(String.format("Category with name %s already exists", category.getName()));
+            });
+
         // Create new category
         Category category = Category.builder()
             .name(request.getName())
