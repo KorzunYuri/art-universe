@@ -4,8 +4,10 @@ services:
 
   postgres:
     container_name: dev__music-data-raw-lastfm__db-postgres
-    restart: always
+    restart: unless-stopped
     shm_size: 128mb
+    stop_grace_period: 1m
+    stop_signal: SIGINT
     build:
       dockerfile: ../common/postgres.dockerfile
       context: ../common
@@ -13,9 +15,6 @@ services:
       - ${PROJECT_ROOT}/env/docker/local/music-data-raw-lastfm.env
       - ${PROJECT_ROOT}/env/docker/local/music-data-raw-lastfm.secrets.env
       - ${PROJECT_ROOT}/music-universe/music-data-raw-lastfm/dev.override.env
-#    environment:
-#      # for init.sql template
-#      MURAW_LASTFM_DB_PASSWORD: ${MURAW_LASTFM_DB_PASSWORD}
     volumes:
       - db-postgres-data:/var/lib/postgresql/data
       - ../common/initdb/templates:/docker-entrypoint-initdb.d
@@ -31,15 +30,14 @@ services:
   db-adminer:
     container_name: dev__music-data-raw-lastfm__db-adminer
     image: adminer
-    restart: always
+    restart: unless-stopped
     ports:
       - "${DB_ADMINER_PORT}:8080"
 
 networks:
   default:
-    name: mu-data-raw-lastfm-network
+    name: dev__mu-data-raw-lastfm-network
 
 volumes:
   db-postgres-data:
-    # share the volume with 'local' docker configuration
-    name: local__mu-data-raw-lastfm__db-postgres-data
+    name: dev__mu-data-raw-lastfm__db-postgres-data

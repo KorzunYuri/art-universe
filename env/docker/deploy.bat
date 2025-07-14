@@ -38,21 +38,9 @@ REM Set environment-specific variables
 if "%ENVIRONMENT%"=="local" (
     set "COMPOSE_FILE=%PROJECT_ROOT%\env\docker\local\docker-compose.yml"
     set "ENV_NAME=Local"
-    set "SERVICES_INFO=  - LastFM Raw Data: http://localhost:9081
-  - Music Data: http://localhost:9082
-  - Music Quiz: http://localhost:9083
-  - UI: http://localhost:4000
-  - Adminer: http://localhost:9980"
 ) else (
     set "COMPOSE_FILE=%PROJECT_ROOT%\env\docker\prod\docker-compose.yml"
     set "ENV_NAME=Production"
-    set "SERVICES_INFO=  - LastFM Raw Data: http://localhost:8081
-  - Music Data: http://localhost:8082
-  - Music Quiz: http://localhost:8083
-  - UI: http://localhost:3000
-  - Adminer: http://localhost:8880
-
-Note: Applications connect to external databases on host machine"
 )
 
 echo === Art Universe %ENV_NAME% Environment Deployment ===
@@ -86,7 +74,23 @@ if !errorlevel! equ 0 (
     echo ✅ %ENV_NAME% environment deployed successfully!
     echo.
     echo Services available at:
-    echo !SERVICES_INFO!
+    
+    REM Output services info line by line to avoid dash interpretation
+    if "%ENVIRONMENT%"=="local" (
+        echo   - LastFM Raw Data: http://localhost:9081
+        echo   - Music Data: http://localhost:9082
+        echo   - Music Quiz: http://localhost:9083
+        echo   - UI: http://localhost:4000
+        echo   - Adminer: http://localhost:9980
+    ) else (
+        echo   - LastFM Raw Data: http://localhost:8081
+        echo   - Music Data: http://localhost:8082
+        echo   - Music Quiz: http://localhost:8083
+        echo   - UI: http://localhost:3000
+        echo   - Adminer: http://localhost:8880
+        echo.
+        echo Note: Applications connect to external databases on host machine
+    )
 ) else (
     echo ❌ Deployment failed!
     exit /b 1

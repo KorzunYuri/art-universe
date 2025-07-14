@@ -2,9 +2,11 @@ version: '3.8'
 
 services:
   postgres:
-    container_name: dev-mu-data-db-postgres
-    restart: always
+    container_name: dev__mu-data__db-postgres
+    restart: unless-stopped
     shm_size: 128mb
+    stop_grace_period: 1m
+    stop_signal: SIGINT
     build:
       dockerfile: ../common/postgres.dockerfile
       context: ../common
@@ -15,11 +17,6 @@ services:
       - ${PROJECT_ROOT}/env/docker/local/music-quiz.secrets.env
       - ${PROJECT_ROOT}/music-universe/music-data/dev.override.env
       - ${PROJECT_ROOT}/music-universe/music-quiz/dev.override.env
-#    environment:
-#      POSTGRES_USER: ${PG_USERNAME:-postgres}
-#      POSTGRES_PASSWORD: ${PG_PASSWORD:-postgres}
-#      MU_DATA_DB_PASSWORD_DM: ${MU_DATA_DB_PASSWORD_DM}
-#      MU_QUIZ_DB_PASSWORD_DM: ${MU_QUIZ_DB_PASSWORD_DM}
     volumes:
       - db-postgres-data:/var/lib/postgresql/data
       - ../common/initdb/templates:/docker-entrypoint-initdb.d
@@ -35,14 +32,14 @@ services:
   db-adminer:
     container_name: dev__mu-data__db-adminer
     image: adminer
-    restart: always
+    restart: unless-stopped
     ports:
       - "${DB_ADMINER_PORT}:8080"
 
 networks:
   default:
-    name: mu-shared-network
+    name: dev__mu-shared-network
 
 volumes:
   db-postgres-data:
-    name: local__mu-data__db-postgres-data
+    name: dev__mu-data__db-postgres-data

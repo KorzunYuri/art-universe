@@ -3,7 +3,7 @@ spring:
     compose:
       enabled: true
       file: ${PROJECT_ROOT}/music-universe/shared/docker/compose/dev__mu-data/docker-compose.yml
-
+      lifecycle-management: start-and-stop
 #  jpa:
 #    properties:
 #      hibernate:
