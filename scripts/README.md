@@ -50,8 +50,6 @@ The script loads environment variables in the following order (later values over
 
 ### Configuration Files Mapping
 
-### Configuration Files Mapping
-
 | Module Path | Module Name | Config Files |
 |-------------|-------------|--------------|
 | `music-universe:music-data-raw-lastfm` | `music-data-raw-lastfm` | `music-data-raw-lastfm.env`, `music-data-raw-lastfm.secrets.env` |

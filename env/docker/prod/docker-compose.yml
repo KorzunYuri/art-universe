@@ -11,6 +11,8 @@ services:
     env_file:
       - ./music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.secrets.env
+    environment:
+      - SPRING_PROFILES_ACTIVE=fast
     ports:
       - "${MURAW_LASTFM_APP_EXTERNAL_PORT}:${MURAW_LASTFM_APP_INTERNAL_PORT}"
       - "${MURAW_LASTFM_ACTUATOR_EXTERNAL_PORT}:${MURAW_LASTFM_ACTUATOR_INTERNAL_PORT}"
@@ -34,6 +36,8 @@ services:
     env_file:
       - ./music-data.env
       - ./music-data.secrets.env
+    environment:
+      - SPRING_PROFILES_ACTIVE=fast
     ports:
       - "${MU_DATA_APP_EXTERNAL_PORT}:${MU_DATA_APP_INTERNAL_PORT}"
       - "${MU_DATA_ACTUATOR_EXTERNAL_PORT}:${MU_DATA_ACTUATOR_INTERNAL_PORT}"
@@ -57,6 +61,8 @@ services:
     env_file:
       - ./music-quiz.env
       - ./music-quiz.secrets.env
+    environment:
+      - SPRING_PROFILES_ACTIVE=fast
     ports:
       - "${MU_QUIZ_APP_EXTERNAL_PORT}:${MU_QUIZ_APP_INTERNAL_PORT}"
       - "${MU_QUIZ_ACTUATOR_EXTERNAL_PORT}:${MU_QUIZ_ACTUATOR_INTERNAL_PORT}"
