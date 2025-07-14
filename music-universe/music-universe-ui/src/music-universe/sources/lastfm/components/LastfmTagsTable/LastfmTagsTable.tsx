@@ -8,9 +8,10 @@ import {
 // types
 import type { LastfmTag } from '@/music-universe/sources/lastfm/types/lastfm-tag'
 import type { Page } from '@/music-universe/shared/types/page'
+import type { LookupEntity } from '@/music-universe/shared/types/lookup'
 // api
 import { fetchTags, type TagSearchParams } from '@/music-universe/sources/lastfm/api/lastfm-tags'
-import { fetchBoundCategories } from '@/music-universe/music-data/api/music-data-categories'
+import { fetchBoundCategories, batchLookupCategories } from '@/music-universe/music-data/api/music-data-categories'
 // styles
 import commonStyles from '@/music-universe/shared/styles/common.module.scss'
 import styles from './LastfmTagsTable.module.css'
@@ -31,6 +32,9 @@ export const LastfmTagsTable = ({ initialSearch = '' }: LastfmTagsTableProps) =>
     const [page, setPage] = useState(0)
     const [sort, setSort] = useState('name,asc')
     const pageSize = 20
+    
+    // Preloaded lookup data for categories
+    const [preloadedLookupData, setPreloadedLookupData] = useState<{[name: string]: LookupEntity[]}>({})
 
     // Load tags with current search parameters and their bound entities
     const loadTags = async () => {
@@ -49,7 +53,7 @@ export const LastfmTagsTable = ({ initialSearch = '' }: LastfmTagsTableProps) =>
             
             // Load bound tags immediately in the same function to avoid useEffect cycles
             if (result && result.content.length > 0) {
-                console.log('🔄 Loading bound tags immediately after tags load')
+                console.log('🔄 Loading bound tags and preloading lookup data...')
                 setLoadingBoundTags(true)
                 try {
                     // Extract all tag IDs
@@ -59,6 +63,21 @@ export const LastfmTagsTable = ({ initialSearch = '' }: LastfmTagsTableProps) =>
                     // Fetch bound tags from music-data API
                     const boundTags = await fetchBoundCategories('LASTFM', tagIds)
                     console.log(`✅ Bound tags loaded: ${boundTags.length} items`)
+                    
+                    // Collect tag names for batch lookup
+                    const tagNames = result.content.map(tag => tag.name)
+                    
+                    // Perform batch lookup for all tags
+                    console.log(`🔍 Performing batch lookup for ${tagNames.length} tags`)
+                    const lookupResponse = await batchLookupCategories(tagNames)
+                    
+                    if (lookupResponse.success) {
+                        console.log(`✅ Batch lookup successful with ${Object.keys(lookupResponse.data.results).length} results`)
+                        setPreloadedLookupData(lookupResponse.data.results)
+                    } else {
+                        console.error('❌ Batch lookup failed:', lookupResponse.message)
+                        setPreloadedLookupData({})
+                    }
 
                     // Update the tags with bound information
                     const updatedContent = result.content.map(tag => {
@@ -215,6 +234,7 @@ export const LastfmTagsTable = ({ initialSearch = '' }: LastfmTagsTableProps) =>
                                 key={tag.id}
                                 tag={tag}
                                 onChange={onTagChanged}
+                                preloadedLookupData={preloadedLookupData[tag.name] || []}
                             />
                         ))}
                     </div>

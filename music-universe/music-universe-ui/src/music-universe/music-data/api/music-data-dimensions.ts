@@ -2,7 +2,7 @@ import axios from 'axios';
 import { MusicDataConfig } from '../config/musicdataconfig';
 import type { ApiResponse } from '@/music-universe/shared/types/api-response';
 import type { Page } from '@/music-universe/shared/types/page';
-import type { LookupEntity } from '@/music-universe/shared/components/AutocompleteInput';
+import type { LookupEntity } from '@/music-universe/shared/types/lookup';
 
 export interface Dimension {
     id: number;

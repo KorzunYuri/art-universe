@@ -9,16 +9,19 @@ import { updateTagApprovalStatus } from "@/music-universe/sources/lastfm/api/las
 import { bindCategoryToExisting, createAndBindCategory, unbindCategory, lookupCategories } from "@/music-universe/music-data/api/music-data-categories";
 // constants
 import { ApprovalStatus } from "@/music-universe/sources/lastfm/constants/approvalStatus";
+// types
+import type { LookupEntity } from "@/music-universe/shared/types/lookup";
 // styles
 import sharedTableStyles from "@/music-universe/shared/components/EntityTable/EntityTableStyles.module.scss";
 import tagTableStyles from "../LastfmTagsTable/LastfmTagsTable.module.css";
 
 interface LastfmTagTableRowProps {
     tag: LastfmTag,
-    onChange: (tag: LastfmTag) => void
+    onChange: (tag: LastfmTag) => void,
+    preloadedLookupData?: LookupEntity[]
 }
 
-export const LastfmTagsTableRow = ({tag, onChange}: LastfmTagTableRowProps) => {
+export const LastfmTagsTableRow = ({tag, onChange, preloadedLookupData = []}: LastfmTagTableRowProps) => {
     const [isApproving, setIsApproving] = useState(false);
 
     function onStatusChange(tagToUpdate: LastfmTag, newStatus: number) {
@@ -113,6 +116,7 @@ export const LastfmTagsTableRow = ({tag, onChange}: LastfmTagTableRowProps) => {
                     onBeforeBind={handleBeforeBind}
                     onAfterBind={handleAfterBind}
                     lookupFunction={lookupCategories}
+                    preloadedOptions={preloadedLookupData}
                     disabled={isApproving}
                 />
             </div>

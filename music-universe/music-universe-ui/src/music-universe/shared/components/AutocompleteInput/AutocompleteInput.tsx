@@ -2,14 +2,10 @@
 import { useState, useEffect, useRef } from 'react';
 // types
 import type { ApiResponse } from '@/music-universe/shared/types/api-response';
+import type { LookupEntity } from '@/music-universe/shared/types/lookup';
 // styles
 import commonStyles from '@/music-universe/shared/styles/common.module.scss';
 import styles from './AutocompleteInput.module.scss';
-
-export interface LookupEntity {
-    id: number;
-    name: string;
-}
 
 export interface AutocompleteInputProps {
     value: string;
@@ -105,15 +101,19 @@ export const AutocompleteInput = ({
                             // Select the exact match
                             onSelect(exactMatch);
                         }
+                        
+                        // Mark as done since we found matches in preloaded options
+                        setInitialSearchDone(true);
+                        setLoading(false);
+                        return;
                     } else {
-                        console.log('⏭️ No matches in preloaded options, but skipping API call');
-                        setSuggestions([]);
+                        // For initial search, we'll only use API if this is a direct user input
+                        // which is unlikely during component mount
+                        console.log('⚠️ No matches in preloaded options for initial search');
+                        setInitialSearchDone(true);
+                        setLoading(false);
+                        return;
                     }
-                    
-                    // Mark as done even if no matches were found
-                    setInitialSearchDone(true);
-                    setLoading(false);
-                    return;
                 }
                 
                 // Fall back to API lookup only if preloadedOptions is undefined
@@ -185,10 +185,18 @@ export const AutocompleteInput = ({
                     setSelectedIndex(-1);
                     return;
                 } else {
-                    console.log('⏭️ No matches in preloaded options, but skipping API call');
-                    setSuggestions([]);
-                    setShowSuggestions(false);
-                    return;
+                    // Only make API call if user has actually typed something new
+                    // This prevents unnecessary API calls after batch lookup
+                    const isUserInput = document.activeElement === inputRef.current;
+                    if (!isUserInput) {
+                        console.log('⏭️ Skipping API call - not from user input');
+                        setSuggestions([]);
+                        setShowSuggestions(false);
+                        return;
+                    }
+                    
+                    console.log('⚠️ No matches in preloaded options, falling back to API call');
+                    // Continue to API lookup below
                 }
             }
             

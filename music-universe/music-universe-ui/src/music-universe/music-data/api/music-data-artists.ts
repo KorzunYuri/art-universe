@@ -2,7 +2,7 @@ import axios from 'axios';
 import { MusicDataConfig } from '../config/musicdataconfig';
 import type { BoundEntity, BoundEntityResponse } from '@/music-universe/shared/types/bindable';
 import type { ApiResponse } from '@/music-universe/shared/types/api-response';
-import type { LookupEntity } from '@/music-universe/shared/components/AutocompleteInput';
+import type { LookupEntity, BatchLookupRequestDTO, BatchLookupResponseDTO } from '@/music-universe/shared/types/lookup';
 
 export interface ArtistBindToExistingRequest {
     artistId: number;
@@ -10,17 +10,6 @@ export interface ArtistBindToExistingRequest {
 
 export interface ArtistCreateAndBindRequest {
     name: string;
-}
-
-export interface ArtistBatchLookupRequestDTO {
-    names: string[];
-    limit?: number;
-}
-
-export interface ArtistBatchLookupResponseDTO {
-    results: {
-        [name: string]: LookupEntity[];
-    };
 }
 
 /**
@@ -62,16 +51,16 @@ export async function lookupArtists(query: string, limit: number = 10): Promise<
  * @param limit Maximum number of results for each name (default: 10)
  * @returns Object with lookup results grouped by artist names
  */
-export async function batchLookupArtists(names: string[], limit: number = 10): Promise<ApiResponse<ArtistBatchLookupResponseDTO>> {
+export async function batchLookupArtists(names: string[], limit: number = 10): Promise<ApiResponse<BatchLookupResponseDTO>> {
     try {
         const url = `${MusicDataConfig.baseApiUrl}/artists/lookup/batch`;
-        const request: ArtistBatchLookupRequestDTO = { 
+        const request: BatchLookupRequestDTO = { 
             names, 
             limit 
         };
 
         console.log(`🔍 Batch looking up ${names.length} artists`);
-        const response = await axios.post<ApiResponse<ArtistBatchLookupResponseDTO>>(url, request);
+        const response = await axios.post<ApiResponse<BatchLookupResponseDTO>>(url, request);
         
         if (response.data.success) {
             const resultCount = Object.keys(response.data.data.results).length;

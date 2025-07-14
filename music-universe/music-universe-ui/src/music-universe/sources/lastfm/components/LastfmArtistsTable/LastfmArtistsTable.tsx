@@ -8,7 +8,7 @@ import {
 // types
 import type { LastfmArtist } from '@/music-universe/sources/lastfm/types'
 import type { Page } from '@/music-universe/shared/types/page'
-import type { LookupEntity } from '@/music-universe/shared/components/AutocompleteInput'
+import type { LookupEntity } from '@/music-universe/shared/types/lookup'
 // api
 import { fetchArtists, type ArtistSearchParams } from '@/music-universe/sources/lastfm/api/lastfm-artists'
 import { fetchBoundArtists, batchLookupArtists } from '@/music-universe/music-data/api/music-data-artists'

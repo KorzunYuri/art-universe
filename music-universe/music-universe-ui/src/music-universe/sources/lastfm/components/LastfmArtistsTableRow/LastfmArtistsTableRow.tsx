@@ -11,7 +11,7 @@ import { updateArtistApprovalStatus } from "@/music-universe/sources/lastfm/api/
 // constants
 import { ApprovalStatus } from "@/music-universe/sources/lastfm/constants/approvalStatus";
 // types
-import type { LookupEntity } from "@/music-universe/shared/components/AutocompleteInput";
+import type { LookupEntity } from "@/music-universe/shared/types/lookup";
 // styles
 import sharedTableStyles from "@/music-universe/shared/components/EntityTable/EntityTableStyles.module.scss";
 import artistTableStyles from "../LastfmArtistsTable/LastfmArtistsTable.module.css";

@@ -1,10 +1,11 @@
 // hooks
 import { useState } from "react";
 // components
-import { AutocompleteInput, type LookupEntity } from "@/music-universe/shared/components/AutocompleteInput";
+import { AutocompleteInput } from "@/music-universe/shared/components/AutocompleteInput";
 // types
 import type { Bindable, BoundEntity } from "@/music-universe/shared/types/bindable";
 import type { ApiResponse } from "@/music-universe/shared/types/api-response";
+import type { LookupEntity } from "@/music-universe/shared/types/lookup";
 // styles
 import commonStyles from "@/music-universe/shared/styles/common.module.scss";
 import styles from "./EntityBinding.module.scss";

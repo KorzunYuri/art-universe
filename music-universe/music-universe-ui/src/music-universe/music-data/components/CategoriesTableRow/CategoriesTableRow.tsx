@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { EditableText, AutocompleteInput, ReadonlyAttr } from "@/music-universe/shared/components";
 // types
 import type { Category, CategorySaveRequest } from "@/music-universe/music-data/api/music-data-categories";
-import type { LookupEntity } from "@/music-universe/shared/components/AutocompleteInput";
+import type { LookupEntity } from "@/music-universe/shared/types/lookup";
 // api
 import { saveCategory, lookupCategories } from "@/music-universe/music-data/api/music-data-categories";
 import { lookupDimensions } from "@/music-universe/music-data/api/music-data-dimensions";

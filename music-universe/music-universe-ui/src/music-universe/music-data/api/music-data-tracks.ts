@@ -2,7 +2,7 @@ import axios from 'axios';
 import { MusicDataConfig } from '../config/musicdataconfig';
 import type { BoundEntity, BoundEntityResponse } from '@/music-universe/shared/types/bindable';
 import type { ApiResponse } from '@/music-universe/shared/types/api-response';
-import type { LookupEntity } from "@/music-universe/shared/components";
+import type { LookupEntity } from '@/music-universe/shared/types/lookup';
 
 export interface TrackBindingRequest {
     name: string;

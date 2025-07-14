@@ -3,7 +3,7 @@ import { MusicDataConfig } from '../config/musicdataconfig';
 import type { ApiResponse } from '@/music-universe/shared/types/api-response';
 import type { Page } from '@/music-universe/shared/types/page';
 import type { BoundEntity, BoundEntityResponse } from '@/music-universe/shared/types/bindable';
-import type { LookupEntity } from '@/music-universe/shared/components/AutocompleteInput';
+import type { LookupEntity, BatchLookupRequestDTO, BatchLookupResponseDTO } from '@/music-universe/shared/types/lookup';
 
 export interface Category {
     id: number;
@@ -93,6 +93,47 @@ export async function lookupCategories(query: string, limit: number = 10): Promi
             success: false,
             message: 'Failed to look up categories',
             data: []
+        };
+    }
+}
+
+/**
+ * Performs batch lookup of categories by multiple names
+ * 
+ * @param names Array of category names to look up
+ * @param limit Maximum number of results for each name (default: 10)
+ * @returns Object with lookup results grouped by category names
+ */
+export async function batchLookupCategories(names: string[], limit: number = 10): Promise<ApiResponse<BatchLookupResponseDTO>> {
+    try {
+        const url = `${MusicDataConfig.baseApiUrl}/categories/lookup/batch`;
+        const request: BatchLookupRequestDTO = { 
+            names, 
+            limit 
+        };
+
+        console.log(`🔍 Batch looking up ${names.length} categories`);
+        const response = await axios.post<ApiResponse<BatchLookupResponseDTO>>(url, request);
+        
+        if (response.data.success) {
+            const resultCount = Object.keys(response.data.data.results).length;
+            console.log(`✅ Batch lookup successful: found matches for ${resultCount} categories`);
+        }
+        
+        return response.data;
+    } catch (error) {
+        console.error('❌ Error batch looking up categories:', error);
+        if (axios.isAxiosError(error)) {
+            console.error('❌ Axios error details:', {
+                status: error.response?.status,
+                statusText: error.response?.statusText,
+                data: error.response?.data
+            });
+        }
+        return {
+            success: false,
+            message: 'Failed to batch lookup categories',
+            data: { results: {} }
         };
     }
 }
