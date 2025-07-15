@@ -3,8 +3,9 @@ import { useEffect, useState } from 'react'
 // types
 import type { Page } from '@/music-universe/shared/types/page'
 import type { Category, CategorySearchParams } from '@/music-universe/music-data/api/music-data-categories'
+import type { LookupEntity } from '@/music-universe/shared/types/lookup'
 // api
-import { fetchCategories } from '@/music-universe/music-data/api/music-data-categories'
+import { fetchCategories, batchLookupCategories } from '@/music-universe/music-data/api/music-data-categories'
 // components
 import { CategoriesTableHeader } from '../CategoriesTableHeader'
 import { CategoriesTableRow } from '../CategoriesTableRow'
@@ -22,6 +23,11 @@ export const CategoriesTable = () => {
     const [page, setPage] = useState(0)
     const [sort, setSort] = useState('name,asc')
     const pageSize = 20
+    
+    // Preloaded lookup data for categories and dimensions
+    const [preloadedCategoryData, setPreloadedCategoryData] = useState<{[name: string]: LookupEntity[]}>({})
+    // @ts-expect-error @typescript-eslint/no-unused-vars
+    const [loadingPreloadedData, setLoadingPreloadedData] = useState(false)
 
     // Load categories with current search parameters
     const loadCategories = async () => {
@@ -36,6 +42,32 @@ export const CategoriesTable = () => {
             
             const result = await fetchCategories(params)
             setData(result)
+            
+            // After loading categories, perform batch lookup for category names
+            if (result && result.content.length > 0) {
+                setLoadingPreloadedData(true)
+                try {
+                    // Collect category names for batch lookup
+                    const categoryNames = result.content.map(category => category.name)
+                    
+                    // Perform batch lookup for all categories
+                    console.log(`🔍 Performing batch lookup for ${categoryNames.length} categories`)
+                    const lookupResponse = await batchLookupCategories(categoryNames)
+                    
+                    if (lookupResponse.success) {
+                        console.log(`✅ Batch lookup successful with ${Object.keys(lookupResponse.data.results).length} results`)
+                        setPreloadedCategoryData(lookupResponse.data.results)
+                    } else {
+                        console.error('❌ Batch lookup failed:', lookupResponse.message)
+                        setPreloadedCategoryData({})
+                    }
+                } catch (error) {
+                    console.error('❌ Error performing batch lookup:', error)
+                    setPreloadedCategoryData({})
+                } finally {
+                    setLoadingPreloadedData(false)
+                }
+            }
         } catch (error) {
             console.error('❌ Error loading categories:', error)
         } finally {
@@ -129,6 +161,7 @@ export const CategoriesTable = () => {
                                 key={category.id}
                                 category={category}
                                 onChange={onCategoryChanged}
+                                preloadedLookupData={preloadedCategoryData[category.name] || []}
                             />
                         ))}
                     </div>

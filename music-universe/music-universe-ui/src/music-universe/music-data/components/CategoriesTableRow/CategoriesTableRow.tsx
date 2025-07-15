@@ -15,9 +15,10 @@ import styles from "./CategoriesTableRow.module.css";
 interface CategoriesTableRowProps {
     category: Category;
     onChange: (category: Category) => void;
+    preloadedLookupData?: LookupEntity[];
 }
 
-export const CategoriesTableRow = ({ category, onChange }: CategoriesTableRowProps) => {
+export const CategoriesTableRow = ({ category, onChange, preloadedLookupData = [] }: CategoriesTableRowProps) => {
     const [editedName, setEditedName] = useState(category.name);
     const [editedParentName, setEditedParentName] = useState(category.parentName || '');
     const [editedDimensionName, setEditedDimensionName] = useState(category.dimensionName || '');
@@ -137,6 +138,7 @@ export const CategoriesTableRow = ({ category, onChange }: CategoriesTableRowPro
                     lookupFunction={lookupCategories}
                     placeholder="Parent category"
                     disabled={isSaving}
+                    preloadedOptions={preloadedLookupData}
                 />
             </div>
             
