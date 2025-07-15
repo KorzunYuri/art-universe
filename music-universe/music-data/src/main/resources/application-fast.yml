@@ -5,8 +5,6 @@ spring:
         # Disable schema validation at startup
         javax.persistence.validation.mode: none
   main:
-    # Lazy initialization of beans
-    lazy-initialization: true
     # Disable Spring Boot banner
     banner-mode: off
 
@@ -17,14 +15,6 @@ spring.autoconfigure.exclude: >
   org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration,
   org.springframework.boot.autoconfigure.websocket.servlet.WebSocketServletAutoConfiguration,
   org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration
-
-# Reduce logging to speed up startup
-logging:
-  level:
-    root: WARN
-    org.springframework: WARN
-    org.hibernate: WARN
-    liquibase: INFO
 
 # Limit actuator endpoints
 management:
