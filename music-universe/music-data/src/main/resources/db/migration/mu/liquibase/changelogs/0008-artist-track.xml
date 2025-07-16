@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
+
+    <changeSet id="0008-0010-artist-track$initial" author="amazon-q">
+        <sqlFile path="../changesets/0008-artist-track/0008-0010-artist-track$initial.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0008-0020-artist-track-binding$initial" author="amazon-q">
+        <sqlFile path="../changesets/0008-artist-track/0008-0020-artist-track-binding$initial.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+</databaseChangeLog>

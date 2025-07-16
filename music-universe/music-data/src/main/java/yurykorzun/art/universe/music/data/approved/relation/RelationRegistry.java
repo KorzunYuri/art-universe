@@ -4,6 +4,8 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.music.data.approved.entity.ArtistCategory;
 import yurykorzun.art.universe.music.data.approved.entity.ArtistCategoryBinding;
+import yurykorzun.art.universe.music.data.approved.entity.ArtistTrack;
+import yurykorzun.art.universe.music.data.approved.entity.ArtistTrackBinding;
 import yurykorzun.art.universe.music.data.approved.entity.EntityType;
 
 import java.util.Collection;
@@ -25,7 +27,9 @@ public class RelationRegistry {
         registerRelationEntity(ArtistCategory.class);
         registerRelationBindingEntity(ArtistCategoryBinding.class);
         
-        // Future relation types will be registered here
+        // Register ArtistTrack
+        registerRelationEntity(ArtistTrack.class);
+        registerRelationBindingEntity(ArtistTrackBinding.class);
     }
     
     /**

@@ -1,7 +1,9 @@
 package yurykorzun.art.universe.music.data.approved.service;
 
 import yurykorzun.art.universe.music.data.approved.dto.BoundEntityProjection;
-import yurykorzun.art.universe.music.data.approved.dto.TrackBindingRequestDTO;import yurykorzun.art.universe.music.data.approved.entity.DataSource;
+import yurykorzun.art.universe.music.data.approved.dto.TrackBindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.TrackCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.approved.entity.DataSource;
 
 import java.util.List;
 
@@ -19,17 +21,30 @@ public interface TrackService {
     BoundEntityProjection findTrack(DataSource dataSource, Long externalId);
     
     /**
-     * Binds an external track to a track in the system.
-     * If the track doesn't exist, it will be created.
+     * Binds an external track to an existing track in the system.
      * The artist must be bound before binding the track.
      *
      * @param dataSource The external data source
      * @param externalId The ID of the track in the external system
-     * @param request    The binding request containing track information
+     * @param request    The binding request containing track ID and artist external ID
      * @return The created binding information
      * @throws IllegalStateException if the artist is not bound
+     * @throws jakarta.persistence.EntityNotFoundException if the track is not found
      */
-    BoundEntityProjection bindTrack(DataSource dataSource, Long externalId, TrackBindingRequestDTO request);
+    BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, TrackBindToExistingRequestDTO request);
+    
+    /**
+     * Creates a new track and binds an external track to it.
+     * The artist must be bound before binding the track.
+     *
+     * @param dataSource The external data source
+     * @param externalId The ID of the track in the external system
+     * @param request    The binding request containing track information and artist external ID
+     * @return The created binding information
+     * @throws IllegalStateException if the artist is not bound or if track binding already exists
+     * @throws IllegalArgumentException if a track with the same name and artist already exists
+     */
+    BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, TrackCreateAndBindRequestDTO request);
     
     /**
      * Unbinds an external track from the system.
@@ -39,5 +54,4 @@ public interface TrackService {
      * @return true if the unbinding was successful, false otherwise
      */
     boolean unbindTrack(DataSource dataSource, Long externalId);
-
 }

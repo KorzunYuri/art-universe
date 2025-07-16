@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TrackBindingRequestDTO {
+public class TrackCreateAndBindRequestDTO {
     
     @NotBlank(message = "Track name is required")
     private String name;

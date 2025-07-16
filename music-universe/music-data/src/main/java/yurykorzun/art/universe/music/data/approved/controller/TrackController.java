@@ -5,7 +5,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.music.data.approved.dto.BoundEntityProjection;
-import yurykorzun.art.universe.music.data.approved.dto.TrackBindingRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.TrackBindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.TrackCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.approved.entity.DataSource;
 import yurykorzun.art.universe.music.data.approved.service.TrackService;
 
@@ -34,17 +35,31 @@ public class TrackController {
         }
     }
     
-    @PostMapping("/bind/{dataSource}/{externalId}")
-    public ResponseEntity<ResponseWrapper<BoundEntityProjection>> bindTrack(
+    @PostMapping("/bind/existing/{dataSource}/{externalId}")
+    public ResponseEntity<ResponseWrapper<BoundEntityProjection>> bindToExisting(
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId,
-        @Valid @RequestBody TrackBindingRequestDTO request
+        @Valid @RequestBody TrackBindToExistingRequestDTO request
     ) {
         try {
-            BoundEntityProjection result = trackService.bindTrack(dataSource, externalId, request);
+            BoundEntityProjection result = trackService.bindToExisting(dataSource, externalId, request);
             return ResponseWrapper.success(result);
         } catch (Exception e) {
-            return ResponseWrapper.failure(String.format("Failed to bind track: %s", e.getMessage()));
+            return ResponseWrapper.failure(String.format("Failed to bind track to existing: %s", e.getMessage()));
+        }
+    }
+    
+    @PostMapping("/bind/new/{dataSource}/{externalId}")
+    public ResponseEntity<ResponseWrapper<BoundEntityProjection>> createAndBind(
+        @PathVariable DataSource dataSource,
+        @PathVariable Long externalId,
+        @Valid @RequestBody TrackCreateAndBindRequestDTO request
+    ) {
+        try {
+            BoundEntityProjection result = trackService.createAndBind(dataSource, externalId, request);
+            return ResponseWrapper.success(result);
+        } catch (Exception e) {
+            return ResponseWrapper.failure(String.format("Failed to create and bind track: %s", e.getMessage()));
         }
     }
     

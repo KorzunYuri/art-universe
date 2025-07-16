@@ -10,7 +10,8 @@ import org.springframework.http.ResponseEntity;
 import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.music.data.approved.dto.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.approved.dto.TestBoundEntityProjectionImpl;
-import yurykorzun.art.universe.music.data.approved.dto.TrackBindingRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.TrackBindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.approved.dto.TrackCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.approved.entity.DataSource;
 import yurykorzun.art.universe.music.data.approved.service.TrackService;
 
@@ -108,14 +109,76 @@ public class TrackControllerTest {
     }
 
     @Test
-    void bindTrack_shouldReturnSuccessResponse() throws Exception {
+    void bindToExisting_shouldReturnSuccessResponse() throws Exception {
+        // Given
+        DataSource dataSource = DataSource.LASTFM;
+        Long externalId = 1L;
+        Long trackId = 123L;
+        Long artistExternalId = 100L;
+        
+        TrackBindToExistingRequestDTO request = TrackBindToExistingRequestDTO.builder()
+            .trackId(trackId)
+            .artistExternalId(artistExternalId)
+            .build();
+        
+        TestBoundEntityProjectionImpl projection = new TestBoundEntityProjectionImpl(
+            externalId, dataSource, trackId, "Test Track"
+        );
+        ResponseEntity<ResponseWrapper<BoundEntityProjection>> expectedResponse = ResponseWrapper.success(projection);
+        
+        when(trackService.bindToExisting(eq(dataSource), eq(externalId), any(TrackBindToExistingRequestDTO.class)))
+            .thenReturn(projection);
+
+        // When
+        ResponseEntity<ResponseWrapper<BoundEntityProjection>> actualResponse =
+            trackController.bindToExisting(dataSource, externalId, request);
+
+        // Then
+        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
+        assertEquals(expectedResponse, actualResponse);
+        
+        verify(trackService).bindToExisting(eq(dataSource), eq(externalId), any(TrackBindToExistingRequestDTO.class));
+    }
+    
+    @Test
+    void bindToExisting_whenExceptionThrown_shouldReturnFailureResponse() throws Exception {
+        // Given
+        DataSource dataSource = DataSource.LASTFM;
+        Long externalId = 1L;
+        Long trackId = 123L;
+        Long artistExternalId = 100L;
+        String errorMessage = "Test error";
+        
+        TrackBindToExistingRequestDTO request = TrackBindToExistingRequestDTO.builder()
+            .trackId(trackId)
+            .artistExternalId(artistExternalId)
+            .build();
+        ResponseEntity<ResponseWrapper<BoundEntityProjection>> expectedResponse =
+            ResponseWrapper.failure(String.format("Failed to bind track to existing: %s", errorMessage));
+        
+        when(trackService.bindToExisting(eq(dataSource), eq(externalId), any(TrackBindToExistingRequestDTO.class)))
+            .thenThrow(new RuntimeException(errorMessage));
+
+        // When
+        ResponseEntity<ResponseWrapper<BoundEntityProjection>> actualResponse =
+            trackController.bindToExisting(dataSource, externalId, request);
+
+        // Then
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
+        assertEquals(expectedResponse, actualResponse);
+        
+        verify(trackService).bindToExisting(eq(dataSource), eq(externalId), any(TrackBindToExistingRequestDTO.class));
+    }
+    
+    @Test
+    void createAndBind_shouldReturnSuccessResponse() throws Exception {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
         String trackName = "Test Track";
         Long artistExternalId = 100L;
         
-        TrackBindingRequestDTO request = TrackBindingRequestDTO.builder()
+        TrackCreateAndBindRequestDTO request = TrackCreateAndBindRequestDTO.builder()
             .name(trackName)
             .artistExternalId(artistExternalId)
             .build();
@@ -125,22 +188,22 @@ public class TrackControllerTest {
         );
         ResponseEntity<ResponseWrapper<BoundEntityProjection>> expectedResponse = ResponseWrapper.success(projection);
         
-        when(trackService.bindTrack(eq(dataSource), eq(externalId), any(TrackBindingRequestDTO.class)))
+        when(trackService.createAndBind(eq(dataSource), eq(externalId), any(TrackCreateAndBindRequestDTO.class)))
             .thenReturn(projection);
 
         // When
         ResponseEntity<ResponseWrapper<BoundEntityProjection>> actualResponse =
-            trackController.bindTrack(dataSource, externalId, request);
+            trackController.createAndBind(dataSource, externalId, request);
 
         // Then
         assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
         assertEquals(expectedResponse, actualResponse);
         
-        verify(trackService).bindTrack(eq(dataSource), eq(externalId), any(TrackBindingRequestDTO.class));
+        verify(trackService).createAndBind(eq(dataSource), eq(externalId), any(TrackCreateAndBindRequestDTO.class));
     }
     
     @Test
-    void bindTrack_whenExceptionThrown_shouldReturnFailureResponse() throws Exception {
+    void createAndBind_whenExceptionThrown_shouldReturnFailureResponse() throws Exception {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
@@ -148,25 +211,25 @@ public class TrackControllerTest {
         Long artistExternalId = 100L;
         String errorMessage = "Test error";
         
-        TrackBindingRequestDTO request = TrackBindingRequestDTO.builder()
+        TrackCreateAndBindRequestDTO request = TrackCreateAndBindRequestDTO.builder()
             .name(trackName)
             .artistExternalId(artistExternalId)
             .build();
         ResponseEntity<ResponseWrapper<BoundEntityProjection>> expectedResponse =
-            ResponseWrapper.failure(String.format("Failed to bind track: %s", errorMessage));
+            ResponseWrapper.failure(String.format("Failed to create and bind track: %s", errorMessage));
         
-        when(trackService.bindTrack(eq(dataSource), eq(externalId), any(TrackBindingRequestDTO.class)))
+        when(trackService.createAndBind(eq(dataSource), eq(externalId), any(TrackCreateAndBindRequestDTO.class)))
             .thenThrow(new RuntimeException(errorMessage));
 
         // When
         ResponseEntity<ResponseWrapper<BoundEntityProjection>> actualResponse =
-            trackController.bindTrack(dataSource, externalId, request);
+            trackController.createAndBind(dataSource, externalId, request);
 
         // Then
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
         assertEquals(expectedResponse, actualResponse);
         
-        verify(trackService).bindTrack(eq(dataSource), eq(externalId), any(TrackBindingRequestDTO.class));
+        verify(trackService).createAndBind(eq(dataSource), eq(externalId), any(TrackCreateAndBindRequestDTO.class));
     }
     
     @Test
