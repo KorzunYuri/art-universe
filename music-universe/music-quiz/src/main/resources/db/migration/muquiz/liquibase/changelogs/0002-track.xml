@@ -9,4 +9,12 @@
         <sqlFile path="db/migration/muquiz/liquibase/changesets/0002-track/0002-0010-track-initial.sql"/>
     </changeSet>
 
+    <changeSet id="0002-0020-track-add-unique-constraint" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0002-track/0002-0020-track-add-unique-constraint.sql"/>
+    </changeSet>
+
+    <changeSet id="0002-0030-track-rename-reference-id" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0002-track/0002-0030-track-rename-reference-id.sql"/>
+    </changeSet>
+
 </databaseChangeLog>

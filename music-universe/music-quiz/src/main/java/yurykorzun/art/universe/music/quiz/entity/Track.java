@@ -11,7 +11,7 @@ import yurykorzun.art.universe.common.persistence.entity.BaseEntity;
  */
 @Entity
 @Table(indexes = {
-    @Index(name = "idx_track_reference_id", columnList = "reference_id")
+    @Index(name = "idx_track_master_id", columnList = "master_id")
 })
 @Getter
 @Setter
@@ -30,6 +30,6 @@ public class Track extends BaseEntity {
     /**
      * Reference to the id in mu.track table
      */
-    @Column(name = "reference_id", nullable = false)
-    private Long referenceId;
+    @Column(name = "master_id", nullable = false, unique = true)
+    private Long masterId;
 }
