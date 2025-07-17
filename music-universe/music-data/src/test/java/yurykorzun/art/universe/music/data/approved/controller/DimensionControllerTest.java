@@ -102,6 +102,28 @@ class DimensionControllerTest {
     }
 
     @Test
+    void lookupDimensions_withNullName_shouldReturnSuccessResponse() {
+        // Given
+        String name = null;
+        LookupResultDTO dimension1 = new LookupResultDTO(1L, "Genre");
+        LookupResultDTO dimension2 = new LookupResultDTO(2L, "Subgenre");
+        List<LookupResultDTO> expectedDimensions = Arrays.asList(dimension1, dimension2);
+        
+        when(dimensionService.lookupDimensions(name)).thenReturn(expectedDimensions);
+        ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> expectedResponse = 
+            ResponseWrapper.success(expectedDimensions);
+
+        // When
+        ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> actualResponse = 
+            dimensionController.lookupDimensions(name, null);
+
+        // Then
+        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
+        assertEquals(expectedResponse, actualResponse);
+        verify(dimensionService).lookupDimensions(name);
+    }
+
+    @Test
     void lookupDimensions_withLimit_shouldReturnSuccessResponse() {
         // Given
         String name = "genre";

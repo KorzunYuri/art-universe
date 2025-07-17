@@ -39,7 +39,7 @@ public class DimensionController {
 
     @GetMapping("/lookup")
     public ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> lookupDimensions(
-        @RequestParam String name,
+        @RequestParam(required = false) String name,
         @RequestParam(required = false) Integer limit
     ) {
         try {

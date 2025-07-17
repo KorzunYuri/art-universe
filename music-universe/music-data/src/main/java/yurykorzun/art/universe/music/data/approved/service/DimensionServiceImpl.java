@@ -41,15 +41,20 @@ public class DimensionServiceImpl implements DimensionService {
 
     @Override
     public List<LookupResultDTO> lookupDimensions(String name, Integer limit) {
-        if (name == null || name.trim().isEmpty()) {
-            return List.of();
-        }
-        
         // Apply default limit if null
         int actualLimit = limit != null ? limit : 20;
         
-        return dimensionRepository.findByNameContainingIgnoreCase(name.trim(), actualLimit)
-            .stream()
+        List<Dimension> dimensions;
+        
+        if (name == null || name.trim().isEmpty()) {
+            // Return all dimensions if name is not provided
+            dimensions = dimensionRepository.findAllWithLimit(actualLimit);
+        } else {
+            // Return dimensions matching the name
+            dimensions = dimensionRepository.findByNameContainingIgnoreCase(name.trim(), actualLimit);
+        }
+        
+        return dimensions.stream()
             .map(dimension -> LookupResultDTO.builder()
                 .id(dimension.getId())
                 .name(dimension.getName())

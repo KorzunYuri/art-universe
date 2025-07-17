@@ -155,41 +155,80 @@ class DimensionServiceTest {
     }
 
     @Test
-    void lookupDimensions_withEmptySearchTerm_shouldReturnEmptyList() {
+    void lookupDimensions_withEmptySearchTerm_shouldReturnAllDimensions() {
         // Given
         String searchTerm = "";
+        int defaultLimit = 20;
+        
+        Dimension dimension1 = Dimension.builder().id(1L).name("Genre").build();
+        Dimension dimension2 = Dimension.builder().id(2L).name("Subgenre").build();
+        List<Dimension> dimensions = List.of(dimension1, dimension2);
+        
+        when(dimensionRepository.findAllWithLimit(defaultLimit)).thenReturn(dimensions);
         
         // When
         List<LookupResultDTO> result = dimensionService.lookupDimensions(searchTerm);
         
         // Then
-        assertTrue(result.isEmpty());
+        assertEquals(2, result.size());
+        assertEquals(1L, result.get(0).getId());
+        assertEquals("Genre", result.get(0).getName());
+        assertEquals(2L, result.get(1).getId());
+        assertEquals("Subgenre", result.get(1).getName());
+        
+        verify(dimensionRepository).findAllWithLimit(defaultLimit);
         verify(dimensionRepository, never()).findByNameContainingIgnoreCase(any(), anyInt());
     }
 
     @Test
-    void lookupDimensions_withNullSearchTerm_shouldReturnEmptyList() {
+    void lookupDimensions_withNullSearchTerm_shouldReturnAllDimensions() {
         // Given
         String searchTerm = null;
+        int defaultLimit = 20;
+        
+        Dimension dimension1 = Dimension.builder().id(1L).name("Genre").build();
+        Dimension dimension2 = Dimension.builder().id(2L).name("Subgenre").build();
+        List<Dimension> dimensions = List.of(dimension1, dimension2);
+        
+        when(dimensionRepository.findAllWithLimit(defaultLimit)).thenReturn(dimensions);
         
         // When
         List<LookupResultDTO> result = dimensionService.lookupDimensions(searchTerm);
         
         // Then
-        assertTrue(result.isEmpty());
+        assertEquals(2, result.size());
+        assertEquals(1L, result.get(0).getId());
+        assertEquals("Genre", result.get(0).getName());
+        assertEquals(2L, result.get(1).getId());
+        assertEquals("Subgenre", result.get(1).getName());
+        
+        verify(dimensionRepository).findAllWithLimit(defaultLimit);
         verify(dimensionRepository, never()).findByNameContainingIgnoreCase(any(), anyInt());
     }
 
     @Test
-    void lookupDimensions_withWhitespaceSearchTerm_shouldReturnEmptyList() {
+    void lookupDimensions_withWhitespaceSearchTerm_shouldReturnAllDimensions() {
         // Given
         String searchTerm = "   ";
+        int defaultLimit = 20;
+        
+        Dimension dimension1 = Dimension.builder().id(1L).name("Genre").build();
+        Dimension dimension2 = Dimension.builder().id(2L).name("Subgenre").build();
+        List<Dimension> dimensions = List.of(dimension1, dimension2);
+        
+        when(dimensionRepository.findAllWithLimit(defaultLimit)).thenReturn(dimensions);
         
         // When
         List<LookupResultDTO> result = dimensionService.lookupDimensions(searchTerm);
         
         // Then
-        assertTrue(result.isEmpty());
+        assertEquals(2, result.size());
+        assertEquals(1L, result.get(0).getId());
+        assertEquals("Genre", result.get(0).getName());
+        assertEquals(2L, result.get(1).getId());
+        assertEquals("Subgenre", result.get(1).getName());
+        
+        verify(dimensionRepository).findAllWithLimit(defaultLimit);
         verify(dimensionRepository, never()).findByNameContainingIgnoreCase(any(), anyInt());
     }
 

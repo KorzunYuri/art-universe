@@ -40,6 +40,16 @@ public interface DimensionRepository extends JpaRepository<Dimension, Long> {
     List<Dimension> findByNameContainingIgnoreCase(@Param("searchTerm") String searchTerm, @Param("limit") int limit);
     
     /**
+     * Find all dimensions with sorting by name in ascending order and limiting results
+     * 
+     * @param limit Maximum number of results to return
+     * @return List of all dimensions, sorted by name
+     */
+    @Query(value = "SELECT d.* FROM dimension d ORDER BY d.name ASC LIMIT :limit", 
+           nativeQuery = true)
+    List<Dimension> findAllWithLimit(@Param("limit") int limit);
+    
+    /**
      * Find dimension by exact name (case insensitive)
      * 
      * @param name The dimension name to search for
