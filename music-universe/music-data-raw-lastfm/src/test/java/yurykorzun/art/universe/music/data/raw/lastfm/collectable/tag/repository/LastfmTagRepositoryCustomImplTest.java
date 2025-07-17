@@ -224,6 +224,31 @@ class LastfmTagRepositoryCustomImplTest extends JpaOnlyTest {
         assertEquals(ApprovalStatus.APPROVED.getCode(), result2.get(0).entityApprovalStatus());
     }
     
+    @Test
+    void findTagsByEntityWithFilters_shouldHandleNullUsageCount() {
+        // Given
+        LastfmArtist artist = dbHelper.createAndSaveArtist();
+        LastfmTag tag = dbHelper.createAndSaveTag(builder -> builder.name("nullUsageTag"));
+        
+        // Create relation with null usage count
+        LastfmArtistTag artistTag = dbHelper.createAndSaveArtistTag(builder -> builder
+            .artist(artist)
+            .tag(tag)
+            .usageCount(null));
+        
+        // When
+        Pageable pageable = PageRequest.of(0, 10);
+        List<EntityTagDto> result = customRepository.findTagsByEntityWithFilters(
+            LastfmEntityType.ARTIST, artist.getId(), null, null, pageable);
+        
+        // Then
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("nullUsageTag", result.get(0).name());
+        // Should return 0 instead of null due to COALESCE
+        assertEquals(Integer.valueOf(0), result.get(0).usageCount());
+    }
+    
     private String getEntityName(Class<?> entityClass) {
         Entity entityAnnotation = entityClass.getAnnotation(Entity.class);
         return entityAnnotation != null ? entityAnnotation.name() : entityClass.getSimpleName().toLowerCase();

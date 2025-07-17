@@ -88,7 +88,7 @@ public class LastfmTagRepositoryCustomImpl implements LastfmTagRepositoryCustom 
         }
         
         StringBuilder queryBuilder = new StringBuilder();
-        queryBuilder.append("SELECT t, e.approvalStatus, rel.usageCount FROM tag t ");
+        queryBuilder.append("SELECT t, e.approvalStatus, COALESCE(rel.usageCount, 0) FROM tag t ");
         queryBuilder.append("JOIN ").append(relationTableName).append(" rel ");
         queryBuilder.append("ON t.id = rel.tag.id ");
         queryBuilder.append("JOIN rel.").append(entityFieldName).append(" e ");
