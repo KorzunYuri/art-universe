@@ -1,8 +1,10 @@
 import axios from 'axios';
 import { MusicDataConfig } from '../config/musicdataconfig';
-import type { BoundEntity, BoundEntityResponse } from '@/music-universe/shared/types/bindable';
+import type { MasterEntity } from '@/music-universe/shared/types/entity-reference';
+import type { BoundEntityResponse } from '@/music-universe/shared/types/master';
 import type { ApiResponse } from '@/music-universe/shared/types/api-response';
 import type { LookupEntity } from '@/music-universe/shared/types/lookup';
+import { createMasterEntity } from '@/music-universe/shared/utils/entity-helpers';
 
 export interface TrackBindingRequest {
     name: string;
@@ -59,7 +61,6 @@ export async function fetchBoundTracks(externalIds: number[]): Promise<BoundEnti
         );
 
         if (response.data.success) {
-            console.log(`🎯 Found ${response.data.data.length} bound tracks`);
             return response.data.data;
         } else {
             console.warn(`⚠️ API returned success=false: ${response.data.message}`);
@@ -79,9 +80,8 @@ export async function fetchBoundTracks(externalIds: number[]): Promise<BoundEnti
  * @param artistExternalId The LastFM artist ID
  * @returns The bound track if successful, null otherwise
  */
-export async function bindTrack(externalId: number, trackName: string, artistExternalId: number): Promise<BoundEntity | null> {
+export async function bindTrack(externalId: number, trackName: string, artistExternalId: number): Promise<MasterEntity | null> {
     try {
-        console.log(`🔗 Binding track ${externalId} with name "${trackName}" and artist ${artistExternalId}`);
         const request: TrackBindingRequest = {
             name: trackName,
             artistExternalId: artistExternalId
@@ -93,10 +93,10 @@ export async function bindTrack(externalId: number, trackName: string, artistExt
         );
 
         if (response.data.success && response.data.data) {
-            return {
-                referenceId: response.data.data.referenceId,
-                referenceName: response.data.data.referenceName
-            };
+            return createMasterEntity(
+                response.data.data.masterId,
+                response.data.data.masterName
+            );
         }
 
         return null;
@@ -114,15 +114,13 @@ export async function bindTrack(externalId: number, trackName: string, artistExt
  */
 export async function unbindTrack(externalId: number): Promise<boolean> {
     try {
-        console.log(`🔓 Unbinding track ${externalId}`);
-
         const response = await axios.delete<ApiResponse<boolean>>(
             `${MusicDataConfig.baseApiUrl}/tracks/unbind/LASTFM/${externalId}`
         );
 
         return response.data.success ? response.data.data : false;
     } catch (error) {
-        console.error('❌ Error unbinding track:', error);
+        console.error('Error unbinding track:', error);
         return false;
     }
 }

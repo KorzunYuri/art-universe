@@ -10,51 +10,56 @@ React application providing management interface for Art Universe music data. Al
 
 ### Data Sources Integration
 - **LastFM Module** - Manage LastFM artists, tracks, tags with approval workflow
-- **Music Data Module** - Bind external entities to internal approved entities
+- **Music Data Module** - Manage master entities and bind raw entities to them
+- **Music Quiz Module** - Manage quiz entities and bind master entities to them
 - **Future**: MusicBrainz, AlbumOfTheYear, Spotify integration
 
 ### Core UI Components
 - `EntityTable` - Generic table for entity management with pagination/search
 - `ApprovalToggle` - Toggle approval status (PENDING/APPROVED/DECLINED)
-- `EntityBinding` - Bind external entities to internal approved entities
+- `EntityBinding` - Bind raw entities to master entities
 - `PaginatedResource` - Custom hook for API data management
+
+### Entity Architecture
+- **Raw Entities** - Entities from external sources (e.g., LastFM artists, tracks, tags)
+- **Master Entities** - Curated entities in Music Data module
 
 ### Page Components
 
-#### Lastfm
+#### Lastfm (Raw Entities)
 
-- `LastfmArtists` - Manage LastFM artists with binding to Music Data
+- `LastfmArtists` - Manage LastFM artists with binding to master artists
 - `LastfmTracks` - Manage LastFM tracks with complex binding workflow
 - `LastfmTags` - Manage LastFM tags with approval controls
 - Navigation between different data sources and entity types
 
-#### Approved entities (belong to music-data module)
+#### Music Data (Master Entities)
 
-- `Categories` - for associating artists, albums & tracks with categories
-- `Dimensions` - categories' dimensions. Any category belongs to one dimension only and inherits dimension from its parent.
-- `Artists` - future development
-- `Albums` - future development
-- `Tracks` - future development
+- `Categories` - Master categories for associating with artists, albums & tracks
+- `Dimensions` - Category dimensions. Any category belongs to one dimension only and inherits dimension from its parent.
+- `Artists` - Master artists (future development)
+- `Albums` - Master albums (future development)
+- `Tracks` - Master tracks (future development)
 
 ## Data Flow Patterns
 
 ### Retrieval flow
-1. Load paginated entities from LastFM API
-2. Load bound entities from Music Data API
-3. (future) load binding statuses from Music Quiz API
+1. Load paginated raw entities from LastFM API
+2. Load bound master entities from Music Data API
+3. Load quiz binding statuses from Music Quiz API
 
-### Data source scoped approval flow (e.g. Lastfm)
+### Raw entity approval flow (e.g. Lastfm)
 1. Update entity status in data source related API (e.g. Lastfm)
 
-### Music Data scoped approval flow
-1. Ensure containing entity is approved in data source related API (e.g. Lastfm)
-2. Ensure containing entity is bound to Music Data
-3. Ensure managed entity is approved in data source API
-4. Ensure managed entity is bound to Music Data
+### Master entity binding flow
+1. Ensure raw entity is approved in its source API (e.g. Lastfm)
+2. Bind raw entity to master entity in Music Data
+3. Update UI to reflect binding status
 
-### Music Quiz approval flow (future)
-1. repeat Music Data approval flow
-2. update entity approval status in Music Quiz
+### Quiz binding flow
+1. Ensure raw entity is bound to master entity
+2. Bind master entity to quiz module
+3. Update UI to reflect quiz binding status
 
 ### Approval System
 - **PENDING** (1) - Default state from external APIs
@@ -64,13 +69,14 @@ React application providing management interface for Art Universe music data. Al
 
 ## API Integration
 
-### LastFM API Client
+### LastFM API Client (Raw Entities)
 - `fetchArtists`, `fetchTracks`, `fetchTags` - Paginated entity retrieval
 - `updateArtistApprovalStatus`, `updateTrackApprovalStatus`, `updateTagApprovalStatus` - Approval management
 
-### Music Data API Client
-
-Watch **[Music Data docs](../music-data/KNOWLEDGE_BASE.md#api-conventions)**
+### Music Data API Client (Master Entities)
+- `bindArtistToExisting`, `createAndBindArtist`, `unbindArtist` - Artist binding operations
+- `bindCategoryToExisting`, `createAndBindCategory`, `unbindCategory` - Category binding operations
+- `bindTrack`, `unbindTrack` - Track binding operations
 
 ## Technology Stack
 
@@ -119,15 +125,23 @@ src/music-universe/
 │   ├── components/          # Reusable UI components
 │   ├── hooks/               # Custom React hooks
 │   └── types/               # TypeScript type definitions
-├── sources/                 # Source-specific modules
+├── sources/                 # Source-specific modules (raw entities)
 │   ├── lastfm/              # LastFM-specific components
-│   └── music-data/          # Music Data API integration
+│   └── adapters/            # Adapters for raw entities
+├── music-data/              # Music Data integration (master entities)
+│   ├── api/                 # API clients for master entities
+│   ├── components/          # Components for master entities
+│   ├── types/               # Types for master entities
+│   └── adapters/            # Adapters for master entities
+├── music-quiz/              # Music Quiz integration
+│   ├── api/                 # API clients for quiz bindings
+│   └── components/          # Components for quiz bindings
 └── main.tsx                 # Application entry point
 ```
 
 ## Integration Points
 
-- **LastFM Raw Data Service** - Entity management and approval
-- **Music Data Service** - Entity binding operations
-- **Music Quiz Service** - Future quiz management interface
+- **LastFM Raw Data Service** - Raw entity management and approval
+- **Music Data Service** - Master entity management and binding
+- **Music Quiz Service** - Quiz binding operations
 - **External Links** - Direct links to LastFM, MusicBrainz pages

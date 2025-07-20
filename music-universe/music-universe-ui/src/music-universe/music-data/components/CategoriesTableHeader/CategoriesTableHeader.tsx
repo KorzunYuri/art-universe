@@ -1,5 +1,5 @@
 import styles from './CategoriesTableHeader.module.css';
-import sharedStyles from "@/music-universe/shared/components/EntityTable/EntityTableStyles.module.scss";
+import sharedStyles from "@/music-universe/shared/components/BaseEntityTable/EntityTableStyles.module.scss";
 
 interface Props {
     sort: string

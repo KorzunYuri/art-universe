@@ -1,6 +1,6 @@
 import { LastfmConfig } from "@/music-universe/sources/lastfm/config/lastfmconfig";
 import type { Page } from "@/music-universe/shared/types/page";
-import type { LastfmTag } from "@/music-universe/sources/lastfm/types/lastfm-tag";
+import { LastfmTag, createLastfmTag, type LastfmTagDto } from "@/music-universe/sources/lastfm/types/lastfm-tag";
 import axios from 'axios';
 
 export interface TagSearchParams {
@@ -31,7 +31,12 @@ export async function fetchTags(params: TagSearchParams): Promise<Page<LastfmTag
         }
     );
 
-    return response.data.data;
+    // Convert plain objects to LastfmTag instances
+    const data = response.data.data;
+    return {
+        ...data,
+        content: data.content.map((tagDto: LastfmTagDto) => createLastfmTag(tagDto))
+    };
 }
 
 /**
@@ -46,7 +51,8 @@ export async function updateTagApprovalStatus(id: number, newStatus: number): Pr
         approvalStatus: newStatus,
     });
 
-    return response.data.data;
+    // Convert plain object to LastfmTag instance
+    return createLastfmTag(response.data.data);
 }
 
 /**

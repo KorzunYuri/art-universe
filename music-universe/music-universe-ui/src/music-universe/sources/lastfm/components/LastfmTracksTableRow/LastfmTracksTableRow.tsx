@@ -6,54 +6,47 @@ import { ApprovalToggle } from "@/music-universe/sources/lastfm/components";
 // backend services
 import { LastfmConfig } from "@/music-universe/sources/lastfm/config/lastfmconfig.ts";
 import type { LastfmTrack } from "@/music-universe/sources/lastfm/types/lastfm-track";
-import { updateTrackApprovalStatus } from "@/music-universe/sources/lastfm/api/lastfm-tracks.ts";
+import { updateApprovalStatus } from "@/music-universe/sources/lastfm/api/lastfm-common.ts";
+// types
+import type { RawEntityTableRow } from "@/music-universe/shared/types/table-row";
 // styles
-import sharedTableStyles from "@/music-universe/shared/components/EntityTable/EntityTableStyles.module.scss";
+import sharedTableStyles from "@/music-universe/shared/components/BaseEntityTable/EntityTableStyles.module.scss";
 import trackTableStyles from "../LastfmTracksTable/LastfmTracksTable.module.css";
 
-interface LastfmTrackTableRowProps {
-    track: LastfmTrack,
-    onChange: (track: LastfmTrack) => void
+interface LastfmTrackTableRowProps extends RawEntityTableRow<LastfmTrack> {
 }
 
-export const LastfmTracksTableRow = ({track, onChange}: LastfmTrackTableRowProps) => {
+export const LastfmTracksTableRow = ({entity}: LastfmTrackTableRowProps) => {
     const [isApproving, setIsApproving] = useState(false);
 
     function onStatusChange(trackToUpdate: LastfmTrack, newStatus: number) {
         setIsApproving(true);
-        updateTrackApprovalStatus(trackToUpdate.id, newStatus)
-            .then(updatedTrack => {
-                // Preserve the boundEntity information when updating approval status
-                onChange({
-                    ...updatedTrack,
-                    boundEntity: track.boundEntity
-                });
-            })
+        updateApprovalStatus(trackToUpdate, newStatus)
             .finally(() => {
                 setIsApproving(false);
             });
     }
 
     return (
-        <div key={track.id} className={sharedTableStyles.row}>
+        <div key={entity.id} className={sharedTableStyles.row}>
             <div className={`${sharedTableStyles.cell} ${trackTableStyles.artist}`}>
-                {track.artist && <ReadonlyAttr value={track.artist.name} />}
+                {entity.artist && <ReadonlyAttr value={entity.artist.name} />}
             </div>
             
             <div className={`${sharedTableStyles.cell} ${trackTableStyles.name}`}>
-                {track.url && <ExternalLink href={track.url} label={track.name}/>}
+                {entity.url && <ExternalLink href={entity.url} label={entity.name}/>}
             </div>
 
             <div className={`${sharedTableStyles.cell} ${trackTableStyles.mbid}`}>
-                {track.mbid && <ExternalLink
-                        href={`${LastfmConfig.mbBaseUrls.track}${track.mbid}`}
+                {entity.mbid && <ExternalLink
+                        href={`${LastfmConfig.mbBaseUrls.track}${entity.mbid}`}
                         label="MusicBrainz"/>}
             </div>
 
             <div className={`${sharedTableStyles.cell} ${trackTableStyles.status}`}>
                 <ApprovalToggle
-                    status={track.approvalStatus}
-                    onChange={(newStatus) => onStatusChange(track, newStatus)}
+                    status={entity.approvalStatus}
+                    onChange={(newStatus) => onStatusChange(entity, newStatus)}
                     disabled={isApproving}
                 />
             </div>
@@ -64,11 +57,11 @@ export const LastfmTracksTableRow = ({track, onChange}: LastfmTrackTableRowProps
             </div>
 
             <div className={`${sharedTableStyles.cell} ${trackTableStyles.count}`}>
-                <ReadonlyAttr value={track.playCount}/>
+                <ReadonlyAttr value={entity.playCount}/>
             </div>
 
             <div className={`${sharedTableStyles.cell} ${trackTableStyles.count}`}>
-                <ReadonlyAttr value={track.listenersCount}/>
+                <ReadonlyAttr value={entity.listenersCount}/>
             </div>
         </div>
     );

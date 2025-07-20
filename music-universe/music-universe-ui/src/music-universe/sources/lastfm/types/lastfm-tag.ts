@@ -1,5 +1,7 @@
-import type { Approvable } from "@/music-universe/shared/types/approvable";
-import type { Bindable, BoundEntity } from "@/music-universe/shared/types/bindable";
+import { BaseRawEntity } from "@/music-universe/shared/types/entity-reference";
+import { MusicDataEntityType } from "@/music-universe/music-data/constants/entityTypes";
+import type { LastfmEntity } from "./lastfm-entity";
+import type { Category } from "@/music-universe/music-data/types/master-entities";
 
 export interface LastfmTagDto {
     id: number;
@@ -10,6 +12,35 @@ export interface LastfmTagDto {
     usageUsersCount: number | null;
 }
 
-export interface LastfmTag extends LastfmTagDto, Approvable, Bindable {
-    boundEntity?: BoundEntity;
+/**
+ * LastFM Tag entity that extends BaseRawEntity and implements LastfmEntity
+ */
+export class LastfmTag extends BaseRawEntity<Category> implements LastfmEntity<Category> {
+    url: string | null;
+    approvalStatus: number;
+    usageCount: number | null;
+    usageUsersCount: number | null;
+
+    constructor(data: LastfmTagDto, masterEntity?: Category) {
+        super(data.id, data.name, masterEntity);
+        this.url = data.url;
+        this.approvalStatus = data.approvalStatus;
+        this.usageCount = data.usageCount;
+        this.usageUsersCount = data.usageUsersCount;
+    }
+
+    getEntityType(): string {
+        return MusicDataEntityType.CATEGORY;
+    }
+    
+    setApprovalStatus(approvalStatus: number): void {
+        this.approvalStatus = approvalStatus;
+    }
+}
+
+/**
+ * Factory function to create LastfmTag from API response
+ */
+export function createLastfmTag(data: LastfmTagDto, masterEntity?: Category): LastfmTag {
+    return new LastfmTag(data, masterEntity);
 }

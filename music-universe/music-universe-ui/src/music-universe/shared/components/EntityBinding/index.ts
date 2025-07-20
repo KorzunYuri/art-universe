@@ -1,1 +1,1 @@
-export { EntityBinding } from './EntityBinding';
+export { EntityBinding } from './EntityBinding.tsx';

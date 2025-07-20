@@ -1,8 +1,10 @@
 import axios from 'axios';
 import { MusicDataConfig } from '../config/musicdataconfig';
-import type { BoundEntity, BoundEntityResponse } from '@/music-universe/shared/types/bindable';
+import type { MasterEntity } from '@/music-universe/shared/types/entity-reference';
+import type { BoundEntityResponse } from '@/music-universe/shared/types/master';
 import type { ApiResponse } from '@/music-universe/shared/types/api-response';
 import type { LookupEntity, BatchLookupRequestDTO, BatchLookupResponseDTO } from '@/music-universe/shared/types/lookup';
+import { createMasterEntity } from '@/music-universe/shared/utils/entity-helpers';
 
 export interface ArtistBindToExistingRequest {
     artistId: number;
@@ -59,19 +61,13 @@ export async function batchLookupArtists(names: string[], limit: number = 10): P
             limit 
         };
 
-        console.log(`🔍 Batch looking up ${names.length} artists`);
         const response = await axios.post<ApiResponse<BatchLookupResponseDTO>>(url, request);
-        
-        if (response.data.success) {
-            const resultCount = Object.keys(response.data.data.results).length;
-            console.log(`✅ Batch lookup successful: found matches for ${resultCount} artists`);
-        }
         
         return response.data;
     } catch (error) {
-        console.error('❌ Error batch looking up artists:', error);
+        console.error('Error batch looking up artists:', error);
         if (axios.isAxiosError(error)) {
-            console.error('❌ Axios error details:', {
+            console.error('Axios error details:', {
                 status: error.response?.status,
                 statusText: error.response?.statusText,
                 data: error.response?.data
@@ -104,14 +100,13 @@ export async function fetchBoundArtists(externalIds: number[]): Promise<BoundEnt
         );
 
         if (response.data.success) {
-            console.log(`🎯 Found ${response.data.data.length} bound artists`);
             return response.data.data;
         } else {
-            console.warn(`⚠️ API returned success=false: ${response.data.message}`);
+            console.warn(`API returned success=false: ${response.data.message}`);
             return [];
         }
     } catch (error) {
-        console.error('❌ Error fetching bound artists:', error);
+        console.error('Error fetching bound artists:', error);
         return [];
     }
 }
@@ -123,9 +118,8 @@ export async function fetchBoundArtists(externalIds: number[]): Promise<BoundEnt
  * @param artistId The existing artist ID in music-data
  * @returns The bound artist if successful, null otherwise
  */
-export async function bindArtistToExisting(externalId: number, artistId: number): Promise<BoundEntity | null> {
+export async function bindArtistToExisting(externalId: number, artistId: number): Promise<MasterEntity | null> {
     try {
-        console.log(`🔗 Binding artist ${externalId} to existing artist ${artistId}`);
         const request: ArtistBindToExistingRequest = { artistId };
         
         const response = await axios.post<ApiResponse<BoundEntityResponse>>(
@@ -134,10 +128,10 @@ export async function bindArtistToExisting(externalId: number, artistId: number)
         );
         
         if (response.data.success && response.data.data) {
-            return {
-                referenceId: response.data.data.referenceId,
-                referenceName: response.data.data.referenceName
-            };
+            return createMasterEntity(
+                response.data.data.masterId,
+                response.data.data.masterName
+            );
         }
         
         return null;
@@ -154,9 +148,8 @@ export async function bindArtistToExisting(externalId: number, artistId: number)
  * @param artistName The name of the new artist
  * @returns The bound artist if successful, null otherwise
  */
-export async function createAndBindArtist(externalId: number, artistName: string): Promise<BoundEntity | null> {
+export async function createAndBindArtist(externalId: number, artistName: string): Promise<MasterEntity | null> {
     try {
-        console.log(`🔗 Creating and binding new artist ${externalId} with name "${artistName}"`);
         const request: ArtistCreateAndBindRequest = { name: artistName };
         
         const response = await axios.post<ApiResponse<BoundEntityResponse>>(
@@ -165,10 +158,10 @@ export async function createAndBindArtist(externalId: number, artistName: string
         );
         
         if (response.data.success && response.data.data) {
-            return {
-                referenceId: response.data.data.referenceId,
-                referenceName: response.data.data.referenceName
-            };
+            return createMasterEntity(
+                response.data.data.masterId,
+                response.data.data.masterName
+            );
         }
         
         return null;
@@ -186,8 +179,6 @@ export async function createAndBindArtist(externalId: number, artistName: string
  */
 export async function unbindArtist(externalId: number): Promise<boolean> {
     try {
-        console.log(`🔓 Unbinding artist ${externalId}`);
-        
         const response = await axios.delete<ApiResponse<boolean>>(
             `${MusicDataConfig.baseApiUrl}/artists/unbind/LASTFM/${externalId}`
         );

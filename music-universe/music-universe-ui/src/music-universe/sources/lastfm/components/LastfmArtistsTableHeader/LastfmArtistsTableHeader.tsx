@@ -1,5 +1,5 @@
 import styles from './LastfmArtistsTableHeader.module.css';
-import sharedStyles from "@/music-universe/shared/components/EntityTable/EntityTableStyles.module.scss";
+import sharedStyles from "@/music-universe/shared/components/BaseEntityTable/EntityTableStyles.module.scss";
 import artistStyles from "@/music-universe/sources/lastfm/components/LastfmArtistsTable/LastfmArtistsTable.module.css";
 
 interface Props {

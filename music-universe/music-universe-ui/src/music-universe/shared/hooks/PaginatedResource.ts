@@ -61,7 +61,6 @@ export function PaginatedResource<T>(
 
     return {
         data,
-        setData,
         loading,
         searchInput,
         setSearchInput,

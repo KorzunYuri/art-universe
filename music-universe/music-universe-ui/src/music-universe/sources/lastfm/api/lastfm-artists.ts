@@ -1,6 +1,6 @@
 import {LastfmConfig} from "@/music-universe/sources/lastfm/config/lastfmconfig.ts"
 import type {Page} from "@/music-universe/shared/types/page.ts";
-import type {LastfmArtist} from "@/music-universe/sources/lastfm/types/lastfm-artist.ts";
+import { LastfmArtist, createLastfmArtist, type LastfmTrackArtistDto } from "@/music-universe/sources/lastfm/types/lastfm-artist.ts";
 import axios from 'axios'
 
 export interface ArtistSearchParams {
@@ -28,7 +28,12 @@ export async function fetchArtists(params: ArtistSearchParams): Promise<Page<Las
             },
         });
 
-    return response.data.data;
+    // Convert plain objects to LastfmArtist instances
+    const data = response.data.data;
+    return {
+        ...data,
+        content: data.content.map((artistDto: LastfmTrackArtistDto) => createLastfmArtist(artistDto))
+    };
 }
 
 export async function updateArtistApprovalStatus(id: number, newStatus: number): Promise<LastfmArtist> {
@@ -36,5 +41,6 @@ export async function updateArtistApprovalStatus(id: number, newStatus: number):
         approvalStatus: newStatus,
     });
 
-    return response.data.data;
+    // Convert plain object to LastfmArtist instance
+    return createLastfmArtist(response.data.data);
 }

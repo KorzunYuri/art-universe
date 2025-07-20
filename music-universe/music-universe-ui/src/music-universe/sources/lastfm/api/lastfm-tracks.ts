@@ -1,6 +1,6 @@
 import { LastfmConfig } from "@/music-universe/sources/lastfm/config/lastfmconfig";
 import type { Page } from "@/music-universe/shared/types/page";
-import type { LastfmTrack } from "@/music-universe/sources/lastfm/types/lastfm-track";
+import { LastfmTrack, createLastfmTrack, type LastfmTrackDto } from "@/music-universe/sources/lastfm/types/lastfm-track";
 import axios from 'axios';
 
 export interface TrackSearchParams {
@@ -37,7 +37,12 @@ export async function fetchTracks(params: TrackSearchParams): Promise<Page<Lastf
         }
     );
 
-    return response.data.data;
+    // Convert plain objects to LastfmTrack instances
+    const data = response.data.data;
+    return {
+        ...data,
+        content: data.content.map((trackDto: LastfmTrackDto) => createLastfmTrack(trackDto))
+    };
 }
 
 /**
@@ -52,5 +57,6 @@ export async function updateTrackApprovalStatus(id: number, newStatus: number): 
         approvalStatus: newStatus,
     });
 
-    return response.data.data;
+    // Convert plain object to LastfmTrack instance
+    return createLastfmTrack(response.data.data);
 }

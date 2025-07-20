@@ -1,4 +1,5 @@
 export * from "./ApprovalToggle"
+export * from "./LastfmEntityTable"
 export * from "./LastfmArtistsTable"
 export * from "./LastfmArtistsTableHeader"
 export * from "./LastfmArtistsTableRow"

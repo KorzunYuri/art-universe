@@ -3,28 +3,29 @@ import { useState, useEffect } from "react";
 // components
 import { EditableText } from "@/music-universe/shared/components";
 // types
-import type { Dimension, DimensionSaveRequest } from "@/music-universe/music-data/api/music-data-dimensions";
+import type { Dimension } from '@/music-universe/music-data/types/master-entities';
+import type { DimensionSaveRequest } from "@/music-universe/music-data/api/music-data-dimensions";
+import type { MasterEntityTableRow } from "@/music-universe/shared/types/table-row";
 // api
 import { saveDimension } from "@/music-universe/music-data/api/music-data-dimensions";
 // styles
-import sharedStyles from "@/music-universe/shared/components/EntityTable/EntityTableStyles.module.scss";
+import sharedStyles from "@/music-universe/shared/components/BaseEntityTable/EntityTableStyles.module.scss";
 import styles from "./DimensionsTableRow.module.css";
 
-interface DimensionsTableRowProps {
-    dimension: Dimension;
-    onChange: (dimension: Dimension) => void;
+interface DimensionsTableRowProps extends MasterEntityTableRow<Dimension> {
+    // no dimension-unique fields
 }
 
-export const DimensionsTableRow = ({ dimension, onChange }: DimensionsTableRowProps) => {
-    const [editedName, setEditedName] = useState(dimension.name);
+export const DimensionsTableRow = ({ entity }: DimensionsTableRowProps) => {
+    const [editedName, setEditedName] = useState(entity.name);
     const [isDirty, setIsDirty] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
     // Sync with external dimension changes
     useEffect(() => {
-        setEditedName(dimension.name);
+        setEditedName(entity.name);
         setIsDirty(false);
-    }, [dimension.name]);
+    }, [entity.name]);
 
     const handleSave = async () => {
         console.log('💾 DimensionsTableRow handleSave called:', { isDirty, editedName: editedName.trim() });
@@ -33,23 +34,22 @@ export const DimensionsTableRow = ({ dimension, onChange }: DimensionsTableRowPr
         setIsSaving(true);
         try {
             const saveRequest: DimensionSaveRequest = {
-                id: dimension.id,
+                id: entity.id,
                 name: editedName.trim()
             };
 
             const savedDimension = await saveDimension(saveRequest);
             if (savedDimension) {
                 console.log('✅ Dimension saved successfully:', savedDimension.id);
-                onChange(savedDimension);
             } else {
                 console.error('❌ Failed to save dimension');
                 // Reset to original value on failure
-                setEditedName(dimension.name);
+                setEditedName(entity.name);
             }
         } catch (error) {
             console.error('❌ Error saving dimension:', error);
             // Reset to original value on error
-            setEditedName(dimension.name);
+            setEditedName(entity.name);
         } finally {
             setIsSaving(false);
         }
@@ -67,7 +67,7 @@ export const DimensionsTableRow = ({ dimension, onChange }: DimensionsTableRowPr
         <div className={sharedStyles.row}>
             <div className={`${sharedStyles.cell} ${styles.name}`}>
                 <EditableText
-                    value={dimension.name}
+                    value={entity.name}
                     onChange={handleNameChange}
                     onDirtyChange={handleDirtyChange}
                     placeholder="Dimension name"

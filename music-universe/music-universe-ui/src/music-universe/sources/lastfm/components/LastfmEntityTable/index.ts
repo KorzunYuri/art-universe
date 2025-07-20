@@ -1,0 +1,1 @@
+export { LastfmEntityTable } from './LastfmEntityTable';

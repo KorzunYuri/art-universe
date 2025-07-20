@@ -94,6 +94,12 @@
     text-align: left;
 }
 
+.quiz {
+    flex: 3;
+    display: flex;
+    justify-content: center;
+}
+
 .count {
     flex: 3;
     text-align: right;

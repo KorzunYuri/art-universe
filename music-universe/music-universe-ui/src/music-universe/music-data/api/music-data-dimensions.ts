@@ -3,8 +3,9 @@ import { MusicDataConfig } from '../config/musicdataconfig';
 import type { ApiResponse } from '@/music-universe/shared/types/api-response';
 import type { Page } from '@/music-universe/shared/types/page';
 import type { LookupEntity } from '@/music-universe/shared/types/lookup';
+import { type Dimension, DimensionImpl } from '@/music-universe/music-data/types/master-entities';
 
-export interface Dimension {
+export interface DimensionDto {
     id: number;
     name: string;
 }
@@ -22,6 +23,13 @@ export interface DimensionSaveRequest {
 }
 
 /**
+ * Creates Dimension from DTO
+ */
+function createDimension(dto: DimensionDto): Dimension {
+    return new DimensionImpl(dto.id, dto.name);
+}
+
+/**
  * Fetches dimensions from the Music Data API
  * 
  * @param params Search parameters
@@ -29,7 +37,7 @@ export interface DimensionSaveRequest {
  */
 export async function fetchDimensions(params: DimensionSearchParams): Promise<Page<Dimension>> {
     try {
-        const response = await axios.get<ApiResponse<Page<Dimension>>>(
+        const response = await axios.get<ApiResponse<Page<DimensionDto>>>(
             `${MusicDataConfig.baseApiUrl}/dimensions/search`,
             {
                 params: {
@@ -41,7 +49,11 @@ export async function fetchDimensions(params: DimensionSearchParams): Promise<Pa
             }
         );
 
-        return response.data.data;
+        const data = response.data.data;
+        return {
+            ...data,
+            content: data.content.map(createDimension)
+        };
     } catch (error) {
         console.error('❌ Error loading dimensions:', error);
         throw error;
@@ -90,13 +102,13 @@ export async function saveDimension(dimension: DimensionSaveRequest): Promise<Di
     try {
         console.log(`💾 Saving dimension:`, dimension.name);
         
-        const response = await axios.post<ApiResponse<Dimension>>(
+        const response = await axios.post<ApiResponse<DimensionDto>>(
             `${MusicDataConfig.baseApiUrl}/dimensions`,
             dimension
         );
         
         if (response.data.success && response.data.data) {
-            return response.data.data;
+            return createDimension(response.data.data);
         }
         
         return null;

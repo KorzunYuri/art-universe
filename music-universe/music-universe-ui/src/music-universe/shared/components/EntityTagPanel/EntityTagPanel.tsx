@@ -43,7 +43,7 @@ export const EntityTagPanel = ({
     try {
       // 1. Load tags from LastFM API
       const entityTags = await fetchEntityTags(entityType, entityId, {
-        minUsageCount: 1 // Only show tags with at least 1 usage
+        minUsageCount: 0 // Show all tags, including those with null usage count
       });
       
       console.log('EntityTags from LastFM:', entityTags);
