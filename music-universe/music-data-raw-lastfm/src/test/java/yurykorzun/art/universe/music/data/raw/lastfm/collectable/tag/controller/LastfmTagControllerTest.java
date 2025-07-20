@@ -11,13 +11,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.EntityTagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.EntityTagSearchParams;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.LastfmTagResponseDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.service.LastfmTagService;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -32,6 +36,75 @@ class LastfmTagControllerTest {
 
     @InjectMocks
     private LastfmTagController controller;
+
+    @Test
+    void getTagById_shouldReturnTagWhenFound() {
+        // Given
+        Long tagId = 1L;
+        LastfmTag tag = LastfmTag.builder()
+            .id(tagId)
+            .name("rock")
+            .url("https://example.com/tag/rock")
+            .usageCount(5000)
+            .usageUsersCount(1000)
+            .approvalStatus(ApprovalStatus.APPROVED)
+            .apiCall(mock(LastfmApiCall.class))
+            .build();
+
+        when(tagService.findById(tagId)).thenReturn(Optional.of(tag));
+
+        // When
+        ResponseEntity<ResponseWrapper<LastfmTagResponseDto>> response = controller.getTagById(tagId);
+
+        // Then
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        ResponseWrapper<LastfmTagResponseDto> body = response.getBody();
+        assertNotNull(body);
+        assertTrue(body.isSuccess());
+
+        LastfmTagResponseDto data = body.getData();
+        assertNotNull(data);
+        assertEquals(tagId, data.id());
+        assertEquals("rock", data.name());
+        assertEquals("https://example.com/tag/rock", data.url());
+        assertEquals(ApprovalStatus.APPROVED.getCode(), data.approvalStatus());
+        assertEquals(5000, data.usageCount());
+        assertEquals(1000, data.usageUsersCount());
+    }
+
+    @Test
+    void getTagById_shouldReturnNotFoundWhenTagDoesNotExist() {
+        // Given
+        Long tagId = 999L;
+        when(tagService.findById(tagId)).thenReturn(Optional.empty());
+
+        // When
+        ResponseEntity<ResponseWrapper<LastfmTagResponseDto>> response = controller.getTagById(tagId);
+
+        // Then
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        ResponseWrapper<LastfmTagResponseDto> body = response.getBody();
+        assertNotNull(body);
+        assertFalse(body.isSuccess());
+        assertTrue(body.getMessage().contains("Tag not found"));
+    }
+
+    @Test
+    void getTagById_shouldReturnErrorWhenExceptionOccurs() {
+        // Given
+        Long tagId = 1L;
+        when(tagService.findById(tagId)).thenThrow(new RuntimeException("Database error"));
+
+        // When
+        ResponseEntity<ResponseWrapper<LastfmTagResponseDto>> response = controller.getTagById(tagId);
+
+        // Then
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        ResponseWrapper<LastfmTagResponseDto> body = response.getBody();
+        assertNotNull(body);
+        assertFalse(body.isSuccess());
+        assertTrue(body.getMessage().contains("Failed to fetch tag"));
+    }
 
     @Test
     void getEntityTags_shouldReturnTagsForValidEntityTypeName() {

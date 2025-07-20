@@ -13,6 +13,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.repositor
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.service.LastfmTrackService;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class LastfmTrackServiceImpl implements LastfmTrackService {
@@ -41,6 +42,11 @@ public class LastfmTrackServiceImpl implements LastfmTrackService {
     @Override
     public List<LastfmTrack> findEntitiesByUniqueKeys(List<String> uniqueKeys) {
         return findAllByUrls(uniqueKeys);
+    }
+
+    @Override
+    public Optional<LastfmTrack> findById(Long id) {
+        return trackRepository.findById(id);
     }
 
     @Override

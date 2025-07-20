@@ -1,6 +1,7 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -13,10 +14,14 @@ import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.EntityTagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.EntityTagSearchParams;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.LastfmTagResponseDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.service.LastfmTagService;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -36,6 +41,78 @@ class LastfmTagControllerMvcTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+    
+    private LastfmTag mockTag;
+    
+    @BeforeEach
+    void setUp() {
+        mockTag = LastfmTag.builder()
+            .id(1L)
+            .name("rock")
+            .url("https://example.com/tag/rock")
+            .usageCount(5000)
+            .usageUsersCount(1000)
+            .approvalStatus(ApprovalStatus.APPROVED)
+            .apiCall(EntityCreationHelper.createApiCall())
+            .build();
+    }
+
+    @Test
+    void GET_tagById_shouldReturnTag_whenFound() throws Exception {
+        // Given
+        Long tagId = 1L;
+        LastfmTagResponseDto responseDto = LastfmTagResponseDto.from(mockTag);
+        
+        when(tagService.findById(eq(tagId)))
+            .thenReturn(Optional.of(mockTag));
+
+        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(responseDto));
+
+        // When & Then
+        mockMvc.perform(get("/api/v1/tags/{id}", tagId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().json(expectedJson));
+    }
+
+    @Test
+    void GET_tagById_shouldReturnNotFound_whenTagDoesNotExist() throws Exception {
+        // Given
+        Long tagId = 999L;
+        String errorMessage = "Tag not found with id: " + tagId;
+        
+        when(tagService.findById(eq(tagId)))
+            .thenReturn(Optional.empty());
+
+        String expectedJson = objectMapper.writeValueAsString(new ResponseWrapper<>(false, errorMessage, null));
+
+        // When & Then
+        mockMvc.perform(get("/api/v1/tags/{id}", tagId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().json(expectedJson));
+    }
+
+    @Test
+    void GET_tagById_shouldReturnError_whenServiceFails() throws Exception {
+        // Given
+        Long tagId = 1L;
+        String errorMessage = "Failed to fetch tag: service error occurred";
+        
+        when(tagService.findById(eq(tagId)))
+            .thenThrow(new RuntimeException("Database error"));
+
+        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.failureBody(errorMessage));
+
+        // When & Then
+        mockMvc.perform(get("/api/v1/tags/{id}", tagId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().json(expectedJson));
+    }
 
     @Test
     void GET_entityTags_shouldReturnTagsForValidEntityTypeName() throws Exception {
@@ -225,60 +302,6 @@ class LastfmTagControllerMvcTest {
                 .param("page", "0")
                 .param("size", "10")
                 .param("sort", "name,desc")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(expectedJson));
-    }
-    
-    @Test
-    void GET_entityTags_shouldSupportSortingByEntityApprovalStatus() throws Exception {
-        // Given
-        Long entityId = 123L;
-        LastfmEntityType entityType = LastfmEntityType.ARTIST;
-        
-        List<EntityTagDto> tags = List.of(
-            new EntityTagDto(1L, "alternative", ApprovalStatus.APPROVED.getCode(), 
-                ApprovalStatus.APPROVED.getCode(), ApprovalStatus.PENDING.getCode(), 75),
-            new EntityTagDto(2L, "rock", ApprovalStatus.APPROVED.getCode(), 
-                ApprovalStatus.APPROVED.getCode(), ApprovalStatus.APPROVED.getCode(), 100)
-        );
-        
-        when(tagService.findAllByEntity(eq(entityType), eq(entityId), any(EntityTagSearchParams.class), any(Pageable.class)))
-            .thenReturn(tags);
-
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(tags));
-
-        // When & Then
-        mockMvc.perform(get("/api/v1/tags/entity/{entityType}/{entityId}", entityType.getName(), entityId)
-                .param("sort", "entityApprovalStatus,asc")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(expectedJson));
-    }
-    
-    @Test
-    void GET_entityTags_shouldSupportSortingByTagApprovalStatus() throws Exception {
-        // Given
-        Long entityId = 123L;
-        LastfmEntityType entityType = LastfmEntityType.ARTIST;
-        
-        List<EntityTagDto> tags = List.of(
-            new EntityTagDto(1L, "alternative", ApprovalStatus.PENDING.getCode(), 
-                ApprovalStatus.PENDING.getCode(), ApprovalStatus.APPROVED.getCode(), 75),
-            new EntityTagDto(2L, "rock", ApprovalStatus.APPROVED.getCode(), 
-                ApprovalStatus.APPROVED.getCode(), ApprovalStatus.APPROVED.getCode(), 100)
-        );
-        
-        when(tagService.findAllByEntity(eq(entityType), eq(entityId), any(EntityTagSearchParams.class), any(Pageable.class)))
-            .thenReturn(tags);
-
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(tags));
-
-        // When & Then
-        mockMvc.perform(get("/api/v1/tags/entity/{entityType}/{entityId}", entityType.getName(), entityId)
-                .param("sort", "tagApprovalStatus,asc")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))

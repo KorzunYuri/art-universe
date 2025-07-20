@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -45,6 +46,21 @@ public class LastfmTagController {
         } catch (Exception e) {
             log.error("Failed to fetch tags: {}", e.getMessage(), e);
             return ResponseWrapper.failure("Failed to fetch tags: service error occurred");
+        }
+    }
+
+    @GetMapping(
+        value = "/{id}",
+        produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<ResponseWrapper<LastfmTagResponseDto>> getTagById(@PathVariable Long id) {
+        try {
+            return tagService.findById(id)
+                .map(tag -> ResponseWrapper.success(LastfmTagResponseDto.from(tag)))
+                .orElse(ResponseWrapper.failure("Tag not found with id: " + id, HttpStatus.NOT_FOUND));
+        } catch (Exception e) {
+            log.error("Failed to fetch tag with id {}: {}", id, e.getMessage(), e);
+            return ResponseWrapper.failure("Failed to fetch tag: service error occurred");
         }
     }
 

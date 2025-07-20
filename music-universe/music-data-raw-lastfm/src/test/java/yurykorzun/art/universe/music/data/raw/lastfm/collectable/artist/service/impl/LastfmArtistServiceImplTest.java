@@ -54,6 +54,36 @@ class LastfmArtistServiceImplTest {
     }
 
     @Test
+    void findById_shouldReturnArtistWhenExists() {
+        // Given
+        long artistId = 42L;
+        LastfmArtist expectedArtist = createArtist(b -> b.id(artistId));
+        when(artistRepository.findById(artistId)).thenReturn(Optional.of(expectedArtist));
+
+        // When
+        Optional<LastfmArtist> result = artistService.findById(artistId);
+
+        // Then
+        assertTrue(result.isPresent());
+        assertEquals(expectedArtist, result.get());
+        verify(artistRepository).findById(artistId);
+    }
+
+    @Test
+    void findById_shouldReturnEmptyOptionalWhenArtistDoesNotExist() {
+        // Given
+        long artistId = 999L;
+        when(artistRepository.findById(artistId)).thenReturn(Optional.empty());
+
+        // When
+        Optional<LastfmArtist> result = artistService.findById(artistId);
+
+        // Then
+        assertFalse(result.isPresent());
+        verify(artistRepository).findById(artistId);
+    }
+
+    @Test
     void save_withValid_shouldCallRepository() {
         LastfmArtist artist = createArtist();
         when(artistRepository.save(artist)).thenReturn(artist);

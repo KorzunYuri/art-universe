@@ -42,6 +42,36 @@ class LastfmTagServiceImplTest {
     }
 
     @Test
+    void findById_shouldReturnTagWhenExists() {
+        // Given
+        long tagId = 42L;
+        LastfmTag expectedTag = createTag(b -> b.id(tagId));
+        when(tagRepository.findById(tagId)).thenReturn(Optional.of(expectedTag));
+
+        // When
+        Optional<LastfmTag> result = tagService.findById(tagId);
+
+        // Then
+        assertTrue(result.isPresent());
+        assertEquals(expectedTag, result.get());
+        verify(tagRepository).findById(tagId);
+    }
+
+    @Test
+    void findById_shouldReturnEmptyOptionalWhenTagDoesNotExist() {
+        // Given
+        long tagId = 999L;
+        when(tagRepository.findById(tagId)).thenReturn(Optional.empty());
+
+        // When
+        Optional<LastfmTag> result = tagService.findById(tagId);
+
+        // Then
+        assertFalse(result.isPresent());
+        verify(tagRepository).findById(tagId);
+    }
+
+    @Test
     void saveAll_withValidAll_shouldCallRepository() {
         List<LastfmTag> tags = List.of(createTag(), createTag());
         when(tagRepository.saveAll(tags)).thenReturn(tags);

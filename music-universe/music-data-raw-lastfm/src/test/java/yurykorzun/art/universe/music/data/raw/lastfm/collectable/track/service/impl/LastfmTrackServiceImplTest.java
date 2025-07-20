@@ -48,6 +48,36 @@ class LastfmTrackServiceImplTest {
     }
 
     @Test
+    void findById_shouldReturnTrackWhenExists() {
+        // Given
+        long trackId = 42L;
+        LastfmTrack expectedTrack = createTrack(b -> b.id(trackId));
+        when(trackRepository.findById(trackId)).thenReturn(Optional.of(expectedTrack));
+
+        // When
+        Optional<LastfmTrack> result = trackService.findById(trackId);
+
+        // Then
+        assertTrue(result.isPresent());
+        assertEquals(expectedTrack, result.get());
+        verify(trackRepository).findById(trackId);
+    }
+
+    @Test
+    void findById_shouldReturnEmptyOptionalWhenTrackDoesNotExist() {
+        // Given
+        long trackId = 999L;
+        when(trackRepository.findById(trackId)).thenReturn(Optional.empty());
+
+        // When
+        Optional<LastfmTrack> result = trackService.findById(trackId);
+
+        // Then
+        assertFalse(result.isPresent());
+        verify(trackRepository).findById(trackId);
+    }
+
+    @Test
     void save_withValidTrack_shouldCallRepository() {
         LastfmTrack track = createTrack();
         when(trackRepository.save(track)).thenReturn(track);

@@ -21,6 +21,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
@@ -77,6 +78,63 @@ class LastfmTrackControllerMvcTest {
             mockTrack,
             anotherMockedTrack
         );
+    }
+
+    @Test
+    void GET_trackById_shouldReturnTrack_whenFound() throws Exception {
+        // Given
+        Long trackId = 1L;
+        LastfmTrackResponseDto responseDto = LastfmTrackResponseDto.from(mockTrack);
+        
+        when(trackService.findById(eq(trackId)))
+            .thenReturn(Optional.of(mockTrack));
+
+        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(responseDto));
+
+        // When & Then
+        mockMvc.perform(get("/api/v1/tracks/{id}", trackId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().json(expectedJson));
+    }
+
+    @Test
+    void GET_trackById_shouldReturnNotFound_whenTrackDoesNotExist() throws Exception {
+        // Given
+        Long trackId = 999L;
+        String errorMessage = "Track not found with id: " + trackId;
+        
+        when(trackService.findById(eq(trackId)))
+            .thenReturn(Optional.empty());
+
+        String expectedJson = objectMapper.writeValueAsString(new ResponseWrapper<>(false, errorMessage, null));
+
+        // When & Then
+        mockMvc.perform(get("/api/v1/tracks/{id}", trackId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().json(expectedJson));
+    }
+
+    @Test
+    void GET_trackById_shouldReturnError_whenServiceFails() throws Exception {
+        // Given
+        Long trackId = 1L;
+        String errorMessage = "Failed to fetch track: service error occurred";
+        
+        when(trackService.findById(eq(trackId)))
+            .thenThrow(new RuntimeException("Database error"));
+
+        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.failureBody(errorMessage));
+
+        // When & Then
+        mockMvc.perform(get("/api/v1/tracks/{id}", trackId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().json(expectedJson));
     }
 
     @Test

@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -43,6 +44,21 @@ public class LastfmArtistController {
         } catch (Exception e) {
             log.error("Failed to fetch artists: {}", e.getMessage(), e);
             return ResponseWrapper.failure("Failed to fetch artists: service error occurred");
+        }
+    }
+
+    @GetMapping(
+        value = "/{id}",
+        produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<ResponseWrapper<LastfmArtistResponseDto>> getArtistById(@PathVariable Long id) {
+        try {
+            return artistService.findById(id)
+                .map(artist -> ResponseWrapper.success(LastfmArtistResponseDto.from(artist)))
+                .orElse(ResponseWrapper.failure("Artist not found with id: " + id, HttpStatus.NOT_FOUND));
+        } catch (Exception e) {
+            log.error("Failed to fetch artist with id {}: {}", id, e.getMessage(), e);
+            return ResponseWrapper.failure("Failed to fetch artist: service error occurred");
         }
     }
 

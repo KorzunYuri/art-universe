@@ -20,6 +20,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -147,6 +148,71 @@ class LastfmArtistControllerTest {
         assertNotNull(body);
         assertFalse(body.isSuccess());
         assertTrue(body.getMessage().contains("Failed to fetch artists"));
+    }
+
+    @Test
+    void getArtistById_shouldReturnArtistWhenFound() {
+        // given
+        Long artistId = 1L;
+        LastfmArtist artist = LastfmArtist.builder()
+            .id(artistId)
+            .name("Test Artist")
+            .url("https://example.com/artist")
+            .mbid("mbid123")
+            .approvalStatus(ApprovalStatus.APPROVED)
+            .playCount(5000L)
+            .listenersCount(1000)
+            .apiCall(mock(LastfmApiCall.class))
+            .build();
+
+        when(artistService.findById(artistId)).thenReturn(Optional.of(artist));
+
+        // when
+        ResponseEntity<ResponseWrapper<LastfmArtistResponseDto>> response = controller.getArtistById(artistId);
+
+        // then
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        ResponseWrapper<LastfmArtistResponseDto> body = response.getBody();
+        assertNotNull(body);
+        assertTrue(body.isSuccess());
+
+        LastfmArtistResponseDto data = body.getData();
+        assertNotNull(data);
+        compareDtoAgainstEntity(data, artist);
+    }
+
+    @Test
+    void getArtistById_shouldReturnNotFoundWhenArtistDoesNotExist() {
+        // given
+        Long artistId = 999L;
+        when(artistService.findById(artistId)).thenReturn(Optional.empty());
+
+        // when
+        ResponseEntity<ResponseWrapper<LastfmArtistResponseDto>> response = controller.getArtistById(artistId);
+
+        // then
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        ResponseWrapper<LastfmArtistResponseDto> body = response.getBody();
+        assertNotNull(body);
+        assertFalse(body.isSuccess());
+        assertTrue(body.getMessage().contains("Artist not found"));
+    }
+
+    @Test
+    void getArtistById_shouldReturnErrorWhenExceptionOccurs() {
+        // given
+        Long artistId = 1L;
+        when(artistService.findById(artistId)).thenThrow(new RuntimeException("Database error"));
+
+        // when
+        ResponseEntity<ResponseWrapper<LastfmArtistResponseDto>> response = controller.getArtistById(artistId);
+
+        // then
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        ResponseWrapper<LastfmArtistResponseDto> body = response.getBody();
+        assertNotNull(body);
+        assertFalse(body.isSuccess());
+        assertTrue(body.getMessage().contains("Failed to fetch artist"));
     }
 
     @Test

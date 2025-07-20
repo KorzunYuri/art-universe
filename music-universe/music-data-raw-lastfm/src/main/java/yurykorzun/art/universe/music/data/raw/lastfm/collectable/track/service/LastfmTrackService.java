@@ -8,6 +8,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.dto.Track
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface LastfmTrackService extends EntityService<LastfmTrack> {
 
@@ -18,4 +19,6 @@ public interface LastfmTrackService extends EntityService<LastfmTrack> {
     List<LastfmTrack> findAllByUrls(List<String> urls);
     
     LastfmTrackResponseDto updateApprovalStatus(Long id, Integer approvalStatusCode);
+    
+    Optional<LastfmTrack> findById(Long id);
 }

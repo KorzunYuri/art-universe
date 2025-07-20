@@ -20,6 +20,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -52,6 +53,73 @@ class LastfmTrackControllerTest {
         } else {
             assertNull(dto.artist());
         }
+    }
+
+    @Test
+    void getTrackById_shouldReturnTrackWhenFound() {
+        // given
+        Long trackId = 1L;
+        LastfmArtist artist = EntityCreationHelper.createArtist(b -> b.id(2L).name("Test Artist"));
+        LastfmTrack track = LastfmTrack.builder()
+            .id(trackId)
+            .name("Test Track")
+            .url("https://example.com/track")
+            .mbid("mbid123")
+            .approvalStatus(ApprovalStatus.APPROVED)
+            .playCount(5000L)
+            .listenersCount(1000)
+            .artist(artist)
+            .apiCall(EntityCreationHelper.createApiCall())
+            .build();
+
+        when(trackService.findById(trackId)).thenReturn(Optional.of(track));
+
+        // when
+        ResponseEntity<ResponseWrapper<LastfmTrackResponseDto>> response = controller.getTrackById(trackId);
+
+        // then
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        ResponseWrapper<LastfmTrackResponseDto> body = response.getBody();
+        assertNotNull(body);
+        assertTrue(body.isSuccess());
+
+        LastfmTrackResponseDto data = body.getData();
+        assertNotNull(data);
+        compareDtoAgainstEntity(data, track);
+    }
+
+    @Test
+    void getTrackById_shouldReturnNotFoundWhenTrackDoesNotExist() {
+        // given
+        Long trackId = 999L;
+        when(trackService.findById(trackId)).thenReturn(Optional.empty());
+
+        // when
+        ResponseEntity<ResponseWrapper<LastfmTrackResponseDto>> response = controller.getTrackById(trackId);
+
+        // then
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        ResponseWrapper<LastfmTrackResponseDto> body = response.getBody();
+        assertNotNull(body);
+        assertFalse(body.isSuccess());
+        assertTrue(body.getMessage().contains("Track not found"));
+    }
+
+    @Test
+    void getTrackById_shouldReturnErrorWhenExceptionOccurs() {
+        // given
+        Long trackId = 1L;
+        when(trackService.findById(trackId)).thenThrow(new RuntimeException("Database error"));
+
+        // when
+        ResponseEntity<ResponseWrapper<LastfmTrackResponseDto>> response = controller.getTrackById(trackId);
+
+        // then
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        ResponseWrapper<LastfmTrackResponseDto> body = response.getBody();
+        assertNotNull(body);
+        assertFalse(body.isSuccess());
+        assertTrue(body.getMessage().contains("Failed to fetch track"));
     }
 
     @Test

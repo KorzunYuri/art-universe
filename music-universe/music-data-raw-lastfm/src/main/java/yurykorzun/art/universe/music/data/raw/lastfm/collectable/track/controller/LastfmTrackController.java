@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -51,6 +52,21 @@ public class LastfmTrackController {
         } catch (Exception e) {
             log.error("Failed to fetch tracks: {}", e.getMessage(), e);
             return ResponseWrapper.failure("Failed to fetch tracks: service error occurred");
+        }
+    }
+
+    @GetMapping(
+        value = "/{id}",
+        produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<ResponseWrapper<LastfmTrackResponseDto>> getTrackById(@PathVariable Long id) {
+        try {
+            return trackService.findById(id)
+                .map(track -> ResponseWrapper.success(LastfmTrackResponseDto.from(track)))
+                .orElse(ResponseWrapper.failure("Track not found with id: " + id, HttpStatus.NOT_FOUND));
+        } catch (Exception e) {
+            log.error("Failed to fetch track with id {}: {}", id, e.getMessage(), e);
+            return ResponseWrapper.failure("Failed to fetch track: service error occurred");
         }
     }
 

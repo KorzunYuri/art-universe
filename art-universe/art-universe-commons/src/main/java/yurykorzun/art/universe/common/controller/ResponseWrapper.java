@@ -27,6 +27,12 @@ public class ResponseWrapper<T> {
             .body(failureBody(errorMessage));
     }
 
+    public static <T> ResponseEntity<ResponseWrapper<T>> failure(String errorMessage, HttpStatus errorCode) {
+        return ResponseEntity
+            .status(errorCode)
+            .body(failureBody(errorMessage));
+    }
+
     public static <T> ResponseWrapper<T> failureBody(String errorMessage) {
         return new ResponseWrapper<>(false, errorMessage, null);
     }
