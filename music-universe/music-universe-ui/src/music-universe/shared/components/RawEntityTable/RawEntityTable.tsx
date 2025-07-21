@@ -2,9 +2,9 @@
 import { useCallback, useEffect } from 'react'
 import type { ReactNode } from 'react'
 // types
-import type { RawEntity, MasterEntity } from '@/music-universe/shared/types/entity-reference'
+import type { RawEntity, MasterEntity } from '@/music-universe/shared/types/entities.ts'
 import type { Page } from '@/music-universe/shared/types/page'
-import type { BoundEntityResponse } from '@/music-universe/shared/types/master'
+import type { BoundEntityResponse } from '@/music-universe/music-data/utils/master-entities-common.ts'
 // hooks
 import { useRawEntityTable } from '@/music-universe/shared/hooks/useRawEntityTable.ts'
 // styles

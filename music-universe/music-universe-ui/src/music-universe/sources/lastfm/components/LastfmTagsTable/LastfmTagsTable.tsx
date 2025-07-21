@@ -8,7 +8,7 @@ import {
 // types
 import type { LastfmTag } from '@/music-universe/sources/lastfm/types/lastfm-tag'
 import type { LookupEntity } from '@/music-universe/shared/types/lookup'
-import type { BoundEntityResponse } from '@/music-universe/shared/types/master'
+import type { BoundEntityResponse } from '@/music-universe/music-data/utils/master-entities-common.ts'
 import type { Category } from "@/music-universe/music-data/types/master-entities";
 // api
 import { fetchTags, type TagSearchParams } from '@/music-universe/sources/lastfm/api/lastfm-tags'

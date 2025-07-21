@@ -1,7 +1,6 @@
-import { BaseRawEntity } from "@/music-universe/shared/types/entity-reference";
-import { MusicDataEntityType } from "@/music-universe/music-data/constants/entityTypes";
+import { BaseRawEntity } from "@/music-universe/shared/types/entities.ts";
 import type { LastfmEntity } from "./lastfm-entity";
-import type { Artist } from "@/music-universe/music-data/types/master-entities";
+import type {Artist, MasterEntityType} from "@/music-universe/music-data/types/master-entities";
 
 export interface LastfmTrackArtistDto {
     id: number;
@@ -32,8 +31,8 @@ export class LastfmArtist extends BaseRawEntity<Artist> implements LastfmEntity<
         this.listenersCount = data.listenersCount;
     }
 
-    getEntityType(): string {
-        return MusicDataEntityType.ARTIST;
+    getEntityType(): MasterEntityType {
+        return "artist";
     }
     
     setApprovalStatus(approvalStatus: number): void {

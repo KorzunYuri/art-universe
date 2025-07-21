@@ -1,4 +1,4 @@
-import type {RawEntity, MasterEntity, BaseEntity} from './entity-reference';
+import type {RawEntity, MasterEntity, BaseEntity} from './entities.ts';
 
 /**
  * Generic interface for entity table row components

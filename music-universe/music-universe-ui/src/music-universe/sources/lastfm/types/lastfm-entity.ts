@@ -1,4 +1,4 @@
-import type { RawEntity, MasterEntity } from '@/music-universe/shared/types/entity-reference';
+import type { RawEntity, MasterEntity } from '@/music-universe/shared/types/entities.ts';
 import type { Approvable } from '@/music-universe/shared/types/approvable';
 
 /**

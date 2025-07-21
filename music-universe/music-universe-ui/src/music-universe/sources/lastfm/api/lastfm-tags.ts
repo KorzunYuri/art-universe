@@ -18,7 +18,7 @@ export interface TagSearchParams {
  * @returns Page of LastfmTag objects
  */
 export async function fetchTags(params: TagSearchParams): Promise<Page<LastfmTag>> {
-    const response = await axios.get(
+    const response = await axios.get<Page<LastfmTagDto>>(
         `${LastfmConfig.baseApiUrl}/tags`,
         {
             params: {
@@ -32,10 +32,9 @@ export async function fetchTags(params: TagSearchParams): Promise<Page<LastfmTag
     );
 
     // Convert plain objects to LastfmTag instances
-    const data = response.data.data;
     return {
-        ...data,
-        content: data.content.map((tagDto: LastfmTagDto) => createLastfmTag(tagDto))
+        ...response.data,
+        content: response.data.content.map((tagDto: LastfmTagDto) => createLastfmTag(tagDto))
     };
 }
 
@@ -47,12 +46,12 @@ export async function fetchTags(params: TagSearchParams): Promise<Page<LastfmTag
  * @returns Updated tag
  */
 export async function updateTagApprovalStatus(id: number, newStatus: number): Promise<LastfmTag> {
-    const response = await axios.patch(`${LastfmConfig.baseApiUrl}/tags/${id}/approval`, {
+    const response = await axios.patch<LastfmTagDto>(`${LastfmConfig.baseApiUrl}/tags/${id}/approval`, {
         approvalStatus: newStatus,
     });
 
     // Convert plain object to LastfmTag instance
-    return createLastfmTag(response.data.data);
+    return createLastfmTag(response.data);
 }
 
 /**
@@ -88,26 +87,15 @@ export async function fetchEntityTags(
     entityId: number,
     params?: EntityTagSearchParams
 ): Promise<EntityTagDto[]> {
-    try {
-        const response = await axios.get(
-            `${LastfmConfig.baseApiUrl}/tags/entity/${entityType}/${entityId}`,
-            {
-                params: {
-                    minUsageCount: params?.minUsageCount,
-                    approvalStatuses: params?.approvalStatuses?.join(','),
-                },
-            }
-        );
-
-        if (response.data.success) {
-            console.log(`✅ Fetched ${response.data.data.length} tags for ${entityType} ${entityId}`);
-            return response.data.data;
-        } else {
-            console.warn(`⚠️ API returned success=false: ${response.data.message}`);
-            return [];
+    const response = await axios.get<EntityTagDto[]>(
+        `${LastfmConfig.baseApiUrl}/tags/entity/${entityType}/${entityId}`,
+        {
+            params: {
+                minUsageCount: params?.minUsageCount,
+                approvalStatuses: params?.approvalStatuses?.join(','),
+            },
         }
-    } catch (error) {
-        console.error(`❌ Error fetching tags for ${entityType} ${entityId}:`, error);
-        return [];
-    }
+    );
+
+    return response.data;
 }

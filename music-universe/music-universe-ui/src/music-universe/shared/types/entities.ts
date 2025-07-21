@@ -1,3 +1,5 @@
+import type {MasterEntityType} from "@/music-universe/music-data/types/master-entities.ts";
+
 /**
  * Base interface for all entities
  */
@@ -39,7 +41,7 @@ export interface MasterEntity extends BaseEntity, MasterEntityHolder {
     /**
      * Returns the entity type
      */
-    getEntityType(): string;
+    getEntityType(): MasterEntityType;
 }
 
 /**
@@ -72,13 +74,13 @@ export interface RawEntity<M extends MasterEntity = MasterEntity> extends BaseEn
     /**
      * Returns the entity type
      */
-    getEntityType(): string;
+    getEntityType(): MasterEntityType;
 }
 
 /**
  * Default implementation of MasterEntity
  */
-export class DefaultMasterEntity implements MasterEntity {
+export abstract class BaseMasterEntity implements MasterEntity {
     id: number;
     name: string;
     
@@ -88,16 +90,14 @@ export class DefaultMasterEntity implements MasterEntity {
     }
     
     getMasterEntity(): MasterEntity {
-        return this;
+        return this as MasterEntity;
     }
     
     hasMasterEntity(): true {
         return true;
     }
-    
-    getEntityType(): string {
-        return 'UNKNOWN';
-    }
+
+    abstract getEntityType(): MasterEntityType;
 }
 
 /**
@@ -126,5 +126,5 @@ export abstract class BaseRawEntity<M extends MasterEntity = MasterEntity> imple
         this.masterEntity = masterEntity;
     }
     
-    abstract getEntityType(): string;
+    abstract getEntityType(): MasterEntityType;
 }

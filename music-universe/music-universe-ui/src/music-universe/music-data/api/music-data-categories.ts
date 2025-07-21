@@ -1,12 +1,15 @@
 import axios from 'axios';
 import { MusicDataConfig } from '../config/musicdataconfig';
-import type { ApiResponse } from '@/music-universe/shared/types/api-response';
 import type { Page } from '@/music-universe/shared/types/page';
-import type { MasterEntity } from '@/music-universe/shared/types/entity-reference';
-import type { BoundEntityResponse } from '@/music-universe/shared/types/master';
+import type { MasterEntity } from '@/music-universe/shared/types/entities.ts';
+import {
+    type BoundEntityResponse,
+    createMasterEntityFromBinding,
+} from '@/music-universe/music-data/utils/master-entities-common.ts';
 import type { LookupEntity, BatchLookupRequestDTO, BatchLookupResponseDTO } from '@/music-universe/shared/types/lookup';
-import { type Category, CategoryImpl } from '@/music-universe/music-data/types/master-entities';
-import { createMasterEntity } from '@/music-universe/shared/utils/entity-helpers';
+import {type Category, CategoryImpl, type MasterEntityType} from '@/music-universe/music-data/types/master-entities';
+
+const entityType: MasterEntityType = 'category'
 
 export interface CategoryDto {
     id: number;
@@ -64,28 +67,22 @@ function createCategory(dto: CategoryDto): Category {
  * @returns Page of Category objects
  */
 export async function fetchCategories(params: CategorySearchParams): Promise<Page<Category>> {
-    try {
-        const response = await axios.get<ApiResponse<Page<CategoryDto>>>(
-            `${MusicDataConfig.baseApiUrl}/categories/search`,
-            {
-                params: {
-                    search: params.search ?? '',
-                    page: params.page ?? 0,
-                    size: params.size ?? 20,
-                    sort: params.sort ?? 'name,asc',
-                },
-            }
-        );
+    const response = await axios.get<Page<CategoryDto>>(
+        `${MusicDataConfig.baseApiUrl}/categories/search`,
+        {
+            params: {
+                search: params.search ?? '',
+                page: params.page ?? 0,
+                size: params.size ?? 20,
+                sort: params.sort ?? 'name,asc',
+            },
+        }
+    );
 
-        const data = response.data.data;
-        return {
-            ...data,
-            content: data.content.map(createCategory)
-        };
-    } catch (error) {
-        console.error('❌ Error loading categories:', error);
-        throw error;
-    }
+    return {
+        ...response.data,
+        content: response.data.content.map(createCategory)
+    };
 }
 
 /**
@@ -95,29 +92,12 @@ export async function fetchCategories(params: CategorySearchParams): Promise<Pag
  * @param limit Maximum number of results (default: 10)
  * @returns List of matching categories
  */
-export async function lookupCategories(query: string, limit: number = 10): Promise<ApiResponse<LookupEntity[]>> {
-    try {
-        const url = `${MusicDataConfig.baseApiUrl}/categories/lookup`;
-        const params = { name: query, limit: limit };
+export async function lookupCategories(query: string, limit: number = 10): Promise<LookupEntity[]> {
+    const url = `${MusicDataConfig.baseApiUrl}/categories/lookup`;
+    const params = { name: query, limit: limit };
 
-        const response = await axios.get<ApiResponse<LookupEntity[]>>(url, { params });
-        
-        return response.data;
-    } catch (error) {
-        console.error('❌ Error looking up categories:', error);
-        if (axios.isAxiosError(error)) {
-            console.error('❌ Axios error details:', {
-                status: error.response?.status,
-                statusText: error.response?.statusText,
-                data: error.response?.data
-            });
-        }
-        return {
-            success: false,
-            message: 'Failed to look up categories',
-            data: []
-        };
-    }
+    const response = await axios.get<LookupEntity[]>(url, { params });
+    return response.data;
 }
 
 /**
@@ -127,32 +107,15 @@ export async function lookupCategories(query: string, limit: number = 10): Promi
  * @param limit Maximum number of results for each name (default: 10)
  * @returns Object with lookup results grouped by category names
  */
-export async function batchLookupCategories(names: string[], limit: number = 10): Promise<ApiResponse<BatchLookupResponseDTO>> {
-    try {
-        const url = `${MusicDataConfig.baseApiUrl}/categories/lookup/batch`;
-        const request: BatchLookupRequestDTO = { 
-            names, 
-            limit 
-        };
+export async function batchLookupCategories(names: string[], limit: number = 10): Promise<BatchLookupResponseDTO> {
+    const url = `${MusicDataConfig.baseApiUrl}/categories/lookup/batch`;
+    const request: BatchLookupRequestDTO = { 
+        names, 
+        limit 
+    };
 
-        const response = await axios.post<ApiResponse<BatchLookupResponseDTO>>(url, request);
-        
-        return response.data;
-    } catch (error) {
-        console.error('❌ Error batch looking up categories:', error);
-        if (axios.isAxiosError(error)) {
-            console.error('❌ Axios error details:', {
-                status: error.response?.status,
-                statusText: error.response?.statusText,
-                data: error.response?.data
-            });
-        }
-        return {
-            success: false,
-            message: 'Failed to batch lookup categories',
-            data: { results: {} }
-        };
-    }
+    const response = await axios.post<BatchLookupResponseDTO>(url, request);
+    return response.data;
 }
 
 /**
@@ -163,27 +126,17 @@ export async function batchLookupCategories(names: string[], limit: number = 10)
  * @returns List of bound categories
  */
 export async function fetchBoundCategories(dataSource: string, externalIds: number[]): Promise<BoundEntityResponse[]> {
-    try {
-        const url = `${MusicDataConfig.baseApiUrl}/categories/bound/${dataSource}`;
-        const response = await axios.get<ApiResponse<BoundEntityResponse[]>>(
-            url,
-            {
-                params: {
-                    externalIds: externalIds.join(','),
-                },
-            }
-        );
-
-        if (response.data.success) {
-            return response.data.data;
-        } else {
-            console.warn(`⚠️ API returned success=false: ${response.data.message}`);
-            return [];
+    const url = `${MusicDataConfig.baseApiUrl}/categories/bound/${dataSource}`;
+    const response = await axios.get<BoundEntityResponse[]>(
+        url,
+        {
+            params: {
+                externalIds: externalIds.join(','),
+            },
         }
-    } catch (error) {
-        console.error('❌ Error fetching bound categories:', error);
-        return [];
-    }
+    );
+
+    return response.data;
 }
 
 /**
@@ -195,27 +148,14 @@ export async function fetchBoundCategories(dataSource: string, externalIds: numb
  * @returns The bound category if successful, null otherwise
  */
 export async function bindCategoryToExisting(dataSource: string, externalId: number, categoryId: number): Promise<MasterEntity | null> {
-    try {
-        const request: CategoryBindToExistingRequest = { categoryId };
-        
-        const response = await axios.post<ApiResponse<BoundEntityResponse>>(
-            `${MusicDataConfig.baseApiUrl}/categories/bind/existing/${dataSource}/${externalId}`,
-            request
-        );
-        
-        if (response.data.success && response.data.data) {
-            const result = createMasterEntity(
-                response.data.data.masterId,
-                response.data.data.masterName
-            );
-            return result;
-        }
-        
-        return null;
-    } catch (error) {
-        console.error('❌ Error binding category to existing:', error);
-        return null;
-    }
+    const request: CategoryBindToExistingRequest = { categoryId };
+    
+    const response = await axios.post<BoundEntityResponse>(
+        `${MusicDataConfig.baseApiUrl}/categories/bind/existing/${dataSource}/${externalId}`,
+        request
+    );
+    
+    return createMasterEntityFromBinding(response.data, entityType);
 }
 
 /**
@@ -227,26 +167,14 @@ export async function bindCategoryToExisting(dataSource: string, externalId: num
  * @returns The bound category if successful, null otherwise
  */
 export async function createAndBindCategory(dataSource: string, externalId: number, categoryName: string): Promise<MasterEntity | null> {
-    try {
-        const request: CategoryCreateAndBindRequest = { name: categoryName };
-        
-        const response = await axios.post<ApiResponse<BoundEntityResponse>>(
-            `${MusicDataConfig.baseApiUrl}/categories/bind/new/${dataSource}/${externalId}`,
-            request
-        );
-        
-        if (response.data.success && response.data.data) {
-            return createMasterEntity(
-                response.data.data.masterId,
-                response.data.data.masterName
-            );
-        }
-        
-        return null;
-    } catch (error) {
-        console.error('❌ Error creating and binding category:', error);
-        return null;
-    }
+    const request: CategoryCreateAndBindRequest = { name: categoryName };
+    
+    const response = await axios.post<BoundEntityResponse>(
+        `${MusicDataConfig.baseApiUrl}/categories/bind/new/${dataSource}/${externalId}`,
+        request
+    );
+
+    return createMasterEntityFromBinding(response.data, entityType);
 }
 
 /**
@@ -257,16 +185,11 @@ export async function createAndBindCategory(dataSource: string, externalId: numb
  * @returns True if successful, false otherwise
  */
 export async function unbindCategory(dataSource: string, externalId: number): Promise<boolean> {
-    try {
-        const response = await axios.delete<ApiResponse<boolean>>(
-            `${MusicDataConfig.baseApiUrl}/categories/unbind/${dataSource}/${externalId}`
-        );
+    const response = await axios.delete<boolean>(
+        `${MusicDataConfig.baseApiUrl}/categories/unbind/${dataSource}/${externalId}`
+    );
 
-        return response.data.success ? response.data.data : false;
-    } catch (error) {
-        console.error('Error unbinding category:', error);
-        return false;
-    }
+    return response.data;
 }
 
 /**
@@ -276,21 +199,12 @@ export async function unbindCategory(dataSource: string, externalId: number): Pr
  * @returns The saved category if successful, null otherwise
  */
 export async function saveCategory(category: CategorySaveRequest): Promise<Category | null> {
-    try {
-        const response = await axios.post<ApiResponse<CategoryDto>>(
-            `${MusicDataConfig.baseApiUrl}/categories`,
-            category
-        );
-        
-        if (response.data.success && response.data.data) {
-            return createCategory(response.data.data);
-        }
-        
-        return null;
-    } catch (error) {
-        console.error('❌ Error saving category:', error);
-        return null;
-    }
+    const response = await axios.post<CategoryDto>(
+        `${MusicDataConfig.baseApiUrl}/categories`,
+        category
+    );
+    
+    return createCategory(response.data);
 }
 
 /**
@@ -300,14 +214,9 @@ export async function saveCategory(category: CategorySaveRequest): Promise<Categ
  * @returns True if successful, false otherwise
  */
 export async function deleteCategory(categoryId: number): Promise<boolean> {
-    try {
-        const response = await axios.delete<ApiResponse<boolean>>(
-            `${MusicDataConfig.baseApiUrl}/categories/${categoryId}`
-        );
-        
-        return response.data.success ? response.data.data : false;
-    } catch (error) {
-        console.error('❌ Error deleting category:', error);
-        return false;
-    }
+    const response = await axios.delete<boolean>(
+        `${MusicDataConfig.baseApiUrl}/categories/${categoryId}`
+    );
+    
+    return response.data;
 }

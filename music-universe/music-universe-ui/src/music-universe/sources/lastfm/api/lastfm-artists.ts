@@ -29,7 +29,7 @@ export async function fetchArtists(params: ArtistSearchParams): Promise<Page<Las
         });
 
     // Convert plain objects to LastfmArtist instances
-    const data = response.data.data;
+    const data = response.data;
     return {
         ...data,
         content: data.content.map((artistDto: LastfmTrackArtistDto) => createLastfmArtist(artistDto))

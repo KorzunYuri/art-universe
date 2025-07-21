@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import type { ReactNode } from 'react'
 // types
 import type { Page } from '@/music-universe/shared/types/page'
-import type { BaseEntity } from '@/music-universe/shared/types/entity-reference'
+import type { BaseEntity } from '@/music-universe/shared/types/entities.ts'
 // hooks
 import { PaginatedResource } from '@/music-universe/shared/hooks/PaginatedResource'
 // styles

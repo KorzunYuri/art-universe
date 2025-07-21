@@ -1,5 +1,15 @@
-import type { MasterEntity } from '@/music-universe/shared/types/entity-reference';
-import { MusicDataEntityType } from '@/music-universe/music-data/constants/entityTypes';
+import type { MasterEntity } from '@/music-universe/shared/types/entities.ts';
+
+export type MasterEntityType = "artist" | "album" | "track" | "category" | "dimension";
+
+export type MasterEntityMap = {
+    artist: Artist;
+    album: Album;
+    track: Track;
+    category: Category;
+    dimension: Dimension;
+};
+
 
 /**
  * Base class for all master entities with common method implementations
@@ -15,21 +25,21 @@ abstract class BaseMasterEntity implements MasterEntity {
         return true;
     }
     
-    abstract getEntityType(): string;
+    abstract getEntityType(): MasterEntityType;
 }
 
 /**
  * Master Artist entity from music-data
  */
 export interface Artist extends MasterEntity {
-    getEntityType(): string;
+    getEntityType(): MasterEntityType;
 }
 
 /**
  * Master Album entity from music-data
  */
 export interface Album extends MasterEntity {
-    getEntityType(): string;
+    getEntityType(): MasterEntityType;
 }
 
 /**
@@ -37,7 +47,7 @@ export interface Album extends MasterEntity {
  */
 export interface Track extends MasterEntity {
     primaryArtistId: number;
-    getEntityType(): string;
+    getEntityType(): MasterEntityType;
 }
 
 /**
@@ -50,28 +60,28 @@ export interface Category extends MasterEntity {
     dimensionName?: string | null;
     effectiveDimensionId?: number | null;
     effectiveDimensionName?: string | null;
-    getEntityType(): string;
+    getEntityType(): MasterEntityType;
 }
 
 /**
  * Master Dimension entity from music-data
  */
 export interface Dimension extends MasterEntity {
-    getEntityType(): string;
+    getEntityType(): MasterEntityType;
 }
 
 /**
  * Implementation classes for master entities
  */
 export class ArtistImpl extends BaseMasterEntity implements Artist {
-    getEntityType(): string {
-        return MusicDataEntityType.ARTIST;
+    getEntityType(): MasterEntityType {
+        return "artist";
     }
 }
 
 export class AlbumImpl extends BaseMasterEntity implements Album {
-    getEntityType(): string {
-        return MusicDataEntityType.ALBUM;
+    getEntityType(): MasterEntityType {
+        return "album";
     }
 }
 
@@ -84,8 +94,8 @@ export class TrackImpl extends BaseMasterEntity implements Track {
         super(id, name);
     }
     
-    getEntityType(): string {
-        return MusicDataEntityType.TRACK;
+    getEntityType(): MasterEntityType {
+        return "track";
     }
 }
 
@@ -103,13 +113,13 @@ export class CategoryImpl extends BaseMasterEntity implements Category {
         super(id, name);
     }
     
-    getEntityType(): string {
-        return MusicDataEntityType.CATEGORY;
+    getEntityType(): MasterEntityType {
+        return "category";
     }
 }
 
 export class DimensionImpl extends BaseMasterEntity implements Dimension {
-    getEntityType(): string {
-        return MusicDataEntityType.DIMENSION;
+    getEntityType(): MasterEntityType {
+        return "dimension";
     }
 }
