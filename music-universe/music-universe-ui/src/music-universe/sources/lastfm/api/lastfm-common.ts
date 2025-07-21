@@ -13,7 +13,7 @@ import type { MasterEntity } from '@/music-universe/shared/types/entities.ts';
 export async function updateApprovalStatus<T extends LastfmEntity<M>, M extends MasterEntity>(
     entity: T, 
     newStatus: number
-): Promise<T> {
+): Promise<void> {
 
     // Map entity type to API endpoint
     const entityTypeToEndpoint: Record<string, string> = {
@@ -37,12 +37,6 @@ export async function updateApprovalStatus<T extends LastfmEntity<M>, M extends 
                 approvalStatus: newStatus,
             }
         );
-        
-        // Update the entity's approval status
-        entity.setApprovalStatus(newStatus);
-        
-        // Return the same entity (no need to create new object)
-        return entity;
     } catch (error) {
         console.error(`Failed to update approval status for ${entityType} ${entity.id}:`, error);
         throw error;

@@ -8,7 +8,7 @@ export interface EntityTableRow<T extends BaseEntity> {
     /**
      * The entity to display in this row
      **/
-    entity: T;
+    entity?: T;
 }
 
 /**
