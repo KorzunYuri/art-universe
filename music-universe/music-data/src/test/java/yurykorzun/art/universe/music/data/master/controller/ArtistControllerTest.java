@@ -5,9 +5,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.music.data.master.dto.ArtistBatchLookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.ArtistBatchLookupResponseDTO;
 import yurykorzun.art.universe.music.data.master.dto.ArtistBindToExistingRequestDTO;
@@ -16,6 +13,8 @@ import yurykorzun.art.universe.music.data.master.dto.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.dto.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.exception.DataAccessException;
+import yurykorzun.art.universe.music.data.master.exception.EntityBindingException;
 import yurykorzun.art.universe.music.data.master.service.ArtistService;
 
 import java.util.HashMap;
@@ -35,7 +34,7 @@ class ArtistControllerTest {
     private ArtistController artistController;
 
     @Test
-    void findBoundArtists_shouldReturnSuccessResponse() throws Exception {
+    void findBoundArtists_shouldReturnListOfBoundEntityProjections() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         List<Long> externalIds = List.of(1L, 2L);
@@ -47,22 +46,17 @@ class ArtistControllerTest {
         List<BoundEntityProjection> expectedBindings = List.of(projection);
         when(artistService.findBoundArtists(dataSource, externalIds))
             .thenReturn(expectedBindings);
-        ResponseEntity<ResponseWrapper<List<BoundEntityProjection>>> expectedResponse =
-            ResponseWrapper.success(expectedBindings);
 
         // When
-        ResponseEntity<ResponseWrapper<List<BoundEntityProjection>>> actualResponse =
-            artistController.findBoundArtists(dataSource, externalIds);
+        List<BoundEntityProjection> result = artistController.findBoundArtists(dataSource, externalIds);
 
         // Then
-        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
-
+        assertEquals(expectedBindings, result);
         verify(artistService).findBoundArtists(dataSource, externalIds);
     }
     
     @Test
-    void findBoundArtists_whenExceptionThrown_shouldReturnFailureResponse() throws Exception {
+    void findBoundArtists_whenExceptionThrown_shouldThrowDataAccessException() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         List<Long> externalIds = List.of(1L, 2L);
@@ -70,22 +64,18 @@ class ArtistControllerTest {
         
         when(artistService.findBoundArtists(dataSource, externalIds))
             .thenThrow(new RuntimeException(errorMessage));
-        ResponseEntity<ResponseWrapper<List<BoundEntityProjection>>> expectedResponse =
-            ResponseWrapper.failure(String.format("Failed to get bound artists: %s", errorMessage));
 
-        // When
-        ResponseEntity<ResponseWrapper<List<BoundEntityProjection>>> actualResponse =
-            artistController.findBoundArtists(dataSource, externalIds);
-
-        // Then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
-
+        // When & Then
+        DataAccessException exception = assertThrows(DataAccessException.class, () -> 
+            artistController.findBoundArtists(dataSource, externalIds)
+        );
+        
+        assertEquals("Failed to get bound artists: " + errorMessage, exception.getMessage());
         verify(artistService).findBoundArtists(dataSource, externalIds);
     }
     
     @Test
-    void lookupArtists_shouldReturnSuccessResponse() throws Exception {
+    void lookupArtists_shouldReturnListOfLookupResults() {
         // Given
         String name = "radio";
         LookupResultDTO artist1 = new LookupResultDTO(1L, "Radiohead");
@@ -93,22 +83,17 @@ class ArtistControllerTest {
         List<LookupResultDTO> expectedArtists = List.of(artist1, artist2);
         
         when(artistService.searchArtistsByName(name)).thenReturn(expectedArtists);
-        ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> expectedResponse =
-            ResponseWrapper.success(expectedArtists);
             
         // When
-        ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> actualResponse =
-            artistController.lookupArtists(name, null);
+        List<LookupResultDTO> result = artistController.lookupArtists(name, null);
             
         // Then
-        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
-        
+        assertEquals(expectedArtists, result);
         verify(artistService).searchArtistsByName(name);
     }
     
     @Test
-    void lookupArtists_withLimit_shouldReturnSuccessResponse() throws Exception {
+    void lookupArtists_withLimit_shouldReturnListOfLookupResults() {
         // Given
         String name = "radio";
         Integer limit = 5;
@@ -117,44 +102,35 @@ class ArtistControllerTest {
         List<LookupResultDTO> expectedArtists = List.of(artist1, artist2);
         
         when(artistService.searchArtistsByName(name, limit)).thenReturn(expectedArtists);
-        ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> expectedResponse =
-            ResponseWrapper.success(expectedArtists);
             
         // When
-        ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> actualResponse =
-            artistController.lookupArtists(name, limit);
+        List<LookupResultDTO> result = artistController.lookupArtists(name, limit);
             
         // Then
-        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
-        
+        assertEquals(expectedArtists, result);
         verify(artistService).searchArtistsByName(name, limit);
     }
     
     @Test
-    void lookupArtists_whenExceptionThrown_shouldReturnFailureResponse() throws Exception {
+    void lookupArtists_whenExceptionThrown_shouldThrowDataAccessException() {
         // Given
         String name = "radio";
         String errorMessage = "Test error";
         
         when(artistService.searchArtistsByName(name))
             .thenThrow(new RuntimeException(errorMessage));
-        ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> expectedResponse =
-            ResponseWrapper.failure(String.format("Failed to lookup artists: %s", errorMessage));
             
-        // When
-        ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> actualResponse =
-            artistController.lookupArtists(name, null);
-            
-        // Then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
+        // When & Then
+        DataAccessException exception = assertThrows(DataAccessException.class, () -> 
+            artistController.lookupArtists(name, null)
+        );
         
+        assertEquals("Failed to lookup artists: " + errorMessage, exception.getMessage());
         verify(artistService).searchArtistsByName(name);
     }
     
     @Test
-    void bindToExisting_shouldReturnSuccessResponse() throws Exception {
+    void bindToExisting_shouldReturnBoundEntityProjection() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
@@ -167,25 +143,20 @@ class ArtistControllerTest {
         TestBoundEntityProjectionImpl projection = new TestBoundEntityProjectionImpl(
             externalId, dataSource, artistId, "Radiohead"
         );
-        ResponseEntity<ResponseWrapper<BoundEntityProjection>> expectedResponse = 
-            ResponseWrapper.success(projection);
         
         when(artistService.bindToExisting(dataSource, externalId, request))
             .thenReturn(projection);
 
         // When
-        ResponseEntity<ResponseWrapper<BoundEntityProjection>> actualResponse =
-            artistController.bindToExisting(dataSource, externalId, request);
+        BoundEntityProjection result = artistController.bindToExisting(dataSource, externalId, request);
 
         // Then
-        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
-        
+        assertEquals(projection, result);
         verify(artistService).bindToExisting(dataSource, externalId, request);
     }
     
     @Test
-    void bindToExisting_whenExceptionThrown_shouldReturnFailureResponse() throws Exception {
+    void bindToExisting_whenExceptionThrown_shouldThrowEntityBindingException() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
@@ -195,25 +166,21 @@ class ArtistControllerTest {
         ArtistBindToExistingRequestDTO request = ArtistBindToExistingRequestDTO.builder()
             .artistId(artistId)
             .build();
-        ResponseEntity<ResponseWrapper<BoundEntityProjection>> expectedResponse =
-            ResponseWrapper.failure(String.format("Failed to bind artist to existing: %s", errorMessage));
         
         when(artistService.bindToExisting(dataSource, externalId, request))
             .thenThrow(new RuntimeException(errorMessage));
 
-        // When
-        ResponseEntity<ResponseWrapper<BoundEntityProjection>> actualResponse =
-            artistController.bindToExisting(dataSource, externalId, request);
-
-        // Then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
+        // When & Then
+        EntityBindingException exception = assertThrows(EntityBindingException.class, () -> 
+            artistController.bindToExisting(dataSource, externalId, request)
+        );
         
+        assertEquals("Failed to bind artist to existing: " + errorMessage, exception.getMessage());
         verify(artistService).bindToExisting(dataSource, externalId, request);
     }
     
     @Test
-    void createAndBind_shouldReturnSuccessResponse() throws Exception {
+    void createAndBind_shouldReturnBoundEntityProjection() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
@@ -226,25 +193,20 @@ class ArtistControllerTest {
         TestBoundEntityProjectionImpl projection = new TestBoundEntityProjectionImpl(
             externalId, dataSource, 101L, artistName
         );
-        ResponseEntity<ResponseWrapper<BoundEntityProjection>> expectedResponse = 
-            ResponseWrapper.success(projection);
         
         when(artistService.createAndBind(dataSource, externalId, request))
             .thenReturn(projection);
 
         // When
-        ResponseEntity<ResponseWrapper<BoundEntityProjection>> actualResponse =
-            artistController.createAndBind(dataSource, externalId, request);
+        BoundEntityProjection result = artistController.createAndBind(dataSource, externalId, request);
 
         // Then
-        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
-        
+        assertEquals(projection, result);
         verify(artistService).createAndBind(dataSource, externalId, request);
     }
     
     @Test
-    void bindArtist_whenExceptionThrown_shouldReturnFailureResponse() throws Exception {
+    void createAndBind_whenExceptionThrown_shouldThrowEntityBindingException() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
@@ -254,45 +216,37 @@ class ArtistControllerTest {
         ArtistCreateAndBindRequestDTO request = ArtistCreateAndBindRequestDTO.builder()
             .name(artistName)
             .build();
-        ResponseEntity<ResponseWrapper<BoundEntityProjection>> expectedResponse =
-            ResponseWrapper.failure(String.format("Failed to create and bind artist: %s", errorMessage));
         
         when(artistService.createAndBind(dataSource, externalId, request))
             .thenThrow(new RuntimeException(errorMessage));
 
-        // When
-        ResponseEntity<ResponseWrapper<BoundEntityProjection>> actualResponse =
-            artistController.createAndBind(dataSource, externalId, request);
-
-        // Then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
+        // When & Then
+        EntityBindingException exception = assertThrows(EntityBindingException.class, () -> 
+            artistController.createAndBind(dataSource, externalId, request)
+        );
         
+        assertEquals("Failed to create and bind artist: " + errorMessage, exception.getMessage());
         verify(artistService).createAndBind(dataSource, externalId, request);
     }
     
     @Test
-    void unbindArtist_shouldReturnSuccessResponse() throws Exception {
+    void unbindArtist_shouldReturnBoolean() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
         
         when(artistService.unbindArtist(dataSource, externalId)).thenReturn(true);
-        ResponseEntity<ResponseWrapper<Boolean>> expectedResponse = ResponseWrapper.success(true);
 
-            // When
-        ResponseEntity<ResponseWrapper<Boolean>> actualResponse =
-            artistController.unbindArtist(dataSource, externalId);
+        // When
+        boolean result = artistController.unbindArtist(dataSource, externalId);
 
         // Then
-        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
-        
+        assertTrue(result);
         verify(artistService).unbindArtist(dataSource, externalId);
     }
     
     @Test
-    void unbindArtist_whenExceptionThrown_shouldReturnFailureResponse() throws Exception {
+    void unbindArtist_whenExceptionThrown_shouldThrowEntityBindingException() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
@@ -300,22 +254,18 @@ class ArtistControllerTest {
 
         when(artistService.unbindArtist(dataSource, externalId))
             .thenThrow(new RuntimeException(errorMessage));
-        ResponseEntity<ResponseWrapper<Boolean>> expectedResponse =
-            ResponseWrapper.failure(String.format("Failed to unbind artist: %s", errorMessage));
 
-        // When
-        ResponseEntity<ResponseWrapper<Boolean>> actualResponse =
-            artistController.unbindArtist(dataSource, externalId);
-
-        // Then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
+        // When & Then
+        EntityBindingException exception = assertThrows(EntityBindingException.class, () -> 
+            artistController.unbindArtist(dataSource, externalId)
+        );
         
+        assertEquals("Failed to unbind artist: " + errorMessage, exception.getMessage());
         verify(artistService).unbindArtist(dataSource, externalId);
     }
     
     @Test
-    void batchLookupArtists_shouldReturnSuccessResponse() {
+    void batchLookupArtists_shouldReturnArtistBatchLookupResponseDTO() {
         // Given
         List<String> searchTerms = List.of("radio", "queen");
         Integer limit = 10;
@@ -341,18 +291,15 @@ class ArtistControllerTest {
         when(artistService.batchLookupArtists(request)).thenReturn(expectedResponse);
         
         // When
-        ResponseEntity<ResponseWrapper<ArtistBatchLookupResponseDTO>> actualResponse =
-            artistController.batchLookupArtists(request);
+        ArtistBatchLookupResponseDTO result = artistController.batchLookupArtists(request);
         
         // Then
-        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
-        assertEquals(ResponseWrapper.successBody(expectedResponse), actualResponse.getBody());
-        
+        assertEquals(expectedResponse, result);
         verify(artistService).batchLookupArtists(request);
     }
     
     @Test
-    void batchLookupArtists_whenExceptionThrown_shouldReturnFailureResponse() {
+    void batchLookupArtists_whenExceptionThrown_shouldThrowDataAccessException() {
         // Given
         List<String> searchTerms = List.of("radio", "queen");
         Integer limit = 10;
@@ -366,18 +313,12 @@ class ArtistControllerTest {
         when(artistService.batchLookupArtists(request))
             .thenThrow(new RuntimeException(errorMessage));
         
-        ResponseEntity<ResponseWrapper<ArtistBatchLookupResponseDTO>> expectedResponse =
-            ResponseWrapper.failure(String.format("Failed to batch lookup artists: %s", errorMessage));
+        // When & Then
+        DataAccessException exception = assertThrows(DataAccessException.class, () -> 
+            artistController.batchLookupArtists(request)
+        );
         
-        // When
-        ResponseEntity<ResponseWrapper<ArtistBatchLookupResponseDTO>> actualResponse =
-            artistController.batchLookupArtists(request);
-        
-        // Then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
-        assertEquals(expectedResponse.getBody().isSuccess(), actualResponse.getBody().isSuccess());
-        assertEquals(expectedResponse.getBody().getMessage(), actualResponse.getBody().getMessage());
-        
+        assertEquals("Failed to batch lookup artists: " + errorMessage, exception.getMessage());
         verify(artistService).batchLookupArtists(request);
     }
 }

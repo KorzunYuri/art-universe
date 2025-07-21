@@ -4,15 +4,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.dto.ApprovalStatusRequestDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.dto.LastfmTrackResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.dto.TrackSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.service.LastfmTrackService;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.exception.DataFetchException;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.exception.DataUpdateException;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.exception.EntityNotFoundException;
 
 import java.util.Set;
 
@@ -30,7 +30,7 @@ public class LastfmTrackController {
     @GetMapping(
         produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<ResponseWrapper<Page<LastfmTrackResponseDto>>> getTracks(
+    public Page<LastfmTrackResponseDto> getTracks(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Long minPlayCount,
             @RequestParam(required = false) Long minListenersCount,
@@ -47,11 +47,10 @@ public class LastfmTrackController {
                     approvalStatuses
             );
             
-            Page<LastfmTrackResponseDto> tracks = trackService.findAll(params, pageable);
-            return ResponseWrapper.success(tracks);
+            return trackService.findAll(params, pageable);
         } catch (Exception e) {
             log.error("Failed to fetch tracks: {}", e.getMessage(), e);
-            return ResponseWrapper.failure("Failed to fetch tracks: service error occurred");
+            throw new DataFetchException("Failed to fetch tracks: service error occurred", e);
         }
     }
 
@@ -59,14 +58,16 @@ public class LastfmTrackController {
         value = "/{id}",
         produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<ResponseWrapper<LastfmTrackResponseDto>> getTrackById(@PathVariable Long id) {
+    public LastfmTrackResponseDto getTrackById(@PathVariable Long id) {
         try {
             return trackService.findById(id)
-                .map(track -> ResponseWrapper.success(LastfmTrackResponseDto.from(track)))
-                .orElse(ResponseWrapper.failure("Track not found with id: " + id, HttpStatus.NOT_FOUND));
+                .map(LastfmTrackResponseDto::from)
+                .orElseThrow(() -> new EntityNotFoundException("Track not found with id: " + id));
+        } catch (EntityNotFoundException e) {
+            throw e;
         } catch (Exception e) {
             log.error("Failed to fetch track with id {}: {}", id, e.getMessage(), e);
-            return ResponseWrapper.failure("Failed to fetch track: service error occurred");
+            throw new DataFetchException("Failed to fetch track: service error occurred", e);
         }
     }
 
@@ -74,16 +75,15 @@ public class LastfmTrackController {
         value = "/{id}/approval",
         produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<ResponseWrapper<LastfmTrackResponseDto>> updateApprovalStatus(
+    public LastfmTrackResponseDto updateApprovalStatus(
             @PathVariable Long id,
             @RequestBody ApprovalStatusRequestDto request
     ) {
         try {
-            LastfmTrackResponseDto updatedTrack = trackService.updateApprovalStatus(id, request.approvalStatus());
-            return ResponseWrapper.success(updatedTrack);
+            return trackService.updateApprovalStatus(id, request.approvalStatus());
         } catch (Exception e) {
             log.error("Failed to update approval status for track {}: {}", id, e.getMessage(), e);
-            return ResponseWrapper.failure("Failed to update approval status: service error occurred");
+            throw new DataUpdateException("Failed to update approval status: service error occurred", e);
         }
     }
 }

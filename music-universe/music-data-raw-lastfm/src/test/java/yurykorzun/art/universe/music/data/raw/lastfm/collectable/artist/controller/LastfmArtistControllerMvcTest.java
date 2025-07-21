@@ -9,7 +9,6 @@ import org.springframework.data.domain.*;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto.ArtistSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto.LastfmArtistResponseDto;
@@ -17,6 +16,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.L
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.dto.ApprovalStatusRequestDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.exception.ErrorResponse;
 
 import java.util.Arrays;
 import java.util.List;
@@ -88,7 +88,7 @@ class LastfmArtistControllerMvcTest {
         when(artistService.findAll(any(ArtistSearchParams.class), any(Pageable.class)))
             .thenReturn(pageResponse);
 
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(pageResponse));
+        String expectedJson = objectMapper.writeValueAsString(pageResponse);
 
         // When & Then
         mockMvc.perform(get("/api/v1/artists")
@@ -109,7 +109,7 @@ class LastfmArtistControllerMvcTest {
         when(artistService.findAll(any(ArtistSearchParams.class), any(Pageable.class)))
             .thenReturn(pageResponse);
 
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(pageResponse));
+        String expectedJson = objectMapper.writeValueAsString(pageResponse);
 
         // When & Then
         mockMvc.perform(get("/api/v1/artists")
@@ -126,7 +126,7 @@ class LastfmArtistControllerMvcTest {
         when(artistService.findAll(any(ArtistSearchParams.class), any(Pageable.class)))
             .thenThrow(new RuntimeException("Test exception"));
 
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.failureBody(errorMessage));
+        String expectedJson = objectMapper.writeValueAsString(new ErrorResponse(errorMessage));
 
         // When & Then
         mockMvc.perform(get("/api/v1/artists")
@@ -144,7 +144,7 @@ class LastfmArtistControllerMvcTest {
         when(artistService.findById(eq(artistId)))
             .thenReturn(Optional.of(mockArtist));
 
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(responseDto));
+        String expectedJson = objectMapper.writeValueAsString(responseDto);
 
         // When & Then
         mockMvc.perform(get("/api/v1/artists/{id}", artistId)
@@ -162,7 +162,7 @@ class LastfmArtistControllerMvcTest {
         when(artistService.findById(eq(artistId)))
             .thenReturn(Optional.empty());
 
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.failureBody(errorMessage));
+        String expectedJson = objectMapper.writeValueAsString(new ErrorResponse(errorMessage));
 
         // When & Then
         mockMvc.perform(get("/api/v1/artists/{id}", artistId)
@@ -180,7 +180,7 @@ class LastfmArtistControllerMvcTest {
         when(artistService.findById(eq(artistId)))
             .thenThrow(new RuntimeException("Test exception"));
 
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.failureBody(errorMessage));
+        String expectedJson = objectMapper.writeValueAsString(new ErrorResponse(errorMessage));
 
         // When & Then
         mockMvc.perform(get("/api/v1/artists/{id}", artistId)
@@ -193,7 +193,7 @@ class LastfmArtistControllerMvcTest {
     void PATCH_artistApproval_shouldUpdateApprovalStatus_whenValidStatusProvided() throws Exception {
         ApprovalStatusRequestDto request = new ApprovalStatusRequestDto(2);
         LastfmArtistResponseDto responseDto = LastfmArtistResponseDto.from(mockArtist);
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(responseDto));
+        String expectedJson = objectMapper.writeValueAsString(responseDto);
 
         when(artistService.updateApprovalStatus(mockArtist.getId(), request.approvalStatus()))
             .thenReturn(responseDto);
@@ -209,7 +209,7 @@ class LastfmArtistControllerMvcTest {
     void PATCH_artistApproval_shouldReturnError_whenServiceFails() throws Exception {
         ApprovalStatusRequestDto request = new ApprovalStatusRequestDto(2);
         String errorMessage = "Failed to update approval status: service error occurred";
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.failureBody(errorMessage));
+        String expectedJson = objectMapper.writeValueAsString(new ErrorResponse(errorMessage));
 
         when(artistService.updateApprovalStatus(mockArtist.getId(), request.approvalStatus()))
             .thenThrow(new RuntimeException(errorMessage));

@@ -9,7 +9,6 @@ import org.springframework.data.domain.*;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.dto.ApprovalStatusRequestDto;
@@ -18,6 +17,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.dto.Track
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.service.LastfmTrackService;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.exception.ErrorResponse;
 
 import java.util.Arrays;
 import java.util.List;
@@ -89,7 +89,7 @@ class LastfmTrackControllerMvcTest {
         when(trackService.findById(eq(trackId)))
             .thenReturn(Optional.of(mockTrack));
 
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(responseDto));
+        String expectedJson = objectMapper.writeValueAsString(responseDto);
 
         // When & Then
         mockMvc.perform(get("/api/v1/tracks/{id}", trackId)
@@ -108,7 +108,7 @@ class LastfmTrackControllerMvcTest {
         when(trackService.findById(eq(trackId)))
             .thenReturn(Optional.empty());
 
-        String expectedJson = objectMapper.writeValueAsString(new ResponseWrapper<>(false, errorMessage, null));
+        String expectedJson = objectMapper.writeValueAsString(new ErrorResponse(errorMessage));
 
         // When & Then
         mockMvc.perform(get("/api/v1/tracks/{id}", trackId)
@@ -127,7 +127,7 @@ class LastfmTrackControllerMvcTest {
         when(trackService.findById(eq(trackId)))
             .thenThrow(new RuntimeException("Database error"));
 
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.failureBody(errorMessage));
+        String expectedJson = objectMapper.writeValueAsString(new ErrorResponse(errorMessage));
 
         // When & Then
         mockMvc.perform(get("/api/v1/tracks/{id}", trackId)
@@ -151,7 +151,7 @@ class LastfmTrackControllerMvcTest {
         when(trackService.findAll(any(TrackSearchParams.class), any(Pageable.class)))
             .thenReturn(pageResponse);
 
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(pageResponse));
+        String expectedJson = objectMapper.writeValueAsString(pageResponse);
 
         // When & Then
         mockMvc.perform(get("/api/v1/tracks")
@@ -173,7 +173,7 @@ class LastfmTrackControllerMvcTest {
         when(trackService.findAll(any(TrackSearchParams.class), any(Pageable.class)))
             .thenReturn(pageResponse);
 
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(pageResponse));
+        String expectedJson = objectMapper.writeValueAsString(pageResponse);
 
         // When & Then
         mockMvc.perform(get("/api/v1/tracks")
@@ -190,7 +190,7 @@ class LastfmTrackControllerMvcTest {
         when(trackService.findAll(any(TrackSearchParams.class), any(Pageable.class)))
             .thenThrow(new RuntimeException("Test exception"));
 
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.failureBody(errorMessage));
+        String expectedJson = objectMapper.writeValueAsString(new ErrorResponse(errorMessage));
 
         // When & Then
         mockMvc.perform(get("/api/v1/tracks")
@@ -203,7 +203,7 @@ class LastfmTrackControllerMvcTest {
     void updateApprovalStatus_shouldUpdateApprovalStatus_whenValidStatusProvided() throws Exception {
         ApprovalStatusRequestDto request = new ApprovalStatusRequestDto(2);
         LastfmTrackResponseDto responseDto = LastfmTrackResponseDto.from(mockTrack);
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(responseDto));
+        String expectedJson = objectMapper.writeValueAsString(responseDto);
 
         when(trackService.updateApprovalStatus(mockTrack.getId(), request.approvalStatus()))
             .thenReturn(responseDto);
@@ -219,7 +219,7 @@ class LastfmTrackControllerMvcTest {
     void updateApprovalStatus_shouldReturnError_whenServiceFails() throws Exception {
         ApprovalStatusRequestDto request = new ApprovalStatusRequestDto(2);
         String errorMessage = "Failed to update approval status: service error occurred";
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.failureBody(errorMessage));
+        String expectedJson = objectMapper.writeValueAsString(new ErrorResponse(errorMessage));
 
         when(trackService.updateApprovalStatus(mockTrack.getId(), request.approvalStatus()))
             .thenThrow(new RuntimeException(errorMessage));
