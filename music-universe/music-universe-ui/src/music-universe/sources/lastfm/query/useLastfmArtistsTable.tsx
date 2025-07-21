@@ -20,9 +20,13 @@ export function useLastfmArtistsTable(initialParams: Partial<SearchParams> = {})
     const dataSource = 'LASTFM';
     const entityType = "artist";
 
+    const rawEntitiesPageQueryKey = rawEntitiesKeys.list(dataSource, entityType, params);
     const rawEntitiesPageQuery = useQuery({
-        queryKey: rawEntitiesKeys.list(dataSource, entityType, params),
+        queryKey: rawEntitiesPageQueryKey,
         queryFn: async () => {
+
+            console.log("batch artist fetch triggered")
+
             // get raw entities
             const rawEntitiesPage = await fetchArtists(params);
             const rawEntities = rawEntitiesPage.content;

@@ -8,6 +8,7 @@ import styles from './LastfmArtistsTable.module.css'
 import {useLastfmArtistsTable} from "@/music-universe/sources/lastfm/query/useLastfmArtistsTable.tsx";
 
 export const LastfmArtistsTable = () => {
+
     const {
         rawEntityIds,
         rawEntities,
@@ -58,22 +59,22 @@ export const LastfmArtistsTable = () => {
             )}
 
             {/* Table */}
-            {!isLoading && rawEntities && (
+            {!isLoading && rawEntityIds && (
                 <>
                     <div className={styles.table}>
                         {/* Header */}
                         <LastfmArtistsTableHeader sort={sort} setSort={setSort}/>
 
                         {/* Rows */}
-                        {rawEntities.map(entity => (
+                        {rawEntityIds.map(rawEntityId => (
                             <LastfmArtistsTableRow
-                                key={entity.id}
-                                entity={entity}
+                                key={rawEntityId}
+                                entityId={rawEntityId}
                             />
                         ))}
 
                         {/* Empty state */}
-                        {rawEntities.length === 0 && (
+                        {rawEntityIds.length === 0 && (
                             <div className={styles.emptyState}>No artists found</div>
                         )}
                     </div>

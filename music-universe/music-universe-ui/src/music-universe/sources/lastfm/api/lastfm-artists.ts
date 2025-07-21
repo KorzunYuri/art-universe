@@ -1,9 +1,9 @@
 import {LastfmConfig} from "@/music-universe/sources/lastfm/config/lastfmconfig.ts"
 import type {Page} from "@/music-universe/shared/types/page.ts";
-import { LastfmArtist, createLastfmArtist, type LastfmTrackArtistDto } from "@/music-universe/sources/lastfm/types/lastfm-artist.ts";
+import {createLastfmArtist, LastfmArtist} from "@/music-universe/sources/lastfm/types/lastfm-artist.ts";
 import axios from 'axios'
 
-export interface ArtistSearchParams {
+export interface LastfmArtistSearchParams {
     search?: string;
     minPlayCount?: number;
     minListenersCount?: number;
@@ -13,8 +13,18 @@ export interface ArtistSearchParams {
     sort?: string;
 }
 
-export async function fetchArtists(params: ArtistSearchParams): Promise<Page<LastfmArtist>> {
-    const response = await axios.get(
+export interface LastfmArtistResponseDto {
+    id: number;
+    name: string;
+    url: string;
+    mbid: string | null;
+    approvalStatus: number;
+    playCount: number | null;
+    listenersCount: number | null;
+}
+
+export async function fetchArtists(params: LastfmArtistSearchParams): Promise<Page<LastfmArtist>> {
+    const response = await axios.get<Page<LastfmArtistResponseDto>>(
         `${LastfmConfig.baseApiUrl}/artists`,
         {
             params: {
@@ -29,18 +39,25 @@ export async function fetchArtists(params: ArtistSearchParams): Promise<Page<Las
         });
 
     // Convert plain objects to LastfmArtist instances
-    const data = response.data;
+    const page = response.data;
     return {
-        ...data,
-        content: data.content.map((artistDto: LastfmTrackArtistDto) => createLastfmArtist(artistDto))
+        ...page,
+        content: page.content.map((artistDto) => createLastfmArtist(artistDto))
     };
 }
 
-export async function updateArtistApprovalStatus(id: number, newStatus: number): Promise<LastfmArtist> {
-    const response = await axios.patch(`${LastfmConfig.baseApiUrl}/artists/${id}/approval`, {
+export async function fetchArtist(id: number): Promise<LastfmArtist> {
+    const response = await axios.get<LastfmArtistResponseDto>(`${LastfmConfig.baseApiUrl}/artists/${id}`);
+
+    // Convert plain object to LastfmArtist instance
+    return createLastfmArtist(response.data);
+}
+
+
+export async function updateArtistApprovalStatus(id: number, newStatus: number): Promise<boolean> {
+    const response = await axios.patch<boolean>(`${LastfmConfig.baseApiUrl}/artists/${id}/approval`, {
         approvalStatus: newStatus,
     });
 
-    // Convert plain object to LastfmArtist instance
-    return createLastfmArtist(response.data.data);
+    return response.data;
 }
