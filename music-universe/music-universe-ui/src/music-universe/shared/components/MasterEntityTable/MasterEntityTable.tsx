@@ -2,7 +2,7 @@
 import { useCallback } from 'react'
 import type { ReactNode } from 'react'
 // types
-import type { MasterEntity } from '@/music-universe/shared/types/entity-reference'
+import type { MasterEntity } from '@/music-universe/shared/types/entities.ts'
 import type { Page } from '@/music-universe/shared/types/page'
 // hooks
 import { PaginatedResource } from '@/music-universe/shared/hooks/PaginatedResource'

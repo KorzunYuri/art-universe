@@ -1,6 +1,7 @@
 import { useRoutes } from 'react-router-dom'
 
 import { LastfmHome, LastfmTags, LastfmArtists, LastfmAlbums, LastfmTracks } from "./pages";
+import {QueryProvider} from "@/music-universe/shared/providers/QueryProvider.tsx";
 
 export default function LastfmApp() {
     const routes = [
@@ -11,5 +12,7 @@ export default function LastfmApp() {
         { path: 'tracks',   element: <LastfmTracks /> },
     ]
 
-    return useRoutes(routes)
+    return <QueryProvider>
+        { useRoutes(routes) }
+    </QueryProvider>
 }

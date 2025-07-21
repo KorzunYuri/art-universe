@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { MusicDataConfig } from '../config/musicdataconfig';
-import type { ApiResponse } from '@/music-universe/shared/types/api-response';
 
 /**
  * DTO for relation binding status response
@@ -71,22 +70,13 @@ export async function bindExternalRelation(
     targetEntityType: string,
     targetExternalEntityId: number
 ): Promise<RelationBindingDTO | null> {
-    try {
-        console.log(`🔗 Binding external relation: ${sourceEntityType}:${sourceExternalEntityId} -> ${targetEntityType}:${targetExternalEntityId}`);
-        
-        const response = await axios.post<ApiResponse<RelationBindingDTO>>(
-            `${MusicDataConfig.baseApiUrl}/relations/bind/${dataSource}/${sourceEntityType}/${sourceExternalEntityId}/${targetEntityType}/${targetExternalEntityId}`
-        );
-        
-        if (response.data.success && response.data.data) {
-            return response.data.data;
-        }
-        
-        return null;
-    } catch (error) {
-        console.error('❌ Error binding external relation:', error);
-        return null;
-    }
+    console.log(`🔗 Binding external relation: ${sourceEntityType}:${sourceExternalEntityId} -> ${targetEntityType}:${targetExternalEntityId}`);
+    
+    const response = await axios.post<RelationBindingDTO>(
+        `${MusicDataConfig.baseApiUrl}/relations/bind/${dataSource}/${sourceEntityType}/${sourceExternalEntityId}/${targetEntityType}/${targetExternalEntityId}`
+    );
+    
+    return response.data;
 }
 
 /**
@@ -106,18 +96,13 @@ export async function unbindExternalRelation(
     targetEntityType: string,
     targetExternalEntityId: number
 ): Promise<boolean> {
-    try {
-        console.log(`🔓 Unbinding external relation: ${sourceEntityType}:${sourceExternalEntityId} -> ${targetEntityType}:${targetExternalEntityId}`);
-        
-        const response = await axios.delete<ApiResponse<boolean>>(
-            `${MusicDataConfig.baseApiUrl}/relations/unbind/${dataSource}/${sourceEntityType}/${sourceExternalEntityId}/${targetEntityType}/${targetExternalEntityId}`
-        );
-        
-        return response.data.success ? response.data.data : false;
-    } catch (error) {
-        console.error('❌ Error unbinding external relation:', error);
-        return false;
-    }
+    console.log(`🔓 Unbinding external relation: ${sourceEntityType}:${sourceExternalEntityId} -> ${targetEntityType}:${targetExternalEntityId}`);
+    
+    const response = await axios.delete<boolean>(
+        `${MusicDataConfig.baseApiUrl}/relations/unbind/${dataSource}/${sourceEntityType}/${sourceExternalEntityId}/${targetEntityType}/${targetExternalEntityId}`
+    );
+    
+    return response.data;
 }
 
 /**
@@ -137,45 +122,18 @@ export async function findBoundExternalRelations(
     targetEntityType: string,
     targetExternalEntityIds: number[]
 ): Promise<RelationBindingStatusDTO> {
-    try {
-        console.log(`🔍 Finding bound external relations for ${targetExternalEntityIds.length} target entities`);
-        
-        const response = await axios.get<ApiResponse<RelationBindingStatusDTO>>(
-            `${MusicDataConfig.baseApiUrl}/relations/bound/${dataSource}/${sourceEntityType}/${sourceExternalEntityId}/${targetEntityType}`,
-            {
-                params: {
-                    ids: targetExternalEntityIds.join(',')
-                }
+    console.log(`🔍 Finding bound external relations for ${targetExternalEntityIds.length} target entities`);
+    
+    const response = await axios.get<RelationBindingStatusDTO>(
+        `${MusicDataConfig.baseApiUrl}/relations/bound/${dataSource}/${sourceEntityType}/${sourceExternalEntityId}/${targetEntityType}`,
+        {
+            params: {
+                ids: targetExternalEntityIds.join(',')
             }
-        );
-        
-        if (response.data.success) {
-            console.log(`✅ Found binding information for ${response.data.data.targetBindings.length} target entities`);
-            return response.data.data;
-        } else {
-            console.warn(`⚠️ API returned success=false: ${response.data.message}`);
-            return {
-                sourceExternalId: sourceExternalEntityId,
-                sourceEntityType: sourceEntityType,
-                sourceEntityName: '',
-                sourceInternalId: 0,
-                sourceEntityBound: false,
-                targetEntityType: targetEntityType,
-                targetBindings: []
-            };
         }
-    } catch (error) {
-        console.error('❌ Error finding bound external relations:', error);
-        return {
-            sourceExternalId: sourceExternalEntityId,
-            sourceEntityType: sourceEntityType,
-            sourceEntityName: '',
-            sourceInternalId: 0,
-            sourceEntityBound: false,
-            targetEntityType: targetEntityType,
-            targetBindings: []
-        };
-    }
+    );
+    
+    return response.data;
 }
 
 /**
@@ -191,24 +149,13 @@ export async function getRelatedEntities(
     sourceEntityId: number,
     targetEntityType: string
 ): Promise<EntityDTO[]> {
-    try {
-        console.log(`🔍 Getting ${targetEntityType}s related to ${sourceEntityType} ${sourceEntityId}`);
-        
-        const response = await axios.get<ApiResponse<EntityDTO[]>>(
-            `${MusicDataConfig.baseApiUrl}/relations/${sourceEntityType}/${sourceEntityId}/${targetEntityType}`
-        );
-        
-        if (response.data.success) {
-            console.log(`✅ Found ${response.data.data.length} related ${targetEntityType}s`);
-            return response.data.data;
-        } else {
-            console.warn(`⚠️ API returned success=false: ${response.data.message}`);
-            return [];
-        }
-    } catch (error) {
-        console.error(`❌ Error getting related ${targetEntityType}s:`, error);
-        return [];
-    }
+    console.log(`🔍 Getting ${targetEntityType}s related to ${sourceEntityType} ${sourceEntityId}`);
+    
+    const response = await axios.get<EntityDTO[]>(
+        `${MusicDataConfig.baseApiUrl}/relations/${sourceEntityType}/${sourceEntityId}/${targetEntityType}`
+    );
+    
+    return response.data;
 }
 
 /**

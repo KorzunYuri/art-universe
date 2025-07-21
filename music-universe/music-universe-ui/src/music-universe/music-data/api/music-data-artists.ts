@@ -1,10 +1,11 @@
 import axios from 'axios';
 import { MusicDataConfig } from '../config/musicdataconfig';
-import type { MasterEntity } from '@/music-universe/shared/types/entity-reference';
-import type { BoundEntityResponse } from '@/music-universe/shared/types/master';
-import type { ApiResponse } from '@/music-universe/shared/types/api-response';
+import type { MasterEntity } from '@/music-universe/shared/types/entities.ts';
+import {type BoundEntityResponse, createMasterEntityFromBinding} from '@/music-universe/music-data/utils/master-entities-common.ts';
 import type { LookupEntity, BatchLookupRequestDTO, BatchLookupResponseDTO } from '@/music-universe/shared/types/lookup';
-import { createMasterEntity } from '@/music-universe/shared/utils/entity-helpers';
+import type {MasterEntityType} from "@/music-universe/music-data/types/master-entities.ts";
+
+const entityType: MasterEntityType = 'artist'
 
 export interface ArtistBindToExistingRequest {
     artistId: number;
@@ -21,29 +22,12 @@ export interface ArtistCreateAndBindRequest {
  * @param limit Maximum number of results (default: 10)
  * @returns List of matching artists
  */
-export async function lookupArtists(query: string, limit: number = 10): Promise<ApiResponse<LookupEntity[]>> {
-    try {
-        const url = `${MusicDataConfig.baseApiUrl}/artists/lookup`;
-        const params = { name: query, limit: limit };
+export async function lookupArtists(query: string, limit: number = 10): Promise<LookupEntity[]> {
+    const url = `${MusicDataConfig.baseApiUrl}/artists/lookup`;
+    const params = { name: query, limit: limit };
 
-        const response = await axios.get<ApiResponse<LookupEntity[]>>(url, { params });
-        
-        return response.data;
-    } catch (error) {
-        console.error('❌ Error looking up artists:', error);
-        if (axios.isAxiosError(error)) {
-            console.error('❌ Axios error details:', {
-                status: error.response?.status,
-                statusText: error.response?.statusText,
-                data: error.response?.data
-            });
-        }
-        return {
-            success: false,
-            message: 'Failed to look up artists',
-            data: []
-        };
-    }
+    const response = await axios.get<LookupEntity[]>(url, { params });
+    return response.data;
 }
 
 /**
@@ -53,32 +37,15 @@ export async function lookupArtists(query: string, limit: number = 10): Promise<
  * @param limit Maximum number of results for each name (default: 10)
  * @returns Object with lookup results grouped by artist names
  */
-export async function batchLookupArtists(names: string[], limit: number = 10): Promise<ApiResponse<BatchLookupResponseDTO>> {
-    try {
-        const url = `${MusicDataConfig.baseApiUrl}/artists/lookup/batch`;
-        const request: BatchLookupRequestDTO = { 
-            names, 
-            limit 
-        };
+export async function batchLookupArtists(names: string[], limit: number = 10): Promise<BatchLookupResponseDTO> {
+    const url = `${MusicDataConfig.baseApiUrl}/artists/lookup/batch`;
+    const request: BatchLookupRequestDTO = { 
+        names, 
+        limit 
+    };
 
-        const response = await axios.post<ApiResponse<BatchLookupResponseDTO>>(url, request);
-        
-        return response.data;
-    } catch (error) {
-        console.error('Error batch looking up artists:', error);
-        if (axios.isAxiosError(error)) {
-            console.error('Axios error details:', {
-                status: error.response?.status,
-                statusText: error.response?.statusText,
-                data: error.response?.data
-            });
-        }
-        return {
-            success: false,
-            message: 'Failed to batch lookup artists',
-            data: { results: {} }
-        };
-    }
+    const response = await axios.post<BatchLookupResponseDTO>(url, request);
+    return response.data;
 }
 
 /**
@@ -88,27 +55,17 @@ export async function batchLookupArtists(names: string[], limit: number = 10): P
  * @returns List of bound artists
  */
 export async function fetchBoundArtists(externalIds: number[]): Promise<BoundEntityResponse[]> {
-    try {
-        const url = `${MusicDataConfig.baseApiUrl}/artists/bound/LASTFM`;
-        const response = await axios.get<ApiResponse<BoundEntityResponse[]>>(
-            url,
-            {
-                params: {
-                    externalIds: externalIds.join(','),
-                },
-            }
-        );
-
-        if (response.data.success) {
-            return response.data.data;
-        } else {
-            console.warn(`API returned success=false: ${response.data.message}`);
-            return [];
+    const url = `${MusicDataConfig.baseApiUrl}/artists/bound/LASTFM`;
+    const response = await axios.get<BoundEntityResponse[]>(
+        url,
+        {
+            params: {
+                externalIds: externalIds.join(','),
+            },
         }
-    } catch (error) {
-        console.error('Error fetching bound artists:', error);
-        return [];
-    }
+    );
+
+    return response.data;
 }
 
 /**
@@ -118,27 +75,15 @@ export async function fetchBoundArtists(externalIds: number[]): Promise<BoundEnt
  * @param artistId The existing artist ID in music-data
  * @returns The bound artist if successful, null otherwise
  */
-export async function bindArtistToExisting(externalId: number, artistId: number): Promise<MasterEntity | null> {
-    try {
-        const request: ArtistBindToExistingRequest = { artistId };
-        
-        const response = await axios.post<ApiResponse<BoundEntityResponse>>(
-            `${MusicDataConfig.baseApiUrl}/artists/bind/existing/LASTFM/${externalId}`,
-            request
-        );
-        
-        if (response.data.success && response.data.data) {
-            return createMasterEntity(
-                response.data.data.masterId,
-                response.data.data.masterName
-            );
-        }
-        
-        return null;
-    } catch (error) {
-        console.error('❌ Error binding artist to existing:', error);
-        return null;
-    }
+export async function bindArtistToExisting(externalId: number, artistId: number): Promise<MasterEntity> {
+    const request: ArtistBindToExistingRequest = { artistId };
+    
+    const response = await axios.post<BoundEntityResponse>(
+        `${MusicDataConfig.baseApiUrl}/artists/bind/existing/LASTFM/${externalId}`,
+        request
+    );
+    
+    return createMasterEntityFromBinding(response.data, entityType);
 }
 
 /**
@@ -148,27 +93,15 @@ export async function bindArtistToExisting(externalId: number, artistId: number)
  * @param artistName The name of the new artist
  * @returns The bound artist if successful, null otherwise
  */
-export async function createAndBindArtist(externalId: number, artistName: string): Promise<MasterEntity | null> {
-    try {
-        const request: ArtistCreateAndBindRequest = { name: artistName };
-        
-        const response = await axios.post<ApiResponse<BoundEntityResponse>>(
-            `${MusicDataConfig.baseApiUrl}/artists/bind/new/LASTFM/${externalId}`,
-            request
-        );
-        
-        if (response.data.success && response.data.data) {
-            return createMasterEntity(
-                response.data.data.masterId,
-                response.data.data.masterName
-            );
-        }
-        
-        return null;
-    } catch (error) {
-        console.error('❌ Error creating and binding artist:', error);
-        return null;
-    }
+export async function createAndBindArtist(externalId: number, artistName: string): Promise<MasterEntity> {
+    const request: ArtistCreateAndBindRequest = { name: artistName };
+    
+    const response = await axios.post<BoundEntityResponse>(
+        `${MusicDataConfig.baseApiUrl}/artists/bind/new/LASTFM/${externalId}`,
+        request
+    );
+
+    return createMasterEntityFromBinding(response.data, entityType);
 }
 
 /**
@@ -178,14 +111,9 @@ export async function createAndBindArtist(externalId: number, artistName: string
  * @returns True if successful, false otherwise
  */
 export async function unbindArtist(externalId: number): Promise<boolean> {
-    try {
-        const response = await axios.delete<ApiResponse<boolean>>(
-            `${MusicDataConfig.baseApiUrl}/artists/unbind/LASTFM/${externalId}`
-        );
-        
-        return response.data.success ? response.data.data : false;
-    } catch (error) {
-        console.error('❌ Error unbinding artist:', error);
-        return false;
-    }
+    const response = await axios.delete<boolean>(
+        `${MusicDataConfig.baseApiUrl}/artists/unbind/LASTFM/${externalId}`
+    );
+    
+    return response.data;
 }

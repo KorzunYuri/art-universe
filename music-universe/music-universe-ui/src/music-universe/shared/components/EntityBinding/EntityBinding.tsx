@@ -3,8 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 // components
 import {DynamicAutocompleteInput} from "@/music-universe/shared/components";
 // types
-import type { RawEntity, MasterEntity } from "@/music-universe/shared/types/entity-reference";
-import type { ApiResponse } from "@/music-universe/shared/types/api-response";
+import type { RawEntity, MasterEntity } from "@/music-universe/shared/types/entities.ts";
 import type { LookupEntity } from "@/music-universe/shared/types/lookup";
 // styles
 import commonStyles from "@/music-universe/shared/styles/common.module.scss";
@@ -17,7 +16,7 @@ interface ExpEntityBindingProps<T extends RawEntity> {
     onUnbind: (entityId: number) => Promise<boolean>;
     onBeforeBind: (entity: T) => Promise<boolean>;
     onAfterBind: (entity: T) => void;
-    lookupFunction: (query: string, limit?: number) => Promise<ApiResponse<LookupEntity[]>>;
+    lookupFunction: (query: string, limit?: number) => Promise<LookupEntity[]>;
     preloadedOptions?: LookupEntity[];
     disabled?: boolean;
 }

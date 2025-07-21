@@ -1,7 +1,7 @@
 // types
 import type { LastfmTrack } from '@/music-universe/sources/lastfm/types/lastfm-track'
 import type {Track} from "@/music-universe/music-data/types/master-entities.ts";
-import type { BoundEntityResponse } from '@/music-universe/shared/types/master'
+import type { BoundEntityResponse } from '@/music-universe/music-data/utils/master-entities-common.ts'
 // api
 import { fetchTracks, type TrackSearchParams } from '@/music-universe/sources/lastfm/api/lastfm-tracks'
 import { fetchBoundTracks } from '@/music-universe/music-data/api/music-data-tracks'

@@ -1,7 +1,6 @@
-import { BaseRawEntity } from "@/music-universe/shared/types/entity-reference";
-import { MusicDataEntityType } from "@/music-universe/music-data/constants/entityTypes";
+import { BaseRawEntity } from "@/music-universe/shared/types/entities.ts";
 import type { LastfmEntity } from "./lastfm-entity";
-import type { Category } from "@/music-universe/music-data/types/master-entities";
+import type {Category, MasterEntityType} from "@/music-universe/music-data/types/master-entities";
 
 export interface LastfmTagDto {
     id: number;
@@ -29,8 +28,8 @@ export class LastfmTag extends BaseRawEntity<Category> implements LastfmEntity<C
         this.usageUsersCount = data.usageUsersCount;
     }
 
-    getEntityType(): string {
-        return MusicDataEntityType.CATEGORY;
+    getEntityType(): MasterEntityType {
+        return "category";
     }
     
     setApprovalStatus(approvalStatus: number): void {

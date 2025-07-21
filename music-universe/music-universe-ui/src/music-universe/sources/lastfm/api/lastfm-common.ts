@@ -1,8 +1,7 @@
 import axios from 'axios';
 import { LastfmConfig } from '@/music-universe/sources/lastfm/config/lastfmconfig';
-import { MusicDataEntityType } from '@/music-universe/music-data/constants/entityTypes';
 import type { LastfmEntity } from '@/music-universe/sources/lastfm/types/lastfm-entity';
-import type { MasterEntity } from '@/music-universe/shared/types/entity-reference';
+import type { MasterEntity } from '@/music-universe/shared/types/entities.ts';
 
 /**
  * Generic function to update approval status for any LastFM entity
@@ -15,11 +14,12 @@ export async function updateApprovalStatus<T extends LastfmEntity<M>, M extends 
     entity: T, 
     newStatus: number
 ): Promise<T> {
+
     // Map entity type to API endpoint
     const entityTypeToEndpoint: Record<string, string> = {
-        [MusicDataEntityType.ARTIST]: 'artists',
-        [MusicDataEntityType.TRACK]: 'tracks', 
-        [MusicDataEntityType.CATEGORY]: 'tags'
+        'artist': 'artists',
+        'track': 'tracks',
+        'category': 'tags'
     };
     
     const entityType = entity.getEntityType();

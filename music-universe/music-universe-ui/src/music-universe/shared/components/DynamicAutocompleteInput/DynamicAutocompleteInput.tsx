@@ -3,14 +3,13 @@ import { useState, useEffect, useRef } from 'react';
 // components
 import {StaticAutocompleteInput} from "@/music-universe/shared/components";
 // types
-import type { ApiResponse } from '@/music-universe/shared/types/api-response';
 import type { LookupEntity } from '@/music-universe/shared/types/lookup';
 
 export interface ExpDynamicAutocompleteInputProps {
     value: string;
     onChange: (value: string) => void;
     onSelect: (entity: LookupEntity | null) => void;
-    lookupFunction: (query: string, limit?: number) => Promise<ApiResponse<LookupEntity[]>>;
+    lookupFunction: (query: string, limit?: number) => Promise<LookupEntity[]>;
     preloadedOptions?: LookupEntity[];
     selectedEntity: LookupEntity | null;
     placeholder?: string;

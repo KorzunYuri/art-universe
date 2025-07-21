@@ -11,7 +11,7 @@ import { bindCategoryToExisting, createAndBindCategory, unbindCategory, lookupCa
 import { ApprovalStatus } from "@/music-universe/sources/lastfm/constants/approvalStatus";
 // types
 import type { LookupEntity } from "@/music-universe/shared/types/lookup";
-import type { MasterEntity } from "@/music-universe/shared/types/entity-reference";
+import type { MasterEntity } from "@/music-universe/shared/types/entities.ts";
 import type { RawEntityTableRow } from "@/music-universe/shared/types/table-row";
 // styles
 import sharedTableStyles from "@/music-universe/shared/components/BaseEntityTable/EntityTableStyles.module.scss";

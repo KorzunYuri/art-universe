@@ -3,9 +3,9 @@ import { useEffect } from 'react'
 import type { ReactNode } from 'react'
 // types
 import type { LastfmEntity } from '@/music-universe/sources/lastfm/types/lastfm-entity'
-import type { MasterEntity } from '@/music-universe/shared/types/entity-reference'
+import type { MasterEntity } from '@/music-universe/shared/types/entities.ts'
 import type { Page } from '@/music-universe/shared/types/page'
-import type { BoundEntityResponse } from '@/music-universe/shared/types/master'
+import type { BoundEntityResponse } from '@/music-universe/music-data/utils/master-entities-common.ts'
 // components
 import { RawEntityTable } from '@/music-universe/shared/components'
 import type {SearchParams} from "@/music-universe/shared/components/BaseEntityTable/BaseEntityTable.tsx";

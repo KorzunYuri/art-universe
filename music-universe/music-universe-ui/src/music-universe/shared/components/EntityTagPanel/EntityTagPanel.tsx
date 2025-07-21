@@ -7,7 +7,6 @@ import {
   unbindExternalRelation
 } from '@/music-universe/music-data/api/music-data-relations';
 import { ApprovalStatus } from '@/music-universe/sources/lastfm/constants/approvalStatus';
-import { MusicDataEntityType } from '@/music-universe/music-data/constants/entityTypes';
 import styles from './EntityTagPanel.module.scss';
 
 export interface EntityTagPanelProps {
