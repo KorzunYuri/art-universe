@@ -1,18 +1,7 @@
 import { BaseRawEntity } from "@/music-universe/shared/types/entities.ts";
 import type { LastfmEntity } from "./lastfm-entity";
 import type { MasterEntityType, Track } from "@/music-universe/music-data/types/master-entities";
-import type {LastfmArtistResponseDto} from "@/music-universe/sources/lastfm/api/lastfm-artists.ts";
-
-export interface LastfmTrackDto {
-    id: number;
-    name: string;
-    url: string;
-    mbid: string | null;
-    approvalStatus: number;
-    playCount: number | null;
-    listenersCount: number | null;
-    artist?: LastfmArtistResponseDto;
-}
+import type {LastfmArtistDto} from "@/music-universe/sources/lastfm/api/lastfm-artists.ts";
 
 /**
  * LastFM Track entity that extends BaseRawEntity and implements LastfmEntity
@@ -23,22 +12,32 @@ export class LastfmTrack extends BaseRawEntity<Track> implements LastfmEntity<Tr
     approvalStatus: number;
     playCount: number | null;
     listenersCount: number | null;
-    artist?: LastfmArtistResponseDto;
+    artist?: LastfmArtistDto;
 
-    constructor(data: LastfmTrackDto, masterEntity?: Track) {
-        super(data.id, data.name, masterEntity);
-        this.url = data.url;
-        this.mbid = data.mbid;
-        this.approvalStatus = data.approvalStatus;
-        this.playCount = data.playCount;
-        this.listenersCount = data.listenersCount;
-        this.artist = data.artist;
+    constructor(
+        id: number,
+        name: string,
+        url: string,
+        mbid: string | null,
+        approvalStatus: number,
+        playCount: number | null,
+        listenersCount: number | null,
+        artist?: LastfmArtistDto,
+        masterEntity?: Track
+    ) {
+        super(id, name, masterEntity);
+        this.url = url;
+        this.mbid = mbid;
+        this.approvalStatus = approvalStatus;
+        this.playCount = playCount;
+        this.listenersCount = listenersCount;
+        this.artist = artist;
     }
 
     getEntityType(): MasterEntityType {
         return "track";
     }
-    
+
     setApprovalStatus(approvalStatus: number): void {
         this.approvalStatus = approvalStatus;
     }
@@ -47,6 +46,26 @@ export class LastfmTrack extends BaseRawEntity<Track> implements LastfmEntity<Tr
 /**
  * Factory function to create LastfmTrack from API response
  */
-export function createLastfmTrack(data: LastfmTrackDto, masterEntity?: Track): LastfmTrack {
-    return new LastfmTrack(data, masterEntity);
+export function createLastfmTrack(
+    id: number,
+    name: string,
+    url: string,
+    mbid: string | null,
+    approvalStatus: number,
+    playCount: number | null,
+    listenersCount: number | null,
+    artist?: LastfmArtistDto,
+    masterEntity?: Track
+): LastfmTrack {
+    return new LastfmTrack(
+        id,
+        name,
+        url,
+        mbid,
+        approvalStatus,
+        playCount,
+        listenersCount,
+        artist,
+        masterEntity
+    );
 }

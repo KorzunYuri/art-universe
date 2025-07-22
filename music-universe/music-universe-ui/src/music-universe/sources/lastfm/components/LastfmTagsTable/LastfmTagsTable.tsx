@@ -11,7 +11,7 @@ import type { LookupEntity } from '@/music-universe/shared/types/lookup'
 import type { BoundEntityResponse } from '@/music-universe/music-data/utils/master-entities-common.ts'
 import type { Category } from "@/music-universe/music-data/types/master-entities";
 // api
-import { fetchTags, type TagSearchParams } from '@/music-universe/sources/lastfm/api/lastfm-tags'
+import { fetchTags, type LastfmTagsPageSearchParams } from '@/music-universe/sources/lastfm/api/lastfm-tags'
 import { fetchBoundCategories, batchLookupCategories } from '@/music-universe/music-data/api/music-data-categories'
 // components
 import { LastfmEntityTable } from '@/music-universe/sources/lastfm/components/LastfmEntityTable'
@@ -35,7 +35,7 @@ export const LastfmTagsTable = ({ initialSearch = '' }: LastfmTagsTableProps) =>
     };
 
     // Load tags with search parameters
-    const loadTags = async (params: TagSearchParams) => {
+    const loadTags = async (params: LastfmTagsPageSearchParams) => {
         try {
             // Apply initial search if provided and not yet applied
             if (initialSearch && !initialSearchApplied && !params.search) {

@@ -3,7 +3,7 @@ import type { LastfmTrack } from '@/music-universe/sources/lastfm/types/lastfm-t
 import type {Track} from "@/music-universe/music-data/types/master-entities.ts";
 import type { BoundEntityResponse } from '@/music-universe/music-data/utils/master-entities-common.ts'
 // api
-import { fetchTracks, type TrackSearchParams } from '@/music-universe/sources/lastfm/api/lastfm-tracks'
+import { fetchTracks, type LastfmTracksPageSearchParams } from '@/music-universe/sources/lastfm/api/lastfm-tracks'
 import { fetchBoundTracks } from '@/music-universe/music-data/api/music-data-tracks'
 // components
 import { LastfmEntityTable } from '@/music-universe/sources/lastfm/components/LastfmEntityTable'
@@ -33,7 +33,7 @@ export const LastfmTracksTable = ({ artistId }: LastfmTracksTableProps) => {
     };
 
     // Load tracks with search parameters
-    const loadTracks = async (params: TrackSearchParams) => {
+    const loadTracks = async (params: LastfmTracksPageSearchParams) => {
         try {
             // Add artistId to params if provided
             if (artistId) {

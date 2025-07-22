@@ -1,57 +1,49 @@
 import { LastfmConfig } from "@/music-universe/sources/lastfm/config/lastfmconfig";
-import type { Page } from "@/music-universe/shared/types/page";
-import { LastfmTag, createLastfmTag, type LastfmTagDto } from "@/music-universe/sources/lastfm/types/lastfm-tag";
 import axios from 'axios';
+import {type BaseLastfmPageSearchParams, fetchEntities} from "@/music-universe/sources/lastfm/api/lastfm-common.ts";
+import type { Page } from "@/music-universe/shared/types/page.ts";
+import { LastfmTag } from "@/music-universe/sources/lastfm/types";
+import type { Category } from "@/music-universe/music-data/types/master-entities";
 
-export interface TagSearchParams {
-    search?: string;
-    approvalStatuses?: number[];
-    page?: number;
-    size?: number;
-    sort?: string;
+export interface LastfmTagDto {
+    id: number;
+    name: string;
+    url: string | null;
+    approvalStatus: number;
+    usageCount: number | null;
+    usageUsersCount: number | null;
 }
 
 /**
- * Fetches tags from the LastFM API
- * 
- * @param params Search parameters
- * @returns Page of LastfmTag objects
+ * Factory function to create LastfmTag from API response DTO
+ * This function handles the conversion from API DTO to domain entity
  */
-export async function fetchTags(params: TagSearchParams): Promise<Page<LastfmTag>> {
-    const response = await axios.get<Page<LastfmTagDto>>(
-        `${LastfmConfig.baseApiUrl}/tags`,
-        {
-            params: {
-                search: params.search ?? '',
-                approvalStatuses: params.approvalStatuses?.join(','),
-                page: params.page ?? 0,
-                size: params.size ?? 20,
-                sort: params.sort ?? 'name,asc',
-            },
-        }
+export function createLastfmTagFromDto(dto: LastfmTagDto, masterEntity?: Category): LastfmTag {
+    return new LastfmTag(
+        dto.id,
+        dto.name,
+        dto.url,
+        dto.approvalStatus,
+        dto.usageCount,
+        dto.usageUsersCount,
+        masterEntity
     );
-
-    // Convert plain objects to LastfmTag instances
-    return {
-        ...response.data,
-        content: response.data.content.map((tagDto: LastfmTagDto) => createLastfmTag(tagDto))
-    };
 }
 
-/**
- * Updates the approval status of a tag
- * 
- * @param id Tag ID
- * @param newStatus New approval status
- * @returns Updated tag
- */
-export async function updateTagApprovalStatus(id: number, newStatus: number): Promise<LastfmTag> {
-    const response = await axios.patch<LastfmTagDto>(`${LastfmConfig.baseApiUrl}/tags/${id}/approval`, {
-        approvalStatus: newStatus,
-    });
+export interface LastfmTagsPageSearchParams extends BaseLastfmPageSearchParams{
+}
 
-    // Convert plain object to LastfmTag instance
-    return createLastfmTag(response.data);
+export async function fetchTags(params: LastfmTagsPageSearchParams) : Promise<Page<LastfmTag>> {
+    return fetchEntities(
+        'category',
+        {
+            search: params.search ?? '',
+            approvalStatuses: params.approvalStatuses,
+            page: params.page ?? 0,
+            size: params.size ?? 20,
+            sort: params.sort ?? 'name,asc',
+        } as LastfmTagsPageSearchParams
+    )
 }
 
 /**
@@ -76,7 +68,7 @@ export interface EntityTagSearchParams {
 
 /**
  * Fetches tags associated with a specific entity from the LastFM API
- * 
+ *
  * @param entityType Type of entity (ARTIST, ALBUM, TRACK)
  * @param entityId ID of the entity
  * @param params Search parameters
