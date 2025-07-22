@@ -5,6 +5,8 @@ import {fetchArtists} from "@/music-universe/sources/lastfm/api/lastfm-artists.t
 import {masterEntityLookupKeys, rawEntitiesKeys} from "@/music-universe/shared/utils/query-keys.ts";
 import {batchLookupArtists, fetchBoundArtists} from "@/music-universe/music-data/api/music-data-artists.ts";
 import {createMasterEntityFromBinding} from "@/music-universe/music-data/utils/master-entities-common.ts";
+import type {DataSource} from "@/music-universe/sources/shared/types/data-sources.ts";
+import type {MasterEntityType} from "@/music-universe/music-data/types/master-entities.ts";
 
 export function useLastfmArtistsTable(initialParams: Partial<SearchParams> = {}) {
     const queryClient = useQueryClient();
@@ -17,8 +19,8 @@ export function useLastfmArtistsTable(initialParams: Partial<SearchParams> = {})
     });
 
     // Constants for this component
-    const dataSource = 'LASTFM';
-    const entityType = "artist";
+    const dataSource: DataSource = 'lastfm';
+    const entityType: MasterEntityType = "artist";
 
     const rawEntitiesPageQueryKey = rawEntitiesKeys.list(dataSource, entityType, params);
     const rawEntitiesPageQuery = useQuery({

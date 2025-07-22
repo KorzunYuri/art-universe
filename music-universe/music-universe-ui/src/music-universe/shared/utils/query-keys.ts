@@ -1,17 +1,18 @@
 import type {MasterEntityType} from "@/music-universe/music-data/types/master-entities.ts";
+import type {DataSource} from "@/music-universe/sources/shared/types/data-sources.ts";
 
 /**
  * keys for raw entities
  */
 export const rawEntitiesKeys = {
   all: ['rawEntities'] as const,
-  source: (dataSource: string) => 
+  source: (dataSource: DataSource) =>
     [...rawEntitiesKeys.all, dataSource] as const,
-  type: (dataSource: string, entityType: MasterEntityType) =>
+  type:   (dataSource: DataSource, entityType: MasterEntityType) =>
     [...rawEntitiesKeys.source(dataSource), entityType] as const,
-  list: (dataSource: string, entityType: MasterEntityType, params?: Record<string, any>) =>
+  list:   (dataSource: DataSource, entityType: MasterEntityType, params?: Record<string, any>) =>
     [...rawEntitiesKeys.type(dataSource, entityType), params] as const,
-  detail: (dataSource: string, entityType: MasterEntityType, id: number) =>
+  detail: (dataSource: DataSource, entityType: MasterEntityType, id: number) =>
     [...rawEntitiesKeys.type(dataSource, entityType), 'detail', id] as const,
 };
 
@@ -20,9 +21,9 @@ export const rawEntitiesKeys = {
  */
 export const masterEntitiesKeys = {
   all: ['masterEntities'] as const,
-  type: (entityType: MasterEntityType) =>
+  type:   (entityType: MasterEntityType) =>
     [...masterEntitiesKeys.all, entityType] as const,
-  list: (entityType: MasterEntityType, params?: Record<string, any>) =>
+  list:   (entityType: MasterEntityType, params?: Record<string, any>) =>
     [...masterEntitiesKeys.type(entityType), params] as const,
   detail: (entityType: MasterEntityType, id: number) =>
     [...masterEntitiesKeys.type(entityType), 'detail', id] as const,
@@ -33,8 +34,8 @@ export const masterEntitiesKeys = {
  */
 export const masterEntityLookupKeys = {
   all: ['lookup'] as const,
-  type: (entityType: MasterEntityType) =>
+  type:   (entityType: MasterEntityType) =>
     [...masterEntityLookupKeys.all, entityType] as const,
-  query: (entityType: MasterEntityType, query: string) =>
+  query:  (entityType: MasterEntityType, query: string) =>
     [...masterEntityLookupKeys.type(entityType), query] as const,
 };

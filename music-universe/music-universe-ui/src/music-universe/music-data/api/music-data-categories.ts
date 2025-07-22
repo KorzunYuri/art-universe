@@ -8,6 +8,7 @@ import {
 } from '@/music-universe/music-data/utils/master-entities-common.ts';
 import type { LookupEntity, BatchLookupRequestDTO, BatchLookupResponseDTO } from '@/music-universe/shared/types/lookup';
 import {type Category, CategoryImpl, type MasterEntityType} from '@/music-universe/music-data/types/master-entities';
+import type {DataSource} from "@/music-universe/sources/shared/types/data-sources.ts";
 
 const entityType: MasterEntityType = 'category'
 
@@ -121,11 +122,11 @@ export async function batchLookupCategories(names: string[], limit: number = 10)
 /**
  * Fetches bound categories from the music-data API
  * 
- * @param dataSource Data source (e.g., 'LASTFM')
+ * @param dataSource {DataSource}
  * @param externalIds List of external IDs to check
  * @returns List of bound categories
  */
-export async function fetchBoundCategories(dataSource: string, externalIds: number[]): Promise<BoundEntityResponse[]> {
+export async function fetchBoundCategories(dataSource: DataSource, externalIds: number[]): Promise<BoundEntityResponse[]> {
     const url = `${MusicDataConfig.baseApiUrl}/categories/bound/${dataSource}`;
     const response = await axios.get<BoundEntityResponse[]>(
         url,
@@ -142,12 +143,12 @@ export async function fetchBoundCategories(dataSource: string, externalIds: numb
 /**
  * Binds a category to an existing category in music-data
  * 
- * @param dataSource Data source (e.g., 'LASTFM')
+ * @param dataSource {DataSource}
  * @param externalId The external category ID
  * @param categoryId The existing category ID in music-data
  * @returns The bound category if successful, null otherwise
  */
-export async function bindCategoryToExisting(dataSource: string, externalId: number, categoryId: number): Promise<MasterEntity | null> {
+export async function bindCategoryToExisting(dataSource: DataSource, externalId: number, categoryId: number): Promise<MasterEntity | null> {
     const request: CategoryBindToExistingRequest = { categoryId };
     
     const response = await axios.post<BoundEntityResponse>(
@@ -161,12 +162,12 @@ export async function bindCategoryToExisting(dataSource: string, externalId: num
 /**
  * Creates a new category and binds it to external category
  * 
- * @param dataSource Data source (e.g., 'LASTFM')
+ * @param dataSource {DataSource}
  * @param externalId The external category ID
  * @param categoryName The name of the new category
  * @returns The bound category if successful, null otherwise
  */
-export async function createAndBindCategory(dataSource: string, externalId: number, categoryName: string): Promise<MasterEntity | null> {
+export async function createAndBindCategory(dataSource: DataSource, externalId: number, categoryName: string): Promise<MasterEntity | null> {
     const request: CategoryCreateAndBindRequest = { name: categoryName };
     
     const response = await axios.post<BoundEntityResponse>(
@@ -180,11 +181,11 @@ export async function createAndBindCategory(dataSource: string, externalId: numb
 /**
  * Unbinds a category from external source
  *
- * @param dataSource Data source (e.g., 'LASTFM')
+ * @param dataSource {DataSource}
  * @param externalId The external category ID
  * @returns True if successful, false otherwise
  */
-export async function unbindCategory(dataSource: string, externalId: number): Promise<boolean> {
+export async function unbindCategory(dataSource: DataSource, externalId: number): Promise<boolean> {
     const response = await axios.delete<boolean>(
         `${MusicDataConfig.baseApiUrl}/categories/unbind/${dataSource}/${externalId}`
     );

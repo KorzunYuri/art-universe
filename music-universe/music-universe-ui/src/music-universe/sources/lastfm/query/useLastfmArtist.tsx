@@ -7,16 +7,29 @@ import {
 } from "@/music-universe/music-data/api/music-data-artists.ts";
 import { createMasterEntityFromBinding } from "@/music-universe/music-data/utils/master-entities-common.ts";
 import type { MasterEntityType } from "@/music-universe/music-data/types/master-entities.ts";
+import type {DataSource} from "@/music-universe/sources/shared/types/data-sources.ts";
+import {LastfmArtist} from "@/music-universe/sources/lastfm/types";
 
-export function useLastfmArtist(rawEntityId: number) {
+export function useLastfmArtist(
+    entityType: MasterEntityType,
+    rawEntityId: number
+) {
 
     const queryClient = useQueryClient();
 
-    // Constants for this component
-    const dataSource = 'LASTFM';
-    const entityType: MasterEntityType = 'artist';
+    // TODO generify component and make dataSource & entityType props or fields
+    const dataSource: DataSource = 'lastfm';
 
     const rawEntityQueryKey = rawEntitiesKeys.detail(dataSource, entityType, rawEntityId);
+
+    const update = (updatedEntity: LastfmArtist) => {
+        queryClient.setQueryData(rawEntityQueryKey, updatedEntity);
+    }
+
+    const invalidate = () => {
+        queryClient.invalidateQueries({ queryKey: rawEntityQueryKey });
+    }
+
     const rawEntityQuery = useQuery({
         queryKey: rawEntityQueryKey,
         queryFn: async () => {
@@ -46,9 +59,11 @@ export function useLastfmArtist(rawEntityId: number) {
     })
 
     return {
-        entity:         rawEntityQuery?.data,
-        isLoading:      rawEntityQuery.isLoading,
-        isError:        rawEntityQuery.isError,
-        errorMessage:   rawEntityQuery.error,
+        entity:             rawEntityQuery?.data,
+        updateEntity:       update,
+        invalidateEntity:   invalidate,
+        isLoading:          rawEntityQuery.isLoading,
+        isError:            rawEntityQuery.isError,
+        error:              rawEntityQuery.error,
     };
 }

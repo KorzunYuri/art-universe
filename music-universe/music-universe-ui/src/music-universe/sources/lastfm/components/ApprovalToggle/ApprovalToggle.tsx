@@ -3,7 +3,7 @@ import { ApprovalStatus, type ApprovalStatusType } from '@/music-universe/source
 
 interface Props {
     status: number
-    onChange: (newStatus: number) => void
+    onChange: (newStatus: ApprovalStatusType) => void
     className?: string
     disabled?: boolean
 }
@@ -14,14 +14,14 @@ const options: {
     color: 'yes' | 'no' | 'auto'
     alwaysDisabled?: boolean
 }[] = [
-    { label: 'yes', value: ApprovalStatus.APPROVED, color: 'yes' },
-    { label: 'no', value: ApprovalStatus.DECLINED, color: 'no' },
-    { label: 'auto', value: ApprovalStatus.AUTOAPPROVED, color: 'auto', alwaysDisabled: true },
+    { label: 'yes',  value: ApprovalStatus.APPROVED,        color: 'yes' },
+    { label: 'no',   value: ApprovalStatus.DECLINED,        color: 'no' },
+    { label: 'auto', value: ApprovalStatus.AUTOAPPROVED,    color: 'auto', alwaysDisabled: true },
 ]
 
 export function ApprovalToggle({ status, onChange, className = '', disabled = false }: Props) {
 
-    const handleClick = (value: number, buttonDisabled?: boolean) => {
+    const handleClick = (value: ApprovalStatusType, buttonDisabled?: boolean) => {
         if (buttonDisabled || disabled) return
         if (value === status) {
             onChange(ApprovalStatus.PENDING)
