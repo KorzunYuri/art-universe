@@ -5,6 +5,7 @@ import {
     type Category, CategoryImpl,
     type MasterEntityType, type MasterEntityMap
 } from "@/music-universe/music-data/types/master-entities.ts";
+import type {DataSource} from "@/music-universe/sources/shared/types/data-sources.ts";
 
 type BindingResponseMap = {
     artist:     BoundEntityResponse;
@@ -16,7 +17,7 @@ type BindingResponseMap = {
 
 export interface BoundEntityResponse {
     externalId: number;
-    dataSource: string;
+    dataSource: DataSource;
     masterId: number;
     masterName: string;
 }

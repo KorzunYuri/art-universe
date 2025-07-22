@@ -1,5 +1,5 @@
 // hooks
-import {useState, memo, useEffect} from "react";
+import {useState, memo} from "react";
 // components
 import {
     EntityBinding,
@@ -9,6 +9,10 @@ import {
     type RawEntityTableRow
 } from "@/music-universe/shared/components";
 import { ApprovalToggle } from "@/music-universe/sources/lastfm/components";
+// types
+import type {DataSource} from "@/music-universe/sources/shared/types/data-sources.ts";
+import type {MasterEntityType} from "@/music-universe/music-data/types/master-entities.ts";
+import type {ApprovalStatusType} from "@/music-universe/sources/lastfm/constants/approvalStatus.ts";
 // backend services
 import { LastfmConfig } from "@/music-universe/sources/lastfm/config/lastfmconfig.ts";
 import type { LastfmArtist } from "@/music-universe/sources/lastfm/types";
@@ -16,8 +20,8 @@ import type { LastfmArtist } from "@/music-universe/sources/lastfm/types";
 import sharedTableStyles from "@/music-universe/shared/components/BaseEntityTable/EntityTableStyles.module.scss";
 import artistTableStyles from "../LastfmArtistsTable/LastfmArtistsTable.module.css";
 import styles from "./LastfmArtistsTableRow.module.scss";
-import {updateApprovalStatus} from "@/music-universe/sources/lastfm/api/lastfm-common.ts";
 import {useLastfmArtist} from "@/music-universe/sources/lastfm/query/useLastfmArtist.tsx";
+import {updateRawEntityApprovalStatus} from "@/music-universe/sources/shared/api/approval.tsx";
 
 interface LastfmArtistTableRowProps extends RawEntityTableRow<LastfmArtist> {
     entityId: number
@@ -28,15 +32,21 @@ export const LastfmArtistsTableRow = memo((
         entityId
     }: LastfmArtistTableRowProps) =>
 {
+    // TODO generify component and make dataSource & entityType props or fields
+    const dataSource: DataSource = 'lastfm';
+    const entityType: MasterEntityType = 'artist';
+
     const [isApproving, setIsApproving] = useState(false);
     const [isTagPanelOpen, setIsTagPanelOpen] = useState(false);
 
     const {
         entity,
+        updateEntity,
+        invalidateEntity,
         isLoading,
         isError,
-        errorMessage
-    } = useLastfmArtist(entityId);
+        error
+    } = useLastfmArtist(entityType, entityId);
 
     const toggleTagPanel = () => {
         setIsTagPanelOpen(!isTagPanelOpen);
@@ -57,15 +67,21 @@ export const LastfmArtistsTableRow = memo((
         return (
             <div className={sharedTableStyles.row}>
                 <div className={`${sharedTableStyles.cell} ${artistTableStyles.name}`}>
-                    No entity found
+                    {isError && error ? error.message : 'No entity found'}
                 </div>
             </div>
         )
     }
 
-    function onStatusChange(newStatus: number) {
+    function onStatusChange(newStatus: ApprovalStatusType) {
+        console.log(`new status ${newStatus} for entity ${entity?.id}`)
+        if (!entity) return;
         setIsApproving(true);
-        updateApprovalStatus(entity, newStatus)
+        updateRawEntityApprovalStatus(dataSource, entity.getEntityType(), entity.id, newStatus)
+            .then(() => {
+                entity.setApprovalStatus(newStatus);
+                updateEntity(entity);
+            })
             .finally(() => {
                 setIsApproving(false);
             });

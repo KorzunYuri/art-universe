@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { MusicDataConfig } from '../config/musicdataconfig';
+import type {DataSource} from "@/music-universe/sources/shared/types/data-sources.ts";
 
 /**
  * DTO for relation binding status response
@@ -56,7 +57,7 @@ export interface RelationPair {
 /**
  * Binds an external relation to an internal one in music-data
  * 
- * @param dataSource Data source (e.g., 'LASTFM')
+ * @param dataSource {DataSource}
  * @param sourceEntityType Source entity type (e.g., 'ARTIST')
  * @param sourceExternalEntityId External source entity ID
  * @param targetEntityType Target entity type (e.g., 'CATEGORY')
@@ -64,7 +65,7 @@ export interface RelationPair {
  * @returns The bound relation if successful, null otherwise
  */
 export async function bindExternalRelation(
-    dataSource: string,
+    dataSource: DataSource,
     sourceEntityType: string,
     sourceExternalEntityId: number,
     targetEntityType: string,
@@ -82,7 +83,7 @@ export async function bindExternalRelation(
 /**
  * Unbinds an external relation in music-data
  * 
- * @param dataSource Data source (e.g., 'LASTFM')
+ * @param dataSource {DataSource}
  * @param sourceEntityType Source entity type (e.g., 'ARTIST')
  * @param sourceExternalEntityId External source entity ID
  * @param targetEntityType Target entity type (e.g., 'CATEGORY')
@@ -90,7 +91,7 @@ export async function bindExternalRelation(
  * @returns True if successful, false otherwise
  */
 export async function unbindExternalRelation(
-    dataSource: string,
+    dataSource: DataSource,
     sourceEntityType: string,
     sourceExternalEntityId: number,
     targetEntityType: string,
@@ -108,7 +109,7 @@ export async function unbindExternalRelation(
 /**
  * Finds bound external relations in music-data
  * 
- * @param dataSource Data source (e.g., 'LASTFM')
+ * @param dataSource {DataSource}
  * @param sourceEntityType Source entity type (e.g., 'ARTIST')
  * @param sourceExternalEntityId External source entity ID
  * @param targetEntityType Target entity type (e.g., 'CATEGORY')
@@ -116,7 +117,7 @@ export async function unbindExternalRelation(
  * @returns DTO with binding status information
  */
 export async function findBoundExternalRelations(
-    dataSource: string,
+    dataSource: DataSource,
     sourceEntityType: string,
     sourceExternalEntityId: number,
     targetEntityType: string,
