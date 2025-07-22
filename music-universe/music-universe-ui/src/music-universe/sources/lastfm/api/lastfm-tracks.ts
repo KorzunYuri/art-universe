@@ -1,62 +1,56 @@
-import { LastfmConfig } from "@/music-universe/sources/lastfm/config/lastfmconfig";
 import type { Page } from "@/music-universe/shared/types/page";
-import { LastfmTrack, createLastfmTrack, type LastfmTrackDto } from "@/music-universe/sources/lastfm/types/lastfm-track";
-import axios from 'axios';
+import { LastfmTrack } from "@/music-universe/sources/lastfm/types/lastfm-track";
+import {type BaseLastfmPageSearchParams, fetchEntities} from "@/music-universe/sources/lastfm/api/lastfm-common.ts";
+import type { Track } from "@/music-universe/music-data/types/master-entities";
+import type { LastfmArtistDto } from "@/music-universe/sources/lastfm/api/lastfm-artists";
 
-export interface TrackSearchParams {
-    search?: string;
+export interface LastfmTrackDto {
+    id: number;
+    name: string;
+    url: string;
+    mbid: string | null;
+    approvalStatus: number;
+    playCount: number | null;
+    listenersCount: number | null;
+    artist?: LastfmArtistDto;
+}
+
+/**
+ * Factory function to create LastfmTrack from API response DTO
+ * This function handles the conversion from API DTO to domain entity
+ */
+export function createLastfmTrackFromDto(dto: LastfmTrackDto, masterEntity?: Track): LastfmTrack {
+    return new LastfmTrack(
+        dto.id,
+        dto.name,
+        dto.url,
+        dto.mbid,
+        dto.approvalStatus,
+        dto.playCount,
+        dto.listenersCount,
+        dto.artist,
+        masterEntity
+    );
+}
+
+export interface LastfmTracksPageSearchParams extends BaseLastfmPageSearchParams {
     minPlayCount?: number;
     minListenersCount?: number;
     artistId?: number;
-    approvalStatuses?: number[];
-    page?: number;
-    size?: number;
-    sort?: string;
 }
 
-/**
- * Fetches tracks from the LastFM API
- * 
- * @param params Search parameters
- * @returns Page of LastfmTrack objects
- */
-export async function fetchTracks(params: TrackSearchParams): Promise<Page<LastfmTrack>> {
-    const response = await axios.get(
-        `${LastfmConfig.baseApiUrl}/tracks`,
+export async function fetchTracks(params: LastfmTracksPageSearchParams): Promise<Page<LastfmTrack>> {
+    return fetchEntities(
+        'track',
         {
-            params: {
-                search: params.search ?? '',
-                minPlayCount: params.minPlayCount,
-                minListenersCount: params.minListenersCount,
-                artistId: params.artistId,
-                approvalStatuses: params.approvalStatuses?.join(','),
-                page: params.page ?? 0,
-                size: params.size ?? 20,
-                sort: params.sort ?? 'name,asc',
-            },
-        }
+            search: params.search ?? '',
+            minPlayCount: params.minPlayCount,
+            minListenersCount: params.minListenersCount,
+            artistId: params.artistId,
+            approvalStatuses: params.approvalStatuses,
+            page: params.page ?? 0,
+            size: params.size ?? 20,
+            sort: params.sort ?? 'name,asc',
+        } as LastfmTracksPageSearchParams
     );
-
-    // Convert plain objects to LastfmTrack instances
-    const data = response.data.data;
-    return {
-        ...data,
-        content: data.content.map((trackDto: LastfmTrackDto) => createLastfmTrack(trackDto))
-    };
-}
-
-/**
- * Updates the approval status of a track
- * 
- * @param id Track ID
- * @param newStatus New approval status
- * @returns Updated track
- */
-export async function updateTrackApprovalStatus(id: number, newStatus: number): Promise<LastfmTrack> {
-    const response = await axios.patch(`${LastfmConfig.baseApiUrl}/tracks/${id}/approval`, {
-        approvalStatus: newStatus,
-    });
-
-    // Convert plain object to LastfmTrack instance
-    return createLastfmTrack(response.data.data);
 }

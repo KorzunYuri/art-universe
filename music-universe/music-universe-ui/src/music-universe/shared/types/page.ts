@@ -26,3 +26,10 @@ export interface Page<T> {
     numberOfElements: number
     empty: boolean
 }
+
+export interface BasePageSearchParams {
+    search?: string;
+    page?: number;
+    size?: number;
+    sort?: string;
+}

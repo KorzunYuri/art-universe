@@ -1,7 +1,6 @@
 import {BaseRawEntity} from "@/music-universe/shared/types/entities.ts";
 import type {LastfmEntity} from "./lastfm-entity";
 import type {Artist, MasterEntityType} from "@/music-universe/music-data/types/master-entities";
-import type {LastfmArtistResponseDto} from "@/music-universe/sources/lastfm/api/lastfm-artists.ts";
 
 /**
  * LastFM Artist entity that extends BaseRawEntity and implements LastfmEntity
@@ -13,13 +12,22 @@ export class LastfmArtist extends BaseRawEntity<Artist> implements LastfmEntity<
     playCount: number | null;
     listenersCount: number | null;
 
-    constructor(data: LastfmArtistResponseDto, masterEntity?: Artist) {
-        super(data.id, data.name, masterEntity);
-        this.url = data.url;
-        this.mbid = data.mbid;
-        this.approvalStatus = data.approvalStatus;
-        this.playCount = data.playCount;
-        this.listenersCount = data.listenersCount;
+    constructor(
+        id: number,
+        name: string,
+        url: string,
+        mbid: string | null,
+        approvalStatus: number,
+        playCount: number | null,
+        listenersCount: number | null,
+        masterEntity?: Artist
+    ) {
+        super(id, name, masterEntity);
+        this.url = url;
+        this.mbid = mbid;
+        this.approvalStatus = approvalStatus;
+        this.playCount = playCount;
+        this.listenersCount = listenersCount;
     }
 
     getEntityType(): MasterEntityType {
@@ -31,9 +39,3 @@ export class LastfmArtist extends BaseRawEntity<Artist> implements LastfmEntity<
     }
 }
 
-/**
- * Factory function to create LastfmArtist from API response
- */
-export function createLastfmArtist(data: LastfmArtistResponseDto, masterEntity?: Artist): LastfmArtist {
-    return new LastfmArtist(data, masterEntity);
-}
