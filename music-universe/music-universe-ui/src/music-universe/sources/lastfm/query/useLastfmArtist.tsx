@@ -1,14 +1,11 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { masterEntityLookupKeys, rawEntitiesKeys } from "@/music-universe/shared/utils/query-keys.ts";
-import {
-    fetchBoundArtists,
-    lookupArtists
-} from "@/music-universe/music-data/api/music-data-artists.ts";
-import { createMasterEntityFromBinding } from "@/music-universe/music-data/utils/master-entities-common.ts";
 import type {MasterEntityType} from "@/music-universe/music-data/types/master-entities.ts";
 import type {DataSource} from "@/music-universe/sources/shared/types/data-sources.ts";
 import {LastfmArtist} from "@/music-universe/sources/lastfm/types";
 import {fetchEntity, type SupportedMasterEntityType} from "@/music-universe/sources/lastfm/api/lastfm-common.ts";
+import {lookupMasterEntities} from "@/music-universe/music-data/api/music-data-commons.ts";
+import {fetchBoundMasterEntities} from "@/music-universe/music-data/api/music-data-bindings.ts";
 
 export function useLastfmArtist(
     entityType: MasterEntityType,
@@ -39,12 +36,12 @@ export function useLastfmArtist(
 
             // get master entity and lookup for entity name
             const [masterEntityBinding, masterEntityLookup] = await Promise.all([
-                fetchBoundArtists([rawEntityId]), // no single-binding method atm
-                lookupArtists(rawEntity.name),
+                fetchBoundMasterEntities(dataSource, entityType, [rawEntityId]), // no single-binding method atm
+                lookupMasterEntities(entityType, rawEntity.name),
             ]);
 
             const masterEntity = masterEntityBinding?.length
-                ? createMasterEntityFromBinding(masterEntityBinding[0], entityType)
+                ? masterEntityBinding[0].masterEntity
                 : undefined;
 
             // update entity

@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { MusicDataConfig } from '../config/musicdataconfig';
 import type {DataSource} from "@/music-universe/sources/shared/types/data-sources.ts";
+import type {MasterEntityType} from "@/music-universe/music-data/types/master-entities.ts";
 
 /**
  * DTO for relation binding status response
@@ -66,9 +67,9 @@ export interface RelationPair {
  */
 export async function bindExternalRelation(
     dataSource: DataSource,
-    sourceEntityType: string,
+    sourceEntityType: MasterEntityType,
     sourceExternalEntityId: number,
-    targetEntityType: string,
+    targetEntityType: MasterEntityType,
     targetExternalEntityId: number
 ): Promise<RelationBindingDTO | null> {
     console.log(`🔗 Binding external relation: ${sourceEntityType}:${sourceExternalEntityId} -> ${targetEntityType}:${targetExternalEntityId}`);
@@ -92,9 +93,9 @@ export async function bindExternalRelation(
  */
 export async function unbindExternalRelation(
     dataSource: DataSource,
-    sourceEntityType: string,
+    sourceEntityType: MasterEntityType,
     sourceExternalEntityId: number,
-    targetEntityType: string,
+    targetEntityType: MasterEntityType,
     targetExternalEntityId: number
 ): Promise<boolean> {
     console.log(`🔓 Unbinding external relation: ${sourceEntityType}:${sourceExternalEntityId} -> ${targetEntityType}:${targetExternalEntityId}`);
@@ -118,9 +119,9 @@ export async function unbindExternalRelation(
  */
 export async function findBoundExternalRelations(
     dataSource: DataSource,
-    sourceEntityType: string,
+    sourceEntityType: MasterEntityType,
     sourceExternalEntityId: number,
-    targetEntityType: string,
+    targetEntityType: MasterEntityType,
     targetExternalEntityIds: number[]
 ): Promise<RelationBindingStatusDTO> {
     console.log(`🔍 Finding bound external relations for ${targetExternalEntityIds.length} target entities`);
@@ -146,9 +147,9 @@ export async function findBoundExternalRelations(
  * @returns List of related entities
  */
 export async function getRelatedEntities(
-    sourceEntityType: string,
+    sourceEntityType: MasterEntityType,
     sourceEntityId: number,
-    targetEntityType: string
+    targetEntityType: MasterEntityType
 ): Promise<EntityDTO[]> {
     console.log(`🔍 Getting ${targetEntityType}s related to ${sourceEntityType} ${sourceEntityId}`);
     
@@ -157,15 +158,4 @@ export async function getRelatedEntities(
     );
     
     return response.data;
-}
-
-/**
- * Helper function to create a RelationPair
- * 
- * @param sourceId Source entity ID
- * @param targetId Target entity ID
- * @returns RelationPair object
- */
-export function createRelationPair(sourceId: number, targetId: number): RelationPair {
-    return { sourceId, targetId };
 }

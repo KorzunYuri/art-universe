@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { MusicDataConfig } from '../config/musicdataconfig';
 import type { Page } from '@/music-universe/shared/types/page';
-import type { LookupEntity } from '@/music-universe/shared/types/lookup';
 import { type Dimension, DimensionImpl } from '@/music-universe/music-data/types/master-entities';
 
 export interface DimensionDto {
@@ -54,21 +53,6 @@ export async function fetchDimensions(params: DimensionSearchParams): Promise<Pa
 }
 
 /**
- * Searches for dimensions in Music Data by name
- * 
- * @param query Search query
- * @param limit Maximum number of results (default: 10)
- * @returns List of matching dimensions
- */
-export async function lookupDimensions(query: string, limit: number = 10): Promise<LookupEntity[]> {
-    const url = `${MusicDataConfig.baseApiUrl}/dimensions/lookup`;
-    const params = { name: query, limit: limit };
-
-    const response = await axios.get<LookupEntity[]>(url, { params });
-    return response.data;
-}
-
-/**
  * Saves a dimension (create or update)
  * 
  * @param dimension Dimension data to save
@@ -87,16 +71,16 @@ export async function saveDimension(dimension: DimensionSaveRequest): Promise<Di
 
 /**
  * Deletes a dimension
- * 
+ *
  * @param dimensionId The dimension ID to delete
  * @returns True if successful, false otherwise
  */
 export async function deleteDimension(dimensionId: number): Promise<boolean> {
     console.log(`🗑️ Deleting dimension ${dimensionId}`);
-    
+
     const response = await axios.delete<boolean>(
         `${MusicDataConfig.baseApiUrl}/dimensions/${dimensionId}`
     );
-    
+
     return response.data;
 }

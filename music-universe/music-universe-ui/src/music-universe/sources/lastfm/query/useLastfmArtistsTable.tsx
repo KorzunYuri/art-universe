@@ -3,10 +3,10 @@ import {useState} from "react";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {fetchArtists} from "@/music-universe/sources/lastfm/api/lastfm-artists.ts";
 import {masterEntityLookupKeys, rawEntitiesKeys} from "@/music-universe/shared/utils/query-keys.ts";
-import {batchLookupArtists, fetchBoundArtists} from "@/music-universe/music-data/api/music-data-artists.ts";
-import {createMasterEntityFromBinding} from "@/music-universe/music-data/utils/master-entities-common.ts";
 import type {DataSource} from "@/music-universe/sources/shared/types/data-sources.ts";
 import type {MasterEntityType} from "@/music-universe/music-data/types/master-entities.ts";
+import { batchLookupMasterEntities } from "@/music-universe/music-data/api/music-data-commons.ts";
+import {fetchBoundMasterEntities} from "@/music-universe/music-data/api/music-data-bindings.ts";
 
 export function useLastfmArtistsTable(initialParams: Partial<SearchParams> = {}) {
     const queryClient = useQueryClient();
@@ -37,17 +37,14 @@ export function useLastfmArtistsTable(initialParams: Partial<SearchParams> = {})
 
             // get master entities
             const [masterEntityBindings, masterEntitiesLookups] = await Promise.all([
-                fetchBoundArtists(rawEntityIds),
-                batchLookupArtists(rawEntityNames),
+                fetchBoundMasterEntities(dataSource, entityType, rawEntityIds),
+                batchLookupMasterEntities(entityType, rawEntityNames),
             ]);
-
-            const rawIdToMasterEntityMap = new Map(
-                masterEntityBindings.map((e) => [e.externalId, createMasterEntityFromBinding(e, entityType)])
-            );
 
             // merge the changes
             const combinedEntities = rawEntities.map((raw) => {
-                raw.setMasterEntity(rawIdToMasterEntityMap.get(raw.id));
+                const boundEntityInfo = masterEntityBindings.find((e) => e.externalId === raw.id);
+                raw.setMasterEntity(boundEntityInfo?.masterEntity);
                 return raw;
             });
 

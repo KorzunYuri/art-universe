@@ -26,50 +26,25 @@ const entityTypeToEndpoint: Record<SupportedMasterEntityType, string> = {
 
 // Define DTO types for each entity type
 type EntityDtoMap = {
-    artist: LastfmArtistDto;
-    track: LastfmTrackDto;
-    category: LastfmTagDto;
+    artist:     LastfmArtistDto;
+    track:      LastfmTrackDto;
+    category:   LastfmTagDto;
 };
 
 // Define entity types for each entity type
 type EntityTypeMap = {
-    artist: LastfmArtist;
-    track: LastfmTrack;
-    category: LastfmTag;
+    artist:     LastfmArtist;
+    track:      LastfmTrack;
+    category:   LastfmTag;
 };
 
-// Map entity type to DTO type and entity type
-interface EntityTypeMapping<K extends SupportedMasterEntityType> {
-    dtoType: EntityDtoMap[K];
-    entityType: EntityTypeMap[K];
-    createEntity: (dto: EntityDtoMap[K]) => EntityTypeMap[K];
-}
-
-const entityMappings: {
-    [K in SupportedMasterEntityType]: EntityTypeMapping<K>
+const entityMappers: {
+    [K in SupportedMasterEntityType]: (dto: EntityDtoMap[K]) => EntityTypeMap[K];
 } = {
-    artist: {
-        dtoType: {} as LastfmArtistDto,
-        entityType: {} as LastfmArtist,
-        createEntity: createLastfmArtistFromDto,
-    },
-    track: {
-        dtoType: {} as LastfmTrackDto,
-        entityType: {} as LastfmTrack,
-        createEntity: createLastfmTrackFromDto,
-    },
-    category: {
-        dtoType: {} as LastfmTagDto,
-        entityType: {} as LastfmTag,
-        createEntity: createLastfmTagFromDto,
-    },
+    artist:     createLastfmArtistFromDto,
+    track:      createLastfmTrackFromDto,
+    category:   createLastfmTagFromDto,
 };
-
-function getEntityMapping<T extends SupportedMasterEntityType>(
-    type: T
-): EntityTypeMapping<T> {
-    return entityMappings[type];
-}
 
 export interface BaseLastfmPageSearchParams extends BasePageSearchParams {
     approvalStatuses?: number[];
@@ -80,7 +55,6 @@ export async function fetchEntities<T extends SupportedMasterEntityType>(
     params: BaseLastfmPageSearchParams
 ): Promise<Page<EntityTypeMap[T]>> {
     const endpoint = entityTypeToEndpoint[entityType];
-    const entityMapping = getEntityMapping(entityType);
 
     const response = await axios.get<Page<EntityDtoMap[T]>>(
         `${LastfmConfig.baseApiUrl}/${endpoint}`,
@@ -94,7 +68,7 @@ export async function fetchEntities<T extends SupportedMasterEntityType>(
 
     return {
         ...response.data,
-        content: response.data.content.map(entityMapping.createEntity)
+        content: response.data.content.map(entityMappers[entityType])
     };
 }
 
@@ -107,13 +81,11 @@ export async function fetchEntity<T extends SupportedMasterEntityType>(
         throw new Error(`Unsupported entity type: ${entityType}`);
     }
 
-    const mapping = getEntityMapping(entityType);
-
     const response = await axios.get<EntityDtoMap[T]>(
         `${LastfmConfig.baseApiUrl}/${endpoint}/${id}`
     );
 
-    return mapping.createEntity(response.data);
+    return entityMappers[entityType](response.data);
 }
 
 /**
