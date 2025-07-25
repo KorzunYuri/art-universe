@@ -189,7 +189,8 @@ export async function bindRawEntityToNewMaster<K extends MasterEntityType>(
  */
 export interface RawEntityToCreateAndBindRequestConverter {
     toBindRequest<T extends MasterEntityType>(
-        entity: RawEntity<T>
+        entity: RawEntity<T>,
+        entityName: string
     ): EntityCreateAndBindRequestMap[T];
 }
 

@@ -146,7 +146,7 @@ export const EntityBinding = <T extends LastfmSupportedEntityType>(
             }
             // Otherwise, create new entity and bind
             else {
-                const request = lastfmEntityToCreateAndBindConverter.toBindRequest(entity);
+                const request = lastfmEntityToCreateAndBindConverter.toBindRequest(entity, inputValue);
                 // @ts-expect-error request cannot be cast to EntityCreateAndBindRequestMap[K]
                 result = await bindRawEntityToNewMaster<T>(dataSource, entityType, entity.id, request);
             }

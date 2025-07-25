@@ -14,10 +14,11 @@ function isLastfmTrack(entity: RawEntity<any>): entity is LastfmTrack {
  */
 export const lastfmEntityToCreateAndBindConverter: RawEntityToCreateAndBindRequestConverter = {
     toBindRequest<T extends MasterEntityType>(
-        entity: RawEntity<T>
+        entity: RawEntity<T>,
+        entityName: string
     ): EntityCreateAndBindRequestMap[T] {
 
-        const baseRequest = { entityName: entity.name };
+        const baseRequest = { entityName: entityName };
 
         if (entity.getEntityType() === 'track' && isLastfmTrack(entity)) {
             return {
