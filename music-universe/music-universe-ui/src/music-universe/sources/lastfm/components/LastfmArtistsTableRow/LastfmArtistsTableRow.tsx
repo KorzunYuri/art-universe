@@ -2,13 +2,12 @@
 import {useState, memo} from "react";
 // components
 import {
-    EntityBinding,
+    ApprovalToggle,
     ExternalLink,
     ReadonlyAttr,
     EntityTagPanel,
     type BaseEntityTableRow
 } from "@/music-universe/shared/components";
-import { ApprovalToggle } from "@/music-universe/sources/lastfm/components";
 // types
 import type {DataSource} from "@/music-universe/sources/shared/types/data-sources.ts";
 import type {MasterEntityType} from "@/music-universe/shared/types/entities.ts";
@@ -21,6 +20,7 @@ import artistTableStyles from "../LastfmArtistsTable/LastfmArtistsTable.module.c
 import styles from "./LastfmArtistsTableRow.module.scss";
 import {useLastfmEntity} from "@/music-universe/sources/lastfm/query/useLastfmEntity.tsx";
 import {updateRawEntityApprovalStatus} from "@/music-universe/sources/shared/api/approval.tsx";
+import {EntityBinding} from "@/music-universe/sources/lastfm/components";
 
 interface LastfmArtistTableRowProps extends BaseEntityTableRow {
     entityId: number

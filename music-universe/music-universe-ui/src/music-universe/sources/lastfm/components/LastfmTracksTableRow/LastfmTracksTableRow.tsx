@@ -1,8 +1,12 @@
 // hooks
 import { useState } from "react";
 // components
-import {ExternalLink, type LegacyEntityTableRow, ReadonlyAttr} from "@/music-universe/shared/components";
-import { ApprovalToggle } from "@/music-universe/sources/lastfm/components";
+import {
+    ApprovalToggle,
+    ExternalLink,
+    type LegacyEntityTableRow,
+    ReadonlyAttr
+} from "@/music-universe/shared/components";
 // backend services
 import { LastfmConfig } from "@/music-universe/sources/lastfm/config/lastfmconfig.ts";
 import type { LastfmTrack } from "@/music-universe/sources/lastfm/types/lastfm-track";

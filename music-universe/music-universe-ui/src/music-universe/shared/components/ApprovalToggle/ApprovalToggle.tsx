@@ -1,5 +1,5 @@
 import styles from './ApprovalToggle.module.scss'
-import { ApprovalStatus, type ApprovalStatusType } from '@/music-universe/sources/lastfm/constants/approvalStatus'
+import { ApprovalStatus, type ApprovalStatusType } from '@/music-universe/sources/lastfm/constants/approvalStatus.ts'
 
 interface Props {
     status: number

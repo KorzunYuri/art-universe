@@ -1,4 +1,4 @@
-export * from "./ApprovalToggle"
+export * from "./EntityBinding"
 export * from "./LastfmEntityTable"
 export * from "./LastfmArtistsTable"
 export * from "./LastfmArtistsTableHeader"
