@@ -24,7 +24,6 @@ export const LastfmArtistsTable = () => {
 
     return (
         <div className={styles.container}>
-            <h2>Artists (TanStack Query)</h2>
 
             {/* Search bar */}
             <div className={styles.searchBar}>

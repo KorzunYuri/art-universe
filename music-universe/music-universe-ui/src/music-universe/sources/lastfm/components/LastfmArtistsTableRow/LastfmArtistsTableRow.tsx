@@ -30,6 +30,7 @@ export const LastfmArtistsTableRow = memo((
     {
         entityId
     }: LastfmArtistTableRowProps) => {
+
     // TODO generify component and make dataSource & entityType props or fields
     const dataSource: DataSource = 'lastfm';
     const entityType: MasterEntityType = 'artist';

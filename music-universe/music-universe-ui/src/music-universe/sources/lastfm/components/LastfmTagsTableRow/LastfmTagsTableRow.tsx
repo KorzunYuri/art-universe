@@ -1,60 +1,98 @@
 // hooks
-import { useState, useEffect, memo } from "react";
+import { useState, memo } from "react";
 // components
 import {
-    ApprovalToggle,
+    ApprovalToggle, type BaseEntityTableRow,
     ExternalLink,
-    type LegacyEntityTableRow,
     ReadonlyAttr
 } from "@/music-universe/shared/components";
-// backend services
-import type { LastfmTag } from "@/music-universe/sources/lastfm/types/lastfm-tag";
-import { updateApprovalStatus } from "@/music-universe/sources/lastfm/api/lastfm-common.ts";
 // constants
-import {type ApprovalStatusType} from "@/music-universe/sources/lastfm/constants/approvalStatus";
+import {ApprovalStatus, type ApprovalStatusType} from "@/music-universe/sources/lastfm/constants/approvalStatus";
 // types
-import type { LookupEntity } from "@/music-universe/music-data/types/master-entities-lookup.ts";
 // styles
 import sharedTableStyles from "@/music-universe/shared/components/BaseEntityTable/EntityTableStyles.module.scss";
 import tagTableStyles from "../LastfmTagsTable/LastfmTagsTable.module.css";
+import type {DataSource} from "@/music-universe/sources/shared/types/data-sources.ts";
+import type {MasterEntityType} from "@/music-universe/shared/types/entities.ts";
+import {useLastfmEntity} from "@/music-universe/sources/lastfm/query/useLastfmEntity.tsx";
+import {updateRawEntityApprovalStatus} from "@/music-universe/sources/shared/api/approval.tsx";
+import {EntityBinding} from "@/music-universe/sources/lastfm/components";
 
-interface LastfmTagTableRowProps extends LegacyEntityTableRow<LastfmTag> {
-    preloadedLookupData?: LookupEntity[]
+interface LastfmTagTableRowProps extends BaseEntityTableRow {
+    entityId: number
 }
 
 export const LastfmTagsTableRow = memo((
     {
-        entity
+        entityId
     }: LastfmTagTableRowProps) =>
 {
+    // TODO generify component and make dataSource & entityType props or fields
+    const dataSource: DataSource = 'lastfm';
+    const entityType: MasterEntityType = 'category';
+
     const [isApproving, setIsApproving] = useState(false);
 
-    console.log('🔧 LastfmTagsTableRow RENDER for entity:', entity.id, entity.name, 'hasMasterEntity:', !!entity.masterEntity);
+    const {
+        entity,
+        updateEntity,
+        invalidateEntity,
+        isLoading,
+        isError,
+        error
+    } = useLastfmEntity(entityType, entityId);
 
-    // Mount/unmount logging
-    useEffect(() => {
-        console.log('🔧 LastfmTagsTableRow MOUNTED for entity:', entity.id, entity.name);
-        return () => {
-            console.log('🔧 LastfmTagsTableRow UNMOUNTED for entity:', entity.id);
-        };
-    }, []); // Empty dependency array - only on mount/unmount
+    // If entity is loading, show loading state
+    if (isLoading) {
+        return (
+            <div className={sharedTableStyles.row}>
+                <div className={`${sharedTableStyles.cell} ${tagTableStyles.name}`}>
+                    Loading...
+                </div>
+            </div>
+        )
+    }
 
-    // Status change handler
-    const handleStatusChange = async (tagToUpdate: LastfmTag, newStatus: ApprovalStatusType) => {
-        setIsApproving(true);
-        try {
-            await updateApprovalStatus('category', tagToUpdate.id, newStatus);
-            // Note: No longer updating parent component directly
-            // The entity will be updated in place via the class instance
-        } catch (error) {
-            console.error("Failed to update tag approval status:", error);
-        } finally {
-            setIsApproving(false);
+    if (!entity) {
+        return (
+            <div className={sharedTableStyles.row}>
+                <div className={`${sharedTableStyles.cell} ${tagTableStyles.name}`}>
+                    {isError && error ? error.message : 'No entity found'}
+                </div>
+            </div>
+        )
+    }
+
+    const ensureIsValidForBinding = async (hasMasterExisted: boolean) => {
+        if (!entity) return false;
+        if (entity.approvalStatus === ApprovalStatus.APPROVED) return true;
+        if (entity.approvalStatus === ApprovalStatus.PENDING) {
+            setApprovalStatus(ApprovalStatus.APPROVED);
+            return true;
         }
-    };
+        // TODO show warning in popup instead of logging
+        console.log(`Entity has invalid status for binding: ${entity.approvalStatus}`);
+        return false;
+    }
+
+    const setApprovalStatus = (newStatus: ApprovalStatusType) => {
+        console.log(`new status ${newStatus} for entity ${entity?.id}`)
+        if (!entity) return;
+        setIsApproving(true);
+        updateRawEntityApprovalStatus(dataSource, entity.getEntityType(), entity.id, newStatus)
+            .then(() => {
+                entity.setApprovalStatus(newStatus);
+                updateEntity(entity);
+            })
+            .finally(() => {
+                setIsApproving(false);
+            });
+    }
 
     return (
-        <div key={entity.id} className={sharedTableStyles.row}>
+        <div key={entity.id}
+             className={sharedTableStyles.row}
+        >
             <div className={`${sharedTableStyles.cell} ${tagTableStyles.name}`}>
                 {entity.url ? (
                     <ExternalLink href={entity.url} label={entity.name}/>
@@ -63,27 +101,25 @@ export const LastfmTagsTableRow = memo((
                 )}
             </div>
 
-            <div className={`${sharedTableStyles.cell} ${tagTableStyles.status}`}>
+            <div className={`${sharedTableStyles.cell} ${tagTableStyles.status}`}
+                 onClick={(e) => e.stopPropagation()}>
                 <ApprovalToggle
                     status={entity.approvalStatus}
-                    onChange={(newStatus) => handleStatusChange(entity, newStatus)}
+                    onChange={setApprovalStatus}
                     disabled={isApproving}
                 />
             </div>
 
-            <div className={`${sharedTableStyles.cell} ${tagTableStyles.binding}`}>
-                {/*<EntityBinding*/}
-                {/*    key={`exp-entity-binding-${entity.id}`}*/}
-                {/*    entity={entity}*/}
-                {/*    onBindToExisting={handleBindToExisting}*/}
-                {/*    onCreateAndBind={handleCreateAndBind}*/}
-                {/*    onUnbind={handleUnbind}*/}
-                {/*    onBeforeBind={handleBeforeBind}*/}
-                {/*    onAfterBind={handleAfterBind}*/}
-                {/*    lookupFunction={(search) => lookupMasterEntities('category', search)}*/}
-                {/*    preloadedOptions={preloadedLookupData}*/}
-                {/*    disabled={isApproving || isBinding}*/}
-                {/*/>*/}
+            <div className={`${sharedTableStyles.cell} ${tagTableStyles.binding}`}
+                 onClick={(e) => e.stopPropagation()}>
+                <EntityBinding
+                    dataSource={dataSource}
+                    entityType={entityType}
+                    entityId={entityId}
+                    onBeforeBind={ensureIsValidForBinding}
+                    onAfterBind={invalidateEntity}
+                    onAfterUnbind={invalidateEntity}
+                />
             </div>
 
             <div className={`${sharedTableStyles.cell} ${tagTableStyles.count}`}>
