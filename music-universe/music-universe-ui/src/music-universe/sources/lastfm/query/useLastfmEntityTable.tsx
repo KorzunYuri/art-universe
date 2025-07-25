@@ -57,9 +57,10 @@ export function useLastfmEntityTable<T extends LastfmSupportedEntityType>(
             })
 
             // update the cache for master entities lookup
-            for (const [name, entities] of Object.entries(masterEntitiesLookups.results)) {
-                queryClient.setQueryData(masterEntityLookupKeys.query(entityType, name), entities);
-            }
+            rawEntityNames.forEach(name => {
+                const lookupEntities = masterEntitiesLookups.results[name] ?? [];
+                queryClient.setQueryData(masterEntityLookupKeys.query(entityType, name), lookupEntities);
+            })
 
             return {
                 page: { ...rawEntitiesPage, content: combinedEntities },
