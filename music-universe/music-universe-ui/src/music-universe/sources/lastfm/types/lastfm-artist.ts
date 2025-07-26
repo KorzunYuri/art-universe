@@ -1,10 +1,7 @@
-import {BaseLastfmEntity} from "./lastfm-entity";
+import {BaseLastfmEntity} from "./lastfm-base-entity";
 import type {Artist} from "@/music-universe/shared/types/entities.ts";
 import type {ApprovalStatusType} from "@/music-universe/sources/lastfm/constants/approvalStatus.ts";
 
-/**
- * LastFM Artist entity that extends BaseRawEntity and implements LastfmEntity
- */
 export class LastfmArtist extends BaseLastfmEntity<"artist"> {
     url: string;
     mbid: string | null;
@@ -32,4 +29,3 @@ export class LastfmArtist extends BaseLastfmEntity<"artist"> {
         return "artist";
     }
 }
-

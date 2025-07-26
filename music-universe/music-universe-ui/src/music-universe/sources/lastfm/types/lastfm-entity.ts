@@ -1,42 +1,13 @@
-import {
-    BaseRawEntity,
-    type MasterEntityMap,
-    type MasterEntityType,
-} from '@/music-universe/shared/types/entities.ts';
-import type {Approvable} from '@/music-universe/shared/types/approvable';
-import type {ApprovalStatusType} from "@/music-universe/sources/lastfm/constants/approvalStatus.ts";
-import type {DataSource} from "@/music-universe/sources/shared/types/data-sources.ts";
+// Re-export interfaces and base class
+export * from './lastfm-interfaces';
+export * from './lastfm-base-entity';
 
-export type LastfmSupportedEntityType = Extract<
-    MasterEntityType,
-    'artist' | 'track' | 'category'
->;
-
-export abstract class BaseLastfmEntity<T extends LastfmSupportedEntityType> extends BaseRawEntity<T> implements Approvable {
-    approvalStatus: ApprovalStatusType;
-
-    protected constructor(
-        id: number,
-        name: string,
-        approvalStatus: ApprovalStatusType,
-        masterEntity?: MasterEntityMap[T],
-    ) {
-        super(id, name, masterEntity);
-        this.approvalStatus = approvalStatus;
-    }
-
-    getDataSource(): DataSource {
-        return 'lastfm';
-    }
-
-    setApprovalStatus(approvalStatus: ApprovalStatusType): void {
-        this.approvalStatus = approvalStatus;
-    }
-}
-
+// Import concrete implementations for type mapping
 import {LastfmArtist} from "@/music-universe/sources/lastfm/types/lastfm-artist.ts";
 import {LastfmTrack} from "@/music-universe/sources/lastfm/types/lastfm-track.ts";
 import {LastfmTag} from "@/music-universe/sources/lastfm/types/lastfm-tag.ts";
+
+// Map of LastFM entity types to their corresponding implementations
 export type LastfmSupportedEntityTypeMap = {
     artist:     LastfmArtist,
     track:      LastfmTrack,

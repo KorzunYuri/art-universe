@@ -1,18 +1,13 @@
-import {BaseLastfmEntity} from "./lastfm-entity";
+import {BaseLastfmEntity} from "./lastfm-base-entity";
 import {type ArtistRelatedRawEntity} from "@/music-universe/shared/types/entities.ts";
 import type {Track} from "@/music-universe/shared/types/entities.ts";
 import type {LastfmArtistDto} from "@/music-universe/sources/lastfm/api/lastfm-artists.ts";
 import type {ApprovalStatusType} from "@/music-universe/sources/lastfm/constants/approvalStatus.ts";
 import type {LastfmArtist} from "@/music-universe/sources/lastfm/types/lastfm-artist.ts";
 
-/**
- * LastFM Track entity that extends BaseRawEntity and implements LastfmEntity
- */
 export class LastfmTrack
-    extends
-        BaseLastfmEntity<"track">
-    implements
-        ArtistRelatedRawEntity<"track">
+    extends BaseLastfmEntity<"track">
+    implements ArtistRelatedRawEntity<"track">
 {
     url: string;
     mbid: string | null;
@@ -48,6 +43,6 @@ export class LastfmTrack
     }
 
     getMasterArtistId(): number | undefined {
-        return this.getMasterEntity()?.id;
+        return this.getMasterEntity()?.primaryArtistId;
     }
 }

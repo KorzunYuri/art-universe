@@ -39,43 +39,36 @@ export function useLastfmEntityTable<T extends LastfmSupportedEntityType>(
             const rawEntitiesPage = await fetchLastfmEntities<T>(entityType, params);
             const rawEntities = rawEntitiesPage.content;
 
-            // attach master entities to raw entities
-            const combinedEntities = [...rawEntities];
+            // assign master entities to raw entities and update individual entities in cache to later be used by rows
             const rawEntityIds = rawEntities.map((entity) => entity.id);
-            fetchBoundMasterEntities(dataSource, entityType, rawEntityIds)
-                .then(masterEntityBindings => {
-                    // merge the changes
-                    combinedEntities.forEach((raw) => {
-                        const boundEntityInfo = masterEntityBindings.find((e) => e.externalId === raw.id);
-                        // @ts-expect-error TS2345: Argument of type A | B is not assignable to type A & B
-                        raw.setMasterEntity(boundEntityInfo?.masterEntity);
-                    });
-
-                    // update the cache with single raw entities, for single row usage
-                    combinedEntities.forEach((e) => {
-                        queryClient.setQueryData(rawEntitiesKeys.detail(dataSource, entityType, e.id), e);
-                    })
-                })
+            try {
+                const masterEntityBindings = await fetchBoundMasterEntities(dataSource, entityType, rawEntityIds);
+                rawEntities.forEach((entity) => {
+                    const boundEntityInfo = masterEntityBindings.find((e) => e.externalId === entity.id);
+                    // @ts-expect-error TS2345: Argument of type A | B is not assignable to type A & B
+                    entity.setMasterEntity(boundEntityInfo?.masterEntity);
+                    queryClient.setQueryData(rawEntitiesKeys.detail(dataSource, entityType, entity.id), entity);
+                });
+            } catch(error) {
+                console.error(`Failed to batch-fetch bound master entities: ${error}`);
+                throw error
+            }
 
             try {
                 // collecting names is needed to init cache with empty lists later, as backend doesn't return them
                 const rawEntityNames = rawEntities.map((entity) => entity.name);
-                const request = rawEntities.map(
-                    entity => new LookupRequestSourceParams(entity.name, entity))
-                batchLookupMasterEntities(entityType, request)
-                    .then(masterEntitiesLookups => {
-                        // update the cache for master entities lookup
-                        rawEntityNames.forEach(name => {
-                            const lookupEntities = masterEntitiesLookups.results[name] ?? [];
-                            queryClient.setQueryData(masterEntityLookupKeys.query(entityType, name), lookupEntities);
-                        })
-                    });
-            } catch {
-                console.log("Failed to get lookups")
+                const request = rawEntities.map(entity => new LookupRequestSourceParams(entity.name, entity))
+                const masterEntitiesLookups = await batchLookupMasterEntities(entityType, request);
+                rawEntityNames.forEach(name => {
+                    const lookupEntities = masterEntitiesLookups.results[name] ?? [];
+                    queryClient.setQueryData(masterEntityLookupKeys.query(entityType, name), lookupEntities);
+                });
+            } catch (error) {
+                console.log(`Failed to batch update master entities lookup: ${error}`)
             }
 
             return {
-                page: { ...rawEntitiesPage, content: combinedEntities },
+                page: { ...rawEntitiesPage, content: rawEntities },
                 rawEntityIds: rawEntityIds,
             };
         }
