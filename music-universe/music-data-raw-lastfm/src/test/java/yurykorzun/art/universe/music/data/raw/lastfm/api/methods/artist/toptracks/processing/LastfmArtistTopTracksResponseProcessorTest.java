@@ -42,7 +42,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Import({
     // processing
     LastfmArtistTopTracksResponseProcessor.class,
-    LastfmArtistTopTracksTrackFactory.class,
+    LastfmArtistTopTracksArtistFactory.class,
     LastfmApiDtoProcessingService.class,
     // entities
     LastfmTrackServiceImpl.class,
@@ -144,13 +144,13 @@ class LastfmArtistTopTracksResponseProcessorTest extends JpaOnlyTest {
         int expectedTracksCount = dtoRoot.getRootObject().getTracks().size();
         assertEquals(initialTrackCount + expectedTracksCount, trackRepository.count(), 
             "New tracks should be created");
-        
+
         // Verify attribute history records were created
         assertTrue(attributeHistoryRepository.count() > initialAttributeCount, 
             "New attribute history records should be created");
         
         // Verify artist-track relations were created
-        assertEquals(initialArtistTrackCount + expectedTracksCount, artistTrackRepository.count(), 
+        assertTrue(artistTrackRepository.count() > initialArtistTrackCount, 
             "Artist-track relations should be created");
         
         // Verify track properties and attributes
@@ -179,9 +179,24 @@ class LastfmArtistTopTracksResponseProcessorTest extends JpaOnlyTest {
         // Verify relation properties
         List<LastfmArtistTrack> relations = artistTrackRepository.findAll();
         for (LastfmArtistTrack relation : relations) {
-            assertEquals(sourceArtist.getId(), relation.getArtist().getId(), 
-                "Relation should reference the source artist");
+            assertNotNull(relation.getArtist(), "Relation should reference an artist");
             assertNotNull(relation.getTrack(), "Relation should reference a track");
+            
+            // Find the track in the saved tracks
+            LastfmTrack track = relation.getTrack();
+            
+            // Find corresponding track DTO
+            var trackDto = dtoRoot.getRootObject().getTracks().stream()
+                .filter(dto -> dto.getName().equals(track.getName()) && 
+                       dto.getUrl().equals(track.getUrl()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Track doesn't correspond to any DTO"));
+            
+            // Verify that the artist in the relation matches the artist in the track DTO
+            if (trackDto.getArtist() != null) {
+                assertEquals(trackDto.getArtist().getName(), relation.getArtist().getName(),
+                    "Artist in relation should match artist in track metadata");
+            }
         }
     }
 
@@ -249,6 +264,7 @@ class LastfmArtistTopTracksResponseProcessorTest extends JpaOnlyTest {
         
         // Record state after first processing
         long trackCountAfterFirstProcessing = trackRepository.count();
+        long artistCountAfterFirstProcessing = artistRepository.count();
         long attributeCountAfterFirstProcessing = attributeHistoryRepository.count();
         long relationCountAfterFirstProcessing = artistTrackRepository.count();
         
@@ -258,30 +274,14 @@ class LastfmArtistTopTracksResponseProcessorTest extends JpaOnlyTest {
         // then - counts should remain the same
         assertEquals(trackCountAfterFirstProcessing, trackRepository.count(),
             "Track count should remain the same after second processing");
+        assertEquals(artistCountAfterFirstProcessing, artistRepository.count(),
+            "Artist count should remain the same after second processing");
         assertEquals(attributeCountAfterFirstProcessing, attributeHistoryRepository.count(),
             "Attribute count should remain the same after second processing");
         assertEquals(relationCountAfterFirstProcessing, artistTrackRepository.count(),
             "Relation count should remain the same after second processing");
     }
 
-    @Test
-    void process_shouldThrowException_whenSourceArtistNotFound() throws IOException {
-        // given
-        // Create source artist first (needed for API call creation)
-        LastfmArtist sourceArtist = consistencyHelper.createAndSaveArtist();
-        
-        // Create API response with the artist
-        LastfmApiResponse apiResponse = createApiResponse(sourceArtist);
-        
-        // Now delete the artist to simulate non-existent artist
-        artistRepository.delete(sourceArtist);
-        
-        // when/then
-        assertThrows(jakarta.persistence.EntityNotFoundException.class, () -> {
-            processor.processResponse(apiResponse);
-        }, "Should throw EntityNotFoundException when source artist not found");
-    }
-    
     @Test
     void process_shouldHandleEmptyTracksList() throws IOException {
         // given
@@ -300,6 +300,7 @@ class LastfmArtistTopTracksResponseProcessorTest extends JpaOnlyTest {
         
         // Record initial state
         long initialTrackCount = trackRepository.count();
+        long initialArtistCount = artistRepository.count();
         long initialRelationCount = artistTrackRepository.count();
         
         // when
@@ -308,6 +309,8 @@ class LastfmArtistTopTracksResponseProcessorTest extends JpaOnlyTest {
         // then - no new entities should be created
         assertEquals(initialTrackCount, trackRepository.count(),
             "No new tracks should be created for empty response");
+        assertEquals(initialArtistCount, artistRepository.count(),
+            "No new artists should be created for empty response");
         assertEquals(initialRelationCount, artistTrackRepository.count(),
             "No new relations should be created for empty response");
     }

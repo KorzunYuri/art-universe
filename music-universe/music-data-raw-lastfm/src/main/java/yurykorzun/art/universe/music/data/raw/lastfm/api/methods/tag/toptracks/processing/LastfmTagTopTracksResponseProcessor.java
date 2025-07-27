@@ -40,7 +40,6 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
     private final LastfmArtistService artistService;
     private final LastfmTrackService trackService;
     private final LastfmArtistTrackService artistTrackService;
-    private final EntityFactory<LastfmTrack, TagTopTracksTrackDto> trackFactory;
     private final EntityFactory<LastfmArtist, TagTopTracksTrackArtistDto> artistFactory;
     private final LastfmApiDtoProcessingService dtoProcessingService;
 
@@ -52,7 +51,6 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
         LastfmTrackService trackService,
         LastfmArtistTrackService artistTrackService,
         LastfmApiDtoProcessingService dtoProcessingService,
-        EntityFactory<LastfmTrack, TagTopTracksTrackDto> trackFactory,
         EntityFactory<LastfmArtist, TagTopTracksTrackArtistDto> artistFactory
     ) {
         super(TagTopTracksDtoRoot.class);
@@ -61,7 +59,6 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
         this.trackService = trackService;
         this.tagService = tagService;
         this.artistTrackService = artistTrackService;
-        this.trackFactory = trackFactory;
         this.artistFactory = artistFactory;
         this.dtoProcessingService = dtoProcessingService;
     }
@@ -102,11 +99,11 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
         //  first save new artists
         var artistMappingResult = updateArtists(dtoRoot, sourceApiCall);
 
-        //  then save new tracks
-        var trackMappingResult = updateTracks(dtoRoot, sourceApiCall);
+        //  then save new tracks with artist references
+        var trackMappingResult = updateTracks(dtoRoot, sourceApiCall, artistMappingResult);
 
         //  finally, bind all tracks to artists
-        bindTracksToArtists(trackMappingResult, artistMappingResult, sourceApiCall);
+        updateArtistTrackRelations(trackMappingResult, artistMappingResult, sourceApiCall);
 
         //  clean cache
         rootsWithMissingAttrsLogged.remove(dtoRoot);
@@ -129,9 +126,15 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
         return result;
     }
 
-    private LastfmApiDtoProcessingResult<LastfmTrack, TagTopTracksTrackDto> updateTracks(TagTopTracksDtoRoot dtoRoot, LastfmApiCall sourceApiCall) {
-
+    private LastfmApiDtoProcessingResult<LastfmTrack, TagTopTracksTrackDto> updateTracks(
+        TagTopTracksDtoRoot dtoRoot, 
+        LastfmApiCall sourceApiCall,
+        LastfmApiDtoProcessingResult<LastfmArtist, TagTopTracksTrackArtistDto> artistMappingResult
+    ) {
         List<TagTopTracksTrackDto> trackDtos = getTrackDtos(dtoRoot);
+
+        // Create track factory with artists from the previous step
+        LastfmTagTopTracksTrackFactory trackFactory = new LastfmTagTopTracksTrackFactory(artistMappingResult);
 
         LastfmApiDtoProcessingResult<LastfmTrack, TagTopTracksTrackDto> result = dtoProcessingService.process(
             sourceApiCall,
@@ -146,7 +149,7 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
         return result;
     }
 
-    private void bindTracksToArtists(
+    private void updateArtistTrackRelations(
         LastfmApiDtoProcessingResult<LastfmTrack, TagTopTracksTrackDto> trackMappingResult,
         LastfmApiDtoProcessingResult<LastfmArtist, TagTopTracksTrackArtistDto> artistMappingResult,
         LastfmApiCall sourceApiCall
