@@ -1,5 +1,5 @@
 // hooks
-import {useEffect, useRef, memo, useCallback} from 'react';
+import {useEffect, useRef, memo, useCallback, useMemo} from 'react';
 // components
 import {StaticAutocompleteInput} from "@/music-universe/shared/components";
 // types
@@ -36,11 +36,14 @@ export const MasterEntityLookup = memo(<T extends MasterEntityType>({
     autoSelectExactMatch = true
 }: MasterEntityLookupProps<T>) => {
 
+    const request = useMemo(
+        () => requestFactory(searchString),
+        [requestFactory, searchString]);
+
     const {
         currentOptions,
-        setRequest,
         isLoading
-    } = useMasterEntitiesLookup(entityType, requestFactory(searchString));
+    } = useMasterEntitiesLookup(entityType, request);
 
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
     const lastSearchValue = useRef('');
@@ -51,7 +54,6 @@ export const MasterEntityLookup = memo(<T extends MasterEntityType>({
         if (query === lastSearchValue.current) {
             return;
         }
-
         lastSearchValue.current = query;
 
         // clear previous timeout
@@ -61,11 +63,9 @@ export const MasterEntityLookup = memo(<T extends MasterEntityType>({
 
         // set new timeout
         timeoutRef.current = setTimeout(() => {
-            console.log(`🔍 MasterEntityLookup: Executing search for "${query}"`);
-            const request = requestFactory(query);
-            setRequest(request);
+            onChange(query);
         }, 300);
-    }, [requestFactory, setRequest]);
+    }, [onChange]);
 
     // Handle value change
     const handleValueChange = useCallback((newValue: string) => {

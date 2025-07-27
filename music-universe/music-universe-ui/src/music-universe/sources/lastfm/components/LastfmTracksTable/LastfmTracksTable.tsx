@@ -38,7 +38,7 @@ export const LastfmTracksTable = (
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && refresh()}
-                    placeholder="Search artist name..."
+                    placeholder="Search track name..."
                     className={commonStyles.muInput}
                 />
                 <button
