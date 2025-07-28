@@ -24,5 +24,6 @@
     <include file="changelogs/0017-relationship-entities.xml" relativeToChangelogFile="true"/>
     <include file="changelogs/0018-entity-relationship-migration.xml" relativeToChangelogFile="true"/>
     <include file="changelogs/0019-fix-numeric-attrs-boundaries.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0020-cleanup-duplicate-artists.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
