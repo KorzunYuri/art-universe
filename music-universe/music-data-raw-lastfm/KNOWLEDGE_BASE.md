@@ -222,12 +222,14 @@ Spring Boot application that collects data about tags, artists, albums, and trac
 
 **Local Development:**
 ```bash
+# Run from project root directory
 ./scripts/run-module-dev.sh music-universe:music-data-raw-lastfm
 # Runs on port 7081 with dev profile
 ```
 
 **Docker Deployment:**
 ```bash
+# Run from project root directory
 ./env/docker/deploy.sh local   # Port 9081
 ./env/docker/deploy.sh prod    # Port 8081
 ```

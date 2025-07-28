@@ -37,6 +37,8 @@ Now, from project root, run
 ./gradlew clean build
 ```
 
+> **Important**: All Gradle commands must be executed from the project root directory where the Gradle Wrapper (`gradlew`/`gradlew.bat`) is located, not from this module directory.
+
 ## Run 
 
 ### Locally
@@ -69,7 +71,7 @@ get-content music-universe/music-data-raw-lastfm/src/main/resources/docker/compo
 }
 ```
 
-Then, to launch the application, execute:
+Then, to launch the application, execute from the project root:
 ```
 ./gradlew :music-universe:music-data-raw-lastfm:bootRun
 ```
