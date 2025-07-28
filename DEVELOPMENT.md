@@ -93,6 +93,8 @@ Use `scripts/run-module-dev.sh/.bat <module-path>` to run individual modules:
 
 ## Build and Testing
 
+> **Important**: All Gradle commands must be executed from the project root directory where the Gradle Wrapper (`gradlew`/`gradlew.bat`) is located, not from individual module directories.
+
 ```bash
 # Build all modules
 ./gradlew build -x test

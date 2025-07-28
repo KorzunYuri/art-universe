@@ -6,7 +6,7 @@ Data storage system for art-related information designed to create quizzes. Prim
 
 ### Build and Deploy
 ```bash
-# Build project
+# Build project (run from project root)
 ./gradlew build -x test
 
 # Deploy local environment (with containerized databases)
@@ -15,6 +15,8 @@ Data storage system for art-related information designed to create quizzes. Prim
 # Deploy production environment (external databases)
 ./env/docker/deploy.sh prod
 ```
+
+> **Note**: All Gradle commands must be executed from the project root directory where the Gradle Wrapper (`gradlew`/`gradlew.bat`) is located.
 
 ### Available Services
 
@@ -53,4 +55,8 @@ Data storage system for art-related information designed to create quizzes. Prim
 - **Build**: Gradle multi-project
 - **Deployment**: Docker, Docker Compose
 - **Testing**: JUnit 5, TestContainers, Mockito
+
+## Project Structure
+
+This is a Gradle multi-project build. The Gradle Wrapper (`gradlew`/`gradlew.bat`) is located only in the project root directory. All Gradle commands must be executed from the project root, not from individual module directories.
 

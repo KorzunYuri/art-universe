@@ -40,12 +40,14 @@ Quiz generation service that creates music quizzes from approved data. Focuses o
 
 **Local Development:**
 ```bash
+# Run from project root directory
 ./scripts/run-module-dev.sh music-universe:music-quiz
 # Runs on port 7083 with dev profile
 ```
 
 **Docker Deployment:**
 ```bash
+# Run from project root directory
 ./env/docker/deploy.sh local   # Port 9083
 ./env/docker/deploy.sh prod    # Port 8083
 ```
