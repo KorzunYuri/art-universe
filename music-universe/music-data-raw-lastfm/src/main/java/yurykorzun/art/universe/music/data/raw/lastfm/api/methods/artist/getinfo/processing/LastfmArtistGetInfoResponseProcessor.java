@@ -104,7 +104,7 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
         LastfmArtist artist = updateArtist(dtoRoot, sourceApiCall);
 
         // Step 2. Create similar artists and relations between artists
-        var artistsBindingResult = updateSimilarArtists(dtoRoot, sourceApiCall);
+        var artistsBindingResult = updateSimilarArtists(dtoRoot, sourceApiCall, artist);
 
         // Step 3.
         bindArtistsToArtist(artistsBindingResult, artist, sourceApiCall);
@@ -114,6 +114,30 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
 
         // bind artist's tags to artist
         bindTagsToArtist(tagsBindingResult, artist, sourceApiCall);
+    }
+
+    /**
+     * Returns DTOs of similar artists for saving, excluding source artist.
+     */
+    private List<ArtistGetInfoSimilarArtistDto> filterDtosForSaving(ArtistGetInfoDtoRoot dtoRoot, LastfmArtist sourceArtist) {
+        return dtoRoot.getArtist().getSimilarArtistsObject().getArtists().stream()
+            .filter(dto -> !isSameArtist(dto, sourceArtist))
+            .toList();
+    }
+    
+    /**
+     * Checks if the DTO represents the same artist as the source artist.
+     * Compares by MBID if both have it, otherwise by name.
+     */
+    private boolean isSameArtist(ArtistGetInfoSimilarArtistDto dto, LastfmArtist sourceArtist) {
+        // If both have MBID, compare by MBID
+        if (dto.getMbid() != null && !dto.getMbid().trim().isEmpty() && 
+            sourceArtist.getMbid() != null && !sourceArtist.getMbid().trim().isEmpty()) {
+            return dto.getMbid().equals(sourceArtist.getMbid());
+        }
+        
+        // Otherwise compare by name (case-insensitive)
+        return dto.getName().equalsIgnoreCase(sourceArtist.getName());
     }
 
     private LastfmArtist updateArtist(ArtistGetInfoDtoRoot dtoRoot, LastfmApiCall sourceApiCall) {
@@ -136,9 +160,12 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
         return result.savedEntities().get(0);
     }
 
-    private LastfmApiDtoProcessingResult<LastfmArtist, ArtistGetInfoSimilarArtistDto> updateSimilarArtists(ArtistGetInfoDtoRoot dtoRoot, LastfmApiCall sourceApiCall) {
-
-        List<ArtistGetInfoSimilarArtistDto> artistDtos = dtoRoot.getArtist().getSimilarArtistsObject().getArtists();
+    private LastfmApiDtoProcessingResult<LastfmArtist, ArtistGetInfoSimilarArtistDto> updateSimilarArtists(
+        ArtistGetInfoDtoRoot dtoRoot, 
+        LastfmApiCall sourceApiCall,
+        LastfmArtist sourceArtist
+    ) {
+        List<ArtistGetInfoSimilarArtistDto> artistDtos = filterDtosForSaving(dtoRoot, sourceArtist);
 
         LastfmApiDtoProcessingResult<LastfmArtist, ArtistGetInfoSimilarArtistDto> result = dtoProcessingService.process(
             sourceApiCall,

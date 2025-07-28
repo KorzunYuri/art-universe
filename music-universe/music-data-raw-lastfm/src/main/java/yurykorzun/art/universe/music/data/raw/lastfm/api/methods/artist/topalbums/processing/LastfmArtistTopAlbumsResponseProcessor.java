@@ -10,6 +10,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.topalbums.dto.ArtistTopAlbumsAlbumDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.topalbums.dto.ArtistTopAlbumsDtoRoot;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.dto.ArtistDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingResult;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiResponseProcessor;
@@ -115,14 +116,29 @@ public class LastfmArtistTopAlbumsResponseProcessor extends LastfmApiResponsePro
                 return false;
             }
 
-            if (!sourceArtist.getName().equals(dto.getArtist().getName())) {
-                log.warn("Artist name in album doesn't match with the on in the album, album: {}, source artist: {}, album artist: {}",
+            if (!isSameArtist(dto.getArtist(), sourceArtist)) {
+                log.warn("Artist in album doesn't match with the source artist, album: {}, source artist: {}, album artist: {}",
                     dto.getName(), sourceArtist.getName(), dto.getArtist().getName());
                 return false;
             }
 
             return true;
         };
+    }
+    
+    /**
+     * Checks if the DTO artist represents the same artist as the source artist.
+     * Compares by MBID if both have it, otherwise by name.
+     */
+    private boolean isSameArtist(ArtistDto dto, LastfmArtist sourceArtist) {
+        // If both have MBID, compare by MBID
+        if (dto.getMbid() != null && !dto.getMbid().trim().isEmpty() && 
+            sourceArtist.getMbid() != null && !sourceArtist.getMbid().trim().isEmpty()) {
+            return dto.getMbid().equals(sourceArtist.getMbid());
+        }
+        
+        // Otherwise compare by name (case-insensitive)
+        return dto.getName().equalsIgnoreCase(sourceArtist.getName());
     }
 
     private void bindAlbumsToArtist(
