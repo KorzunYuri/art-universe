@@ -37,7 +37,6 @@ class LastfmTagTopTracksTrackFactory extends LastfmTrackEntityFactory<TagTopTrac
         }
         
         return builder
-            .duration(dto.getDuration())
-            .isStreamable(1 == dto.getStreamableObject().getFullTrack());
+            .duration(dto.getDuration());
     }
 }

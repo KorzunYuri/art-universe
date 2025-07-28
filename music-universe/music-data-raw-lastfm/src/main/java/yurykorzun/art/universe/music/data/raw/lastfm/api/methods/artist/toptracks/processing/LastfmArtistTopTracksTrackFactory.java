@@ -31,7 +31,6 @@ public class LastfmArtistTopTracksTrackFactory extends LastfmTrackEntityFactory<
     protected LastfmTrack.LastfmTrackBuilder<?, ?> setExtensionFields(LastfmTrack.LastfmTrackBuilder<?, ?> builder, ArtistTopTracksTrackDto dto) {
         // Set basic track properties
         builder
-            .isStreamable(1 == dto.getStreamable())
             .playCount(dto.getPlayCount())
             .listenersCount(dto.getListenersCount());
         
