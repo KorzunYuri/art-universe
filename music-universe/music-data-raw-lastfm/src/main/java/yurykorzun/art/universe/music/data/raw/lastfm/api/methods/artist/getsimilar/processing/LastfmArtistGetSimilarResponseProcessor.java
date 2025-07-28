@@ -84,16 +84,17 @@ public class LastfmArtistGetSimilarResponseProcessor extends LastfmApiResponsePr
         LastfmArtist artist = artistService.findById(sourceApiCall.getEntityId())
             .orElseThrow(() -> new EntityNotFoundException(String.format("Source artist with ID=%s not found", sourceApiCall.getEntityId())));
 
-        var similarArtistResult = updateSimilarArtists(dtoRoot, sourceApiCall);
+        var similarArtistResult = updateSimilarArtists(dtoRoot, sourceApiCall, artist);
 
         bindArtistsToArtist(similarArtistResult, artist, sourceApiCall);
     }
 
     private LastfmApiDtoProcessingResult<LastfmArtist, ArtistGetSimilarArtistDto> updateSimilarArtists(
         ArtistGetSimilarDtoRoot dtoRoot,
-        LastfmApiCall sourceApiCall
+        LastfmApiCall sourceApiCall,
+        LastfmArtist sourceArtist
     ) {
-        List<ArtistGetSimilarArtistDto> dtos = filterDtosForSaving(dtoRoot);
+        List<ArtistGetSimilarArtistDto> dtos = filterDtosForSaving(dtoRoot, sourceArtist);
 
         LastfmApiDtoProcessingResult<LastfmArtist, ArtistGetSimilarArtistDto> result = dtoProcessingService.process(
             sourceApiCall,
@@ -141,11 +142,27 @@ public class LastfmArtistGetSimilarResponseProcessor extends LastfmApiResponsePr
     }
 
     /**
-     * Returns DTOs of artists for saving, filtered by match coefficient.
+     * Returns DTOs of artists for saving, filtered by match coefficient and excluding source artist.
      */
-    private List<ArtistGetSimilarArtistDto> filterDtosForSaving(ArtistGetSimilarDtoRoot dtoRoot) {
+    private List<ArtistGetSimilarArtistDto> filterDtosForSaving(ArtistGetSimilarDtoRoot dtoRoot, LastfmArtist sourceArtist) {
         return dtoRoot.getRootObject().getArtists().stream()
             .filter(a -> a.getMatchCoeff() > artistMatchThreshold)
+            .filter(a -> !isSameArtist(a, sourceArtist))
             .toList();
+    }
+    
+    /**
+     * Checks if the DTO represents the same artist as the source artist.
+     * Compares by MBID if both have it, otherwise by name.
+     */
+    private boolean isSameArtist(ArtistGetSimilarArtistDto dto, LastfmArtist sourceArtist) {
+        // If both have MBID, compare by MBID
+        if (dto.getMbid() != null && !dto.getMbid().trim().isEmpty() && 
+            sourceArtist.getMbid() != null && !sourceArtist.getMbid().trim().isEmpty()) {
+            return dto.getMbid().equals(sourceArtist.getMbid());
+        }
+        
+        // Otherwise compare by name (case-insensitive)
+        return dto.getName().equalsIgnoreCase(sourceArtist.getName());
     }
 }
