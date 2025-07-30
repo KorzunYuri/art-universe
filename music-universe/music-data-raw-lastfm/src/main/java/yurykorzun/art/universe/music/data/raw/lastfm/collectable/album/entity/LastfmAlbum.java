@@ -8,6 +8,7 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.antlr.v4.runtime.misc.NotNull;
 import yurykorzun.art.universe.common.persistence.converter.GzipBase64StringConverter;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 
@@ -45,6 +46,10 @@ public class LastfmAlbum extends BaseLastfmEntity {
 
     @Column(name = "publish_ts")
     private LocalDateTime publishTs;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "artist_id")
+    private LastfmArtist artist;
 
     @Deprecated
     @Column(name = "description")
