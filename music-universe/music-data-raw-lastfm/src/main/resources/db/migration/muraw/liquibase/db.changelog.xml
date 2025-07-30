@@ -26,5 +26,6 @@
     <include file="changelogs/0019-fix-numeric-attrs-boundaries.xml" relativeToChangelogFile="true"/>
     <include file="changelogs/0020-cleanup-duplicate-artists.xml" relativeToChangelogFile="true"/>
     <include file="changelogs/0021-remove-deprecated-fields.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0022-restore-track-artist-id.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
