@@ -3,23 +3,19 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.track.getinfo.
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.LastfmApiConstants;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallService;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.track.common.service.LastfmTrackApiCallsGenerator;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.track.common.service.LastfmTrackApiCallGenerator;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmDataSnapshotService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.repository.LastfmTrackRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.service.LastfmTrackService;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Component
 @Slf4j
-public class LastfmTrackGetInfoApiCallGenerator extends LastfmTrackApiCallsGenerator {
+public class LastfmTrackGetInfoApiCallGenerator extends LastfmTrackApiCallGenerator {
 
     private final LastfmTrackService trackService;
 

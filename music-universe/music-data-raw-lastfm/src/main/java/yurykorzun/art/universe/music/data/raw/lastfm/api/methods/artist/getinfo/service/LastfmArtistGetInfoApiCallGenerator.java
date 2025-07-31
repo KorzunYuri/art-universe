@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallService;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.service.LastfmArtistApiCallsGenerator;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.service.LastfmArtistApiCallGenerator;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmDataSnapshotService;
@@ -15,7 +15,7 @@ import java.util.List;
 
 @Component
 @Slf4j
-public class LastfmArtistGetInfoApiCallGenerator extends LastfmArtistApiCallsGenerator {
+public class LastfmArtistGetInfoApiCallGenerator extends LastfmArtistApiCallGenerator {
 
     private final LastfmArtistService artistService;
 
@@ -45,8 +45,7 @@ public class LastfmArtistGetInfoApiCallGenerator extends LastfmArtistApiCallsGen
 
     @Override
     protected List<LastfmArtist> selectEntitiesForApiCalls() {
-        List<LastfmArtist> artists = artistService.findAllToGetInfoFor();
-        // deduplication has been already applied on SQL level: here it is applied for consistency
-        return deduplicateByMbid(artists);
+        // note: deduplication is already applied on SQL level
+        return artistService.findAllToGetInfoFor();
     }
 }

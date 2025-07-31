@@ -106,8 +106,10 @@ class LastfmTrackGetInfoApiCallGeneratorTest {
 
         // Verify each request
         for (int i = 0; i < tracks.size(); i++) {
-            LastfmApiCallCreateRequest request = requests.get(i);
             LastfmTrack track = tracks.get(i);
+            LastfmApiCallCreateRequest request = requests.stream().filter(r -> r.getEntityId() == track.getId())
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("No API call request found for track " + track.getId()));
 
             assertEquals(LastfmApiCallType.TRACK_GET_INFO, request.getType(), "API call type should be TRACK_GET_INFO");
             assertEquals(LastfmEntityType.TRACK, request.getEntityType(), "Entity type should be TRACK");

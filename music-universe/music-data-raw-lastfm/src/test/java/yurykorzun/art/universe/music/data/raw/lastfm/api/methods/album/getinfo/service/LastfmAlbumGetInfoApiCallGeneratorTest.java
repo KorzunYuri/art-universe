@@ -95,8 +95,10 @@ class LastfmAlbumGetInfoApiCallGeneratorTest {
 
         // Verify each request
         for (int i = 0; i < albums.size(); i++) {
-            LastfmApiCallCreateRequest request = requests.get(i);
             LastfmAlbum album = albums.get(i);
+            LastfmApiCallCreateRequest request = requests.stream().filter(r -> r.getEntityId() == album.getId())
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("No API call request found for album " + album.getId()));
 
             assertEquals(LastfmApiCallType.ALBUM_GET_INFO, request.getType(), "API call type should be ALBUM_GET_INFO");
             assertEquals(LastfmEntityType.ALBUM, request.getEntityType(), "Entity type should be ALBUM");

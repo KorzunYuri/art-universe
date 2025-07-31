@@ -1,4 +1,4 @@
-package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.album.common.service;
+package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.track.common.service;
 
 import io.micrometer.common.util.StringUtils;
 import jakarta.annotation.Nullable;
@@ -6,18 +6,18 @@ import lombok.extern.slf4j.Slf4j;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.LastfmApiConstants;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.service.EntityScopedApiCallGenerator;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.entity.LastfmAlbum;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmDataSnapshotService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityService;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
-public abstract class LastfmAlbumApiCallGenerator extends EntityScopedApiCallGenerator<LastfmAlbum> {
+public abstract class LastfmTrackApiCallGenerator extends EntityScopedApiCallGenerator<LastfmTrack> {
 
-    protected LastfmAlbumApiCallGenerator(
+    protected LastfmTrackApiCallGenerator(
         LastfmApiCallService lastfmApiCallService,
         LastfmDataSnapshotService snapshotService,
         LastfmEntityService entityService
@@ -27,27 +27,22 @@ public abstract class LastfmAlbumApiCallGenerator extends EntityScopedApiCallGen
 
     @Override
     protected LastfmEntityType getScopeEntityType() {
-        return LastfmEntityType.ALBUM;
+        return LastfmEntityType.TRACK;
     }
 
     @Override
-    protected boolean isValidForApiCall(LastfmAlbum entity) {
-        // either album.mbid or artist.name + album.name must be present
-        boolean isValid = StringUtils.isNotBlank(entity.getMbid()) || artistIsValid(entity);
-
+    protected boolean isValidForApiCall(LastfmTrack track) {
+        boolean isValid = track.getMbid() != null ||
+            (track.getName() != null && track.getArtist() != null);
         if (!isValid) {
-            log.warn("Album {} is not valid for api call {} creation: missing both mbid & artist", entity.getId(), getApiCallType());
+            log.warn("Track {} is not valid for api call {} creation: missing both mbid & artist+name",
+                track.getId(), getApiCallType());
         }
-
         return isValid;
     }
 
-    private static boolean artistIsValid(LastfmAlbum entity) {
-        return entity.getArtist() != null && StringUtils.isNotBlank(entity.getArtist().getName());
-    }
-
     @Override
-    protected @Nullable String getApiCallUniqueKey(LastfmAlbum entity) {
+    protected @Nullable String getApiCallUniqueKey(LastfmTrack entity) {
         if (StringUtils.isNotBlank(entity.getMbid())) {
             return String.format("mbid-%s", entity.getMbid());
         } else if (artistIsValid(entity)) {
@@ -56,8 +51,12 @@ public abstract class LastfmAlbumApiCallGenerator extends EntityScopedApiCallGen
         return null;
     }
 
+    private static boolean artistIsValid(LastfmTrack entity) {
+        return entity.getArtist() != null && StringUtils.isNotBlank(entity.getArtist().getName());
+    }
+
     @Override
-    protected boolean hasHigherPriority(LastfmAlbum candidate, @Nullable LastfmAlbum existing) {
+    protected boolean hasHigherPriority(LastfmTrack candidate, @Nullable LastfmTrack existing) {
         if (existing == null) {
             return true;
         }
@@ -72,14 +71,14 @@ public abstract class LastfmAlbumApiCallGenerator extends EntityScopedApiCallGen
             return false;
         }
         
-        // Compare album listeners count
+        // Compare track listeners count
         if (isHigherValue(candidate.getListenersCount(), existing.getListenersCount())) {
             return true;
         } else if (isHigherValue(existing.getListenersCount(), candidate.getListenersCount())) {
             return false;
         }
         
-        // Compare album play count
+        // Compare track play count
         if (isHigherValue(candidate.getPlayCount(), existing.getPlayCount())) {
             return true;
         } else if (isHigherValue(existing.getPlayCount(), candidate.getPlayCount())) {
@@ -100,26 +99,25 @@ public abstract class LastfmAlbumApiCallGenerator extends EntityScopedApiCallGen
         return candidate.getId() < existing.getId();
     }
 
-    private static Integer getArtistMetric(LastfmAlbum entity) {
+    private static Integer getArtistMetric(LastfmTrack entity) {
         if (entity.getArtist() == null) {
             return null;
         }
         return entity.getArtist().getListenersCount();
     }
 
-
     @Override
-    protected Map<String, String> getCommonApiCallParameters(LastfmAlbum album) {
+    protected Map<String, String> getCommonApiCallParameters(LastfmTrack track) {
         Map<String, String> params = new HashMap<>();
 
-        // Either mbid (preferred) or album name + artist name must be provided
-        if (album.getMbid() != null) {
-            params.put(LastfmApiConstants.PARAM_NAME_MBID, album.getMbid());
+        // Either mbid (preferred) or track name + artist name must be provided
+        if (track.getMbid() != null) {
+            params.put(LastfmApiConstants.PARAM_NAME_MBID, track.getMbid());
         } else {
-            params.put(LastfmApiConstants.PARAM_NAME_ALBUM, album.getName());
-            // Artist is required when using album name
-            if (album.getArtist() != null) {
-                params.put(LastfmApiConstants.PARAM_NAME_ARTIST, album.getArtist().getName());
+            params.put(LastfmApiConstants.PARAM_NAME_TRACK, track.getName());
+            // Artist is required when using track name
+            if (track.getArtist() != null) {
+                params.put(LastfmApiConstants.PARAM_NAME_ARTIST, track.getArtist().getName());
             }
         }
 
