@@ -47,7 +47,7 @@ public class LastfmAlbum extends BaseLastfmEntity {
     @Column(name = "publish_ts")
     private LocalDateTime publishTs;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "artist_id")
     private LastfmArtist artist;
 

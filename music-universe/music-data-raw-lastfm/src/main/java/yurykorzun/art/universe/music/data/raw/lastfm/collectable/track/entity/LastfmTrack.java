@@ -41,7 +41,7 @@ public class LastfmTrack extends BaseLastfmEntity {
     @Column(name = "play_count")
     private Long playCount;
     
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "artist_id")
     private LastfmArtist artist;
 
