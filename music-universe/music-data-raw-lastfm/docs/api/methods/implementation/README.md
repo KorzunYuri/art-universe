@@ -29,9 +29,9 @@ These guides are designed for developers implementing new API response processor
 - **[artist.getSimilar](artist.getSimilar.md)** - Creates artist similarity relationships
 - **[artist.search](artist.search.md)** - Artist discovery
 - **[track.getInfo](track.getInfo.md)** - Track details with album and tags
+- **[album.getInfo](album.getInfo.md)** - Album details with tracks and tags
 
 ### Implementation Templates (Not Yet Implemented)
-- **[album.getInfo](album.getInfo.md)** - Album details with tracks and tags
 - **[album.getTopTags](album.getTopTags.md)** - Creates album-tag relationships
 - **[track.getTopTags](track.getTopTags.md)** - Creates track-tag relationships
 - **[tag.getInfo](tag.getInfo.md)** - Tag details with wiki information
@@ -75,6 +75,6 @@ These guides are designed for developers implementing new API response processor
 4. Begin implementing new relationship entities and processors
 
 Priority order based on data gaps:
-1. **album.getInfo** - For album-track relationships
-2. **track.getInfo** - For track-tag relationships  
-3. **tag.getInfo** - For tag descriptions
+1. **track.getTopTags** - For track-tag relationships  
+2. **tag.getInfo** - For tag descriptions
+3. **tag.getTopAlbums** - For tag-album relationships

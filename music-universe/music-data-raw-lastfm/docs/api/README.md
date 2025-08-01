@@ -15,13 +15,13 @@ This document provides detailed technical information about LastFM API methods i
 8. **artist.getSimilar** - Creates artist similarity relationships
 9. **artist.search** - Artist discovery
 10. **track.getInfo** - Track details with album and tags
+11. **album.getInfo** - Album details with tracks and tags
 
 ### Not Yet Implemented ❌
-1. **album.getInfo** - Album details with tracks and tags
-2. **album.getTopTags** - Creates album-tag relationships
-3. **track.getTopTags** - Creates track-tag relationships
-4. **tag.getInfo** - Tag details with wiki information
-5. **tag.getTopAlbums** - Creates tag-album relationships
+1. **album.getTopTags** - Creates album-tag relationships
+2. **track.getTopTags** - Creates track-tag relationships
+3. **tag.getInfo** - Tag details with wiki information
+4. **tag.getTopAlbums** - Creates tag-album relationships
 
 ## Methods Reference
 
@@ -40,7 +40,7 @@ This document provides detailed technical information about LastFM API methods i
 | **artist.getTopAlbums** | Artists by listeners_count DESC<br/>MBID deduplication<br/>No pending calls | Album play_count >= 10,000<br/>Artist consistency check | **Albums**: name, mbid, url, play_count<br/>**Relations**: artist-album |
 | **artist.getTopTracks** | Artists by listeners_count DESC<br/>MBID deduplication<br/>No pending calls | Track listeners_count >= 1,000 | **Tracks**: name, mbid, url, listeners_count, play_count<br/>**Artists**: name, mbid, url<br/>**Relations**: artist-track |
 | **artist.search** | Unprocessed search requests<br/>processed = false | Name similarity > 0.5 vs search string<br/>Levenshtein distance | **Artists**: name, mbid, url, listeners_count |
-| **album.getInfo** | *Not implemented* | *Not implemented* | *Not implemented* |
+| **album.getInfo** | Standard findAllUnprocessed<br/>dueDurationDays = 28 | No filtering<br/>All returned data saved | **Albums**: name, mbid, url, listeners_count, play_count<br/>**Artists**: name, mbid, url<br/>**Tracks**: name, mbid, url, duration<br/>**Tags**: name, url<br/>**Relations**: artist-track, album-track, album-tag |
 | **album.getTopTags** | *Not implemented* | *Not implemented* | *Not implemented* |
 | **track.getInfo** | **Priority 1**: Tracks with missing stats<br/>**Priority 2**: Tracks from popular artists<br/>MBID deduplication | No filtering<br/>All returned data saved | **Tracks**: name, mbid, url, duration, listeners_count, play_count<br/>**Artists**: name, mbid, url<br/>**Albums**: name, mbid, url<br/>**Tags**: name, url<br/>**Relations**: artist-track, album-track, track-tag |
 | **track.getTopTags** | *Not implemented* | *Not implemented* | *Not implemented* |
@@ -72,15 +72,16 @@ This document provides detailed technical information about LastFM API methods i
 
 | Attribute | album.getInfo | artist.getTopAlbums | tag.getTopAlbums |
 |-----------|---------------|---------------------|------------------|
-| **name** | 🚫 | ✅ | 🚫 |
-| **mbid** | 🚫 | ✅ | 🚫 |
-| **url** | 🚫 | ✅ | 🚫 |
-| **listeners_count** | 🚫 | ❌ | 🚫 |
-| **play_count** | 🚫 | ✅ | 🚫 |
+| **name** | ✅ | ✅ | 🚫 |
+| **mbid** | ✅ | ✅ | 🚫 |
+| **url** | ✅ | ✅ | 🚫 |
+| **listeners_count** | ✅ | ❌ | 🚫 |
+| **play_count** | ✅ | ✅ | 🚫 |
 
 **Primary Sources:**
-- **name, mbid, url, play_count**: artist.getTopAlbums (only implemented source)
-- **listeners_count**: NOT AVAILABLE in any implemented method
+- **name, mbid, url**: album.getInfo, artist.getTopAlbums
+- **listeners_count**: album.getInfo (only source)
+- **play_count**: album.getInfo, artist.getTopAlbums
 
 ### Track Entity
 
@@ -137,15 +138,13 @@ This document provides detailed technical information about LastFM API methods i
 ## Critical Data Gaps
 
 ### Missing Primary Sources
-1. **Album listeners_count** - No implemented method provides this
-2. **Track statistics from tags** - tag.getTopTracks doesn't provide listeners/playcount
-3. **Album-Track relationships** - album.getInfo not implemented
-4. **Track-Tag relationships** - track.getTopTags not implemented
+1. **Track-Tag relationships** - track.getTopTags not implemented
+2. **Tag-Album relationships** - tag.getTopAlbums not implemented
+3. **Tag descriptions** - tag.getInfo not implemented
 
 ### Single Point of Failure
 1. **Artist play_count** - Only from artist.getInfo
-2. **Album data** - Only from artist.getTopAlbums
-3. **Tag usage statistics** - Only from tag.getTopTags
+2. **Album listeners_count** - Only from album.getInfo
 
 ## Configuration
 
@@ -173,9 +172,9 @@ This document provides detailed technical information about LastFM API methods i
 ## Recommendations
 
 ### High Priority Implementations
-1. **album.getInfo** - For album-track relationships and complete album data
-2. **track.getTopTags** - For track-tag relationships
-3. **tag.getInfo** - For tag descriptions and detailed statistics
+1. **track.getTopTags** - For track-tag relationships
+2. **tag.getInfo** - For tag descriptions and detailed statistics
+3. **tag.getTopAlbums** - For tag-album relationships
 
 ### Data Quality Improvements
 1. Add fallback sources for critical single-source attributes

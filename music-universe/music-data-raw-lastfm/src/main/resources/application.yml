@@ -97,6 +97,9 @@ lastfm:
       initial-delay-ms: 500
       multiplier: 1.5
     methods:
+      album:
+        getInfo:
+          dueDurationDays: 28
       artist:
         getInfo:
           dueDurationDays: 7

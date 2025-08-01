@@ -1,4 +1,4 @@
-package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.track.common;
+package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.track.common.processing;
 
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityFactory;
