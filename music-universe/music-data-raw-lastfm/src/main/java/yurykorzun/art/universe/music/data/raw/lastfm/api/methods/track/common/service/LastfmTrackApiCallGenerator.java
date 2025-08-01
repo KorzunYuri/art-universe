@@ -32,12 +32,15 @@ public abstract class LastfmTrackApiCallGenerator extends EntityScopedApiCallGen
 
     @Override
     protected boolean isValidForApiCall(LastfmTrack track) {
-        boolean isValid = track.getMbid() != null ||
-            (track.getName() != null && track.getArtist() != null);
+        // either track.mbid or track.name + artist.name must be present
+        boolean isValid = StringUtils.isNotBlank(track.getMbid())
+            || (StringUtils.isNotBlank(track.getName()) && artistIsValid(track));
+
         if (!isValid) {
             log.warn("Track {} is not valid for api call {} creation: missing both mbid & artist+name",
                 track.getId(), getApiCallType());
         }
+
         return isValid;
     }
 

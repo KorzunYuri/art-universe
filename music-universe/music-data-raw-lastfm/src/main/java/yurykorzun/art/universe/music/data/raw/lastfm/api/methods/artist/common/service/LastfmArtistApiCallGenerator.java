@@ -44,10 +44,12 @@ public abstract class LastfmArtistApiCallGenerator extends EntityScopedApiCallGe
     @Override
     protected boolean isValidForApiCall(LastfmArtist artist) {
         boolean isValid = StringUtils.isNotBlank(artist.getMbid()) || StringUtils.isNotBlank(artist.getName());
+
         if (!isValid) {
             log.warn("Artist {} is not valid for api call {} creation: missing both mbid & name",
                 artist.getId(), getApiCallType());
         }
+
         return isValid;
     }
 

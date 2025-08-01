@@ -33,7 +33,8 @@ public abstract class LastfmAlbumApiCallGenerator extends EntityScopedApiCallGen
     @Override
     protected boolean isValidForApiCall(LastfmAlbum entity) {
         // either album.mbid or artist.name + album.name must be present
-        boolean isValid = StringUtils.isNotBlank(entity.getMbid()) || artistIsValid(entity);
+        boolean isValid = StringUtils.isNotBlank(entity.getMbid())
+            || (StringUtils.isNotBlank(entity.getName()) && artistIsValid(entity));
 
         if (!isValid) {
             log.warn("Album {} is not valid for api call {} creation: missing both mbid & artist", entity.getId(), getApiCallType());
