@@ -4,15 +4,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto.ArtistSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto.LastfmArtistResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.dto.ApprovalStatusRequestDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.exception.DataFetchException;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.exception.DataUpdateException;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.exception.EntityNotFoundException;
 
 import java.util.Set;
 
@@ -30,7 +30,7 @@ public class LastfmArtistController {
     @GetMapping(
         produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<ResponseWrapper<Page<LastfmArtistResponseDto>>> getArtists(
+    public Page<LastfmArtistResponseDto> getArtists(
         @RequestParam(required = false) String search,
         @RequestParam(required = false) Long minPlayCount,
         @RequestParam(required = false) Long minListenersCount,
@@ -39,11 +39,10 @@ public class LastfmArtistController {
     ) {
         try {
             ArtistSearchParams params = new ArtistSearchParams(search, minPlayCount, minListenersCount, approvalStatuses);
-            Page<LastfmArtistResponseDto> page = artistService.findAll(params, pageable);
-            return ResponseWrapper.success(page);
+            return artistService.findAll(params, pageable);
         } catch (Exception e) {
             log.error("Failed to fetch artists: {}", e.getMessage(), e);
-            return ResponseWrapper.failure("Failed to fetch artists: service error occurred");
+            throw new DataFetchException("Failed to fetch artists: service error occurred", e);
         }
     }
 
@@ -51,28 +50,29 @@ public class LastfmArtistController {
         value = "/{id}",
         produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<ResponseWrapper<LastfmArtistResponseDto>> getArtistById(@PathVariable Long id) {
+    public LastfmArtistResponseDto getArtistById(@PathVariable Long id) {
         try {
             return artistService.findById(id)
-                .map(artist -> ResponseWrapper.success(LastfmArtistResponseDto.from(artist)))
-                .orElse(ResponseWrapper.failure("Artist not found with id: " + id, HttpStatus.NOT_FOUND));
+                .map(LastfmArtistResponseDto::from)
+                .orElseThrow(() -> new EntityNotFoundException("Artist not found with id: " + id));
+        } catch (EntityNotFoundException e) {
+            throw e;
         } catch (Exception e) {
             log.error("Failed to fetch artist with id {}: {}", id, e.getMessage(), e);
-            return ResponseWrapper.failure("Failed to fetch artist: service error occurred");
+            throw new DataFetchException("Failed to fetch artist: service error occurred", e);
         }
     }
 
     @PatchMapping("/{id}/approval")
-    public ResponseEntity<ResponseWrapper<LastfmArtistResponseDto>> updateApprovalStatus(
+    public LastfmArtistResponseDto updateApprovalStatus(
         @PathVariable Long id,
         @RequestBody ApprovalStatusRequestDto request
     ) {
         try {
-            LastfmArtistResponseDto artist = artistService.updateApprovalStatus(id, request.approvalStatus());
-            return ResponseWrapper.success(artist);
+            return artistService.updateApprovalStatus(id, request.approvalStatus());
         } catch (Exception e) {
             log.error("Failed to update approval status: {}", e.getMessage(), e);
-            return ResponseWrapper.failure("Failed to update approval status: service error occurred");
+            throw new DataUpdateException("Failed to update approval status: service error occurred", e);
         }
     }
 }

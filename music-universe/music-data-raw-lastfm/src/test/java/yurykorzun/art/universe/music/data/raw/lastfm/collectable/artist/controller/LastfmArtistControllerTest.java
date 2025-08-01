@@ -6,9 +6,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto.ArtistSearchParams;
@@ -17,6 +14,9 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.L
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.dto.ApprovalStatusRequestDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.exception.DataFetchException;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.exception.DataUpdateException;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.exception.EntityNotFoundException;
 
 import java.util.HashSet;
 import java.util.List;
@@ -47,7 +47,7 @@ class LastfmArtistControllerTest {
     }
 
     @Test
-    void getArtists_shouldReturnDtoPageWrappedInResponse() {
+    void getArtists_shouldReturnDtoPage() {
         // given
         String search = "radiohead";
         Long minPlayCount = 1000L;
@@ -87,21 +87,14 @@ class LastfmArtistControllerTest {
             .thenReturn(dtoPage);
 
         // when
-        ResponseEntity<ResponseWrapper<Page<LastfmArtistResponseDto>>> response = 
-            controller.getArtists(search, minPlayCount, minListenersCount, approvalStatuses, pageable);
+        Page<LastfmArtistResponseDto> result = controller.getArtists(search, minPlayCount, minListenersCount, approvalStatuses, pageable);
 
         // then
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        ResponseWrapper<Page<LastfmArtistResponseDto>> body = response.getBody();
-        assertNotNull(body);
-        assertTrue(body.isSuccess());
-
-        Page<LastfmArtistResponseDto> data = body.getData();
-        assertNotNull(data);
-        assertEquals(2, data.getTotalElements());
+        assertNotNull(result);
+        assertEquals(2, result.getTotalElements());
 
         for (int i = 0; i < artistList.size(); i++) {
-            compareDtoAgainstEntity(data.getContent().get(i), artistList.get(i));
+            compareDtoAgainstEntity(result.getContent().get(i), artistList.get(i));
         }
     }
 
@@ -118,36 +111,25 @@ class LastfmArtistControllerTest {
             .thenReturn(dtoPage);
 
         // when
-        ResponseEntity<ResponseWrapper<Page<LastfmArtistResponseDto>>> response = 
-            controller.getArtists(null, null, null, null, pageable);
+        Page<LastfmArtistResponseDto> result = controller.getArtists(null, null, null, null, pageable);
 
         // then
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        ResponseWrapper<Page<LastfmArtistResponseDto>> body = response.getBody();
-        assertNotNull(body);
-        assertTrue(body.isSuccess());
-        
-        Page<LastfmArtistResponseDto> data = body.getData();
-        assertNotNull(data);
-        assertEquals(1, data.getTotalElements());
+        assertNotNull(result);
+        assertEquals(1, result.getTotalElements());
     }
 
     @Test
-    void getArtists_shouldReturnFailureOnException() {
+    void getArtists_shouldThrowDataFetchExceptionOnException() {
         // given
         Pageable pageable = PageRequest.of(0, 10);
         when(artistService.findAll(any(ArtistSearchParams.class), any())).thenThrow(new RuntimeException("Fail"));
 
-        // when
-        ResponseEntity<ResponseWrapper<Page<LastfmArtistResponseDto>>> response = 
+        // when & then
+        DataFetchException exception = assertThrows(DataFetchException.class, () -> {
             controller.getArtists("abc", null, null, null, pageable);
-
-        // then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        ResponseWrapper<?> body = response.getBody();
-        assertNotNull(body);
-        assertFalse(body.isSuccess());
-        assertTrue(body.getMessage().contains("Failed to fetch artists"));
+        });
+        
+        assertTrue(exception.getMessage().contains("Failed to fetch artists"));
     }
 
     @Test
@@ -168,51 +150,39 @@ class LastfmArtistControllerTest {
         when(artistService.findById(artistId)).thenReturn(Optional.of(artist));
 
         // when
-        ResponseEntity<ResponseWrapper<LastfmArtistResponseDto>> response = controller.getArtistById(artistId);
+        LastfmArtistResponseDto result = controller.getArtistById(artistId);
 
         // then
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        ResponseWrapper<LastfmArtistResponseDto> body = response.getBody();
-        assertNotNull(body);
-        assertTrue(body.isSuccess());
-
-        LastfmArtistResponseDto data = body.getData();
-        assertNotNull(data);
-        compareDtoAgainstEntity(data, artist);
+        assertNotNull(result);
+        compareDtoAgainstEntity(result, artist);
     }
 
     @Test
-    void getArtistById_shouldReturnNotFoundWhenArtistDoesNotExist() {
+    void getArtistById_shouldThrowEntityNotFoundExceptionWhenArtistDoesNotExist() {
         // given
         Long artistId = 999L;
         when(artistService.findById(artistId)).thenReturn(Optional.empty());
 
-        // when
-        ResponseEntity<ResponseWrapper<LastfmArtistResponseDto>> response = controller.getArtistById(artistId);
-
-        // then
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        ResponseWrapper<LastfmArtistResponseDto> body = response.getBody();
-        assertNotNull(body);
-        assertFalse(body.isSuccess());
-        assertTrue(body.getMessage().contains("Artist not found"));
+        // when & then
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
+            controller.getArtistById(artistId);
+        });
+        
+        assertTrue(exception.getMessage().contains("Artist not found"));
     }
 
     @Test
-    void getArtistById_shouldReturnErrorWhenExceptionOccurs() {
+    void getArtistById_shouldThrowDataFetchExceptionWhenExceptionOccurs() {
         // given
         Long artistId = 1L;
         when(artistService.findById(artistId)).thenThrow(new RuntimeException("Database error"));
 
-        // when
-        ResponseEntity<ResponseWrapper<LastfmArtistResponseDto>> response = controller.getArtistById(artistId);
-
-        // then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        ResponseWrapper<LastfmArtistResponseDto> body = response.getBody();
-        assertNotNull(body);
-        assertFalse(body.isSuccess());
-        assertTrue(body.getMessage().contains("Failed to fetch artist"));
+        // when & then
+        DataFetchException exception = assertThrows(DataFetchException.class, () -> {
+            controller.getArtistById(artistId);
+        });
+        
+        assertTrue(exception.getMessage().contains("Failed to fetch artist"));
     }
 
     @Test
@@ -222,37 +192,27 @@ class LastfmArtistControllerTest {
         int approvalStatusCode = newApprovalStatus.getCode();
 
         LastfmArtist artist = EntityCreationHelper.createArtist(b -> b.approvalStatus(newApprovalStatus));
+        LastfmArtistResponseDto responseDto = LastfmArtistResponseDto.from(artist);
 
         when(artistService.updateApprovalStatus(artistId, approvalStatusCode))
-            .thenReturn(LastfmArtistResponseDto.from(artist));
+            .thenReturn(responseDto);
 
-        ResponseEntity<ResponseWrapper<LastfmArtistResponseDto>> response =
-            controller.updateApprovalStatus(artistId, new ApprovalStatusRequestDto(approvalStatusCode));
+        LastfmArtistResponseDto result = controller.updateApprovalStatus(artistId, new ApprovalStatusRequestDto(approvalStatusCode));
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        ResponseWrapper<LastfmArtistResponseDto> body = response.getBody();
-        assertNotNull(body);
-        assertTrue(body.isSuccess());
-
-        LastfmArtistResponseDto data = body.getData();
-        assertNotNull(data);
-        assertEquals(newApprovalStatus.getCode(), data.approvalStatus());
+        assertNotNull(result);
+        assertEquals(newApprovalStatus.getCode(), result.approvalStatus());
     }
 
-
     @Test
-    void updateApprovalStatus_shouldHandleServiceException() {
+    void updateApprovalStatus_shouldThrowDataUpdateExceptionOnServiceException() {
         Long artistId = 1L;
         when(artistService.updateApprovalStatus(anyLong(), anyInt()))
             .thenThrow(new IllegalArgumentException("Invalid status"));
 
-        ResponseEntity<ResponseWrapper<LastfmArtistResponseDto>> response =
+        DataUpdateException exception = assertThrows(DataUpdateException.class, () -> {
             controller.updateApprovalStatus(artistId, new ApprovalStatusRequestDto(999));
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        ResponseWrapper<LastfmArtistResponseDto> body = response.getBody();
-        assertNotNull(body);
-        assertFalse(body.isSuccess());
-        assertTrue(body.getMessage().contains("Failed to update approval status"));
+        });
+        
+        assertTrue(exception.getMessage().contains("Failed to update approval status"));
     }
 }

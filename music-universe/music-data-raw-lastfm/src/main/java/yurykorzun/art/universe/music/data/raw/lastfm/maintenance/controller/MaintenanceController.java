@@ -1,13 +1,15 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.maintenance.controller;
 
-import org.springframework.http.ResponseEntity;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.exception.MaintenanceException;
 import yurykorzun.art.universe.music.data.raw.lastfm.maintenance.service.DbMaintenanceService;
 
 @RestController
 @RequestMapping("maintenance")
+@Slf4j
 public class MaintenanceController {
 
     private final DbMaintenanceService maintenanceService;
@@ -17,12 +19,12 @@ public class MaintenanceController {
     }
 
     @GetMapping("/trigger")
-    public ResponseEntity<String> triggerDbMaintenance() {
+    public String triggerDbMaintenance() {
         if (maintenanceService.enqueueMaintenance()) {
-            return ResponseEntity.ok().body("maintenance requested");
+            return "maintenance requested";
         } else {
-            return ResponseEntity.internalServerError().body("Failed to request maintenance");
+            log.error("Failed to request maintenance");
+            throw new MaintenanceException("Failed to request maintenance");
         }
     }
-
 }
