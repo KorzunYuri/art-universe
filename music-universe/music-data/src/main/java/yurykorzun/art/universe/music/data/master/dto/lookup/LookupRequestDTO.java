@@ -6,18 +6,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-import java.util.List;
-
-/**
- * Abstract base class for batch lookup requests
- * @param <T> The type of lookup request contained in this batch
- */
 @Data
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public abstract class BatchLookupRequestDTO<T extends LookupRequestDTO> {
-    @NotNull(message = "Search requests are required")
-    private List<T> searchRequests;
+public class LookupRequestDTO {
+    @NotNull(message = "Search term is required")
+    private String search;
     private Integer limit;
 }

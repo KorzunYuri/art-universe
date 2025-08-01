@@ -14,7 +14,8 @@ public enum EntityType implements Coded {
     ARTIST(1, "artist"),
     ALBUM(2, "album"),
     TRACK(3, "track"),
-    CATEGORY(4, "category");
+    CATEGORY(4, "category"),
+    DIMENSION(5, "dimension");
 
     private final int code;
     private final String name;

@@ -48,12 +48,12 @@ class EntityCreateAndBindRequestDTOTest {
         // Then
         assertEquals(1, violations.size());
         ConstraintViolation<EntityCreateAndBindRequestDTO> violation = violations.iterator().next();
-        assertEquals("name", violation.getPropertyPath().toString());
+        assertEquals("entityName", violation.getPropertyPath().toString());
         assertEquals("Entity name is required", violation.getMessage());
     }
 
     @Test
-    void shouldFailValidation_whenNameIsEmpty() {
+    void shouldFailValidation_whenEntityNameIsEmpty() {
         // Given
         EntityCreateAndBindRequestDTO dto = EntityCreateAndBindRequestDTO.builder()
             .entityName("")
@@ -65,7 +65,7 @@ class EntityCreateAndBindRequestDTOTest {
         // Then
         assertEquals(1, violations.size());
         ConstraintViolation<EntityCreateAndBindRequestDTO> violation = violations.iterator().next();
-        assertEquals("name", violation.getPropertyPath().toString());
+        assertEquals("entityName", violation.getPropertyPath().toString());
         assertEquals("Entity name is required", violation.getMessage());
     }
 

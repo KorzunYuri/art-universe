@@ -1,7 +1,6 @@
-package yurykorzun.art.universe.music.data.master.relation.metadata;
+package yurykorzun.art.universe.music.data.master.entity;
 
 import lombok.Getter;
-import yurykorzun.art.universe.music.data.master.entity.EntityType;
 
 /**
  * Metadata for an entity, containing information about table names and field names.

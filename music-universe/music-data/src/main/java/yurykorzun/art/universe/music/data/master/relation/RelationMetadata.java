@@ -1,10 +1,8 @@
-package yurykorzun.art.universe.music.data.master.relation.metadata;
+package yurykorzun.art.universe.music.data.master.relation;
 
 import lombok.Getter;
 import yurykorzun.art.universe.music.data.master.entity.EntityType;
-import yurykorzun.art.universe.music.data.master.relation.RelationBindingEntity;
-import yurykorzun.art.universe.music.data.master.relation.RelationEntity;
-import yurykorzun.art.universe.music.data.master.relation.RelationRegistry;
+import yurykorzun.art.universe.music.data.master.entity.EntityMetadata;
 
 /**
  * Metadata for a relation between two entities, containing information about

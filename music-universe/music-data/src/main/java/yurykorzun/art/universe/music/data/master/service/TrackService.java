@@ -3,6 +3,10 @@ package yurykorzun.art.universe.music.data.master.service;
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedBatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 
 import java.util.List;
@@ -54,4 +58,22 @@ public interface TrackService {
      * @return true if the unbinding was successful, false otherwise
      */
     boolean unbindTrack(DataSource dataSource, Long externalId);
+    
+    /**
+     * Searches for tracks by name (case insensitive, partial match) with optional artist filter.
+     * Results are formatted as "Artist - Track" and prioritized by matching artist if specified.
+     *
+     * @param request The lookup request containing search term, optional artist IDs, and limit
+     * @return List of track DTOs matching the search term
+     */
+    List<LookupResultDTO> lookupTracks(ArtistRelatedLookupRequestDTO request);
+
+    /**
+     * Batch lookup of tracks by multiple search terms with optional artist filter.
+     * Each search term will have its own limited result set.
+     *
+     * @param request The batch lookup request containing search requests, artist IDs, and limit
+     * @return A map of search terms to lists of matching tracks
+     */
+    BatchLookupResponseDTO batchLookupTracks(ArtistRelatedBatchLookupRequestDTO request);
 }

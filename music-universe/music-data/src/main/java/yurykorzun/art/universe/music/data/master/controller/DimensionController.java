@@ -38,13 +38,13 @@ public class DimensionController {
 
     @GetMapping("/lookup")
     public List<LookupResultDTO> lookupDimensions(
-        @RequestParam(required = false) String name,
+        @RequestParam(required = false) String searchTerm,
         @RequestParam(required = false) Integer limit
     ) {
         try {
             return limit != null
-                ? dimensionService.lookupDimensions(name, limit)
-                : dimensionService.lookupDimensions(name);
+                ? dimensionService.lookupDimensions(searchTerm, limit)
+                : dimensionService.lookupDimensions(searchTerm);
         } catch (Exception e) {
             throw new DataAccessException(String.format("Failed to lookup dimensions: %s", e.getMessage()), e);
         }

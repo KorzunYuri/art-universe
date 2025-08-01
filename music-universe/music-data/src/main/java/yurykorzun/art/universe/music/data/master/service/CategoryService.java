@@ -3,12 +3,10 @@ package yurykorzun.art.universe.music.data.master.service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import yurykorzun.art.universe.music.data.master.dto.CategoryHierarchyProjection;
-import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.*;
 import yurykorzun.art.universe.music.data.master.dto.CategorySaveRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 
@@ -28,11 +26,10 @@ public interface CategoryService {
     /**
      * Lookup categories by name for dropdown lists
      * 
-     * @param name Search term to look for in category names (case insensitive, partial match)
-     * @param limit Maximum number of results to return (default: 20)
+     * @param request The lookup request containing search term and optional limit
      * @return List of lightweight category DTOs with id and name only
      */
-    List<LookupResultDTO> lookupCategories(String name, Integer limit);
+    List<LookupResultDTO> lookupCategories(LookupRequestDTO request);
     
     /**
      * Lookup categories by name for dropdown lists
@@ -42,16 +39,27 @@ public interface CategoryService {
      * @return List of lightweight category DTOs with id and name only
      */
     default List<LookupResultDTO> lookupCategories(String name) {
-        return lookupCategories(name, 20);
+        return lookupCategories(LookupRequestDTO.builder().search(name).build());
     }
     
     /**
-     * Batch lookup categories by multiple names
+     * Lookup categories by name for dropdown lists
      * 
-     * @param request The batch lookup request containing category names and optional limit
-     * @return Map of category names to lists of matching categories
+     * @param name Search term to look for in category names (case insensitive, partial match)
+     * @param limit Maximum number of results to return (default: 20)
+     * @return List of lightweight category DTOs with id and name only
      */
-    BatchLookupResponseDTO batchLookupCategories(BatchLookupRequestDTO request);
+    default List<LookupResultDTO> lookupCategories(String name, Integer limit) {
+        return lookupCategories(LookupRequestDTO.builder().search(name).limit(limit).build());
+    }
+    
+    /**
+     * Batch lookup categories by multiple search requests
+     * 
+     * @param request The batch lookup request containing search requests and optional limit
+     * @return Map of search terms to lists of matching categories
+     */
+    BatchLookupResponseDTO batchLookupCategories(BaseBatchLookupRequestDTO request);
     
     /**
      * Save a category (create new or update existing)

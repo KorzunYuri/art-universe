@@ -2,11 +2,11 @@ package yurykorzun.art.universe.music.data.master.service;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.persistence.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BaseBatchLookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
@@ -14,22 +14,20 @@ import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjecti
 import yurykorzun.art.universe.music.data.master.entity.Artist;
 import yurykorzun.art.universe.music.data.master.entity.ArtistBinding;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.entity.EntityType;
 import yurykorzun.art.universe.music.data.master.repository.ArtistBindingRepository;
 import yurykorzun.art.universe.music.data.master.repository.ArtistRepository;
+import yurykorzun.art.universe.music.data.master.service.lookup.BaseLookupService;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class ArtistServiceImpl implements ArtistService {
 
     private final ArtistRepository artistRepository;
     private final ArtistBindingRepository bindingsRepository;
-    private final EntityManager entityManager;
+    private final BaseLookupService lookupService;
 
     public ArtistServiceImpl(
         ArtistRepository artistRepository,
@@ -38,7 +36,7 @@ public class ArtistServiceImpl implements ArtistService {
     ) {
         this.artistRepository = artistRepository;
         this.bindingsRepository = bindingsRepository;
-        this.entityManager = entityManager;
+        this.lookupService = new BaseLookupService(entityManager, EntityType.ARTIST);
     }
 
     @Override
@@ -134,94 +132,13 @@ public class ArtistServiceImpl implements ArtistService {
     }
     
     @Override
-    public List<LookupResultDTO> searchArtistsByName(String search, Integer limit) {
-        if (search == null || search.trim().isEmpty()) {
-            return List.of();
-        }
-        
-        // Apply default limit if null
-        int actualLimit = limit != null ? limit : 20;
-        
-        return artistRepository.findByNameContainingIgnoreCase(search.trim(), actualLimit)
-            .stream()
-            .map(artist -> LookupResultDTO.builder()
-                .id(artist.getId())
-                .name(artist.getName())
-                .build())
-            .collect(Collectors.toList());
+    public List<LookupResultDTO> lookupArtists(LookupRequestDTO request) {
+        return lookupService.lookup(request);
     }
     
     @Override
     @Transactional(readOnly = true)
-    public BatchLookupResponseDTO batchLookupArtists(BatchLookupRequestDTO request) {
-        if (request.getSearchTerms() == null || request.getSearchTerms().isEmpty()) {
-            return BatchLookupResponseDTO.builder().build();
-        }
-        
-        // Apply default limit if null
-        int actualLimit = request.getLimit() != null ? request.getLimit() : 20;
-        
-        // Filter and prepare search terms
-        List<String> searchTerms = request.getSearchTerms().stream()
-            .filter(term -> term != null && !term.trim().isEmpty())
-            .map(String::trim)
-            .collect(Collectors.toList());
-        
-        if (searchTerms.isEmpty()) {
-            return BatchLookupResponseDTO.builder().build();
-        }
-        
-        // Dynamically build SQL query with UNION ALL
-        StringBuilder sqlBuilder = new StringBuilder();
-        
-        for (int i = 0; i < searchTerms.size(); i++) {
-            if (i > 0) {
-                sqlBuilder.append("\nUNION ALL\n");
-            }
-            
-            sqlBuilder.append("""
-                SELECT * FROM (
-                    SELECT a.id, a.name, a.created_at, a.updated_at, ? as search_term
-                    FROM artist a
-                    WHERE LOWER(a.name) LIKE LOWER(CONCAT('%', ?, '%'))
-                    ORDER BY a.name ASC
-                    LIMIT ?
-                ) AS result
-            """);
-        }
-        
-        // Create query and set parameters
-        Query query = entityManager.createNativeQuery(sqlBuilder.toString());
-        
-        int paramIndex = 1;
-        for (String searchTerm : searchTerms) {
-            query.setParameter(paramIndex++, searchTerm); // For search_term column
-            query.setParameter(paramIndex++, searchTerm); // For WHERE clause
-            query.setParameter(paramIndex++, actualLimit); // For LIMIT
-        }
-        
-        // Execute the query
-        @SuppressWarnings("unchecked")
-        List<Object[]> results = query.getResultList();
-        
-        // Process results into the response DTO
-        Map<String, List<LookupResultDTO>> resultMap = new HashMap<>();
-        
-        for (Object[] row : results) {
-            Long id = ((Number) row[0]).longValue();
-            String name = (String) row[1];
-            String searchTerm = (String) row[4];
-            
-            LookupResultDTO dto = LookupResultDTO.builder()
-                .id(id)
-                .name(name)
-                .build();
-            
-            resultMap.computeIfAbsent(searchTerm, k -> new ArrayList<>()).add(dto);
-        }
-        
-        return BatchLookupResponseDTO.builder()
-            .results(resultMap)
-            .build();
+    public BatchLookupResponseDTO batchLookupArtists(BaseBatchLookupRequestDTO request) {
+        return lookupService.batchLookup(request);
     }
 }

@@ -5,10 +5,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BaseBatchLookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
@@ -18,6 +19,9 @@ import yurykorzun.art.universe.music.data.master.exception.EntityBindingExceptio
 import yurykorzun.art.universe.music.data.master.service.ArtistService;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.List;
 import java.util.Map;
 
@@ -77,56 +81,56 @@ class ArtistControllerTest {
     @Test
     void lookupArtists_shouldReturnListOfLookupResults() {
         // Given
-        String name = "radio";
+        String search = "radio";
         LookupResultDTO artist1 = new LookupResultDTO(1L, "Radiohead");
         LookupResultDTO artist2 = new LookupResultDTO(2L, "Radio Moscow");
         List<LookupResultDTO> expectedArtists = List.of(artist1, artist2);
         
-        when(artistService.searchArtistsByName(name)).thenReturn(expectedArtists);
+        when(artistService.lookupArtists(any(LookupRequestDTO.class))).thenReturn(expectedArtists);
             
         // When
-        List<LookupResultDTO> result = artistController.lookupArtists(name, null);
+        List<LookupResultDTO> result = artistController.lookupArtists(search, null);
             
         // Then
         assertEquals(expectedArtists, result);
-        verify(artistService).searchArtistsByName(name);
+        verify(artistService).lookupArtists(any(LookupRequestDTO.class));
     }
     
     @Test
     void lookupArtists_withLimit_shouldReturnListOfLookupResults() {
         // Given
-        String name = "radio";
+        String search = "radio";
         Integer limit = 5;
         LookupResultDTO artist1 = new LookupResultDTO(1L, "Radiohead");
         LookupResultDTO artist2 = new LookupResultDTO(2L, "Radio Moscow");
         List<LookupResultDTO> expectedArtists = List.of(artist1, artist2);
         
-        when(artistService.searchArtistsByName(name, limit)).thenReturn(expectedArtists);
+        when(artistService.lookupArtists(any(LookupRequestDTO.class))).thenReturn(expectedArtists);
             
         // When
-        List<LookupResultDTO> result = artistController.lookupArtists(name, limit);
+        List<LookupResultDTO> result = artistController.lookupArtists(search, limit);
             
         // Then
         assertEquals(expectedArtists, result);
-        verify(artistService).searchArtistsByName(name, limit);
+        verify(artistService).lookupArtists(any(LookupRequestDTO.class));
     }
     
     @Test
     void lookupArtists_whenExceptionThrown_shouldThrowDataAccessException() {
         // Given
-        String name = "radio";
+        String search = "radio";
         String errorMessage = "Test error";
         
-        when(artistService.searchArtistsByName(name))
+        when(artistService.lookupArtists(any(LookupRequestDTO.class)))
             .thenThrow(new RuntimeException(errorMessage));
             
         // When & Then
         DataAccessException exception = assertThrows(DataAccessException.class, () -> 
-            artistController.lookupArtists(name, null)
+            artistController.lookupArtists(search, null)
         );
         
         assertEquals("Failed to lookup artists: " + errorMessage, exception.getMessage());
-        verify(artistService).searchArtistsByName(name);
+        verify(artistService).lookupArtists(any(LookupRequestDTO.class));
     }
     
     @Test
@@ -270,8 +274,8 @@ class ArtistControllerTest {
         List<String> searchTerms = List.of("radio", "queen");
         Integer limit = 10;
         
-        BatchLookupRequestDTO request = BatchLookupRequestDTO.builder()
-            .searchTerms(searchTerms)
+        BaseBatchLookupRequestDTO request = BaseBatchLookupRequestDTO.builder()
+            .searchRequests(createLookupRequests(searchTerms))
             .limit(limit)
             .build();
         
@@ -305,8 +309,8 @@ class ArtistControllerTest {
         Integer limit = 10;
         String errorMessage = "Test error";
         
-        BatchLookupRequestDTO request = BatchLookupRequestDTO.builder()
-            .searchTerms(searchTerms)
+        BaseBatchLookupRequestDTO request = BaseBatchLookupRequestDTO.builder()
+            .searchRequests(createLookupRequests(searchTerms))
             .limit(limit)
             .build();
         
@@ -320,5 +324,14 @@ class ArtistControllerTest {
         
         assertEquals("Failed to batch lookup artists: " + errorMessage, exception.getMessage());
         verify(artistService).batchLookupArtists(request);
+    }
+    
+    /**
+     * Helper method to convert a list of search terms to a list of LookupRequestDTO
+     */
+    private List<LookupRequestDTO> createLookupRequests(List<String> searchTerms) {
+        return searchTerms.stream()
+            .map(term -> LookupRequestDTO.builder().search(term).build())
+            .collect(Collectors.toList());
     }
 }

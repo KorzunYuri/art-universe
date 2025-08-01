@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
@@ -140,11 +141,11 @@ class CategoryControllerMvcTest {
         
         String expectedJson = objectMapper.writeValueAsString(expectedCategories);
         
-        when(categoryService.lookupCategories(searchQuery)).thenReturn(expectedCategories);
+        when(categoryService.lookupCategories(any(LookupRequestDTO.class))).thenReturn(expectedCategories);
         
         // When & Then
         mockMvc.perform(get("/api/v1/categories/lookup")
-                .param("name", searchQuery))
+                .param("search", searchQuery))
             .andDo(print())
             .andExpect(status().isOk())
             .andExpect(content().json(expectedJson));
@@ -161,11 +162,11 @@ class CategoryControllerMvcTest {
         
         String expectedJson = objectMapper.writeValueAsString(expectedCategories);
         
-        when(categoryService.lookupCategories(searchQuery, limit)).thenReturn(expectedCategories);
+        when(categoryService.lookupCategories(any(LookupRequestDTO.class))).thenReturn(expectedCategories);
         
         // When & Then
         mockMvc.perform(get("/api/v1/categories/lookup")
-                .param("name", searchQuery)
+                .param("search", searchQuery)
                 .param("limit", limit.toString()))
             .andDo(print())
             .andExpect(status().isOk())
@@ -179,11 +180,11 @@ class CategoryControllerMvcTest {
         List<LookupResultDTO> emptyList = Collections.emptyList();
         String expectedJson = objectMapper.writeValueAsString(emptyList);
         
-        when(categoryService.lookupCategories(searchQuery)).thenReturn(emptyList);
+        when(categoryService.lookupCategories(any(LookupRequestDTO.class))).thenReturn(emptyList);
         
         // When & Then
         mockMvc.perform(get("/api/v1/categories/lookup")
-                .param("name", searchQuery))
+                .param("search", searchQuery))
             .andExpect(status().isOk())
             .andExpect(content().json(expectedJson));
     }
@@ -194,12 +195,12 @@ class CategoryControllerMvcTest {
         String searchQuery = "rock";
         String errorMessage = "Search error occurred";
         
-        when(categoryService.lookupCategories(searchQuery))
+        when(categoryService.lookupCategories(any(LookupRequestDTO.class)))
             .thenThrow(new RuntimeException(errorMessage));
         
         // When & Then
         mockMvc.perform(get("/api/v1/categories/lookup")
-                .param("name", searchQuery))
+                .param("search", searchQuery))
             .andExpect(status().isInternalServerError());
     }
 }

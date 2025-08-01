@@ -1,5 +1,6 @@
 package yurykorzun.art.universe.music.data.master.service;
 
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -8,9 +9,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.music.data.master.dto.DimensionDto;
 import yurykorzun.art.universe.music.data.master.dto.DimensionSaveRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.entity.Dimension;
+import yurykorzun.art.universe.music.data.master.entity.EntityType;
 import yurykorzun.art.universe.music.data.master.repository.DimensionRepository;
+import yurykorzun.art.universe.music.data.master.service.lookup.DimensionLookupService;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,9 +24,11 @@ import java.util.stream.Collectors;
 public class DimensionServiceImpl implements DimensionService {
 
     private final DimensionRepository dimensionRepository;
+    private final DimensionLookupService lookupService;
 
-    public DimensionServiceImpl(DimensionRepository dimensionRepository) {
+    public DimensionServiceImpl(DimensionRepository dimensionRepository, EntityManager entityManager) {
         this.dimensionRepository = dimensionRepository;
+        this.lookupService = new DimensionLookupService(entityManager, EntityType.DIMENSION);
     }
 
     @Override
@@ -41,25 +47,12 @@ public class DimensionServiceImpl implements DimensionService {
 
     @Override
     public List<LookupResultDTO> lookupDimensions(String name, Integer limit) {
-        // Apply default limit if null
-        int actualLimit = limit != null ? limit : 20;
+        LookupRequestDTO request = LookupRequestDTO.builder()
+            .search(name)
+            .limit(limit)
+            .build();
         
-        List<Dimension> dimensions;
-        
-        if (name == null || name.trim().isEmpty()) {
-            // Return all dimensions if name is not provided
-            dimensions = dimensionRepository.findAllWithLimit(actualLimit);
-        } else {
-            // Return dimensions matching the name
-            dimensions = dimensionRepository.findByNameContainingIgnoreCase(name.trim(), actualLimit);
-        }
-        
-        return dimensions.stream()
-            .map(dimension -> LookupResultDTO.builder()
-                .id(dimension.getId())
-                .name(dimension.getName())
-                .build())
-            .collect(Collectors.toList());
+        return lookupService.lookup(request);
     }
 
     @Override

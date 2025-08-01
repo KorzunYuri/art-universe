@@ -14,11 +14,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Test for BatchLookupRequestDTO using a concrete implementation
- * since BatchLookupRequestDTO is abstract
- */
-class BatchLookupRequestDTOTest {
+class BaseBatchLookupRequestDTOTest {
 
     private Validator validator;
 

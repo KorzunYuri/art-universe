@@ -1,10 +1,15 @@
 package yurykorzun.art.universe.music.data.master.service;
 
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedBatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
@@ -13,6 +18,7 @@ import yurykorzun.art.universe.music.data.master.entity.Track;
 import yurykorzun.art.universe.music.data.master.entity.TrackBinding;
 import yurykorzun.art.universe.music.data.master.repository.TrackBindingRepository;
 import yurykorzun.art.universe.music.data.master.repository.TrackRepository;
+import yurykorzun.art.universe.music.data.master.service.lookup.ArtistRelatedLookupService;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,17 +30,20 @@ public class TrackServiceImpl implements TrackService {
     private final TrackBindingRepository bindingsRepository;
     private final ArtistService artistService;
     private final RelationService relationService;
+    private final ArtistRelatedLookupService lookupService;
 
     public TrackServiceImpl(
         TrackRepository trackRepository,
         TrackBindingRepository bindingsRepository,
         ArtistService artistService,
-        RelationService relationService
+        RelationService relationService,
+        EntityManager entityManager
     ) {
         this.trackRepository = trackRepository;
         this.bindingsRepository = bindingsRepository;
         this.artistService = artistService;
         this.relationService = relationService;
+        this.lookupService = new ArtistRelatedLookupService(entityManager, EntityType.TRACK);
     }
 
     @Override
@@ -188,5 +197,16 @@ public class TrackServiceImpl implements TrackService {
         }
         
         return false;
+    }
+    
+    @Override
+    public List<LookupResultDTO> lookupTracks(ArtistRelatedLookupRequestDTO request) {
+        return lookupService.lookup(request);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public BatchLookupResponseDTO batchLookupTracks(ArtistRelatedBatchLookupRequestDTO request) {
+        return lookupService.batchLookup(request);
     }
 }

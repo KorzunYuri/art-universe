@@ -74,73 +74,73 @@ class DimensionControllerTest {
     @Test
     void lookupDimensions_shouldReturnListOfLookupResults() {
         // Given
-        String name = "genre";
+        String searchTerm = "genre";
         LookupResultDTO dimension1 = new LookupResultDTO(1L, "Genre");
         LookupResultDTO dimension2 = new LookupResultDTO(2L, "Subgenre");
         List<LookupResultDTO> expectedDimensions = Arrays.asList(dimension1, dimension2);
         
-        when(dimensionService.lookupDimensions(name)).thenReturn(expectedDimensions);
+        when(dimensionService.lookupDimensions(searchTerm)).thenReturn(expectedDimensions);
 
         // When
-        List<LookupResultDTO> result = dimensionController.lookupDimensions(name, null);
+        List<LookupResultDTO> result = dimensionController.lookupDimensions(searchTerm, null);
 
         // Then
         assertEquals(expectedDimensions, result);
-        verify(dimensionService).lookupDimensions(name);
+        verify(dimensionService).lookupDimensions(searchTerm);
     }
 
     @Test
     void lookupDimensions_withNullName_shouldReturnListOfLookupResults() {
         // Given
-        String name = null;
+        String searchTerm = null;
         LookupResultDTO dimension1 = new LookupResultDTO(1L, "Genre");
         LookupResultDTO dimension2 = new LookupResultDTO(2L, "Subgenre");
         List<LookupResultDTO> expectedDimensions = Arrays.asList(dimension1, dimension2);
         
-        when(dimensionService.lookupDimensions(name)).thenReturn(expectedDimensions);
+        when(dimensionService.lookupDimensions(searchTerm)).thenReturn(expectedDimensions);
 
         // When
-        List<LookupResultDTO> result = dimensionController.lookupDimensions(name, null);
+        List<LookupResultDTO> result = dimensionController.lookupDimensions(searchTerm, null);
 
         // Then
         assertEquals(expectedDimensions, result);
-        verify(dimensionService).lookupDimensions(name);
+        verify(dimensionService).lookupDimensions(searchTerm);
     }
 
     @Test
     void lookupDimensions_withLimit_shouldReturnListOfLookupResults() {
         // Given
-        String name = "genre";
+        String searchTerm = "genre";
         Integer limit = 5;
         LookupResultDTO dimension1 = new LookupResultDTO(1L, "Genre");
         LookupResultDTO dimension2 = new LookupResultDTO(2L, "Subgenre");
         List<LookupResultDTO> expectedDimensions = Arrays.asList(dimension1, dimension2);
         
-        when(dimensionService.lookupDimensions(name, limit)).thenReturn(expectedDimensions);
+        when(dimensionService.lookupDimensions(searchTerm, limit)).thenReturn(expectedDimensions);
 
         // When
-        List<LookupResultDTO> result = dimensionController.lookupDimensions(name, limit);
+        List<LookupResultDTO> result = dimensionController.lookupDimensions(searchTerm, limit);
 
         // Then
         assertEquals(expectedDimensions, result);
-        verify(dimensionService).lookupDimensions(name, limit);
+        verify(dimensionService).lookupDimensions(searchTerm, limit);
     }
 
     @Test
     void lookupDimensions_whenExceptionThrown_shouldThrowDataAccessException() {
         // Given
-        String name = "genre";
+        String searchTerm = "genre";
         String errorMessage = "Test error";
         
-        when(dimensionService.lookupDimensions(name)).thenThrow(new RuntimeException(errorMessage));
+        when(dimensionService.lookupDimensions(searchTerm)).thenThrow(new RuntimeException(errorMessage));
 
         // When & Then
         DataAccessException exception = assertThrows(DataAccessException.class, () -> 
-            dimensionController.lookupDimensions(name, null)
+            dimensionController.lookupDimensions(searchTerm, null)
         );
         
         assertEquals("Failed to lookup dimensions: " + errorMessage, exception.getMessage());
-        verify(dimensionService).lookupDimensions(name);
+        verify(dimensionService).lookupDimensions(searchTerm);
     }
 
     @Test

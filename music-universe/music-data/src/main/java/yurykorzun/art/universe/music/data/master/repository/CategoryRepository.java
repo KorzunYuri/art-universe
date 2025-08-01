@@ -31,52 +31,57 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
      * @return Page of categories with hierarchy information
      */
     @Query(nativeQuery = true, 
-           countQuery = """
-               WITH RECURSIVE category_hierarchy AS (
-                   -- Base case: root categories (no parent)
-                   SELECT
-                       c.id,
-                       c.name,
-                       c.dimension_id,
-                       c.dimension_id AS effective_dimension_id,
-                       c.parent_id,
-                       1 AS hierarchy_level
-                   FROM
-                       category c
-                   WHERE
-                       c.parent_id IS NULL
-           
-                   UNION ALL
-           
-                   -- Recursive case: child categories
-                   SELECT
-                       c.id,
-                       c.name,
-                       c.dimension_id,
-                       COALESCE(c.dimension_id, ch.effective_dimension_id) AS effective_dimension_id,
-                       c.parent_id,
-                       ch.hierarchy_level + 1 AS hierarchy_level
-                   FROM
-                       category c
-                   JOIN
-                       category_hierarchy ch ON c.parent_id = ch.id
-               )
-               SELECT COUNT(*)
-               FROM
+            countQuery = """
+                WITH RECURSIVE category_hierarchy AS (
+                -- Base case: root categories (no parent)
+                SELECT
+                   c.id,
+                   c.name,
+                   c.dimension_id,
+                   c.dimension_id AS effective_dimension_id,
+                   c.parent_id,
+                   1 AS hierarchy_level
+                FROM
+                   category c
+                WHERE
+                   c.parent_id IS NULL
+                
+                UNION ALL
+                
+                -- Recursive case: child categories
+                SELECT
+                   c.id,
+                   c.name,
+                   c.dimension_id,
+                   COALESCE(c.dimension_id, ch.effective_dimension_id) AS effective_dimension_id,
+                   c.parent_id,
+                   ch.hierarchy_level + 1 AS hierarchy_level
+                FROM
+                   category c
+                JOIN
                    category_hierarchy ch
-               LEFT JOIN
-                   dimension d ON ch.dimension_id = d.id
-               LEFT JOIN
-                   dimension ed ON ch.effective_dimension_id = ed.id
-               LEFT JOIN
-                   category parent ON ch.parent_id = parent.id
-               WHERE
-                   (:search IS NULL OR :search = '' OR 
-                    LOWER(ch.name) LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(parent.name) LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(d.name) LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(ed.name) LIKE LOWER(CONCAT('%', :search, '%')))
-               """,
+                       ON c.parent_id = ch.id
+                )
+                SELECT COUNT(*)
+                FROM
+                    category_hierarchy ch
+                LEFT JOIN
+                    dimension d
+                        ON ch.dimension_id = d.id
+                LEFT JOIN
+                    dimension ed
+                        ON ch.effective_dimension_id = ed.id
+                LEFT JOIN
+                    category parent
+                        ON ch.parent_id = parent.id
+                WHERE
+                (
+                :search IS NULL OR :search = ''
+                OR   LOWER(ch.name)      LIKE LOWER(CONCAT('%', :search, '%'))
+                OR   LOWER(parent.name)  LIKE LOWER(CONCAT('%', :search, '%'))
+                OR   LOWER(d.name)       LIKE LOWER(CONCAT('%', :search, '%'))
+                OR   LOWER(ed.name)      LIKE LOWER(CONCAT('%', :search, '%')))
+                """,
            value = """
                WITH RECURSIVE category_hierarchy AS (
                    -- Base case: root categories (no parent)
@@ -126,11 +131,13 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
                LEFT JOIN
                    category parent ON ch.parent_id = parent.id
                WHERE
-                   (:search IS NULL OR :search = '' OR 
-                    LOWER(ch.name) LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(parent.name) LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(d.name) LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(ed.name) LIKE LOWER(CONCAT('%', :search, '%')))
+                   (    :search IS NULL
+                    OR  :search = ''
+                    OR  LOWER(ch.name)      LIKE LOWER(CONCAT('%', :search, '%'))
+                    OR  LOWER(parent.name)  LIKE LOWER(CONCAT('%', :search, '%'))
+                    OR  LOWER(d.name)       LIKE LOWER(CONCAT('%', :search, '%'))
+                    OR  LOWER(ed.name)      LIKE LOWER(CONCAT('%', :search, '%'))
+                    )
                """)
     Page<CategoryHierarchyProjection> searchCategories(@Param("search") String search, Pageable pageable);
 

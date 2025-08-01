@@ -15,8 +15,8 @@ import yurykorzun.art.universe.music.data.master.entity.EntityType;
 import yurykorzun.art.universe.music.data.master.relation.RelationBindingEntity;
 import yurykorzun.art.universe.music.data.master.relation.RelationEntity;
 import yurykorzun.art.universe.music.data.master.relation.RelationRegistry;
-import yurykorzun.art.universe.music.data.master.relation.metadata.EntityMetadata;
-import yurykorzun.art.universe.music.data.master.relation.metadata.RelationMetadata;
+import yurykorzun.art.universe.music.data.master.entity.EntityMetadata;
+import yurykorzun.art.universe.music.data.master.relation.RelationMetadata;
 
 import java.util.ArrayList;
 import java.util.Collections;

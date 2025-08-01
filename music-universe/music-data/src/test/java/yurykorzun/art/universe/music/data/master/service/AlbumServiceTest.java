@@ -1,5 +1,7 @@
 package yurykorzun.art.universe.music.data.master.service;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -7,14 +9,22 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
+import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedBatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.repository.AlbumBindingRepository;
 import yurykorzun.art.universe.music.data.master.repository.AlbumRepository;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -25,6 +35,15 @@ public class AlbumServiceTest {
 
     @Mock
     private AlbumBindingRepository albumBindingRepository;
+    
+    @Mock
+    private ArtistService artistService;
+    
+    @Mock
+    private EntityManager entityManager;
+    
+    @Mock
+    private Query query;
 
     @InjectMocks
     private AlbumServiceImpl albumService;
@@ -55,4 +74,8 @@ public class AlbumServiceTest {
         verifyNoMoreInteractions(albumBindingRepository);
         verifyNoInteractions(albumRepository);
     }
+    
+
+    
+
 }

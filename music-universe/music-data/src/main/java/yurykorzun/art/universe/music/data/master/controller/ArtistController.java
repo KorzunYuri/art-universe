@@ -2,10 +2,11 @@ package yurykorzun.art.universe.music.data.master.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
-import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BaseBatchLookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
@@ -39,13 +40,15 @@ public class ArtistController {
     
     @GetMapping("/lookup")
     public List<LookupResultDTO> lookupArtists(
-        @RequestParam String name,
+        @RequestParam String search,
         @RequestParam(required = false) Integer limit
     ) {
         try {
-            return limit != null
-                ? artistService.searchArtistsByName(name, limit)
-                : artistService.searchArtistsByName(name);
+            LookupRequestDTO request = LookupRequestDTO.builder()
+                .search(search)
+                .limit(limit)
+                .build();
+            return artistService.lookupArtists(request);
         } catch (Exception e) {
             throw new DataAccessException(String.format("Failed to lookup artists: %s", e.getMessage()), e);
         }
@@ -53,7 +56,7 @@ public class ArtistController {
     
     @PostMapping("/lookup/batch")
     public BatchLookupResponseDTO batchLookupArtists(
-        @Valid @RequestBody BatchLookupRequestDTO request
+        @Valid @RequestBody BaseBatchLookupRequestDTO request
     ) {
         try {
             return artistService.batchLookupArtists(request);

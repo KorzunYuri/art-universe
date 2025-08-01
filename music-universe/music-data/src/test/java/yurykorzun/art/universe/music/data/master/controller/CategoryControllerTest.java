@@ -12,11 +12,12 @@ import org.springframework.data.domain.Pageable;
 import yurykorzun.art.universe.music.data.master.dto.CategoryHierarchyProjection;
 import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategorySaveRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BaseBatchLookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.TestCategoryHierarchyProjectionImpl;
 import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
@@ -27,6 +28,9 @@ import yurykorzun.art.universe.music.data.master.service.CategoryService;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.List;
 import java.util.Map;
 
@@ -87,55 +91,55 @@ class CategoryControllerTest {
     @Test
     void lookupCategories_shouldReturnListOfLookupResults() {
         // Given
-        String name = "rock";
+        String search = "rock";
         LookupResultDTO category1 = new LookupResultDTO(1L, "Rock");
         LookupResultDTO category2 = new LookupResultDTO(2L, "Alternative Rock");
         List<LookupResultDTO> expectedCategories = Arrays.asList(category1, category2);
         
-        when(categoryService.lookupCategories(name)).thenReturn(expectedCategories);
+        when(categoryService.lookupCategories(any(LookupRequestDTO.class))).thenReturn(expectedCategories);
 
         // When
-        List<LookupResultDTO> result = categoryController.lookupCategories(name, null);
+        List<LookupResultDTO> result = categoryController.lookupCategories(search, null);
 
         // Then
         assertEquals(expectedCategories, result);
-        verify(categoryService).lookupCategories(name);
+        verify(categoryService).lookupCategories(any(LookupRequestDTO.class));
     }
 
     @Test
     void lookupCategories_withLimit_shouldReturnListOfLookupResults() {
         // Given
-        String name = "rock";
+        String search = "rock";
         Integer limit = 5;
         LookupResultDTO category1 = new LookupResultDTO(1L, "Rock");
         LookupResultDTO category2 = new LookupResultDTO(2L, "Alternative Rock");
         List<LookupResultDTO> expectedCategories = Arrays.asList(category1, category2);
         
-        when(categoryService.lookupCategories(name, limit)).thenReturn(expectedCategories);
+        when(categoryService.lookupCategories(any(LookupRequestDTO.class))).thenReturn(expectedCategories);
 
         // When
-        List<LookupResultDTO> result = categoryController.lookupCategories(name, limit);
+        List<LookupResultDTO> result = categoryController.lookupCategories(search, limit);
 
         // Then
         assertEquals(expectedCategories, result);
-        verify(categoryService).lookupCategories(name, limit);
+        verify(categoryService).lookupCategories(any(LookupRequestDTO.class));
     }
 
     @Test
     void lookupCategories_whenExceptionThrown_shouldThrowDataAccessException() {
         // Given
-        String name = "rock";
+        String search = "rock";
         String errorMessage = "Test error";
         
-        when(categoryService.lookupCategories(name)).thenThrow(new RuntimeException(errorMessage));
+        when(categoryService.lookupCategories(any(LookupRequestDTO.class))).thenThrow(new RuntimeException(errorMessage));
 
         // When & Then
         DataAccessException exception = assertThrows(DataAccessException.class, () -> 
-            categoryController.lookupCategories(name, null)
+            categoryController.lookupCategories(search, null)
         );
         
         assertEquals("Failed to lookup categories: " + errorMessage, exception.getMessage());
-        verify(categoryService).lookupCategories(name);
+        verify(categoryService).lookupCategories(any(LookupRequestDTO.class));
     }
 
     @Test
@@ -430,8 +434,8 @@ class CategoryControllerTest {
         List<String> names = List.of("rock", "jazz");
         Integer limit = 10;
         
-        BatchLookupRequestDTO request = BatchLookupRequestDTO.builder()
-            .searchTerms(names)
+        BaseBatchLookupRequestDTO request = BaseBatchLookupRequestDTO.builder()
+            .searchRequests(createLookupRequests(names))
             .limit(limit)
             .build();
         
@@ -465,8 +469,8 @@ class CategoryControllerTest {
         Integer limit = 10;
         String errorMessage = "Test error";
         
-        BatchLookupRequestDTO request = BatchLookupRequestDTO.builder()
-            .searchTerms(names)
+        BaseBatchLookupRequestDTO request = BaseBatchLookupRequestDTO.builder()
+            .searchRequests(createLookupRequests(names))
             .limit(limit)
             .build();
         
@@ -480,5 +484,14 @@ class CategoryControllerTest {
         
         assertEquals("Failed to batch lookup categories: " + errorMessage, exception.getMessage());
         verify(categoryService).batchLookupCategories(request);
+    }
+    
+    /**
+     * Helper method to convert a list of search terms to a list of LookupRequestDTO
+     */
+    private List<LookupRequestDTO> createLookupRequests(List<String> searchTerms) {
+        return searchTerms.stream()
+            .map(term -> LookupRequestDTO.builder().search(term).build())
+            .collect(Collectors.toList());
     }
 }

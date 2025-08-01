@@ -39,7 +39,7 @@ class ArtistRelatedEntityCreateAndBindRequestDTOTest {
     }
 
     @Test
-    void shouldFailValidation_whenNameIsNull() {
+    void shouldFailValidation_whenEntityNameIsNull() {
         // Given
         ArtistRelatedEntityCreateAndBindRequestDTO dto = ArtistRelatedEntityCreateAndBindRequestDTO.builder()
             .entityName(null)
@@ -52,7 +52,25 @@ class ArtistRelatedEntityCreateAndBindRequestDTOTest {
         // Then
         assertEquals(1, violations.size());
         ConstraintViolation<ArtistRelatedEntityCreateAndBindRequestDTO> violation = violations.iterator().next();
-        assertEquals("name", violation.getPropertyPath().toString());
+        assertEquals("entityName", violation.getPropertyPath().toString());
+        assertEquals("Entity name is required", violation.getMessage());
+    }
+
+    @Test
+    void shouldFailValidation_whenEntityNameIsEmpty() {
+        // Given
+        ArtistRelatedEntityCreateAndBindRequestDTO dto = ArtistRelatedEntityCreateAndBindRequestDTO.builder()
+            .entityName("")
+            .primaryArtistId(1L)
+            .build();
+
+        // When
+        Set<ConstraintViolation<ArtistRelatedEntityCreateAndBindRequestDTO>> violations = validator.validate(dto);
+
+        // Then
+        assertEquals(1, violations.size());
+        ConstraintViolation<ArtistRelatedEntityCreateAndBindRequestDTO> violation = violations.iterator().next();
+        assertEquals("entityName", violation.getPropertyPath().toString());
         assertEquals("Entity name is required", violation.getMessage());
     }
 

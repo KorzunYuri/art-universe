@@ -9,6 +9,10 @@ import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntity
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
+import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedBatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.exception.DataAccessException;
 import yurykorzun.art.universe.music.data.master.exception.EntityBindingException;
@@ -16,7 +20,10 @@ import yurykorzun.art.universe.music.data.master.service.TrackService;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -231,5 +238,161 @@ public class TrackControllerTest {
         
         assertEquals("Failed to unbind track: " + errorMessage, exception.getMessage());
         verify(trackService).unbindTrack(dataSource, externalId);
+    }
+    
+    @Test
+    void lookupTracks_shouldReturnListOfLookupResults() {
+        // Given
+        String searchTerm = "paranoid";
+        Long artistId = 123L;
+        
+        LookupResultDTO track1 = new LookupResultDTO(1L, "Radiohead - Paranoid Android");
+        LookupResultDTO track2 = new LookupResultDTO(2L, "Black Sabbath - Paranoid");
+        List<LookupResultDTO> expectedTracks = List.of(track1, track2);
+        
+        when(trackService.lookupTracks(any(ArtistRelatedLookupRequestDTO.class)))
+            .thenReturn(expectedTracks);
+            
+        // When
+        List<LookupResultDTO> result = trackController.lookupTracks(searchTerm, artistId, null, null);
+            
+        // Then
+        assertEquals(expectedTracks, result);
+        verify(trackService).lookupTracks(any(ArtistRelatedLookupRequestDTO.class));
+    }
+    
+    @Test
+    void lookupTracks_withLimit_shouldReturnListOfLookupResults() {
+        // Given
+        String searchTerm = "paranoid";
+        Long artistId = 123L;
+        Integer limit = 5;
+        
+        LookupResultDTO track1 = new LookupResultDTO(1L, "Radiohead - Paranoid Android");
+        LookupResultDTO track2 = new LookupResultDTO(2L, "Black Sabbath - Paranoid");
+        List<LookupResultDTO> expectedTracks = List.of(track1, track2);
+        
+        when(trackService.lookupTracks(any(ArtistRelatedLookupRequestDTO.class)))
+            .thenReturn(expectedTracks);
+            
+        // When
+        List<LookupResultDTO> result = trackController.lookupTracks(searchTerm, artistId, null, limit);
+            
+        // Then
+        assertEquals(expectedTracks, result);
+        verify(trackService).lookupTracks(any(ArtistRelatedLookupRequestDTO.class));
+    }
+    
+    @Test
+    void lookupTracks_withoutArtistId_shouldReturnListOfLookupResults() {
+        // Given
+        String searchTerm = "paranoid";
+        Long artistId = null;
+        
+        LookupResultDTO track1 = new LookupResultDTO(1L, "Radiohead - Paranoid Android");
+        LookupResultDTO track2 = new LookupResultDTO(2L, "Black Sabbath - Paranoid");
+        List<LookupResultDTO> expectedTracks = List.of(track1, track2);
+        
+        when(trackService.lookupTracks(any(ArtistRelatedLookupRequestDTO.class)))
+            .thenReturn(expectedTracks);
+            
+        // When
+        List<LookupResultDTO> result = trackController.lookupTracks(searchTerm, artistId, null, null);
+            
+        // Then
+        assertEquals(expectedTracks, result);
+        verify(trackService).lookupTracks(any(ArtistRelatedLookupRequestDTO.class));
+    }
+    
+    @Test
+    void lookupTracks_whenExceptionThrown_shouldThrowDataAccessException() {
+        // Given
+        String searchTerm = "paranoid";
+        Long artistId = 123L;
+        String errorMessage = "Test error";
+        
+        when(trackService.lookupTracks(any(ArtistRelatedLookupRequestDTO.class)))
+            .thenThrow(new RuntimeException(errorMessage));
+            
+        // When & Then
+        DataAccessException exception = assertThrows(DataAccessException.class, () -> 
+            trackController.lookupTracks(searchTerm, artistId, null, null)
+        );
+        
+        assertEquals("Failed to lookup tracks: " + errorMessage, exception.getMessage());
+        verify(trackService).lookupTracks(any(ArtistRelatedLookupRequestDTO.class));
+    }
+    
+    @Test
+    void batchLookupTracks_shouldReturnBatchLookupResponseDTO() {
+        // Given
+        List<String> searchTerms = List.of("paranoid", "karma");
+        Long artistId = 123L;
+        Integer limit = 10;
+        
+        ArtistRelatedBatchLookupRequestDTO request = ArtistRelatedBatchLookupRequestDTO.builder()
+            .searchRequests(createArtistRelatedLookupRequests(searchTerms, artistId))
+            .limit(limit)
+            .build();
+        
+        Map<String, List<LookupResultDTO>> resultMap = new HashMap<>();
+        resultMap.put("paranoid", List.of(
+            new LookupResultDTO(1L, "Radiohead - Paranoid Android"),
+            new LookupResultDTO(2L, "Black Sabbath - Paranoid")
+        ));
+        resultMap.put("karma", List.of(
+            new LookupResultDTO(3L, "Radiohead - Karma Police")
+        ));
+        
+        BatchLookupResponseDTO expectedResponse = BatchLookupResponseDTO.builder()
+            .results(resultMap)
+            .build();
+        
+        when(trackService.batchLookupTracks(request)).thenReturn(expectedResponse);
+        
+        // When
+        BatchLookupResponseDTO result = trackController.batchLookupTracks(request);
+        
+        // Then
+        assertEquals(expectedResponse, result);
+        verify(trackService).batchLookupTracks(request);
+    }
+    
+    @Test
+    void batchLookupTracks_whenExceptionThrown_shouldThrowDataAccessException() {
+        // Given
+        List<String> searchTerms = List.of("paranoid", "karma");
+        Long artistId = 123L;
+        Integer limit = 10;
+        String errorMessage = "Test error";
+        
+        ArtistRelatedBatchLookupRequestDTO request = ArtistRelatedBatchLookupRequestDTO.builder()
+            .searchRequests(createArtistRelatedLookupRequests(searchTerms, artistId))
+            .limit(limit)
+            .build();
+        
+        when(trackService.batchLookupTracks(request))
+            .thenThrow(new RuntimeException(errorMessage));
+        
+        // When & Then
+        DataAccessException exception = assertThrows(DataAccessException.class, () -> 
+            trackController.batchLookupTracks(request)
+        );
+        
+        assertEquals("Failed to batch lookup tracks: " + errorMessage, exception.getMessage());
+        verify(trackService).batchLookupTracks(request);
+    }
+    
+    /**
+     * Helper method to convert a list of search terms to a list of ArtistRelatedLookupRequestDTO
+     */
+    private List<ArtistRelatedLookupRequestDTO> createArtistRelatedLookupRequests(List<String> searchTerms, Long artistId) {
+        return searchTerms.stream()
+            .map(term -> ArtistRelatedLookupRequestDTO.builder()
+                .search(term)
+                .masterArtistId(artistId)
+                .dataSource(DataSource.LASTFM)
+                .build())
+            .collect(Collectors.toList());
     }
 }

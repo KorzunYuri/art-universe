@@ -7,11 +7,12 @@ import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.music.data.master.dto.CategoryHierarchyProjection;
 import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategorySaveRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BaseBatchLookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.exception.DataAccessException;
 import yurykorzun.art.universe.music.data.master.exception.EntityBindingException;
@@ -44,13 +45,15 @@ public class CategoryController {
 
     @GetMapping("/lookup")
     public List<LookupResultDTO> lookupCategories(
-        @RequestParam String name,
+        @RequestParam String search,
         @RequestParam(required = false) Integer limit
     ) {
         try {
-            return limit != null
-                ? categoryService.lookupCategories(name, limit)
-                : categoryService.lookupCategories(name);
+            LookupRequestDTO request = LookupRequestDTO.builder()
+                .search(search)
+                .limit(limit)
+                .build();
+            return categoryService.lookupCategories(request);
         } catch (Exception e) {
             throw new DataAccessException(String.format("Failed to lookup categories: %s", e.getMessage()), e);
         }
@@ -58,7 +61,7 @@ public class CategoryController {
     
     @PostMapping("/lookup/batch")
     public BatchLookupResponseDTO batchLookupCategories(
-        @Valid @RequestBody BatchLookupRequestDTO request
+        @Valid @RequestBody BaseBatchLookupRequestDTO request
     ) {
         try {
             return categoryService.batchLookupCategories(request);

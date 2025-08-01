@@ -6,6 +6,7 @@ import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import yurykorzun.art.universe.music.data.master.entity.DataSource;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -14,11 +15,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Test for BatchLookupRequestDTO using a concrete implementation
- * since BatchLookupRequestDTO is abstract
- */
-class BatchLookupRequestDTOTest {
+class ArtistRelatedBatchLookupRequestDTOTest {
 
     private Validator validator;
 
@@ -31,14 +28,23 @@ class BatchLookupRequestDTOTest {
     @Test
     void shouldCreateValidDTO_whenAllFieldsAreSet() {
         // Given
-        List<LookupRequestDTO> searchRequests = Arrays.asList(
-            LookupRequestDTO.builder().search("test1").limit(5).build(),
-            LookupRequestDTO.builder().search("test2").limit(10).build()
-        );
-        Integer limit = 20;
+        ArtistRelatedLookupRequestDTO request1 = ArtistRelatedLookupRequestDTO.builder()
+            .search("paranoid")
+            .masterArtistId(123L)
+            .dataSource(DataSource.LASTFM)
+            .build();
+        
+        ArtistRelatedLookupRequestDTO request2 = ArtistRelatedLookupRequestDTO.builder()
+            .search("karma")
+            .masterArtistId(123L)
+            .dataSource(DataSource.LASTFM)
+            .build();
+        
+        List<ArtistRelatedLookupRequestDTO> searchRequests = Arrays.asList(request1, request2);
+        Integer limit = 10;
         
         // When
-        BaseBatchLookupRequestDTO dto = BaseBatchLookupRequestDTO.builder()
+        ArtistRelatedBatchLookupRequestDTO dto = ArtistRelatedBatchLookupRequestDTO.builder()
             .searchRequests(searchRequests)
             .limit(limit)
             .build();
@@ -51,17 +57,17 @@ class BatchLookupRequestDTOTest {
     @Test
     void shouldFailValidation_whenSearchRequestsIsNull() {
         // Given
-        BaseBatchLookupRequestDTO dto = BaseBatchLookupRequestDTO.builder()
+        ArtistRelatedBatchLookupRequestDTO dto = ArtistRelatedBatchLookupRequestDTO.builder()
             .searchRequests(null)
-            .limit(20)
+            .limit(10)
             .build();
         
         // When
-        Set<ConstraintViolation<BaseBatchLookupRequestDTO>> violations = validator.validate(dto);
+        Set<ConstraintViolation<ArtistRelatedBatchLookupRequestDTO>> violations = validator.validate(dto);
         
         // Then
         assertEquals(1, violations.size());
-        ConstraintViolation<BaseBatchLookupRequestDTO> violation = violations.iterator().next();
+        ConstraintViolation<ArtistRelatedBatchLookupRequestDTO> violation = violations.iterator().next();
         assertEquals("searchRequests", violation.getPropertyPath().toString());
         assertEquals("Search requests are required", violation.getMessage());
     }
@@ -69,13 +75,16 @@ class BatchLookupRequestDTOTest {
     @Test
     void shouldCreateValidDTO_withOptionalFieldsNull() {
         // Given
-        List<LookupRequestDTO> searchRequests = Arrays.asList(
-            LookupRequestDTO.builder().search("test1").build(),
-            LookupRequestDTO.builder().search("test2").build()
-        );
+        ArtistRelatedLookupRequestDTO request = ArtistRelatedLookupRequestDTO.builder()
+            .search("paranoid")
+            .masterArtistId(123L)
+            .dataSource(DataSource.LASTFM)
+            .build();
+        
+        List<ArtistRelatedLookupRequestDTO> searchRequests = List.of(request);
         
         // When
-        BaseBatchLookupRequestDTO dto = BaseBatchLookupRequestDTO.builder()
+        ArtistRelatedBatchLookupRequestDTO dto = ArtistRelatedBatchLookupRequestDTO.builder()
             .searchRequests(searchRequests)
             .limit(null)
             .build();
@@ -85,36 +94,41 @@ class BatchLookupRequestDTOTest {
         assertNull(dto.getLimit());
         
         // Validate
-        Set<ConstraintViolation<BaseBatchLookupRequestDTO>> violations = validator.validate(dto);
+        Set<ConstraintViolation<ArtistRelatedBatchLookupRequestDTO>> violations = validator.validate(dto);
         assertTrue(violations.isEmpty());
     }
 
     @Test
     void shouldCreateDTOWithNoArgsConstructor() {
         // When
-        BaseBatchLookupRequestDTO dto = new BaseBatchLookupRequestDTO();
-        List<LookupRequestDTO> searchRequests = Arrays.asList(
-            LookupRequestDTO.builder().search("test1").build(),
-            LookupRequestDTO.builder().search("test2").build()
-        );
+        ArtistRelatedBatchLookupRequestDTO dto = new ArtistRelatedBatchLookupRequestDTO();
+        
+        ArtistRelatedLookupRequestDTO request = ArtistRelatedLookupRequestDTO.builder()
+            .search("paranoid")
+            .masterArtistId(123L)
+            .dataSource(DataSource.LASTFM)
+            .build();
+        
+        List<ArtistRelatedLookupRequestDTO> searchRequests = List.of(request);
+        
         dto.setSearchRequests(searchRequests);
-        dto.setLimit(20);
+        dto.setLimit(10);
         
         // Then
         assertEquals(searchRequests, dto.getSearchRequests());
-        assertEquals(20, dto.getLimit());
+        assertEquals(10, dto.getLimit());
     }
-    
+
     @Test
     void shouldValidateEmptySearchRequestsList() {
         // Given
-        BaseBatchLookupRequestDTO dto = BaseBatchLookupRequestDTO.builder()
+        ArtistRelatedBatchLookupRequestDTO dto = ArtistRelatedBatchLookupRequestDTO.builder()
             .searchRequests(Collections.emptyList())
-            .limit(20)
+            .limit(10)
             .build();
         
         // When
-        Set<ConstraintViolation<BaseBatchLookupRequestDTO>> violations = validator.validate(dto);
+        Set<ConstraintViolation<ArtistRelatedBatchLookupRequestDTO>> violations = validator.validate(dto);
         
         // Then
         assertTrue(violations.isEmpty(), "Empty list should be valid, filtering will happen in service layer");

@@ -5,6 +5,10 @@ import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedBatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.exception.DataAccessException;
 import yurykorzun.art.universe.music.data.master.exception.EntityBindingException;
@@ -31,6 +35,37 @@ public class TrackController {
             return trackService.findBoundTracks(dataSource, externalIds);
         } catch (Exception e) {
             throw new DataAccessException(String.format("Failed to get bound tracks: %s", e.getMessage()), e);
+        }
+    }
+    
+    @GetMapping("/lookup")
+    public List<LookupResultDTO> lookupTracks(
+        @RequestParam String search,
+        @RequestParam(required = false) Long masterArtistId,
+        @RequestParam(required = false) Long externalArtistId,
+        @RequestParam(required = false) Integer limit
+    ) {
+        try {
+            ArtistRelatedLookupRequestDTO request = ArtistRelatedLookupRequestDTO.builder()
+                .search(search)
+                .masterArtistId(masterArtistId)
+                .externalArtistId(externalArtistId)
+                .limit(limit)
+                .build();
+            return trackService.lookupTracks(request);
+        } catch (Exception e) {
+            throw new DataAccessException(String.format("Failed to lookup tracks: %s", e.getMessage()), e);
+        }
+    }
+    
+    @PostMapping("/lookup/batch")
+    public BatchLookupResponseDTO batchLookupTracks(
+        @Valid @RequestBody ArtistRelatedBatchLookupRequestDTO request
+    ) {
+        try {
+            return trackService.batchLookupTracks(request);
+        } catch (Exception e) {
+            throw new DataAccessException(String.format("Failed to batch lookup tracks: %s", e.getMessage()), e);
         }
     }
     

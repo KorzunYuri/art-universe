@@ -1,5 +1,6 @@
 package yurykorzun.art.universe.music.data.master.service;
 
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -7,6 +8,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedBatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityCreateAndBindRequestDTO;
@@ -17,11 +22,16 @@ import yurykorzun.art.universe.music.data.master.entity.TrackBinding;
 import yurykorzun.art.universe.music.data.master.repository.TrackBindingRepository;
 import yurykorzun.art.universe.music.data.master.repository.TrackRepository;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -39,6 +49,9 @@ class TrackServiceTest {
     
     @Mock
     private RelationService relationService;
+    
+    @Mock
+    private EntityManager entityManager;
 
     @InjectMocks
     private TrackServiceImpl trackService;
@@ -445,4 +458,8 @@ class TrackServiceTest {
         verify(trackBindingRepository).findByDataSourceAndExternalId(dataSource, externalId);
         verify(trackBindingRepository, never()).delete(any());
     }
+    
+
+    
+
 }

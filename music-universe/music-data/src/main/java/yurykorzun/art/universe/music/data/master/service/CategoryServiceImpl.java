@@ -2,32 +2,30 @@ package yurykorzun.art.universe.music.data.master.service;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.persistence.Query;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.music.data.master.dto.CategoryHierarchyProjection;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BaseBatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategorySaveRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.entity.Category;
 import yurykorzun.art.universe.music.data.master.entity.CategoryBinding;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.entity.EntityType;
 import yurykorzun.art.universe.music.data.master.repository.CategoryRepository;
 import yurykorzun.art.universe.music.data.master.repository.CategoryBindingRepository;
 import yurykorzun.art.universe.music.data.master.repository.DimensionRepository;
+import yurykorzun.art.universe.music.data.master.service.lookup.BaseLookupService;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
@@ -35,7 +33,7 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryBindingRepository categoryBindingRepository;
     private final DimensionRepository dimensionRepository;
-    private final EntityManager entityManager;
+    private final BaseLookupService lookupService;
 
     public CategoryServiceImpl(
         CategoryRepository categoryRepository,
@@ -46,7 +44,7 @@ public class CategoryServiceImpl implements CategoryService {
         this.categoryRepository = categoryRepository;
         this.categoryBindingRepository = categoryBindingRepository;
         this.dimensionRepository = dimensionRepository;
-        this.entityManager = entityManager;
+        this.lookupService = new BaseLookupService(entityManager, EntityType.CATEGORY);
     }
 
     @Override
@@ -55,21 +53,14 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public List<LookupResultDTO> lookupCategories(String name, Integer limit) {
-        if (name == null || name.trim().isEmpty()) {
-            return List.of();
-        }
-        
-        // Apply default limit if null
-        int actualLimit = limit != null ? limit : 20;
-        
-        return categoryRepository.findByNameContainingIgnoreCase(name.trim(), actualLimit)
-            .stream()
-            .map(category -> LookupResultDTO.builder()
-                .id(category.getId())
-                .name(category.getName())
-                .build())
-            .collect(Collectors.toList());
+    public List<LookupResultDTO> lookupCategories(LookupRequestDTO request) {
+        return lookupService.lookup(request);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public BatchLookupResponseDTO batchLookupCategories(BaseBatchLookupRequestDTO request) {
+        return lookupService.batchLookup(request);
     }
 
     @Override
@@ -219,79 +210,5 @@ public class CategoryServiceImpl implements CategoryService {
         }
         
         return false;
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public BatchLookupResponseDTO batchLookupCategories(BatchLookupRequestDTO request) {
-        if (request.getSearchTerms() == null || request.getSearchTerms().isEmpty()) {
-            return BatchLookupResponseDTO.builder().build();
-        }
-        
-        // Apply default limit if null
-        int actualLimit = request.getLimit() != null ? request.getLimit() : 20;
-        
-        // Filter and prepare search terms
-        List<String> searchTerms = request.getSearchTerms().stream()
-            .filter(term -> term != null && !term.trim().isEmpty())
-            .map(String::trim)
-            .toList();
-        
-        if (searchTerms.isEmpty()) {
-            return BatchLookupResponseDTO.builder().build();
-        }
-        
-        // Dynamically build SQL query with UNION ALL
-        StringBuilder sqlBuilder = new StringBuilder();
-        
-        for (int i = 0; i < searchTerms.size(); i++) {
-            if (i > 0) {
-                sqlBuilder.append("\nUNION ALL\n");
-            }
-            
-            sqlBuilder.append("""
-                SELECT * FROM (
-                    SELECT c.id, c.name, c.created_at, c.updated_at, ? as search_term
-                    FROM category c
-                    WHERE LOWER(c.name) LIKE LOWER(CONCAT('%', ?, '%'))
-                    ORDER BY c.name ASC
-                    LIMIT ?
-                ) AS result
-            """);
-        }
-        
-        // Create query and set parameters
-        Query query = entityManager.createNativeQuery(sqlBuilder.toString());
-        
-        int paramIndex = 1;
-        for (String searchTerm : searchTerms) {
-            query.setParameter(paramIndex++, searchTerm); // For search_term column
-            query.setParameter(paramIndex++, searchTerm); // For WHERE clause
-            query.setParameter(paramIndex++, actualLimit); // For LIMIT
-        }
-        
-        // Execute the query
-        @SuppressWarnings("unchecked")
-        List<Object[]> results = query.getResultList();
-        
-        // Process results into the response DTO
-        Map<String, List<LookupResultDTO>> resultMap = new HashMap<>();
-        
-        for (Object[] row : results) {
-            Long id = ((Number) row[0]).longValue();
-            String name = (String) row[1];
-            String searchTerm = (String) row[4];
-            
-            LookupResultDTO dto = LookupResultDTO.builder()
-                .id(id)
-                .name(name)
-                .build();
-            
-            resultMap.computeIfAbsent(searchTerm, k -> new ArrayList<>()).add(dto);
-        }
-        
-        return BatchLookupResponseDTO.builder()
-            .results(resultMap)
-            .build();
     }
 }
