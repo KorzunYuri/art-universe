@@ -103,7 +103,7 @@ public class LastfmArtistGetSimilarResponseProcessor extends LastfmApiResponsePr
             artistAttrHandlers,
             artistService
         );
-        log.info("Saved {} similar artists", result.savedEntities().size());
+        log.info("Saved {} similar artists", result.actualEntities().size());
         log.info("Saved {} similar artists' attributes", result.savedAttributeValues().size());
 
         return result;

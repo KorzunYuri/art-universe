@@ -8,7 +8,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.B
 import java.util.List;
 
 public record LastfmApiDtoProcessingResult<E extends BaseLastfmEntity, D extends EntityDto<E>>(
-    List<E> savedEntities,
+    List<E> actualEntities,
     List<LastfmAttributeHistoryRecord> savedAttributeValues,
     EntityMappingResult<E, D> entityMapping
 ) {

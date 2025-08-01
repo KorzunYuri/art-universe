@@ -14,14 +14,14 @@ This document provides detailed technical information about LastFM API methods i
 7. **artist.getTopAlbums** - Creates artist-album relationships
 8. **artist.getSimilar** - Creates artist similarity relationships
 9. **artist.search** - Artist discovery
+10. **track.getInfo** - Track details with album and tags
 
 ### Not Yet Implemented ❌
 1. **album.getInfo** - Album details with tracks and tags
 2. **album.getTopTags** - Creates album-tag relationships
-3. **track.getInfo** - Track details with album and tags
-4. **track.getTopTags** - Creates track-tag relationships
-5. **tag.getInfo** - Tag details with wiki information
-6. **tag.getTopAlbums** - Creates tag-album relationships
+3. **track.getTopTags** - Creates track-tag relationships
+4. **tag.getInfo** - Tag details with wiki information
+5. **tag.getTopAlbums** - Creates tag-album relationships
 
 ## Methods Reference
 
@@ -42,7 +42,7 @@ This document provides detailed technical information about LastFM API methods i
 | **artist.search** | Unprocessed search requests<br/>processed = false | Name similarity > 0.5 vs search string<br/>Levenshtein distance | **Artists**: name, mbid, url, listeners_count |
 | **album.getInfo** | *Not implemented* | *Not implemented* | *Not implemented* |
 | **album.getTopTags** | *Not implemented* | *Not implemented* | *Not implemented* |
-| **track.getInfo** | *Not implemented* | *Not implemented* | *Not implemented* |
+| **track.getInfo** | **Priority 1**: Tracks with missing stats<br/>**Priority 2**: Tracks from popular artists<br/>MBID deduplication | No filtering<br/>All returned data saved | **Tracks**: name, mbid, url, duration, listeners_count, play_count<br/>**Artists**: name, mbid, url<br/>**Albums**: name, mbid, url<br/>**Tags**: name, url<br/>**Relations**: artist-track, album-track, track-tag |
 | **track.getTopTags** | *Not implemented* | *Not implemented* | *Not implemented* |
 
 ## Entity Attributes Mapping
@@ -86,17 +86,17 @@ This document provides detailed technical information about LastFM API methods i
 
 | Attribute | track.getInfo | artist.getTopTracks | tag.getTopTracks |
 |-----------|---------------|---------------------|------------------|
-| **name** | 🚫 | ✅ | ✅ |
-| **mbid** | 🚫 | ✅ | ✅ |
-| **url** | 🚫 | ✅ | ✅ |
-| **duration** | 🚫 | ❌ | ✅ |
-| **listeners_count** | 🚫 | ✅ | ❌ |
-| **play_count** | 🚫 | ✅ | ❌ |
+| **name** | ✅ | ✅ | ✅ |
+| **mbid** | ✅ | ✅ | ✅ |
+| **url** | ✅ | ✅ | ✅ |
+| **duration** | ✅ | ❌ | ✅ |
+| **listeners_count** | ✅ | ✅ | ❌ |
+| **play_count** | ✅ | ✅ | ❌ |
 
 **Primary Sources:**
-- **name, mbid, url**: artist.getTopTracks, tag.getTopTracks
-- **listeners_count, play_count**: artist.getTopTracks (only source)
-- **duration**: tag.getTopTracks (only source)
+- **name, mbid, url**: artist.getTopTracks, tag.getTopTracks, track.getInfo
+- **listeners_count, play_count**: artist.getTopTracks, track.getInfo
+- **duration**: tag.getTopTracks, track.getInfo
 
 ### Tag Entity
 
@@ -140,13 +140,12 @@ This document provides detailed technical information about LastFM API methods i
 1. **Album listeners_count** - No implemented method provides this
 2. **Track statistics from tags** - tag.getTopTracks doesn't provide listeners/playcount
 3. **Album-Track relationships** - album.getInfo not implemented
-4. **Track-Tag relationships** - track.getInfo/getTopTags not implemented
+4. **Track-Tag relationships** - track.getTopTags not implemented
 
 ### Single Point of Failure
 1. **Artist play_count** - Only from artist.getInfo
 2. **Album data** - Only from artist.getTopAlbums
 3. **Tag usage statistics** - Only from tag.getTopTags
-4. **Track listeners/playcount** - Only from artist.getTopTracks
 
 ## Configuration
 
@@ -175,7 +174,7 @@ This document provides detailed technical information about LastFM API methods i
 
 ### High Priority Implementations
 1. **album.getInfo** - For album-track relationships and complete album data
-2. **track.getInfo** - For track-tag relationships and complete track statistics
+2. **track.getTopTags** - For track-tag relationships
 3. **tag.getInfo** - For tag descriptions and detailed statistics
 
 ### Data Quality Improvements

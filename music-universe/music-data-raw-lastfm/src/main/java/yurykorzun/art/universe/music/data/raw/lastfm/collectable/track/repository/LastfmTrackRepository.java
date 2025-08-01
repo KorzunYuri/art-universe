@@ -2,22 +2,24 @@ package yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.reposito
 
 import jakarta.annotation.Nullable;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface LastfmTrackRepository extends JpaRepository<LastfmTrack, Long> {
 
     List<LastfmTrack> findAllByUrlIn(List<String> urls);
+    
+    Optional<LastfmTrack> findByUrl(String url);
     
     @Query(value = """
         SELECT  t
@@ -75,5 +77,62 @@ public interface LastfmTrackRepository extends JpaRepository<LastfmTrack, Long> 
         } else {
             return findTracksWithApprovalStatus(search, minPlayCount, minListenersCount, artistId, approvalStatuses, pageable);
         }
+    }
+
+    /**
+     * Find tracks with missing playCount and listenersCount that haven't been processed by track.getInfo yet
+     */
+    @Query(value = """
+    WITH ranked_tracks AS (
+        SELECT
+            t.*,
+            a.listeners_count AS artist_listeners_count,
+            a.approval_status AS artist_approval_status,
+            ROW_NUMBER() OVER (
+                PARTITION BY t.artist_id
+                ORDER BY t.id
+            ) AS artist_track_rank
+        FROM
+            track t
+        LEFT JOIN
+            artist a ON t.artist_id = a.id
+        WHERE
+            NOT EXISTS (
+                SELECT 1
+                FROM api_call ac
+                WHERE ac.type           = 10    -- track.getInfo
+                  AND ac.entity_type    = 3     -- track
+                  AND ac.entity_id      = t.id
+                  AND ac.due_dttm > CURRENT_TIMESTAMP
+            )
+    )
+    SELECT
+        rt.*
+    FROM
+        ranked_tracks rt
+    WHERE
+        rt.artist_track_rank <= :tracksPerArtist
+    ORDER BY
+        CASE WHEN rt.listeners_count IS NULL
+                THEN 0
+                ELSE 1 END,
+        CASE WHEN rt.artist_approval_status = 2 -- APPROVED
+                THEN 0
+                ELSE 1 END,
+        COALESCE(rt.artist_listeners_count, -1) DESC,
+        rt.id
+    LIMIT :limit
+    """, nativeQuery = true)
+    List<LastfmTrack> findTracksForGetInfo(
+        @Param("limit") int limit,
+        @Param("tracksPerArtist") int tracksPerArtist
+    );
+
+    default List<LastfmTrack> findTracksForGetInfo(int limit) {
+        return findTracksForGetInfo(limit, 3);
+    }
+
+    default List<LastfmTrack> findTracksForGetInfo() {
+        return findTracksForGetInfo(LastfmConstants.HIBERNATE_BATCH_SIZE);
     }
 }

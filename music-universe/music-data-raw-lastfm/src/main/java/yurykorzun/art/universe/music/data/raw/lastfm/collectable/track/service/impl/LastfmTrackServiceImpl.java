@@ -11,6 +11,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.dto.Track
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.repository.LastfmTrackRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.service.LastfmTrackService;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 
 import java.util.List;
 import java.util.Optional;
@@ -77,5 +78,10 @@ public class LastfmTrackServiceImpl implements LastfmTrackService {
         track.updateApprovalStatus(approvalStatus);
         LastfmTrack updated = trackRepository.save(track);
         return LastfmTrackResponseDto.from(updated);
+    }
+    
+    @Override
+    public List<LastfmTrack> findTracksForGetInfo() {
+        return trackRepository.findTracksForGetInfo();
     }
 }

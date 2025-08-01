@@ -120,7 +120,7 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
             artistAttrHandlers,
             artistService
         );
-        log.info("saved {} tag's tracks' artists", result.savedEntities().size());
+        log.info("saved {} tag's tracks' artists", result.actualEntities().size());
         log.info("saved {} tag's tracks' artists' attributes", result.savedAttributeValues().size());
 
         return result;
@@ -143,7 +143,7 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
             trackAttrHandlers,
             trackService
         );
-        log.info("saved {} tag's tracks", result.savedEntities().size());
+        log.info("saved {} tag's tracks", result.actualEntities().size());
         log.info("saved {} tag's tracks' attributes", result.savedAttributeValues().size());
 
         return result;

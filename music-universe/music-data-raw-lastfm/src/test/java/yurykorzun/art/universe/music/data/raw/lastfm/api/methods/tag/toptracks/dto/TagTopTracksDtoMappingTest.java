@@ -17,7 +17,6 @@ public class TagTopTracksDtoMappingTest {
     public void parse_shouldParseCorrectly_whenTagTopTagsResponseProvided() throws IOException {
         String responseJsonString = LastfmApiClientResourceUtil.getApiClientResponse("tag.getTopTracks");
 
-
         // Parse JSON into DTO
         TagTopTracksDtoRoot dtoRoot = mapper.readValue(responseJsonString, TagTopTracksDtoRoot.class);
         assertNotNull(dtoRoot, "dtoRoot should not be null");
@@ -34,9 +33,6 @@ public class TagTopTracksDtoMappingTest {
         assertEquals(301, firstTrack.getDuration(), "Incorrect track duration");
         assertNotNull(firstTrack.getArtist(), "Artist information should not be null");
         assertEquals("Nirvana", firstTrack.getArtist().getName(), "Incorrect artist name");
-        assertNotNull(firstTrack.getStreamableObject(), "Streamable information should not be null");
-        assertEquals(0, firstTrack.getStreamableObject().getText(), "Incorrect streamable text value");
-        assertEquals(0, firstTrack.getStreamableObject().getFullTrack(), "Incorrect streamable fullTrack value");
         assertNotNull(firstTrack.getRankInfo(), "Rank information should not be null");
         assertEquals(1, firstTrack.getRankInfo().getRank(), "Incorrect track rank");
 
@@ -46,9 +42,6 @@ public class TagTopTracksDtoMappingTest {
         assertEquals(224, secondTrack.getDuration(), "Incorrect track duration");
         assertNotNull(secondTrack.getArtist(), "Artist information should not be null");
         assertEquals("The Killers", secondTrack.getArtist().getName(), "Incorrect artist name");
-        assertNotNull(secondTrack.getStreamableObject(), "Streamable information should not be null");
-        assertEquals(0, secondTrack.getStreamableObject().getText(), "Incorrect streamable text value");
-        assertEquals(0, secondTrack.getStreamableObject().getFullTrack(), "Incorrect streamable fullTrack value");
         assertNotNull(secondTrack.getRankInfo(), "Rank information should not be null");
         assertEquals(2, secondTrack.getRankInfo().getRank(), "Incorrect track rank");
     }

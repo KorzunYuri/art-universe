@@ -154,10 +154,10 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
         log.info("saved artist {}", dto.getName());
         log.info("saved {} artists' attributes", result.savedAttributeValues().size());
 
-        if (result.savedEntities().size() != 1) {
-            throw new IllegalArgumentException(String.format("Expected 1 artists to be saved, got %s", result.savedEntities().size()));
+        if (result.actualEntities().size() != 1) {
+            throw new IllegalArgumentException(String.format("Expected 1 artists to be saved, got %s", result.actualEntities().size()));
         }
-        return result.savedEntities().get(0);
+        return result.actualEntities().get(0);
     }
 
     private LastfmApiDtoProcessingResult<LastfmArtist, ArtistGetInfoSimilarArtistDto> updateSimilarArtists(
@@ -174,7 +174,7 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
             similarArtistAttrHandlers,
             artistService
         );
-        log.info("saved {} artist's similar artists", result.savedEntities().size());
+        log.info("saved {} artist's similar artists", result.actualEntities().size());
         log.info("saved {} artist's similar artists' attributes", result.savedAttributeValues().size());
 
         return result;
@@ -191,7 +191,7 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
             tagAttrHandlers,
             tagService
         );
-        log.info("saved {} tags", result.savedEntities().size());
+        log.info("saved {} tags", result.actualEntities().size());
         log.info("saved {} tags' attributes", result.savedAttributeValues().size());
 
         return result;
@@ -202,7 +202,7 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
         LastfmArtist artist,
         LastfmApiCall sourceApiCall
     ) {
-        List<LastfmArtistsRelation> relations = artistsMappingResult.savedEntities().stream()
+        List<LastfmArtistsRelation> relations = artistsMappingResult.actualEntities().stream()
             .map((similarArtist) -> LastfmArtistsRelation.builder()
                     .apiCall(sourceApiCall)
                     .sourceArtist(similarArtist)
@@ -219,7 +219,7 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
         LastfmArtist artist,
         LastfmApiCall sourceApiCall
     ) {
-        List<LastfmArtistTag> relations = tagsMappingResult.savedEntities().stream()
+        List<LastfmArtistTag> relations = tagsMappingResult.actualEntities().stream()
             .map((tag) -> LastfmArtistTag.builder()
                 .apiCall(sourceApiCall)
                 .artist(artist)

@@ -28,11 +28,11 @@ These guides are designed for developers implementing new API response processor
 - **[artist.getTopAlbums](artist.getTopAlbums.md)** - Creates artist-album relationships
 - **[artist.getSimilar](artist.getSimilar.md)** - Creates artist similarity relationships
 - **[artist.search](artist.search.md)** - Artist discovery
+- **[track.getInfo](track.getInfo.md)** - Track details with album and tags
 
 ### Implementation Templates (Not Yet Implemented)
 - **[album.getInfo](album.getInfo.md)** - Album details with tracks and tags
 - **[album.getTopTags](album.getTopTags.md)** - Creates album-tag relationships
-- **[track.getInfo](track.getInfo.md)** - Track details with album and tags
 - **[track.getTopTags](track.getTopTags.md)** - Creates track-tag relationships
 - **[tag.getInfo](tag.getInfo.md)** - Tag details with wiki information
 - **[tag.getTopAlbums](tag.getTopAlbums.md)** - Creates tag-album relationships

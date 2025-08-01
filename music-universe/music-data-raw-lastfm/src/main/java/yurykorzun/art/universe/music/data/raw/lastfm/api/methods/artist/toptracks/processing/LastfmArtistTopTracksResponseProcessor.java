@@ -1,6 +1,5 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptracks.processing;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -128,7 +127,7 @@ public class LastfmArtistTopTracksResponseProcessor extends LastfmApiResponsePro
             artistAttrHandlers,
             artistService
         );
-        log.info("saved {} track artists", result.savedEntities().size());
+        log.info("saved {} track artists", result.actualEntities().size());
         log.info("saved {} track artists' attributes", result.savedAttributeValues().size());
 
         return result;
@@ -155,7 +154,7 @@ public class LastfmArtistTopTracksResponseProcessor extends LastfmApiResponsePro
             trackAttrHandlers,
             trackService
         );
-        log.info("saved {} tracks", result.savedEntities().size());
+        log.info("saved {} tracks", result.actualEntities().size());
         log.info("saved {} tracks' attributes", result.savedAttributeValues().size());
 
         return result;

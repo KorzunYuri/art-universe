@@ -98,7 +98,7 @@ public class LastfmArtistTopAlbumsResponseProcessor extends LastfmApiResponsePro
             albumAttrHandlers,
             albumService
         );
-        log.info("Saved {} artist's albums", result.savedEntities().size());
+        log.info("Saved {} artist's albums", result.actualEntities().size());
         log.info("Saved {} artist's albums' attributes", result.savedAttributeValues().size());
 
         return result;
@@ -146,7 +146,7 @@ public class LastfmArtistTopAlbumsResponseProcessor extends LastfmApiResponsePro
         LastfmApiCall sourceApiCall,
         LastfmArtist artist
     ) {
-        List<LastfmArtistAlbum> relations = albumsMappingResult.savedEntities().stream()
+        List<LastfmArtistAlbum> relations = albumsMappingResult.actualEntities().stream()
             .map((album) -> LastfmArtistAlbum.builder()
                     .apiCall(sourceApiCall)
                     .artist(artist)

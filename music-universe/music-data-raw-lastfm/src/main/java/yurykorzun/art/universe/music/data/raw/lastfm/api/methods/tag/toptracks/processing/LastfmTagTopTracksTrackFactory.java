@@ -21,7 +21,7 @@ class LastfmTagTopTracksTrackFactory extends LastfmTrackEntityFactory<TagTopTrac
      * @param artistsResult Result of processing artists, containing saved artists
      */
     public LastfmTagTopTracksTrackFactory(LastfmApiDtoProcessingResult<LastfmArtist, TagTopTracksTrackArtistDto> artistsResult) {
-        this.artistsByName = artistsResult.savedEntities().stream()
+        this.artistsByName = artistsResult.actualEntities().stream()
             .collect(Collectors.toMap(LastfmArtist::getName, Function.identity()));
     }
 
