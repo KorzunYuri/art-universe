@@ -1,13 +1,13 @@
 package yurykorzun.art.universe.music.data.master.controller;
 
 import jakarta.validation.Valid;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.music.data.master.dto.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.dto.TrackBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.TrackCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.exception.DataAccessException;
+import yurykorzun.art.universe.music.data.master.exception.EntityBindingException;
 import yurykorzun.art.universe.music.data.master.service.TrackService;
 
 import java.util.List;
@@ -23,56 +23,52 @@ public class TrackController {
     }
 
     @GetMapping("/bound/{dataSource}")
-    public ResponseEntity<ResponseWrapper<List<BoundEntityProjection>>> findBoundTracks(
+    public List<BoundEntityProjection> findBoundTracks(
         @PathVariable DataSource dataSource,
         @RequestParam List<Long> externalIds
     ) {
         try {
-            List<BoundEntityProjection> result = trackService.findBoundTracks(dataSource, externalIds);
-            return ResponseWrapper.success(result);
+            return trackService.findBoundTracks(dataSource, externalIds);
         } catch (Exception e) {
-            return ResponseWrapper.failure(String.format("Failed to get bound tracks: %s", e.getMessage()));
+            throw new DataAccessException(String.format("Failed to get bound tracks: %s", e.getMessage()), e);
         }
     }
     
     @PostMapping("/bind/existing/{dataSource}/{externalId}")
-    public ResponseEntity<ResponseWrapper<BoundEntityProjection>> bindToExisting(
+    public BoundEntityProjection bindToExisting(
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId,
         @Valid @RequestBody TrackBindToExistingRequestDTO request
     ) {
         try {
-            BoundEntityProjection result = trackService.bindToExisting(dataSource, externalId, request);
-            return ResponseWrapper.success(result);
+            return trackService.bindToExisting(dataSource, externalId, request);
         } catch (Exception e) {
-            return ResponseWrapper.failure(String.format("Failed to bind track to existing: %s", e.getMessage()));
+            throw new EntityBindingException(String.format("Failed to bind track to existing: %s", e.getMessage()), e);
         }
     }
     
     @PostMapping("/bind/new/{dataSource}/{externalId}")
-    public ResponseEntity<ResponseWrapper<BoundEntityProjection>> createAndBind(
+    public BoundEntityProjection createAndBind(
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId,
         @Valid @RequestBody TrackCreateAndBindRequestDTO request
     ) {
         try {
-            BoundEntityProjection result = trackService.createAndBind(dataSource, externalId, request);
-            return ResponseWrapper.success(result);
+            return trackService.createAndBind(dataSource, externalId, request);
         } catch (Exception e) {
-            return ResponseWrapper.failure(String.format("Failed to create and bind track: %s", e.getMessage()));
+            throw new EntityBindingException(String.format("Failed to create and bind track: %s", e.getMessage()), e);
         }
     }
     
     @DeleteMapping("/unbind/{dataSource}/{externalId}")
-    public ResponseEntity<ResponseWrapper<Boolean>> unbindTrack(
+    public boolean unbindTrack(
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId
     ) {
         try {
-            boolean result = trackService.unbindTrack(dataSource, externalId);
-            return ResponseWrapper.success(result);
+            return trackService.unbindTrack(dataSource, externalId);
         } catch (Exception e) {
-            return ResponseWrapper.failure(String.format("Failed to unbind track: %s", e.getMessage()));
+            throw new EntityBindingException(String.format("Failed to unbind track: %s", e.getMessage()), e);
         }
     }
 }

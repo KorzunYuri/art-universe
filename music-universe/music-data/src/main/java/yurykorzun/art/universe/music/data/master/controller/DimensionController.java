@@ -4,12 +4,12 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.music.data.master.dto.DimensionDto;
 import yurykorzun.art.universe.music.data.master.dto.DimensionSaveRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.LookupResultDTO;
+import yurykorzun.art.universe.music.data.master.exception.DataAccessException;
+import yurykorzun.art.universe.music.data.master.exception.EntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.service.DimensionService;
 
 import java.util.List;
@@ -25,56 +25,54 @@ public class DimensionController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<ResponseWrapper<Page<DimensionDto>>> searchDimensions(
+    public Page<DimensionDto> searchDimensions(
         @RequestParam(required = false) String query,
         @PageableDefault(size = 20, sort = "name") Pageable pageable
     ) {
         try {
-            Page<DimensionDto> dimensions = dimensionService.searchDimensions(query, pageable);
-            return ResponseWrapper.success(dimensions);
+            return dimensionService.searchDimensions(query, pageable);
         } catch (Exception e) {
-            return ResponseWrapper.failure(String.format("Failed to search dimensions: %s", e.getMessage()));
+            throw new DataAccessException(String.format("Failed to search dimensions: %s", e.getMessage()), e);
         }
     }
 
     @GetMapping("/lookup")
-    public ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> lookupDimensions(
+    public List<LookupResultDTO> lookupDimensions(
         @RequestParam(required = false) String name,
         @RequestParam(required = false) Integer limit
     ) {
         try {
-            List<LookupResultDTO> dimensions = limit != null
+            return limit != null
                 ? dimensionService.lookupDimensions(name, limit)
                 : dimensionService.lookupDimensions(name);
-            return ResponseWrapper.success(dimensions);
         } catch (Exception e) {
-            return ResponseWrapper.failure(String.format("Failed to lookup dimensions: %s", e.getMessage()));
+            throw new DataAccessException(String.format("Failed to lookup dimensions: %s", e.getMessage()), e);
         }
     }
 
     @PostMapping
-    public ResponseEntity<ResponseWrapper<DimensionDto>> saveDimension(
+    public DimensionDto saveDimension(
         @Valid @RequestBody DimensionSaveRequestDTO request
     ) {
         try {
-            DimensionDto savedDimension = dimensionService.saveDimension(request);
-            return ResponseWrapper.success(savedDimension);
+            return dimensionService.saveDimension(request);
         } catch (Exception e) {
-            return ResponseWrapper.failure(String.format("Failed to save dimension: %s", e.getMessage()));
+            throw new DataAccessException(String.format("Failed to save dimension: %s", e.getMessage()), e);
         }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ResponseWrapper<Boolean>> deleteDimension(@PathVariable Long id) {
+    public boolean deleteDimension(@PathVariable Long id) {
         try {
             boolean deleted = dimensionService.deleteDimension(id);
-            if (deleted) {
-                return ResponseWrapper.success(true);
-            } else {
-                return ResponseWrapper.failure("Dimension not found with id: " + id);
+            if (!deleted) {
+                throw new EntityNotFoundException("Dimension", id);
             }
+            return true;
+        } catch (EntityNotFoundException e) {
+            throw e;
         } catch (Exception e) {
-            return ResponseWrapper.failure(String.format("Failed to delete dimension: %s", e.getMessage()));
+            throw new DataAccessException(String.format("Failed to delete dimension: %s", e.getMessage()), e);
         }
     }
 }

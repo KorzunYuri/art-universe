@@ -5,12 +5,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.music.data.master.dto.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.dto.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.exception.DataAccessException;
 import yurykorzun.art.universe.music.data.master.service.AlbumService;
 
 import java.util.Arrays;
@@ -30,7 +28,7 @@ public class AlbumControllerTest {
     private AlbumController albumController;
 
     @Test
-    void whenFindBoundAlbums_shouldReturnSuccessResponse() {
+    void findBoundAlbums_shouldReturnListOfBoundEntityProjections() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         List<Long> externalIds = Arrays.asList(101L, 102L, 999L);
@@ -42,23 +40,17 @@ public class AlbumControllerTest {
         
         when(albumService.findBoundAlbums(dataSource, externalIds))
             .thenReturn(mockBindings);
-            
-        ResponseEntity<ResponseWrapper<List<BoundEntityProjection>>> expectedResponse = 
-            ResponseWrapper.success(mockBindings);
 
         // When
-        ResponseEntity<ResponseWrapper<List<BoundEntityProjection>>> actualResponse = 
-            albumController.findBoundAlbums(dataSource, externalIds);
+        List<BoundEntityProjection> result = albumController.findBoundAlbums(dataSource, externalIds);
 
         // Then
-        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
-
+        assertEquals(mockBindings, result);
         verify(albumService).findBoundAlbums(dataSource, externalIds);
     }
 
     @Test
-    void whenFindBoundAlbums_withException_shouldReturnFailureResponse() {
+    void findBoundAlbums_whenExceptionThrown_shouldThrowDataAccessException() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         List<Long> externalIds = Arrays.asList(101L, 102L);
@@ -66,41 +58,30 @@ public class AlbumControllerTest {
         
         when(albumService.findBoundAlbums(dataSource, externalIds))
             .thenThrow(new RuntimeException(errorMessage));
-            
-        ResponseEntity<ResponseWrapper<List<BoundEntityProjection>>> expectedResponse = 
-            ResponseWrapper.failure(String.format("Failed to get bound albums: %s", errorMessage));
 
-        // When
-        ResponseEntity<ResponseWrapper<List<BoundEntityProjection>>> actualResponse = 
-            albumController.findBoundAlbums(dataSource, externalIds);
-
-        // Then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
-
+        // When & Then
+        DataAccessException exception = assertThrows(DataAccessException.class, () -> 
+            albumController.findBoundAlbums(dataSource, externalIds)
+        );
+        
+        assertEquals("Failed to get bound albums: " + errorMessage, exception.getMessage());
         verify(albumService).findBoundAlbums(dataSource, externalIds);
     }
     
     @Test
-    void whenFindBoundAlbums_withNoResults_shouldReturnEmptyList() throws Exception {
+    void findBoundAlbums_withNoResults_shouldReturnEmptyList() {
         // Given
         final DataSource dataSource = DataSource.LASTFM;
         List<BoundEntityProjection> emptyList = Collections.emptyList();
         
         when(albumService.findBoundAlbums(eq(dataSource), any()))
             .thenReturn(emptyList);
-            
-        ResponseEntity<ResponseWrapper<List<BoundEntityProjection>>> expectedResponse = 
-            ResponseWrapper.success(emptyList);
 
         // When
-        ResponseEntity<ResponseWrapper<List<BoundEntityProjection>>> actualResponse = 
-            albumController.findBoundAlbums(dataSource, List.of(999L, 888L));
+        List<BoundEntityProjection> result = albumController.findBoundAlbums(dataSource, List.of(999L, 888L));
 
         // Then
-        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
-
+        assertEquals(emptyList, result);
         verify(albumService).findBoundAlbums(eq(dataSource), any());
     }
 }

@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.music.data.master.dto.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.dto.TestBoundEntityProjectionImpl;
@@ -52,7 +51,7 @@ class CategoryControllerMvcTest {
         // Given
         final DataSource dataSource = DataSource.LASTFM;
         List<BoundEntityProjection> emptyList = Collections.emptyList();
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(emptyList));
+        String expectedJson = objectMapper.writeValueAsString(emptyList);
         
         when(categoryService.findBoundCategories(eq(dataSource), any()))
             .thenReturn(emptyList);
@@ -76,7 +75,7 @@ class CategoryControllerMvcTest {
         final String[] externalIdParams = externalIds.stream()
             .map(String::valueOf)
             .toArray(String[]::new);
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(expectedCategories));
+        String expectedJson = objectMapper.writeValueAsString(expectedCategories);
 
         when(categoryService.findBoundCategories(dataSource, externalIds)).thenReturn(expectedCategories);
 
@@ -100,7 +99,7 @@ class CategoryControllerMvcTest {
         final String[] externalIdParams = externalIds.stream()
             .map(String::valueOf)
             .toArray(String[]::new);
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(expectedCategories));
+        String expectedJson = objectMapper.writeValueAsString(expectedCategories);
 
         when(categoryService.findBoundCategories(dataSource, externalIds)).thenReturn(expectedCategories);
 
@@ -121,8 +120,6 @@ class CategoryControllerMvcTest {
             .map(String::valueOf)
             .toArray(String[]::new);
         String errorMessage = "Service error occurred";
-        String expectedJson = objectMapper.writeValueAsString(
-            ResponseWrapper.failureBody(String.format("Failed to get bound categories: %s", errorMessage)));
 
         when(categoryService.findBoundCategories(dataSource, externalIds))
             .thenThrow(new RuntimeException(errorMessage));
@@ -130,8 +127,7 @@ class CategoryControllerMvcTest {
         // When & Then
         mockMvc.perform(get("/api/v1/categories/bound/{dataSource}", dataSource)
                 .param("externalIds", externalIdParams))
-            .andExpect(status().isInternalServerError())
-            .andExpect(content().json(expectedJson));
+            .andExpect(status().isInternalServerError());
     }
     
     @Test
@@ -142,7 +138,7 @@ class CategoryControllerMvcTest {
         LookupResultDTO category2 = new LookupResultDTO(2L, "Alternative Rock");
         List<LookupResultDTO> expectedCategories = List.of(category1, category2);
         
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(expectedCategories));
+        String expectedJson = objectMapper.writeValueAsString(expectedCategories);
         
         when(categoryService.lookupCategories(searchQuery)).thenReturn(expectedCategories);
         
@@ -163,7 +159,7 @@ class CategoryControllerMvcTest {
         LookupResultDTO category2 = new LookupResultDTO(2L, "Alternative Rock");
         List<LookupResultDTO> expectedCategories = List.of(category1, category2);
         
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(expectedCategories));
+        String expectedJson = objectMapper.writeValueAsString(expectedCategories);
         
         when(categoryService.lookupCategories(searchQuery, limit)).thenReturn(expectedCategories);
         
@@ -181,7 +177,7 @@ class CategoryControllerMvcTest {
         // Given
         String searchQuery = "nonexistent";
         List<LookupResultDTO> emptyList = Collections.emptyList();
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(emptyList));
+        String expectedJson = objectMapper.writeValueAsString(emptyList);
         
         when(categoryService.lookupCategories(searchQuery)).thenReturn(emptyList);
         
@@ -197,8 +193,6 @@ class CategoryControllerMvcTest {
         // Given
         String searchQuery = "rock";
         String errorMessage = "Search error occurred";
-        String expectedJson = objectMapper.writeValueAsString(
-            ResponseWrapper.failureBody(String.format("Failed to lookup categories: %s", errorMessage)));
         
         when(categoryService.lookupCategories(searchQuery))
             .thenThrow(new RuntimeException(errorMessage));
@@ -206,7 +200,6 @@ class CategoryControllerMvcTest {
         // When & Then
         mockMvc.perform(get("/api/v1/categories/lookup")
                 .param("name", searchQuery))
-            .andExpect(status().isInternalServerError())
-            .andExpect(content().json(expectedJson));
+            .andExpect(status().isInternalServerError());
     }
 }
