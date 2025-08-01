@@ -3,10 +3,10 @@ package yurykorzun.art.universe.music.data.master.service;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import yurykorzun.art.universe.music.data.master.dto.BoundEntityProjection;
-import yurykorzun.art.universe.music.data.master.dto.RelationBindingDTO;
-import yurykorzun.art.universe.music.data.master.dto.TrackBindToExistingRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.TrackCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityBindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.entity.EntityType;
 import yurykorzun.art.universe.music.data.master.entity.Track;
@@ -50,19 +50,19 @@ public class TrackServiceImpl implements TrackService {
     
     @Override
     @Transactional
-    public BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, TrackBindToExistingRequestDTO request) {
+    public BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, ArtistRelatedEntityBindToExistingRequestDTO request) {
         // 1. Check that artist is bound
-        BoundEntityProjection artistBinding = artistService.findArtist(dataSource, request.getArtistExternalId());
+        BoundEntityProjection artistBinding = artistService.findArtist(dataSource, request.getPrimaryArtistId());
         if (artistBinding == null) {
             throw new IllegalStateException(
                 String.format("Artist with external ID %d from %s must be bound before binding track", 
-                    request.getArtistExternalId(), dataSource)
+                    request.getPrimaryArtistId(), dataSource)
             );
         }
         
         // 2. Validate that the track exists
-        Track track = trackRepository.findById(request.getTrackId())
-            .orElseThrow(() -> new EntityNotFoundException("Track not found with id: " + request.getTrackId()));
+        Track track = trackRepository.findById(request.getMasterId())
+            .orElseThrow(() -> new EntityNotFoundException("Track not found with id: " + request.getMasterId()));
         
         // 3. Create or update track binding
         Optional<TrackBinding> existingBinding = bindingsRepository.findByDataSourceAndExternalId(dataSource, externalId);
@@ -91,29 +91,29 @@ public class TrackServiceImpl implements TrackService {
             EntityType.ARTIST, artistId, EntityType.TRACK, track.getId());
         
         // 5. Bind external relation and return result
-        return bindExternalRelationAndGetResult(dataSource, externalId, request.getArtistExternalId());
+        return bindExternalRelationAndGetResult(dataSource, externalId, request.getPrimaryArtistId());
     }
     
     @Override
     @Transactional
-    public BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, TrackCreateAndBindRequestDTO request) {
+    public BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, ArtistRelatedEntityCreateAndBindRequestDTO request) {
         // 1. Check that artist is bound
-        BoundEntityProjection artistBinding = artistService.findArtist(dataSource, request.getArtistExternalId());
+        BoundEntityProjection artistBinding = artistService.findArtist(dataSource, request.getPrimaryArtistId());
         if (artistBinding == null) {
             throw new IllegalStateException(
                 String.format("Artist with external ID %d from %s must be bound before binding track", 
-                    request.getArtistExternalId(), dataSource)
+                    request.getPrimaryArtistId(), dataSource)
             );
         }
         
         Long artistId = artistBinding.getMasterId();
         
         // 2. Check if track already exists
-        Optional<Track> existingTrack = trackRepository.findByNameAndPrimaryArtistId(request.getName(), artistId);
+        Optional<Track> existingTrack = trackRepository.findByNameAndPrimaryArtistId(request.getEntityName(), artistId);
         if (existingTrack.isPresent()) {
             throw new IllegalArgumentException(
                 String.format("Track with name '%s' for artist ID %d already exists", 
-                    request.getName(), artistId)
+                    request.getEntityName(), artistId)
             );
         }
         
@@ -128,7 +128,7 @@ public class TrackServiceImpl implements TrackService {
         
         // 4. Create new track
         Track track = Track.builder()
-            .name(request.getName())
+            .name(request.getEntityName())
             .primaryArtistId(artistId)
             .build();
         
@@ -148,7 +148,7 @@ public class TrackServiceImpl implements TrackService {
             EntityType.ARTIST, artistId, EntityType.TRACK, savedTrack.getId());
         
         // 7. Bind external relation and return result
-        return bindExternalRelationAndGetResult(dataSource, externalId, request.getArtistExternalId());
+        return bindExternalRelationAndGetResult(dataSource, externalId, request.getPrimaryArtistId());
     }
     
     /**

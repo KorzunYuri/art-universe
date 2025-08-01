@@ -2,12 +2,12 @@ package yurykorzun.art.universe.music.data.master.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
-import yurykorzun.art.universe.music.data.master.dto.ArtistBatchLookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.ArtistBatchLookupResponseDTO;
-import yurykorzun.art.universe.music.data.master.dto.ArtistBindToExistingRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.ArtistCreateAndBindRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.LookupResultDTO;
-import yurykorzun.art.universe.music.data.master.dto.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.exception.DataAccessException;
 import yurykorzun.art.universe.music.data.master.exception.EntityBindingException;
@@ -52,8 +52,8 @@ public class ArtistController {
     }
     
     @PostMapping("/lookup/batch")
-    public ArtistBatchLookupResponseDTO batchLookupArtists(
-        @Valid @RequestBody ArtistBatchLookupRequestDTO request
+    public BatchLookupResponseDTO batchLookupArtists(
+        @Valid @RequestBody BatchLookupRequestDTO request
     ) {
         try {
             return artistService.batchLookupArtists(request);
@@ -66,7 +66,7 @@ public class ArtistController {
     public BoundEntityProjection bindToExisting(
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId,
-        @Valid @RequestBody ArtistBindToExistingRequestDTO request
+        @Valid @RequestBody EntityBindToExistingRequestDTO request
     ) {
         try {
             return artistService.bindToExisting(dataSource, externalId, request);
@@ -79,7 +79,7 @@ public class ArtistController {
     public BoundEntityProjection createAndBind(
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId,
-        @Valid @RequestBody ArtistCreateAndBindRequestDTO request
+        @Valid @RequestBody EntityCreateAndBindRequestDTO request
     ) {
         try {
             return artistService.createAndBind(dataSource, externalId, request);

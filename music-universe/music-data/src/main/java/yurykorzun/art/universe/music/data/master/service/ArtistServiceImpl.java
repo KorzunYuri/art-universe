@@ -5,12 +5,12 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import yurykorzun.art.universe.music.data.master.dto.ArtistBatchLookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.ArtistBatchLookupResponseDTO;
-import yurykorzun.art.universe.music.data.master.dto.LookupResultDTO;
-import yurykorzun.art.universe.music.data.master.dto.ArtistBindToExistingRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.ArtistCreateAndBindRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.entity.Artist;
 import yurykorzun.art.universe.music.data.master.entity.ArtistBinding;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
@@ -53,10 +53,10 @@ public class ArtistServiceImpl implements ArtistService {
     
     @Override
     @Transactional
-    public BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, ArtistBindToExistingRequestDTO request) {
+    public BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, EntityBindToExistingRequestDTO request) {
         // Validate that the artist exists
-        Artist artist = artistRepository.findById(request.getArtistId())
-            .orElseThrow(() -> new EntityNotFoundException("Artist not found with id: " + request.getArtistId()));
+        Artist artist = artistRepository.findById(request.getMasterId())
+            .orElseThrow(() -> new EntityNotFoundException("Artist not found with id: " + request.getMasterId()));
         
         // Check if binding already exists
         Optional<ArtistBinding> existingBinding = bindingsRepository.findByDataSourceAndExternalId(dataSource, externalId);
@@ -85,15 +85,15 @@ public class ArtistServiceImpl implements ArtistService {
 
     @Override
     @Transactional
-    public BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, ArtistCreateAndBindRequestDTO request) {
-        artistRepository.findByName(request.getName())
+    public BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, EntityCreateAndBindRequestDTO request) {
+        artistRepository.findByName(request.getEntityName())
             .ifPresent(artist -> {
                 throw new IllegalArgumentException(String.format("Artist with name %s already exists", artist.getName()));
             });
 
         // Create new artist
         Artist artist = Artist.builder()
-            .name(request.getName())
+            .name(request.getEntityName())
             .build();
         
         Artist savedArtist = artistRepository.save(artist);
@@ -153,9 +153,9 @@ public class ArtistServiceImpl implements ArtistService {
     
     @Override
     @Transactional(readOnly = true)
-    public ArtistBatchLookupResponseDTO batchLookupArtists(ArtistBatchLookupRequestDTO request) {
+    public BatchLookupResponseDTO batchLookupArtists(BatchLookupRequestDTO request) {
         if (request.getSearchTerms() == null || request.getSearchTerms().isEmpty()) {
-            return ArtistBatchLookupResponseDTO.builder().build();
+            return BatchLookupResponseDTO.builder().build();
         }
         
         // Apply default limit if null
@@ -168,7 +168,7 @@ public class ArtistServiceImpl implements ArtistService {
             .collect(Collectors.toList());
         
         if (searchTerms.isEmpty()) {
-            return ArtistBatchLookupResponseDTO.builder().build();
+            return BatchLookupResponseDTO.builder().build();
         }
         
         // Dynamically build SQL query with UNION ALL
@@ -220,7 +220,7 @@ public class ArtistServiceImpl implements ArtistService {
             resultMap.computeIfAbsent(searchTerm, k -> new ArrayList<>()).add(dto);
         }
         
-        return ArtistBatchLookupResponseDTO.builder()
+        return BatchLookupResponseDTO.builder()
             .results(resultMap)
             .build();
     }

@@ -1,7 +1,7 @@
 package yurykorzun.art.universe.music.data.master.controller;
 
 import org.springframework.web.bind.annotation.*;
-import yurykorzun.art.universe.music.data.master.dto.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.exception.DataAccessException;
 import yurykorzun.art.universe.music.data.master.service.AlbumService;

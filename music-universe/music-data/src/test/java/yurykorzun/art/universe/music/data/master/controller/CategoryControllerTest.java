@@ -10,15 +10,15 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import yurykorzun.art.universe.music.data.master.dto.CategoryHierarchyProjection;
-import yurykorzun.art.universe.music.data.master.dto.LookupResultDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategorySaveRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryBindToExistingRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryCreateAndBindRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryBatchLookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryBatchLookupResponseDTO;
-import yurykorzun.art.universe.music.data.master.dto.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.dto.TestCategoryHierarchyProjectionImpl;
-import yurykorzun.art.universe.music.data.master.dto.TestBoundEntityProjectionImpl;
+import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.exception.DataAccessException;
 import yurykorzun.art.universe.music.data.master.exception.EntityBindingException;
@@ -294,14 +294,14 @@ class CategoryControllerTest {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
-        Long categoryId = 101L;
+        Long masterId = 101L;
         
-        CategoryBindToExistingRequestDTO request = CategoryBindToExistingRequestDTO.builder()
-            .categoryId(categoryId)
+        EntityBindToExistingRequestDTO request = EntityBindToExistingRequestDTO.builder()
+            .masterId(masterId)
             .build();
         
         TestBoundEntityProjectionImpl projection = new TestBoundEntityProjectionImpl(
-            externalId, dataSource, categoryId, "Rock"
+            externalId, dataSource, masterId, "Rock"
         );
         
         when(categoryService.bindToExisting(dataSource, externalId, request))
@@ -320,11 +320,11 @@ class CategoryControllerTest {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
-        Long categoryId = 101L;
+        Long masterId = 101L;
         String errorMessage = "Test error";
         
-        CategoryBindToExistingRequestDTO request = CategoryBindToExistingRequestDTO.builder()
-            .categoryId(categoryId)
+        EntityBindToExistingRequestDTO request = EntityBindToExistingRequestDTO.builder()
+            .masterId(masterId)
             .build();
         
         when(categoryService.bindToExisting(dataSource, externalId, request))
@@ -346,8 +346,8 @@ class CategoryControllerTest {
         Long externalId = 1L;
         String categoryName = "New Genre";
         
-        CategoryCreateAndBindRequestDTO request = CategoryCreateAndBindRequestDTO.builder()
-            .name(categoryName)
+        EntityCreateAndBindRequestDTO request = EntityCreateAndBindRequestDTO.builder()
+            .entityName(categoryName)
             .build();
         
         TestBoundEntityProjectionImpl projection = new TestBoundEntityProjectionImpl(
@@ -373,8 +373,8 @@ class CategoryControllerTest {
         String categoryName = "New Genre";
         String errorMessage = "Test error";
         
-        CategoryCreateAndBindRequestDTO request = CategoryCreateAndBindRequestDTO.builder()
-            .name(categoryName)
+        EntityCreateAndBindRequestDTO request = EntityCreateAndBindRequestDTO.builder()
+            .entityName(categoryName)
             .build();
         
         when(categoryService.createAndBind(dataSource, externalId, request))
@@ -425,13 +425,13 @@ class CategoryControllerTest {
     }
     
     @Test
-    void batchLookupCategories_shouldReturnCategoryBatchLookupResponseDTO() {
+    void batchLookupCategories_shouldReturnBatchLookupResponseDTO() {
         // Given
         List<String> names = List.of("rock", "jazz");
         Integer limit = 10;
         
-        CategoryBatchLookupRequestDTO request = CategoryBatchLookupRequestDTO.builder()
-            .names(names)
+        BatchLookupRequestDTO request = BatchLookupRequestDTO.builder()
+            .searchTerms(names)
             .limit(limit)
             .build();
         
@@ -444,14 +444,14 @@ class CategoryControllerTest {
             new LookupResultDTO(3L, "Jazz")
         ));
         
-        CategoryBatchLookupResponseDTO expectedResponse = CategoryBatchLookupResponseDTO.builder()
+        BatchLookupResponseDTO expectedResponse = BatchLookupResponseDTO.builder()
             .results(resultMap)
             .build();
         
         when(categoryService.batchLookupCategories(request)).thenReturn(expectedResponse);
         
         // When
-        CategoryBatchLookupResponseDTO result = categoryController.batchLookupCategories(request);
+        BatchLookupResponseDTO result = categoryController.batchLookupCategories(request);
         
         // Then
         assertEquals(expectedResponse, result);
@@ -465,8 +465,8 @@ class CategoryControllerTest {
         Integer limit = 10;
         String errorMessage = "Test error";
         
-        CategoryBatchLookupRequestDTO request = CategoryBatchLookupRequestDTO.builder()
-            .names(names)
+        BatchLookupRequestDTO request = BatchLookupRequestDTO.builder()
+            .searchTerms(names)
             .limit(limit)
             .build();
         

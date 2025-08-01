@@ -8,13 +8,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.music.data.master.dto.CategoryHierarchyProjection;
-import yurykorzun.art.universe.music.data.master.dto.LookupResultDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategorySaveRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryBindToExistingRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryCreateAndBindRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryBatchLookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryBatchLookupResponseDTO;
-import yurykorzun.art.universe.music.data.master.dto.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.entity.Category;
 import yurykorzun.art.universe.music.data.master.entity.CategoryBinding;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
@@ -139,10 +139,10 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
-    public BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, CategoryBindToExistingRequestDTO request) {
+    public BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, EntityBindToExistingRequestDTO request) {
         // Validate that the category exists
-        Category category = categoryRepository.findById(request.getCategoryId())
-            .orElseThrow(() -> new EntityNotFoundException("Category not found with id: " + request.getCategoryId()));
+        Category category = categoryRepository.findById(request.getMasterId())
+            .orElseThrow(() -> new EntityNotFoundException("Category not found with id: " + request.getMasterId()));
         
         // Check if binding already exists
         Optional<CategoryBinding> existingBinding = categoryBindingRepository.findByDataSourceAndExternalId(dataSource, externalId);
@@ -171,16 +171,16 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
-    public BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, CategoryCreateAndBindRequestDTO request) {
+    public BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, EntityCreateAndBindRequestDTO request) {
         // Check if category with the same name already exists
-        categoryRepository.findByName(request.getName())
+        categoryRepository.findByName(request.getEntityName())
             .ifPresent(category -> {
                 throw new IllegalArgumentException(String.format("Category with name %s already exists", category.getName()));
             });
 
         // Create new category
         Category category = Category.builder()
-            .name(request.getName())
+            .name(request.getEntityName())
             .build();
         
         Category savedCategory = categoryRepository.save(category);
@@ -223,22 +223,22 @@ public class CategoryServiceImpl implements CategoryService {
     
     @Override
     @Transactional(readOnly = true)
-    public CategoryBatchLookupResponseDTO batchLookupCategories(CategoryBatchLookupRequestDTO request) {
-        if (request.getNames() == null || request.getNames().isEmpty()) {
-            return CategoryBatchLookupResponseDTO.builder().build();
+    public BatchLookupResponseDTO batchLookupCategories(BatchLookupRequestDTO request) {
+        if (request.getSearchTerms() == null || request.getSearchTerms().isEmpty()) {
+            return BatchLookupResponseDTO.builder().build();
         }
         
         // Apply default limit if null
         int actualLimit = request.getLimit() != null ? request.getLimit() : 20;
         
         // Filter and prepare search terms
-        List<String> searchTerms = request.getNames().stream()
+        List<String> searchTerms = request.getSearchTerms().stream()
             .filter(term -> term != null && !term.trim().isEmpty())
             .map(String::trim)
             .toList();
         
         if (searchTerms.isEmpty()) {
-            return CategoryBatchLookupResponseDTO.builder().build();
+            return BatchLookupResponseDTO.builder().build();
         }
         
         // Dynamically build SQL query with UNION ALL
@@ -290,7 +290,7 @@ public class CategoryServiceImpl implements CategoryService {
             resultMap.computeIfAbsent(searchTerm, k -> new ArrayList<>()).add(dto);
         }
         
-        return CategoryBatchLookupResponseDTO.builder()
+        return BatchLookupResponseDTO.builder()
             .results(resultMap)
             .build();
     }

@@ -5,10 +5,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import yurykorzun.art.universe.music.data.master.dto.BoundEntityProjection;
-import yurykorzun.art.universe.music.data.master.dto.TestBoundEntityProjectionImpl;
-import yurykorzun.art.universe.music.data.master.dto.TrackBindToExistingRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.TrackCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityBindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.exception.DataAccessException;
 import yurykorzun.art.universe.music.data.master.exception.EntityBindingException;
@@ -95,19 +95,19 @@ public class TrackControllerTest {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
-        Long trackId = 123L;
-        Long artistExternalId = 100L;
+        Long masterId = 123L;
+        Long primaryArtistId = 456L;
         
-        TrackBindToExistingRequestDTO request = TrackBindToExistingRequestDTO.builder()
-            .trackId(trackId)
-            .artistExternalId(artistExternalId)
+        ArtistRelatedEntityBindToExistingRequestDTO request = ArtistRelatedEntityBindToExistingRequestDTO.builder()
+            .masterId(masterId)
+            .primaryArtistId(primaryArtistId)
             .build();
         
         TestBoundEntityProjectionImpl projection = new TestBoundEntityProjectionImpl(
-            externalId, dataSource, trackId, "Test Track"
+            externalId, dataSource, masterId, "Test Track"
         );
         
-        when(trackService.bindToExisting(eq(dataSource), eq(externalId), any(TrackBindToExistingRequestDTO.class)))
+        when(trackService.bindToExisting(eq(dataSource), eq(externalId), any(ArtistRelatedEntityBindToExistingRequestDTO.class)))
             .thenReturn(projection);
 
         // When
@@ -115,7 +115,7 @@ public class TrackControllerTest {
 
         // Then
         assertEquals(projection, result);
-        verify(trackService).bindToExisting(eq(dataSource), eq(externalId), any(TrackBindToExistingRequestDTO.class));
+        verify(trackService).bindToExisting(eq(dataSource), eq(externalId), any(ArtistRelatedEntityBindToExistingRequestDTO.class));
     }
     
     @Test
@@ -123,16 +123,16 @@ public class TrackControllerTest {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
-        Long trackId = 123L;
-        Long artistExternalId = 100L;
+        Long masterId = 123L;
+        Long primaryArtistId = 456L;
         String errorMessage = "Test error";
         
-        TrackBindToExistingRequestDTO request = TrackBindToExistingRequestDTO.builder()
-            .trackId(trackId)
-            .artistExternalId(artistExternalId)
+        ArtistRelatedEntityBindToExistingRequestDTO request = ArtistRelatedEntityBindToExistingRequestDTO.builder()
+            .masterId(masterId)
+            .primaryArtistId(primaryArtistId)
             .build();
         
-        when(trackService.bindToExisting(eq(dataSource), eq(externalId), any(TrackBindToExistingRequestDTO.class)))
+        when(trackService.bindToExisting(eq(dataSource), eq(externalId), any(ArtistRelatedEntityBindToExistingRequestDTO.class)))
             .thenThrow(new RuntimeException(errorMessage));
 
         // When & Then
@@ -141,7 +141,7 @@ public class TrackControllerTest {
         );
         
         assertEquals("Failed to bind track to existing: " + errorMessage, exception.getMessage());
-        verify(trackService).bindToExisting(eq(dataSource), eq(externalId), any(TrackBindToExistingRequestDTO.class));
+        verify(trackService).bindToExisting(eq(dataSource), eq(externalId), any(ArtistRelatedEntityBindToExistingRequestDTO.class));
     }
     
     @Test
@@ -150,18 +150,18 @@ public class TrackControllerTest {
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
         String trackName = "Test Track";
-        Long artistExternalId = 100L;
+        Long primaryArtistId = 100L;
         
-        TrackCreateAndBindRequestDTO request = TrackCreateAndBindRequestDTO.builder()
-            .name(trackName)
-            .artistExternalId(artistExternalId)
+        ArtistRelatedEntityCreateAndBindRequestDTO request = ArtistRelatedEntityCreateAndBindRequestDTO.builder()
+            .entityName(trackName)
+            .primaryArtistId(primaryArtistId)
             .build();
         
         TestBoundEntityProjectionImpl projection = new TestBoundEntityProjectionImpl(
             externalId, dataSource, 101L, trackName
         );
         
-        when(trackService.createAndBind(eq(dataSource), eq(externalId), any(TrackCreateAndBindRequestDTO.class)))
+        when(trackService.createAndBind(eq(dataSource), eq(externalId), any(ArtistRelatedEntityCreateAndBindRequestDTO.class)))
             .thenReturn(projection);
 
         // When
@@ -169,7 +169,7 @@ public class TrackControllerTest {
 
         // Then
         assertEquals(projection, result);
-        verify(trackService).createAndBind(eq(dataSource), eq(externalId), any(TrackCreateAndBindRequestDTO.class));
+        verify(trackService).createAndBind(eq(dataSource), eq(externalId), any(ArtistRelatedEntityCreateAndBindRequestDTO.class));
     }
     
     @Test
@@ -178,15 +178,15 @@ public class TrackControllerTest {
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
         String trackName = "Test Track";
-        Long artistExternalId = 100L;
+        Long primaryArtistId = 100L;
         String errorMessage = "Test error";
         
-        TrackCreateAndBindRequestDTO request = TrackCreateAndBindRequestDTO.builder()
-            .name(trackName)
-            .artistExternalId(artistExternalId)
+        ArtistRelatedEntityCreateAndBindRequestDTO request = ArtistRelatedEntityCreateAndBindRequestDTO.builder()
+            .entityName(trackName)
+            .primaryArtistId(primaryArtistId)
             .build();
         
-        when(trackService.createAndBind(eq(dataSource), eq(externalId), any(TrackCreateAndBindRequestDTO.class)))
+        when(trackService.createAndBind(eq(dataSource), eq(externalId), any(ArtistRelatedEntityCreateAndBindRequestDTO.class)))
             .thenThrow(new RuntimeException(errorMessage));
 
         // When & Then
@@ -195,7 +195,7 @@ public class TrackControllerTest {
         );
         
         assertEquals("Failed to create and bind track: " + errorMessage, exception.getMessage());
-        verify(trackService).createAndBind(eq(dataSource), eq(externalId), any(TrackCreateAndBindRequestDTO.class));
+        verify(trackService).createAndBind(eq(dataSource), eq(externalId), any(ArtistRelatedEntityCreateAndBindRequestDTO.class));
     }
     
     @Test

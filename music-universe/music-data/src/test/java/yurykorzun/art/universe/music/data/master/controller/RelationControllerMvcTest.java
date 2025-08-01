@@ -9,13 +9,11 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import yurykorzun.art.universe.music.data.master.config.WebMvcTestConfig;
 import yurykorzun.art.universe.music.data.master.dto.EntityDTO;
-import yurykorzun.art.universe.music.data.master.dto.RelationBindingDTO;
-import yurykorzun.art.universe.music.data.master.dto.RelationBindingStatusDTO;
-import yurykorzun.art.universe.music.data.master.dto.TargetEntityBindingDTO;
+import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingDTO;
+import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingStatusDTO;
+import yurykorzun.art.universe.music.data.master.dto.relation.TargetEntityBindingDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.entity.EntityType;
-import yurykorzun.art.universe.music.data.master.exception.DataAccessException;
-import yurykorzun.art.universe.music.data.master.exception.EntityBindingException;
 import yurykorzun.art.universe.music.data.master.service.RelationService;
 
 import java.util.Arrays;

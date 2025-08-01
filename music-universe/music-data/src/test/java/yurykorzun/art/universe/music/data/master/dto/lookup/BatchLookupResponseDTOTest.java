@@ -1,4 +1,4 @@
-package yurykorzun.art.universe.music.data.master.dto;
+package yurykorzun.art.universe.music.data.master.dto.lookup;
 
 import org.junit.jupiter.api.Test;
 
@@ -8,12 +8,12 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class CategoryBatchLookupResponseDTOTest {
+class BatchLookupResponseDTOTest {
 
     @Test
     void shouldCreateEmptyResponse_whenNoResultsProvided() {
         // When
-        CategoryBatchLookupResponseDTO response = CategoryBatchLookupResponseDTO.builder().build();
+        BatchLookupResponseDTO response = BatchLookupResponseDTO.builder().build();
         
         // Then
         assertNotNull(response.getResults());
@@ -24,30 +24,30 @@ class CategoryBatchLookupResponseDTOTest {
     void shouldCreateResponse_withResults() {
         // Given
         Map<String, List<LookupResultDTO>> results = new HashMap<>();
-        results.put("rock", List.of(
-            new LookupResultDTO(1L, "Rock"),
-            new LookupResultDTO(2L, "Alternative Rock")
+        results.put("radio", List.of(
+            new LookupResultDTO(1L, "Radiohead"),
+            new LookupResultDTO(2L, "Radio Moscow")
         ));
-        results.put("jazz", List.of(
-            new LookupResultDTO(3L, "Jazz")
+        results.put("queen", List.of(
+            new LookupResultDTO(3L, "Queen")
         ));
         
         // When
-        CategoryBatchLookupResponseDTO response = CategoryBatchLookupResponseDTO.builder()
+        BatchLookupResponseDTO response = BatchLookupResponseDTO.builder()
             .results(results)
             .build();
         
         // Then
         assertEquals(results, response.getResults());
         assertEquals(2, response.getResults().size());
-        assertEquals(2, response.getResults().get("rock").size());
-        assertEquals(1, response.getResults().get("jazz").size());
+        assertEquals(2, response.getResults().get("radio").size());
+        assertEquals(1, response.getResults().get("queen").size());
     }
     
     @Test
     void shouldCreateResponse_withNoArgsConstructor() {
         // When
-        CategoryBatchLookupResponseDTO response = new CategoryBatchLookupResponseDTO();
+        BatchLookupResponseDTO response = new BatchLookupResponseDTO();
         
         // Then
         assertNotNull(response.getResults());
@@ -55,7 +55,7 @@ class CategoryBatchLookupResponseDTOTest {
         
         // When
         Map<String, List<LookupResultDTO>> results = new HashMap<>();
-        results.put("rock", List.of(new LookupResultDTO(1L, "Rock")));
+        results.put("radio", List.of(new LookupResultDTO(1L, "Radiohead")));
         response.setResults(results);
         
         // Then
@@ -66,10 +66,10 @@ class CategoryBatchLookupResponseDTOTest {
     void shouldCreateResponse_withAllArgsConstructor() {
         // Given
         Map<String, List<LookupResultDTO>> results = new HashMap<>();
-        results.put("rock", List.of(new LookupResultDTO(1L, "Rock")));
+        results.put("radio", List.of(new LookupResultDTO(1L, "Radiohead")));
         
         // When
-        CategoryBatchLookupResponseDTO response = new CategoryBatchLookupResponseDTO(results);
+        BatchLookupResponseDTO response = new BatchLookupResponseDTO(results);
         
         // Then
         assertEquals(results, response.getResults());

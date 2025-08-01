@@ -8,13 +8,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import yurykorzun.art.universe.music.data.master.dto.ArtistBatchLookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.ArtistBatchLookupResponseDTO;
-import yurykorzun.art.universe.music.data.master.dto.LookupResultDTO;
-import yurykorzun.art.universe.music.data.master.dto.ArtistBindToExistingRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.ArtistCreateAndBindRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.BoundEntityProjection;
-import yurykorzun.art.universe.music.data.master.dto.TestBoundEntityProjectionImpl;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.master.entity.Artist;
 import yurykorzun.art.universe.music.data.master.entity.ArtistBinding;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
@@ -307,8 +307,8 @@ class ArtistServiceTest {
             .name("Radiohead")
             .build();
         
-        ArtistBindToExistingRequestDTO request = ArtistBindToExistingRequestDTO.builder()
-            .artistId(artistId)
+        EntityBindToExistingRequestDTO request = EntityBindToExistingRequestDTO.builder()
+            .masterId(artistId)
             .build();
         
         ArtistBinding binding = ArtistBinding.builder()
@@ -348,8 +348,8 @@ class ArtistServiceTest {
         Long externalId = 1L;
         Long artistId = 101L;
         
-        ArtistBindToExistingRequestDTO request = ArtistBindToExistingRequestDTO.builder()
-            .artistId(artistId)
+        EntityBindToExistingRequestDTO request = EntityBindToExistingRequestDTO.builder()
+            .masterId(artistId)
             .build();
         
         when(artistRepository.findById(artistId)).thenReturn(Optional.empty());
@@ -382,8 +382,8 @@ class ArtistServiceTest {
             .masterId(oldArtistId)
             .build();
         
-        ArtistBindToExistingRequestDTO request = ArtistBindToExistingRequestDTO.builder()
-            .artistId(artistId)
+        EntityBindToExistingRequestDTO request = EntityBindToExistingRequestDTO.builder()
+            .masterId(artistId)
             .build();
         
         TestBoundEntityProjectionImpl expectedResult = new TestBoundEntityProjectionImpl(
@@ -422,8 +422,8 @@ class ArtistServiceTest {
             .name(artistName)
             .build();
         
-        ArtistCreateAndBindRequestDTO request = ArtistCreateAndBindRequestDTO.builder()
-            .name(artistName)
+        EntityCreateAndBindRequestDTO request = EntityCreateAndBindRequestDTO.builder()
+            .entityName(artistName)
             .build();
         
         ArtistBinding binding = ArtistBinding.builder()
@@ -475,8 +475,8 @@ class ArtistServiceTest {
             .masterId(999L) // Old reference
             .build();
         
-        ArtistCreateAndBindRequestDTO request = ArtistCreateAndBindRequestDTO.builder()
-            .name(artistName)
+        EntityCreateAndBindRequestDTO request = EntityCreateAndBindRequestDTO.builder()
+            .entityName(artistName)
             .build();
         
         TestBoundEntityProjectionImpl expectedResult = new TestBoundEntityProjectionImpl(
@@ -514,8 +514,8 @@ class ArtistServiceTest {
             .name(artistName)
             .build();
         
-        ArtistCreateAndBindRequestDTO request = ArtistCreateAndBindRequestDTO.builder()
-            .name(artistName)
+        EntityCreateAndBindRequestDTO request = EntityCreateAndBindRequestDTO.builder()
+            .entityName(artistName)
             .build();
         
         when(artistRepository.findByName(artistName)).thenReturn(Optional.of(existingArtist));
@@ -554,7 +554,7 @@ class ArtistServiceTest {
         List<String> searchTerms = List.of("radio", "queen");
         int limit = 10;
         
-        ArtistBatchLookupRequestDTO request = ArtistBatchLookupRequestDTO.builder()
+        BatchLookupRequestDTO request = BatchLookupRequestDTO.builder()
             .searchTerms(searchTerms)
             .limit(limit)
             .build();
@@ -573,7 +573,7 @@ class ArtistServiceTest {
         when(query.getResultList()).thenReturn(queryResults);
         
         // When
-        ArtistBatchLookupResponseDTO result = artistService.batchLookupArtists(request);
+        BatchLookupResponseDTO result = artistService.batchLookupArtists(request);
         
         // Then
         assertNotNull(result);
@@ -603,13 +603,13 @@ class ArtistServiceTest {
     @Test
     void batchLookupArtists_withNullSearchTerms_shouldReturnEmptyResults() {
         // Given
-        ArtistBatchLookupRequestDTO request = ArtistBatchLookupRequestDTO.builder()
+        BatchLookupRequestDTO request = BatchLookupRequestDTO.builder()
             .searchTerms(null)
             .limit(10)
             .build();
         
         // When
-        ArtistBatchLookupResponseDTO result = artistService.batchLookupArtists(request);
+        BatchLookupResponseDTO result = artistService.batchLookupArtists(request);
         
         // Then
         assertNotNull(result);
@@ -620,13 +620,13 @@ class ArtistServiceTest {
     @Test
     void batchLookupArtists_withEmptySearchTerms_shouldReturnEmptyResults() {
         // Given
-        ArtistBatchLookupRequestDTO request = ArtistBatchLookupRequestDTO.builder()
+        BatchLookupRequestDTO request = BatchLookupRequestDTO.builder()
             .searchTerms(List.of())
             .limit(10)
             .build();
         
         // When
-        ArtistBatchLookupResponseDTO result = artistService.batchLookupArtists(request);
+        BatchLookupResponseDTO result = artistService.batchLookupArtists(request);
         
         // Then
         assertNotNull(result);
@@ -641,7 +641,7 @@ class ArtistServiceTest {
         Integer limit = null;
         int defaultLimit = 20;
         
-        ArtistBatchLookupRequestDTO request = ArtistBatchLookupRequestDTO.builder()
+        BatchLookupRequestDTO request = BatchLookupRequestDTO.builder()
             .searchTerms(searchTerms)
             .limit(limit)
             .build();
@@ -669,7 +669,7 @@ class ArtistServiceTest {
         List<String> searchTerms = Arrays.asList("radio", "", "  ", null);
         int limit = 10;
         
-        ArtistBatchLookupRequestDTO request = ArtistBatchLookupRequestDTO.builder()
+        BatchLookupRequestDTO request = BatchLookupRequestDTO.builder()
             .searchTerms(searchTerms)
             .limit(limit)
             .build();
@@ -683,7 +683,7 @@ class ArtistServiceTest {
         when(query.getResultList()).thenReturn(queryResults);
         
         // When
-        ArtistBatchLookupResponseDTO result = artistService.batchLookupArtists(request);
+        BatchLookupResponseDTO result = artistService.batchLookupArtists(request);
         
         // Then
         assertNotNull(result);

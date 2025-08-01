@@ -1,4 +1,4 @@
-package yurykorzun.art.universe.music.data.master.dto;
+package yurykorzun.art.universe.music.data.master.dto.lookup;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,11 +1,11 @@
 package yurykorzun.art.universe.music.data.master.service;
 
-import yurykorzun.art.universe.music.data.master.dto.ArtistBatchLookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.ArtistBatchLookupResponseDTO;
-import yurykorzun.art.universe.music.data.master.dto.LookupResultDTO;
-import yurykorzun.art.universe.music.data.master.dto.ArtistBindToExistingRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.ArtistCreateAndBindRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 
 import java.util.List;
@@ -31,7 +31,7 @@ public interface ArtistService {
      * @param request The binding request containing artist ID
      * @return The created binding information
      */
-    BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, ArtistBindToExistingRequestDTO request);
+    BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, EntityBindToExistingRequestDTO request);
     
     /**
      * Create a new artist and bind an external artist to it
@@ -41,7 +41,7 @@ public interface ArtistService {
      * @param request The binding request containing artist information
      * @return The created binding information
      */
-    BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, ArtistCreateAndBindRequestDTO request);
+    BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, EntityCreateAndBindRequestDTO request);
     
     /**
      * Unbinds an external artist from the system.
@@ -79,5 +79,5 @@ public interface ArtistService {
      * @param request The batch lookup request containing search terms and limit
      * @return A map of search terms to lists of matching artists
      */
-    ArtistBatchLookupResponseDTO batchLookupArtists(ArtistBatchLookupRequestDTO request);
+    BatchLookupResponseDTO batchLookupArtists(BatchLookupRequestDTO request);
 }

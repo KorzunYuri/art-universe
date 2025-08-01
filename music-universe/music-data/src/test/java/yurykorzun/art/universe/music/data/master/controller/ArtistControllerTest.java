@@ -5,13 +5,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import yurykorzun.art.universe.music.data.master.dto.ArtistBatchLookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.ArtistBatchLookupResponseDTO;
-import yurykorzun.art.universe.music.data.master.dto.ArtistBindToExistingRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.ArtistCreateAndBindRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.LookupResultDTO;
-import yurykorzun.art.universe.music.data.master.dto.BoundEntityProjection;
-import yurykorzun.art.universe.music.data.master.dto.TestBoundEntityProjectionImpl;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.exception.DataAccessException;
 import yurykorzun.art.universe.music.data.master.exception.EntityBindingException;
@@ -134,14 +134,14 @@ class ArtistControllerTest {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
-        Long artistId = 101L;
+        Long masterId = 101L;
         
-        ArtistBindToExistingRequestDTO request = ArtistBindToExistingRequestDTO.builder()
-            .artistId(artistId)
+        EntityBindToExistingRequestDTO request = EntityBindToExistingRequestDTO.builder()
+            .masterId(masterId)
             .build();
         
         TestBoundEntityProjectionImpl projection = new TestBoundEntityProjectionImpl(
-            externalId, dataSource, artistId, "Radiohead"
+            externalId, dataSource, masterId, "Radiohead"
         );
         
         when(artistService.bindToExisting(dataSource, externalId, request))
@@ -160,11 +160,11 @@ class ArtistControllerTest {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
-        Long artistId = 101L;
+        Long masterId = 101L;
         String errorMessage = "Test error";
         
-        ArtistBindToExistingRequestDTO request = ArtistBindToExistingRequestDTO.builder()
-            .artistId(artistId)
+        EntityBindToExistingRequestDTO request = EntityBindToExistingRequestDTO.builder()
+            .masterId(masterId)
             .build();
         
         when(artistService.bindToExisting(dataSource, externalId, request))
@@ -186,8 +186,8 @@ class ArtistControllerTest {
         Long externalId = 1L;
         String artistName = "New Artist";
         
-        ArtistCreateAndBindRequestDTO request = ArtistCreateAndBindRequestDTO.builder()
-            .name(artistName)
+        EntityCreateAndBindRequestDTO request = EntityCreateAndBindRequestDTO.builder()
+            .entityName(artistName)
             .build();
         
         TestBoundEntityProjectionImpl projection = new TestBoundEntityProjectionImpl(
@@ -213,8 +213,8 @@ class ArtistControllerTest {
         String artistName = "Test Artist";
         String errorMessage = "Test error";
         
-        ArtistCreateAndBindRequestDTO request = ArtistCreateAndBindRequestDTO.builder()
-            .name(artistName)
+        EntityCreateAndBindRequestDTO request = EntityCreateAndBindRequestDTO.builder()
+            .entityName(artistName)
             .build();
         
         when(artistService.createAndBind(dataSource, externalId, request))
@@ -265,12 +265,12 @@ class ArtistControllerTest {
     }
     
     @Test
-    void batchLookupArtists_shouldReturnArtistBatchLookupResponseDTO() {
+    void batchLookupArtists_shouldReturnBatchLookupResponseDTO() {
         // Given
         List<String> searchTerms = List.of("radio", "queen");
         Integer limit = 10;
         
-        ArtistBatchLookupRequestDTO request = ArtistBatchLookupRequestDTO.builder()
+        BatchLookupRequestDTO request = BatchLookupRequestDTO.builder()
             .searchTerms(searchTerms)
             .limit(limit)
             .build();
@@ -284,14 +284,14 @@ class ArtistControllerTest {
             new LookupResultDTO(3L, "Queen")
         ));
         
-        ArtistBatchLookupResponseDTO expectedResponse = ArtistBatchLookupResponseDTO.builder()
+        BatchLookupResponseDTO expectedResponse = BatchLookupResponseDTO.builder()
             .results(resultMap)
             .build();
         
         when(artistService.batchLookupArtists(request)).thenReturn(expectedResponse);
         
         // When
-        ArtistBatchLookupResponseDTO result = artistController.batchLookupArtists(request);
+        BatchLookupResponseDTO result = artistController.batchLookupArtists(request);
         
         // Then
         assertEquals(expectedResponse, result);
@@ -305,7 +305,7 @@ class ArtistControllerTest {
         Integer limit = 10;
         String errorMessage = "Test error";
         
-        ArtistBatchLookupRequestDTO request = ArtistBatchLookupRequestDTO.builder()
+        BatchLookupRequestDTO request = BatchLookupRequestDTO.builder()
             .searchTerms(searchTerms)
             .limit(limit)
             .build();

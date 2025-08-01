@@ -5,13 +5,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.music.data.master.dto.CategoryHierarchyProjection;
-import yurykorzun.art.universe.music.data.master.dto.LookupResultDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategorySaveRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryBindToExistingRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryCreateAndBindRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryBatchLookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryBatchLookupResponseDTO;
-import yurykorzun.art.universe.music.data.master.dto.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.exception.DataAccessException;
 import yurykorzun.art.universe.music.data.master.exception.EntityBindingException;
@@ -57,8 +57,8 @@ public class CategoryController {
     }
     
     @PostMapping("/lookup/batch")
-    public CategoryBatchLookupResponseDTO batchLookupCategories(
-        @Valid @RequestBody CategoryBatchLookupRequestDTO request
+    public BatchLookupResponseDTO batchLookupCategories(
+        @Valid @RequestBody BatchLookupRequestDTO request
     ) {
         try {
             return categoryService.batchLookupCategories(request);
@@ -109,7 +109,7 @@ public class CategoryController {
     public BoundEntityProjection bindToExisting(
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId,
-        @Valid @RequestBody CategoryBindToExistingRequestDTO request
+        @Valid @RequestBody EntityBindToExistingRequestDTO request
     ) {
         try {
             return categoryService.bindToExisting(dataSource, externalId, request);
@@ -122,7 +122,7 @@ public class CategoryController {
     public BoundEntityProjection createAndBind(
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId,
-        @Valid @RequestBody CategoryCreateAndBindRequestDTO request
+        @Valid @RequestBody EntityCreateAndBindRequestDTO request
     ) {
         try {
             return categoryService.createAndBind(dataSource, externalId, request);

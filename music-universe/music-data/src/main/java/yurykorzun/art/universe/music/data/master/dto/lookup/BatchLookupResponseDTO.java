@@ -1,4 +1,4 @@
-package yurykorzun.art.universe.music.data.master.dto;
+package yurykorzun.art.universe.music.data.master.dto.lookup;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,12 +9,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Unified DTO for batch lookup responses across all entity types
+ */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CategoryBatchLookupResponseDTO {
-
+public class BatchLookupResponseDTO {
+    
     @Builder.Default
     private Map<String, List<LookupResultDTO>> results = new HashMap<>();
 }

@@ -1,4 +1,4 @@
-package yurykorzun.art.universe.music.data.master.dto;
+package yurykorzun.art.universe.music.data.master.dto.lookup;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
@@ -13,7 +13,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class ArtistBatchLookupRequestDTOTest {
+class BatchLookupRequestDTOTest {
 
     private Validator validator;
 
@@ -26,17 +26,17 @@ class ArtistBatchLookupRequestDTOTest {
     @Test
     void whenSearchTermsIsNull_thenValidationFails() {
         // given
-        ArtistBatchLookupRequestDTO dto = ArtistBatchLookupRequestDTO.builder()
+        BatchLookupRequestDTO dto = BatchLookupRequestDTO.builder()
             .searchTerms(null)
             .limit(10)
             .build();
 
         // when
-        Set<ConstraintViolation<ArtistBatchLookupRequestDTO>> violations = validator.validate(dto);
+        Set<ConstraintViolation<BatchLookupRequestDTO>> violations = validator.validate(dto);
 
         // then
         assertEquals(1, violations.size());
-        ConstraintViolation<ArtistBatchLookupRequestDTO> violation = violations.iterator().next();
+        ConstraintViolation<BatchLookupRequestDTO> violation = violations.iterator().next();
         assertEquals("searchTerms", violation.getPropertyPath().toString());
         assertEquals("At least one search term is required", violation.getMessage());
     }
@@ -44,17 +44,17 @@ class ArtistBatchLookupRequestDTOTest {
     @Test
     void whenSearchTermsIsEmpty_thenValidationFails() {
         // given
-        ArtistBatchLookupRequestDTO dto = ArtistBatchLookupRequestDTO.builder()
+        BatchLookupRequestDTO dto = BatchLookupRequestDTO.builder()
             .searchTerms(List.of())
             .limit(10)
             .build();
 
         // when
-        Set<ConstraintViolation<ArtistBatchLookupRequestDTO>> violations = validator.validate(dto);
+        Set<ConstraintViolation<BatchLookupRequestDTO>> violations = validator.validate(dto);
 
         // then
         assertEquals(1, violations.size());
-        ConstraintViolation<ArtistBatchLookupRequestDTO> violation = violations.iterator().next();
+        ConstraintViolation<BatchLookupRequestDTO> violation = violations.iterator().next();
         assertEquals("searchTerms", violation.getPropertyPath().toString());
         assertEquals("At least one search term is required", violation.getMessage());
     }
@@ -62,13 +62,13 @@ class ArtistBatchLookupRequestDTOTest {
     @Test
     void whenSearchTermsIsValid_thenValidationPasses() {
         // given
-        ArtistBatchLookupRequestDTO dto = ArtistBatchLookupRequestDTO.builder()
+        BatchLookupRequestDTO dto = BatchLookupRequestDTO.builder()
             .searchTerms(List.of("radio", "queen"))
             .limit(10)
             .build();
 
         // when
-        Set<ConstraintViolation<ArtistBatchLookupRequestDTO>> violations = validator.validate(dto);
+        Set<ConstraintViolation<BatchLookupRequestDTO>> violations = validator.validate(dto);
 
         // then
         assertTrue(violations.isEmpty());
@@ -77,13 +77,13 @@ class ArtistBatchLookupRequestDTOTest {
     @Test
     void whenLimitIsNull_thenValidationPasses() {
         // given
-        ArtistBatchLookupRequestDTO dto = ArtistBatchLookupRequestDTO.builder()
+        BatchLookupRequestDTO dto = BatchLookupRequestDTO.builder()
             .searchTerms(List.of("radio"))
             .limit(null)
             .build();
 
         // when
-        Set<ConstraintViolation<ArtistBatchLookupRequestDTO>> violations = validator.validate(dto);
+        Set<ConstraintViolation<BatchLookupRequestDTO>> violations = validator.validate(dto);
 
         // then
         assertTrue(violations.isEmpty());

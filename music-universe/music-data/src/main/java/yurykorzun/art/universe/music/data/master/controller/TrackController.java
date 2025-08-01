@@ -2,9 +2,9 @@ package yurykorzun.art.universe.music.data.master.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
-import yurykorzun.art.universe.music.data.master.dto.BoundEntityProjection;
-import yurykorzun.art.universe.music.data.master.dto.TrackBindToExistingRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.TrackCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityBindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.exception.DataAccessException;
 import yurykorzun.art.universe.music.data.master.exception.EntityBindingException;
@@ -38,7 +38,7 @@ public class TrackController {
     public BoundEntityProjection bindToExisting(
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId,
-        @Valid @RequestBody TrackBindToExistingRequestDTO request
+        @Valid @RequestBody ArtistRelatedEntityBindToExistingRequestDTO request
     ) {
         try {
             return trackService.bindToExisting(dataSource, externalId, request);
@@ -51,7 +51,7 @@ public class TrackController {
     public BoundEntityProjection createAndBind(
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId,
-        @Valid @RequestBody TrackCreateAndBindRequestDTO request
+        @Valid @RequestBody ArtistRelatedEntityCreateAndBindRequestDTO request
     ) {
         try {
             return trackService.createAndBind(dataSource, externalId, request);

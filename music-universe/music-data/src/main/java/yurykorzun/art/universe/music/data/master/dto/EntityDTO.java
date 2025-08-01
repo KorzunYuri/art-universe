@@ -20,7 +20,4 @@ public class EntityDTO {
     private Long id;
     private String name;
     private EntityType entityType;
-    
-    @Builder.Default
-    private Map<String, Object> additionalProperties = new HashMap<>();
 }

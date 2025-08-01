@@ -1,7 +1,7 @@
 package yurykorzun.art.universe.music.data.master.service;
 
 import org.springframework.stereotype.Service;
-import yurykorzun.art.universe.music.data.master.dto.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.repository.AlbumBindingRepository;
 import yurykorzun.art.universe.music.data.master.repository.AlbumRepository;

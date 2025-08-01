@@ -1,8 +1,8 @@
 package yurykorzun.art.universe.music.data.master.service;
 
 import yurykorzun.art.universe.music.data.master.dto.EntityDTO;
-import yurykorzun.art.universe.music.data.master.dto.RelationBindingDTO;
-import yurykorzun.art.universe.music.data.master.dto.RelationBindingStatusDTO;
+import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingDTO;
+import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingStatusDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.entity.EntityType;
 

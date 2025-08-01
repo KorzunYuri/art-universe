@@ -1,6 +1,5 @@
-package yurykorzun.art.universe.music.data.master.dto;
+package yurykorzun.art.universe.music.data.master.dto.lookup;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,13 +8,15 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+/**
+ * Unified DTO for batch lookup requests across all entity types
+ */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ArtistBatchLookupRequestDTO {
+public class BatchLookupRequestDTO {
 
-    @JsonProperty("names")
     @NotEmpty(message = "At least one search term is required")
     private List<String> searchTerms;
     

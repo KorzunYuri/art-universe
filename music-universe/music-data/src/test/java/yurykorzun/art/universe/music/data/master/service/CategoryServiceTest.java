@@ -8,14 +8,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import yurykorzun.art.universe.music.data.master.dto.LookupResultDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategorySaveRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryBindToExistingRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryCreateAndBindRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryBatchLookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryBatchLookupResponseDTO;
-import yurykorzun.art.universe.music.data.master.dto.BoundEntityProjection;
-import yurykorzun.art.universe.music.data.master.dto.TestBoundEntityProjectionImpl;
+import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.master.entity.Category;
 import yurykorzun.art.universe.music.data.master.entity.CategoryBinding;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
@@ -127,8 +127,8 @@ class CategoryServiceTest {
             .name("Rock")
             .build();
         
-        CategoryBindToExistingRequestDTO request = CategoryBindToExistingRequestDTO.builder()
-            .categoryId(categoryId)
+        EntityBindToExistingRequestDTO request = EntityBindToExistingRequestDTO.builder()
+            .masterId(categoryId)
             .build();
         
         CategoryBinding binding = CategoryBinding.builder()
@@ -168,8 +168,8 @@ class CategoryServiceTest {
         Long externalId = 1L;
         Long categoryId = 101L;
         
-        CategoryBindToExistingRequestDTO request = CategoryBindToExistingRequestDTO.builder()
-            .categoryId(categoryId)
+        EntityBindToExistingRequestDTO request = EntityBindToExistingRequestDTO.builder()
+            .masterId(categoryId)
             .build();
         
         when(categoryRepository.findById(categoryId)).thenReturn(Optional.empty());
@@ -202,8 +202,8 @@ class CategoryServiceTest {
             .masterId(oldCategoryId)
             .build();
         
-        CategoryBindToExistingRequestDTO request = CategoryBindToExistingRequestDTO.builder()
-            .categoryId(categoryId)
+        EntityBindToExistingRequestDTO request = EntityBindToExistingRequestDTO.builder()
+            .masterId(categoryId)
             .build();
         
         TestBoundEntityProjectionImpl expectedResult = new TestBoundEntityProjectionImpl(
@@ -242,8 +242,8 @@ class CategoryServiceTest {
             .name(categoryName)
             .build();
         
-        CategoryCreateAndBindRequestDTO request = CategoryCreateAndBindRequestDTO.builder()
-            .name(categoryName)
+        EntityCreateAndBindRequestDTO request = EntityCreateAndBindRequestDTO.builder()
+            .entityName(categoryName)
             .build();
         
         CategoryBinding binding = CategoryBinding.builder()
@@ -290,8 +290,8 @@ class CategoryServiceTest {
             .name(categoryName)
             .build();
         
-        CategoryCreateAndBindRequestDTO request = CategoryCreateAndBindRequestDTO.builder()
-            .name(categoryName)
+        EntityCreateAndBindRequestDTO request = EntityCreateAndBindRequestDTO.builder()
+            .entityName(categoryName)
             .build();
         
         when(categoryRepository.findByName(categoryName)).thenReturn(Optional.of(existingCategory));
@@ -326,8 +326,8 @@ class CategoryServiceTest {
             .masterId(999L) // Old reference
             .build();
         
-        CategoryCreateAndBindRequestDTO request = CategoryCreateAndBindRequestDTO.builder()
-            .name(categoryName)
+        EntityCreateAndBindRequestDTO request = EntityCreateAndBindRequestDTO.builder()
+            .entityName(categoryName)
             .build();
         
         TestBoundEntityProjectionImpl expectedResult = new TestBoundEntityProjectionImpl(
@@ -576,8 +576,8 @@ class CategoryServiceTest {
         List<String> searchTerms = List.of("rock", "jazz");
         int limit = 10;
         
-        CategoryBatchLookupRequestDTO request = CategoryBatchLookupRequestDTO.builder()
-            .names(searchTerms)
+        BatchLookupRequestDTO request = BatchLookupRequestDTO.builder()
+            .searchTerms(searchTerms)
             .limit(limit)
             .build();
         
@@ -595,7 +595,7 @@ class CategoryServiceTest {
         when(query.getResultList()).thenReturn(queryResults);
         
         // When
-        CategoryBatchLookupResponseDTO result = categoryService.batchLookupCategories(request);
+        BatchLookupResponseDTO result = categoryService.batchLookupCategories(request);
         
         // Then
         assertNotNull(result);
@@ -625,13 +625,13 @@ class CategoryServiceTest {
     @Test
     void batchLookupCategories_withNullNames_shouldReturnEmptyResults() {
         // Given
-        CategoryBatchLookupRequestDTO request = CategoryBatchLookupRequestDTO.builder()
-            .names(null)
+        BatchLookupRequestDTO request = BatchLookupRequestDTO.builder()
+            .searchTerms(null)
             .limit(10)
             .build();
         
         // When
-        CategoryBatchLookupResponseDTO result = categoryService.batchLookupCategories(request);
+        BatchLookupResponseDTO result = categoryService.batchLookupCategories(request);
         
         // Then
         assertNotNull(result);
@@ -643,13 +643,13 @@ class CategoryServiceTest {
     @Test
     void batchLookupCategories_withEmptyNames_shouldReturnEmptyResults() {
         // Given
-        CategoryBatchLookupRequestDTO request = CategoryBatchLookupRequestDTO.builder()
-            .names(List.of())
+        BatchLookupRequestDTO request = BatchLookupRequestDTO.builder()
+            .searchTerms(List.of())
             .limit(10)
             .build();
         
         // When
-        CategoryBatchLookupResponseDTO result = categoryService.batchLookupCategories(request);
+        BatchLookupResponseDTO result = categoryService.batchLookupCategories(request);
         
         // Then
         assertNotNull(result);
@@ -665,8 +665,8 @@ class CategoryServiceTest {
         Integer limit = null;
         int defaultLimit = 20;
         
-        CategoryBatchLookupRequestDTO request = CategoryBatchLookupRequestDTO.builder()
-            .names(searchTerms)
+        BatchLookupRequestDTO request = BatchLookupRequestDTO.builder()
+            .searchTerms(searchTerms)
             .limit(limit)
             .build();
         
@@ -693,8 +693,8 @@ class CategoryServiceTest {
         List<String> searchTerms = Arrays.asList("rock", "", "  ", null);
         int limit = 10;
         
-        CategoryBatchLookupRequestDTO request = CategoryBatchLookupRequestDTO.builder()
-            .names(searchTerms)
+        BatchLookupRequestDTO request = BatchLookupRequestDTO.builder()
+            .searchTerms(searchTerms)
             .limit(limit)
             .build();
         
@@ -707,7 +707,7 @@ class CategoryServiceTest {
         when(query.getResultList()).thenReturn(queryResults);
         
         // When
-        CategoryBatchLookupResponseDTO result = categoryService.batchLookupCategories(request);
+        BatchLookupResponseDTO result = categoryService.batchLookupCategories(request);
         
         // Then
         assertNotNull(result);

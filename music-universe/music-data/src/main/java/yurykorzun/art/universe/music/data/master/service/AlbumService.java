@@ -1,6 +1,6 @@
 package yurykorzun.art.universe.music.data.master.service;
 
-import yurykorzun.art.universe.music.data.master.dto.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 
 import java.util.List;
