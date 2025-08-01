@@ -47,9 +47,7 @@ public class LastfmTrackGetInfoApiCallGenerator extends LastfmTrackApiCallGenera
 
     @Override
     protected List<LastfmTrack> selectEntitiesForApiCalls() {
-        List<LastfmTrack> tracks = trackService.findTracksForGetInfo();
-        log.info("Found {} tracks with missing statistics for track.getInfo", tracks.size());
-        return tracks;
+        return trackService.findTracksForGetInfo();
     }
 
 }

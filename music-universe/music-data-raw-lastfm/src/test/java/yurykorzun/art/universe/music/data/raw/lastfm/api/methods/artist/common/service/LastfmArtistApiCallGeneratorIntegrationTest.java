@@ -263,7 +263,7 @@ public class LastfmArtistApiCallGeneratorIntegrationTest extends JpaOnlyTest {
     }
 
     private void mockUnprocessedArtistRetrieval(LastfmArtistApiCallGenerator generator, List<LastfmArtist> unprocessedArtists) {
-        when(artistService.findAllToGetInfoFor()).thenReturn(unprocessedArtists);
+        when(artistService.findArtistsForGetInfo()).thenReturn(unprocessedArtists);
         when(entityService.<LastfmArtist>findAllUnprocessed(eq(LastfmEntityType.ARTIST), eq(generator.getApiCallType()), any()))
             .thenReturn(unprocessedArtists);
         when(dataSnapshotService.getOrCreateSnapshotFor(eq(generator.getApiCallType()), any(LastfmArtist.class)))

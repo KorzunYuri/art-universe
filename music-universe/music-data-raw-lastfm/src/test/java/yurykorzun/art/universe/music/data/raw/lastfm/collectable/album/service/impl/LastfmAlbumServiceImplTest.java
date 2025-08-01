@@ -15,6 +15,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.common.utils.AssertionUtils
 import java.util.List;
 import java.util.stream.IntStream;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @Tag("integration")
@@ -73,5 +74,19 @@ class LastfmAlbumServiceImplTest extends JpaOnlyTest {
             List.of(albumsToSave),
             "albumRepository.findAllByUrlIn"
         );
+    }
+    
+    @Test
+    void findAlbumsForGetInfo_shouldCallRepository() {
+        // given
+        List<LastfmAlbum> expectedAlbums = buildAlbums(3);
+        when(albumRepository.findAlbumsForGetInfo()).thenReturn(expectedAlbums);
+        
+        // when
+        List<LastfmAlbum> result = albumService.findAlbumsForGetInfo();
+        
+        // then
+        verify(albumRepository, times(1)).findAlbumsForGetInfo();
+        assertEquals(expectedAlbums, result, "Should return albums from repository");
     }
 }

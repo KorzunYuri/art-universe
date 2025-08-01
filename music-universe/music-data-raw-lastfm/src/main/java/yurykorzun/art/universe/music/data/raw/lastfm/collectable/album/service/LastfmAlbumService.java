@@ -11,4 +11,13 @@ public interface LastfmAlbumService extends EntityService<LastfmAlbum> {
     List<LastfmAlbum> findAllByUrls(List<String> urls);
 
     Optional<LastfmAlbum> findById(Long entityId);
+    
+    /**
+     * Find albums for album.getInfo API call with the following priority:
+     * 1. Albums with missing playCount and listenersCount
+     * 2. Prioritize albums from popular artists (join by artist_id, sort by listenersCount)
+     * 
+     * @return List of albums to process with album.getInfo API call
+     */
+    List<LastfmAlbum> findAlbumsForGetInfo();
 }

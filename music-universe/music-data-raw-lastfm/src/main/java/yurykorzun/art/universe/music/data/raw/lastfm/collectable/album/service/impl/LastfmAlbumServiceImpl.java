@@ -36,5 +36,9 @@ public class LastfmAlbumServiceImpl implements LastfmAlbumService {
     public List<LastfmAlbum> saveAll(List<LastfmAlbum> lastfmAlbums) {
         return albumRepository.saveAll(lastfmAlbums);
     }
-
+    
+    @Override
+    public List<LastfmAlbum> findAlbumsForGetInfo() {
+        return albumRepository.findAlbumsForGetInfo();
+    }
 }

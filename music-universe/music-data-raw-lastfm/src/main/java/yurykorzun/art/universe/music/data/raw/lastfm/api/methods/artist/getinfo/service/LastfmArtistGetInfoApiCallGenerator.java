@@ -46,6 +46,6 @@ public class LastfmArtistGetInfoApiCallGenerator extends LastfmArtistApiCallGene
     @Override
     protected List<LastfmArtist> selectEntitiesForApiCalls() {
         // note: deduplication is already applied on SQL level
-        return artistService.findAllToGetInfoFor();
+        return artistService.findArtistsForGetInfo();
     }
 }

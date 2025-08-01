@@ -96,6 +96,7 @@ public abstract class EntityScopedApiCallGenerator<SE extends BaseLastfmEntity> 
 
         // get entities to create api calls for
         List<SE> unprocessed = selectEntitiesForApiCalls();
+        log.info("Found {} entities for method {}", unprocessed.size(), getApiCallType().getMethod());
 
         // filter out those we cannot build the request for
         List<SE> validForApiCalls = unprocessed.stream()
