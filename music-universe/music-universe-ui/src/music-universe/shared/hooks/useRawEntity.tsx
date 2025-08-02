@@ -1,8 +1,8 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { masterEntityLookupKeys, rawEntitiesKeys } from "@/music-universe/shared/utils/query-keys.ts";
 import type { DataSource } from "@/music-universe/sources/shared/types/data-sources.ts";
-import { fetchBoundMasterEntities } from "@/music-universe/music-data/api/music-data-binding.ts";
-import { lookupMasterEntities } from "@/music-universe/music-data/api/music-data-lookup.ts";
+import { fetchBoundMasterEntities } from "@/music-universe/music-data/api/music-data-common-binding.ts";
+import { lookupMasterEntities } from "@/music-universe/music-data/api/music-data-common-lookup.ts";
 import { LookupRequestSourceParams } from "@/music-universe/music-data/types/master-entities-lookup.ts";
 import type { MasterEntityType, RawEntity } from "@/music-universe/shared/types/entities.ts";
 
@@ -15,11 +15,11 @@ import type { MasterEntityType, RawEntity } from "@/music-universe/shared/types/
  * @param fetchFn Function that fetches the raw entity from the data source
  * @returns Object with entity data and utility functions
  */
-export function useRawEntity<T extends MasterEntityType>(
+export function useRawEntity<M extends MasterEntityType, R extends RawEntity<M>>(
     dataSource: DataSource,
-    entityType: T,
+    entityType: M,
     rawEntityId: number,
-    fetchFn: () => Promise<RawEntity<T>>
+    fetchFn: () => Promise<R>
 ) {
     const queryClient = useQueryClient();
     const rawEntityQueryKey = rawEntitiesKeys.detail(dataSource, entityType, rawEntityId);
@@ -27,7 +27,7 @@ export function useRawEntity<T extends MasterEntityType>(
     /**
      * Updates the entity in the query cache
      */
-    const update = (updatedEntity: RawEntity<T>) => {
+    const update = (updatedEntity: RawEntity<M>) => {
         queryClient.setQueryData(rawEntityQueryKey, updatedEntity);
     }
 
@@ -46,7 +46,7 @@ export function useRawEntity<T extends MasterEntityType>(
 
             try {
                 // Assign master entity if bound
-                const masterEntityBinding = await fetchBoundMasterEntities<T>(dataSource, entityType, [rawEntityId]);
+                const masterEntityBinding = await fetchBoundMasterEntities<M>(dataSource, entityType, [rawEntityId]);
                 const masterEntity = masterEntityBinding?.length
                     ? masterEntityBinding[0].masterEntity
                     : undefined;

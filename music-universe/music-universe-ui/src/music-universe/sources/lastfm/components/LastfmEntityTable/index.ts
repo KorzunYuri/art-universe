@@ -1,1 +1,0 @@
-export { LastfmEntityTable } from './LastfmEntityTable';

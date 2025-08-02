@@ -1,21 +1,13 @@
 import axios from 'axios';
 import { MusicDataConfig } from '../config/musicdataconfig';
-import type { Page } from '@/music-universe/shared/types/page';
+import type {BasePageSearchParams} from '@/music-universe/shared/types/page';
 import { type Dimension, DimensionImpl } from '@/music-universe/shared/types/entities.ts';
 import type {LookupEntity} from "@/music-universe/music-data/types/master-entities-lookup.ts";
-import {entityToEndpoint} from "@/music-universe/music-data/api/music-data-commons.ts";
+import {type BaseMasterEntityDto, entityToEndpoint} from "@/music-universe/music-data/api/music-data-commons.ts";
 
-export interface DimensionDto {
-    id: number;
-    name: string;
-}
+export interface DimensionDto extends BaseMasterEntityDto {}
 
-export interface DimensionSearchParams {
-    search?: string;
-    page?: number;
-    size?: number;
-    sort?: string;
-}
+export interface DimensionPageSearchParams extends BasePageSearchParams{}
 
 export interface DimensionSaveRequest {
     id?: number;
@@ -25,33 +17,8 @@ export interface DimensionSaveRequest {
 /**
  * Creates Dimension from DTO
  */
-function createDimension(dto: DimensionDto): Dimension {
+export function createDimensionFromDto(dto: DimensionDto): Dimension {
     return new DimensionImpl(dto.id, dto.name);
-}
-
-/**
- * Fetches dimensions from the Music Data API
- * 
- * @param params Search parameters
- * @returns Page of Dimension objects
- */
-export async function fetchDimensions(params: DimensionSearchParams): Promise<Page<Dimension>> {
-    const response = await axios.get<Page<DimensionDto>>(
-        `${MusicDataConfig.baseApiUrl}/dimensions/search`,
-        {
-            params: {
-                query: params.search ?? '',
-                page: params.page ?? 0,
-                size: params.size ?? 20,
-                sort: params.sort ?? 'name,asc',
-            },
-        }
-    );
-
-    return {
-        ...response.data,
-        content: response.data.content.map(createDimension)
-    };
 }
 
 /**
@@ -85,7 +52,7 @@ export async function saveDimension(dimension: DimensionSaveRequest): Promise<Di
         dimension
     );
     
-    return createDimension(response.data);
+    return createDimensionFromDto(response.data);
 }
 
 /**

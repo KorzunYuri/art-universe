@@ -1,75 +1,76 @@
 // hooks
-import {useState, useEffect} from "react";
+import {useState} from "react";
 // components
 import {
     EditableText,
     MasterEntityLookup,
     StaticAutocompleteInput,
-    ReadonlyAttr, type LegacyEntityTableRow
+    ReadonlyAttr, type BaseEntityTableRow
 } from "@/music-universe/shared/components";
 // types
-import type { Category } from '@/music-universe/shared/types/entities.ts';
 import type { CategorySaveRequest } from "@/music-universe/music-data/api/music-data-categories";
-import type {LookupEntity} from "@/music-universe/music-data/types/master-entities-lookup.ts";
+import {createBaseLookupRequest, type LookupEntity} from "@/music-universe/music-data/types/master-entities-lookup.ts";
 // api
 import {saveCategory} from "@/music-universe/music-data/api/music-data-categories";
 // styles
-import sharedStyles from "@/music-universe/shared/components/BaseEntityTable/EntityTableStyles.module.scss";
 import styles from "./CategoriesTableRow.module.css";
+import type {MasterEntityType} from "@/music-universe/shared/types/entities.ts";
+import {useMasterEntity} from "@/music-universe/music-data/hooks/useMasterEntity.ts";
+import sharedTableStyles from "@/music-universe/shared/styles/EntityTableStyles.module.scss";
+import artistTableStyles
+    from "@/music-universe/sources/lastfm/components/LastfmArtistsTable/LastfmArtistsTable.module.css";
+import {useMasterEntitiesLookup} from "@/music-universe/music-data/hooks/useMasterEntitiesLookup.ts";
 
-import {lookupMasterEntities} from "@/music-universe/music-data/api/music-data-lookup.ts";
-
-interface CategoriesTableRowProps extends LegacyEntityTableRow<Category> {
-    preloadedCategories?: LookupEntity[];
-    preloadedDimensions?: LookupEntity[];
+interface CategoriesTableRowProps extends BaseEntityTableRow {
 }
-
 export const CategoriesTableRow = (
     {
+        entityId
+    }: CategoriesTableRowProps
+) => {
+
+    const entityType: MasterEntityType = 'category';
+
+    const {
         entity,
-        preloadedCategories = [],
-        preloadedDimensions = []
-    }: CategoriesTableRowProps) => {
-    const [editedName, setEditedName] = useState(entity.name);
-    const [editedParentName, setEditedParentName] = useState(entity.parentName || '');
-    const [editedDimensionName, setEditedDimensionName] = useState(entity.dimensionName || '');
+        isLoading: isLoadingEntity,
+        isError,
+        error
+    } = useMasterEntity(entityType, entityId);
+
+    const {
+        currentOptions: dimensions,
+        isLoading: isLoadingDimensions
+    } = useMasterEntitiesLookup(entityType, { search: '' }); // we need all dimensions at once
+
+    const [editedName, setEditedName] = useState(entity?.name || '');
+    const [editedParentName, setEditedParentName] = useState(entity?.parentName || '');
+    const [editedDimensionName, setEditedDimensionName] = useState(entity?.dimensionName || '');
     const [selectedParent, setSelectedParent] = useState<LookupEntity | null>(null);
     const [selectedDimension, setSelectedDimension] = useState<LookupEntity | null>(null);
     const [isDirty, setIsDirty] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
-    // Find matching parent and dimension on initial load
-    useEffect(() => {
-        // Find matching parent if available
-        if (entity.parentName && preloadedCategories.length > 0) {
-            const matchingParent = preloadedCategories.find(
-                option => option.name.toLowerCase() === entity.parentName?.toLowerCase()
-            );
-            if (matchingParent) {
-                console.log(`Found matching parent for ${entity.name}: ${matchingParent.name}`);
-                setSelectedParent(matchingParent);
-            }
-        }
+    // If entity is loading, show loading state
+    if (isLoadingEntity) {
+        return (
+            <div className={sharedTableStyles.row}>
+                <div className={`${sharedTableStyles.cell} ${artistTableStyles.name}`}>
+                    Loading...
+                </div>
+            </div>
+        )
+    }
 
-        // Find matching dimension if available
-        if (entity.dimensionName && preloadedDimensions.length > 0) {
-            const matchingDimension = preloadedDimensions.find(
-                option => option.name.toLowerCase() === entity.dimensionName?.toLowerCase()
-            );
-            if (matchingDimension) {
-                console.log(`Found matching dimension for ${entity.name}: ${matchingDimension.name}`);
-                setSelectedDimension(matchingDimension);
-            }
-        }
-    }, [entity, preloadedCategories, preloadedDimensions]);
-
-    // Sync with external category changes
-    useEffect(() => {
-        setEditedName(entity.name);
-        setEditedParentName(entity.parentName || '');
-        setEditedDimensionName(entity.dimensionName || '');
-        setIsDirty(false);
-    }, [entity.name, entity.parentName, entity.dimensionName]);
+    if (!entity) {
+        return (
+            <div className={sharedTableStyles.row}>
+                <div className={`${sharedTableStyles.cell} ${artistTableStyles.name}`}>
+                    {isError && error ? error.message : 'No entity found'}
+                </div>
+            </div>
+        )
+    }
 
     const checkDirty = (name: string, parentName: string, dimensionName: string) => {
         const isNameDirty = name !== entity.name;
@@ -167,8 +168,8 @@ export const CategoriesTableRow = (
     };
 
     return (
-        <div className={sharedStyles.row}>
-            <div className={`${sharedStyles.cell} ${styles.name}`}>
+        <div className={sharedTableStyles.row}>
+            <div className={`${sharedTableStyles.cell} ${styles.name}`}>
                 <EditableText
                     value={entity.name}
                     onChange={handleNameChange}
@@ -177,36 +178,36 @@ export const CategoriesTableRow = (
                 />
             </div>
 
-            <div className={`${sharedStyles.cell} ${styles.parent}`}>
+            <div className={`${sharedTableStyles.cell} ${styles.parent}`}>
                 <MasterEntityLookup
+                    entityType={'category'}
                     searchString={editedParentName}
+                    requestFactory={createBaseLookupRequest}
                     onChange={handleParentChange}
                     onSelect={handleParentSelect}
-                    lookupFunction={(search) => lookupMasterEntities('category', search)}
-                    preloadedOptions={preloadedCategories}
                     selectedEntity={selectedParent}
                     placeholder="Parent category"
                     disabled={isSaving}
                 />
             </div>
 
-            <div className={`${sharedStyles.cell} ${styles.dimension}`}>
+            <div className={`${sharedTableStyles.cell} ${styles.dimension}`}>
                 <StaticAutocompleteInput
                     searchString={editedDimensionName}
                     onChange={handleDimensionChange}
                     onSelect={handleDimensionSelect}
-                    options={preloadedDimensions}
+                    options={dimensions}
                     selectedEntity={selectedDimension}
                     placeholder="Dimension"
-                    disabled={isSaving}
+                    disabled={isSaving || isLoadingDimensions}
                 />
             </div>
 
-            <div className={`${sharedStyles.cell} ${styles.effectiveDimension}`}>
+            <div className={`${sharedTableStyles.cell} ${styles.effectiveDimension}`}>
                 <ReadonlyAttr value={entity.effectiveDimensionName || '-'}/>
             </div>
 
-            <div className={`${sharedStyles.cell} ${styles.actions}`}>
+            <div className={`${sharedTableStyles.cell} ${styles.actions}`}>
                 <button
                     onClick={handleSave}
                     disabled={!isDirty || isSaving || !editedName.trim()}

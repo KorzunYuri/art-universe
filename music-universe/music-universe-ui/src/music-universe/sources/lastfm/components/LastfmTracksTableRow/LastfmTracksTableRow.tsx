@@ -10,7 +10,7 @@ import {
 import { LastfmConfig } from "@/music-universe/sources/lastfm/config/lastfmconfig.ts";
 // types
 // styles
-import sharedTableStyles from "@/music-universe/shared/components/BaseEntityTable/EntityTableStyles.module.scss";
+import sharedTableStyles from "@/music-universe/shared/styles/EntityTableStyles.module.scss";
 import trackTableStyles from "../LastfmTracksTable/LastfmTracksTable.module.css";
 import {ApprovalStatus, type ApprovalStatusType} from "@/music-universe/sources/lastfm/constants/approvalStatus.ts";
 import type {DataSource} from "@/music-universe/sources/shared/types/data-sources.ts";

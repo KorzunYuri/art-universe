@@ -1,5 +1,5 @@
 // styles
-import sharedStyles from "@/music-universe/shared/components/BaseEntityTable/EntityTableStyles.module.scss";
+import sharedStyles from "@/music-universe/shared/styles/EntityTableStyles.module.scss";
 import tagStyles from "@/music-universe/sources/lastfm/components/LastfmTagsTable/LastfmTagsTable.module.css";
 import styles from './LastfmTagsTableHeader.module.css';
 

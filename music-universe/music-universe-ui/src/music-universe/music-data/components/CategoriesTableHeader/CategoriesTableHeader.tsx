@@ -1,8 +1,8 @@
 import styles from './CategoriesTableHeader.module.css';
-import sharedStyles from "@/music-universe/shared/components/BaseEntityTable/EntityTableStyles.module.scss";
+import sharedStyles from "@/music-universe/shared/styles/EntityTableStyles.module.scss";
 
 interface Props {
-    sort: string
+    sort?: string
     setSort: (value: string) => void
 }
 

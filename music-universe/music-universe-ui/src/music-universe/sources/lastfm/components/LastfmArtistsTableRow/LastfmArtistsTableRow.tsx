@@ -18,7 +18,7 @@ import { LastfmConfig } from "@/music-universe/sources/lastfm/config/lastfmconfi
 import { useLastfmEntity } from "@/music-universe/sources/lastfm/hooks/useLastfmEntity";
 import { updateRawEntityApprovalStatus } from "@/music-universe/sources/shared/api/approval";
 // styles
-import sharedTableStyles from "@/music-universe/shared/components/BaseEntityTable/EntityTableStyles.module.scss";
+import sharedTableStyles from "@/music-universe/shared/styles/EntityTableStyles.module.scss";
 import artistTableStyles from "../LastfmArtistsTable/LastfmArtistsTable.module.css";
 import styles from "./LastfmArtistsTableRow.module.scss";
 
@@ -28,7 +28,8 @@ interface LastfmArtistTableRowProps extends BaseEntityTableRow {
 export const LastfmArtistsTableRow = memo((
     {
         entityId
-    }: LastfmArtistTableRowProps) => {
+    }: LastfmArtistTableRowProps
+) => {
 
     // TODO generify component and make dataSource & entityType props or fields
     const dataSource: DataSource = 'lastfm';

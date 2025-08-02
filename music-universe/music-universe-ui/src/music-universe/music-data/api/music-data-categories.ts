@@ -1,11 +1,10 @@
 import axios from 'axios';
 import { MusicDataConfig } from '../config/musicdataconfig';
-import type { Page } from '@/music-universe/shared/types/page';
+import type {BasePageSearchParams} from '@/music-universe/shared/types/page';
 import {type Category, CategoryImpl} from '@/music-universe/shared/types/entities.ts';
+import type {BaseMasterEntityDto} from "@/music-universe/music-data/api/music-data-commons.ts";
 
-export interface CategoryDto {
-    id: number;
-    name: string;
+export interface CategoryDto extends BaseMasterEntityDto{
     parentId: number | null;
     parentName: string | null;
     dimensionId: number | null;
@@ -14,12 +13,7 @@ export interface CategoryDto {
     effectiveDimensionName: string | null;
 }
 
-export interface CategorySearchParams {
-    search?: string;
-    page?: number;
-    size?: number;
-    sort?: string;
-}
+export interface CategoryPageSearchParams extends BasePageSearchParams {}
 
 export interface CategorySaveRequest {
     id?: number;
@@ -31,7 +25,7 @@ export interface CategorySaveRequest {
 /**
  * Creates Category from DTO
  */
-function createCategory(dto: CategoryDto): Category {
+export function createCategoryFromDto(dto: CategoryDto): Category {
     return new CategoryImpl(
         dto.id,
         dto.name,
@@ -45,32 +39,6 @@ function createCategory(dto: CategoryDto): Category {
 }
 
 /**
- * Fetches categories from the Music Data API
- * 
- * @param params Search parameters
- * @returns Page of Category objects
- */
-export async function fetchCategories(params: CategorySearchParams): Promise<Page<Category>> {
-    const response = await axios.get<Page<CategoryDto>>(
-        `${MusicDataConfig.baseApiUrl}/categories/search`,
-        {
-            params: {
-                search: params.search ?? '',
-                page: params.page ?? 0,
-                size: params.size ?? 20,
-                sort: params.sort ?? 'name,asc',
-            },
-        }
-    );
-
-    return {
-        ...response.data,
-        content: response.data.content.map(createCategory)
-    };
-}
-
-
-/**
  * Saves a category (create or update)
  * 
  * @param category Category data to save
@@ -82,7 +50,7 @@ export async function saveCategory(category: CategorySaveRequest): Promise<Categ
         category
     );
     
-    return createCategory(response.data);
+    return createCategoryFromDto(response.data);
 }
 
 /**

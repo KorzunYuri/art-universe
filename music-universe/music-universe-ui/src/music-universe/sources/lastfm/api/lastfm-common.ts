@@ -18,14 +18,14 @@ export const lastfmEntityTypeToEndpoint: Record<LastfmSupportedEntityType, strin
     'category': 'tags'
 };
 
-export type EntityDtoMap = {
+export type LastfmEntityDtoMap = {
     artist:     LastfmArtistDto;
     track:      LastfmTrackDto;
     category:   LastfmTagDto;
 };
 
 export const lastfmEntityMappers: {
-    [K in LastfmSupportedEntityType]: (dto: EntityDtoMap[K]) => LastfmSupportedEntityTypeMap[K];
+    [K in LastfmSupportedEntityType]: (dto: LastfmEntityDtoMap[K]) => LastfmSupportedEntityTypeMap[K];
 } = {
     artist:     createLastfmArtistFromDto,
     track:      createLastfmTrackFromDto,

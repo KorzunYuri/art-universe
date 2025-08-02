@@ -9,7 +9,7 @@ import type {BasePageSearchParams, Page} from "@/music-universe/shared/types/pag
 import axios from "axios";
 import {LastfmConfig} from "@/music-universe/sources/lastfm/config/lastfmconfig.ts";
 import {
-    type EntityDtoMap,
+    type LastfmEntityDtoMap,
     lastfmEntityMappers,
     lastfmEntityTypeToEndpoint
 } from "@/music-universe/sources/lastfm/api/lastfm-common.ts";
@@ -30,7 +30,7 @@ export async function fetchLastfmEntities<T extends LastfmSupportedEntityType>(
 ): Promise<Page<LastfmSupportedEntityTypeMap[T]>> {
 
     const endpoint = lastfmEntityTypeToEndpoint[entityType];
-    const response = await axios.get<Page<EntityDtoMap[T]>>(
+    const response = await axios.get<Page<LastfmEntityDtoMap[T]>>(
         `${LastfmConfig.baseApiUrl}/${endpoint}`,
         {
             params: {
@@ -52,7 +52,7 @@ export async function fetchLastfmEntity<T extends LastfmSupportedEntityType>(
 ): Promise<LastfmSupportedEntityTypeMap[T]> {
 
     const endpoint = lastfmEntityTypeToEndpoint[entityType];
-    const response = await axios.get<EntityDtoMap[T]>(
+    const response = await axios.get<LastfmEntityDtoMap[T]>(
         `${LastfmConfig.baseApiUrl}/${endpoint}/${id}`
     );
 

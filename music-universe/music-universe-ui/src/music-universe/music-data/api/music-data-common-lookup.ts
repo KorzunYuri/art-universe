@@ -66,6 +66,7 @@ function toLookupRequest<T extends MasterEntityType>(
 
     // For track and album entities, add artist-related parameters if available
     if (
+        entity &&
         (entity.getEntityType() === 'track' || entity.getEntityType() === 'album')
         && isArtistRelatedEntity(entity)
     ) {

@@ -28,8 +28,8 @@ export interface Page<T> {
 }
 
 export interface BasePageSearchParams {
+    page: number;
     search?: string;
-    page?: number;
     size?: number;
     sort?: string;
 }

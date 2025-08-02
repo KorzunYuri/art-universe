@@ -1,5 +1,4 @@
 export * from "./EntityBinding"
-export * from "./LastfmEntityTable"
 export * from "./LastfmArtistsTable"
 export * from "./LastfmArtistsTableHeader"
 export * from "./LastfmArtistsTableRow"

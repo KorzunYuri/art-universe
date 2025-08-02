@@ -1,1 +1,0 @@
-export { MasterEntityTable } from './MasterEntityTable';

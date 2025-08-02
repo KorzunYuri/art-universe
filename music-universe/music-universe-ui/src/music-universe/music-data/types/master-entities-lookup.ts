@@ -16,6 +16,16 @@ export interface BaseLookupRequest {
     limit?: number;
 }
 
+export function createBaseLookupRequest(
+    search: string,
+    limit: number = 20
+) {
+    return {
+        search,
+        limit
+    }
+}
+
 /**
  * Artist-related lookup request interface
  */
@@ -40,7 +50,7 @@ export type LookupRequestMap = {
  */
 export class LookupRequestSourceParams<K extends MasterEntityType> {
     search: string;
-    rawEntity: RawEntity<K>;
+    rawEntity?: RawEntity<K>;
 
     constructor(
         search: string,

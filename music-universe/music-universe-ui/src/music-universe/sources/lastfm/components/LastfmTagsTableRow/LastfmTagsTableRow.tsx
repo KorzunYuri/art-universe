@@ -17,7 +17,7 @@ import { updateRawEntityApprovalStatus } from "@/music-universe/sources/shared/a
 // constants
 import { ApprovalStatus, type ApprovalStatusType } from "@/music-universe/sources/lastfm/constants/approvalStatus";
 // styles
-import sharedTableStyles from "@/music-universe/shared/components/BaseEntityTable/EntityTableStyles.module.scss";
+import sharedTableStyles from "@/music-universe/shared/styles/EntityTableStyles.module.scss";
 import tagTableStyles from "../LastfmTagsTable/LastfmTagsTable.module.css";
 
 interface LastfmTagTableRowProps extends BaseEntityTableRow {

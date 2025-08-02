@@ -4,9 +4,10 @@ import {useLastfmEntity} from "@/music-universe/sources/lastfm/hooks/useLastfmEn
 // components
 import {MasterEntityLookup} from "@/music-universe/shared/components";
 // types
-import type {
-    LookupEntity,
-    LookupRequestSourceParams
+import {
+    createBaseLookupRequest,
+    type LookupEntity,
+    type LookupRequestSourceParams
 } from "@/music-universe/music-data/types/master-entities-lookup.ts";
 // styles
 import commonStyles from "@/music-universe/shared/styles/common.module.scss";
@@ -18,7 +19,7 @@ import {
     bindRawEntityToNewMaster,
     unbindRawEntity,
     type BoundEntityInfo,
-} from "@/music-universe/music-data/api/music-data-binding.ts";
+} from "@/music-universe/music-data/api/music-data-common-binding.ts";
 import type {LastfmSupportedEntityType} from "@/music-universe/sources/lastfm/types/lastfm-entity.ts";
 import {useQueryClient} from "@tanstack/react-query";
 import {masterEntityLookupKeys} from "@/music-universe/shared/utils/query-keys.ts";
@@ -78,7 +79,7 @@ export const EntityBinding = <T extends LastfmSupportedEntityType>(
     const isDisabled = disabled || isLoading || isBinding || isUnbinding || isError;
 
     const createLookupRequest: (searchString: string) => LookupRequestSourceParams<T> = useCallback((searchString: string) => {
-        const baseParams = { search: searchString };
+        const baseParams = createBaseLookupRequest(searchString);
         if (!entity) {
             return baseParams as LookupRequestSourceParams<T>;
         }

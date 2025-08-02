@@ -72,7 +72,9 @@ export abstract class BaseRawEntity<T extends MasterEntityType>
 /** ------------------ Master Entity Interfaces ------------------ **/
 
 export interface Artist extends MasterEntity<"artist"> {}
-export interface Album extends MasterEntity<"album"> {}
+export interface Album extends MasterEntity<"album"> {
+    primaryArtistId: number;
+}
 export interface Track extends MasterEntity<"track"> {
     primaryArtistId: number;
 }
@@ -95,6 +97,10 @@ export class ArtistImpl extends BaseMasterEntity<"artist"> implements Artist {
 }
 
 export class AlbumImpl extends BaseMasterEntity<"album"> implements Album {
+    constructor(id: number, name: string, public primaryArtistId: number) {
+        super(id, name);
+        this.primaryArtistId = primaryArtistId;
+    }
     getEntityType(): "album" {
         return "album";
     }
@@ -103,8 +109,8 @@ export class AlbumImpl extends BaseMasterEntity<"album"> implements Album {
 export class TrackImpl extends BaseMasterEntity<"track"> implements Track {
     constructor(id: number, name: string, public primaryArtistId: number) {
         super(id, name);
+        this.primaryArtistId = primaryArtistId;
     }
-
     getEntityType(): "track" {
         return "track";
     }
@@ -138,9 +144,9 @@ export class DimensionImpl extends BaseMasterEntity<"dimension"> implements Dime
 /** ------------------ Master Entity Map ------------------ **/
 
 export type MasterEntityMap = {
-    artist: Artist;
-    album: Album;
-    track: Track;
-    category: Category;
-    dimension: Dimension;
+    artist:     Artist;
+    album:      Album;
+    track:      Track;
+    category:   Category;
+    dimension:  Dimension;
 };

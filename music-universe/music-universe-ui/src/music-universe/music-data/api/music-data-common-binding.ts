@@ -11,9 +11,9 @@ import {
     type Category, CategoryImpl,
     type Dimension, DimensionImpl,
     type RawEntity,
-    type ArtistRelatedRawEntity
+    type ArtistRelatedRawEntity, type MasterEntityMap
 } from "@/music-universe/shared/types/entities.ts";
-import {entityToEndpoint, type EntityTypeMap} from "@/music-universe/music-data/api/music-data-commons.ts";
+import {entityToEndpoint} from "@/music-universe/music-data/api/music-data-commons.ts";
 import axios from "axios";
 import {MusicDataConfig} from "@/music-universe/music-data/config/musicdataconfig.ts";
 
@@ -44,21 +44,21 @@ export interface BoundEntityResponse {
     masterName: string;
 }
 
-interface TrackBoundEntityResponse extends BoundEntityResponse {
+interface ArtistRelatedBoundEntityResponse extends BoundEntityResponse {
     primaryArtistId: number;
 }
 
 type EntityBindingResponseMap = {
     artist:     BoundEntityResponse;
-    album:      BoundEntityResponse;
-    track:      TrackBoundEntityResponse;
+    album:      ArtistRelatedBoundEntityResponse;
+    track:      ArtistRelatedBoundEntityResponse;
     category:   BoundEntityResponse;
     dimension:  BoundEntityResponse;
 }
 
 export type EntityCreateAndBindRequestMap = {
     artist:     EntityCreateAndBindRequest;
-    album:      EntityCreateAndBindRequest;
+    album:      ArtistRelatedEntityCreateAndBindRequest;
     track:      ArtistRelatedEntityCreateAndBindRequest;
     category:   EntityCreateAndBindRequest;
     dimension:  EntityCreateAndBindRequest;
@@ -66,20 +66,19 @@ export type EntityCreateAndBindRequestMap = {
 
 export type EntityBindToExistingRequestMap = {
     artist:     EntityBindToExistingRequest;
-    album:      EntityBindToExistingRequest;
+    album:      ArtistRelatedEntityBindToExistingRequest;
     track:      ArtistRelatedEntityBindToExistingRequest;
     category:   EntityBindToExistingRequest;
     dimension:  EntityBindToExistingRequest;
 }
 
-
 function createArtistFromBindingResponse(res: BoundEntityResponse): Artist {
     return new ArtistImpl(res.masterId, res.masterName);
 }
-function createAlbumFromBindingResponse(res: BoundEntityResponse): Album {
-    return new AlbumImpl(res.masterId, res.masterName);
+function createAlbumFromBindingResponse(res: ArtistRelatedBoundEntityResponse): Album {
+    return new AlbumImpl(res.masterId, res.masterName, res.primaryArtistId);
 }
-function createTrackFromBindingResponse(res: TrackBoundEntityResponse): Track {
+function createTrackFromBindingResponse(res: ArtistRelatedBoundEntityResponse): Track {
     return new TrackImpl(res.masterId, res.masterName, res.primaryArtistId);
 }
 function createCategoryFromBindingResponse(res: BoundEntityResponse): Category {
@@ -90,7 +89,7 @@ function createDimensionFromBindingResponse(res: BoundEntityResponse): Dimension
 }
 
 const bindingResponseMappers: {
-    [K in MasterEntityType]: (dto: EntityBindingResponseMap[K]) => EntityTypeMap[K];
+    [K in MasterEntityType]: (dto: EntityBindingResponseMap[K]) => MasterEntityMap[K];
 } = {
     artist:     createArtistFromBindingResponse,
     album:      createAlbumFromBindingResponse,
@@ -107,7 +106,7 @@ export interface BoundEntityInfo<K extends MasterEntityType> {
     dataSource: DataSource;
     entityType: K;
     externalId: number;
-    masterEntity: EntityTypeMap[K];
+    masterEntity: MasterEntityMap[K];
 }
 
 function makeBoundEntityInfoMapper<K extends MasterEntityType>(entityType: K) {
