@@ -7,10 +7,12 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.album.getinfo.dto.*;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.EntityDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingResult;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiResponseProcessor;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityFactory;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityMappingResult;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandlerFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.entity.LastfmAlbum;
@@ -18,6 +20,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.service.L
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.entity.LastfmAlbumTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.entity.LastfmAlbumTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.entity.LastfmArtistTrack;
@@ -31,6 +34,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.service.L
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -143,16 +147,21 @@ public class LastfmAlbumGetInfoResponseProcessor extends LastfmApiResponseProces
 
         AlbumGetInfoAlbumDto albumDto = dtoRoot.getAlbum();
 
-        // Step 1: Process artists from tracks
-        var artistsResult = processArtists(albumDto, sourceApiCall);
-        Map<String, LastfmArtist> artistsByUrl = artistsResult.actualEntities().stream()
-            .collect(Collectors.toMap(LastfmArtist::getUrl, Function.identity()));
+        // Step 1: Process artists from tracks (if available)
+        Map<String, LastfmArtist> artistsByUrl = Collections.emptyMap();
+        if (hasTracks(albumDto)) {
+            var artistsResult = processArtists(albumDto, sourceApiCall);
+            artistsByUrl = artistsResult.actualEntities().stream()
+                .collect(Collectors.toMap(LastfmArtist::getUrl, Function.identity(), (a1, a2) -> a1));
+        } else {
+            log.info("Album {} has no tracks, skipping artist processing", albumDto.getName());
+        }
         
         // Step 2: Process album
         var albumResult = processAlbum(albumDto, sourceApiCall);
         LastfmAlbum updatedAlbum = albumResult.actualEntities().get(0);
         
-        // Step 3: Process tracks
+        // Step 3: Process tracks (if available)
         if (hasTracks(albumDto)) {
             var trackResult = processTracks(albumDto.getTracksObject().getTracks(), artistsByUrl, sourceApiCall);
             
@@ -164,8 +173,10 @@ public class LastfmAlbumGetInfoResponseProcessor extends LastfmApiResponseProces
         }
         
         // Step 6: Process tags if available
-        if (albumDto.getTags() != null && albumDto.getTags().getTag() != null && !albumDto.getTags().getTag().isEmpty()) {
+        if (hasTags(albumDto)) {
             processAlbumTags(updatedAlbum, albumDto.getTags().getTag(), sourceApiCall);
+        } else {
+            log.info("Album {} has no tags, skipping tag processing", albumDto.getName());
         }
     }
 
@@ -173,6 +184,12 @@ public class LastfmAlbumGetInfoResponseProcessor extends LastfmApiResponseProces
         return albumDto.getTracksObject() != null
             && albumDto.getTracksObject().getTracks() != null
             && !albumDto.getTracksObject().getTracks().isEmpty();
+    }
+    
+    private static boolean hasTags(AlbumGetInfoAlbumDto albumDto) {
+        return albumDto.getTags() != null 
+            && albumDto.getTags().getTag() != null 
+            && !albumDto.getTags().getTag().isEmpty();
     }
 
     private void validateRootDto(AlbumGetInfoDtoRoot dtoRoot, LastfmApiResponse sourceApiResponse) {
@@ -186,8 +203,14 @@ public class LastfmAlbumGetInfoResponseProcessor extends LastfmApiResponseProces
     ) {
         List<AlbumGetInfoTrackArtistDto> artistDtos = albumDto.getTracksObject().getTracks().stream()
             .map(AlbumGetInfoTrackDto::getArtist)
+            .filter(artist -> artist != null) // Filter out null artists
             .distinct()
             .toList();
+
+        if (artistDtos.isEmpty()) {
+            log.info("No valid artists found in tracks for album {}", albumDto.getName());
+            return createEmptyProcessingResult(sourceApiCall);
+        }
 
         LastfmApiDtoProcessingResult<LastfmArtist, AlbumGetInfoTrackArtistDto> result = dtoProcessingService.process(
             sourceApiCall,
@@ -199,7 +222,11 @@ public class LastfmAlbumGetInfoResponseProcessor extends LastfmApiResponseProces
 
         return result;
     }
-    
+
+    private static <E extends BaseLastfmEntity, D extends EntityDto<E>> LastfmApiDtoProcessingResult<E, D> createEmptyProcessingResult(LastfmApiCall sourceApiCall) {
+        return new LastfmApiDtoProcessingResult<>(List.of(), List.of(), new EntityMappingResult<>(Map.of(), sourceApiCall));
+    }
+
     private LastfmApiDtoProcessingResult<LastfmAlbum, AlbumGetInfoAlbumDto> processAlbum(
         AlbumGetInfoAlbumDto albumDto, 
         LastfmApiCall sourceApiCall
@@ -223,6 +250,11 @@ public class LastfmAlbumGetInfoResponseProcessor extends LastfmApiResponseProces
         Map<String, LastfmArtist> artistsByUrl,
         LastfmApiCall sourceApiCall
     ) {
+        if (trackDtos == null || trackDtos.isEmpty()) {
+            log.info("No tracks to process");
+            return createEmptyProcessingResult(sourceApiCall);
+        }
+        
         // Create track factory with artist map
         EntityFactory<LastfmTrack, AlbumGetInfoTrackDto> trackFactory = 
             new LastfmAlbumGetInfoTrackFactory(artistsByUrl);
@@ -244,6 +276,11 @@ public class LastfmAlbumGetInfoResponseProcessor extends LastfmApiResponseProces
         List<LastfmTrack> tracks,
         LastfmApiCall sourceApiCall
     ) {
+        if (tracks.isEmpty()) {
+            log.info("No tracks to create artist-track relationships");
+            return;
+        }
+        
         List<LastfmArtistTrack> relationships = new ArrayList<>();
         
         for (LastfmTrack track : tracks) {
@@ -260,6 +297,8 @@ public class LastfmAlbumGetInfoResponseProcessor extends LastfmApiResponseProces
         if (!relationships.isEmpty()) {
             artistTrackService.upsertAll(relationships);
             log.info("Created {} artist-track relationships", relationships.size());
+        } else {
+            log.info("No artist-track relationships to create (no tracks with artists)");
         }
     }
     
@@ -268,6 +307,11 @@ public class LastfmAlbumGetInfoResponseProcessor extends LastfmApiResponseProces
         LastfmApiDtoProcessingResult<LastfmTrack, AlbumGetInfoTrackDto> trackResult,
         LastfmApiCall sourceApiCall
     ) {
+        if (trackResult.entityMapping().getMap().isEmpty()) {
+            log.info("No track mappings to create album-track relationships");
+            return;
+        }
+        
         List<LastfmAlbumTrack> relationships = new ArrayList<>();
         
         trackResult.entityMapping().forEach((url, mapping) -> {
@@ -295,6 +339,11 @@ public class LastfmAlbumGetInfoResponseProcessor extends LastfmApiResponseProces
         List<AlbumGetInfoTagDto> tagDtos,
         LastfmApiCall sourceApiCall
     ) {
+        if (tagDtos == null || tagDtos.isEmpty()) {
+            log.info("No tags to process for album {}", album.getName());
+            return;
+        }
+        
         // Process tags
         LastfmApiDtoProcessingResult<LastfmTag, AlbumGetInfoTagDto> result = dtoProcessingService.process(
             sourceApiCall,
@@ -303,6 +352,11 @@ public class LastfmAlbumGetInfoResponseProcessor extends LastfmApiResponseProces
             tagAttrHandlers,
             tagService
         );
+        
+        if (result.actualEntities().isEmpty()) {
+            log.info("No tags were processed for album {}", album.getName());
+            return;
+        }
         
         // Create album-tag relationships
         List<LastfmAlbumTag> relationships = new ArrayList<>();

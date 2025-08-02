@@ -354,4 +354,109 @@ class LastfmAlbumGetInfoResponseProcessorTest extends JpaOnlyTest {
         assertThrows(IllegalStateException.class, () -> processor.processResponse(apiResponse),
             "Should throw exception when album not found");
     }
+
+    @Test
+    void process_shouldHandleNoTracks_whenResponseHasNoTracksObject() throws Exception {
+        // given
+        // Create a modified response with no tracks
+        ObjectMapper objectMapper = new ObjectMapper();
+        AlbumGetInfoDtoRoot modifiedDtoRoot = objectMapper.readValue(responseJsonString, AlbumGetInfoDtoRoot.class);
+        modifiedDtoRoot.getAlbum().setTracksObject(null); // Remove tracks object completely
+        String modifiedResponse = objectMapper.writeValueAsString(modifiedDtoRoot);
+
+        // Create existing album
+        LastfmAlbum existingAlbum = consistencyHelper.createAndSaveAlbum(builder ->
+            builder.name(dtoRoot.getAlbum().getName())
+                .url(dtoRoot.getAlbum().getUrl())
+        );
+
+        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
+            modifiedResponse, LastfmApiCallType.ALBUM_GET_INFO, existingAlbum);
+
+        // Record initial state
+        long initialTrackCount = trackRepository.count();
+        long initialAlbumTrackCount = albumTrackRepository.count();
+        long initialArtistTrackCount = artistTrackRepository.count();
+
+        // when
+        processor.processResponse(apiResponse);
+
+        // then
+        // Verify album was updated
+        Optional<LastfmAlbum> updatedAlbum = albumRepository.findById(existingAlbum.getId());
+        assertTrue(updatedAlbum.isPresent(), "Album should still exist in database");
+
+        // Verify album data was updated
+        LastfmAlbum album = updatedAlbum.get();
+        assertEquals(modifiedDtoRoot.getAlbum().getPlayCount(), album.getPlayCount(), "Album play count should be updated");
+        assertEquals(modifiedDtoRoot.getAlbum().getListenersCount(), album.getListenersCount(), "Album listeners count should be updated");
+
+        // Verify no tracks were created
+        assertEquals(initialTrackCount, trackRepository.count(), "No tracks should be created");
+
+        // Verify no album-track relationships were created
+        assertEquals(initialAlbumTrackCount, albumTrackRepository.count(), "No album-track relationships should be created");
+
+        // Verify no artist-track relationships were created
+        assertEquals(initialArtistTrackCount, artistTrackRepository.count(), "No artist-track relationships should be created");
+
+        // Verify tags were still processed
+        assertFalse(tagRepository.findAll().isEmpty(), "Tags should still be processed");
+        assertFalse(albumTagRepository.findAll().isEmpty(), "Album-tag relationships should still be created");
+    }
+
+    @Test
+    void process_shouldHandleNoTagsAndNoTracks_whenResponseHasNeither() throws Exception {
+        // given
+        // Create a modified response with no tracks and no tags
+        ObjectMapper objectMapper = new ObjectMapper();
+        AlbumGetInfoDtoRoot modifiedDtoRoot = objectMapper.readValue(responseJsonString, AlbumGetInfoDtoRoot.class);
+        modifiedDtoRoot.getAlbum().setTracksObject(null); // Remove tracks object completely
+        modifiedDtoRoot.getAlbum().setTags(null); // Remove tags object completely
+        String modifiedResponse = objectMapper.writeValueAsString(modifiedDtoRoot);
+
+        // Create existing album
+        LastfmAlbum existingAlbum = consistencyHelper.createAndSaveAlbum(builder ->
+            builder.name(dtoRoot.getAlbum().getName())
+                .url(dtoRoot.getAlbum().getUrl())
+        );
+
+        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
+            modifiedResponse, LastfmApiCallType.ALBUM_GET_INFO, existingAlbum);
+
+        // Record initial state
+        long initialTrackCount = trackRepository.count();
+        long initialTagCount = tagRepository.count();
+        long initialAlbumTrackCount = albumTrackRepository.count();
+        long initialArtistTrackCount = artistTrackRepository.count();
+        long initialAlbumTagCount = albumTagRepository.count();
+
+        // when
+        processor.processResponse(apiResponse);
+
+        // then
+        // Verify album was updated
+        Optional<LastfmAlbum> updatedAlbum = albumRepository.findById(existingAlbum.getId());
+        assertTrue(updatedAlbum.isPresent(), "Album should still exist in database");
+
+        // Verify album data was updated
+        LastfmAlbum album = updatedAlbum.get();
+        assertEquals(modifiedDtoRoot.getAlbum().getPlayCount(), album.getPlayCount(), "Album play count should be updated");
+        assertEquals(modifiedDtoRoot.getAlbum().getListenersCount(), album.getListenersCount(), "Album listeners count should be updated");
+
+        // Verify no tracks were created
+        assertEquals(initialTrackCount, trackRepository.count(), "No tracks should be created");
+
+        // Verify no album-track relationships were created
+        assertEquals(initialAlbumTrackCount, albumTrackRepository.count(), "No album-track relationships should be created");
+
+        // Verify no artist-track relationships were created
+        assertEquals(initialArtistTrackCount, artistTrackRepository.count(), "No artist-track relationships should be created");
+
+        // Verify no tags were created
+        assertEquals(initialTagCount, tagRepository.count(), "No tags should be created");
+
+        // Verify no album-tag relationships were created
+        assertEquals(initialAlbumTagCount, albumTagRepository.count(), "No album-tag relationships should be created");
+    }
 }
