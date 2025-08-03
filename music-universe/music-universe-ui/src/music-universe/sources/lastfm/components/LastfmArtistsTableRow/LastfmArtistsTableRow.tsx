@@ -147,7 +147,7 @@ export const LastfmArtistsTableRow = memo((
             {isTagPanelOpen && (
                 <div className={styles.tagPanelContainer}>
                     <EntityTagPanel
-                        entityType='track'
+                        entityType='artist'
                         entityId={entity.id}
                         entityApprovalStatus={entity.approvalStatus}
                         tagPageBaseUrl="/lastfm/tags/"
