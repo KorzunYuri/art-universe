@@ -7,9 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import yurykorzun.art.universe.common.controller.ResponseWrapper;
-import yurykorzun.art.universe.music.data.master.dto.BoundEntityProjection;
-import yurykorzun.art.universe.music.data.master.dto.TestBoundEntityProjectionImpl;
+import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.service.TrackService;
 
@@ -51,7 +50,7 @@ class TrackControllerMvcTest {
         // Given
         final DataSource dataSource = DataSource.LASTFM;
         List<BoundEntityProjection> emptyList = Collections.emptyList();
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(emptyList));
+        String expectedJson = objectMapper.writeValueAsString(emptyList);
         
         when(trackService.findBoundTracks(eq(dataSource), any()))
             .thenReturn(emptyList);
@@ -75,7 +74,7 @@ class TrackControllerMvcTest {
         final String[] externalIdParams = externalIds.stream()
             .map(String::valueOf)
             .toArray(String[]::new);
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(expectedTracks));
+        String expectedJson = objectMapper.writeValueAsString(expectedTracks);
 
         when(trackService.findBoundTracks(dataSource, externalIds)).thenReturn(expectedTracks);
 
@@ -99,7 +98,7 @@ class TrackControllerMvcTest {
         final String[] externalIdParams = externalIds.stream()
             .map(String::valueOf)
             .toArray(String[]::new);
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(expectedTracks));
+        String expectedJson = objectMapper.writeValueAsString(expectedTracks);
 
         when(trackService.findBoundTracks(dataSource, externalIds)).thenReturn(expectedTracks);
 
@@ -120,8 +119,6 @@ class TrackControllerMvcTest {
             .map(String::valueOf)
             .toArray(String[]::new);
         String errorMessage = "Service error occurred";
-        String expectedJson = objectMapper.writeValueAsString(
-            ResponseWrapper.failureBody(String.format("Failed to get bound tracks: %s", errorMessage)));
 
         when(trackService.findBoundTracks(dataSource, externalIds))
             .thenThrow(new RuntimeException(errorMessage));
@@ -129,7 +126,6 @@ class TrackControllerMvcTest {
         // When & Then
         mockMvc.perform(get("/api/v1/tracks/bound/{dataSource}", dataSource)
                 .param("externalIds", externalIdParams))
-            .andExpect(status().isInternalServerError())
-            .andExpect(content().json(expectedJson));
+            .andExpect(status().isInternalServerError());
     }
 }

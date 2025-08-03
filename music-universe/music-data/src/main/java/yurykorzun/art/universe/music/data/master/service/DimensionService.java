@@ -4,7 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import yurykorzun.art.universe.music.data.master.dto.DimensionDto;
 import yurykorzun.art.universe.music.data.master.dto.DimensionSaveRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.LookupResultDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 
 import java.util.List;
 
@@ -17,7 +17,12 @@ public interface DimensionService {
      * @param pageable Pagination and sorting parameters
      * @return Page of dimensions
      */
-    Page<DimensionDto> searchDimensions(String query, Pageable pageable);
+    Page<DimensionDto> findDimensions(String query, Pageable pageable);
+
+    /**
+     * Returns a single dimension with a provided id
+     */
+    DimensionDto getDimension(Long id);
     
     /**
      * Lookup dimensions by name for dropdown lists

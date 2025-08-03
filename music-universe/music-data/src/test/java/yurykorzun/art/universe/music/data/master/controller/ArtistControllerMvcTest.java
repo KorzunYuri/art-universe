@@ -7,10 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import yurykorzun.art.universe.common.controller.ResponseWrapper;
-import yurykorzun.art.universe.music.data.master.dto.LookupResultDTO;
-import yurykorzun.art.universe.music.data.master.dto.BoundEntityProjection;
-import yurykorzun.art.universe.music.data.master.dto.TestBoundEntityProjectionImpl;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.service.ArtistService;
 
@@ -52,7 +52,7 @@ class ArtistControllerMvcTest {
         // Given
         final DataSource dataSource = DataSource.LASTFM;
         List<BoundEntityProjection> emptyList = Collections.emptyList();
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(emptyList));
+        String expectedJson = objectMapper.writeValueAsString(emptyList);
         
         when(artistService.findBoundArtists(eq(dataSource), any()))
             .thenReturn(emptyList);
@@ -76,7 +76,7 @@ class ArtistControllerMvcTest {
         final String[] externalIdParams = externalIds.stream()
             .map(String::valueOf)
             .toArray(String[]::new);
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(expectedArtists));
+        String expectedJson = objectMapper.writeValueAsString(expectedArtists);
 
         when(artistService.findBoundArtists(dataSource, externalIds)).thenReturn(expectedArtists);
 
@@ -100,7 +100,7 @@ class ArtistControllerMvcTest {
         final String[] externalIdParams = externalIds.stream()
             .map(String::valueOf)
             .toArray(String[]::new);
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(expectedArtists));
+        String expectedJson = objectMapper.writeValueAsString(expectedArtists);
 
         when(artistService.findBoundArtists(dataSource, externalIds)).thenReturn(expectedArtists);
 
@@ -121,8 +121,6 @@ class ArtistControllerMvcTest {
             .map(String::valueOf)
             .toArray(String[]::new);
         String errorMessage = "Service error occurred";
-        String expectedJson = objectMapper.writeValueAsString(
-            ResponseWrapper.failureBody(String.format("Failed to get bound artists: %s", errorMessage)));
 
         when(artistService.findBoundArtists(dataSource, externalIds))
             .thenThrow(new RuntimeException(errorMessage));
@@ -130,8 +128,7 @@ class ArtistControllerMvcTest {
         // When & Then
         mockMvc.perform(get("/api/v1/artists/bound/{dataSource}", dataSource)
                 .param("externalIds", externalIdParams))
-            .andExpect(status().isInternalServerError())
-            .andExpect(content().json(expectedJson));
+            .andExpect(status().isInternalServerError());
     }
     
     @Test
@@ -142,13 +139,13 @@ class ArtistControllerMvcTest {
         LookupResultDTO artist2 = new LookupResultDTO(2L, "Radio Moscow");
         List<LookupResultDTO> expectedArtists = List.of(artist1, artist2);
         
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(expectedArtists));
+        String expectedJson = objectMapper.writeValueAsString(expectedArtists);
         
-        when(artistService.searchArtistsByName(searchQuery)).thenReturn(expectedArtists);
+        when(artistService.lookupArtists(any(LookupRequestDTO.class))).thenReturn(expectedArtists);
         
         // When & Then
         mockMvc.perform(get("/api/v1/artists/lookup")
-                .param("name", searchQuery))
+                .param("search", searchQuery))
             .andDo(print())
             .andExpect(status().isOk())
             .andExpect(content().json(expectedJson));
@@ -163,13 +160,13 @@ class ArtistControllerMvcTest {
         LookupResultDTO artist2 = new LookupResultDTO(2L, "Radio Moscow");
         List<LookupResultDTO> expectedArtists = List.of(artist1, artist2);
         
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(expectedArtists));
+        String expectedJson = objectMapper.writeValueAsString(expectedArtists);
         
-        when(artistService.searchArtistsByName(searchQuery, limit)).thenReturn(expectedArtists);
+        when(artistService.lookupArtists(any(LookupRequestDTO.class))).thenReturn(expectedArtists);
         
         // When & Then
         mockMvc.perform(get("/api/v1/artists/lookup")
-                .param("name", searchQuery)
+                .param("search", searchQuery)
                 .param("limit", limit.toString()))
             .andDo(print())
             .andExpect(status().isOk())
@@ -181,13 +178,13 @@ class ArtistControllerMvcTest {
         // Given
         String searchQuery = "nonexistent";
         List<LookupResultDTO> emptyList = Collections.emptyList();
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(emptyList));
+        String expectedJson = objectMapper.writeValueAsString(emptyList);
         
-        when(artistService.searchArtistsByName(searchQuery)).thenReturn(emptyList);
+        when(artistService.lookupArtists(any(LookupRequestDTO.class))).thenReturn(emptyList);
         
         // When & Then
         mockMvc.perform(get("/api/v1/artists/lookup")
-                .param("name", searchQuery))
+                .param("search", searchQuery))
             .andExpect(status().isOk())
             .andExpect(content().json(expectedJson));
     }
@@ -197,16 +194,13 @@ class ArtistControllerMvcTest {
         // Given
         String searchQuery = "radio";
         String errorMessage = "Search error occurred";
-        String expectedJson = objectMapper.writeValueAsString(
-            ResponseWrapper.failureBody(String.format("Failed to lookup artists: %s", errorMessage)));
         
-        when(artistService.searchArtistsByName(searchQuery))
+        when(artistService.lookupArtists(any(LookupRequestDTO.class)))
             .thenThrow(new RuntimeException(errorMessage));
         
         // When & Then
         mockMvc.perform(get("/api/v1/artists/lookup")
-                .param("name", searchQuery))
-            .andExpect(status().isInternalServerError())
-            .andExpect(content().json(expectedJson));
+                .param("search", searchQuery))
+            .andExpect(status().isInternalServerError());
     }
 }

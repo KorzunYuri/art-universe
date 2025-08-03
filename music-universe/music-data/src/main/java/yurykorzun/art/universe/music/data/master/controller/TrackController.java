@@ -1,12 +1,14 @@
 package yurykorzun.art.universe.music.data.master.controller;
 
 import jakarta.validation.Valid;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import yurykorzun.art.universe.common.controller.ResponseWrapper;
-import yurykorzun.art.universe.music.data.master.dto.BoundEntityProjection;
-import yurykorzun.art.universe.music.data.master.dto.TrackBindToExistingRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.TrackCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityBindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedBatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.service.TrackService;
 
@@ -23,56 +25,61 @@ public class TrackController {
     }
 
     @GetMapping("/bound/{dataSource}")
-    public ResponseEntity<ResponseWrapper<List<BoundEntityProjection>>> findBoundTracks(
+    public List<BoundEntityProjection> findBoundTracks(
         @PathVariable DataSource dataSource,
         @RequestParam List<Long> externalIds
     ) {
-        try {
-            List<BoundEntityProjection> result = trackService.findBoundTracks(dataSource, externalIds);
-            return ResponseWrapper.success(result);
-        } catch (Exception e) {
-            return ResponseWrapper.failure(String.format("Failed to get bound tracks: %s", e.getMessage()));
-        }
+        return trackService.findBoundTracks(dataSource, externalIds);
+    }
+    
+    @GetMapping("/lookup")
+    public List<LookupResultDTO> lookupTracks(
+        @RequestParam String search,
+        @RequestParam(required = false) DataSource dataSource,
+        @RequestParam(required = false) Long masterArtistId,
+        @RequestParam(required = false) Long externalArtistId,
+        @RequestParam(required = false) Integer limit
+    ) {
+        ArtistRelatedLookupRequestDTO request = ArtistRelatedLookupRequestDTO.builder()
+            .search(search)
+            .dataSource(dataSource)
+            .masterArtistId(masterArtistId)
+            .externalArtistId(externalArtistId)
+            .limit(limit)
+            .build();
+        return trackService.lookupTracks(request);
+    }
+    
+    @PostMapping("/lookup/batch")
+    public BatchLookupResponseDTO batchLookupTracks(
+        @Valid @RequestBody ArtistRelatedBatchLookupRequestDTO request
+    ) {
+        return trackService.batchLookupTracks(request);
     }
     
     @PostMapping("/bind/existing/{dataSource}/{externalId}")
-    public ResponseEntity<ResponseWrapper<BoundEntityProjection>> bindToExisting(
+    public BoundEntityProjection bindToExisting(
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId,
-        @Valid @RequestBody TrackBindToExistingRequestDTO request
+        @Valid @RequestBody ArtistRelatedEntityBindToExistingRequestDTO request
     ) {
-        try {
-            BoundEntityProjection result = trackService.bindToExisting(dataSource, externalId, request);
-            return ResponseWrapper.success(result);
-        } catch (Exception e) {
-            return ResponseWrapper.failure(String.format("Failed to bind track to existing: %s", e.getMessage()));
-        }
+        return trackService.bindToExisting(dataSource, externalId, request);
     }
     
     @PostMapping("/bind/new/{dataSource}/{externalId}")
-    public ResponseEntity<ResponseWrapper<BoundEntityProjection>> createAndBind(
+    public BoundEntityProjection createAndBind(
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId,
-        @Valid @RequestBody TrackCreateAndBindRequestDTO request
+        @Valid @RequestBody ArtistRelatedEntityCreateAndBindRequestDTO request
     ) {
-        try {
-            BoundEntityProjection result = trackService.createAndBind(dataSource, externalId, request);
-            return ResponseWrapper.success(result);
-        } catch (Exception e) {
-            return ResponseWrapper.failure(String.format("Failed to create and bind track: %s", e.getMessage()));
-        }
+        return trackService.createAndBind(dataSource, externalId, request);
     }
     
     @DeleteMapping("/unbind/{dataSource}/{externalId}")
-    public ResponseEntity<ResponseWrapper<Boolean>> unbindTrack(
+    public boolean unbindTrack(
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId
     ) {
-        try {
-            boolean result = trackService.unbindTrack(dataSource, externalId);
-            return ResponseWrapper.success(result);
-        } catch (Exception e) {
-            return ResponseWrapper.failure(String.format("Failed to unbind track: %s", e.getMessage()));
-        }
+        return trackService.unbindTrack(dataSource, externalId);
     }
 }

@@ -1,29 +1,67 @@
 package yurykorzun.art.universe.music.data.master.service;
 
+import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
-import yurykorzun.art.universe.music.data.master.dto.BoundEntityProjection;
+import org.springframework.transaction.annotation.Transactional;
+import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityBindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedBatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.entity.EntityType;
 import yurykorzun.art.universe.music.data.master.repository.AlbumBindingRepository;
-import yurykorzun.art.universe.music.data.master.repository.AlbumRepository;
+import yurykorzun.art.universe.music.data.master.service.lookup.ArtistRelatedLookupService;
 
 import java.util.List;
 
 @Service
 public class AlbumServiceImpl implements AlbumService {
 
-    private final AlbumRepository albumRepository;
     private final AlbumBindingRepository bindingsRepository;
+    private final ArtistRelatedLookupService lookupService;
 
     public AlbumServiceImpl(
-        AlbumRepository albumRepository,
-        AlbumBindingRepository bindingsRepository
+        AlbumBindingRepository bindingsRepository,
+        EntityManager entityManager
     ) {
-        this.albumRepository = albumRepository;
         this.bindingsRepository = bindingsRepository;
+        this.lookupService = new ArtistRelatedLookupService(entityManager, EntityType.ALBUM);
     }
 
     @Override
     public List<BoundEntityProjection> findBoundAlbums(DataSource dataSource, List<Long> externalIds) {
         return bindingsRepository.findBoundAlbumsForDataSource(dataSource, externalIds);
+    }
+
+    @Override
+    public BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, ArtistRelatedEntityBindToExistingRequestDTO request) {
+        // This method will be implemented in the future
+        throw new UnsupportedOperationException("Album binding is not yet implemented");
+    }
+
+    @Override
+    public BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, ArtistRelatedEntityCreateAndBindRequestDTO request) {
+        // This method will be implemented in the future
+        throw new UnsupportedOperationException("Album binding is not yet implemented");
+    }
+
+    @Override
+    public boolean unbindAlbum(DataSource dataSource, Long externalId) {
+        // This method will be implemented in the future
+        throw new UnsupportedOperationException("Album unbinding is not yet implemented");
+    }
+
+    @Override
+    public List<LookupResultDTO> lookupAlbums(ArtistRelatedLookupRequestDTO request) {
+        return lookupService.lookup(request);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public BatchLookupResponseDTO batchLookupAlbums(ArtistRelatedBatchLookupRequestDTO request) {
+        return lookupService.batchLookup(request);
     }
 }

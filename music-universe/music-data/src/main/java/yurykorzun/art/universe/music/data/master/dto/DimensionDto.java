@@ -1,15 +1,11 @@
 package yurykorzun.art.universe.music.data.master.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Data
-@Builder
+@EqualsAndHashCode(callSuper = false)
+@SuperBuilder
 @NoArgsConstructor
-@AllArgsConstructor
-public class DimensionDto {
-    private Long id;
-    private String name;
+public class DimensionDto extends BaseEntityDto{
 }

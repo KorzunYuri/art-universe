@@ -9,18 +9,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.music.data.master.dto.DimensionDto;
 import yurykorzun.art.universe.music.data.master.dto.DimensionSaveRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.LookupResultDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
+import yurykorzun.art.universe.music.data.master.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.service.DimensionService;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -33,7 +31,7 @@ class DimensionControllerTest {
     private DimensionController dimensionController;
 
     @Test
-    void searchDimensions_shouldReturnSuccessResponse() {
+    void findDimensions_shouldReturnPageOfDimensions() {
         // Given
         String query = "genre";
         Pageable pageable = PageRequest.of(0, 10);
@@ -42,132 +40,110 @@ class DimensionControllerTest {
         DimensionDto dimension2 = DimensionDto.builder().id(2L).name("Subgenre").build();
         
         List<DimensionDto> dimensions = Arrays.asList(dimension1, dimension2);
-        Page<DimensionDto> page = new PageImpl<>(dimensions, pageable, dimensions.size());
+        Page<DimensionDto> expectedPage = new PageImpl<>(dimensions, pageable, dimensions.size());
         
-        when(dimensionService.searchDimensions(query, pageable)).thenReturn(page);
-        ResponseEntity<ResponseWrapper<Page<DimensionDto>>> expectedResponse = 
-            ResponseWrapper.success(page);
+        when(dimensionService.findDimensions(query, pageable)).thenReturn(expectedPage);
 
         // When
-        ResponseEntity<ResponseWrapper<Page<DimensionDto>>> actualResponse = 
-            dimensionController.searchDimensions(query, pageable);
+        Page<DimensionDto> result = dimensionController.findDimensions(query, pageable);
 
         // Then
-        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
-        verify(dimensionService).searchDimensions(query, pageable);
+        assertEquals(expectedPage, result);
+        verify(dimensionService).findDimensions(query, pageable);
     }
 
     @Test
-    void searchDimensions_whenExceptionThrown_shouldReturnFailureResponse() {
+    void findDimensions_whenExceptionThrown_shouldPassThroughException() {
         // Given
         String query = "genre";
         Pageable pageable = PageRequest.of(0, 10);
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
         
-        when(dimensionService.searchDimensions(query, pageable)).thenThrow(new RuntimeException(errorMessage));
-        ResponseEntity<ResponseWrapper<Page<DimensionDto>>> expectedResponse = 
-            ResponseWrapper.failure(String.format("Failed to search dimensions: %s", errorMessage));
+        when(dimensionService.findDimensions(query, pageable)).thenThrow(expectedException);
 
-        // When
-        ResponseEntity<ResponseWrapper<Page<DimensionDto>>> actualResponse = 
-            dimensionController.searchDimensions(query, pageable);
-
-        // Then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
-        verify(dimensionService).searchDimensions(query, pageable);
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+            dimensionController.findDimensions(query, pageable)
+        );
+        
+        assertSame(expectedException, exception);
+        verify(dimensionService).findDimensions(query, pageable);
     }
 
     @Test
-    void lookupDimensions_shouldReturnSuccessResponse() {
+    void lookupDimensions_shouldReturnListOfLookupResults() {
         // Given
-        String name = "genre";
+        String searchTerm = "genre";
         LookupResultDTO dimension1 = new LookupResultDTO(1L, "Genre");
         LookupResultDTO dimension2 = new LookupResultDTO(2L, "Subgenre");
         List<LookupResultDTO> expectedDimensions = Arrays.asList(dimension1, dimension2);
         
-        when(dimensionService.lookupDimensions(name)).thenReturn(expectedDimensions);
-        ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> expectedResponse = 
-            ResponseWrapper.success(expectedDimensions);
+        when(dimensionService.lookupDimensions(searchTerm)).thenReturn(expectedDimensions);
 
         // When
-        ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> actualResponse = 
-            dimensionController.lookupDimensions(name, null);
+        List<LookupResultDTO> result = dimensionController.lookupDimensions(searchTerm, null);
 
         // Then
-        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
-        verify(dimensionService).lookupDimensions(name);
+        assertEquals(expectedDimensions, result);
+        verify(dimensionService).lookupDimensions(searchTerm);
     }
 
     @Test
-    void lookupDimensions_withNullName_shouldReturnSuccessResponse() {
+    void lookupDimensions_withNullName_shouldReturnListOfLookupResults() {
         // Given
-        String name = null;
+        String searchTerm = null;
         LookupResultDTO dimension1 = new LookupResultDTO(1L, "Genre");
         LookupResultDTO dimension2 = new LookupResultDTO(2L, "Subgenre");
         List<LookupResultDTO> expectedDimensions = Arrays.asList(dimension1, dimension2);
         
-        when(dimensionService.lookupDimensions(name)).thenReturn(expectedDimensions);
-        ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> expectedResponse = 
-            ResponseWrapper.success(expectedDimensions);
+        when(dimensionService.lookupDimensions(searchTerm)).thenReturn(expectedDimensions);
 
         // When
-        ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> actualResponse = 
-            dimensionController.lookupDimensions(name, null);
+        List<LookupResultDTO> result = dimensionController.lookupDimensions(searchTerm, null);
 
         // Then
-        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
-        verify(dimensionService).lookupDimensions(name);
+        assertEquals(expectedDimensions, result);
+        verify(dimensionService).lookupDimensions(searchTerm);
     }
 
     @Test
-    void lookupDimensions_withLimit_shouldReturnSuccessResponse() {
+    void lookupDimensions_withLimit_shouldReturnListOfLookupResults() {
         // Given
-        String name = "genre";
+        String searchTerm = "genre";
         Integer limit = 5;
         LookupResultDTO dimension1 = new LookupResultDTO(1L, "Genre");
         LookupResultDTO dimension2 = new LookupResultDTO(2L, "Subgenre");
         List<LookupResultDTO> expectedDimensions = Arrays.asList(dimension1, dimension2);
         
-        when(dimensionService.lookupDimensions(name, limit)).thenReturn(expectedDimensions);
-        ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> expectedResponse = 
-            ResponseWrapper.success(expectedDimensions);
+        when(dimensionService.lookupDimensions(searchTerm, limit)).thenReturn(expectedDimensions);
 
         // When
-        ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> actualResponse = 
-            dimensionController.lookupDimensions(name, limit);
+        List<LookupResultDTO> result = dimensionController.lookupDimensions(searchTerm, limit);
 
         // Then
-        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
-        verify(dimensionService).lookupDimensions(name, limit);
+        assertEquals(expectedDimensions, result);
+        verify(dimensionService).lookupDimensions(searchTerm, limit);
     }
 
     @Test
-    void lookupDimensions_whenExceptionThrown_shouldReturnFailureResponse() {
+    void lookupDimensions_whenExceptionThrown_shouldPassThroughException() {
         // Given
-        String name = "genre";
-        String errorMessage = "Test error";
+        String searchTerm = "genre";
+        RuntimeException expectedException = new RuntimeException("Test error");
         
-        when(dimensionService.lookupDimensions(name)).thenThrow(new RuntimeException(errorMessage));
-        ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> expectedResponse = 
-            ResponseWrapper.failure(String.format("Failed to lookup dimensions: %s", errorMessage));
+        when(dimensionService.lookupDimensions(searchTerm)).thenThrow(expectedException);
 
-        // When
-        ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> actualResponse = 
-            dimensionController.lookupDimensions(name, null);
-
-        // Then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
-        verify(dimensionService).lookupDimensions(name);
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+            dimensionController.lookupDimensions(searchTerm, null)
+        );
+        
+        assertSame(expectedException, exception);
+        verify(dimensionService).lookupDimensions(searchTerm);
     }
 
     @Test
-    void saveDimension_shouldReturnSuccessResponse() {
+    void saveDimension_shouldReturnDimensionDto() {
         // Given
         DimensionSaveRequestDTO request = DimensionSaveRequestDTO.builder()
             .name("New Genre")
@@ -179,92 +155,79 @@ class DimensionControllerTest {
             .build();
         
         when(dimensionService.saveDimension(request)).thenReturn(savedDimension);
-        ResponseEntity<ResponseWrapper<DimensionDto>> expectedResponse = 
-            ResponseWrapper.success(savedDimension);
 
         // When
-        ResponseEntity<ResponseWrapper<DimensionDto>> actualResponse = 
-            dimensionController.saveDimension(request);
+        DimensionDto result = dimensionController.saveDimension(request);
 
         // Then
-        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
+        assertEquals(savedDimension, result);
         verify(dimensionService).saveDimension(request);
     }
 
     @Test
-    void saveDimension_whenExceptionThrown_shouldReturnFailureResponse() {
+    void saveDimension_whenExceptionThrown_shouldPassThroughException() {
         // Given
         DimensionSaveRequestDTO request = DimensionSaveRequestDTO.builder()
             .name("New Genre")
             .build();
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
         
-        when(dimensionService.saveDimension(request)).thenThrow(new RuntimeException(errorMessage));
-        ResponseEntity<ResponseWrapper<DimensionDto>> expectedResponse = 
-            ResponseWrapper.failure(String.format("Failed to save dimension: %s", errorMessage));
+        when(dimensionService.saveDimension(request)).thenThrow(expectedException);
 
-        // When
-        ResponseEntity<ResponseWrapper<DimensionDto>> actualResponse = 
-            dimensionController.saveDimension(request);
-
-        // Then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+            dimensionController.saveDimension(request)
+        );
+        
+        assertSame(expectedException, exception);
         verify(dimensionService).saveDimension(request);
     }
 
     @Test
-    void deleteDimension_whenFound_shouldReturnSuccessResponse() {
+    void deleteDimension_whenFound_shouldReturnTrue() {
         // Given
         Long id = 1L;
         
         when(dimensionService.deleteDimension(id)).thenReturn(true);
-        ResponseEntity<ResponseWrapper<Boolean>> expectedResponse = ResponseWrapper.success(true);
 
         // When
-        ResponseEntity<ResponseWrapper<Boolean>> actualResponse = dimensionController.deleteDimension(id);
+        boolean result = dimensionController.deleteDimension(id);
 
         // Then
-        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
+        assertTrue(result);
         verify(dimensionService).deleteDimension(id);
     }
 
     @Test
-    void deleteDimension_whenNotFound_shouldReturnFailureResponse() {
+    void deleteDimension_whenNotFound_shouldThrowEntityNotFoundException() {
         // Given
         Long id = 1L;
         
         when(dimensionService.deleteDimension(id)).thenReturn(false);
-        ResponseEntity<ResponseWrapper<Boolean>> expectedResponse = 
-            ResponseWrapper.failure("Dimension not found with id: " + id);
 
-        // When
-        ResponseEntity<ResponseWrapper<Boolean>> actualResponse = dimensionController.deleteDimension(id);
-
-        // Then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
+        // When & Then
+        CustomEntityNotFoundException exception = assertThrows(CustomEntityNotFoundException.class, () ->
+            dimensionController.deleteDimension(id)
+        );
+        
+        assertEquals("Dimension not found with id: " + id, exception.getMessage());
         verify(dimensionService).deleteDimension(id);
     }
 
     @Test
-    void deleteDimension_whenExceptionThrown_shouldReturnFailureResponse() {
+    void deleteDimension_whenExceptionThrown_shouldPassThroughException() {
         // Given
         Long id = 1L;
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
         
-        when(dimensionService.deleteDimension(id)).thenThrow(new RuntimeException(errorMessage));
-        ResponseEntity<ResponseWrapper<Boolean>> expectedResponse = 
-            ResponseWrapper.failure(String.format("Failed to delete dimension: %s", errorMessage));
+        when(dimensionService.deleteDimension(id)).thenThrow(expectedException);
 
-        // When
-        ResponseEntity<ResponseWrapper<Boolean>> actualResponse = dimensionController.deleteDimension(id);
-
-        // Then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+            dimensionController.deleteDimension(id)
+        );
+        
+        assertSame(expectedException, exception);
         verify(dimensionService).deleteDimension(id);
     }
 }
