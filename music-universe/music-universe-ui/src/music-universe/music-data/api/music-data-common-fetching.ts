@@ -28,7 +28,7 @@ export async function fetchMasterEntities<T extends MasterEntityType>(
 ): Promise<Page<MasterEntityMap[T]>> {
     const endpoint = entityToEndpoint[entityType];
     const response = await axios.get<Page<MasterEntityDtoMap[T]>>(
-        `${MusicDataConfig.baseApiUrl}/${endpoint}/search`,
+        `${MusicDataConfig.baseApiUrl}/${endpoint}`,
         {
             params
         }

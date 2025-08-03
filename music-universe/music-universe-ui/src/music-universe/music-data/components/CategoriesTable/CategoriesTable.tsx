@@ -6,6 +6,7 @@ import {CategoriesTableRow} from "@/music-universe/music-data/components/Categor
 // styles
 import styles from './CategoriesTable.module.css'
 import commonStyles from "@/music-universe/shared/styles/common.module.scss";
+import {useMasterEntitiesLookup} from "@/music-universe/music-data/hooks/useMasterEntitiesLookup.ts";
 
 export const CategoriesTable = () => {
 
@@ -21,6 +22,9 @@ export const CategoriesTable = () => {
         prevPage,
         refresh
     } = useMasterEntityTable("category");
+
+    // init dimensions cache
+    useMasterEntitiesLookup('dimension', { search: '' }); // we need all dimensions at once
 
     return (
         <div className={styles.container}>

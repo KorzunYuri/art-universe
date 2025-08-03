@@ -41,7 +41,7 @@ export const CategoriesTableRow = (
     const {
         currentOptions: dimensions,
         isLoading: isLoadingDimensions
-    } = useMasterEntitiesLookup(entityType, { search: '' }); // we need all dimensions at once
+    } = useMasterEntitiesLookup('dimension', { search: '' }); // we need all dimensions at once
 
     const [editedName, setEditedName] = useState(entity?.name || '');
     const [editedParentName, setEditedParentName] = useState(entity?.parentName || '');
