@@ -1,10 +1,9 @@
 // types
-import type { Category } from '@/music-universe/music-data/types/master-entities'
+import type { Category } from '@/music-universe/shared/types/entities.ts'
 import type { CategorySearchParams } from '@/music-universe/music-data/api/music-data-categories'
-import type { LookupEntity } from '@/music-universe/shared/types/lookup'
+import type { LookupEntity } from '@/music-universe/music-data/types/master-entities-lookup.ts'
 // api
-import { fetchCategories, batchLookupCategories } from '@/music-universe/music-data/api/music-data-categories'
-import { lookupDimensions } from "@/music-universe/music-data/api/music-data-dimensions.ts";
+import { fetchCategories } from '@/music-universe/music-data/api/music-data-categories'
 // components
 import { MasterEntityTable } from '@/music-universe/shared/components'
 import { CategoriesTableHeader } from '../CategoriesTableHeader'
@@ -13,6 +12,7 @@ import { CategoriesTableRow } from '../CategoriesTableRow'
 import { useState, useEffect, useCallback, useRef } from 'react'
 // styles
 import styles from './CategoriesTable.module.css'
+import {batchLookupMasterEntities, lookupMasterEntities} from "@/music-universe/music-data/api/music-data-commons.ts";
 
 export const CategoriesTable = () => {
     // Preloaded lookup data for categories and dimensions
@@ -25,27 +25,19 @@ export const CategoriesTable = () => {
     
     // Atomic function to load all required data
     const loadAllData = useCallback(async () => {
-        try {
-            console.log('📊 Loading dimensions...');
-            const dimensionsResponse = await lookupDimensions('', 50);
-            if (dimensionsResponse.success) {
-                console.log('✅ Dimensions loaded:', dimensionsResponse.data.length);
-                setPreloadedDimensions(dimensionsResponse.data);
-                dimensionsLoadedRef.current = true;
-            } else {
-                console.error('❌ Failed to load dimensions:', dimensionsResponse.message);
-            }
-        } catch (error) {
-            console.error('❌ Error in loadAllData:', error);
-        }
+        console.log('📊 Loading dimensions...');
+        const dimensions = await lookupMasterEntities('dimension', '', 50);
+        setPreloadedDimensions(dimensions);
+        dimensionsLoadedRef.current = true;
     }, []);
 
     // Load data on component mount and when explicitly requested
     useEffect(() => {
         if (isInitialLoad) {
             console.log('🚀 Initial load triggered');
-            loadAllData();
-            setIsInitialLoad(false);
+            loadAllData()
+                .finally(() => setIsInitialLoad(false))
+            ;
         }
     }, [isInitialLoad, loadAllData]);
 
@@ -64,15 +56,8 @@ export const CategoriesTable = () => {
         
         try {
             console.log('🔍 Batch looking up parent categories:', parentNames);
-            const response = await batchLookupCategories(parentNames);
-            
-            if (response.success) {
-                console.log('✅ Batch lookup successful:', response.data.results);
-                setPreloadedCategories(response.data.results);
-            } else {
-                console.error('❌ Batch lookup failed:', response.message);
-                setPreloadedCategories({});
-            }
+            const response = await batchLookupMasterEntities('category', parentNames);
+            setPreloadedCategories(response.results);
         } catch (error) {
             console.error('❌ Error batch looking up parent categories:', error);
             setPreloadedCategories({});

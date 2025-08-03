@@ -1,26 +1,24 @@
 // types
 import type { LastfmTrack } from '@/music-universe/sources/lastfm/types/lastfm-track'
-import type {Track} from "@/music-universe/music-data/types/master-entities.ts";
-import type { BoundEntityResponse } from '@/music-universe/music-data/utils/master-entities-common.ts'
-// api
-import { fetchTracks, type LastfmTracksPageSearchParams } from '@/music-universe/sources/lastfm/api/lastfm-tracks'
-import { fetchBoundTracks } from '@/music-universe/music-data/api/music-data-tracks'
+import type {MasterEntityType, Track} from "@/music-universe/shared/types/entities.ts";
 // components
 import { LastfmEntityTable } from '@/music-universe/sources/lastfm/components/LastfmEntityTable'
-import {
-    LastfmTracksTableHeader,
-    LastfmTracksTableRow,
-} from '@/music-universe/sources/lastfm/components'
 // utils
-import { TrackImpl } from '@/music-universe/music-data/types/master-entities'
+import { TrackImpl } from '@/music-universe/shared/types/entities.ts'
 // styles
 import styles from './LastfmTracksTable.module.css'
+import { type BoundEntityResponse} from "@/music-universe/music-data/api/music-data-binding.ts";
+import type {DataSource} from "@/music-universe/sources/shared/types/data-sources.ts";
 
 interface LastfmTracksTableProps {
     artistId?: number;
 }
 
 export const LastfmTracksTable = ({ artistId }: LastfmTracksTableProps) => {
+
+    const dataSource: DataSource = 'lastfm';
+    const entityType: MasterEntityType = 'track';
+
     // Create Track from BoundEntityResponse
     const createTrack = (boundEntity: BoundEntityResponse): Track => {
         // For now, we'll use a default primaryArtistId of 0
@@ -31,29 +29,12 @@ export const LastfmTracksTable = ({ artistId }: LastfmTracksTableProps) => {
             0 // TODO: Get actual primaryArtistId from API
         );
     };
-
-    // Load tracks with search parameters
-    const loadTracks = async (params: LastfmTracksPageSearchParams) => {
-        try {
-            // Add artistId to params if provided
-            if (artistId) {
-                params.artistId = artistId;
-            }
-            
-            const result = await fetchTracks(params);
-            
-            return result;
-        } catch (error) {
-            console.error('Error loading tracks:', error);
-            throw error;
-        }
-    }
     
     return (
         <div className={styles.container}>
             <LastfmEntityTable<LastfmTrack, Track>
-                fetchEntities={loadTracks}
-                fetchMasterEntities={fetchBoundTracks}
+                fetchEntities={(searchParams) => fetchLastfmEntities(entityType, searchParams)}
+                fetchMasterEntities={(rawEntityIds) => fetchBoundMasterEntities(dataSource, entityType, rawEntityIds)}
                 createMasterEntity={createTrack}
                 renderHeader={(sort, setSort) => (
                     <LastfmTracksTableHeader sort={sort} setSort={setSort} />

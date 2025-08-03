@@ -3,22 +3,22 @@ import {useState, useEffect} from "react";
 // components
 import {
     EditableText,
-    DynamicAutocompleteInput,
+    MasterEntityLookup,
     StaticAutocompleteInput,
-    ReadonlyAttr
+    ReadonlyAttr, type LegacyEntityTableRow
 } from "@/music-universe/shared/components";
 // types
-import type { Category } from '@/music-universe/music-data/types/master-entities';
+import type { Category } from '@/music-universe/shared/types/entities.ts';
 import type { CategorySaveRequest } from "@/music-universe/music-data/api/music-data-categories";
-import type {LookupEntity} from "@/music-universe/shared/types/lookup";
-import type { MasterEntityTableRow } from "@/music-universe/shared/types/table-row";
+import type {LookupEntity} from "@/music-universe/music-data/types/master-entities-lookup.ts";
 // api
-import {saveCategory, lookupCategories} from "@/music-universe/music-data/api/music-data-categories";
+import {saveCategory} from "@/music-universe/music-data/api/music-data-categories";
 // styles
 import sharedStyles from "@/music-universe/shared/components/BaseEntityTable/EntityTableStyles.module.scss";
 import styles from "./CategoriesTableRow.module.css";
+import {lookupMasterEntities} from "@/music-universe/music-data/api/music-data-commons.ts";
 
-interface CategoriesTableRowProps extends MasterEntityTableRow<Category> {
+interface CategoriesTableRowProps extends LegacyEntityTableRow<Category> {
     preloadedCategories?: LookupEntity[];
     preloadedDimensions?: LookupEntity[];
 }
@@ -177,11 +177,11 @@ export const CategoriesTableRow = (
             </div>
 
             <div className={`${sharedStyles.cell} ${styles.parent}`}>
-                <DynamicAutocompleteInput
-                    value={editedParentName}
+                <MasterEntityLookup
+                    searchString={editedParentName}
                     onChange={handleParentChange}
                     onSelect={handleParentSelect}
-                    lookupFunction={lookupCategories}
+                    lookupFunction={(search) => lookupMasterEntities('category', search)}
                     preloadedOptions={preloadedCategories}
                     selectedEntity={selectedParent}
                     placeholder="Parent category"
@@ -191,7 +191,7 @@ export const CategoriesTableRow = (
 
             <div className={`${sharedStyles.cell} ${styles.dimension}`}>
                 <StaticAutocompleteInput
-                    value={editedDimensionName}
+                    searchString={editedDimensionName}
                     onChange={handleDimensionChange}
                     onSelect={handleDimensionSelect}
                     options={preloadedDimensions}

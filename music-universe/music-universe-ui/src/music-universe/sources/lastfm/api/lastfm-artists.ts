@@ -1,8 +1,8 @@
-import {type BaseLastfmPageSearchParams, fetchEntities} from "@/music-universe/sources/lastfm/api/lastfm-common.ts";
+import {type BaseLastfmPageSearchParams} from "@/music-universe/sources/lastfm/api/lastfm-common.ts";
 import type {BaseEntity} from "@/music-universe/shared/types/entities.ts";
 import {LastfmArtist} from "@/music-universe/sources/lastfm/types";
-import type {Page} from "@/music-universe/shared/types/page.ts";
-import type {Artist} from "@/music-universe/music-data/types/master-entities.ts";
+import type {Artist} from "@/music-universe/shared/types/entities.ts";
+import type {ApprovalStatusType} from "@/music-universe/sources/lastfm/constants/approvalStatus.ts";
 
 export interface LastfmArtistsPageSearchParams extends BaseLastfmPageSearchParams{
     minPlayCount?: number;
@@ -12,24 +12,9 @@ export interface LastfmArtistsPageSearchParams extends BaseLastfmPageSearchParam
 export interface LastfmArtistDto extends BaseEntity {
     url: string;
     mbid: string | null;
-    approvalStatus: number;
+    approvalStatus: ApprovalStatusType;
     playCount: number | null;
     listenersCount: number | null;
-}
-
-export async function fetchArtists(params: LastfmArtistsPageSearchParams) : Promise<Page<LastfmArtist>> {
-    return fetchEntities(
-        'artist',
-        {
-            search: params.search ?? '',
-            minPlayCount: params.minPlayCount,
-            minListenersCount: params.minListenersCount,
-            approvalStatuses: params.approvalStatuses,
-            page: params.page ?? 0,
-            size: params.size ?? 20,
-            sort: params.sort ?? 'name,asc',
-        } as LastfmArtistsPageSearchParams
-    )
 }
 
 /**

@@ -1,15 +1,16 @@
-import { BaseRawEntity } from "@/music-universe/shared/types/entities.ts";
-import type { LastfmEntity } from "./lastfm-entity";
-import type { MasterEntityType, Track } from "@/music-universe/music-data/types/master-entities";
+import {BaseRawEntity} from "@/music-universe/shared/types/entities.ts";
+import type {LastfmEntity} from "./lastfm-entity";
+import type {Track} from "@/music-universe/shared/types/entities.ts";
 import type {LastfmArtistDto} from "@/music-universe/sources/lastfm/api/lastfm-artists.ts";
+import type {ApprovalStatusType} from "@/music-universe/sources/lastfm/constants/approvalStatus.ts";
 
 /**
  * LastFM Track entity that extends BaseRawEntity and implements LastfmEntity
  */
-export class LastfmTrack extends BaseRawEntity<Track> implements LastfmEntity<Track> {
+export class LastfmTrack extends BaseRawEntity<"track"> implements LastfmEntity<"track"> {
     url: string;
     mbid: string | null;
-    approvalStatus: number;
+    approvalStatus: ApprovalStatusType;
     playCount: number | null;
     listenersCount: number | null;
     artist?: LastfmArtistDto;
@@ -19,7 +20,7 @@ export class LastfmTrack extends BaseRawEntity<Track> implements LastfmEntity<Tr
         name: string,
         url: string,
         mbid: string | null,
-        approvalStatus: number,
+        approvalStatus: ApprovalStatusType,
         playCount: number | null,
         listenersCount: number | null,
         artist?: LastfmArtistDto,
@@ -34,12 +35,16 @@ export class LastfmTrack extends BaseRawEntity<Track> implements LastfmEntity<Tr
         this.artist = artist;
     }
 
-    getEntityType(): MasterEntityType {
+    getEntityType(): "track" {
         return "track";
     }
 
-    setApprovalStatus(approvalStatus: number): void {
+    setApprovalStatus(approvalStatus: ApprovalStatusType): void {
         this.approvalStatus = approvalStatus;
+    }
+
+    getPrimaryArtistId(): number | undefined {
+        return this.artist?.id;
     }
 }
 
@@ -51,7 +56,7 @@ export function createLastfmTrack(
     name: string,
     url: string,
     mbid: string | null,
-    approvalStatus: number,
+    approvalStatus: ApprovalStatusType,
     playCount: number | null,
     listenersCount: number | null,
     artist?: LastfmArtistDto,

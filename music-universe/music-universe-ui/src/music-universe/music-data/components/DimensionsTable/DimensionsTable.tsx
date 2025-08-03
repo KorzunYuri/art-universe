@@ -1,5 +1,5 @@
 // types
-import type { Dimension } from '@/music-universe/music-data/types/master-entities'
+import type { Dimension } from '@/music-universe/shared/types/entities.ts'
 // api
 import { fetchDimensions } from '@/music-universe/music-data/api/music-data-dimensions'
 // components

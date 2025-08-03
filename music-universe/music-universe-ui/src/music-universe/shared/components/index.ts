@@ -1,7 +1,7 @@
 export * from './BaseEntityTable'
-export * from './DynamicAutocompleteInput'
+export * from './MasterEntityLookup'
 export * from './EditableText'
-export * from './EntityBinding'
+export * from '../../sources/lastfm/components/EntityBinding'
 export * from './EntityTagPanel'
 export * from './EntityTagItem'
 export * from './ExternalLink'
@@ -13,4 +13,4 @@ export * from './ReadonlyAttr'
 export * from './StaticAutocompleteInput'
 
 // Export table row types for type safety
-export type { EntityTableRow, RawEntityTableRow, MasterEntityTableRow } from '../types/table-row'
+export type { BaseEntityTableRow, LegacyEntityTableRow } from '../types/table-row'

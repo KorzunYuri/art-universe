@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { MusicDataConfig } from '../config/musicdataconfig';
 import type {DataSource} from "@/music-universe/sources/shared/types/data-sources.ts";
-import type {MasterEntityType} from "@/music-universe/music-data/types/master-entities.ts";
+import type {MasterEntityType} from "@/music-universe/shared/types/entities.ts";
 
 /**
  * DTO for relation binding status response

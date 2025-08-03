@@ -1,4 +1,4 @@
-import type {MasterEntityType} from "@/music-universe/music-data/types/master-entities.ts";
+import type {MasterEntityType} from "@/music-universe/shared/types/entities.ts";
 import type {DataSource} from "@/music-universe/sources/shared/types/data-sources.ts";
 
 /**

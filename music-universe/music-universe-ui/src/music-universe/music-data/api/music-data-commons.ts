@@ -6,7 +6,7 @@ import {
     type Track,
     type Category,
     type Dimension,
-} from "@/music-universe/music-data/types/master-entities.ts";
+} from "@/music-universe/shared/types/entities.ts";
 import type {
     BatchLookupRequestDTO,
     BatchLookupResponseDTO,
@@ -56,19 +56,19 @@ export async function lookupMasterEntities(
  * Performs batch lookup of entities by multiple names, for page load optimization
  *
  * @param entityType
- * @param names Array of search strings to look up
+ * @param searchTerms Array of search strings to look up
  * @param limit Maximum number of results for each name (default: 10)
  * @returns Object with lookup results grouped by search strings
  */
 export async function batchLookupMasterEntities(
     entityType: MasterEntityType,
-    names: string[],
+    searchTerms: string[],
     limit: number = 10
 ): Promise<BatchLookupResponseDTO> {
     const endpoint = entityToEndpoint[entityType];
     const url = `${MusicDataConfig.baseApiUrl}/${endpoint}/lookup/batch`;
     const request: BatchLookupRequestDTO = {
-        names,
+        searchTerms,
         limit
     };
 

@@ -1,27 +1,27 @@
 // hooks
 import { useState } from "react";
 // components
-import { ExternalLink, ReadonlyAttr } from "@/music-universe/shared/components";
+import {ExternalLink, type LegacyEntityTableRow, ReadonlyAttr} from "@/music-universe/shared/components";
 import { ApprovalToggle } from "@/music-universe/sources/lastfm/components";
 // backend services
 import { LastfmConfig } from "@/music-universe/sources/lastfm/config/lastfmconfig.ts";
 import type { LastfmTrack } from "@/music-universe/sources/lastfm/types/lastfm-track";
 import { updateApprovalStatus } from "@/music-universe/sources/lastfm/api/lastfm-common.ts";
 // types
-import type { RawEntityTableRow } from "@/music-universe/shared/types/table-row";
 // styles
 import sharedTableStyles from "@/music-universe/shared/components/BaseEntityTable/EntityTableStyles.module.scss";
 import trackTableStyles from "../LastfmTracksTable/LastfmTracksTable.module.css";
+import type {ApprovalStatusType} from "@/music-universe/sources/lastfm/constants/approvalStatus.ts";
 
-interface LastfmTrackTableRowProps extends RawEntityTableRow<LastfmTrack> {
+interface LastfmTrackTableRowProps extends LegacyEntityTableRow<LastfmTrack> {
 }
 
 export const LastfmTracksTableRow = ({entity}: LastfmTrackTableRowProps) => {
     const [isApproving, setIsApproving] = useState(false);
 
-    function onStatusChange(trackToUpdate: LastfmTrack, newStatus: number) {
+    function onStatusChange(trackToUpdate: LastfmTrack, newStatus: ApprovalStatusType) {
         setIsApproving(true);
-        updateApprovalStatus(trackToUpdate, newStatus)
+        updateApprovalStatus('track', trackToUpdate.id, newStatus)
             .finally(() => {
                 setIsApproving(false);
             });

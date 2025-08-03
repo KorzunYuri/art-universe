@@ -5,13 +5,12 @@ import {
 } from '@/music-universe/sources/lastfm/components'
 // styles
 import styles from './LastfmArtistsTable.module.css'
-import {useLastfmArtistsTable} from "@/music-universe/sources/lastfm/query/useLastfmArtistsTable.tsx";
+import {useLastfmEntityTable} from "@/music-universe/sources/lastfm/query/useLastfmEntityTable.tsx";
 
 export const LastfmArtistsTable = () => {
 
     const {
         rawEntityIds,
-        rawEntities,
         pagination,
         search,
         sort,
@@ -21,7 +20,7 @@ export const LastfmArtistsTable = () => {
         nextPage,
         prevPage,
         refresh
-    } = useLastfmArtistsTable();
+    } = useLastfmEntityTable("artist");
 
     return (
         <div className={styles.container}>

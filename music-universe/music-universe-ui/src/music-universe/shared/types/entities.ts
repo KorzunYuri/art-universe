@@ -1,130 +1,139 @@
-import type {MasterEntityType} from "@/music-universe/music-data/types/master-entities.ts";
+export type MasterEntityType = "artist" | "album" | "track" | "category" | "dimension";
 
-/**
- * Base interface for all entities
- */
 export interface BaseEntity {
     id: number;
     name: string;
 }
 
-/**
- * Interface for entities that can hold a reference to a master entity
- */
-export interface MasterEntityHolder {
-    /**
-     * Returns the master entity if available
-     */
-    getMasterEntity(): MasterEntity | undefined;
-    
-    /**
-     * Checks if the entity has a master entity reference
-     */
+export interface MasterEntityHolder<T extends MasterEntityType> {
+    getMasterEntity(): MasterEntityMap[T] | undefined;
     hasMasterEntity(): boolean;
 }
 
-/**
- * Interface for master entities (from music-data)
- * Master entities always reference themselves
- */
-export interface MasterEntity extends BaseEntity, MasterEntityHolder {
-    /**
-     * Returns the master entity (self-reference for MasterEntity)
-     */
-    getMasterEntity(): MasterEntity;
-    
-    /**
-     * Always returns true for MasterEntity
-     */
+export interface MasterEntity<T extends MasterEntityType> extends BaseEntity, MasterEntityHolder<T> {
+    getMasterEntity(): MasterEntityMap[T];
     hasMasterEntity(): true;
-    
-    /**
-     * Returns the entity type
-     */
-    getEntityType(): MasterEntityType;
+    getEntityType(): T;
 }
 
-/**
- * Interface for raw entities (from external sources like LastFM)
- * Can be bound to a master entity
- * @template M The type of master entity this raw entity can be bound to
- */
-export interface RawEntity<M extends MasterEntity = MasterEntity> extends BaseEntity, MasterEntityHolder {
-    /**
-     * Reference to the master entity this raw entity is bound to
-     */
-    masterEntity?: M;
-    
-    /**
-     * Returns the master entity if available
-     */
-    getMasterEntity(): M | undefined;
-    
-    /**
-     * Checks if the entity has a master entity reference
-     */
+export interface RawEntity<T extends MasterEntityType>
+    extends BaseEntity,
+        MasterEntityHolder<T> {
+    masterEntity?: MasterEntityMap[T];
+    getMasterEntity(): MasterEntityMap[T] | undefined;
     hasMasterEntity(): boolean;
-    
-    /**
-     * Sets the master entity for this raw entity
-     * @param masterEntity The master entity to bind to this raw entity
-     */
-    setMasterEntity(masterEntity: M | undefined): void;
-    
-    /**
-     * Returns the entity type
-     */
-    getEntityType(): MasterEntityType;
+    setMasterEntity(masterEntity: MasterEntityMap[T] | undefined): void;
+    getEntityType(): T;
 }
 
-/**
- * Default implementation of MasterEntity
- */
-export abstract class BaseMasterEntity implements MasterEntity {
-    id: number;
-    name: string;
-    
-    constructor(id: number, name: string) {
-        this.id = id;
-        this.name = name;
+/** ------------------ Base Implementations ------------------ **/
+
+export abstract class BaseMasterEntity<T extends MasterEntityType> implements MasterEntity<T> {
+    constructor(public id: number, public name: string) {}
+
+    getMasterEntity(): MasterEntityMap[T] {
+        return this as unknown as MasterEntityMap[T];
     }
-    
-    getMasterEntity(): MasterEntity {
-        return this as MasterEntity;
-    }
-    
+
     hasMasterEntity(): true {
         return true;
     }
 
-    abstract getEntityType(): MasterEntityType;
+    abstract getEntityType(): T;
 }
 
-/**
- * Base class for raw entities with common method implementations
- */
-export abstract class BaseRawEntity<M extends MasterEntity = MasterEntity> implements RawEntity<M> {
-    id: number;
-    name: string;
-    masterEntity?: M;
-    
-    constructor(id: number, name: string, masterEntity?: M) {
-        this.id = id;
-        this.name = name;
-        this.masterEntity = masterEntity;
-    }
-    
-    getMasterEntity(): M | undefined {
+export abstract class BaseRawEntity<T extends MasterEntityType>
+    implements RawEntity<T>
+{
+    constructor(public id: number, public name: string, public masterEntity?: MasterEntityMap[T]) {}
+
+    getMasterEntity(): MasterEntityMap[T] | undefined {
         return this.masterEntity;
     }
-    
+
     hasMasterEntity(): boolean {
         return this.masterEntity !== undefined;
     }
-    
-    setMasterEntity(masterEntity: M | undefined): void {
+
+    setMasterEntity(masterEntity: MasterEntityMap[T] | undefined): void {
         this.masterEntity = masterEntity;
     }
-    
-    abstract getEntityType(): MasterEntityType;
+
+    abstract getEntityType(): T;
 }
+
+/** ------------------ Master Entity Interfaces ------------------ **/
+
+export interface Artist extends MasterEntity<"artist"> {}
+export interface Album extends MasterEntity<"album"> {}
+export interface Track extends MasterEntity<"track"> {
+    primaryArtistId: number;
+}
+export interface Category extends MasterEntity<"category"> {
+    parentId?: number | null;
+    parentName?: string | null;
+    dimensionId?: number | null;
+    dimensionName?: string | null;
+    effectiveDimensionId?: number | null;
+    effectiveDimensionName?: string | null;
+}
+export interface Dimension extends MasterEntity<"dimension"> {}
+
+/** ------------------ Master Entity Implementations ------------------ **/
+
+export class ArtistImpl extends BaseMasterEntity<"artist"> implements Artist {
+    getEntityType(): "artist" {
+        return "artist";
+    }
+}
+
+export class AlbumImpl extends BaseMasterEntity<"album"> implements Album {
+    getEntityType(): "album" {
+        return "album";
+    }
+}
+
+export class TrackImpl extends BaseMasterEntity<"track"> implements Track {
+    constructor(id: number, name: string, public primaryArtistId: number) {
+        super(id, name);
+    }
+
+    getEntityType(): "track" {
+        return "track";
+    }
+}
+
+export class CategoryImpl extends BaseMasterEntity<"category"> implements Category {
+    constructor(
+        id: number,
+        name: string,
+        public parentId?: number | null,
+        public parentName?: string | null,
+        public dimensionId?: number | null,
+        public dimensionName?: string | null,
+        public effectiveDimensionId?: number | null,
+        public effectiveDimensionName?: string | null
+    ) {
+        super(id, name);
+    }
+
+    getEntityType(): "category" {
+        return "category";
+    }
+}
+
+export class DimensionImpl extends BaseMasterEntity<"dimension"> implements Dimension {
+    getEntityType(): "dimension" {
+        return "dimension";
+    }
+}
+
+/** ------------------ Master Entity Map ------------------ **/
+
+export type MasterEntityMap = {
+    artist: Artist;
+    album: Album;
+    track: Track;
+    category: Category;
+    dimension: Dimension;
+};

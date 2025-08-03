@@ -1,15 +1,15 @@
-import type { Page } from "@/music-universe/shared/types/page";
 import { LastfmTrack } from "@/music-universe/sources/lastfm/types/lastfm-track";
-import {type BaseLastfmPageSearchParams, fetchEntities} from "@/music-universe/sources/lastfm/api/lastfm-common.ts";
-import type { Track } from "@/music-universe/music-data/types/master-entities";
+import {type BaseLastfmPageSearchParams} from "@/music-universe/sources/lastfm/api/lastfm-common.ts";
+import type { Track } from "@/music-universe/shared/types/entities.ts";
 import type { LastfmArtistDto } from "@/music-universe/sources/lastfm/api/lastfm-artists";
+import type {ApprovalStatusType} from "@/music-universe/sources/lastfm/constants/approvalStatus.ts";
 
 export interface LastfmTrackDto {
     id: number;
     name: string;
     url: string;
     mbid: string | null;
-    approvalStatus: number;
+    approvalStatus: ApprovalStatusType;
     playCount: number | null;
     listenersCount: number | null;
     artist?: LastfmArtistDto;
@@ -37,20 +37,4 @@ export interface LastfmTracksPageSearchParams extends BaseLastfmPageSearchParams
     minPlayCount?: number;
     minListenersCount?: number;
     artistId?: number;
-}
-
-export async function fetchTracks(params: LastfmTracksPageSearchParams): Promise<Page<LastfmTrack>> {
-    return fetchEntities(
-        'track',
-        {
-            search: params.search ?? '',
-            minPlayCount: params.minPlayCount,
-            minListenersCount: params.minListenersCount,
-            artistId: params.artistId,
-            approvalStatuses: params.approvalStatuses,
-            page: params.page ?? 0,
-            size: params.size ?? 20,
-            sort: params.sort ?? 'name,asc',
-        } as LastfmTracksPageSearchParams
-    );
 }

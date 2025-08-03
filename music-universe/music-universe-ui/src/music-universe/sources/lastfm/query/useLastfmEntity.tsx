@@ -1,25 +1,25 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { masterEntityLookupKeys, rawEntitiesKeys } from "@/music-universe/shared/utils/query-keys.ts";
-import type {MasterEntityType} from "@/music-universe/music-data/types/master-entities.ts";
 import type {DataSource} from "@/music-universe/sources/shared/types/data-sources.ts";
-import {LastfmArtist} from "@/music-universe/sources/lastfm/types";
-import {fetchEntity, type SupportedMasterEntityType} from "@/music-universe/sources/lastfm/api/lastfm-common.ts";
+import {
+    fetchLastfmEntity,
+} from "@/music-universe/sources/lastfm/api/lastfm-common.ts";
 import {lookupMasterEntities} from "@/music-universe/music-data/api/music-data-commons.ts";
-import {fetchBoundMasterEntities} from "@/music-universe/music-data/api/music-data-bindings.ts";
+import {fetchBoundMasterEntities} from "@/music-universe/music-data/api/music-data-binding.ts";
+import type {
+    LastfmSupportedEntityType,
+    LastfmSupportedEntityTypeMap
+} from "@/music-universe/sources/lastfm/types/lastfm-entity.ts";
 
-export function useLastfmArtist(
-    entityType: MasterEntityType,
+export function useLastfmEntity<T extends LastfmSupportedEntityType>(
+    entityType: T,
     rawEntityId: number
 ) {
-
+    const dataSource: DataSource = "lastfm";
     const queryClient = useQueryClient();
-
-    // TODO generify component and make dataSource & entityType props or fields
-    const dataSource: DataSource = 'lastfm';
-
     const rawEntityQueryKey = rawEntitiesKeys.detail(dataSource, entityType, rawEntityId);
 
-    const update = (updatedEntity: LastfmArtist) => {
+    const update = (updatedEntity: LastfmSupportedEntityTypeMap[T]) => {
         queryClient.setQueryData(rawEntityQueryKey, updatedEntity);
     }
 
@@ -30,13 +30,12 @@ export function useLastfmArtist(
     const rawEntityQuery = useQuery({
         queryKey: rawEntityQueryKey,
         queryFn: async () => {
-
             // get raw entity
-            const rawEntity = await fetchEntity(entityType as SupportedMasterEntityType , rawEntityId) as LastfmArtist;
+            const rawEntity = await fetchLastfmEntity<T>(entityType, rawEntityId);
 
             // get master entity and lookup for entity name
             const [masterEntityBinding, masterEntityLookup] = await Promise.all([
-                fetchBoundMasterEntities(dataSource, entityType, [rawEntityId]), // no single-binding method atm
+                fetchBoundMasterEntities<T>(dataSource, entityType, [rawEntityId]),
                 lookupMasterEntities(entityType, rawEntity.name),
             ]);
 
@@ -44,8 +43,8 @@ export function useLastfmArtist(
                 ? masterEntityBinding[0].masterEntity
                 : undefined;
 
-            // update entity
-            rawEntity.setMasterEntity(masterEntity)
+            // @ts-expect-error LastfmSupportedMasterEntityType is a subset of MasterEntityType and raw/master entity types correspond to each other
+            rawEntity.setMasterEntity(masterEntity);
 
             // update the cache for master entities lookup
             const masterEntityLookupQueryKey = masterEntityLookupKeys.query(entityType, rawEntity.name);

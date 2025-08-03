@@ -7,24 +7,32 @@ import {
 } from '@/music-universe/sources/lastfm/components'
 // types
 import type { LastfmTag } from '@/music-universe/sources/lastfm/types/lastfm-tag'
-import type { LookupEntity } from '@/music-universe/shared/types/lookup'
-import type { BoundEntityResponse } from '@/music-universe/music-data/utils/master-entities-common.ts'
-import type { Category } from "@/music-universe/music-data/types/master-entities";
+import type { LookupEntity } from '@/music-universe/music-data/types/master-entities-lookup.ts'
+import type {Category, MasterEntityType} from "@/music-universe/shared/types/entities.ts";
 // api
-import { fetchTags, type LastfmTagsPageSearchParams } from '@/music-universe/sources/lastfm/api/lastfm-tags'
-import { fetchBoundCategories, batchLookupCategories } from '@/music-universe/music-data/api/music-data-categories'
+import { type LastfmTagsPageSearchParams } from '@/music-universe/sources/lastfm/api/lastfm-tags'
 // components
 import { LastfmEntityTable } from '@/music-universe/sources/lastfm/components/LastfmEntityTable'
 // utils
-import { CategoryImpl } from '@/music-universe/music-data/types/master-entities'
+import { CategoryImpl } from '@/music-universe/shared/types/entities.ts'
 // styles
 import styles from './LastfmTagsTable.module.css'
+import {batchLookupMasterEntities} from "@/music-universe/music-data/api/music-data-commons.ts";
+import type {DataSource} from "@/music-universe/sources/shared/types/data-sources.ts";
+import {
+    type BoundEntityResponse,
+    fetchBoundMasterEntities
+} from "@/music-universe/music-data/api/music-data-binding.ts";
 
 interface LastfmTagsTableProps {
     initialSearch?: string;
 }
 
 export const LastfmTagsTable = ({ initialSearch = '' }: LastfmTagsTableProps) => {
+
+    const dataSource: DataSource = 'lastfm';
+    const entityType: MasterEntityType = 'category';
+
     // Preloaded lookup data for categories
     const [preloadedLookupData, setPreloadedLookupData] = useState<{[name: string]: LookupEntity[]}>({})
     const [initialSearchApplied, setInitialSearchApplied] = useState(false)
@@ -52,13 +60,8 @@ export const LastfmTagsTable = ({ initialSearch = '' }: LastfmTagsTableProps) =>
                     const tagNames = result.content.map(tag => tag.name)
                     
                     // Perform batch lookup for all tags
-                    const lookupResponse = await batchLookupCategories(tagNames)
-                    
-                    if (lookupResponse.success) {
-                        setPreloadedLookupData(lookupResponse.data.results)
-                    } else {
-                        setPreloadedLookupData({})
-                    }
+                    const lookupResponse = await batchLookupMasterEntities('category', tagNames)
+                    setPreloadedLookupData(lookupResponse.results || {})
                 } catch (error) {
                     console.error('Error performing batch lookup:', error)
                     setPreloadedLookupData({})
@@ -83,7 +86,7 @@ export const LastfmTagsTable = ({ initialSearch = '' }: LastfmTagsTableProps) =>
         <div className={styles.container}>
             <LastfmEntityTable<LastfmTag, Category>
                 fetchEntities={loadTags}
-                fetchMasterEntities={(ids) => fetchBoundCategories('LASTFM', ids)}
+                fetchMasterEntities={(ids) => fetchBoundMasterEntities(dataSource, entityType, ids)}
                 createMasterEntity={createCategory}
                 renderHeader={(sort, setSort) => (
                     <LastfmTagsTableHeader sort={sort} setSort={setSort} />

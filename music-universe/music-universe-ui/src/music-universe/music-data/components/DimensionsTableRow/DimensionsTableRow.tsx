@@ -1,18 +1,17 @@
 // hooks
 import { useState, useEffect } from "react";
 // components
-import { EditableText } from "@/music-universe/shared/components";
+import {EditableText, type LegacyEntityTableRow} from "@/music-universe/shared/components";
 // types
-import type { Dimension } from '@/music-universe/music-data/types/master-entities';
+import type { Dimension } from '@/music-universe/shared/types/entities.ts';
 import type { DimensionSaveRequest } from "@/music-universe/music-data/api/music-data-dimensions";
-import type { MasterEntityTableRow } from "@/music-universe/shared/types/table-row";
 // api
 import { saveDimension } from "@/music-universe/music-data/api/music-data-dimensions";
 // styles
 import sharedStyles from "@/music-universe/shared/components/BaseEntityTable/EntityTableStyles.module.scss";
 import styles from "./DimensionsTableRow.module.css";
 
-interface DimensionsTableRowProps extends MasterEntityTableRow<Dimension> {
+interface DimensionsTableRowProps extends LegacyEntityTableRow<Dimension> {
     // no dimension-unique fields
 }
 

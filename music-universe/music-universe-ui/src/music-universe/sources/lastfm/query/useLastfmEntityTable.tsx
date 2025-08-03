@@ -1,14 +1,17 @@
 import type {SearchParams} from "@/music-universe/shared/components/BaseEntityTable/BaseEntityTable.tsx";
 import {useState} from "react";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
-import {fetchArtists} from "@/music-universe/sources/lastfm/api/lastfm-artists.ts";
 import {masterEntityLookupKeys, rawEntitiesKeys} from "@/music-universe/shared/utils/query-keys.ts";
 import type {DataSource} from "@/music-universe/sources/shared/types/data-sources.ts";
-import type {MasterEntityType} from "@/music-universe/music-data/types/master-entities.ts";
 import { batchLookupMasterEntities } from "@/music-universe/music-data/api/music-data-commons.ts";
-import {fetchBoundMasterEntities} from "@/music-universe/music-data/api/music-data-bindings.ts";
+import {fetchBoundMasterEntities} from "@/music-universe/music-data/api/music-data-binding.ts";
+import {fetchLastfmEntities} from "@/music-universe/sources/lastfm/api/lastfm-common.ts";
+import type {LastfmSupportedEntityType} from "@/music-universe/sources/lastfm/types/lastfm-entity.ts";
 
-export function useLastfmArtistsTable(initialParams: Partial<SearchParams> = {}) {
+export function useLastfmEntityTable<T extends LastfmSupportedEntityType>(
+    entityType: T,
+    initialParams: Partial<SearchParams> = {}
+) {
     const queryClient = useQueryClient();
     const [params, setParams] = useState<SearchParams>({
         page: 0,
@@ -20,7 +23,6 @@ export function useLastfmArtistsTable(initialParams: Partial<SearchParams> = {})
 
     // Constants for this component
     const dataSource: DataSource = 'lastfm';
-    const entityType: MasterEntityType = "artist";
 
     const rawEntitiesPageQueryKey = rawEntitiesKeys.list(dataSource, entityType, params);
     const rawEntitiesPageQuery = useQuery({
@@ -30,7 +32,7 @@ export function useLastfmArtistsTable(initialParams: Partial<SearchParams> = {})
             console.log("batch artist fetch triggered")
 
             // get raw entities
-            const rawEntitiesPage = await fetchArtists(params);
+            const rawEntitiesPage = await fetchLastfmEntities<T>(entityType, params);
             const rawEntities = rawEntitiesPage.content;
             const rawEntityIds = rawEntities.map((entity) => entity.id);
             const rawEntityNames = rawEntities.map((entity) => entity.name);
@@ -44,6 +46,7 @@ export function useLastfmArtistsTable(initialParams: Partial<SearchParams> = {})
             // merge the changes
             const combinedEntities = rawEntities.map((raw) => {
                 const boundEntityInfo = masterEntityBindings.find((e) => e.externalId === raw.id);
+                // @ts-expect-error LastfmSupportedMasterEntityType is a subset of MasterEntityType and raw/master entity types correspond to each other
                 raw.setMasterEntity(boundEntityInfo?.masterEntity);
                 return raw;
             });

@@ -1,14 +1,15 @@
 import {BaseRawEntity} from "@/music-universe/shared/types/entities.ts";
 import type {LastfmEntity} from "./lastfm-entity";
-import type {Artist, MasterEntityType} from "@/music-universe/music-data/types/master-entities";
+import type {Artist} from "@/music-universe/shared/types/entities.ts";
+import type {ApprovalStatusType} from "@/music-universe/sources/lastfm/constants/approvalStatus.ts";
 
 /**
  * LastFM Artist entity that extends BaseRawEntity and implements LastfmEntity
  */
-export class LastfmArtist extends BaseRawEntity<Artist> implements LastfmEntity<Artist> {
+export class LastfmArtist extends BaseRawEntity<"artist"> implements LastfmEntity<"artist"> {
     url: string;
     mbid: string | null;
-    approvalStatus: number;
+    approvalStatus: ApprovalStatusType;
     playCount: number | null;
     listenersCount: number | null;
 
@@ -17,7 +18,7 @@ export class LastfmArtist extends BaseRawEntity<Artist> implements LastfmEntity<
         name: string,
         url: string,
         mbid: string | null,
-        approvalStatus: number,
+        approvalStatus: ApprovalStatusType,
         playCount: number | null,
         listenersCount: number | null,
         masterEntity?: Artist
@@ -30,11 +31,11 @@ export class LastfmArtist extends BaseRawEntity<Artist> implements LastfmEntity<
         this.listenersCount = listenersCount;
     }
 
-    getEntityType(): MasterEntityType {
+    getEntityType(): "artist" {
         return "artist";
     }
-    
-    setApprovalStatus(approvalStatus: number): void {
+
+    setApprovalStatus(approvalStatus: ApprovalStatusType): void {
         this.approvalStatus = approvalStatus;
     }
 }

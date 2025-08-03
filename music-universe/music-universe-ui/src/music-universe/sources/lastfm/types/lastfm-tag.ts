@@ -1,13 +1,14 @@
-import { BaseRawEntity } from "@/music-universe/shared/types/entities.ts";
-import type { LastfmEntity } from "./lastfm-entity";
-import type {Category, MasterEntityType} from "@/music-universe/music-data/types/master-entities";
+import {BaseRawEntity} from "@/music-universe/shared/types/entities.ts";
+import type {LastfmEntity} from "./lastfm-entity";
+import type {Category} from "@/music-universe/shared/types/entities.ts";
+import type {ApprovalStatusType} from "@/music-universe/sources/lastfm/constants/approvalStatus.ts";
 
 /**
  * LastFM Tag entity that extends BaseRawEntity and implements LastfmEntity
  */
-export class LastfmTag extends BaseRawEntity<Category> implements LastfmEntity<Category> {
+export class LastfmTag extends BaseRawEntity<"category"> implements LastfmEntity<"category"> {
     url: string | null;
-    approvalStatus: number;
+    approvalStatus: ApprovalStatusType;
     usageCount: number | null;
     usageUsersCount: number | null;
 
@@ -15,7 +16,7 @@ export class LastfmTag extends BaseRawEntity<Category> implements LastfmEntity<C
         id: number,
         name: string,
         url: string | null,
-        approvalStatus: number,
+        approvalStatus: ApprovalStatusType,
         usageCount: number | null,
         usageUsersCount: number | null,
         masterEntity?: Category
@@ -27,11 +28,11 @@ export class LastfmTag extends BaseRawEntity<Category> implements LastfmEntity<C
         this.usageUsersCount = usageUsersCount;
     }
 
-    getEntityType(): MasterEntityType {
+    getEntityType(): "category" {
         return "category";
     }
 
-    setApprovalStatus(approvalStatus: number): void {
+    setApprovalStatus(approvalStatus: ApprovalStatusType): void {
         this.approvalStatus = approvalStatus;
     }
 }
@@ -43,7 +44,7 @@ export function createLastfmTag(
     id: number,
     name: string,
     url: string | null,
-    approvalStatus: number,
+    approvalStatus: ApprovalStatusType,
     usageCount: number | null,
     usageUsersCount: number | null,
     masterEntity?: Category

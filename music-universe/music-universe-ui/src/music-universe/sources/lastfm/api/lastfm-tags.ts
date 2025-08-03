@@ -1,15 +1,15 @@
 import { LastfmConfig } from "@/music-universe/sources/lastfm/config/lastfmconfig";
 import axios from 'axios';
-import {type BaseLastfmPageSearchParams, fetchEntities} from "@/music-universe/sources/lastfm/api/lastfm-common.ts";
-import type { Page } from "@/music-universe/shared/types/page.ts";
+import {type BaseLastfmPageSearchParams} from "@/music-universe/sources/lastfm/api/lastfm-common.ts";
 import { LastfmTag } from "@/music-universe/sources/lastfm/types";
-import type { Category } from "@/music-universe/music-data/types/master-entities";
+import type { Category } from "@/music-universe/shared/types/entities.ts";
+import type {ApprovalStatusType} from "@/music-universe/sources/lastfm/constants/approvalStatus.ts";
 
 export interface LastfmTagDto {
     id: number;
     name: string;
     url: string | null;
-    approvalStatus: number;
+    approvalStatus: ApprovalStatusType;
     usageCount: number | null;
     usageUsersCount: number | null;
 }
@@ -33,28 +33,15 @@ export function createLastfmTagFromDto(dto: LastfmTagDto, masterEntity?: Categor
 export interface LastfmTagsPageSearchParams extends BaseLastfmPageSearchParams{
 }
 
-export async function fetchTags(params: LastfmTagsPageSearchParams) : Promise<Page<LastfmTag>> {
-    return fetchEntities(
-        'category',
-        {
-            search: params.search ?? '',
-            approvalStatuses: params.approvalStatuses,
-            page: params.page ?? 0,
-            size: params.size ?? 20,
-            sort: params.sort ?? 'name,asc',
-        } as LastfmTagsPageSearchParams
-    )
-}
-
 /**
  * DTO for tags associated with a specific entity
  */
 export interface EntityTagDto {
     id: number;
     name: string;
-    approvalStatus: number;
+    approvalStatus: ApprovalStatusType;
     tagApprovalStatus: number;
-    entityApprovalStatus: number;
+    entityApprovalStatus: ApprovalStatusType;
     usageCount: number | null;
 }
 

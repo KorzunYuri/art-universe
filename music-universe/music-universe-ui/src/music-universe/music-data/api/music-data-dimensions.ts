@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { MusicDataConfig } from '../config/musicdataconfig';
 import type { Page } from '@/music-universe/shared/types/page';
-import { type Dimension, DimensionImpl } from '@/music-universe/music-data/types/master-entities';
+import { type Dimension, DimensionImpl } from '@/music-universe/shared/types/entities.ts';
 
 export interface DimensionDto {
     id: number;

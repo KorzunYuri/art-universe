@@ -10,7 +10,8 @@ import {
     type Track, TrackImpl,
     type Category, CategoryImpl,
     type Dimension, DimensionImpl,
-} from "@/music-universe/music-data/types/master-entities.ts";
+    type RawEntity
+} from "@/music-universe/shared/types/entities.ts";
 import {entityToEndpoint, type EntityTypeMap} from "@/music-universe/music-data/api/music-data-commons.ts";
 import axios from "axios";
 import {MusicDataConfig} from "@/music-universe/music-data/config/musicdataconfig.ts";
@@ -23,7 +24,7 @@ interface CreateAndBindRequest {
 }
 
 interface TrackCreateAndBindRequest extends CreateAndBindRequest {
-    artistExternalId: number;
+    artistExternalId: number | undefined;
 }
 
 export interface BoundEntityResponse {
@@ -45,7 +46,7 @@ type EntityBindingResponseMap = {
     dimension:  BoundEntityResponse;
 }
 
-type EntityCreateAndBindRequestMap = {
+export type EntityCreateAndBindRequestMap = {
     artist:     CreateAndBindRequest;
     album:      CreateAndBindRequest;
     track:      TrackCreateAndBindRequest;
@@ -83,7 +84,7 @@ const bindingResponseMappers: {
 /**
  * Bound entity response adapted for UI needs
  */
-interface BoundEntityInfo<K extends MasterEntityType> {
+export interface BoundEntityInfo<K extends MasterEntityType> {
     dataSource: DataSource;
     entityType: K;
     externalId: number;
@@ -163,23 +164,33 @@ export async function bindRawEntityToExistingMaster<K extends MasterEntityType>(
  *
  * @param dataSource
  * @param entityType
- * @param externalId The data source entity ID
- * @param request the necessary parameters
+ * @param rawEntityId
+ * @param request
  * @returns The bound master entity
  */
 export async function bindRawEntityToNewMaster<K extends MasterEntityType>(
     dataSource: DataSource,
     entityType: K,
-    externalId: number,
+    rawEntityId: number,
     request: EntityCreateAndBindRequestMap[K]
 ): Promise<BoundEntityInfo<K>> {
     const endpoint = entityToEndpoint[entityType];
     const response = await axios.post<EntityBindingResponseMap[K]>(
-        `${MusicDataConfig.baseApiUrl}/${endpoint}/bind/new/${dataSource}/${externalId}`,
+        `${MusicDataConfig.baseApiUrl}/${endpoint}/bind/new/${dataSource}/${rawEntityId}`,
         request
     );
 
     return makeEntityInfoMapper(entityType)(response.data);
+}
+
+/**
+ * Converter of raw entities to CreateAndBindRequest, to be implemented by every data source
+ * Unifying the raw entities' structure for these need is inconvenient so we will let the caller make the job.
+ */
+export interface RawEntityToCreateAndBindRequestConverter {
+    toBindRequest<T extends MasterEntityType>(
+        entity: RawEntity<T>
+    ): EntityCreateAndBindRequestMap[T];
 }
 
 /**

@@ -3,11 +3,11 @@ import sharedStyles from "@/music-universe/shared/components/BaseEntityTable/Ent
 import artistStyles from "@/music-universe/sources/lastfm/components/LastfmArtistsTable/LastfmArtistsTable.module.css";
 
 interface Props {
-    sort: string
+    sort?: string
     setSort: (value: string) => void
 }
 
-export const LastfmArtistsTableHeader = ({ sort, setSort }: Props) => {
+export const LastfmArtistsTableHeader = ({ sort = '', setSort }: Props) => {
     const currentField = sort?.split(',')[0]
     const currentDir = sort?.split(',')[1] ?? 'asc'
 

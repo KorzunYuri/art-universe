@@ -10,7 +10,7 @@ export interface LookupEntity {
  * Generic request DTO for batch lookup operations
  */
 export interface BatchLookupRequestDTO {
-    names: string[];
+    searchTerms: string[];
     limit?: number;
 }
 
