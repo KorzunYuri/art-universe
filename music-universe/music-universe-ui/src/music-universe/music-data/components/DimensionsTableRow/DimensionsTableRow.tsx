@@ -1,7 +1,7 @@
 // hooks
-import { useState, useEffect } from "react";
+import { useState } from "react";
 // components
-import {type BaseEntityTableRow, EditableText, type LegacyEntityTableRow} from "@/music-universe/shared/components";
+import {type BaseEntityTableRow, EditableText} from "@/music-universe/shared/components";
 // types
 import type { DimensionSaveRequest } from "@/music-universe/music-data/api/music-data-dimensions";
 // api

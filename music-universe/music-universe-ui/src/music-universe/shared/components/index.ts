@@ -10,4 +10,4 @@ export * from './ReadonlyAttr'
 export * from './StaticAutocompleteInput'
 
 // Export table row types for type safety
-export type { BaseEntityTableRow, LegacyEntityTableRow } from '../types/table-row'
+export type { BaseEntityTableRow } from '../types/table-row'
