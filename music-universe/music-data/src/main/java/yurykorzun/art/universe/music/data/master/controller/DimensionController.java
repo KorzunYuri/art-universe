@@ -8,8 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.music.data.master.dto.DimensionDto;
 import yurykorzun.art.universe.music.data.master.dto.DimensionSaveRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
-import yurykorzun.art.universe.music.data.master.exception.DataAccessException;
-import yurykorzun.art.universe.music.data.master.exception.EntityNotFoundException;
+import yurykorzun.art.universe.music.data.master.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.service.DimensionService;
 
 import java.util.List;
@@ -24,16 +23,17 @@ public class DimensionController {
         this.dimensionService = dimensionService;
     }
 
-    @GetMapping("/search")
-    public Page<DimensionDto> searchDimensions(
+    @GetMapping
+    public Page<DimensionDto> findDimensions(
         @RequestParam(required = false) String query,
         @PageableDefault(size = 20, sort = "name") Pageable pageable
     ) {
-        try {
-            return dimensionService.searchDimensions(query, pageable);
-        } catch (Exception e) {
-            throw new DataAccessException(String.format("Failed to search dimensions: %s", e.getMessage()), e);
-        }
+        return dimensionService.findDimensions(query, pageable);
+    }
+
+    @GetMapping("/{id}")
+    public DimensionDto getDimension(@PathVariable Long id) {
+        return dimensionService.getDimension(id);
     }
 
     @GetMapping("/lookup")
@@ -41,38 +41,24 @@ public class DimensionController {
         @RequestParam(required = false) String searchTerm,
         @RequestParam(required = false) Integer limit
     ) {
-        try {
-            return limit != null
-                ? dimensionService.lookupDimensions(searchTerm, limit)
-                : dimensionService.lookupDimensions(searchTerm);
-        } catch (Exception e) {
-            throw new DataAccessException(String.format("Failed to lookup dimensions: %s", e.getMessage()), e);
-        }
+        return limit != null
+            ? dimensionService.lookupDimensions(searchTerm, limit)
+            : dimensionService.lookupDimensions(searchTerm);
     }
 
     @PostMapping
     public DimensionDto saveDimension(
         @Valid @RequestBody DimensionSaveRequestDTO request
     ) {
-        try {
-            return dimensionService.saveDimension(request);
-        } catch (Exception e) {
-            throw new DataAccessException(String.format("Failed to save dimension: %s", e.getMessage()), e);
-        }
+        return dimensionService.saveDimension(request);
     }
 
     @DeleteMapping("/{id}")
     public boolean deleteDimension(@PathVariable Long id) {
-        try {
-            boolean deleted = dimensionService.deleteDimension(id);
-            if (!deleted) {
-                throw new EntityNotFoundException("Dimension", id);
-            }
-            return true;
-        } catch (EntityNotFoundException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new DataAccessException(String.format("Failed to delete dimension: %s", e.getMessage()), e);
+        boolean deleted = dimensionService.deleteDimension(id);
+        if (!deleted) {
+            throw new CustomEntityNotFoundException("Dimension", id);
         }
+        return true;
     }
 }

@@ -14,16 +14,12 @@ import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.exception.DataAccessException;
-import yurykorzun.art.universe.music.data.master.exception.EntityBindingException;
 import yurykorzun.art.universe.music.data.master.service.ArtistService;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -60,21 +56,21 @@ class ArtistControllerTest {
     }
     
     @Test
-    void findBoundArtists_whenExceptionThrown_shouldThrowDataAccessException() {
+    void findBoundArtists_whenExceptionThrown_shouldPassThroughException() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         List<Long> externalIds = List.of(1L, 2L);
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
         
         when(artistService.findBoundArtists(dataSource, externalIds))
-            .thenThrow(new RuntimeException(errorMessage));
+            .thenThrow(expectedException);
 
         // When & Then
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> 
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
             artistController.findBoundArtists(dataSource, externalIds)
         );
         
-        assertEquals("Failed to get bound artists: " + errorMessage, exception.getMessage());
+        assertSame(expectedException, exception);
         verify(artistService).findBoundArtists(dataSource, externalIds);
     }
     
@@ -116,20 +112,20 @@ class ArtistControllerTest {
     }
     
     @Test
-    void lookupArtists_whenExceptionThrown_shouldThrowDataAccessException() {
+    void lookupArtists_whenExceptionThrown_shouldPassThroughException() {
         // Given
         String search = "radio";
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
         
         when(artistService.lookupArtists(any(LookupRequestDTO.class)))
-            .thenThrow(new RuntimeException(errorMessage));
+            .thenThrow(expectedException);
             
         // When & Then
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> 
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
             artistController.lookupArtists(search, null)
         );
         
-        assertEquals("Failed to lookup artists: " + errorMessage, exception.getMessage());
+        assertSame(expectedException, exception);
         verify(artistService).lookupArtists(any(LookupRequestDTO.class));
     }
     
@@ -160,26 +156,26 @@ class ArtistControllerTest {
     }
     
     @Test
-    void bindToExisting_whenExceptionThrown_shouldThrowEntityBindingException() {
+    void bindToExisting_whenExceptionThrown_shouldPassThroughException() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
         Long masterId = 101L;
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
         
         EntityBindToExistingRequestDTO request = EntityBindToExistingRequestDTO.builder()
             .masterId(masterId)
             .build();
         
         when(artistService.bindToExisting(dataSource, externalId, request))
-            .thenThrow(new RuntimeException(errorMessage));
+            .thenThrow(expectedException);
 
         // When & Then
-        EntityBindingException exception = assertThrows(EntityBindingException.class, () -> 
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
             artistController.bindToExisting(dataSource, externalId, request)
         );
         
-        assertEquals("Failed to bind artist to existing: " + errorMessage, exception.getMessage());
+        assertSame(expectedException, exception);
         verify(artistService).bindToExisting(dataSource, externalId, request);
     }
     
@@ -210,26 +206,26 @@ class ArtistControllerTest {
     }
     
     @Test
-    void createAndBind_whenExceptionThrown_shouldThrowEntityBindingException() {
+    void createAndBind_whenExceptionThrown_shouldPassThroughException() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
         String artistName = "Test Artist";
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
         
         EntityCreateAndBindRequestDTO request = EntityCreateAndBindRequestDTO.builder()
             .entityName(artistName)
             .build();
         
         when(artistService.createAndBind(dataSource, externalId, request))
-            .thenThrow(new RuntimeException(errorMessage));
+            .thenThrow(expectedException);
 
         // When & Then
-        EntityBindingException exception = assertThrows(EntityBindingException.class, () -> 
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
             artistController.createAndBind(dataSource, externalId, request)
         );
         
-        assertEquals("Failed to create and bind artist: " + errorMessage, exception.getMessage());
+        assertSame(expectedException, exception);
         verify(artistService).createAndBind(dataSource, externalId, request);
     }
     
@@ -250,21 +246,21 @@ class ArtistControllerTest {
     }
     
     @Test
-    void unbindArtist_whenExceptionThrown_shouldThrowEntityBindingException() {
+    void unbindArtist_whenExceptionThrown_shouldPassThroughException() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
 
         when(artistService.unbindArtist(dataSource, externalId))
-            .thenThrow(new RuntimeException(errorMessage));
+            .thenThrow(expectedException);
 
         // When & Then
-        EntityBindingException exception = assertThrows(EntityBindingException.class, () -> 
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
             artistController.unbindArtist(dataSource, externalId)
         );
         
-        assertEquals("Failed to unbind artist: " + errorMessage, exception.getMessage());
+        assertSame(expectedException, exception);
         verify(artistService).unbindArtist(dataSource, externalId);
     }
     
@@ -303,11 +299,11 @@ class ArtistControllerTest {
     }
     
     @Test
-    void batchLookupArtists_whenExceptionThrown_shouldThrowDataAccessException() {
+    void batchLookupArtists_whenExceptionThrown_shouldPassThroughException() {
         // Given
         List<String> searchTerms = List.of("radio", "queen");
         Integer limit = 10;
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
         
         BaseBatchLookupRequestDTO request = BaseBatchLookupRequestDTO.builder()
             .searchRequests(createLookupRequests(searchTerms))
@@ -315,14 +311,14 @@ class ArtistControllerTest {
             .build();
         
         when(artistService.batchLookupArtists(request))
-            .thenThrow(new RuntimeException(errorMessage));
+            .thenThrow(expectedException);
         
         // When & Then
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> 
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
             artistController.batchLookupArtists(request)
         );
         
-        assertEquals("Failed to batch lookup artists: " + errorMessage, exception.getMessage());
+        assertSame(expectedException, exception);
         verify(artistService).batchLookupArtists(request);
     }
     

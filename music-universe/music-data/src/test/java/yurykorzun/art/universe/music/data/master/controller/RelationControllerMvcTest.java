@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import yurykorzun.art.universe.music.data.master.config.WebMvcTestConfig;
-import yurykorzun.art.universe.music.data.master.dto.EntityDTO;
+import yurykorzun.art.universe.music.data.master.dto.relation.RelatedEntityDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingStatusDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.TargetEntityBindingDTO;
@@ -82,7 +82,7 @@ class RelationControllerMvcTest {
     }
 
     @Test
-    void bindExternalRelation_whenExceptionThrown_shouldReturnErrorResponse() throws Exception {
+    void bindExternalRelation_whenExceptionThrown_shouldBeHandledByGlobalExceptionHandler() throws Exception {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         EntityType sourceEntityType = EntityType.ARTIST;
@@ -99,7 +99,7 @@ class RelationControllerMvcTest {
         mockMvc.perform(post("/api/v1/relations/bind/{dataSource}/{sourceEntityType}/{sourceExternalEntityId}/{targetEntityType}/{targetExternalEntityId}",
                 dataSource.name(), sourceEntityType.getName(), sourceExternalEntityId, targetEntityType.getName(), targetExternalEntityId))
             .andDo(print())
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isInternalServerError());
 
         verify(relationService).bindExternalRelation(
             eq(dataSource), eq(sourceEntityType), eq(sourceExternalEntityId), eq(targetEntityType), eq(targetExternalEntityId)
@@ -134,7 +134,7 @@ class RelationControllerMvcTest {
     }
 
     @Test
-    void unbindExternalRelation_whenExceptionThrown_shouldReturnErrorResponse() throws Exception {
+    void unbindExternalRelation_whenExceptionThrown_shouldBeHandledByGlobalExceptionHandler() throws Exception {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         EntityType sourceEntityType = EntityType.ARTIST;
@@ -151,7 +151,7 @@ class RelationControllerMvcTest {
         mockMvc.perform(delete("/api/v1/relations/unbind/{dataSource}/{sourceEntityType}/{sourceExternalEntityId}/{targetEntityType}/{targetExternalEntityId}",
                 dataSource.name(), sourceEntityType.getName(), sourceExternalEntityId, targetEntityType.getName(), targetExternalEntityId))
             .andDo(print())
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isInternalServerError());
 
         verify(relationService).unbindExternalRelation(
             eq(dataSource), eq(sourceEntityType), eq(sourceExternalEntityId), eq(targetEntityType), eq(targetExternalEntityId)
@@ -216,7 +216,7 @@ class RelationControllerMvcTest {
     }
 
     @Test
-    void findBoundExternalRelations_whenExceptionThrown_shouldReturnErrorResponse() throws Exception {
+    void findBoundExternalRelations_whenExceptionThrown_shouldBeHandledByGlobalExceptionHandler() throws Exception {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         EntityType sourceEntityType = EntityType.ARTIST;
@@ -247,13 +247,13 @@ class RelationControllerMvcTest {
         Long sourceEntityId = 123L;
         EntityType targetEntityType = EntityType.CATEGORY;
 
-        List<EntityDTO> entities = Arrays.asList(
-            EntityDTO.builder()
+        List<RelatedEntityDTO> entities = Arrays.asList(
+            RelatedEntityDTO.builder()
                 .id(1L)
                 .name("Category 1")
                 .entityType(targetEntityType)
                 .build(),
-            EntityDTO.builder()
+            RelatedEntityDTO.builder()
                 .id(2L)
                 .name("Category 2")
                 .entityType(targetEntityType)
@@ -279,7 +279,7 @@ class RelationControllerMvcTest {
     }
 
     @Test
-    void getRelatedEntities_whenExceptionThrown_shouldReturnErrorResponse() throws Exception {
+    void getRelatedEntities_whenExceptionThrown_shouldBeHandledByGlobalExceptionHandler() throws Exception {
         // Given
         EntityType sourceEntityType = EntityType.ARTIST;
         Long sourceEntityId = 123L;
@@ -329,7 +329,7 @@ class RelationControllerMvcTest {
     }
 
     @Test
-    void createInternalRelation_whenExceptionThrown_shouldReturnErrorResponse() throws Exception {
+    void createInternalRelation_whenExceptionThrown_shouldBeHandledByGlobalExceptionHandler() throws Exception {
         // Given
         EntityType sourceEntityType = EntityType.ARTIST;
         Long sourceEntityId = 123L;
@@ -379,7 +379,7 @@ class RelationControllerMvcTest {
     }
 
     @Test
-    void deleteInternalRelation_whenExceptionThrown_shouldReturnErrorResponse() throws Exception {
+    void deleteInternalRelation_whenExceptionThrown_shouldBeHandledByGlobalExceptionHandler() throws Exception {
         // Given
         EntityType sourceEntityType = EntityType.ARTIST;
         Long sourceEntityId = 123L;
@@ -421,7 +421,7 @@ class RelationControllerMvcTest {
     }
 
     @Test
-    void deleteInternalRelationById_whenExceptionThrown_shouldReturnErrorResponse() throws Exception {
+    void deleteInternalRelationById_whenExceptionThrown_shouldBeHandledByGlobalExceptionHandler() throws Exception {
         // Given
         Long relationId = 123L;
         String errorMessage = "Test error";

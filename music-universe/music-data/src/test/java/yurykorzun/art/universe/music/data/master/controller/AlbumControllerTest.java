@@ -12,7 +12,6 @@ import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupR
 import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.exception.DataAccessException;
 import yurykorzun.art.universe.music.data.master.service.AlbumService;
 
 import java.util.Arrays;
@@ -58,21 +57,21 @@ public class AlbumControllerTest {
     }
 
     @Test
-    void findBoundAlbums_whenExceptionThrown_shouldThrowDataAccessException() {
+    void findBoundAlbums_whenExceptionThrown_shouldPassThroughException() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         List<Long> externalIds = Arrays.asList(101L, 102L);
-        String errorMessage = "Test exception";
+        RuntimeException expectedException = new RuntimeException("Test exception");
         
         when(albumService.findBoundAlbums(dataSource, externalIds))
-            .thenThrow(new RuntimeException(errorMessage));
+            .thenThrow(expectedException);
 
         // When & Then
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> 
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
             albumController.findBoundAlbums(dataSource, externalIds)
         );
         
-        assertEquals("Failed to get bound albums: " + errorMessage, exception.getMessage());
+        assertSame(expectedException, exception);
         verify(albumService).findBoundAlbums(dataSource, externalIds);
     }
     
@@ -97,6 +96,7 @@ public class AlbumControllerTest {
     void lookupAlbums_shouldReturnListOfLookupResults() {
         // Given
         String searchTerm = "computer";
+        DataSource dataSource = DataSource.LASTFM;
         Long masterArtistId = 123L;
         Long externalArtistId = null;
         Integer limit = null;
@@ -109,7 +109,7 @@ public class AlbumControllerTest {
             .thenReturn(expectedAlbums);
             
         // When
-        List<LookupResultDTO> result = albumController.lookupAlbums(searchTerm, masterArtistId, externalArtistId, limit);
+        List<LookupResultDTO> result = albumController.lookupAlbums(searchTerm, dataSource, masterArtistId, externalArtistId, limit);
             
         // Then
         assertEquals(expectedAlbums, result);
@@ -120,6 +120,7 @@ public class AlbumControllerTest {
     void lookupAlbums_withAllParameters_shouldReturnListOfLookupResults() {
         // Given
         String searchTerm = "computer";
+        DataSource dataSource = DataSource.LASTFM;
         Long masterArtistId = 123L;
         Long externalArtistId = 456L;
         Integer limit = 10;
@@ -131,7 +132,7 @@ public class AlbumControllerTest {
             .thenReturn(expectedAlbums);
             
         // When
-        List<LookupResultDTO> result = albumController.lookupAlbums(searchTerm, masterArtistId, externalArtistId, limit);
+        List<LookupResultDTO> result = albumController.lookupAlbums(searchTerm, dataSource, masterArtistId, externalArtistId, limit);
             
         // Then
         assertEquals(expectedAlbums, result);
@@ -146,21 +147,22 @@ public class AlbumControllerTest {
     }
     
     @Test
-    void lookupAlbums_whenExceptionThrown_shouldThrowDataAccessException() {
+    void lookupAlbums_whenExceptionThrown_shouldPassThroughException() {
         // Given
         String searchTerm = "computer";
+        DataSource dataSource = DataSource.LASTFM;
         Long masterArtistId = 123L;
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
         
         when(albumService.lookupAlbums(any(ArtistRelatedLookupRequestDTO.class)))
-            .thenThrow(new RuntimeException(errorMessage));
+            .thenThrow(expectedException);
             
         // When & Then
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> 
-            albumController.lookupAlbums(searchTerm, masterArtistId, null, null)
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+            albumController.lookupAlbums(searchTerm, dataSource, masterArtistId, null, null)
         );
         
-        assertEquals("Failed to lookup albums: " + errorMessage, exception.getMessage());
+        assertSame(expectedException, exception);
         verify(albumService).lookupAlbums(any(ArtistRelatedLookupRequestDTO.class));
     }
     
@@ -207,7 +209,7 @@ public class AlbumControllerTest {
     }
     
     @Test
-    void batchLookupAlbums_whenExceptionThrown_shouldThrowDataAccessException() {
+    void batchLookupAlbums_whenExceptionThrown_shouldPassThroughException() {
         // Given
         ArtistRelatedLookupRequestDTO request = ArtistRelatedLookupRequestDTO.builder()
             .search("computer")
@@ -220,17 +222,17 @@ public class AlbumControllerTest {
             .limit(10)
             .build();
         
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
         
         when(albumService.batchLookupAlbums(batchRequest))
-            .thenThrow(new RuntimeException(errorMessage));
+            .thenThrow(expectedException);
         
         // When & Then
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> 
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
             albumController.batchLookupAlbums(batchRequest)
         );
         
-        assertEquals("Failed to batch lookup albums: " + errorMessage, exception.getMessage());
+        assertSame(expectedException, exception);
         verify(albumService).batchLookupAlbums(batchRequest);
     }
 }

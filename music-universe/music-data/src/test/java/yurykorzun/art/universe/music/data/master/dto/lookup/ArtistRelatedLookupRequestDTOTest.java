@@ -70,36 +70,14 @@ class ArtistRelatedLookupRequestDTOTest {
     }
 
     @Test
-    void shouldFailValidation_whenDataSourceIsNull() {
-        // Given
-        ArtistRelatedLookupRequestDTO dto = ArtistRelatedLookupRequestDTO.builder()
-            .search("test")
-            .limit(10)
-            .masterArtistId(123L)
-            .externalArtistId(456L)
-            .dataSource(null)
-            .build();
-        
-        // When
-        Set<ConstraintViolation<ArtistRelatedLookupRequestDTO>> violations = validator.validate(dto);
-        
-        // Then
-        assertEquals(1, violations.size());
-        ConstraintViolation<ArtistRelatedLookupRequestDTO> violation = violations.iterator().next();
-        assertEquals("dataSource", violation.getPropertyPath().toString());
-        assertEquals("Data source is required", violation.getMessage());
-    }
-
-    @Test
     void shouldCreateValidDTO_withOptionalFieldsNull() {
         // Given
         String search = "test";
-        DataSource dataSource = DataSource.LASTFM;
         
         // When
         ArtistRelatedLookupRequestDTO dto = ArtistRelatedLookupRequestDTO.builder()
             .search(search)
-            .dataSource(dataSource)
+            .dataSource(null)
             .limit(null)
             .masterArtistId(null)
             .externalArtistId(null)
@@ -107,7 +85,7 @@ class ArtistRelatedLookupRequestDTOTest {
         
         // Then
         assertEquals(search, dto.getSearch());
-        assertEquals(dataSource, dto.getDataSource());
+        assertNull(dto.getDataSource());
         assertNull(dto.getLimit());
         assertNull(dto.getMasterArtistId());
         assertNull(dto.getExternalArtistId());

@@ -1,6 +1,5 @@
 package yurykorzun.art.universe.music.data.master.dto.lookup;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -16,9 +15,6 @@ import yurykorzun.art.universe.music.data.master.entity.DataSource;
 public class ArtistRelatedLookupRequestDTO extends LookupRequestDTO {
 
     private Long masterArtistId;
-
-    @NotNull(message = "Data source is required")
     private DataSource dataSource;
-
     private Long externalArtistId;
 }

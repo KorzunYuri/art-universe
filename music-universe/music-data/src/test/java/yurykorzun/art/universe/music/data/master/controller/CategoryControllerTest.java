@@ -21,9 +21,7 @@ import yurykorzun.art.universe.music.data.master.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.TestCategoryHierarchyProjectionImpl;
 import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.exception.DataAccessException;
-import yurykorzun.art.universe.music.data.master.exception.EntityBindingException;
-import yurykorzun.art.universe.music.data.master.exception.EntityNotFoundException;
+import yurykorzun.art.universe.music.data.master.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.service.CategoryService;
 
 import java.util.Arrays;
@@ -31,8 +29,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -47,7 +43,7 @@ class CategoryControllerTest {
     private CategoryController categoryController;
 
     @Test
-    void searchCategories_shouldReturnPageOfCategories() {
+    void findCategories_shouldReturnPageOfCategories() {
         // Given
         String search = "genre";
         Pageable pageable = PageRequest.of(0, 10);
@@ -60,32 +56,32 @@ class CategoryControllerTest {
         List<CategoryHierarchyProjection> categories = Arrays.asList(category1, category2);
         Page<CategoryHierarchyProjection> expectedPage = new PageImpl<>(categories, pageable, categories.size());
         
-        when(categoryService.searchCategories(search, pageable)).thenReturn(expectedPage);
+        when(categoryService.findCategories(search, pageable)).thenReturn(expectedPage);
 
         // When
-        Page<CategoryHierarchyProjection> result = categoryController.searchCategories(search, pageable);
+        Page<CategoryHierarchyProjection> result = categoryController.findCategories(search, pageable);
 
         // Then
         assertEquals(expectedPage, result);
-        verify(categoryService).searchCategories(search, pageable);
+        verify(categoryService).findCategories(search, pageable);
     }
 
     @Test
-    void searchCategories_whenExceptionThrown_shouldThrowDataAccessException() {
+    void findCategories_whenExceptionThrown_shouldPassThroughException() {
         // Given
         String search = "genre";
         Pageable pageable = PageRequest.of(0, 10);
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
         
-        when(categoryService.searchCategories(search, pageable)).thenThrow(new RuntimeException(errorMessage));
+        when(categoryService.findCategories(search, pageable)).thenThrow(expectedException);
 
         // When & Then
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> 
-            categoryController.searchCategories(search, pageable)
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+            categoryController.findCategories(search, pageable)
         );
         
-        assertEquals("Failed to search categories: " + errorMessage, exception.getMessage());
-        verify(categoryService).searchCategories(search, pageable);
+        assertSame(expectedException, exception);
+        verify(categoryService).findCategories(search, pageable);
     }
 
     @Test
@@ -126,19 +122,19 @@ class CategoryControllerTest {
     }
 
     @Test
-    void lookupCategories_whenExceptionThrown_shouldThrowDataAccessException() {
+    void lookupCategories_whenExceptionThrown_shouldPassThroughException() {
         // Given
         String search = "rock";
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
         
-        when(categoryService.lookupCategories(any(LookupRequestDTO.class))).thenThrow(new RuntimeException(errorMessage));
+        when(categoryService.lookupCategories(any(LookupRequestDTO.class))).thenThrow(expectedException);
 
         // When & Then
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> 
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
             categoryController.lookupCategories(search, null)
         );
         
-        assertEquals("Failed to lookup categories: " + errorMessage, exception.getMessage());
+        assertSame(expectedException, exception);
         verify(categoryService).lookupCategories(any(LookupRequestDTO.class));
     }
 
@@ -164,43 +160,43 @@ class CategoryControllerTest {
     }
 
     @Test
-    void saveCategory_whenExceptionThrown_shouldThrowDataAccessException() {
+    void saveCategory_whenExceptionThrown_shouldPassThroughException() {
         // Given
         CategorySaveRequestDTO request = CategorySaveRequestDTO.builder()
             .name("Genre")
             .dimensionId(1L)
             .build();
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
         
-        when(categoryService.saveCategory(request)).thenThrow(new RuntimeException(errorMessage));
+        when(categoryService.saveCategory(request)).thenThrow(expectedException);
 
         // When & Then
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> 
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
             categoryController.saveCategory(request)
         );
         
-        assertEquals("Failed to save category: " + errorMessage, exception.getMessage());
+        assertSame(expectedException, exception);
         verify(categoryService).saveCategory(request);
     }
 
     @Test
-    void saveCategory_whenSelfParentValidationFails_shouldThrowDataAccessException() {
+    void saveCategory_whenSelfParentValidationFails_shouldPassThroughException() {
         // Given
         CategorySaveRequestDTO request = CategorySaveRequestDTO.builder()
             .id(1L)
             .name("Test Category")
             .parentId(1L) // Same as ID - self-parent
             .build();
-        String errorMessage = "Category cannot be parent of itself";
+        IllegalArgumentException expectedException = new IllegalArgumentException("Category cannot be parent of itself");
         
-        when(categoryService.saveCategory(request)).thenThrow(new IllegalArgumentException(errorMessage));
+        when(categoryService.saveCategory(request)).thenThrow(expectedException);
 
         // When & Then
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> 
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> 
             categoryController.saveCategory(request)
         );
         
-        assertEquals("Failed to save category: " + errorMessage, exception.getMessage());
+        assertSame(expectedException, exception);
         verify(categoryService).saveCategory(request);
     }
 
@@ -227,7 +223,7 @@ class CategoryControllerTest {
         when(categoryService.deleteCategory(id)).thenReturn(false);
 
         // When & Then
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> 
+        CustomEntityNotFoundException exception = assertThrows(CustomEntityNotFoundException.class, () ->
             categoryController.deleteCategory(id)
         );
         
@@ -236,19 +232,19 @@ class CategoryControllerTest {
     }
 
     @Test
-    void deleteCategory_whenExceptionThrown_shouldThrowDataAccessException() {
+    void deleteCategory_whenExceptionThrown_shouldPassThroughException() {
         // Given
         Long id = 1L;
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
         
-        when(categoryService.deleteCategory(id)).thenThrow(new RuntimeException(errorMessage));
+        when(categoryService.deleteCategory(id)).thenThrow(expectedException);
 
         // When & Then
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> 
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
             categoryController.deleteCategory(id)
         );
         
-        assertEquals("Failed to delete category: " + errorMessage, exception.getMessage());
+        assertSame(expectedException, exception);
         verify(categoryService).deleteCategory(id);
     }
 
@@ -275,21 +271,21 @@ class CategoryControllerTest {
     }
 
     @Test
-    void findBoundCategories_whenExceptionThrown_shouldThrowDataAccessException() {
+    void findBoundCategories_whenExceptionThrown_shouldPassThroughException() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         List<Long> externalIds = List.of(1L, 2L);
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
         
         when(categoryService.findBoundCategories(dataSource, externalIds))
-            .thenThrow(new RuntimeException(errorMessage));
+            .thenThrow(expectedException);
 
         // When & Then
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> 
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
             categoryController.findBoundCategories(dataSource, externalIds)
         );
         
-        assertEquals("Failed to get bound categories: " + errorMessage, exception.getMessage());
+        assertSame(expectedException, exception);
         verify(categoryService).findBoundCategories(dataSource, externalIds);
     }
 
@@ -320,26 +316,26 @@ class CategoryControllerTest {
     }
 
     @Test
-    void bindToExisting_whenExceptionThrown_shouldThrowEntityBindingException() {
+    void bindToExisting_whenExceptionThrown_shouldPassThroughException() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
         Long masterId = 101L;
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
         
         EntityBindToExistingRequestDTO request = EntityBindToExistingRequestDTO.builder()
             .masterId(masterId)
             .build();
         
         when(categoryService.bindToExisting(dataSource, externalId, request))
-            .thenThrow(new RuntimeException(errorMessage));
+            .thenThrow(expectedException);
 
         // When & Then
-        EntityBindingException exception = assertThrows(EntityBindingException.class, () -> 
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
             categoryController.bindToExisting(dataSource, externalId, request)
         );
         
-        assertEquals("Failed to bind category to existing: " + errorMessage, exception.getMessage());
+        assertSame(expectedException, exception);
         verify(categoryService).bindToExisting(dataSource, externalId, request);
     }
 
@@ -370,26 +366,26 @@ class CategoryControllerTest {
     }
 
     @Test
-    void createAndBind_whenExceptionThrown_shouldThrowEntityBindingException() {
+    void createAndBind_whenExceptionThrown_shouldPassThroughException() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
         String categoryName = "New Genre";
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
         
         EntityCreateAndBindRequestDTO request = EntityCreateAndBindRequestDTO.builder()
             .entityName(categoryName)
             .build();
         
         when(categoryService.createAndBind(dataSource, externalId, request))
-            .thenThrow(new RuntimeException(errorMessage));
+            .thenThrow(expectedException);
 
         // When & Then
-        EntityBindingException exception = assertThrows(EntityBindingException.class, () -> 
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
             categoryController.createAndBind(dataSource, externalId, request)
         );
         
-        assertEquals("Failed to create and bind category: " + errorMessage, exception.getMessage());
+        assertSame(expectedException, exception);
         verify(categoryService).createAndBind(dataSource, externalId, request);
     }
 
@@ -410,21 +406,21 @@ class CategoryControllerTest {
     }
 
     @Test
-    void unbindCategory_whenExceptionThrown_shouldThrowEntityBindingException() {
+    void unbindCategory_whenExceptionThrown_shouldPassThroughException() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
 
         when(categoryService.unbindCategory(dataSource, externalId))
-            .thenThrow(new RuntimeException(errorMessage));
+            .thenThrow(expectedException);
 
         // When & Then
-        EntityBindingException exception = assertThrows(EntityBindingException.class, () -> 
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
             categoryController.unbindCategory(dataSource, externalId)
         );
         
-        assertEquals("Failed to unbind category: " + errorMessage, exception.getMessage());
+        assertSame(expectedException, exception);
         verify(categoryService).unbindCategory(dataSource, externalId);
     }
     
@@ -463,11 +459,11 @@ class CategoryControllerTest {
     }
     
     @Test
-    void batchLookupCategories_whenExceptionThrown_shouldThrowDataAccessException() {
+    void batchLookupCategories_whenExceptionThrown_shouldPassThroughException() {
         // Given
         List<String> names = List.of("rock", "jazz");
         Integer limit = 10;
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
         
         BaseBatchLookupRequestDTO request = BaseBatchLookupRequestDTO.builder()
             .searchRequests(createLookupRequests(names))
@@ -475,14 +471,14 @@ class CategoryControllerTest {
             .build();
         
         when(categoryService.batchLookupCategories(request))
-            .thenThrow(new RuntimeException(errorMessage));
+            .thenThrow(expectedException);
         
         // When & Then
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> 
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
             categoryController.batchLookupCategories(request)
         );
         
-        assertEquals("Failed to batch lookup categories: " + errorMessage, exception.getMessage());
+        assertSame(expectedException, exception);
         verify(categoryService).batchLookupCategories(request);
     }
     

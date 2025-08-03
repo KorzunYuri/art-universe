@@ -14,8 +14,6 @@ import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupR
 import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.exception.DataAccessException;
-import yurykorzun.art.universe.music.data.master.exception.EntityBindingException;
 import yurykorzun.art.universe.music.data.master.service.TrackService;
 
 import java.util.Arrays;
@@ -62,21 +60,21 @@ public class TrackControllerTest {
     }
 
     @Test
-    void findBoundTracks_whenExceptionThrown_shouldThrowDataAccessException() {
+    void findBoundTracks_whenExceptionThrown_shouldPassThroughException() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         List<Long> externalIds = Arrays.asList(101L, 102L);
-        String errorMessage = "Test exception";
+        RuntimeException expectedException = new RuntimeException("Test exception");
         
         when(trackService.findBoundTracks(dataSource, externalIds))
-            .thenThrow(new RuntimeException(errorMessage));
+            .thenThrow(expectedException);
 
         // When & Then
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> 
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
             trackController.findBoundTracks(dataSource, externalIds)
         );
         
-        assertEquals("Failed to get bound tracks: " + errorMessage, exception.getMessage());
+        assertSame(expectedException, exception);
         verify(trackService).findBoundTracks(dataSource, externalIds);
     }
     
@@ -126,13 +124,13 @@ public class TrackControllerTest {
     }
     
     @Test
-    void bindToExisting_whenExceptionThrown_shouldThrowEntityBindingException() {
+    void bindToExisting_whenExceptionThrown_shouldPassThroughException() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
         Long masterId = 123L;
         Long primaryArtistId = 456L;
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
         
         ArtistRelatedEntityBindToExistingRequestDTO request = ArtistRelatedEntityBindToExistingRequestDTO.builder()
             .masterId(masterId)
@@ -140,14 +138,14 @@ public class TrackControllerTest {
             .build();
         
         when(trackService.bindToExisting(eq(dataSource), eq(externalId), any(ArtistRelatedEntityBindToExistingRequestDTO.class)))
-            .thenThrow(new RuntimeException(errorMessage));
+            .thenThrow(expectedException);
 
         // When & Then
-        EntityBindingException exception = assertThrows(EntityBindingException.class, () -> 
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
             trackController.bindToExisting(dataSource, externalId, request)
         );
         
-        assertEquals("Failed to bind track to existing: " + errorMessage, exception.getMessage());
+        assertSame(expectedException, exception);
         verify(trackService).bindToExisting(eq(dataSource), eq(externalId), any(ArtistRelatedEntityBindToExistingRequestDTO.class));
     }
     
@@ -180,13 +178,13 @@ public class TrackControllerTest {
     }
     
     @Test
-    void createAndBind_whenExceptionThrown_shouldThrowEntityBindingException() {
+    void createAndBind_whenExceptionThrown_shouldPassThroughException() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
         String trackName = "Test Track";
         Long primaryArtistId = 100L;
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
         
         ArtistRelatedEntityCreateAndBindRequestDTO request = ArtistRelatedEntityCreateAndBindRequestDTO.builder()
             .entityName(trackName)
@@ -194,14 +192,14 @@ public class TrackControllerTest {
             .build();
         
         when(trackService.createAndBind(eq(dataSource), eq(externalId), any(ArtistRelatedEntityCreateAndBindRequestDTO.class)))
-            .thenThrow(new RuntimeException(errorMessage));
+            .thenThrow(expectedException);
 
         // When & Then
-        EntityBindingException exception = assertThrows(EntityBindingException.class, () -> 
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
             trackController.createAndBind(dataSource, externalId, request)
         );
         
-        assertEquals("Failed to create and bind track: " + errorMessage, exception.getMessage());
+        assertSame(expectedException, exception);
         verify(trackService).createAndBind(eq(dataSource), eq(externalId), any(ArtistRelatedEntityCreateAndBindRequestDTO.class));
     }
     
@@ -222,21 +220,21 @@ public class TrackControllerTest {
     }
     
     @Test
-    void unbindTrack_whenExceptionThrown_shouldThrowEntityBindingException() {
+    void unbindTrack_whenExceptionThrown_shouldPassThroughException() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
 
         when(trackService.unbindTrack(dataSource, externalId))
-            .thenThrow(new RuntimeException(errorMessage));
+            .thenThrow(expectedException);
 
         // When & Then
-        EntityBindingException exception = assertThrows(EntityBindingException.class, () -> 
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
             trackController.unbindTrack(dataSource, externalId)
         );
         
-        assertEquals("Failed to unbind track: " + errorMessage, exception.getMessage());
+        assertSame(expectedException, exception);
         verify(trackService).unbindTrack(dataSource, externalId);
     }
     
@@ -244,6 +242,7 @@ public class TrackControllerTest {
     void lookupTracks_shouldReturnListOfLookupResults() {
         // Given
         String searchTerm = "paranoid";
+        DataSource dataSource = DataSource.LASTFM;
         Long artistId = 123L;
         
         LookupResultDTO track1 = new LookupResultDTO(1L, "Radiohead - Paranoid Android");
@@ -254,7 +253,7 @@ public class TrackControllerTest {
             .thenReturn(expectedTracks);
             
         // When
-        List<LookupResultDTO> result = trackController.lookupTracks(searchTerm, artistId, null, null);
+        List<LookupResultDTO> result = trackController.lookupTracks(searchTerm, dataSource, artistId, null, null);
             
         // Then
         assertEquals(expectedTracks, result);
@@ -265,6 +264,7 @@ public class TrackControllerTest {
     void lookupTracks_withLimit_shouldReturnListOfLookupResults() {
         // Given
         String searchTerm = "paranoid";
+        DataSource dataSource = DataSource.LASTFM;
         Long artistId = 123L;
         Integer limit = 5;
         
@@ -276,7 +276,7 @@ public class TrackControllerTest {
             .thenReturn(expectedTracks);
             
         // When
-        List<LookupResultDTO> result = trackController.lookupTracks(searchTerm, artistId, null, limit);
+        List<LookupResultDTO> result = trackController.lookupTracks(searchTerm, dataSource, artistId, null, limit);
             
         // Then
         assertEquals(expectedTracks, result);
@@ -287,6 +287,7 @@ public class TrackControllerTest {
     void lookupTracks_withoutArtistId_shouldReturnListOfLookupResults() {
         // Given
         String searchTerm = "paranoid";
+        DataSource dataSource = DataSource.LASTFM;
         Long artistId = null;
         
         LookupResultDTO track1 = new LookupResultDTO(1L, "Radiohead - Paranoid Android");
@@ -297,7 +298,7 @@ public class TrackControllerTest {
             .thenReturn(expectedTracks);
             
         // When
-        List<LookupResultDTO> result = trackController.lookupTracks(searchTerm, artistId, null, null);
+        List<LookupResultDTO> result = trackController.lookupTracks(searchTerm, dataSource, artistId, null, null);
             
         // Then
         assertEquals(expectedTracks, result);
@@ -305,21 +306,22 @@ public class TrackControllerTest {
     }
     
     @Test
-    void lookupTracks_whenExceptionThrown_shouldThrowDataAccessException() {
+    void lookupTracks_whenExceptionThrown_shouldPassThroughException() {
         // Given
         String searchTerm = "paranoid";
+        DataSource dataSource = DataSource.LASTFM;
         Long artistId = 123L;
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
         
         when(trackService.lookupTracks(any(ArtistRelatedLookupRequestDTO.class)))
-            .thenThrow(new RuntimeException(errorMessage));
+            .thenThrow(expectedException);
             
         // When & Then
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> 
-            trackController.lookupTracks(searchTerm, artistId, null, null)
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+            trackController.lookupTracks(searchTerm, dataSource, artistId, null, null)
         );
         
-        assertEquals("Failed to lookup tracks: " + errorMessage, exception.getMessage());
+        assertSame(expectedException, exception);
         verify(trackService).lookupTracks(any(ArtistRelatedLookupRequestDTO.class));
     }
     
@@ -359,12 +361,12 @@ public class TrackControllerTest {
     }
     
     @Test
-    void batchLookupTracks_whenExceptionThrown_shouldThrowDataAccessException() {
+    void batchLookupTracks_whenExceptionThrown_shouldPassThroughException() {
         // Given
         List<String> searchTerms = List.of("paranoid", "karma");
         Long artistId = 123L;
         Integer limit = 10;
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
         
         ArtistRelatedBatchLookupRequestDTO request = ArtistRelatedBatchLookupRequestDTO.builder()
             .searchRequests(createArtistRelatedLookupRequests(searchTerms, artistId))
@@ -372,14 +374,14 @@ public class TrackControllerTest {
             .build();
         
         when(trackService.batchLookupTracks(request))
-            .thenThrow(new RuntimeException(errorMessage));
+            .thenThrow(expectedException);
         
         // When & Then
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> 
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
             trackController.batchLookupTracks(request)
         );
         
-        assertEquals("Failed to batch lookup tracks: " + errorMessage, exception.getMessage());
+        assertSame(expectedException, exception);
         verify(trackService).batchLookupTracks(request);
     }
     

@@ -14,9 +14,7 @@ import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBind
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.exception.DataAccessException;
-import yurykorzun.art.universe.music.data.master.exception.EntityBindingException;
-import yurykorzun.art.universe.music.data.master.exception.EntityNotFoundException;
+import yurykorzun.art.universe.music.data.master.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.service.CategoryService;
 
 import java.util.List;
@@ -31,16 +29,19 @@ public class CategoryController {
         this.categoryService = categoryService;
     }
 
-    @GetMapping("/search")
-    public Page<CategoryHierarchyProjection> searchCategories(
+    @GetMapping
+    public Page<CategoryHierarchyProjection> findCategories(
         @RequestParam(required = false) String query,
         Pageable pageable
     ) {
-        try {
-            return categoryService.searchCategories(query, pageable);
-        } catch (Exception e) {
-            throw new DataAccessException(String.format("Failed to search categories: %s", e.getMessage()), e);
-        }
+        return categoryService.findCategories(query, pageable);
+    }
+
+    @GetMapping("/{id}")
+    public CategoryHierarchyProjection getCategory(
+        @PathVariable Long id
+    ) {
+        return categoryService.getCategory(id);
     }
 
     @GetMapping("/lookup")
@@ -48,52 +49,34 @@ public class CategoryController {
         @RequestParam String search,
         @RequestParam(required = false) Integer limit
     ) {
-        try {
-            LookupRequestDTO request = LookupRequestDTO.builder()
-                .search(search)
-                .limit(limit)
-                .build();
-            return categoryService.lookupCategories(request);
-        } catch (Exception e) {
-            throw new DataAccessException(String.format("Failed to lookup categories: %s", e.getMessage()), e);
-        }
+        LookupRequestDTO request = LookupRequestDTO.builder()
+            .search(search)
+            .limit(limit)
+            .build();
+        return categoryService.lookupCategories(request);
     }
     
     @PostMapping("/lookup/batch")
     public BatchLookupResponseDTO batchLookupCategories(
         @Valid @RequestBody BaseBatchLookupRequestDTO request
     ) {
-        try {
-            return categoryService.batchLookupCategories(request);
-        } catch (Exception e) {
-            throw new DataAccessException(String.format("Failed to batch lookup categories: %s", e.getMessage()), e);
-        }
+        return categoryService.batchLookupCategories(request);
     }
 
     @PostMapping
     public CategoryHierarchyProjection saveCategory(
         @Valid @RequestBody CategorySaveRequestDTO request
     ) {
-        try {
-            return categoryService.saveCategory(request);
-        } catch (Exception e) {
-            throw new DataAccessException(String.format("Failed to save category: %s", e.getMessage()), e);
-        }
+        return categoryService.saveCategory(request);
     }
 
     @DeleteMapping("/{id}")
     public boolean deleteCategory(@PathVariable Long id) {
-        try {
-            boolean deleted = categoryService.deleteCategory(id);
-            if (!deleted) {
-                throw new EntityNotFoundException("Category", id);
-            }
-            return true;
-        } catch (EntityNotFoundException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new DataAccessException(String.format("Failed to delete category: %s", e.getMessage()), e);
+        boolean deleted = categoryService.deleteCategory(id);
+        if (!deleted) {
+            throw new CustomEntityNotFoundException("Category", id);
         }
+        return true;
     }
 
     @GetMapping("/bound/{dataSource}")
@@ -101,11 +84,7 @@ public class CategoryController {
         @PathVariable DataSource dataSource,
         @RequestParam List<Long> externalIds
     ) {
-        try {
-            return categoryService.findBoundCategories(dataSource, externalIds);
-        } catch (Exception e) {
-            throw new DataAccessException(String.format("Failed to get bound categories: %s", e.getMessage()), e);
-        }
+        return categoryService.findBoundCategories(dataSource, externalIds);
     }
 
     @PostMapping("/bind/existing/{dataSource}/{externalId}")
@@ -114,11 +93,7 @@ public class CategoryController {
         @PathVariable Long externalId,
         @Valid @RequestBody EntityBindToExistingRequestDTO request
     ) {
-        try {
-            return categoryService.bindToExisting(dataSource, externalId, request);
-        } catch (Exception e) {
-            throw new EntityBindingException(String.format("Failed to bind category to existing: %s", e.getMessage()), e);
-        }
+        return categoryService.bindToExisting(dataSource, externalId, request);
     }
 
     @PostMapping("/bind/new/{dataSource}/{externalId}")
@@ -127,11 +102,7 @@ public class CategoryController {
         @PathVariable Long externalId,
         @Valid @RequestBody EntityCreateAndBindRequestDTO request
     ) {
-        try {
-            return categoryService.createAndBind(dataSource, externalId, request);
-        } catch (Exception e) {
-            throw new EntityBindingException(String.format("Failed to create and bind category: %s", e.getMessage()), e);
-        }
+        return categoryService.createAndBind(dataSource, externalId, request);
     }
 
     @DeleteMapping("/unbind/{dataSource}/{externalId}")
@@ -139,10 +110,6 @@ public class CategoryController {
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId
     ) {
-        try {
-            return categoryService.unbindCategory(dataSource, externalId);
-        } catch (Exception e) {
-            throw new EntityBindingException(String.format("Failed to unbind category: %s", e.getMessage()), e);
-        }
+        return categoryService.unbindCategory(dataSource, externalId);
     }
 }

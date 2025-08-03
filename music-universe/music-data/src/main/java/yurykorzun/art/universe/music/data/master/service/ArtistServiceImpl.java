@@ -1,7 +1,6 @@
 package yurykorzun.art.universe.music.data.master.service;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.music.data.master.dto.lookup.BaseBatchLookupRequestDTO;
@@ -15,6 +14,7 @@ import yurykorzun.art.universe.music.data.master.entity.Artist;
 import yurykorzun.art.universe.music.data.master.entity.ArtistBinding;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.entity.EntityType;
+import yurykorzun.art.universe.music.data.master.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.repository.ArtistBindingRepository;
 import yurykorzun.art.universe.music.data.master.repository.ArtistRepository;
 import yurykorzun.art.universe.music.data.master.service.lookup.BaseLookupService;
@@ -54,7 +54,7 @@ public class ArtistServiceImpl implements ArtistService {
     public BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, EntityBindToExistingRequestDTO request) {
         // Validate that the artist exists
         Artist artist = artistRepository.findById(request.getMasterId())
-            .orElseThrow(() -> new EntityNotFoundException("Artist not found with id: " + request.getMasterId()));
+            .orElseThrow(() -> new CustomEntityNotFoundException("Artist", request.getMasterId()));
         
         // Check if binding already exists
         Optional<ArtistBinding> existingBinding = bindingsRepository.findByDataSourceAndExternalId(dataSource, externalId);

@@ -10,8 +10,6 @@ import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupR
 import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.exception.DataAccessException;
-import yurykorzun.art.universe.music.data.master.exception.EntityBindingException;
 import yurykorzun.art.universe.music.data.master.service.TrackService;
 
 import java.util.List;
@@ -31,42 +29,32 @@ public class TrackController {
         @PathVariable DataSource dataSource,
         @RequestParam List<Long> externalIds
     ) {
-        try {
-            return trackService.findBoundTracks(dataSource, externalIds);
-        } catch (Exception e) {
-            throw new DataAccessException(String.format("Failed to get bound tracks: %s", e.getMessage()), e);
-        }
+        return trackService.findBoundTracks(dataSource, externalIds);
     }
     
     @GetMapping("/lookup")
     public List<LookupResultDTO> lookupTracks(
         @RequestParam String search,
+        @RequestParam(required = false) DataSource dataSource,
         @RequestParam(required = false) Long masterArtistId,
         @RequestParam(required = false) Long externalArtistId,
         @RequestParam(required = false) Integer limit
     ) {
-        try {
-            ArtistRelatedLookupRequestDTO request = ArtistRelatedLookupRequestDTO.builder()
-                .search(search)
-                .masterArtistId(masterArtistId)
-                .externalArtistId(externalArtistId)
-                .limit(limit)
-                .build();
-            return trackService.lookupTracks(request);
-        } catch (Exception e) {
-            throw new DataAccessException(String.format("Failed to lookup tracks: %s", e.getMessage()), e);
-        }
+        ArtistRelatedLookupRequestDTO request = ArtistRelatedLookupRequestDTO.builder()
+            .search(search)
+            .dataSource(dataSource)
+            .masterArtistId(masterArtistId)
+            .externalArtistId(externalArtistId)
+            .limit(limit)
+            .build();
+        return trackService.lookupTracks(request);
     }
     
     @PostMapping("/lookup/batch")
     public BatchLookupResponseDTO batchLookupTracks(
         @Valid @RequestBody ArtistRelatedBatchLookupRequestDTO request
     ) {
-        try {
-            return trackService.batchLookupTracks(request);
-        } catch (Exception e) {
-            throw new DataAccessException(String.format("Failed to batch lookup tracks: %s", e.getMessage()), e);
-        }
+        return trackService.batchLookupTracks(request);
     }
     
     @PostMapping("/bind/existing/{dataSource}/{externalId}")
@@ -75,11 +63,7 @@ public class TrackController {
         @PathVariable Long externalId,
         @Valid @RequestBody ArtistRelatedEntityBindToExistingRequestDTO request
     ) {
-        try {
-            return trackService.bindToExisting(dataSource, externalId, request);
-        } catch (Exception e) {
-            throw new EntityBindingException(String.format("Failed to bind track to existing: %s", e.getMessage()), e);
-        }
+        return trackService.bindToExisting(dataSource, externalId, request);
     }
     
     @PostMapping("/bind/new/{dataSource}/{externalId}")
@@ -88,11 +72,7 @@ public class TrackController {
         @PathVariable Long externalId,
         @Valid @RequestBody ArtistRelatedEntityCreateAndBindRequestDTO request
     ) {
-        try {
-            return trackService.createAndBind(dataSource, externalId, request);
-        } catch (Exception e) {
-            throw new EntityBindingException(String.format("Failed to create and bind track: %s", e.getMessage()), e);
-        }
+        return trackService.createAndBind(dataSource, externalId, request);
     }
     
     @DeleteMapping("/unbind/{dataSource}/{externalId}")
@@ -100,10 +80,6 @@ public class TrackController {
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId
     ) {
-        try {
-            return trackService.unbindTrack(dataSource, externalId);
-        } catch (Exception e) {
-            throw new EntityBindingException(String.format("Failed to unbind track: %s", e.getMessage()), e);
-        }
+        return trackService.unbindTrack(dataSource, externalId);
     }
 }

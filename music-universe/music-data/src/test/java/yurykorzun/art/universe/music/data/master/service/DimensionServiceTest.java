@@ -1,6 +1,5 @@
 package yurykorzun.art.universe.music.data.master.service;
 
-import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -12,18 +11,15 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import yurykorzun.art.universe.music.data.master.dto.DimensionDto;
 import yurykorzun.art.universe.music.data.master.dto.DimensionSaveRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.entity.Dimension;
+import yurykorzun.art.universe.music.data.master.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.repository.DimensionRepository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,7 +32,7 @@ class DimensionServiceTest {
     private DimensionServiceImpl dimensionService;
 
     @Test
-    void searchDimensions_shouldReturnPageOfDimensionDtos() {
+    void findDimensions_shouldReturnPageOfDimensionDtos() {
         // Given
         String query = "genre";
         Pageable pageable = PageRequest.of(0, 10);
@@ -49,7 +45,7 @@ class DimensionServiceTest {
         when(dimensionRepository.searchDimensions(query, pageable)).thenReturn(dimensionPage);
 
         // When
-        Page<DimensionDto> result = dimensionService.searchDimensions(query, pageable);
+        Page<DimensionDto> result = dimensionService.findDimensions(query, pageable);
 
         // Then
         assertEquals(2, result.getContent().size());
@@ -63,7 +59,7 @@ class DimensionServiceTest {
     }
 
     @Test
-    void searchDimensions_withNullQuery_shouldReturnAllDimensions() {
+    void findDimensions_withNullQuery_shouldReturnAllDimensions() {
         // Given
         String query = null;
         Pageable pageable = PageRequest.of(0, 10);
@@ -75,7 +71,7 @@ class DimensionServiceTest {
         when(dimensionRepository.searchDimensions(query, pageable)).thenReturn(dimensionPage);
 
         // When
-        Page<DimensionDto> result = dimensionService.searchDimensions(query, pageable);
+        Page<DimensionDto> result = dimensionService.findDimensions(query, pageable);
 
         // Then
         assertEquals(1, result.getContent().size());
@@ -184,7 +180,7 @@ class DimensionServiceTest {
         when(dimensionRepository.findById(dimensionId)).thenReturn(Optional.empty());
         
         // When & Then
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, 
+        CustomEntityNotFoundException exception = assertThrows(CustomEntityNotFoundException.class,
             () -> dimensionService.saveDimension(request));
         
         assertEquals("Dimension not found with id: 999", exception.getMessage());

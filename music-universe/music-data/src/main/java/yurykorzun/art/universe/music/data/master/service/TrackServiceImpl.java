@@ -1,7 +1,6 @@
 package yurykorzun.art.universe.music.data.master.service;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityBindToExistingRequestDTO;
@@ -16,6 +15,7 @@ import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.entity.EntityType;
 import yurykorzun.art.universe.music.data.master.entity.Track;
 import yurykorzun.art.universe.music.data.master.entity.TrackBinding;
+import yurykorzun.art.universe.music.data.master.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.repository.TrackBindingRepository;
 import yurykorzun.art.universe.music.data.master.repository.TrackRepository;
 import yurykorzun.art.universe.music.data.master.service.lookup.ArtistRelatedLookupService;
@@ -71,7 +71,7 @@ public class TrackServiceImpl implements TrackService {
         
         // 2. Validate that the track exists
         Track track = trackRepository.findById(request.getMasterId())
-            .orElseThrow(() -> new EntityNotFoundException("Track not found with id: " + request.getMasterId()));
+            .orElseThrow(() -> new CustomEntityNotFoundException("Track", request.getMasterId()));
         
         // 3. Create or update track binding
         Optional<TrackBinding> existingBinding = bindingsRepository.findByDataSourceAndExternalId(dataSource, externalId);
@@ -183,7 +183,7 @@ public class TrackServiceImpl implements TrackService {
         return bindingsRepository.findBoundTracksForDataSource(dataSource, List.of(externalId))
             .stream()
             .findFirst()
-            .orElseThrow(() -> new EntityNotFoundException("Track binding not found after creation"));
+            .orElseThrow(() -> new CustomEntityNotFoundException("Track binding not found after creation"));
     }
     
     @Override

@@ -17,7 +17,12 @@ public interface DimensionService {
      * @param pageable Pagination and sorting parameters
      * @return Page of dimensions
      */
-    Page<DimensionDto> searchDimensions(String query, Pageable pageable);
+    Page<DimensionDto> findDimensions(String query, Pageable pageable);
+
+    /**
+     * Returns a single dimension with a provided id
+     */
+    DimensionDto getDimension(Long id);
     
     /**
      * Lookup dimensions by name for dropdown lists

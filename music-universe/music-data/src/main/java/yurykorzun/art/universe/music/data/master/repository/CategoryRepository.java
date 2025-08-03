@@ -139,7 +139,7 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
                     OR  LOWER(ed.name)      LIKE LOWER(CONCAT('%', :search, '%'))
                     )
                """)
-    Page<CategoryHierarchyProjection> searchCategories(@Param("search") String search, Pageable pageable);
+    Page<CategoryHierarchyProjection> findCategories(@Param("search") String search, Pageable pageable);
 
     /**
      * Find a single category with hierarchy information by ID

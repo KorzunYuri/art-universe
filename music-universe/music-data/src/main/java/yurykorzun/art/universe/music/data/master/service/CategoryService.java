@@ -21,8 +21,13 @@ public interface CategoryService {
      * @param pageable Pagination and sorting parameters
      * @return Page of categories with hierarchy information
      */
-    Page<CategoryHierarchyProjection> searchCategories(String search, Pageable pageable);
-    
+    Page<CategoryHierarchyProjection> findCategories(String search, Pageable pageable);
+
+    /**
+     * Returns a single category with a provided id
+     */
+    CategoryHierarchyProjection getCategory(Long id);
+
     /**
      * Lookup categories by name for dropdown lists
      * 
@@ -30,28 +35,6 @@ public interface CategoryService {
      * @return List of lightweight category DTOs with id and name only
      */
     List<LookupResultDTO> lookupCategories(LookupRequestDTO request);
-    
-    /**
-     * Lookup categories by name for dropdown lists
-     * Uses default limit of 20 results.
-     * 
-     * @param name Search term to look for in category names (case insensitive, partial match)
-     * @return List of lightweight category DTOs with id and name only
-     */
-    default List<LookupResultDTO> lookupCategories(String name) {
-        return lookupCategories(LookupRequestDTO.builder().search(name).build());
-    }
-    
-    /**
-     * Lookup categories by name for dropdown lists
-     * 
-     * @param name Search term to look for in category names (case insensitive, partial match)
-     * @param limit Maximum number of results to return (default: 20)
-     * @return List of lightweight category DTOs with id and name only
-     */
-    default List<LookupResultDTO> lookupCategories(String name, Integer limit) {
-        return lookupCategories(LookupRequestDTO.builder().search(name).limit(limit).build());
-    }
     
     /**
      * Batch lookup categories by multiple search requests
@@ -93,7 +76,7 @@ public interface CategoryService {
      * @param externalId The ID of the category in the external system
      * @return The bound category information, or null if not found
      */
-    BoundEntityProjection findCategory(DataSource dataSource, Long externalId);
+    BoundEntityProjection findBoundCategory(DataSource dataSource, Long externalId);
     
     /**
      * Bind an external category to an existing category in the system
@@ -123,4 +106,5 @@ public interface CategoryService {
      * @return true if the unbinding was successful, false otherwise
      */
     boolean unbindCategory(DataSource dataSource, Long externalId);
+
 }

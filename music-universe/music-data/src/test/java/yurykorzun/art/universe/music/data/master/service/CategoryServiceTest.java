@@ -8,14 +8,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import yurykorzun.art.universe.music.data.master.dto.lookup.BaseBatchLookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategorySaveRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
-import yurykorzun.art.universe.music.data.master.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.master.entity.Category;
 import yurykorzun.art.universe.music.data.master.entity.CategoryBinding;
@@ -24,12 +20,8 @@ import yurykorzun.art.universe.music.data.master.repository.CategoryRepository;
 import yurykorzun.art.universe.music.data.master.repository.CategoryBindingRepository;
 import yurykorzun.art.universe.music.data.master.repository.DimensionRepository;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -79,7 +71,7 @@ class CategoryServiceTest {
     }
 
     @Test
-    void findCategory_shouldReturnSingleBoundCategory() {
+    void findCategory_shouldReturnSingleBoundBoundCategory() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
@@ -92,7 +84,7 @@ class CategoryServiceTest {
             .thenReturn(projection);
 
         // When
-        BoundEntityProjection result = categoryService.findCategory(dataSource, externalId);
+        BoundEntityProjection result = categoryService.findBoundCategory(dataSource, externalId);
 
         // Then
         assertEquals(projection, result);
@@ -100,7 +92,7 @@ class CategoryServiceTest {
     }
 
     @Test
-    void findCategory_whenNotFound_shouldReturnNull() {
+    void findBoundCategory_whenNotFound_shouldReturnNull() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
@@ -109,7 +101,7 @@ class CategoryServiceTest {
             .thenReturn(null);
 
         // When
-        BoundEntityProjection result = categoryService.findCategory(dataSource, externalId);
+        BoundEntityProjection result = categoryService.findBoundCategory(dataSource, externalId);
 
         // Then
         assertNull(result);

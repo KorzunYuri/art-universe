@@ -48,8 +48,14 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public Page<CategoryHierarchyProjection> searchCategories(String search, Pageable pageable) {
-        return categoryRepository.searchCategories(search, pageable);
+    public Page<CategoryHierarchyProjection> findCategories(String search, Pageable pageable) {
+        return categoryRepository.findCategories(search, pageable);
+    }
+
+    @Override
+    public CategoryHierarchyProjection getCategory(Long id) {
+        return categoryRepository.findByIdWithHierarchy(id)
+            .orElseThrow(() -> new EntityNotFoundException("Category not found with id " + id));
     }
 
     @Override
@@ -124,7 +130,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public BoundEntityProjection findCategory(DataSource dataSource, Long externalId) {
+    public BoundEntityProjection findBoundCategory(DataSource dataSource, Long externalId) {
         return categoryBindingRepository.findBoundCategoryForDataSource(dataSource, externalId);
     }
 

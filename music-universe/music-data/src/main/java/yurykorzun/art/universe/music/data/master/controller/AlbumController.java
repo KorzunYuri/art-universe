@@ -10,8 +10,6 @@ import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupR
 import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.exception.DataAccessException;
-import yurykorzun.art.universe.music.data.master.exception.EntityBindingException;
 import yurykorzun.art.universe.music.data.master.service.AlbumService;
 
 import java.util.List;
@@ -31,42 +29,32 @@ public class AlbumController {
         @PathVariable DataSource dataSource,
         @RequestParam List<Long> externalIds
     ) {
-        try {
-            return albumService.findBoundAlbums(dataSource, externalIds);
-        } catch (Exception e) {
-            throw new DataAccessException(String.format("Failed to get bound albums: %s", e.getMessage()), e);
-        }
+        return albumService.findBoundAlbums(dataSource, externalIds);
     }
     
     @GetMapping("/lookup")
     public List<LookupResultDTO> lookupAlbums(
         @RequestParam String search,
+        @RequestParam(required = false) DataSource dataSource,
         @RequestParam(required = false) Long masterArtistId,
         @RequestParam(required = false) Long externalArtistId,
         @RequestParam(required = false) Integer limit
     ) {
-        try {
-            ArtistRelatedLookupRequestDTO request = ArtistRelatedLookupRequestDTO.builder()
-                .search(search)
-                .masterArtistId(masterArtistId)
-                .externalArtistId(externalArtistId)
-                .limit(limit)
-                .build();
-            return albumService.lookupAlbums(request);
-        } catch (Exception e) {
-            throw new DataAccessException(String.format("Failed to lookup albums: %s", e.getMessage()), e);
-        }
+        ArtistRelatedLookupRequestDTO request = ArtistRelatedLookupRequestDTO.builder()
+            .search(search)
+            .dataSource(dataSource)
+            .masterArtistId(masterArtistId)
+            .externalArtistId(externalArtistId)
+            .limit(limit)
+            .build();
+        return albumService.lookupAlbums(request);
     }
     
     @PostMapping("/lookup/batch")
     public BatchLookupResponseDTO batchLookupAlbums(
         @Valid @RequestBody ArtistRelatedBatchLookupRequestDTO request
     ) {
-        try {
-            return albumService.batchLookupAlbums(request);
-        } catch (Exception e) {
-            throw new DataAccessException(String.format("Failed to batch lookup albums: %s", e.getMessage()), e);
-        }
+        return albumService.batchLookupAlbums(request);
     }
     
     @PostMapping("/bind/existing/{dataSource}/{externalId}")
@@ -75,11 +63,7 @@ public class AlbumController {
         @PathVariable Long externalId,
         @Valid @RequestBody ArtistRelatedEntityBindToExistingRequestDTO request
     ) {
-        try {
-            return albumService.bindToExisting(dataSource, externalId, request);
-        } catch (Exception e) {
-            throw new EntityBindingException(String.format("Failed to bind album to existing: %s", e.getMessage()), e);
-        }
+        return albumService.bindToExisting(dataSource, externalId, request);
     }
     
     @PostMapping("/bind/new/{dataSource}/{externalId}")
@@ -88,11 +72,7 @@ public class AlbumController {
         @PathVariable Long externalId,
         @Valid @RequestBody ArtistRelatedEntityCreateAndBindRequestDTO request
     ) {
-        try {
-            return albumService.createAndBind(dataSource, externalId, request);
-        } catch (Exception e) {
-            throw new EntityBindingException(String.format("Failed to create and bind album: %s", e.getMessage()), e);
-        }
+        return albumService.createAndBind(dataSource, externalId, request);
     }
     
     @DeleteMapping("/unbind/{dataSource}/{externalId}")
@@ -100,10 +80,6 @@ public class AlbumController {
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId
     ) {
-        try {
-            return albumService.unbindAlbum(dataSource, externalId);
-        } catch (Exception e) {
-            throw new EntityBindingException(String.format("Failed to unbind album: %s", e.getMessage()), e);
-        }
+        return albumService.unbindAlbum(dataSource, externalId);
     }
 }

@@ -1,13 +1,11 @@
 package yurykorzun.art.universe.music.data.master.controller;
 
 import org.springframework.web.bind.annotation.*;
-import yurykorzun.art.universe.music.data.master.dto.EntityDTO;
+import yurykorzun.art.universe.music.data.master.dto.relation.RelatedEntityDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingStatusDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.entity.EntityType;
-import yurykorzun.art.universe.music.data.master.exception.DataAccessException;
-import yurykorzun.art.universe.music.data.master.exception.EntityBindingException;
 import yurykorzun.art.universe.music.data.master.service.RelationService;
 
 import java.util.List;
@@ -43,13 +41,8 @@ public class RelationController {
         @PathVariable EntityType targetEntityType,
         @PathVariable Long targetExternalEntityId
     ) {
-        try {
-            return relationService.bindExternalRelation(
-                dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId);
-        } catch (Exception e) {
-            throw new EntityBindingException(
-                String.format("Failed to bind relation: %s", e.getMessage()), e);
-        }
+        return relationService.bindExternalRelation(
+            dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId);
     }
 
     /**
@@ -70,13 +63,8 @@ public class RelationController {
         @PathVariable EntityType targetEntityType,
         @PathVariable Long targetExternalEntityId
     ) {
-        try {
-            return relationService.unbindExternalRelation(
-                dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId);
-        } catch (Exception e) {
-            throw new EntityBindingException(
-                String.format("Failed to unbind relation: %s", e.getMessage()), e);
-        }
+        return relationService.unbindExternalRelation(
+            dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId);
     }
 
     /**
@@ -97,13 +85,8 @@ public class RelationController {
         @PathVariable EntityType targetEntityType,
         @RequestParam(name = "ids", required = false) List<Long> targetExternalEntityIds
     ) {
-        try {
-            return relationService.findBoundExternalRelations(
-                dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityIds);
-        } catch (Exception e) {
-            throw new DataAccessException(
-                String.format("Failed to get bound relations: %s", e.getMessage()), e);
-        }
+        return relationService.findBoundExternalRelations(
+            dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityIds);
     }
 
     /**
@@ -115,18 +98,13 @@ public class RelationController {
      * @return List of DTOs with related entity information
      */
     @GetMapping("/{sourceEntityType}/{sourceEntityId}/{targetEntityType}")
-    public List<EntityDTO> getRelatedEntities(
+    public List<RelatedEntityDTO> getRelatedEntities(
         @PathVariable EntityType sourceEntityType,
         @PathVariable Long sourceEntityId,
         @PathVariable EntityType targetEntityType
     ) {
-        try {
-            return relationService.getRelatedEntities(
-                sourceEntityType, sourceEntityId, targetEntityType);
-        } catch (Exception e) {
-            throw new DataAccessException(
-                String.format("Failed to get related entities: %s", e.getMessage()), e);
-        }
+        return relationService.getRelatedEntities(
+            sourceEntityType, sourceEntityId, targetEntityType);
     }
     
     /**
@@ -145,13 +123,8 @@ public class RelationController {
         @PathVariable EntityType targetEntityType,
         @PathVariable Long targetEntityId
     ) {
-        try {
-            return relationService.createInternalRelation(
-                sourceEntityType, sourceEntityId, targetEntityType, targetEntityId);
-        } catch (Exception e) {
-            throw new DataAccessException(
-                String.format("Failed to create relation: %s", e.getMessage()), e);
-        }
+        return relationService.createInternalRelation(
+            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId);
     }
     
     /**
@@ -170,13 +143,8 @@ public class RelationController {
         @PathVariable EntityType targetEntityType,
         @PathVariable Long targetEntityId
     ) {
-        try {
-            return relationService.deleteInternalRelation(
-                sourceEntityType, sourceEntityId, targetEntityType, targetEntityId);
-        } catch (Exception e) {
-            throw new DataAccessException(
-                String.format("Failed to delete relation: %s", e.getMessage()), e);
-        }
+        return relationService.deleteInternalRelation(
+            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId);
     }
     
     /**
@@ -189,11 +157,6 @@ public class RelationController {
     public boolean deleteInternalRelationById(
         @PathVariable Long relationId
     ) {
-        try {
-            return relationService.deleteInternalRelationById(relationId);
-        } catch (Exception e) {
-            throw new DataAccessException(
-                String.format("Failed to delete relation: %s", e.getMessage()), e);
-        }
+        return relationService.deleteInternalRelationById(relationId);
     }
 }

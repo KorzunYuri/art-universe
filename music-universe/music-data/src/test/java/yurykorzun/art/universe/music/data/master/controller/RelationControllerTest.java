@@ -5,14 +5,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import yurykorzun.art.universe.music.data.master.dto.EntityDTO;
+import yurykorzun.art.universe.music.data.master.dto.relation.RelatedEntityDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingStatusDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.TargetEntityBindingDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.entity.EntityType;
-import yurykorzun.art.universe.music.data.master.exception.DataAccessException;
-import yurykorzun.art.universe.music.data.master.exception.EntityBindingException;
 import yurykorzun.art.universe.music.data.master.service.RelationService;
 
 import java.util.Arrays;
@@ -69,27 +67,27 @@ class RelationControllerTest {
     }
 
     @Test
-    void bindExternalRelation_whenExceptionThrown_shouldThrowEntityBindingException() {
+    void bindExternalRelation_whenExceptionThrown_shouldPassThroughException() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         EntityType sourceEntityType = EntityType.ARTIST;
         Long sourceExternalEntityId = 123L;
         EntityType targetEntityType = EntityType.CATEGORY;
         Long targetExternalEntityId = 456L;
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
 
         when(relationService.bindExternalRelation(
             dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId
-        )).thenThrow(new RuntimeException(errorMessage));
+        )).thenThrow(expectedException);
 
         // When & Then
-        EntityBindingException exception = assertThrows(EntityBindingException.class, () -> 
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
             relationController.bindExternalRelation(
                 dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId
             )
         );
         
-        assertEquals("Failed to bind relation: " + errorMessage, exception.getMessage());
+        assertSame(expectedException, exception);
         verify(relationService).bindExternalRelation(
             dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId
         );
@@ -121,27 +119,27 @@ class RelationControllerTest {
     }
 
     @Test
-    void unbindExternalRelation_whenExceptionThrown_shouldThrowEntityBindingException() {
+    void unbindExternalRelation_whenExceptionThrown_shouldPassThroughException() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         EntityType sourceEntityType = EntityType.ARTIST;
         Long sourceExternalEntityId = 123L;
         EntityType targetEntityType = EntityType.CATEGORY;
         Long targetExternalEntityId = 456L;
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
 
         when(relationService.unbindExternalRelation(
             dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId
-        )).thenThrow(new RuntimeException(errorMessage));
+        )).thenThrow(expectedException);
 
         // When & Then
-        EntityBindingException exception = assertThrows(EntityBindingException.class, () -> 
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
             relationController.unbindExternalRelation(
                 dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId
             )
         );
         
-        assertEquals("Failed to unbind relation: " + errorMessage, exception.getMessage());
+        assertSame(expectedException, exception);
         verify(relationService).unbindExternalRelation(
             dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId
         );
@@ -202,27 +200,27 @@ class RelationControllerTest {
     }
 
     @Test
-    void findBoundExternalRelations_whenExceptionThrown_shouldThrowDataAccessException() {
+    void findBoundExternalRelations_whenExceptionThrown_shouldPassThroughException() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         EntityType sourceEntityType = EntityType.ARTIST;
         Long sourceExternalEntityId = 123L;
         EntityType targetEntityType = EntityType.CATEGORY;
         List<Long> targetExternalEntityIds = Arrays.asList(456L, 789L);
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
 
         when(relationService.findBoundExternalRelations(
             eq(dataSource), eq(sourceEntityType), eq(sourceExternalEntityId), eq(targetEntityType), eq(targetExternalEntityIds)
-        )).thenThrow(new RuntimeException(errorMessage));
+        )).thenThrow(expectedException);
 
         // When & Then
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> 
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
             relationController.findBoundExternalRelations(
                 dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityIds
             )
         );
         
-        assertEquals("Failed to get bound relations: " + errorMessage, exception.getMessage());
+        assertSame(expectedException, exception);
         verify(relationService).findBoundExternalRelations(
             eq(dataSource), eq(sourceEntityType), eq(sourceExternalEntityId), eq(targetEntityType), eq(targetExternalEntityIds)
         );
@@ -235,13 +233,13 @@ class RelationControllerTest {
         Long sourceEntityId = 123L;
         EntityType targetEntityType = EntityType.CATEGORY;
 
-        List<EntityDTO> expectedEntities = Arrays.asList(
-            EntityDTO.builder()
+        List<RelatedEntityDTO> expectedEntities = Arrays.asList(
+            RelatedEntityDTO.builder()
                 .id(1L)
                 .name("Category 1")
                 .entityType(targetEntityType)
                 .build(),
-            EntityDTO.builder()
+            RelatedEntityDTO.builder()
                 .id(2L)
                 .name("Category 2")
                 .entityType(targetEntityType)
@@ -253,7 +251,7 @@ class RelationControllerTest {
         )).thenReturn(expectedEntities);
 
         // When
-        List<EntityDTO> result = relationController.getRelatedEntities(
+        List<RelatedEntityDTO> result = relationController.getRelatedEntities(
             sourceEntityType, sourceEntityId, targetEntityType
         );
 
@@ -265,25 +263,25 @@ class RelationControllerTest {
     }
 
     @Test
-    void getRelatedEntities_whenExceptionThrown_shouldThrowDataAccessException() {
+    void getRelatedEntities_whenExceptionThrown_shouldPassThroughException() {
         // Given
         EntityType sourceEntityType = EntityType.ARTIST;
         Long sourceEntityId = 123L;
         EntityType targetEntityType = EntityType.CATEGORY;
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
 
         when(relationService.getRelatedEntities(
             sourceEntityType, sourceEntityId, targetEntityType
-        )).thenThrow(new RuntimeException(errorMessage));
+        )).thenThrow(expectedException);
 
         // When & Then
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> 
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
             relationController.getRelatedEntities(
                 sourceEntityType, sourceEntityId, targetEntityType
             )
         );
         
-        assertEquals("Failed to get related entities: " + errorMessage, exception.getMessage());
+        assertSame(expectedException, exception);
         verify(relationService).getRelatedEntities(
             sourceEntityType, sourceEntityId, targetEntityType
         );
@@ -315,26 +313,26 @@ class RelationControllerTest {
     }
 
     @Test
-    void createInternalRelation_whenExceptionThrown_shouldThrowDataAccessException() {
+    void createInternalRelation_whenExceptionThrown_shouldPassThroughException() {
         // Given
         EntityType sourceEntityType = EntityType.ARTIST;
         Long sourceEntityId = 123L;
         EntityType targetEntityType = EntityType.CATEGORY;
         Long targetEntityId = 456L;
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
 
         when(relationService.createInternalRelation(
             sourceEntityType, sourceEntityId, targetEntityType, targetEntityId
-        )).thenThrow(new RuntimeException(errorMessage));
+        )).thenThrow(expectedException);
 
         // When & Then
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> 
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
             relationController.createInternalRelation(
                 sourceEntityType, sourceEntityId, targetEntityType, targetEntityId
             )
         );
         
-        assertEquals("Failed to create relation: " + errorMessage, exception.getMessage());
+        assertSame(expectedException, exception);
         verify(relationService).createInternalRelation(
             sourceEntityType, sourceEntityId, targetEntityType, targetEntityId
         );
@@ -365,26 +363,26 @@ class RelationControllerTest {
     }
 
     @Test
-    void deleteInternalRelation_whenExceptionThrown_shouldThrowDataAccessException() {
+    void deleteInternalRelation_whenExceptionThrown_shouldPassThroughException() {
         // Given
         EntityType sourceEntityType = EntityType.ARTIST;
         Long sourceEntityId = 123L;
         EntityType targetEntityType = EntityType.CATEGORY;
         Long targetEntityId = 456L;
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
 
         when(relationService.deleteInternalRelation(
             sourceEntityType, sourceEntityId, targetEntityType, targetEntityId
-        )).thenThrow(new RuntimeException(errorMessage));
+        )).thenThrow(expectedException);
 
         // When & Then
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> 
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
             relationController.deleteInternalRelation(
                 sourceEntityType, sourceEntityId, targetEntityType, targetEntityId
             )
         );
         
-        assertEquals("Failed to delete relation: " + errorMessage, exception.getMessage());
+        assertSame(expectedException, exception);
         verify(relationService).deleteInternalRelation(
             sourceEntityType, sourceEntityId, targetEntityType, targetEntityId
         );
@@ -406,19 +404,19 @@ class RelationControllerTest {
     }
 
     @Test
-    void deleteInternalRelationById_whenExceptionThrown_shouldThrowDataAccessException() {
+    void deleteInternalRelationById_whenExceptionThrown_shouldPassThroughException() {
         // Given
         Long relationId = 123L;
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
 
-        when(relationService.deleteInternalRelationById(relationId)).thenThrow(new RuntimeException(errorMessage));
+        when(relationService.deleteInternalRelationById(relationId)).thenThrow(expectedException);
 
         // When & Then
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> 
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
             relationController.deleteInternalRelationById(relationId)
         );
         
-        assertEquals("Failed to delete relation: " + errorMessage, exception.getMessage());
+        assertSame(expectedException, exception);
         verify(relationService).deleteInternalRelationById(relationId);
     }
 }

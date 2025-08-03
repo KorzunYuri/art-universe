@@ -1,6 +1,6 @@
 package yurykorzun.art.universe.music.data.master.service;
 
-import yurykorzun.art.universe.music.data.master.dto.EntityDTO;
+import yurykorzun.art.universe.music.data.master.dto.relation.RelatedEntityDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingStatusDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
@@ -74,7 +74,7 @@ public interface RelationService {
      * @param targetEntityType Target entity type
      * @return List of DTOs with related entity information
      */
-    List<EntityDTO> getRelatedEntities(
+    List<RelatedEntityDTO> getRelatedEntities(
         EntityType sourceEntityType, 
         Long sourceEntityId, 
         EntityType targetEntityType

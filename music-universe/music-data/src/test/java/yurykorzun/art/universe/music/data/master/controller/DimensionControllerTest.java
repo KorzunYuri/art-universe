@@ -12,8 +12,7 @@ import org.springframework.data.domain.Pageable;
 import yurykorzun.art.universe.music.data.master.dto.DimensionDto;
 import yurykorzun.art.universe.music.data.master.dto.DimensionSaveRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
-import yurykorzun.art.universe.music.data.master.exception.DataAccessException;
-import yurykorzun.art.universe.music.data.master.exception.EntityNotFoundException;
+import yurykorzun.art.universe.music.data.master.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.service.DimensionService;
 
 import java.util.Arrays;
@@ -32,7 +31,7 @@ class DimensionControllerTest {
     private DimensionController dimensionController;
 
     @Test
-    void searchDimensions_shouldReturnPageOfDimensions() {
+    void findDimensions_shouldReturnPageOfDimensions() {
         // Given
         String query = "genre";
         Pageable pageable = PageRequest.of(0, 10);
@@ -43,32 +42,32 @@ class DimensionControllerTest {
         List<DimensionDto> dimensions = Arrays.asList(dimension1, dimension2);
         Page<DimensionDto> expectedPage = new PageImpl<>(dimensions, pageable, dimensions.size());
         
-        when(dimensionService.searchDimensions(query, pageable)).thenReturn(expectedPage);
+        when(dimensionService.findDimensions(query, pageable)).thenReturn(expectedPage);
 
         // When
-        Page<DimensionDto> result = dimensionController.searchDimensions(query, pageable);
+        Page<DimensionDto> result = dimensionController.findDimensions(query, pageable);
 
         // Then
         assertEquals(expectedPage, result);
-        verify(dimensionService).searchDimensions(query, pageable);
+        verify(dimensionService).findDimensions(query, pageable);
     }
 
     @Test
-    void searchDimensions_whenExceptionThrown_shouldThrowDataAccessException() {
+    void findDimensions_whenExceptionThrown_shouldPassThroughException() {
         // Given
         String query = "genre";
         Pageable pageable = PageRequest.of(0, 10);
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
         
-        when(dimensionService.searchDimensions(query, pageable)).thenThrow(new RuntimeException(errorMessage));
+        when(dimensionService.findDimensions(query, pageable)).thenThrow(expectedException);
 
         // When & Then
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> 
-            dimensionController.searchDimensions(query, pageable)
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+            dimensionController.findDimensions(query, pageable)
         );
         
-        assertEquals("Failed to search dimensions: " + errorMessage, exception.getMessage());
-        verify(dimensionService).searchDimensions(query, pageable);
+        assertSame(expectedException, exception);
+        verify(dimensionService).findDimensions(query, pageable);
     }
 
     @Test
@@ -127,19 +126,19 @@ class DimensionControllerTest {
     }
 
     @Test
-    void lookupDimensions_whenExceptionThrown_shouldThrowDataAccessException() {
+    void lookupDimensions_whenExceptionThrown_shouldPassThroughException() {
         // Given
         String searchTerm = "genre";
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
         
-        when(dimensionService.lookupDimensions(searchTerm)).thenThrow(new RuntimeException(errorMessage));
+        when(dimensionService.lookupDimensions(searchTerm)).thenThrow(expectedException);
 
         // When & Then
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> 
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
             dimensionController.lookupDimensions(searchTerm, null)
         );
         
-        assertEquals("Failed to lookup dimensions: " + errorMessage, exception.getMessage());
+        assertSame(expectedException, exception);
         verify(dimensionService).lookupDimensions(searchTerm);
     }
 
@@ -166,21 +165,21 @@ class DimensionControllerTest {
     }
 
     @Test
-    void saveDimension_whenExceptionThrown_shouldThrowDataAccessException() {
+    void saveDimension_whenExceptionThrown_shouldPassThroughException() {
         // Given
         DimensionSaveRequestDTO request = DimensionSaveRequestDTO.builder()
             .name("New Genre")
             .build();
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
         
-        when(dimensionService.saveDimension(request)).thenThrow(new RuntimeException(errorMessage));
+        when(dimensionService.saveDimension(request)).thenThrow(expectedException);
 
         // When & Then
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> 
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
             dimensionController.saveDimension(request)
         );
         
-        assertEquals("Failed to save dimension: " + errorMessage, exception.getMessage());
+        assertSame(expectedException, exception);
         verify(dimensionService).saveDimension(request);
     }
 
@@ -207,7 +206,7 @@ class DimensionControllerTest {
         when(dimensionService.deleteDimension(id)).thenReturn(false);
 
         // When & Then
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> 
+        CustomEntityNotFoundException exception = assertThrows(CustomEntityNotFoundException.class, () ->
             dimensionController.deleteDimension(id)
         );
         
@@ -216,19 +215,19 @@ class DimensionControllerTest {
     }
 
     @Test
-    void deleteDimension_whenExceptionThrown_shouldThrowDataAccessException() {
+    void deleteDimension_whenExceptionThrown_shouldPassThroughException() {
         // Given
         Long id = 1L;
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
         
-        when(dimensionService.deleteDimension(id)).thenThrow(new RuntimeException(errorMessage));
+        when(dimensionService.deleteDimension(id)).thenThrow(expectedException);
 
         // When & Then
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> 
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
             dimensionController.deleteDimension(id)
         );
         
-        assertEquals("Failed to delete dimension: " + errorMessage, exception.getMessage());
+        assertSame(expectedException, exception);
         verify(dimensionService).deleteDimension(id);
     }
 }

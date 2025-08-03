@@ -1,17 +1,17 @@
 package yurykorzun.art.universe.music.data.master.service;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import yurykorzun.art.universe.music.data.master.dto.EntityDTO;
+import yurykorzun.art.universe.music.data.master.dto.relation.RelatedEntityDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingStatusDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.TargetEntityBindingDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.entity.EntityType;
+import yurykorzun.art.universe.music.data.master.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.relation.RelationBindingEntity;
 import yurykorzun.art.universe.music.data.master.relation.RelationEntity;
 import yurykorzun.art.universe.music.data.master.relation.RelationRegistry;
@@ -54,12 +54,12 @@ public class RelationServiceImpl implements RelationService {
         Long targetInternalId = findInternalEntityId(dataSource, targetEntityType, targetExternalEntityId);
         
         if (sourceInternalId == null) {
-            throw new EntityNotFoundException(
+            throw new CustomEntityNotFoundException(
                 String.format("External %s with ID %d is not bound", sourceEntityType.getName(), sourceExternalEntityId));
         }
         
         if (targetInternalId == null) {
-            throw new EntityNotFoundException(
+            throw new CustomEntityNotFoundException(
                 String.format("External %s with ID %d is not bound", targetEntityType.getName(), targetExternalEntityId));
         }
         
@@ -216,7 +216,7 @@ public class RelationServiceImpl implements RelationService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<EntityDTO> getRelatedEntities(
+    public List<RelatedEntityDTO> getRelatedEntities(
         EntityType sourceEntityType, 
         Long sourceEntityId, 
         EntityType targetEntityType
@@ -248,9 +248,9 @@ public class RelationServiceImpl implements RelationService {
         }
         
         // Convert results to DTOs
-        List<EntityDTO> entities = new ArrayList<>();
+        List<RelatedEntityDTO> entities = new ArrayList<>();
         for (Object[] row : results) {
-            entities.add(EntityDTO.builder()
+            entities.add(RelatedEntityDTO.builder()
                 .id(((Number) row[0]).longValue())
                 .name((String) row[1])
                 .entityType(targetEntityType)
@@ -763,7 +763,7 @@ public class RelationServiceImpl implements RelationService {
      * 
      * @param entityType Entity type
      * @param entityId Entity ID
-     * @throws EntityNotFoundException if entity does not exist
+     * @throws CustomEntityNotFoundException if entity does not exist
      */
     private void validateEntityExists(EntityType entityType, Long entityId) {
         try {
@@ -780,10 +780,9 @@ public class RelationServiceImpl implements RelationService {
                 .getSingleResult();
             
             if (count.intValue() == 0) {
-                throw new EntityNotFoundException(
-                    String.format("%s with ID %d not found", entityType.getName(), entityId));
+                throw new CustomEntityNotFoundException(entityType.getName(), entityId);
             }
-        } catch (EntityNotFoundException e) {
+        } catch (CustomEntityNotFoundException e) {
             throw e;
         } catch (Exception e) {
             throw new RuntimeException(
