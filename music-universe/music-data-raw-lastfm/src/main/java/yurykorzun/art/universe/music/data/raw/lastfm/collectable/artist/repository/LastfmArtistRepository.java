@@ -163,14 +163,38 @@ public interface LastfmArtistRepository extends JpaRepository<LastfmArtist, Long
                 UNION
                 SELECT * FROM not_approved_artists_no_info
             )
+            , deduplicated_artists AS (
+                SELECT DISTINCT ON (COALESCE(a.mbid, 'id_' || a.id::text))
+                    a.*,
+                    ua.priority_1,
+                    ua.priority_2
+                FROM
+                    union_artists ua
+                JOIN 
+                    artist a ON a.id = ua.id
+                ORDER BY 
+                    COALESCE(a.mbid, 'id_' || a.id::text),
+                    ua.priority_1,
+                    ua.priority_2,
+                    -- for same MBID - choose more popular artist
+                    a.approval_status DESC,
+                    COALESCE(a.listeners_count, 0) DESC,
+                    a.id ASC
+            )
             SELECT
-                a.*
+                id,
+                name, 
+                mbid, 
+                url,
+                listeners_count, 
+                play_count, 
+                approval_status, 
+                api_call_id, 
+                created_at, 
+                updated_at
             FROM
-                union_artists ua
-            JOIN 
-                artist a
-                    ON  a.id = ua.id
-            ORDER BY ua.priority_1, ua.priority_2
+                deduplicated_artists
+            ORDER BY priority_1, priority_2
             LIMIT :batchSize
         """,
         nativeQuery = true)

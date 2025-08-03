@@ -352,4 +352,82 @@ class LastfmArtistGetSimilarResponseProcessorTest extends JpaOnlyTest {
         assertEquals(1, artistRepository.count(), "Only source artist should exist");
         assertEquals(0, artistsRelationRepository.count(), "No artist-artist relations should be created");
     }
+    
+    @Test
+    void process_shouldExcludeSimilarArtist_whenMbidEqualsToSourceArtistMbid() throws Exception {
+        // given
+        // Create source artist with same MBID as one in the test response
+        LastfmArtist sourceArtist = consistencyHelper.createAndSaveArtist(builder -> 
+            builder.name("Cher")
+                   .mbid("c43d2302-02db-487b-b62d-8cb3c57f94c6")
+        );
+        
+        // Create API response
+        LastfmApiResponse apiResponse = createApiResponse(sourceArtist);
+        
+        // Record initial state
+        long initialArtistCount = artistRepository.count();
+        long initialRelationCount = artistsRelationRepository.count();
+        
+        // when
+        processor.processResponse(apiResponse);
+        
+        // then
+        // Verify that one less artist was created (source artist excluded)
+        int totalArtistsInResponse = dtoRoot.getRootObject().getArtists().size();
+        int expectedNewArtistsCount = totalArtistsInResponse - 1; // Exclude source artist
+        assertEquals(initialArtistCount + expectedNewArtistsCount, artistRepository.count(), 
+            "Source artist should be excluded from similar artists");
+        
+        // Verify that relations were created only for non-source artists
+        List<LastfmArtistsRelation> relations = artistsRelationRepository.findByTargetArtistId(sourceArtist.getId());
+        assertEquals(expectedNewArtistsCount, relations.size(), 
+            "Relations should be created only for non-source artists");
+        
+        // Verify that none of the created relations point to the source artist as source
+        for (LastfmArtistsRelation relation : relations) {
+            assertNotEquals(sourceArtist.getId(), relation.getSourceArtist().getId(),
+                "Source artist should not appear as source in any relation");
+            assertNotEquals(sourceArtist.getMbid(), relation.getSourceArtist().getMbid(),
+                "Source artist MBID should not appear in any similar artist");
+        }
+    }
+    
+    @Test
+    void process_shouldExcludeSourceArtistByName_whenSourceArtistHasNoMbidButNameMatches() throws Exception {
+        // given
+        // Create source artist with same name but no MBID
+        LastfmArtist sourceArtist = consistencyHelper.createAndSaveArtist(builder -> 
+            builder.name("Sonny & Cher")
+                   .mbid(null) // No MBID
+        );
+        
+        // Create API response
+        LastfmApiResponse apiResponse = createApiResponse(sourceArtist);
+        
+        // Record initial state
+        long initialArtistCount = artistRepository.count();
+        
+        // when
+        processor.processResponse(apiResponse);
+        
+        // then
+        // Verify that one less artist was created (source artist excluded by name)
+        int totalArtistsInResponse = dtoRoot.getRootObject().getArtists().size();
+        int expectedNewArtistsCount = totalArtistsInResponse - 1; // Exclude source artist
+        assertEquals(initialArtistCount + expectedNewArtistsCount, artistRepository.count(), 
+            "Source artist should be excluded from similar artists by name comparison");
+        
+        // Verify that relations were created only for non-source artists
+        List<LastfmArtistsRelation> relations = artistsRelationRepository.findByTargetArtistId(sourceArtist.getId());
+        assertEquals(expectedNewArtistsCount, relations.size(), 
+            "Relations should be created only for non-source artists");
+        
+        // Verify that none of the created relations have the same name as source artist
+        for (LastfmArtistsRelation relation : relations) {
+            assertNotEquals(sourceArtist.getName().toLowerCase(), 
+                relation.getSourceArtist().getName().toLowerCase(),
+                "Source artist name should not appear in any similar artist");
+        }
+    }
 }

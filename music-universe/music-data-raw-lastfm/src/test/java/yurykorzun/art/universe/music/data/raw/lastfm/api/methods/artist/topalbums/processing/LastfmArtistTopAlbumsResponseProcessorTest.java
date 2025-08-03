@@ -34,6 +34,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTe
 
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -41,7 +42,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @Import({
     // processing
     LastfmArtistTopAlbumsResponseProcessor.class,
-    LastfmArtistTopAlbumsAlbumFactory.class,
     LastfmApiDtoProcessingService.class,
     // entities
     LastfmAlbumServiceImpl.class,
@@ -295,28 +295,6 @@ class LastfmArtistTopAlbumsResponseProcessorTest extends JpaOnlyTest {
     }
 
     @Test
-    void process_shouldFilterOutAlbumsWithMismatchedArtistNames() throws IOException {
-        // given
-        // Create source artist with different name than in response
-        LastfmArtist sourceArtist = consistencyHelper.createAndSaveArtist(builder ->
-            builder.name("Different Artist Name")
-        );
-
-        // Create API response
-        LastfmApiResponse apiResponse = createApiResponse(sourceArtist);
-
-        // Record initial state
-        long initialAlbumCount = albumRepository.count();
-
-        // when
-        processor.processResponse(apiResponse);
-
-        // then - no albums should be created due to artist name mismatch
-        assertEquals(initialAlbumCount, albumRepository.count(),
-            "No albums should be created when artist names don't match");
-    }
-
-    @Test
     void process_shouldThrowException_whenSourceArtistNotFound() throws IOException {
         // given
         // Create source artist first (needed for API call creation)
@@ -333,24 +311,69 @@ class LastfmArtistTopAlbumsResponseProcessorTest extends JpaOnlyTest {
             processor.processResponse(apiResponse);
         }, "Should throw EntityNotFoundException when source artist not found");
     }
-    
+
     @Test
-    void process_shouldHandleErrorGracefully_whenResponseIsInvalid() {
+    void process_shouldSetArtistReferenceInAlbum_whenProcessingResponse() throws IOException {
         // given
         // Create source artist
+        LastfmArtist sourceArtist = consistencyHelper.createAndSaveArtist(builder ->
+            builder.name(dtoRoot.getTopAlbumsObject().getAlbums().get(0).getArtist().getName())
+        );
+
+        // Create API response
+        LastfmApiResponse apiResponse = createApiResponse(sourceArtist);
+
+        // when
+        processor.processResponse(apiResponse);
+
+        // then
+        // Verify all albums have artist reference set
+        List<LastfmAlbum> savedAlbums = albumRepository.findAll();
+        assertFalse(savedAlbums.isEmpty(), "Albums should be created");
+
+        for (LastfmAlbum album : savedAlbums) {
+            assertNotNull(album.getArtist(), "Album should have artist reference set");
+            assertEquals(sourceArtist.getId(), album.getArtist().getId(),
+                "Album should reference the correct artist");
+        }
+    }
+
+    @Test
+    void process_shouldProcessArtistsFromAlbumDtos_beforeProcessingAlbums() throws IOException {
+        // given
         LastfmArtist sourceArtist = consistencyHelper.createAndSaveArtist();
-        
-        // Create invalid API response
-        String invalidJson = "{\"topalbums\": {\"invalid\": true}}";
-        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
-            invalidJson, LastfmApiCallType.ARTIST_TOP_ALBUMS, sourceArtist);
-        
-        // when/then
-        assertThrows(RuntimeException.class, () -> processor.processResponse(apiResponse),
-            "Should throw exception when processing invalid response");
-        
-        // Verify no entities were created
-        assertEquals(1, artistRepository.count(), "Only source artist should exist");
-        assertEquals(0, albumRepository.count(), "No albums should be created");
+
+        // Modify the response to use several artists
+        ObjectNode jsonNode = (ObjectNode) objectMapper.readTree(responseJsonString);
+        ObjectNode topAlbumsNode = (ObjectNode) jsonNode.path("topalbums");
+        ObjectNode firstAlbumNode = (ObjectNode) topAlbumsNode.path("album").get(0);
+        ObjectNode artistNode = (ObjectNode) firstAlbumNode.path("artist");
+        artistNode.put("name", UUID.randomUUID().toString());
+        artistNode.put("mbid", UUID.randomUUID().toString());
+
+        String modifiedResponseBody = objectMapper.writeValueAsString(jsonNode);
+
+        // Create a new API response with the modified body
+        LastfmApiResponse modifiedApiResponse = consistencyHelper.createAndSaveApiResponse(
+            modifiedResponseBody, LastfmApiCallType.ARTIST_TOP_ALBUMS, sourceArtist);
+
+        // when
+        processor.processResponse(modifiedApiResponse);
+
+        // then
+        // Verify artists were processed from DTOs
+        List<LastfmArtist> savedArtists = artistRepository.findAll();
+        assertTrue(savedArtists.size() > 1, "Multiple artists should be processed");
+
+        // Verify albums reference the correct artists
+        List<LastfmAlbum> savedAlbums = albumRepository.findAll();
+        assertFalse(savedAlbums.isEmpty(), "Albums should be created");
+
+        List<LastfmArtistAlbum> savedRelations = artistAlbumRepository.findAll();
+        assertFalse(savedRelations.isEmpty(), "Artist-Album relations should be created");
+
+        for (LastfmAlbum album : savedAlbums) {
+            assertNotNull(album.getArtist(), "Album should have artist reference set");
+        }
     }
 }

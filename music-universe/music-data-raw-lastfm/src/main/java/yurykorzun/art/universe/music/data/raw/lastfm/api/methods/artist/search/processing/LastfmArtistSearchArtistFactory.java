@@ -11,7 +11,6 @@ public class LastfmArtistSearchArtistFactory extends LastfmArtistEntityFactory<A
     @Override
     protected LastfmArtist.LastfmArtistBuilder<?, ?> setExtensionFields(LastfmArtist.LastfmArtistBuilder<?, ?> builder, ArtistSearchArtistDto dto) {
         return builder
-            .isStreamable(1 == dto.getStreamable())
             .listenersCount(dto.getListenersCount())
         ;
     }

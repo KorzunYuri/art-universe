@@ -44,7 +44,6 @@ import static org.junit.jupiter.api.Assertions.*;
     // processing
     LastfmTagTopTracksResponseProcessor.class,
     LastfmTagTopTracksArtistFactory.class,
-    LastfmTagTopTracksTrackFactory.class,
     LastfmApiDtoProcessingService.class,
     // entities
     LastfmArtistServiceImpl.class,

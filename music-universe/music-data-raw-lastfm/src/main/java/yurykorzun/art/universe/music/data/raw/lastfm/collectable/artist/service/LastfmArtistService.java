@@ -22,7 +22,7 @@ public interface LastfmArtistService extends EntityService<LastfmArtist> {
 
     List<LastfmArtist> findAllByNames(List<String> names);
 
-    List<LastfmArtist> findAllToGetInfoFor();
+    List<LastfmArtist> findArtistsForGetInfo();
 
     LastfmArtistResponseDto updateApprovalStatus(Long id, Integer approvalStatusCode);
 }

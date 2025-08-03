@@ -39,6 +39,7 @@ public class LastfmAlbumEntityFactory<D extends AlbumDto> implements EntityFacto
                 .playCount(entity.getPlayCount())
                 .listenersCount(entity.getListenersCount())
                 .publishTs(entity.getPublishTs())
+                .artist(entity.getArtist())
             .build();
     }
 }

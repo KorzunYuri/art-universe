@@ -83,7 +83,7 @@ public class LastfmArtistSearchResponseProcessor extends LastfmApiResponseProces
             artistService
         );
 
-        log.info("Saved {} found artists", result.savedEntities().size());
+        log.info("Saved {} found artists", result.actualEntities().size());
         log.info("Saved {} found artists' attributes", result.savedAttributeValues().size());
     }
 

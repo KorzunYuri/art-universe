@@ -10,8 +10,11 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.track.common.dt
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-@JsonIgnoreProperties(ignoreUnknown = true) // ignore artist, among others
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ArtistTopTracksTrackDto extends TrackDto {
+
+    @JsonProperty("artist")
+    private ArtistTopTracksTrackArtistDto artist;
 
     @JsonProperty("streamable")
     private int streamable;
@@ -21,5 +24,4 @@ public class ArtistTopTracksTrackDto extends TrackDto {
 
     @JsonProperty("listeners")
     private int listenersCount;
-
 }

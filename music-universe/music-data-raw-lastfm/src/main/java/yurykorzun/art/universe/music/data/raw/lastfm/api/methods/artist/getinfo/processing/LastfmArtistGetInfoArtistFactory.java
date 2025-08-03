@@ -11,8 +11,6 @@ class LastfmArtistGetInfoArtistFactory extends LastfmArtistEntityFactory<ArtistG
     @Override
     protected LastfmArtist.LastfmArtistBuilder<?, ?> setExtensionFields(LastfmArtist.LastfmArtistBuilder<?, ?> builder, ArtistGetInfoArtistDto dto) {
         return builder
-            .isStreamable(1 == dto.getStreamable())
-            .isOnTour(1 == dto.getOnTour())
             .listenersCount(dto.getStats().getListeners())
             .playCount(dto.getStats().getPlayCount())
             ;

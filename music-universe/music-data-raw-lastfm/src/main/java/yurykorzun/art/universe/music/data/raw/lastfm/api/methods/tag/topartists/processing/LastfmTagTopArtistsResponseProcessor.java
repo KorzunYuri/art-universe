@@ -93,7 +93,7 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
             attrHandlers,
             artistService
         );
-        log.info("saved {} tag's artists", result.savedEntities().size());
+        log.info("saved {} tag's artists", result.actualEntities().size());
         log.info("saved {} tag's artists' attributes", result.savedAttributeValues().size());
 
         return result;

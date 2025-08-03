@@ -63,12 +63,14 @@ Central data management service for approved music data. Manages curated entitie
 
 **Local Development:**
 ```bash
+# Run from project root directory
 ./scripts/run-module-dev.sh music-universe:music-data
 # Runs on port 7082 with dev profile
 ```
 
 **Docker Deployment:**
 ```bash
+# Run from project root directory
 ./env/docker/deploy.sh local   # Port 9082
 ./env/docker/deploy.sh prod    # Port 8082
 ```

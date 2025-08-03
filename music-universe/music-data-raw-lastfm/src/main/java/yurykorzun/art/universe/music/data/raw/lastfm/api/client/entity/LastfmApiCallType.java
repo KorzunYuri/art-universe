@@ -13,9 +13,13 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.DtoR
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.TagTopArtistsDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.dto.TagTopTagsDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.dto.TagTopTracksDtoRoot;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.track.getinfo.dto.TrackGetInfoDtoRoot;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.album.getinfo.dto.AlbumGetInfoDtoRoot;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.entity.LastfmAlbum;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -88,6 +92,22 @@ public enum LastfmApiCallType implements ApiCallType {
             Set.of(PARAM_NAME_LIMIT),
             ArtistSearchDtoRoot.class,
             null
+        )
+    ,   TRACK_GET_INFO(
+            10,
+            "track.getInfo",
+            Set.of(PARAM_NAME_API_KEY),
+            Set.of(PARAM_NAME_TRACK, PARAM_NAME_ARTIST, PARAM_NAME_MBID),
+            TrackGetInfoDtoRoot.class,
+            LastfmTrack.class
+        )
+    ,   ALBUM_GET_INFO(
+            11,
+            "album.getInfo",
+            Set.of(PARAM_NAME_API_KEY),
+            Set.of(PARAM_NAME_ALBUM, PARAM_NAME_ARTIST, PARAM_NAME_MBID),
+            AlbumGetInfoDtoRoot.class,
+            LastfmAlbum.class
         );
 
     static {

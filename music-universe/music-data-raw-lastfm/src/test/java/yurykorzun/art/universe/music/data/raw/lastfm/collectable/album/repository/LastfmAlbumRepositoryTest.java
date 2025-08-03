@@ -1,10 +1,15 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.repository;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.entity.LastfmAlbum;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
 
@@ -21,6 +26,17 @@ class LastfmAlbumRepositoryTest extends JpaOnlyTest {
 
     @Autowired
     private DbConsistencyHelper consistencyHelper;
+    
+    @BeforeEach
+    void setUp() {
+        // Clean up before each test to ensure consistent state
+        consistencyHelper.cleanup();
+    }
+    
+    @AfterEach
+    void tearDown() {
+        consistencyHelper.cleanup();
+    }
 
     @Test
     void save_shouldSaveAlbum_whenValidDataProvided() {
@@ -75,5 +91,102 @@ class LastfmAlbumRepositoryTest extends JpaOnlyTest {
             .filter(a -> album1.getName().equals(a.getName()))
             .findFirst().get();
         assertEquals(album1after1stSave.getId(), album1after2ndSave.getId());
+    }
+    
+    @Test
+    void findAlbumsForGetInfo_shouldPrioritizeAlbumsWithMissingStats() {
+        // Create artists with different listener counts
+        LastfmArtist popularArtist = consistencyHelper.createAndSaveArtist(builder -> 
+            builder.name("Popular Artist").listenersCount(10000).approvalStatus(ApprovalStatus.APPROVED));
+            
+        LastfmArtist lessPopularArtist = consistencyHelper.createAndSaveArtist(builder -> 
+            builder.name("Less Popular Artist").listenersCount(5000).approvalStatus(ApprovalStatus.PENDING));
+            
+        LastfmArtist unpopularArtist = consistencyHelper.createAndSaveArtist(builder -> 
+            builder.name("Unpopular Artist").listenersCount(1000).approvalStatus(ApprovalStatus.PENDING));
+        
+        // Create albums with different stats
+        // Album with missing stats from popular artist (highest priority)
+        LastfmAlbum albumWithMissingStats = consistencyHelper.createAndSaveAlbum(builder -> 
+            builder.name("Album With Missing Stats")
+                  .url("https://example.com/album1")
+                  .playCount(null)
+                  .listenersCount(null)
+                  .artist(popularArtist));
+        
+        // Album with stats from popular artist (lower priority)
+        LastfmAlbum albumWithStats = consistencyHelper.createAndSaveAlbum(builder -> 
+            builder.name("Album With Stats")
+                  .url("https://example.com/album2")
+                  .playCount(5000L)
+                  .listenersCount(1000)
+                  .artist(popularArtist));
+        
+        // Album with missing stats from less popular artist (medium priority)
+        LastfmAlbum albumFromLessPopularArtist = consistencyHelper.createAndSaveAlbum(builder -> 
+            builder.name("Album From Less Popular Artist")
+                  .url("https://example.com/album3")
+                  .playCount(null)
+                  .listenersCount(null)
+                  .artist(lessPopularArtist));
+        
+        // Album with missing stats from unpopular artist (lowest priority)
+        LastfmAlbum albumFromUnpopularArtist = consistencyHelper.createAndSaveAlbum(builder -> 
+            builder.name("Album From Unpopular Artist")
+                  .url("https://example.com/album4")
+                  .playCount(null)
+                  .listenersCount(null)
+                  .artist(unpopularArtist));
+        
+        // Create an API call for one album to test filtering
+        LastfmApiCall apiCall = consistencyHelper.createAndSaveApiCall(LastfmApiCallType.ALBUM_GET_INFO, albumWithStats);
+        
+        // Execute query with limit 3
+        List<LastfmAlbum> result = albumRepository.findAlbumsForGetInfo(3);
+        
+        // Verify results
+        assertEquals(3, result.size(), "Should return 3 albums");
+        
+        // First should be the album with missing stats from popular artist
+        assertEquals(albumWithMissingStats.getId(), result.get(0).getId(), 
+            "First album should be the one with missing stats from popular artist");
+        
+        // Second should be the album from less popular artist
+        assertEquals(albumFromLessPopularArtist.getId(), result.get(1).getId(), 
+            "Second album should be the one from less popular artist");
+        
+        // Third should be the album from unpopular artist
+        assertEquals(albumFromUnpopularArtist.getId(), result.get(2).getId(), 
+            "Third album should be the one from unpopular artist");
+        
+        // Album with stats and pending API call should not be included
+        assertFalse(result.contains(albumWithStats), 
+            "Album with stats and pending API call should not be included");
+    }
+    
+    @Test
+    void findAlbumsForGetInfo_shouldLimitAlbumsPerArtist() {
+        // Create an artist
+        LastfmArtist artist = consistencyHelper.createAndSaveArtist(builder -> 
+            builder.name("Test Artist").listenersCount(5000));
+        
+        // Create 5 albums for the same artist
+        for (int i = 1; i <= 5; i++) {
+            int ind = i;
+            consistencyHelper.createAndSaveAlbum(builder ->
+                builder.name("Album " + ind)
+                      .url("https://example.com/album" + ind)
+                      .playCount(null)
+                      .listenersCount(null)
+                      .artist(artist));
+        }
+        
+        // Execute query with albumsPerArtist = 2
+        List<LastfmAlbum> result = albumRepository.findAlbumsForGetInfo(10, 2);
+        
+        // Verify results
+        assertEquals(2, result.size(), "Should return only 2 albums per artist");
+        assertEquals("Album 1", result.get(0).getName(), "Should return albums in order of creation");
+        assertEquals("Album 2", result.get(1).getName(), "Should return albums in order of creation");
     }
 }
