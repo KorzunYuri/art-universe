@@ -1,23 +1,27 @@
 // hooks
 import {useCallback, useEffect, useState} from "react";
-import {useLastfmEntity} from "@/music-universe/sources/lastfm/query/useLastfmEntity.tsx";
+import {useLastfmEntity} from "@/music-universe/sources/lastfm/hooks/useLastfmEntity.tsx";
 // components
 import {MasterEntityLookup} from "@/music-universe/shared/components";
 // types
-import type {LookupEntity} from "@/music-universe/music-data/types/master-entities-lookup.ts";
+import type {
+    LookupEntity,
+    LookupRequestSourceParams
+} from "@/music-universe/music-data/types/master-entities-lookup.ts";
 // styles
 import commonStyles from "@/music-universe/shared/styles/common.module.scss";
 import styles from "./EntityBinding.module.scss";
 import type {MasterEntityType} from "@/music-universe/shared/types/entities.ts";
 import type {DataSource} from "@/music-universe/sources/shared/types/data-sources.ts";
 import {
-    bindRawEntityToExistingMaster, bindRawEntityToNewMaster,
-    type BoundEntityInfo, unbindRawEntity
+    bindRawEntityToExistingMaster,
+    bindRawEntityToNewMaster,
+    unbindRawEntity,
+    type BoundEntityInfo,
 } from "@/music-universe/music-data/api/music-data-binding.ts";
 import type {LastfmSupportedEntityType} from "@/music-universe/sources/lastfm/types/lastfm-entity.ts";
 import {useQueryClient} from "@tanstack/react-query";
 import {masterEntityLookupKeys} from "@/music-universe/shared/utils/query-keys.ts";
-import {lastfmEntityToCreateAndBindConverter} from "@/music-universe/sources/lastfm/api/lastfm-binding.ts";
 
 interface EntityBindingProps<K extends MasterEntityType> {
     dataSource: DataSource;
@@ -38,7 +42,6 @@ enum BindingState {
 
 /**
  * A component for binding raw ('external') entities to master entities.
- * Currently is Lastfm-specific, needs to be generified
  */
 export const EntityBinding = <T extends LastfmSupportedEntityType>(
     {
@@ -74,6 +77,18 @@ export const EntityBinding = <T extends LastfmSupportedEntityType>(
 
     const isDisabled = disabled || isLoading || isBinding || isUnbinding || isError;
 
+    const createLookupRequest: (searchString: string) => LookupRequestSourceParams<T> = useCallback((searchString: string) => {
+        const baseParams = { search: searchString };
+        if (!entity) {
+            return baseParams as LookupRequestSourceParams<T>;
+        }
+
+        // @ts-expect-error TS2345: Argument of type A | B is not assignable to type A & B
+        return {
+            ...baseParams,
+            rawEntity: entity
+        } as LookupRequestSourceParams<T>;
+    }, [entity]);
 
     // Handle input change in autocomplete
     const handleInputChange = useCallback((value: string) => {
@@ -86,8 +101,10 @@ export const EntityBinding = <T extends LastfmSupportedEntityType>(
 
     // Handle entity selection from autocomplete
     const handleEntitySelect = useCallback((matchedMasterEntity: LookupEntity | null) => {
-        console.log(`🔄 EntityBinding: handleEntitySelect called with:`, matchedMasterEntity?.name || 'null');
-        console.log(`🔄 EntityBinding: Previous selectedEntity:`, selectedEntity?.name || 'null');
+        console.log(
+            `EntityBinding: handleEntitySelect called with: ${matchedMasterEntity?.name || 'null'} `,
+            `Previous selectedEntity: ${selectedEntity?.name || 'null'}`
+        );
 
         if (matchedMasterEntity?.id === selectedEntity?.id) {
             console.log(`🔄 EntityBinding: Skipping update - same entity selected`);
@@ -103,10 +120,18 @@ export const EntityBinding = <T extends LastfmSupportedEntityType>(
         }
     }, [selectedEntity]);
 
+    // Handle loading and error states
+    if (isLoading) {
+        return <div className={styles.loadingState}>Loading...</div>;
+    }
+
+    if (isError) {
+        return <div className={styles.errorState}>Error loading entity</div>;
+    }
+
+    // Handle case when entity is undefined
     if (!entity) {
-        return (
-            <div></div>
-        )
+        return <div className={styles.emptyState}>No entity data</div>;
     }
 
     // Determine current binding state
@@ -126,7 +151,7 @@ export const EntityBinding = <T extends LastfmSupportedEntityType>(
 
     // Handle binding operations
     const handleBind = async () => {
-        if (!inputValue) return;
+        if (!inputValue || !entity) return;
 
         setIsBinding(true);
         try {
@@ -142,13 +167,13 @@ export const EntityBinding = <T extends LastfmSupportedEntityType>(
 
             // If an entity was selected from autocomplete, bind to existing
             if (selectedEntity) {
-                result = await bindRawEntityToExistingMaster(dataSource, entityType, entity.id, selectedEntity.id);
+                // @ts-expect-error TS2345: Argument of type A | B is not assignable to type A & B
+                result = await bindRawEntityToExistingMaster(selectedEntity.id, entity);
             }
             // Otherwise, create new entity and bind
             else {
-                const request = lastfmEntityToCreateAndBindConverter.toBindRequest(entity, inputValue);
-                // @ts-expect-error request cannot be cast to EntityCreateAndBindRequestMap[K]
-                result = await bindRawEntityToNewMaster<T>(dataSource, entityType, entity.id, request);
+                // @ts-expect-error TS2345: Argument of type A | B is not assignable to type A & B
+                result = await bindRawEntityToNewMaster<T>(inputValue, entity);
             }
 
             // Call onAfterBind to update parent components
@@ -161,6 +186,7 @@ export const EntityBinding = <T extends LastfmSupportedEntityType>(
             // If this was a create operation, refresh lookup to get the new entity
             if (wasCreationRequest) {
                 console.log(`🔄 EntityBinding: Refreshing lookup after create`);
+                // TODO move to onAfterBind on parent side?
                 queryClient.invalidateQueries({ queryKey: masterEntityLookupKeys.type(entityType) });
             }
         } catch (error) {
@@ -172,6 +198,8 @@ export const EntityBinding = <T extends LastfmSupportedEntityType>(
 
     // Handle unbind operation
     const handleUnbind = async () => {
+        if (!entity) return;
+
         setIsUnbinding(true);
         try {
             const canProceed = await onBeforeUnbind();
@@ -250,6 +278,7 @@ export const EntityBinding = <T extends LastfmSupportedEntityType>(
                     <MasterEntityLookup
                         searchString={inputValue}
                         entityType={entityType}
+                        requestFactory={createLookupRequest}
                         onSelect={handleEntitySelect}
                         onChange={handleInputChange}
                         selectedEntity={selectedEntity}

@@ -10,7 +10,8 @@ import {
     type Track, TrackImpl,
     type Category, CategoryImpl,
     type Dimension, DimensionImpl,
-    type RawEntity
+    type RawEntity,
+    type ArtistRelatedRawEntity
 } from "@/music-universe/shared/types/entities.ts";
 import {entityToEndpoint, type EntityTypeMap} from "@/music-universe/music-data/api/music-data-commons.ts";
 import axios from "axios";
@@ -19,13 +20,22 @@ import {MusicDataConfig} from "@/music-universe/music-data/config/musicdataconfi
 /**
  * Structures for binding (bindToNew, bindToExisting) and 'fetch bound entities' methods
  */
-interface CreateAndBindRequest {
+export interface EntityCreateAndBindRequest {
     entityName: string
 }
 
-interface TrackCreateAndBindRequest extends CreateAndBindRequest {
-    artistExternalId: number | undefined;
+export interface EntityBindToExistingRequest {
+    masterId: number
 }
+
+export interface ArtistRelatedEntityCreateAndBindRequest extends EntityCreateAndBindRequest {
+    primaryArtistId: number;
+}
+
+export interface ArtistRelatedEntityBindToExistingRequest extends EntityBindToExistingRequest {
+    primaryArtistId: number;
+}
+
 
 export interface BoundEntityResponse {
     externalId: number;
@@ -47,12 +57,21 @@ type EntityBindingResponseMap = {
 }
 
 export type EntityCreateAndBindRequestMap = {
-    artist:     CreateAndBindRequest;
-    album:      CreateAndBindRequest;
-    track:      TrackCreateAndBindRequest;
-    category:   CreateAndBindRequest;
-    dimension:  CreateAndBindRequest;
+    artist:     EntityCreateAndBindRequest;
+    album:      EntityCreateAndBindRequest;
+    track:      ArtistRelatedEntityCreateAndBindRequest;
+    category:   EntityCreateAndBindRequest;
+    dimension:  EntityCreateAndBindRequest;
 }
+
+export type EntityBindToExistingRequestMap = {
+    artist:     EntityBindToExistingRequest;
+    album:      EntityBindToExistingRequest;
+    track:      ArtistRelatedEntityBindToExistingRequest;
+    category:   EntityBindToExistingRequest;
+    dimension:  EntityBindToExistingRequest;
+}
+
 
 function createArtistFromBindingResponse(res: BoundEntityResponse): Artist {
     return new ArtistImpl(res.masterId, res.masterName);
@@ -91,7 +110,7 @@ export interface BoundEntityInfo<K extends MasterEntityType> {
     masterEntity: EntityTypeMap[K];
 }
 
-function makeEntityInfoMapper<K extends MasterEntityType>(entityType: K) {
+function makeBoundEntityInfoMapper<K extends MasterEntityType>(entityType: K) {
     return (dto: EntityBindingResponseMap[K]): BoundEntityInfo<K> => ({
         dataSource: dto.dataSource,
         entityType,
@@ -130,68 +149,115 @@ export async function fetchBoundMasterEntities<K extends MasterEntityType>(
         }
     );
 
-    return response.data.map(makeEntityInfoMapper(entityType));
+    return response.data.map(makeBoundEntityInfoMapper(entityType));
 }
 
 /**
  * Bind an entity from data source to an existing master entity
  *
- * @param dataSource
- * @param entityType
- * @param externalId The data source entity ID
- * @param masterId The master entity ID in music-data
  * @returns The bound master entity
+ * @param masterId master entity id to bind entity to
+ * @param entity raw entity to bind to existing master entity
  */
 export async function bindRawEntityToExistingMaster<K extends MasterEntityType>(
-    dataSource: DataSource,
-    entityType: K,
-    externalId: number,
-    masterId: number
+    masterId: number,
+    entity: RawEntity<K>
 ): Promise<BoundEntityInfo<K>> {
-    const endpoint = entityToEndpoint[entityType];
+    const endpoint = entityToEndpoint[entity.getEntityType()];
     const response = await axios.post<EntityBindingResponseMap[K]>(
-        `${MusicDataConfig.baseApiUrl}/${endpoint}/bind/existing/${dataSource}/${externalId}`,
-        {
-            masterId: masterId
-        }
+        `${MusicDataConfig.baseApiUrl}/${endpoint}/bind/existing/${entity.getDataSource()}/${entity.id}`,
+        toBindToExistingRequest(masterId, entity)
     );
 
-    return makeEntityInfoMapper(entityType)(response.data);
+    return makeBoundEntityInfoMapper(entity.getEntityType())(response.data);
 }
 
 /**
  * Creates a new entity and binds it to raw entity from an external source
  *
- * @param dataSource
- * @param entityType
- * @param rawEntityId
- * @param request
  * @returns The bound master entity
+ * @param entityName effective name of master entity that will be created
+ * @param entity raw entity to create master entity from
  */
 export async function bindRawEntityToNewMaster<K extends MasterEntityType>(
-    dataSource: DataSource,
-    entityType: K,
-    rawEntityId: number,
-    request: EntityCreateAndBindRequestMap[K]
+    entityName: string,
+    entity: RawEntity<K>
 ): Promise<BoundEntityInfo<K>> {
-    const endpoint = entityToEndpoint[entityType];
+    const endpoint = entityToEndpoint[entity.getEntityType()];
     const response = await axios.post<EntityBindingResponseMap[K]>(
-        `${MusicDataConfig.baseApiUrl}/${endpoint}/bind/new/${dataSource}/${rawEntityId}`,
-        request
+        `${MusicDataConfig.baseApiUrl}/${endpoint}/bind/new/${entity.getDataSource()}/${entity.id}`,
+        toCreateAndBindRequest(entityName, entity)
     );
 
-    return makeEntityInfoMapper(entityType)(response.data);
+    return makeBoundEntityInfoMapper(entity.getEntityType())(response.data);
 }
 
 /**
- * Converter of raw entities to CreateAndBindRequest, to be implemented by every data source
- * Unifying the raw entities' structure for these need is inconvenient so we will let the caller make the job.
+ * Helper function to create a request for artist-related entities
  */
-export interface RawEntityToCreateAndBindRequestConverter {
-    toBindRequest<T extends MasterEntityType>(
-        entity: RawEntity<T>,
-        entityName: string
-    ): EntityCreateAndBindRequestMap[T];
+function createArtistRelatedRequest<T extends 'create' | 'bind', K extends MasterEntityType>(
+    baseRequest: T extends 'create' ? { entityName: string } : { masterId: number },
+    entity: ArtistRelatedRawEntity<K>
+): T extends 'create' ? ArtistRelatedEntityCreateAndBindRequest : ArtistRelatedEntityBindToExistingRequest {
+    const artistId = entity.getExternalArtistId();
+
+    if (!artistId) {
+        throw new Error("Cannot create artist-related binding request: artist ID is missing");
+    }
+
+    return {
+        ...baseRequest,
+        primaryArtistId: artistId
+    } as T extends 'create' ? ArtistRelatedEntityCreateAndBindRequest : ArtistRelatedEntityBindToExistingRequest;
+}
+
+/**
+ * Creates a request for creating and binding a new master entity
+ *
+ * @param entityName Name for the new master entity
+ * @param entity Raw entity to bind
+ * @returns Request object for creating and binding
+ */
+function toCreateAndBindRequest<T extends MasterEntityType>(
+    entityName: string,
+    entity: RawEntity<T>
+): EntityCreateAndBindRequestMap[T] {
+    const baseRequest = { entityName };
+
+    // For track entities, we need to include the primary artist ID
+    if (entity.getEntityType() === 'track' && isArtistRelatedEntity(entity)) {
+        return createArtistRelatedRequest<'create', T>(baseRequest, entity) as EntityCreateAndBindRequestMap[T];
+    }
+
+    return baseRequest as EntityCreateAndBindRequestMap[T];
+}
+
+/**
+ * Creates a request for binding to an existing master entity
+ *
+ * @param masterId ID of the existing master entity
+ * @param entity Raw entity to bind
+ * @returns Request object for binding to existing
+ */
+function toBindToExistingRequest<T extends MasterEntityType>(
+    masterId: number,
+    entity: RawEntity<T>
+): EntityBindToExistingRequestMap[T] {
+    const baseRequest = { masterId };
+
+    // For track entities, we need to include the primary artist ID
+    if (entity.getEntityType() === 'track' && isArtistRelatedEntity(entity)) {
+        return createArtistRelatedRequest<'bind', T>(baseRequest, entity) as EntityBindToExistingRequestMap[T];
+    }
+
+    return baseRequest as EntityBindToExistingRequestMap[T];
+}
+
+/**
+ * Type guard to check if an entity implements ArtistRelatedRawEntity
+ */
+function isArtistRelatedEntity<T extends MasterEntityType>(entity: RawEntity<T>): entity is ArtistRelatedRawEntity<T> {
+    return 'getExternalArtistId' in entity && typeof entity.getExternalArtistId === 'function';
 }
 
 /**

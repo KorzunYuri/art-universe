@@ -12,7 +12,7 @@ import { CategoriesTableRow } from '../CategoriesTableRow'
 import { useState, useEffect, useCallback, useRef } from 'react'
 // styles
 import styles from './CategoriesTable.module.css'
-import {batchLookupMasterEntities, lookupMasterEntities} from "@/music-universe/music-data/api/music-data-commons.ts";
+import {batchLookupMasterEntities, lookupMasterEntities} from "@/music-universe/music-data/api/music-data-lookup.ts";
 
 export const CategoriesTable = () => {
     // Preloaded lookup data for categories and dimensions

@@ -1,8 +1,8 @@
 import { LastfmTrack } from "@/music-universe/sources/lastfm/types/lastfm-track";
-import {type BaseLastfmPageSearchParams} from "@/music-universe/sources/lastfm/api/lastfm-common.ts";
 import type { Track } from "@/music-universe/shared/types/entities.ts";
-import type { LastfmArtistDto } from "@/music-universe/sources/lastfm/api/lastfm-artists";
+import {createLastfmArtistFromDto, type LastfmArtistDto} from "@/music-universe/sources/lastfm/api/lastfm-artists";
 import type {ApprovalStatusType} from "@/music-universe/sources/lastfm/constants/approvalStatus.ts";
+import type {BaseLastfmPageSearchParams} from "@/music-universe/sources/lastfm/api/lastfm-common-fetching.ts";
 
 export interface LastfmTrackDto {
     id: number;
@@ -28,7 +28,7 @@ export function createLastfmTrackFromDto(dto: LastfmTrackDto, masterEntity?: Tra
         dto.approvalStatus,
         dto.playCount,
         dto.listenersCount,
-        dto.artist,
+        dto.artist ? createLastfmArtistFromDto(dto.artist) : undefined,
         masterEntity
     );
 }

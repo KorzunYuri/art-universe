@@ -1,6 +1,7 @@
-import styles from './LastfmArtistsTableHeader.module.css';
+// styles
 import sharedStyles from "@/music-universe/shared/components/BaseEntityTable/EntityTableStyles.module.scss";
 import artistStyles from "@/music-universe/sources/lastfm/components/LastfmArtistsTable/LastfmArtistsTable.module.css";
+import styles from './LastfmArtistsTableHeader.module.css';
 
 interface Props {
     sort?: string

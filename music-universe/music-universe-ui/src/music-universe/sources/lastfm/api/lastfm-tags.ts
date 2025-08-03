@@ -1,9 +1,9 @@
 import { LastfmConfig } from "@/music-universe/sources/lastfm/config/lastfmconfig";
 import axios from 'axios';
-import {type BaseLastfmPageSearchParams} from "@/music-universe/sources/lastfm/api/lastfm-common.ts";
 import { LastfmTag } from "@/music-universe/sources/lastfm/types";
 import type { Category } from "@/music-universe/shared/types/entities.ts";
 import type {ApprovalStatusType} from "@/music-universe/sources/lastfm/constants/approvalStatus.ts";
+import type {BaseLastfmPageSearchParams} from "@/music-universe/sources/lastfm/api/lastfm-common-fetching.ts";
 
 export interface LastfmTagDto {
     id: number;

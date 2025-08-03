@@ -1,5 +1,5 @@
 // hooks
-import {useState, memo} from "react";
+import {useState, memo, useCallback} from "react";
 // components
 import {
     ApprovalToggle,
@@ -8,22 +8,21 @@ import {
     EntityTagPanel,
     type BaseEntityTableRow
 } from "@/music-universe/shared/components";
+import { EntityBinding } from "@/music-universe/sources/lastfm/components";
 // types
-import type {DataSource} from "@/music-universe/sources/shared/types/data-sources.ts";
-import type {MasterEntityType} from "@/music-universe/shared/types/entities.ts";
-import {ApprovalStatus, type ApprovalStatusType} from "@/music-universe/sources/lastfm/constants/approvalStatus.ts";
-// backend services
+import type { DataSource } from "@/music-universe/sources/shared/types/data-sources.ts";
+import type { MasterEntityType } from "@/music-universe/shared/types/entities.ts";
+import { ApprovalStatus, type ApprovalStatusType } from "@/music-universe/sources/lastfm/constants/approvalStatus.ts";
+// services
 import { LastfmConfig } from "@/music-universe/sources/lastfm/config/lastfmconfig.ts";
+import { useLastfmEntity } from "@/music-universe/sources/lastfm/hooks/useLastfmEntity";
+import { updateRawEntityApprovalStatus } from "@/music-universe/sources/shared/api/approval";
 // styles
 import sharedTableStyles from "@/music-universe/shared/components/BaseEntityTable/EntityTableStyles.module.scss";
 import artistTableStyles from "../LastfmArtistsTable/LastfmArtistsTable.module.css";
 import styles from "./LastfmArtistsTableRow.module.scss";
-import {useLastfmEntity} from "@/music-universe/sources/lastfm/query/useLastfmEntity.tsx";
-import {updateRawEntityApprovalStatus} from "@/music-universe/sources/shared/api/approval.tsx";
-import {EntityBinding} from "@/music-universe/sources/lastfm/components";
 
 interface LastfmArtistTableRowProps extends BaseEntityTableRow {
-    entityId: number
 }
 
 export const LastfmArtistsTableRow = memo((
@@ -47,9 +46,31 @@ export const LastfmArtistsTableRow = memo((
         error
     } = useLastfmEntity(entityType, entityId);
 
-    const toggleTagPanel = () => {
-        setIsTagPanelOpen(!isTagPanelOpen);
-    };
+    const setApprovalStatus = useCallback((newStatus: ApprovalStatusType) => {
+        console.log(`new status ${newStatus} for entity ${entity?.id}`)
+        if (!entity) return;
+        setIsApproving(true);
+        updateRawEntityApprovalStatus(dataSource, entity.getEntityType(), entity.id, newStatus)
+            .then(() => {
+                entity.setApprovalStatus(newStatus);
+                updateEntity(entity);
+            })
+            .finally(() => {
+                setIsApproving(false);
+            });
+    }, [entity, updateEntity]);
+
+    const ensureIsValidForBinding = useCallback(async (hasMasterExisted: boolean) => {
+        if (!entity) return false;
+        if (entity.approvalStatus === ApprovalStatus.APPROVED) return true;
+        if (entity.approvalStatus === ApprovalStatus.PENDING) {
+            setApprovalStatus(ApprovalStatus.APPROVED);
+            return true;
+        }
+        // TODO show warning in popup instead of logging
+        console.log(`Entity has invalid status for binding: ${entity.approvalStatus}`);
+        return false;
+    }, [entity, setApprovalStatus]);
 
     // If entity is loading, show loading state
     if (isLoading) {
@@ -72,31 +93,9 @@ export const LastfmArtistsTableRow = memo((
         )
     }
 
-    const ensureIsValidForBinding = async (hasMasterExisted: boolean) => {
-        if (!entity) return false;
-        if (entity.approvalStatus === ApprovalStatus.APPROVED) return true;
-        if (entity.approvalStatus === ApprovalStatus.PENDING) {
-            setApprovalStatus(ApprovalStatus.APPROVED);
-            return true;
-        }
-        // TODO show warning in popup instead of logging
-        console.log(`Entity has invalid status for binding: ${entity.approvalStatus}`);
-        return false;
-    }
-
-    const setApprovalStatus = (newStatus: ApprovalStatusType) => {
-        console.log(`new status ${newStatus} for entity ${entity?.id}`)
-        if (!entity) return;
-        setIsApproving(true);
-        updateRawEntityApprovalStatus(dataSource, entity.getEntityType(), entity.id, newStatus)
-            .then(() => {
-                entity.setApprovalStatus(newStatus);
-                updateEntity(entity);
-            })
-            .finally(() => {
-                setIsApproving(false);
-            });
-    }
+    const toggleTagPanel = () => {
+        setIsTagPanelOpen(!isTagPanelOpen);
+    };
 
     return (
         <>
@@ -148,7 +147,7 @@ export const LastfmArtistsTableRow = memo((
             {isTagPanelOpen && (
                 <div className={styles.tagPanelContainer}>
                     <EntityTagPanel
-                        entityType='artist'
+                        entityType='track'
                         entityId={entity.id}
                         entityApprovalStatus={entity.approvalStatus}
                         tagPageBaseUrl="/lastfm/tags/"
@@ -158,4 +157,4 @@ export const LastfmArtistsTableRow = memo((
             )}
         </>
     );
-});
+})

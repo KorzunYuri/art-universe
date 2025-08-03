@@ -2,24 +2,25 @@
 import { useState, memo } from "react";
 // components
 import {
-    ApprovalToggle, type BaseEntityTableRow,
+    ApprovalToggle,
     ExternalLink,
-    ReadonlyAttr
+    ReadonlyAttr,
+    type BaseEntityTableRow
 } from "@/music-universe/shared/components";
-// constants
-import {ApprovalStatus, type ApprovalStatusType} from "@/music-universe/sources/lastfm/constants/approvalStatus";
+import { EntityBinding } from "@/music-universe/sources/lastfm/components";
 // types
+import type { DataSource } from "@/music-universe/sources/shared/types/data-sources.ts";
+import type { MasterEntityType } from "@/music-universe/shared/types/entities.ts";
+// services
+import { useLastfmEntity } from "@/music-universe/sources/lastfm/hooks/useLastfmEntity";
+import { updateRawEntityApprovalStatus } from "@/music-universe/sources/shared/api/approval";
+// constants
+import { ApprovalStatus, type ApprovalStatusType } from "@/music-universe/sources/lastfm/constants/approvalStatus";
 // styles
 import sharedTableStyles from "@/music-universe/shared/components/BaseEntityTable/EntityTableStyles.module.scss";
 import tagTableStyles from "../LastfmTagsTable/LastfmTagsTable.module.css";
-import type {DataSource} from "@/music-universe/sources/shared/types/data-sources.ts";
-import type {MasterEntityType} from "@/music-universe/shared/types/entities.ts";
-import {useLastfmEntity} from "@/music-universe/sources/lastfm/query/useLastfmEntity.tsx";
-import {updateRawEntityApprovalStatus} from "@/music-universe/sources/shared/api/approval.tsx";
-import {EntityBinding} from "@/music-universe/sources/lastfm/components";
 
 interface LastfmTagTableRowProps extends BaseEntityTableRow {
-    entityId: number
 }
 
 export const LastfmTagsTableRow = memo((

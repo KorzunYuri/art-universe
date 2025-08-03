@@ -1,9 +1,13 @@
-import styles from './LastfmTagsTable.module.css'
-import {useLastfmEntityTable} from "@/music-universe/sources/lastfm/query/useLastfmEntityTable.tsx";
+// hooks
+import { useLastfmEntityTable } from "@/music-universe/sources/lastfm/hooks/useLastfmEntityTable";
+// components
 import {
     LastfmTagsTableHeader,
     LastfmTagsTableRow
 } from "@/music-universe/sources/lastfm/components";
+// styles
+import commonStyles from '@/music-universe/shared/styles/common.module.scss';
+import styles from './LastfmTagsTable.module.css';
 
 interface LastfmTagsTableProps {
     initialSearch?: string;
@@ -37,8 +41,8 @@ export const LastfmTagsTable = (
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && refresh()}
-                    placeholder="Search artist name..."
-                    className={styles.searchInput}
+                    placeholder="Search tag name..."
+                    className={commonStyles.muInput}
                 />
                 <button
                     onClick={refresh}

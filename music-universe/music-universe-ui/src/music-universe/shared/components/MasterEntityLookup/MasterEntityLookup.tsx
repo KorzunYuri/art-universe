@@ -3,13 +3,17 @@ import {useEffect, useRef, memo, useCallback} from 'react';
 // components
 import {StaticAutocompleteInput} from "@/music-universe/shared/components";
 // types
-import type { LookupEntity } from '@/music-universe/music-data/types/master-entities-lookup.ts';
+import type {
+    LookupEntity,
+    LookupRequestSourceParams
+} from '@/music-universe/music-data/types/master-entities-lookup.ts';
 import {useMasterEntitiesLookup} from "@/music-universe/music-data/hooks/useMasterEntitiesLookup.ts";
 import type {MasterEntityType} from "@/music-universe/shared/types/entities.ts";
 
-export interface MasterEntityLookupProps {
+export interface MasterEntityLookupProps<T extends MasterEntityType> {
     entityType: MasterEntityType,
     searchString: string;
+    requestFactory: (searchString: string) => LookupRequestSourceParams<T>;
     onSelect: (entity: LookupEntity | null) => void;
     onChange: (value: string) => void;
     selectedEntity?: LookupEntity | null;
@@ -19,9 +23,10 @@ export interface MasterEntityLookupProps {
     autoSelectExactMatch?: boolean;
 }
 
-export const MasterEntityLookup = memo(({
+export const MasterEntityLookup = memo(<T extends MasterEntityType>({
     entityType,
     searchString,
+    requestFactory,
     onSelect,
     onChange,
     selectedEntity = null,
@@ -29,14 +34,14 @@ export const MasterEntityLookup = memo(({
     disabled = false,
     className = '',
     autoSelectExactMatch = true
-}: MasterEntityLookupProps) => {
+}: MasterEntityLookupProps<T>) => {
 
     const {
         currentOptions,
-        setQuery,
+        setRequest,
         isLoading
-    } = useMasterEntitiesLookup(entityType, searchString);
-    
+    } = useMasterEntitiesLookup(entityType, requestFactory(searchString));
+
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
     const lastSearchValue = useRef('');
 
@@ -57,9 +62,10 @@ export const MasterEntityLookup = memo(({
         // set new timeout
         timeoutRef.current = setTimeout(() => {
             console.log(`🔍 MasterEntityLookup: Executing search for "${query}"`);
-            setQuery(query);
+            const request = requestFactory(query);
+            setRequest(request);
         }, 300);
-    }, [setQuery]);
+    }, [requestFactory, setRequest]);
 
     // Handle value change
     const handleValueChange = useCallback((newValue: string) => {

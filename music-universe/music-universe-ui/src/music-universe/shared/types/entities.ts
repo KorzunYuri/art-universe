@@ -1,3 +1,5 @@
+import type {DataSource} from "@/music-universe/sources/shared/types/data-sources.ts";
+
 export type MasterEntityType = "artist" | "album" | "track" | "category" | "dimension";
 
 export interface BaseEntity {
@@ -11,19 +13,23 @@ export interface MasterEntityHolder<T extends MasterEntityType> {
 }
 
 export interface MasterEntity<T extends MasterEntityType> extends BaseEntity, MasterEntityHolder<T> {
+    getEntityType(): T;
     getMasterEntity(): MasterEntityMap[T];
     hasMasterEntity(): true;
-    getEntityType(): T;
 }
 
-export interface RawEntity<T extends MasterEntityType>
-    extends BaseEntity,
-        MasterEntityHolder<T> {
+export interface RawEntity<T extends MasterEntityType> extends BaseEntity, MasterEntityHolder<T> {
     masterEntity?: MasterEntityMap[T];
-    getMasterEntity(): MasterEntityMap[T] | undefined;
-    hasMasterEntity(): boolean;
-    setMasterEntity(masterEntity: MasterEntityMap[T] | undefined): void;
+    getDataSource(): DataSource;
     getEntityType(): T;
+    hasMasterEntity(): boolean;
+    getMasterEntity(): MasterEntityMap[T] | undefined;
+    setMasterEntity(masterEntity: MasterEntityMap[T] | undefined): void;
+}
+
+export interface ArtistRelatedRawEntity<T extends MasterEntityType> extends RawEntity<T> {
+    getExternalArtistId(): number | undefined;
+    getMasterArtistId(): number | undefined;
 }
 
 /** ------------------ Base Implementations ------------------ **/
@@ -59,6 +65,7 @@ export abstract class BaseRawEntity<T extends MasterEntityType>
         this.masterEntity = masterEntity;
     }
 
+    abstract getDataSource(): DataSource;
     abstract getEntityType(): T;
 }
 

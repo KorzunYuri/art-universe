@@ -94,3 +94,33 @@
 .hidden {
     display: none;
 }
+
+// Styles for loading, error and empty states
+.loadingState, .errorState, .emptyState {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 2.25rem;
+    width: 100%;
+    border-radius: 4px;
+    font-size: 12px;
+    padding: 0 12px;
+}
+
+.loadingState {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    color: #6c757d;
+}
+
+.errorState {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+.emptyState {
+    background-color: #e9ecef;
+    border: 1px solid #dee2e6;
+    color: #495057;
+}

@@ -33,6 +33,9 @@ export const EntityTagPanel = ({
   tagPageBaseUrl,
   onClose
 }: EntityTagPanelProps) => {
+
+  // TODO rewrite to TanQuery
+
   const [tags, setTags] = useState<TagWithRelation[]>([]);
   const [loading, setLoading] = useState(false);
   

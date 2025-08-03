@@ -3,14 +3,18 @@ import {useState} from "react";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {masterEntityLookupKeys, rawEntitiesKeys} from "@/music-universe/shared/utils/query-keys.ts";
 import type {DataSource} from "@/music-universe/sources/shared/types/data-sources.ts";
-import { batchLookupMasterEntities } from "@/music-universe/music-data/api/music-data-commons.ts";
 import {fetchBoundMasterEntities} from "@/music-universe/music-data/api/music-data-binding.ts";
-import {fetchLastfmEntities} from "@/music-universe/sources/lastfm/api/lastfm-common.ts";
 import type {LastfmSupportedEntityType} from "@/music-universe/sources/lastfm/types/lastfm-entity.ts";
+import {batchLookupMasterEntities} from "@/music-universe/music-data/api/music-data-lookup.ts";
+import {
+    fetchLastfmEntities,
+    type LastfmPageSearchParamsMap
+} from "@/music-universe/sources/lastfm/api/lastfm-common-fetching.ts";
+import {LookupRequestSourceParams} from "@/music-universe/music-data/types/master-entities-lookup.ts";
 
 export function useLastfmEntityTable<T extends LastfmSupportedEntityType>(
     entityType: T,
-    initialParams: Partial<SearchParams> = {}
+    initialParams: Partial<LastfmPageSearchParamsMap[T]> = {}
 ) {
     const queryClient = useQueryClient();
     const [params, setParams] = useState<SearchParams>({
@@ -34,33 +38,41 @@ export function useLastfmEntityTable<T extends LastfmSupportedEntityType>(
             // get raw entities
             const rawEntitiesPage = await fetchLastfmEntities<T>(entityType, params);
             const rawEntities = rawEntitiesPage.content;
+
+            // attach master entities to raw entities
+            const combinedEntities = [...rawEntities];
             const rawEntityIds = rawEntities.map((entity) => entity.id);
-            const rawEntityNames = rawEntities.map((entity) => entity.name);
+            fetchBoundMasterEntities(dataSource, entityType, rawEntityIds)
+                .then(masterEntityBindings => {
+                    // merge the changes
+                    combinedEntities.forEach((raw) => {
+                        const boundEntityInfo = masterEntityBindings.find((e) => e.externalId === raw.id);
+                        // @ts-expect-error TS2345: Argument of type A | B is not assignable to type A & B
+                        raw.setMasterEntity(boundEntityInfo?.masterEntity);
+                    });
 
-            // get master entities
-            const [masterEntityBindings, masterEntitiesLookups] = await Promise.all([
-                fetchBoundMasterEntities(dataSource, entityType, rawEntityIds),
-                batchLookupMasterEntities(entityType, rawEntityNames),
-            ]);
+                    // update the cache with single raw entities, for single row usage
+                    combinedEntities.forEach((e) => {
+                        queryClient.setQueryData(rawEntitiesKeys.detail(dataSource, entityType, e.id), e);
+                    })
+                })
 
-            // merge the changes
-            const combinedEntities = rawEntities.map((raw) => {
-                const boundEntityInfo = masterEntityBindings.find((e) => e.externalId === raw.id);
-                // @ts-expect-error LastfmSupportedMasterEntityType is a subset of MasterEntityType and raw/master entity types correspond to each other
-                raw.setMasterEntity(boundEntityInfo?.masterEntity);
-                return raw;
-            });
-
-            // update the cache with single raw entities, for single row usage
-            combinedEntities.forEach((e) => {
-                queryClient.setQueryData(rawEntitiesKeys.detail(dataSource, entityType, e.id), e);
-            })
-
-            // update the cache for master entities lookup
-            rawEntityNames.forEach(name => {
-                const lookupEntities = masterEntitiesLookups.results[name] ?? [];
-                queryClient.setQueryData(masterEntityLookupKeys.query(entityType, name), lookupEntities);
-            })
+            try {
+                // collecting names is needed to init cache with empty lists later, as backend doesn't return them
+                const rawEntityNames = rawEntities.map((entity) => entity.name);
+                const request = rawEntities.map(
+                    entity => new LookupRequestSourceParams(entity.name, entity))
+                batchLookupMasterEntities(entityType, request)
+                    .then(masterEntitiesLookups => {
+                        // update the cache for master entities lookup
+                        rawEntityNames.forEach(name => {
+                            const lookupEntities = masterEntitiesLookups.results[name] ?? [];
+                            queryClient.setQueryData(masterEntityLookupKeys.query(entityType, name), lookupEntities);
+                        })
+                    });
+            } catch {
+                console.log("Failed to get lookups")
+            }
 
             return {
                 page: { ...rawEntitiesPage, content: combinedEntities },

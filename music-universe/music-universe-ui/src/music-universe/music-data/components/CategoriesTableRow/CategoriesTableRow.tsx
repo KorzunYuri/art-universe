@@ -16,7 +16,8 @@ import {saveCategory} from "@/music-universe/music-data/api/music-data-categorie
 // styles
 import sharedStyles from "@/music-universe/shared/components/BaseEntityTable/EntityTableStyles.module.scss";
 import styles from "./CategoriesTableRow.module.css";
-import {lookupMasterEntities} from "@/music-universe/music-data/api/music-data-commons.ts";
+
+import {lookupMasterEntities} from "@/music-universe/music-data/api/music-data-lookup.ts";
 
 interface CategoriesTableRowProps extends LegacyEntityTableRow<Category> {
     preloadedCategories?: LookupEntity[];

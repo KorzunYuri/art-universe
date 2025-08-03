@@ -1,13 +1,9 @@
-import {type BaseLastfmPageSearchParams} from "@/music-universe/sources/lastfm/api/lastfm-common.ts";
 import type {BaseEntity} from "@/music-universe/shared/types/entities.ts";
 import {LastfmArtist} from "@/music-universe/sources/lastfm/types";
 import type {Artist} from "@/music-universe/shared/types/entities.ts";
 import type {ApprovalStatusType} from "@/music-universe/sources/lastfm/constants/approvalStatus.ts";
+import type {BaseLastfmPageSearchParams} from "@/music-universe/sources/lastfm/api/lastfm-common-fetching.ts";
 
-export interface LastfmArtistsPageSearchParams extends BaseLastfmPageSearchParams{
-    minPlayCount?: number;
-    minListenersCount?: number;
-}
 
 export interface LastfmArtistDto extends BaseEntity {
     url: string;
@@ -31,4 +27,9 @@ export function createLastfmArtistFromDto(dto: LastfmArtistDto, masterEntity?: A
         dto.listenersCount,
         masterEntity
     );
+}
+
+export interface LastfmArtistsPageSearchParams extends BaseLastfmPageSearchParams {
+    minPlayCount?: number;
+    minListenersCount?: number;
 }

@@ -2,6 +2,8 @@ import axios from 'axios';
 import { MusicDataConfig } from '../config/musicdataconfig';
 import type { Page } from '@/music-universe/shared/types/page';
 import { type Dimension, DimensionImpl } from '@/music-universe/shared/types/entities.ts';
+import type {LookupEntity} from "@/music-universe/music-data/types/master-entities-lookup.ts";
+import {entityToEndpoint} from "@/music-universe/music-data/api/music-data-commons.ts";
 
 export interface DimensionDto {
     id: number;
@@ -50,6 +52,23 @@ export async function fetchDimensions(params: DimensionSearchParams): Promise<Pa
         ...response.data,
         content: response.data.content.map(createDimension)
     };
+}
+
+/**
+ * Performs lookup of dimensions, optionally for provided search string
+ *
+ * @returns List of matching categories
+ * @param search search string
+ */
+export async function lookupDimensions(
+    search: string = ""
+): Promise<LookupEntity[]> {
+    const endpoint = entityToEndpoint['dimension'];
+    const url = `${MusicDataConfig.baseApiUrl}/${endpoint}/lookup`;
+    const params = search ? { search: search} : {};
+
+    const response = await axios.get<LookupEntity[]>(url, { params });
+    return response.data;
 }
 
 /**

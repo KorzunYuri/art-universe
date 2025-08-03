@@ -1,14 +1,15 @@
+// hooks
+import { useLastfmEntityTable } from "@/music-universe/sources/lastfm/hooks/useLastfmEntityTable";
 // components
 import {
     LastfmArtistsTableHeader,
     LastfmArtistsTableRow,
-} from '@/music-universe/sources/lastfm/components'
+} from '@/music-universe/sources/lastfm/components';
 // styles
-import styles from './LastfmArtistsTable.module.css'
-import {useLastfmEntityTable} from "@/music-universe/sources/lastfm/query/useLastfmEntityTable.tsx";
+import commonStyles from '@/music-universe/shared/styles/common.module.scss';
+import styles from './LastfmArtistsTable.module.css';
 
 export const LastfmArtistsTable = () => {
-
     const {
         rawEntityIds,
         pagination,
@@ -24,7 +25,6 @@ export const LastfmArtistsTable = () => {
 
     return (
         <div className={styles.container}>
-
             {/* Search bar */}
             <div className={styles.searchBar}>
                 <input
@@ -33,7 +33,7 @@ export const LastfmArtistsTable = () => {
                     onChange={(e) => setSearch(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && refresh()}
                     placeholder="Search artist name..."
-                    className={styles.searchInput}
+                    className={commonStyles.muInput}
                 />
                 <button
                     onClick={refresh}

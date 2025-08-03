@@ -1,52 +1,110 @@
-// types
-import type { LastfmTrack } from '@/music-universe/sources/lastfm/types/lastfm-track'
-import type {MasterEntityType, Track} from "@/music-universe/shared/types/entities.ts";
-// components
-import { LastfmEntityTable } from '@/music-universe/sources/lastfm/components/LastfmEntityTable'
-// utils
-import { TrackImpl } from '@/music-universe/shared/types/entities.ts'
 // styles
 import styles from './LastfmTracksTable.module.css'
-import { type BoundEntityResponse} from "@/music-universe/music-data/api/music-data-binding.ts";
-import type {DataSource} from "@/music-universe/sources/shared/types/data-sources.ts";
+import {useLastfmEntityTable} from "@/music-universe/sources/lastfm/hooks/useLastfmEntityTable.tsx";
+import commonStyles from "@/music-universe/shared/styles/common.module.scss";
+import {
+    LastfmTracksTableHeader,
+    LastfmTracksTableRow
+} from "@/music-universe/sources/lastfm/components";
 
 interface LastfmTracksTableProps {
     artistId?: number;
 }
 
-export const LastfmTracksTable = ({ artistId }: LastfmTracksTableProps) => {
+export const LastfmTracksTable = (
+    {
+        artistId = undefined
+    }: LastfmTracksTableProps) =>
+{
+    const {
+        rawEntityIds,
+        pagination,
+        search,
+        sort,
+        isLoading,
+        setSearch,
+        setSort,
+        nextPage,
+        prevPage,
+        refresh
+    } = useLastfmEntityTable("track", { artistId: artistId });
 
-    const dataSource: DataSource = 'lastfm';
-    const entityType: MasterEntityType = 'track';
-
-    // Create Track from BoundEntityResponse
-    const createTrack = (boundEntity: BoundEntityResponse): Track => {
-        // For now, we'll use a default primaryArtistId of 0
-        // In a real implementation, this should come from the API response
-        return new TrackImpl(
-            boundEntity.masterId,
-            boundEntity.masterName,
-            0 // TODO: Get actual primaryArtistId from API
-        );
-    };
-    
     return (
         <div className={styles.container}>
-            <LastfmEntityTable<LastfmTrack, Track>
-                fetchEntities={(searchParams) => fetchLastfmEntities(entityType, searchParams)}
-                fetchMasterEntities={(rawEntityIds) => fetchBoundMasterEntities(dataSource, entityType, rawEntityIds)}
-                createMasterEntity={createTrack}
-                renderHeader={(sort, setSort) => (
-                    <LastfmTracksTableHeader sort={sort} setSort={setSort} />
-                )}
-                renderRow={(track) => (
-                    <LastfmTracksTableRow
-                        key={track.id}
-                        entity={track}
-                    />
-                )}
-                searchPlaceholder="Search track name..."
-            />
+            {/* Search bar */}
+            <div className={styles.searchBar}>
+                <input
+                    type="text"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && refresh()}
+                    placeholder="Search artist name..."
+                    className={commonStyles.muInput}
+                />
+                <button
+                    onClick={refresh}
+                    className={styles.searchButton}
+                    disabled={isLoading}
+                >
+                    Search
+                </button>
+                <button
+                    onClick={refresh}
+                    className={styles.refreshButton}
+                    disabled={isLoading}
+                >
+                    Refresh
+                </button>
+            </div>
+
+            {/* Loading indicator */}
+            {isLoading && (
+                <div className={styles.loading}>Loading...</div>
+            )}
+
+            {/* Table */}
+            {!isLoading && rawEntityIds && (
+                <>
+                    <div className={styles.table}>
+                        {/* Header */}
+                        <LastfmTracksTableHeader sort={sort} setSort={setSort} />
+
+                        {/* Rows */}
+                        {rawEntityIds.map(rawEntityId => (
+                            <LastfmTracksTableRow
+                                key={rawEntityId}
+                                entityId={rawEntityId}
+                            />
+                        ))}
+
+                        {/* Empty state */}
+                        {rawEntityIds.length === 0 && (
+                            <div className={styles.emptyState}>No artists found</div>
+                        )}
+                    </div>
+
+                    {/* Pagination */}
+                    <div className={styles.pagination}>
+                        <button
+                            onClick={prevPage}
+                            disabled={!pagination.hasPrevPage || isLoading}
+                            className={styles.paginationButton}
+                        >
+                            Previous
+                        </button>
+                        <span className={styles.pageInfo}>
+                          Page {pagination.page + 1} of {pagination.totalPages}
+                        </span>
+                        <button
+                            onClick={nextPage}
+                            disabled={!pagination.hasNextPage || isLoading}
+                            className={styles.paginationButton}
+                        >
+                            Next
+                        </button>
+                    </div>
+                </>
+            )}
         </div>
     )
 }
