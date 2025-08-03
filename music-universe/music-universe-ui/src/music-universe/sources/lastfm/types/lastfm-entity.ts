@@ -1,16 +1,15 @@
-import type { RawEntity, MasterEntity } from '@/music-universe/shared/types/entity-reference';
-import type { Approvable } from '@/music-universe/shared/types/approvable';
+// Re-export interfaces and base class
+export * from './lastfm-interfaces';
+export * from './lastfm-base-entity';
 
-/**
- * Interface for LastFM entities that are both raw entities and approvable
- * @template M The type of master entity this LastFM entity can be bound to
- */
-export interface LastfmEntity<M extends MasterEntity = MasterEntity> extends RawEntity<M>, Approvable {
-    approvalStatus: number;
-    
-    /**
-     * Sets the approval status for this LastFM entity
-     * @param approvalStatus The new approval status
-     */
-    setApprovalStatus(approvalStatus: number): void;
+// Import concrete implementations for type mapping
+import {LastfmArtist} from "@/music-universe/sources/lastfm/types/lastfm-artist.ts";
+import {LastfmTrack} from "@/music-universe/sources/lastfm/types/lastfm-track.ts";
+import {LastfmTag} from "@/music-universe/sources/lastfm/types/lastfm-tag.ts";
+
+// Map of LastFM entity types to their corresponding implementations
+export type LastfmSupportedEntityTypeMap = {
+    artist:     LastfmArtist,
+    track:      LastfmTrack,
+    category:   LastfmTag,
 }

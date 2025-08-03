@@ -31,7 +31,7 @@ public class AlbumController {
     ) {
         return albumService.findBoundAlbums(dataSource, externalIds);
     }
-    
+
     @GetMapping("/lookup")
     public List<LookupResultDTO> lookupAlbums(
         @RequestParam String search,
@@ -49,14 +49,14 @@ public class AlbumController {
             .build();
         return albumService.lookupAlbums(request);
     }
-    
+
     @PostMapping("/lookup/batch")
     public BatchLookupResponseDTO batchLookupAlbums(
         @Valid @RequestBody ArtistRelatedBatchLookupRequestDTO request
     ) {
         return albumService.batchLookupAlbums(request);
     }
-    
+
     @PostMapping("/bind/existing/{dataSource}/{externalId}")
     public BoundEntityProjection bindToExisting(
         @PathVariable DataSource dataSource,
@@ -65,7 +65,7 @@ public class AlbumController {
     ) {
         return albumService.bindToExisting(dataSource, externalId, request);
     }
-    
+
     @PostMapping("/bind/new/{dataSource}/{externalId}")
     public BoundEntityProjection createAndBind(
         @PathVariable DataSource dataSource,
@@ -74,7 +74,7 @@ public class AlbumController {
     ) {
         return albumService.createAndBind(dataSource, externalId, request);
     }
-    
+
     @DeleteMapping("/unbind/{dataSource}/{externalId}")
     public boolean unbindAlbum(
         @PathVariable DataSource dataSource,

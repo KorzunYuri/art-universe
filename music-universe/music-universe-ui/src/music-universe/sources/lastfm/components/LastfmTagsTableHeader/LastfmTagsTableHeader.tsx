@@ -1,13 +1,14 @@
-import styles from './LastfmTagsTableHeader.module.css';
-import sharedStyles from "@/music-universe/shared/components/BaseEntityTable/EntityTableStyles.module.scss";
+// styles
+import sharedStyles from "@/music-universe/shared/styles/EntityTableStyles.module.scss";
 import tagStyles from "@/music-universe/sources/lastfm/components/LastfmTagsTable/LastfmTagsTable.module.css";
+import styles from './LastfmTagsTableHeader.module.css';
 
 interface Props {
-    sort: string
+    sort?: string
     setSort: (value: string) => void
 }
 
-export const LastfmTagsTableHeader = ({ sort, setSort }: Props) => {
+export const LastfmTagsTableHeader = ({ sort = '', setSort }: Props) => {
     const currentField = sort?.split(',')[0]
     const currentDir = sort?.split(',')[1] ?? 'asc'
 

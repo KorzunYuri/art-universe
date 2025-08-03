@@ -1,46 +1,28 @@
-import { BaseRawEntity } from "@/music-universe/shared/types/entity-reference";
-import { MusicDataEntityType } from "@/music-universe/music-data/constants/entityTypes";
-import type { LastfmEntity } from "./lastfm-entity";
-import type { Category } from "@/music-universe/music-data/types/master-entities";
+import {BaseLastfmEntity} from "./lastfm-base-entity";
+import type {Category} from "@/music-universe/shared/types/entities.ts";
+import type {ApprovalStatusType} from "@/music-universe/sources/lastfm/constants/approvalStatus.ts";
 
-export interface LastfmTagDto {
-    id: number;
-    name: string;
+export class LastfmTag extends BaseLastfmEntity<"category"> {
     url: string | null;
-    approvalStatus: number;
-    usageCount: number | null;
-    usageUsersCount: number | null;
-}
-
-/**
- * LastFM Tag entity that extends BaseRawEntity and implements LastfmEntity
- */
-export class LastfmTag extends BaseRawEntity<Category> implements LastfmEntity<Category> {
-    url: string | null;
-    approvalStatus: number;
     usageCount: number | null;
     usageUsersCount: number | null;
 
-    constructor(data: LastfmTagDto, masterEntity?: Category) {
-        super(data.id, data.name, masterEntity);
-        this.url = data.url;
-        this.approvalStatus = data.approvalStatus;
-        this.usageCount = data.usageCount;
-        this.usageUsersCount = data.usageUsersCount;
+    constructor(
+        id: number,
+        name: string,
+        url: string | null,
+        approvalStatus: ApprovalStatusType,
+        usageCount: number | null,
+        usageUsersCount: number | null,
+        masterEntity?: Category
+    ) {
+        super(id, name, approvalStatus, masterEntity);
+        this.url = url;
+        this.usageCount = usageCount;
+        this.usageUsersCount = usageUsersCount;
     }
 
-    getEntityType(): string {
-        return MusicDataEntityType.CATEGORY;
+    getEntityType(): "category" {
+        return "category";
     }
-    
-    setApprovalStatus(approvalStatus: number): void {
-        this.approvalStatus = approvalStatus;
-    }
-}
-
-/**
- * Factory function to create LastfmTag from API response
- */
-export function createLastfmTag(data: LastfmTagDto, masterEntity?: Category): LastfmTag {
-    return new LastfmTag(data, masterEntity);
 }

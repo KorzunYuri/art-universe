@@ -7,11 +7,11 @@ import {
   unbindExternalRelation
 } from '@/music-universe/music-data/api/music-data-relations';
 import { ApprovalStatus } from '@/music-universe/sources/lastfm/constants/approvalStatus';
-import { MusicDataEntityType } from '@/music-universe/music-data/constants/entityTypes';
 import styles from './EntityTagPanel.module.scss';
+import type {MasterEntityType} from "@/music-universe/shared/types/entities.ts";
 
 export interface EntityTagPanelProps {
-  entityType: string; // 'ARTIST', 'ALBUM', 'TRACK'
+  entityType: MasterEntityType;
   entityId: number;
   entityApprovalStatus: number;
   tagPageBaseUrl?: string; // Base URL for tag pages, e.g. '/lastfm/tags/'
@@ -31,9 +31,11 @@ export const EntityTagPanel = ({
   entityId,
   entityApprovalStatus,
   tagPageBaseUrl,
-  // onClose prop is defined but not currently used in the component
   onClose
 }: EntityTagPanelProps) => {
+
+  // TODO rewrite to TanQuery
+
   const [tags, setTags] = useState<TagWithRelation[]>([]);
   const [loading, setLoading] = useState(false);
   
@@ -58,10 +60,10 @@ export const EntityTagPanel = ({
       
       // 3. Check which relations are bound in music-data
       const boundRelationsStatus = await findBoundExternalRelations(
-        'LASTFM',
+        'lastfm',
         entityType,
         entityId,
-        MusicDataEntityType.CATEGORY,
+        'category',
         tagIds
       );
       
@@ -136,10 +138,10 @@ export const EntityTagPanel = ({
     try {
       // Call API to bind relation
       const result = await bindExternalRelation(
-        'LASTFM',
+        'lastfm',
         entityType,
         entityId,
-        MusicDataEntityType.CATEGORY,
+        'category',
         tagId
       );
       
@@ -177,10 +179,10 @@ export const EntityTagPanel = ({
     try {
       // Call API to unbind relation
       const success = await unbindExternalRelation(
-        'LASTFM',
+        'lastfm',
         entityType,
         entityId,
-        MusicDataEntityType.CATEGORY,
+        'category',
         tagId
       );
       

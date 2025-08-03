@@ -1,46 +1,35 @@
-import {LastfmConfig} from "@/music-universe/sources/lastfm/config/lastfmconfig.ts"
-import type {Page} from "@/music-universe/shared/types/page.ts";
-import { LastfmArtist, createLastfmArtist, type LastfmTrackArtistDto } from "@/music-universe/sources/lastfm/types/lastfm-artist.ts";
-import axios from 'axios'
+import type {BaseEntity} from "@/music-universe/shared/types/entities.ts";
+import {LastfmArtist} from "@/music-universe/sources/lastfm/types";
+import type {Artist} from "@/music-universe/shared/types/entities.ts";
+import type {ApprovalStatusType} from "@/music-universe/sources/lastfm/constants/approvalStatus.ts";
+import type {BaseLastfmPageSearchParams} from "@/music-universe/sources/lastfm/api/lastfm-common-fetching.ts";
 
-export interface ArtistSearchParams {
-    search?: string;
+
+export interface LastfmArtistDto extends BaseEntity {
+    url: string;
+    mbid: string | null;
+    approvalStatus: ApprovalStatusType;
+    playCount: number | null;
+    listenersCount: number | null;
+}
+
+/**
+ * Factory function to create LastfmArtist from API response DTO
+ */
+export function createLastfmArtistFromDto(dto: LastfmArtistDto, masterEntity?: Artist): LastfmArtist {
+    return new LastfmArtist(
+        dto.id,
+        dto.name,
+        dto.url,
+        dto.mbid,
+        dto.approvalStatus,
+        dto.playCount,
+        dto.listenersCount,
+        masterEntity
+    );
+}
+
+export interface LastfmArtistsPageSearchParams extends BaseLastfmPageSearchParams {
     minPlayCount?: number;
     minListenersCount?: number;
-    approvalStatuses?: number[];
-    page?: number;
-    size?: number;
-    sort?: string;
-}
-
-export async function fetchArtists(params: ArtistSearchParams): Promise<Page<LastfmArtist>> {
-    const response = await axios.get(
-        `${LastfmConfig.baseApiUrl}/artists`,
-        {
-            params: {
-                search: params.search ?? '',
-                minPlayCount: params.minPlayCount,
-                minListenersCount: params.minListenersCount,
-                approvalStatuses: params.approvalStatuses?.join(','),
-                page: params.page ?? 0,
-                size: params.size ?? 20,
-                sort: params.sort ?? 'name,asc',
-            },
-        });
-
-    // Convert plain objects to LastfmArtist instances
-    const data = response.data.data;
-    return {
-        ...data,
-        content: data.content.map((artistDto: LastfmTrackArtistDto) => createLastfmArtist(artistDto))
-    };
-}
-
-export async function updateArtistApprovalStatus(id: number, newStatus: number): Promise<LastfmArtist> {
-    const response = await axios.patch(`${LastfmConfig.baseApiUrl}/artists/${id}/approval`, {
-        approvalStatus: newStatus,
-    });
-
-    // Convert plain object to LastfmArtist instance
-    return createLastfmArtist(response.data.data);
 }

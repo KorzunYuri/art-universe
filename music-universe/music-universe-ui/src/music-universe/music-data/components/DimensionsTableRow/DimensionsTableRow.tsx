@@ -1,31 +1,62 @@
 // hooks
-import { useState, useEffect } from "react";
+import { useState } from "react";
 // components
-import { EditableText } from "@/music-universe/shared/components";
+import {type BaseEntityTableRow, EditableText} from "@/music-universe/shared/components";
 // types
-import type { Dimension } from '@/music-universe/music-data/types/master-entities';
 import type { DimensionSaveRequest } from "@/music-universe/music-data/api/music-data-dimensions";
-import type { MasterEntityTableRow } from "@/music-universe/shared/types/table-row";
 // api
 import { saveDimension } from "@/music-universe/music-data/api/music-data-dimensions";
 // styles
-import sharedStyles from "@/music-universe/shared/components/BaseEntityTable/EntityTableStyles.module.scss";
+import sharedStyles from "@/music-universe/shared/styles/EntityTableStyles.module.scss";
 import styles from "./DimensionsTableRow.module.css";
+import type {MasterEntityType} from "@/music-universe/shared/types/entities.ts";
+import {useMasterEntity} from "@/music-universe/music-data/hooks/useMasterEntity.ts";
+import sharedTableStyles from "@/music-universe/shared/styles/EntityTableStyles.module.scss";
+import artistTableStyles
+    from "@/music-universe/sources/lastfm/components/LastfmArtistsTable/LastfmArtistsTable.module.css";
 
-interface DimensionsTableRowProps extends MasterEntityTableRow<Dimension> {
-    // no dimension-unique fields
+interface DimensionsTableRowProps extends BaseEntityTableRow {
 }
 
-export const DimensionsTableRow = ({ entity }: DimensionsTableRowProps) => {
-    const [editedName, setEditedName] = useState(entity.name);
+export const DimensionsTableRow = (
+    {
+        entityId
+    }: DimensionsTableRowProps
+) => {
+
+    const entityType: MasterEntityType = 'dimension';
+
+    const {
+        entity,
+        isLoading: isLoadingEntity,
+        isError,
+        error
+    } = useMasterEntity(entityType, entityId);
+
+    const [editedName, setEditedName] = useState(entity?.name || '');
     const [isDirty, setIsDirty] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
-    // Sync with external dimension changes
-    useEffect(() => {
-        setEditedName(entity.name);
-        setIsDirty(false);
-    }, [entity.name]);
+    // If entity is loading, show loading state
+    if (isLoadingEntity) {
+        return (
+            <div className={sharedTableStyles.row}>
+                <div className={`${sharedTableStyles.cell} ${artistTableStyles.name}`}>
+                    Loading...
+                </div>
+            </div>
+        )
+    }
+
+    if (!entity) {
+        return (
+            <div className={sharedTableStyles.row}>
+                <div className={`${sharedTableStyles.cell} ${artistTableStyles.name}`}>
+                    {isError && error ? error.message : 'No entity found'}
+                </div>
+            </div>
+        )
+    }
 
     const handleSave = async () => {
         console.log('💾 DimensionsTableRow handleSave called:', { isDirty, editedName: editedName.trim() });

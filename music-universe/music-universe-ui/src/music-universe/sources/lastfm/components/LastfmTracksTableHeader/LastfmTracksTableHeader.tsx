@@ -1,13 +1,13 @@
 import styles from './LastfmTracksTableHeader.module.css';
-import sharedStyles from "@/music-universe/shared/components/BaseEntityTable/EntityTableStyles.module.scss";
+import sharedStyles from "@/music-universe/shared/styles/EntityTableStyles.module.scss";
 import trackStyles from "@/music-universe/sources/lastfm/components/LastfmTracksTable/LastfmTracksTable.module.css";
 
 interface Props {
-    sort: string
+    sort?: string
     setSort: (value: string) => void
 }
 
-export const LastfmTracksTableHeader = ({ sort, setSort }: Props) => {
+export const LastfmTracksTableHeader = ({ sort = '', setSort }: Props) => {
     const currentField = sort?.split(',')[0]
     const currentDir = sort?.split(',')[1] ?? 'asc'
 
@@ -32,7 +32,7 @@ export const LastfmTracksTableHeader = ({ sort, setSort }: Props) => {
                 Artist
             </div>
             <div className={`${sharedStyles.cell} ${trackStyles.name}`} onClick={() => toggleSort('name')}>
-                {renderLabel('Track', 'name')}
+                {renderLabel('Track name', 'name')}
             </div>
             <div className={`${sharedStyles.cell} ${trackStyles.mbid}`}>MusicBrainz</div>
             <div className={`${sharedStyles.cell} ${trackStyles.status}`}>Approval</div>

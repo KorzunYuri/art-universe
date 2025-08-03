@@ -1,90 +1,98 @@
 // hooks
-import { useState, memo } from "react";
+import {useState, memo, useCallback} from "react";
 // components
 import {
-    EntityBinding,
+    ApprovalToggle,
     ExternalLink,
     ReadonlyAttr,
     EntityTagPanel,
-    type RawEntityTableRow
+    type BaseEntityTableRow
 } from "@/music-universe/shared/components";
-import { ApprovalToggle } from "@/music-universe/sources/lastfm/components";
-// backend services
-import { LastfmConfig } from "@/music-universe/sources/lastfm/config/lastfmconfig.ts";
-import type { LastfmArtist } from "@/music-universe/sources/lastfm/types";
-import { bindArtistToExisting, createAndBindArtist, unbindArtist, lookupArtists } from "@/music-universe/music-data/api/music-data-artists.ts";
-import { updateApprovalStatus } from "@/music-universe/sources/lastfm/api/lastfm-common.ts";
-// constants
-import { ApprovalStatus } from "@/music-universe/sources/lastfm/constants/approvalStatus";
+import { EntityBinding } from "@/music-universe/sources/lastfm/components";
 // types
-import type { LookupEntity } from "@/music-universe/shared/types/lookup";
+import type { DataSource } from "@/music-universe/sources/shared/types/data-sources.ts";
+import type { MasterEntityType } from "@/music-universe/shared/types/entities.ts";
+import { ApprovalStatus, type ApprovalStatusType } from "@/music-universe/sources/lastfm/constants/approvalStatus.ts";
+// services
+import { LastfmConfig } from "@/music-universe/sources/lastfm/config/lastfmconfig.ts";
+import { useLastfmEntity } from "@/music-universe/sources/lastfm/hooks/useLastfmEntity";
+import { updateRawEntityApprovalStatus } from "@/music-universe/sources/shared/api/approval";
 // styles
-import sharedTableStyles from "@/music-universe/shared/components/BaseEntityTable/EntityTableStyles.module.scss";
+import sharedTableStyles from "@/music-universe/shared/styles/EntityTableStyles.module.scss";
 import artistTableStyles from "../LastfmArtistsTable/LastfmArtistsTable.module.css";
 import styles from "./LastfmArtistsTableRow.module.scss";
 
-interface LastfmArtistTableRowProps extends RawEntityTableRow<LastfmArtist> {
-    preloadedLookupData?: LookupEntity[]
+interface LastfmArtistTableRowProps extends BaseEntityTableRow {
 }
 
 export const LastfmArtistsTableRow = memo((
     {
-        entity,
-        preloadedLookupData = []
-    }: LastfmArtistTableRowProps) =>
-{
+        entityId
+    }: LastfmArtistTableRowProps
+) => {
+
+    // TODO generify component and make dataSource & entityType props or fields
+    const dataSource: DataSource = 'lastfm';
+    const entityType: MasterEntityType = 'artist';
+
     const [isApproving, setIsApproving] = useState(false);
     const [isTagPanelOpen, setIsTagPanelOpen] = useState(false);
-    const [, forceUpdate] = useState({});
 
-    function onStatusChange(artistToUpdate: LastfmArtist, newStatus: number) {
+    const {
+        entity,
+        updateEntity,
+        invalidateEntity,
+        isLoading,
+        isError,
+        error
+    } = useLastfmEntity(entityType, entityId);
+
+    const setApprovalStatus = useCallback((newStatus: ApprovalStatusType) => {
+        console.log(`new status ${newStatus} for entity ${entity?.id}`)
+        if (!entity) return;
         setIsApproving(true);
-        updateApprovalStatus(artistToUpdate, newStatus)
+        updateRawEntityApprovalStatus(dataSource, entity.getEntityType(), entity.id, newStatus)
             .then(() => {
-                // Force re-render after approval status change
-                forceUpdate({});
+                entity.setApprovalStatus(newStatus);
+                updateEntity(entity);
             })
             .finally(() => {
                 setIsApproving(false);
             });
-    }
+    }, [entity, updateEntity]);
 
-    async function handleBeforeBind(artistToApprove: LastfmArtist): Promise<boolean> {
-        if (artistToApprove.approvalStatus === ApprovalStatus.APPROVED) {
+    const ensureIsValidForBinding = useCallback(async (hasMasterExisted: boolean) => {
+        if (!entity) return false;
+        if (entity.approvalStatus === ApprovalStatus.APPROVED) return true;
+        if (entity.approvalStatus === ApprovalStatus.PENDING) {
+            setApprovalStatus(ApprovalStatus.APPROVED);
             return true;
         }
+        // TODO show warning in popup instead of logging
+        console.log(`Entity has invalid status for binding: ${entity.approvalStatus}`);
+        return false;
+    }, [entity, setApprovalStatus]);
 
-        // Approve the artist if not already approved
-        try {
-            console.log("Artist not approved, approving first...");
-            await updateApprovalStatus(artistToApprove, ApprovalStatus.APPROVED);
-            
-            // Force re-render after approval status change
-            forceUpdate({});
-            
-            console.log("Artist approved successfully");
-            return true;
-        } catch (error) {
-            console.error("Failed to approve artist:", error);
-            return false;
-        }
+    // If entity is loading, show loading state
+    if (isLoading) {
+        return (
+            <div className={sharedTableStyles.row}>
+                <div className={`${sharedTableStyles.cell} ${artistTableStyles.name}`}>
+                    Loading...
+                </div>
+            </div>
+        )
     }
 
-    async function handleBindToExisting(artistId: number, targetArtistId: number) {
-        console.log("Binding to existing artist...");
-        return await bindArtistToExisting(artistId, targetArtistId);
+    if (!entity) {
+        return (
+            <div className={sharedTableStyles.row}>
+                <div className={`${sharedTableStyles.cell} ${artistTableStyles.name}`}>
+                    {isError && error ? error.message : 'No entity found'}
+                </div>
+            </div>
+        )
     }
-
-    async function handleCreateAndBind(artistId: number, name: string) {
-        console.log("Creating and binding new artist...");
-        return await createAndBindArtist(artistId, name);
-    }
-
-    // Handle the result of binding from the EntityBinding component
-    const handleAfterBind = (updatedEntity: LastfmArtist) => {
-        // Entity is already updated in place via the class instance
-        // No need to notify parent component
-    };
 
     const toggleTagPanel = () => {
         setIsTagPanelOpen(!isTagPanelOpen);
@@ -92,8 +100,8 @@ export const LastfmArtistsTableRow = memo((
 
     return (
         <>
-            <div 
-                key={entity.id} 
+            <div
+                key={entity.id}
                 className={`${sharedTableStyles.row} ${isTagPanelOpen ? styles.activeRow : ''}`}
                 onClick={toggleTagPanel}
             >
@@ -103,30 +111,28 @@ export const LastfmArtistsTableRow = memo((
 
                 <div className={`${sharedTableStyles.cell}  ${artistTableStyles.mbid}`}>
                     {entity.mbid && <ExternalLink
-                            href={`${LastfmConfig.mbBaseUrls.artist}${entity.mbid}`}
-                            label="MusicBrainz"/>}
+                        href={`${LastfmConfig.mbBaseUrls.artist}${entity.mbid}`}
+                        label="MusicBrainz"/>}
                 </div>
 
-                <div className={`${sharedTableStyles.cell}  ${artistTableStyles.status}`} onClick={(e) => e.stopPropagation()}>
+                <div className={`${sharedTableStyles.cell}  ${artistTableStyles.status}`}
+                     onClick={(e) => e.stopPropagation()}>
                     <ApprovalToggle
                         status={entity.approvalStatus}
-                        onChange={(newStatus) => onStatusChange(entity, newStatus)}
+                        onChange={setApprovalStatus}
                         disabled={isApproving}
                     />
                 </div>
 
-                <div className={`${sharedTableStyles.cell}  ${artistTableStyles.binding}`} onClick={(e) => e.stopPropagation()}>
+                <div className={`${sharedTableStyles.cell}  ${artistTableStyles.binding}`}
+                     onClick={(e) => e.stopPropagation()}>
                     <EntityBinding
-                        key={`exp-entity-binding-${entity.id}`}
-                        entity={entity}
-                        onBindToExisting={handleBindToExisting}
-                        onCreateAndBind={handleCreateAndBind}
-                        onUnbind={unbindArtist}
-                        onBeforeBind={handleBeforeBind}
-                        onAfterBind={handleAfterBind}
-                        lookupFunction={lookupArtists}
-                        preloadedOptions={preloadedLookupData}
-                        disabled={isApproving}
+                        dataSource={dataSource}
+                        entityType={entityType}
+                        entityId={entityId}
+                        onBeforeBind={ensureIsValidForBinding}
+                        onAfterBind={invalidateEntity}
+                        onAfterUnbind={invalidateEntity}
                     />
                 </div>
 
@@ -142,7 +148,7 @@ export const LastfmArtistsTableRow = memo((
             {isTagPanelOpen && (
                 <div className={styles.tagPanelContainer}>
                     <EntityTagPanel
-                        entityType="ARTIST"
+                        entityType='artist'
                         entityId={entity.id}
                         entityApprovalStatus={entity.approvalStatus}
                         tagPageBaseUrl="/lastfm/tags/"
@@ -152,4 +158,4 @@ export const LastfmArtistsTableRow = memo((
             )}
         </>
     );
-});
+})

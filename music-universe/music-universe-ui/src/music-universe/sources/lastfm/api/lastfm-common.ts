@@ -1,50 +1,61 @@
 import axios from 'axios';
-import { LastfmConfig } from '@/music-universe/sources/lastfm/config/lastfmconfig';
-import { MusicDataEntityType } from '@/music-universe/music-data/constants/entityTypes';
-import type { LastfmEntity } from '@/music-universe/sources/lastfm/types/lastfm-entity';
-import type { MasterEntity } from '@/music-universe/shared/types/entity-reference';
+import {LastfmConfig} from '@/music-universe/sources/lastfm/config/lastfmconfig';
+
+import type {ApprovalStatusType} from "@/music-universe/sources/lastfm/constants/approvalStatus.ts";
+
+import {createLastfmArtistFromDto, type LastfmArtistDto} from "@/music-universe/sources/lastfm/api/lastfm-artists.ts";
+import {createLastfmTrackFromDto, type LastfmTrackDto} from "@/music-universe/sources/lastfm/api/lastfm-tracks.ts";
+import {createLastfmTagFromDto, type LastfmTagDto} from "@/music-universe/sources/lastfm/api/lastfm-tags.ts";
+import type {
+    LastfmSupportedEntityType,
+    LastfmSupportedEntityTypeMap
+} from "@/music-universe/sources/lastfm/types/lastfm-entity.ts";
+
+
+export const lastfmEntityTypeToEndpoint: Record<LastfmSupportedEntityType, string> = {
+    'artist': 'artists',
+    'track': 'tracks',
+    'category': 'tags'
+};
+
+export type LastfmEntityDtoMap = {
+    artist:     LastfmArtistDto;
+    track:      LastfmTrackDto;
+    category:   LastfmTagDto;
+};
+
+export const lastfmEntityMappers: {
+    [K in LastfmSupportedEntityType]: (dto: LastfmEntityDtoMap[K]) => LastfmSupportedEntityTypeMap[K];
+} = {
+    artist:     createLastfmArtistFromDto,
+    track:      createLastfmTrackFromDto,
+    category:   createLastfmTagFromDto,
+};
 
 /**
  * Generic function to update approval status for any LastFM entity
- * 
- * @param entity The LastFM entity to update
+ *
+ * @param entityType
+ * @param entityId
  * @param newStatus New approval status
  * @returns The same entity with updated approval status
  */
-export async function updateApprovalStatus<T extends LastfmEntity<M>, M extends MasterEntity>(
-    entity: T, 
-    newStatus: number
-): Promise<T> {
-    // Map entity type to API endpoint
-    const entityTypeToEndpoint: Record<string, string> = {
-        [MusicDataEntityType.ARTIST]: 'artists',
-        [MusicDataEntityType.TRACK]: 'tracks', 
-        [MusicDataEntityType.CATEGORY]: 'tags'
-    };
-    
-    const entityType = entity.getEntityType();
-    const endpoint = entityTypeToEndpoint[entityType];
-    
-    if (!endpoint) {
-        throw new Error(`Unknown entity type: ${entityType}`);
-    }
-    
+export async function updateApprovalStatus(
+    entityType: LastfmSupportedEntityType,
+    entityId: number,
+    newStatus: ApprovalStatusType
+): Promise<void> {
+
+    const endpoint = lastfmEntityTypeToEndpoint[entityType];
     try {
-        // Make API call to update approval status
         await axios.patch(
-            `${LastfmConfig.baseApiUrl}/${endpoint}/${entity.id}/approval`, 
+            `${LastfmConfig.baseApiUrl}/${endpoint}/${entityId}/approval`,
             {
                 approvalStatus: newStatus,
             }
         );
-        
-        // Update the entity's approval status
-        entity.setApprovalStatus(newStatus);
-        
-        // Return the same entity (no need to create new object)
-        return entity;
     } catch (error) {
-        console.error(`Failed to update approval status for ${entityType} ${entity.id}:`, error);
+        console.error(`Failed to update approval status for ${entityType} ${entityId}:`, error);
         throw error;
     }
 }

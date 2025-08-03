@@ -2,6 +2,7 @@ import { useRoutes } from 'react-router-dom'
 import { Categories } from './pages/Categories'
 import { Dimensions } from './pages/Dimensions'
 import { MusicDataHome } from './pages/MusicDataHome'
+import { QueryProvider } from "@/music-universe/shared/providers/QueryProvider.tsx";
 
 export default function MusicDataApp() {
     const routes = [
@@ -10,5 +11,7 @@ export default function MusicDataApp() {
         { path: 'dimensions',   element: <Dimensions /> },
     ]
 
-    return useRoutes(routes)
+    return <QueryProvider>
+        { useRoutes(routes) }
+    </QueryProvider>
 }

@@ -1,49 +1,31 @@
-import { BaseRawEntity } from "@/music-universe/shared/types/entity-reference";
-import { MusicDataEntityType } from "@/music-universe/music-data/constants/entityTypes";
-import type { LastfmEntity } from "./lastfm-entity";
-import type { Artist } from "@/music-universe/music-data/types/master-entities";
+import {BaseLastfmEntity} from "./lastfm-base-entity";
+import type {Artist} from "@/music-universe/shared/types/entities.ts";
+import type {ApprovalStatusType} from "@/music-universe/sources/lastfm/constants/approvalStatus.ts";
 
-export interface LastfmTrackArtistDto {
-    id: number;
-    name: string;
+export class LastfmArtist extends BaseLastfmEntity<"artist"> {
     url: string;
     mbid: string | null;
-    approvalStatus: number;
-    playCount: number | null;
-    listenersCount: number | null;
-}
-
-/**
- * LastFM Artist entity that extends BaseRawEntity and implements LastfmEntity
- */
-export class LastfmArtist extends BaseRawEntity<Artist> implements LastfmEntity<Artist> {
-    url: string;
-    mbid: string | null;
-    approvalStatus: number;
     playCount: number | null;
     listenersCount: number | null;
 
-    constructor(data: LastfmTrackArtistDto, masterEntity?: Artist) {
-        super(data.id, data.name, masterEntity);
-        this.url = data.url;
-        this.mbid = data.mbid;
-        this.approvalStatus = data.approvalStatus;
-        this.playCount = data.playCount;
-        this.listenersCount = data.listenersCount;
+    constructor(
+        id: number,
+        name: string,
+        url: string,
+        mbid: string | null,
+        approvalStatus: ApprovalStatusType,
+        playCount: number | null,
+        listenersCount: number | null,
+        masterEntity?: Artist
+    ) {
+        super(id, name, approvalStatus, masterEntity);
+        this.url = url;
+        this.mbid = mbid;
+        this.playCount = playCount;
+        this.listenersCount = listenersCount;
     }
 
-    getEntityType(): string {
-        return MusicDataEntityType.ARTIST;
+    getEntityType(): "artist" {
+        return "artist";
     }
-    
-    setApprovalStatus(approvalStatus: number): void {
-        this.approvalStatus = approvalStatus;
-    }
-}
-
-/**
- * Factory function to create LastfmArtist from API response
- */
-export function createLastfmArtist(data: LastfmTrackArtistDto, masterEntity?: Artist): LastfmArtist {
-    return new LastfmArtist(data, masterEntity);
 }
