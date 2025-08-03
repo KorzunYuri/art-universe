@@ -73,6 +73,7 @@ function toLookupRequest<T extends MasterEntityType>(
 
         return {
             ...baseRequest,
+            ...{ dataSource: entity.getDataSource() },
             ...(artistRelatedEntity.getExternalArtistId() !== undefined ?
                 { externalArtistId: artistRelatedEntity.getExternalArtistId() } : {}),
             ...(artistRelatedEntity.getMasterArtistId() !== undefined ?
