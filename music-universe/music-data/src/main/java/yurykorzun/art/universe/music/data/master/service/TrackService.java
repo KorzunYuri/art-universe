@@ -1,8 +1,12 @@
 package yurykorzun.art.universe.music.data.master.service;
 
-import yurykorzun.art.universe.music.data.master.dto.BoundEntityProjection;
-import yurykorzun.art.universe.music.data.master.dto.TrackBindToExistingRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.TrackCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityBindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedBatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 
 import java.util.List;
@@ -26,12 +30,12 @@ public interface TrackService {
      *
      * @param dataSource The external data source
      * @param externalId The ID of the track in the external system
-     * @param request    The binding request containing track ID and artist external ID
+     * @param request    The binding request containing track ID and primary artist ID
      * @return The created binding information
      * @throws IllegalStateException if the artist is not bound
      * @throws jakarta.persistence.EntityNotFoundException if the track is not found
      */
-    BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, TrackBindToExistingRequestDTO request);
+    BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, ArtistRelatedEntityBindToExistingRequestDTO request);
     
     /**
      * Creates a new track and binds an external track to it.
@@ -39,12 +43,12 @@ public interface TrackService {
      *
      * @param dataSource The external data source
      * @param externalId The ID of the track in the external system
-     * @param request    The binding request containing track information and artist external ID
+     * @param request    The binding request containing track information and primary artist ID
      * @return The created binding information
      * @throws IllegalStateException if the artist is not bound or if track binding already exists
      * @throws IllegalArgumentException if a track with the same name and artist already exists
      */
-    BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, TrackCreateAndBindRequestDTO request);
+    BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, ArtistRelatedEntityCreateAndBindRequestDTO request);
     
     /**
      * Unbinds an external track from the system.
@@ -54,4 +58,22 @@ public interface TrackService {
      * @return true if the unbinding was successful, false otherwise
      */
     boolean unbindTrack(DataSource dataSource, Long externalId);
+    
+    /**
+     * Searches for tracks by name (case insensitive, partial match) with optional artist filter.
+     * Results are formatted as "Artist - Track" and prioritized by matching artist if specified.
+     *
+     * @param request The lookup request containing search term, optional artist IDs, and limit
+     * @return List of track DTOs matching the search term
+     */
+    List<LookupResultDTO> lookupTracks(ArtistRelatedLookupRequestDTO request);
+
+    /**
+     * Batch lookup of tracks by multiple search terms with optional artist filter.
+     * Each search term will have its own limited result set.
+     *
+     * @param request The batch lookup request containing search requests, artist IDs, and limit
+     * @return A map of search terms to lists of matching tracks
+     */
+    BatchLookupResponseDTO batchLookupTracks(ArtistRelatedBatchLookupRequestDTO request);
 }

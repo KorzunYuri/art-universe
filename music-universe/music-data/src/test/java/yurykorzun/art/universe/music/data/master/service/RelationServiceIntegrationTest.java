@@ -1,7 +1,6 @@
 package yurykorzun.art.universe.music.data.master.service;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -9,16 +8,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
 import yurykorzun.art.universe.music.data.master.common.archetypes.JpaOnlyTest;
-import yurykorzun.art.universe.music.data.master.dto.EntityDTO;
-import yurykorzun.art.universe.music.data.master.dto.RelationBindingDTO;
-import yurykorzun.art.universe.music.data.master.dto.RelationBindingStatusDTO;
-import yurykorzun.art.universe.music.data.master.dto.TargetEntityBindingDTO;
+import yurykorzun.art.universe.music.data.master.dto.relation.RelatedEntityDTO;
+import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingDTO;
+import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingStatusDTO;
+import yurykorzun.art.universe.music.data.master.dto.relation.TargetEntityBindingDTO;
 import yurykorzun.art.universe.music.data.master.entity.Artist;
 import yurykorzun.art.universe.music.data.master.entity.ArtistBinding;
 import yurykorzun.art.universe.music.data.master.entity.Category;
 import yurykorzun.art.universe.music.data.master.entity.CategoryBinding;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.entity.EntityType;
+import yurykorzun.art.universe.music.data.master.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.relation.RelationRegistry;
 
 import java.util.Arrays;
@@ -194,7 +194,7 @@ class RelationServiceIntegrationTest extends JpaOnlyTest {
         relationService.bindExternalRelation(dataSource, sourceEntityType, 123L, targetEntityType, 101L);
         
         // When
-        List<EntityDTO> results = relationService.getRelatedEntities(
+        List<RelatedEntityDTO> results = relationService.getRelatedEntities(
             sourceEntityType, artist1.getId(), targetEntityType);
         
         // Then
@@ -243,7 +243,7 @@ class RelationServiceIntegrationTest extends JpaOnlyTest {
         Long targetEntityId = category1.getId();
         
         // When & Then
-        assertThrows(EntityNotFoundException.class, () -> 
+        assertThrows(CustomEntityNotFoundException.class, () ->
             relationService.createInternalRelation(sourceEntityType, sourceEntityId, targetEntityType, targetEntityId));
     }
     

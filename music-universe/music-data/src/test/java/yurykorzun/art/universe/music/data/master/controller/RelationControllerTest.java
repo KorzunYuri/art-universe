@@ -5,13 +5,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import yurykorzun.art.universe.common.controller.ResponseWrapper;
-import yurykorzun.art.universe.music.data.master.dto.EntityDTO;
-import yurykorzun.art.universe.music.data.master.dto.RelationBindingDTO;
-import yurykorzun.art.universe.music.data.master.dto.RelationBindingStatusDTO;
-import yurykorzun.art.universe.music.data.master.dto.TargetEntityBindingDTO;
+import yurykorzun.art.universe.music.data.master.dto.relation.RelatedEntityDTO;
+import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingDTO;
+import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingStatusDTO;
+import yurykorzun.art.universe.music.data.master.dto.relation.TargetEntityBindingDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.entity.EntityType;
 import yurykorzun.art.universe.music.data.master.service.RelationService;
@@ -19,7 +16,7 @@ import yurykorzun.art.universe.music.data.master.service.RelationService;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -34,7 +31,7 @@ class RelationControllerTest {
     private RelationController relationController;
 
     @Test
-    void bindExternalRelation_shouldReturnSuccessResponse() {
+    void bindExternalRelation_shouldReturnBindingDTO() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         EntityType sourceEntityType = EntityType.ARTIST;
@@ -58,47 +55,46 @@ class RelationControllerTest {
         )).thenReturn(expectedBinding);
 
         // When
-        ResponseEntity<ResponseWrapper<RelationBindingDTO>> response = relationController.bindExternalRelation(
+        RelationBindingDTO result = relationController.bindExternalRelation(
             dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId
         );
 
         // Then
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(expectedBinding, response.getBody().getData());
+        assertEquals(expectedBinding, result);
         verify(relationService).bindExternalRelation(
             dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId
         );
     }
 
     @Test
-    void bindExternalRelation_whenExceptionThrown_shouldReturnFailureResponse() {
+    void bindExternalRelation_whenExceptionThrown_shouldPassThroughException() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         EntityType sourceEntityType = EntityType.ARTIST;
         Long sourceExternalEntityId = 123L;
         EntityType targetEntityType = EntityType.CATEGORY;
         Long targetExternalEntityId = 456L;
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
 
         when(relationService.bindExternalRelation(
             dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId
-        )).thenThrow(new RuntimeException(errorMessage));
+        )).thenThrow(expectedException);
 
-        // When
-        ResponseEntity<ResponseWrapper<RelationBindingDTO>> response = relationController.bindExternalRelation(
-            dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+            relationController.bindExternalRelation(
+                dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId
+            )
         );
-
-        // Then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertEquals("Failed to bind relation: " + errorMessage, response.getBody().getMessage());
+        
+        assertSame(expectedException, exception);
         verify(relationService).bindExternalRelation(
             dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId
         );
     }
 
     @Test
-    void unbindExternalRelation_shouldReturnSuccessResponse() {
+    void unbindExternalRelation_shouldReturnBoolean() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         EntityType sourceEntityType = EntityType.ARTIST;
@@ -111,47 +107,46 @@ class RelationControllerTest {
         )).thenReturn(true);
 
         // When
-        ResponseEntity<ResponseWrapper<Boolean>> response = relationController.unbindExternalRelation(
+        boolean result = relationController.unbindExternalRelation(
             dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId
         );
 
         // Then
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(true, response.getBody().getData());
+        assertTrue(result);
         verify(relationService).unbindExternalRelation(
             dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId
         );
     }
 
     @Test
-    void unbindExternalRelation_whenExceptionThrown_shouldReturnFailureResponse() {
+    void unbindExternalRelation_whenExceptionThrown_shouldPassThroughException() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         EntityType sourceEntityType = EntityType.ARTIST;
         Long sourceExternalEntityId = 123L;
         EntityType targetEntityType = EntityType.CATEGORY;
         Long targetExternalEntityId = 456L;
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
 
         when(relationService.unbindExternalRelation(
             dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId
-        )).thenThrow(new RuntimeException(errorMessage));
+        )).thenThrow(expectedException);
 
-        // When
-        ResponseEntity<ResponseWrapper<Boolean>> response = relationController.unbindExternalRelation(
-            dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+            relationController.unbindExternalRelation(
+                dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId
+            )
         );
-
-        // Then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertEquals("Failed to unbind relation: " + errorMessage, response.getBody().getMessage());
+        
+        assertSame(expectedException, exception);
         verify(relationService).unbindExternalRelation(
             dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId
         );
     }
 
     @Test
-    void findBoundExternalRelations_shouldReturnSuccessResponse() {
+    void findBoundExternalRelations_shouldReturnBindingStatusDTO() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         EntityType sourceEntityType = EntityType.ARTIST;
@@ -193,59 +188,58 @@ class RelationControllerTest {
         )).thenReturn(expectedStatus);
 
         // When
-        ResponseEntity<ResponseWrapper<RelationBindingStatusDTO>> response = relationController.findBoundExternalRelations(
+        RelationBindingStatusDTO result = relationController.findBoundExternalRelations(
             dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityIds
         );
 
         // Then
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(expectedStatus, response.getBody().getData());
+        assertEquals(expectedStatus, result);
         verify(relationService).findBoundExternalRelations(
             eq(dataSource), eq(sourceEntityType), eq(sourceExternalEntityId), eq(targetEntityType), eq(targetExternalEntityIds)
         );
     }
 
     @Test
-    void findBoundExternalRelations_whenExceptionThrown_shouldReturnFailureResponse() {
+    void findBoundExternalRelations_whenExceptionThrown_shouldPassThroughException() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         EntityType sourceEntityType = EntityType.ARTIST;
         Long sourceExternalEntityId = 123L;
         EntityType targetEntityType = EntityType.CATEGORY;
         List<Long> targetExternalEntityIds = Arrays.asList(456L, 789L);
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
 
         when(relationService.findBoundExternalRelations(
             eq(dataSource), eq(sourceEntityType), eq(sourceExternalEntityId), eq(targetEntityType), eq(targetExternalEntityIds)
-        )).thenThrow(new RuntimeException(errorMessage));
+        )).thenThrow(expectedException);
 
-        // When
-        ResponseEntity<ResponseWrapper<RelationBindingStatusDTO>> response = relationController.findBoundExternalRelations(
-            dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityIds
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+            relationController.findBoundExternalRelations(
+                dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityIds
+            )
         );
-
-        // Then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertEquals("Failed to get bound relations: " + errorMessage, response.getBody().getMessage());
+        
+        assertSame(expectedException, exception);
         verify(relationService).findBoundExternalRelations(
             eq(dataSource), eq(sourceEntityType), eq(sourceExternalEntityId), eq(targetEntityType), eq(targetExternalEntityIds)
         );
     }
 
     @Test
-    void getRelatedEntities_shouldReturnSuccessResponse() {
+    void getRelatedEntities_shouldReturnEntityDTOList() {
         // Given
         EntityType sourceEntityType = EntityType.ARTIST;
         Long sourceEntityId = 123L;
         EntityType targetEntityType = EntityType.CATEGORY;
 
-        List<EntityDTO> expectedEntities = Arrays.asList(
-            EntityDTO.builder()
+        List<RelatedEntityDTO> expectedEntities = Arrays.asList(
+            RelatedEntityDTO.builder()
                 .id(1L)
                 .name("Category 1")
                 .entityType(targetEntityType)
                 .build(),
-            EntityDTO.builder()
+            RelatedEntityDTO.builder()
                 .id(2L)
                 .name("Category 2")
                 .entityType(targetEntityType)
@@ -257,45 +251,44 @@ class RelationControllerTest {
         )).thenReturn(expectedEntities);
 
         // When
-        ResponseEntity<ResponseWrapper<List<EntityDTO>>> response = relationController.getRelatedEntities(
+        List<RelatedEntityDTO> result = relationController.getRelatedEntities(
             sourceEntityType, sourceEntityId, targetEntityType
         );
 
         // Then
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(expectedEntities, response.getBody().getData());
+        assertEquals(expectedEntities, result);
         verify(relationService).getRelatedEntities(
             sourceEntityType, sourceEntityId, targetEntityType
         );
     }
 
     @Test
-    void getRelatedEntities_whenExceptionThrown_shouldReturnFailureResponse() {
+    void getRelatedEntities_whenExceptionThrown_shouldPassThroughException() {
         // Given
         EntityType sourceEntityType = EntityType.ARTIST;
         Long sourceEntityId = 123L;
         EntityType targetEntityType = EntityType.CATEGORY;
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
 
         when(relationService.getRelatedEntities(
             sourceEntityType, sourceEntityId, targetEntityType
-        )).thenThrow(new RuntimeException(errorMessage));
+        )).thenThrow(expectedException);
 
-        // When
-        ResponseEntity<ResponseWrapper<List<EntityDTO>>> response = relationController.getRelatedEntities(
-            sourceEntityType, sourceEntityId, targetEntityType
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+            relationController.getRelatedEntities(
+                sourceEntityType, sourceEntityId, targetEntityType
+            )
         );
-
-        // Then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertEquals("Failed to get related entities: " + errorMessage, response.getBody().getMessage());
+        
+        assertSame(expectedException, exception);
         verify(relationService).getRelatedEntities(
             sourceEntityType, sourceEntityId, targetEntityType
         );
     }
     
     @Test
-    void createInternalRelation_shouldReturnSuccessResponse() {
+    void createInternalRelation_shouldReturnLong() {
         // Given
         EntityType sourceEntityType = EntityType.ARTIST;
         Long sourceEntityId = 123L;
@@ -308,46 +301,45 @@ class RelationControllerTest {
         )).thenReturn(expectedRelationId);
 
         // When
-        ResponseEntity<ResponseWrapper<Long>> response = relationController.createInternalRelation(
+        Long result = relationController.createInternalRelation(
             sourceEntityType, sourceEntityId, targetEntityType, targetEntityId
         );
 
         // Then
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(expectedRelationId, response.getBody().getData());
+        assertEquals(expectedRelationId, result);
         verify(relationService).createInternalRelation(
             sourceEntityType, sourceEntityId, targetEntityType, targetEntityId
         );
     }
 
     @Test
-    void createInternalRelation_whenExceptionThrown_shouldReturnFailureResponse() {
+    void createInternalRelation_whenExceptionThrown_shouldPassThroughException() {
         // Given
         EntityType sourceEntityType = EntityType.ARTIST;
         Long sourceEntityId = 123L;
         EntityType targetEntityType = EntityType.CATEGORY;
         Long targetEntityId = 456L;
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
 
         when(relationService.createInternalRelation(
             sourceEntityType, sourceEntityId, targetEntityType, targetEntityId
-        )).thenThrow(new RuntimeException(errorMessage));
+        )).thenThrow(expectedException);
 
-        // When
-        ResponseEntity<ResponseWrapper<Long>> response = relationController.createInternalRelation(
-            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+            relationController.createInternalRelation(
+                sourceEntityType, sourceEntityId, targetEntityType, targetEntityId
+            )
         );
-
-        // Then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertEquals("Failed to create relation: " + errorMessage, response.getBody().getMessage());
+        
+        assertSame(expectedException, exception);
         verify(relationService).createInternalRelation(
             sourceEntityType, sourceEntityId, targetEntityType, targetEntityId
         );
     }
 
     @Test
-    void deleteInternalRelation_shouldReturnSuccessResponse() {
+    void deleteInternalRelation_shouldReturnBoolean() {
         // Given
         EntityType sourceEntityType = EntityType.ARTIST;
         Long sourceEntityId = 123L;
@@ -359,74 +351,72 @@ class RelationControllerTest {
         )).thenReturn(true);
 
         // When
-        ResponseEntity<ResponseWrapper<Boolean>> response = relationController.deleteInternalRelation(
+        boolean result = relationController.deleteInternalRelation(
             sourceEntityType, sourceEntityId, targetEntityType, targetEntityId
         );
 
         // Then
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(true, response.getBody().getData());
+        assertTrue(result);
         verify(relationService).deleteInternalRelation(
             sourceEntityType, sourceEntityId, targetEntityType, targetEntityId
         );
     }
 
     @Test
-    void deleteInternalRelation_whenExceptionThrown_shouldReturnFailureResponse() {
+    void deleteInternalRelation_whenExceptionThrown_shouldPassThroughException() {
         // Given
         EntityType sourceEntityType = EntityType.ARTIST;
         Long sourceEntityId = 123L;
         EntityType targetEntityType = EntityType.CATEGORY;
         Long targetEntityId = 456L;
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
 
         when(relationService.deleteInternalRelation(
             sourceEntityType, sourceEntityId, targetEntityType, targetEntityId
-        )).thenThrow(new RuntimeException(errorMessage));
+        )).thenThrow(expectedException);
 
-        // When
-        ResponseEntity<ResponseWrapper<Boolean>> response = relationController.deleteInternalRelation(
-            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+            relationController.deleteInternalRelation(
+                sourceEntityType, sourceEntityId, targetEntityType, targetEntityId
+            )
         );
-
-        // Then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertEquals("Failed to delete relation: " + errorMessage, response.getBody().getMessage());
+        
+        assertSame(expectedException, exception);
         verify(relationService).deleteInternalRelation(
             sourceEntityType, sourceEntityId, targetEntityType, targetEntityId
         );
     }
 
     @Test
-    void deleteInternalRelationById_shouldReturnSuccessResponse() {
+    void deleteInternalRelationById_shouldReturnBoolean() {
         // Given
         Long relationId = 123L;
 
         when(relationService.deleteInternalRelationById(relationId)).thenReturn(true);
 
         // When
-        ResponseEntity<ResponseWrapper<Boolean>> response = relationController.deleteInternalRelationById(relationId);
+        boolean result = relationController.deleteInternalRelationById(relationId);
 
         // Then
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(true, response.getBody().getData());
+        assertTrue(result);
         verify(relationService).deleteInternalRelationById(relationId);
     }
 
     @Test
-    void deleteInternalRelationById_whenExceptionThrown_shouldReturnFailureResponse() {
+    void deleteInternalRelationById_whenExceptionThrown_shouldPassThroughException() {
         // Given
         Long relationId = 123L;
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
 
-        when(relationService.deleteInternalRelationById(relationId)).thenThrow(new RuntimeException(errorMessage));
+        when(relationService.deleteInternalRelationById(relationId)).thenThrow(expectedException);
 
-        // When
-        ResponseEntity<ResponseWrapper<Boolean>> response = relationController.deleteInternalRelationById(relationId);
-
-        // Then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertEquals("Failed to delete relation: " + errorMessage, response.getBody().getMessage());
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+            relationController.deleteInternalRelationById(relationId)
+        );
+        
+        assertSame(expectedException, exception);
         verify(relationService).deleteInternalRelationById(relationId);
     }
 }

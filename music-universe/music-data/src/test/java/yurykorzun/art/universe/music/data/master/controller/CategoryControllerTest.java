@@ -9,28 +9,28 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.music.data.master.dto.CategoryHierarchyProjection;
-import yurykorzun.art.universe.music.data.master.dto.LookupResultDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategorySaveRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryBindToExistingRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryCreateAndBindRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryBatchLookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryBatchLookupResponseDTO;
-import yurykorzun.art.universe.music.data.master.dto.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BaseBatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.TestCategoryHierarchyProjectionImpl;
-import yurykorzun.art.universe.music.data.master.dto.TestBoundEntityProjectionImpl;
+import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.service.CategoryService;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,7 +43,7 @@ class CategoryControllerTest {
     private CategoryController categoryController;
 
     @Test
-    void searchCategories_shouldReturnSuccessResponse() {
+    void findCategories_shouldReturnPageOfCategories() {
         // Given
         String search = "genre";
         Pageable pageable = PageRequest.of(0, 10);
@@ -54,110 +54,92 @@ class CategoryControllerTest {
             2L, "Subgenre", 1L, 1L, 1L, 2, "Dimension 1", "Dimension 1", "Genre");
         
         List<CategoryHierarchyProjection> categories = Arrays.asList(category1, category2);
-        Page<CategoryHierarchyProjection> page = new PageImpl<>(categories, pageable, categories.size());
+        Page<CategoryHierarchyProjection> expectedPage = new PageImpl<>(categories, pageable, categories.size());
         
-        when(categoryService.searchCategories(search, pageable)).thenReturn(page);
-        ResponseEntity<ResponseWrapper<Page<CategoryHierarchyProjection>>> expectedResponse = 
-            ResponseWrapper.success(page);
+        when(categoryService.findCategories(search, pageable)).thenReturn(expectedPage);
 
         // When
-        ResponseEntity<ResponseWrapper<Page<CategoryHierarchyProjection>>> actualResponse = 
-            categoryController.searchCategories(search, pageable);
+        Page<CategoryHierarchyProjection> result = categoryController.findCategories(search, pageable);
 
         // Then
-        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
-        verify(categoryService).searchCategories(search, pageable);
+        assertEquals(expectedPage, result);
+        verify(categoryService).findCategories(search, pageable);
     }
 
     @Test
-    void searchCategories_whenExceptionThrown_shouldReturnFailureResponse() {
+    void findCategories_whenExceptionThrown_shouldPassThroughException() {
         // Given
         String search = "genre";
         Pageable pageable = PageRequest.of(0, 10);
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
         
-        when(categoryService.searchCategories(search, pageable)).thenThrow(new RuntimeException(errorMessage));
-        ResponseEntity<ResponseWrapper<Page<CategoryHierarchyProjection>>> expectedResponse = 
-            ResponseWrapper.failure(String.format("Failed to search categories: %s", errorMessage));
+        when(categoryService.findCategories(search, pageable)).thenThrow(expectedException);
 
-        // When
-        ResponseEntity<ResponseWrapper<Page<CategoryHierarchyProjection>>> actualResponse = 
-            categoryController.searchCategories(search, pageable);
-
-        // Then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
-        verify(categoryService).searchCategories(search, pageable);
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+            categoryController.findCategories(search, pageable)
+        );
+        
+        assertSame(expectedException, exception);
+        verify(categoryService).findCategories(search, pageable);
     }
 
     @Test
-    void lookupCategories_shouldReturnSuccessResponse() {
+    void lookupCategories_shouldReturnListOfLookupResults() {
         // Given
-        String name = "rock";
+        String search = "rock";
         LookupResultDTO category1 = new LookupResultDTO(1L, "Rock");
         LookupResultDTO category2 = new LookupResultDTO(2L, "Alternative Rock");
         List<LookupResultDTO> expectedCategories = Arrays.asList(category1, category2);
         
-        when(categoryService.lookupCategories(name)).thenReturn(expectedCategories);
-        ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> expectedResponse = 
-            ResponseWrapper.success(expectedCategories);
+        when(categoryService.lookupCategories(any(LookupRequestDTO.class))).thenReturn(expectedCategories);
 
         // When
-        ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> actualResponse = 
-            categoryController.lookupCategories(name, null);
+        List<LookupResultDTO> result = categoryController.lookupCategories(search, null);
 
         // Then
-        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
-        verify(categoryService).lookupCategories(name);
+        assertEquals(expectedCategories, result);
+        verify(categoryService).lookupCategories(any(LookupRequestDTO.class));
     }
 
     @Test
-    void lookupCategories_withLimit_shouldReturnSuccessResponse() {
+    void lookupCategories_withLimit_shouldReturnListOfLookupResults() {
         // Given
-        String name = "rock";
+        String search = "rock";
         Integer limit = 5;
         LookupResultDTO category1 = new LookupResultDTO(1L, "Rock");
         LookupResultDTO category2 = new LookupResultDTO(2L, "Alternative Rock");
         List<LookupResultDTO> expectedCategories = Arrays.asList(category1, category2);
         
-        when(categoryService.lookupCategories(name, limit)).thenReturn(expectedCategories);
-        ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> expectedResponse = 
-            ResponseWrapper.success(expectedCategories);
+        when(categoryService.lookupCategories(any(LookupRequestDTO.class))).thenReturn(expectedCategories);
 
         // When
-        ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> actualResponse = 
-            categoryController.lookupCategories(name, limit);
+        List<LookupResultDTO> result = categoryController.lookupCategories(search, limit);
 
         // Then
-        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
-        verify(categoryService).lookupCategories(name, limit);
+        assertEquals(expectedCategories, result);
+        verify(categoryService).lookupCategories(any(LookupRequestDTO.class));
     }
 
     @Test
-    void lookupCategories_whenExceptionThrown_shouldReturnFailureResponse() {
+    void lookupCategories_whenExceptionThrown_shouldPassThroughException() {
         // Given
-        String name = "rock";
-        String errorMessage = "Test error";
+        String search = "rock";
+        RuntimeException expectedException = new RuntimeException("Test error");
         
-        when(categoryService.lookupCategories(name)).thenThrow(new RuntimeException(errorMessage));
-        ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> expectedResponse = 
-            ResponseWrapper.failure(String.format("Failed to lookup categories: %s", errorMessage));
+        when(categoryService.lookupCategories(any(LookupRequestDTO.class))).thenThrow(expectedException);
 
-        // When
-        ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> actualResponse = 
-            categoryController.lookupCategories(name, null);
-
-        // Then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
-        verify(categoryService).lookupCategories(name);
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+            categoryController.lookupCategories(search, null)
+        );
+        
+        assertSame(expectedException, exception);
+        verify(categoryService).lookupCategories(any(LookupRequestDTO.class));
     }
 
     @Test
-    void saveCategory_shouldReturnSuccessResponse() {
+    void saveCategory_shouldReturnCategoryHierarchyProjection() {
         // Given
         CategorySaveRequestDTO request = CategorySaveRequestDTO.builder()
             .name("Genre")
@@ -168,122 +150,106 @@ class CategoryControllerTest {
             1L, "Genre", 1L, 1L, null, 1, "Dimension 1", "Dimension 1", null);
         
         when(categoryService.saveCategory(request)).thenReturn(savedCategory);
-        ResponseEntity<ResponseWrapper<CategoryHierarchyProjection>> expectedResponse = 
-            ResponseWrapper.success(savedCategory);
 
         // When
-        ResponseEntity<ResponseWrapper<CategoryHierarchyProjection>> actualResponse = 
-            categoryController.saveCategory(request);
+        CategoryHierarchyProjection result = categoryController.saveCategory(request);
 
         // Then
-        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
+        assertEquals(savedCategory, result);
         verify(categoryService).saveCategory(request);
     }
 
     @Test
-    void saveCategory_whenExceptionThrown_shouldReturnFailureResponse() {
+    void saveCategory_whenExceptionThrown_shouldPassThroughException() {
         // Given
         CategorySaveRequestDTO request = CategorySaveRequestDTO.builder()
             .name("Genre")
             .dimensionId(1L)
             .build();
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
         
-        when(categoryService.saveCategory(request)).thenThrow(new RuntimeException(errorMessage));
-        ResponseEntity<ResponseWrapper<CategoryHierarchyProjection>> expectedResponse = 
-            ResponseWrapper.failure(String.format("Failed to save category: %s", errorMessage));
+        when(categoryService.saveCategory(request)).thenThrow(expectedException);
 
-        // When
-        ResponseEntity<ResponseWrapper<CategoryHierarchyProjection>> actualResponse = 
-            categoryController.saveCategory(request);
-
-        // Then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+            categoryController.saveCategory(request)
+        );
+        
+        assertSame(expectedException, exception);
         verify(categoryService).saveCategory(request);
     }
 
     @Test
-    void saveCategory_whenSelfParentValidationFails_shouldReturnFailureResponse() {
+    void saveCategory_whenSelfParentValidationFails_shouldPassThroughException() {
         // Given
         CategorySaveRequestDTO request = CategorySaveRequestDTO.builder()
             .id(1L)
             .name("Test Category")
             .parentId(1L) // Same as ID - self-parent
             .build();
-        String errorMessage = "Category cannot be parent of itself";
+        IllegalArgumentException expectedException = new IllegalArgumentException("Category cannot be parent of itself");
         
-        when(categoryService.saveCategory(request)).thenThrow(new IllegalArgumentException(errorMessage));
-        ResponseEntity<ResponseWrapper<CategoryHierarchyProjection>> expectedResponse = 
-            ResponseWrapper.failure(String.format("Failed to save category: %s", errorMessage));
+        when(categoryService.saveCategory(request)).thenThrow(expectedException);
 
-        // When
-        ResponseEntity<ResponseWrapper<CategoryHierarchyProjection>> actualResponse = 
-            categoryController.saveCategory(request);
-
-        // Then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
+        // When & Then
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> 
+            categoryController.saveCategory(request)
+        );
+        
+        assertSame(expectedException, exception);
         verify(categoryService).saveCategory(request);
     }
 
     @Test
-    void deleteCategory_whenFound_shouldReturnSuccessResponse() {
+    void deleteCategory_whenFound_shouldReturnTrue() {
         // Given
         Long id = 1L;
         
         when(categoryService.deleteCategory(id)).thenReturn(true);
-        ResponseEntity<ResponseWrapper<Boolean>> expectedResponse = ResponseWrapper.success(true);
 
         // When
-        ResponseEntity<ResponseWrapper<Boolean>> actualResponse = categoryController.deleteCategory(id);
+        boolean result = categoryController.deleteCategory(id);
 
         // Then
-        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
+        assertTrue(result);
         verify(categoryService).deleteCategory(id);
     }
 
     @Test
-    void deleteCategory_whenNotFound_shouldReturnFailureResponse() {
+    void deleteCategory_whenNotFound_shouldThrowEntityNotFoundException() {
         // Given
         Long id = 1L;
         
         when(categoryService.deleteCategory(id)).thenReturn(false);
-        ResponseEntity<ResponseWrapper<Boolean>> expectedResponse = 
-            ResponseWrapper.failure("Category not found with id: " + id);
 
-        // When
-        ResponseEntity<ResponseWrapper<Boolean>> actualResponse = categoryController.deleteCategory(id);
-
-        // Then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
+        // When & Then
+        CustomEntityNotFoundException exception = assertThrows(CustomEntityNotFoundException.class, () ->
+            categoryController.deleteCategory(id)
+        );
+        
+        assertEquals("Category not found with id: " + id, exception.getMessage());
         verify(categoryService).deleteCategory(id);
     }
 
     @Test
-    void deleteCategory_whenExceptionThrown_shouldReturnFailureResponse() {
+    void deleteCategory_whenExceptionThrown_shouldPassThroughException() {
         // Given
         Long id = 1L;
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
         
-        when(categoryService.deleteCategory(id)).thenThrow(new RuntimeException(errorMessage));
-        ResponseEntity<ResponseWrapper<Boolean>> expectedResponse = 
-            ResponseWrapper.failure(String.format("Failed to delete category: %s", errorMessage));
+        when(categoryService.deleteCategory(id)).thenThrow(expectedException);
 
-        // When
-        ResponseEntity<ResponseWrapper<Boolean>> actualResponse = categoryController.deleteCategory(id);
-
-        // Then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+            categoryController.deleteCategory(id)
+        );
+        
+        assertSame(expectedException, exception);
         verify(categoryService).deleteCategory(id);
     }
 
     @Test
-    void findBoundCategories_shouldReturnSuccessResponse() {
+    void findBoundCategories_shouldReturnListOfBoundEntityProjections() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         List<Long> externalIds = List.of(1L, 2L);
@@ -295,204 +261,177 @@ class CategoryControllerTest {
         
         when(categoryService.findBoundCategories(dataSource, externalIds))
             .thenReturn(expectedBindings);
-        ResponseEntity<ResponseWrapper<List<BoundEntityProjection>>> expectedResponse =
-            ResponseWrapper.success(expectedBindings);
 
         // When
-        ResponseEntity<ResponseWrapper<List<BoundEntityProjection>>> actualResponse =
-            categoryController.findBoundCategories(dataSource, externalIds);
+        List<BoundEntityProjection> result = categoryController.findBoundCategories(dataSource, externalIds);
 
         // Then
-        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
+        assertEquals(expectedBindings, result);
         verify(categoryService).findBoundCategories(dataSource, externalIds);
     }
 
     @Test
-    void findBoundCategories_whenExceptionThrown_shouldReturnFailureResponse() {
+    void findBoundCategories_whenExceptionThrown_shouldPassThroughException() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         List<Long> externalIds = List.of(1L, 2L);
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
         
         when(categoryService.findBoundCategories(dataSource, externalIds))
-            .thenThrow(new RuntimeException(errorMessage));
-        ResponseEntity<ResponseWrapper<List<BoundEntityProjection>>> expectedResponse =
-            ResponseWrapper.failure(String.format("Failed to get bound categories: %s", errorMessage));
+            .thenThrow(expectedException);
 
-        // When
-        ResponseEntity<ResponseWrapper<List<BoundEntityProjection>>> actualResponse =
-            categoryController.findBoundCategories(dataSource, externalIds);
-
-        // Then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+            categoryController.findBoundCategories(dataSource, externalIds)
+        );
+        
+        assertSame(expectedException, exception);
         verify(categoryService).findBoundCategories(dataSource, externalIds);
     }
 
     @Test
-    void bindToExisting_shouldReturnSuccessResponse() {
+    void bindToExisting_shouldReturnBoundEntityProjection() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
-        Long categoryId = 101L;
+        Long masterId = 101L;
         
-        CategoryBindToExistingRequestDTO request = CategoryBindToExistingRequestDTO.builder()
-            .categoryId(categoryId)
+        EntityBindToExistingRequestDTO request = EntityBindToExistingRequestDTO.builder()
+            .masterId(masterId)
             .build();
         
         TestBoundEntityProjectionImpl projection = new TestBoundEntityProjectionImpl(
-            externalId, dataSource, categoryId, "Rock"
+            externalId, dataSource, masterId, "Rock"
         );
-        ResponseEntity<ResponseWrapper<BoundEntityProjection>> expectedResponse = 
-            ResponseWrapper.success(projection);
         
         when(categoryService.bindToExisting(dataSource, externalId, request))
             .thenReturn(projection);
 
         // When
-        ResponseEntity<ResponseWrapper<BoundEntityProjection>> actualResponse =
-            categoryController.bindToExisting(dataSource, externalId, request);
+        BoundEntityProjection result = categoryController.bindToExisting(dataSource, externalId, request);
 
         // Then
-        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
+        assertEquals(projection, result);
         verify(categoryService).bindToExisting(dataSource, externalId, request);
     }
 
     @Test
-    void bindToExisting_whenExceptionThrown_shouldReturnFailureResponse() {
+    void bindToExisting_whenExceptionThrown_shouldPassThroughException() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
-        Long categoryId = 101L;
-        String errorMessage = "Test error";
+        Long masterId = 101L;
+        RuntimeException expectedException = new RuntimeException("Test error");
         
-        CategoryBindToExistingRequestDTO request = CategoryBindToExistingRequestDTO.builder()
-            .categoryId(categoryId)
+        EntityBindToExistingRequestDTO request = EntityBindToExistingRequestDTO.builder()
+            .masterId(masterId)
             .build();
-        ResponseEntity<ResponseWrapper<BoundEntityProjection>> expectedResponse =
-            ResponseWrapper.failure(String.format("Failed to bind category to existing: %s", errorMessage));
         
         when(categoryService.bindToExisting(dataSource, externalId, request))
-            .thenThrow(new RuntimeException(errorMessage));
+            .thenThrow(expectedException);
 
-        // When
-        ResponseEntity<ResponseWrapper<BoundEntityProjection>> actualResponse =
-            categoryController.bindToExisting(dataSource, externalId, request);
-
-        // Then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+            categoryController.bindToExisting(dataSource, externalId, request)
+        );
+        
+        assertSame(expectedException, exception);
         verify(categoryService).bindToExisting(dataSource, externalId, request);
     }
 
     @Test
-    void createAndBind_shouldReturnSuccessResponse() {
+    void createAndBind_shouldReturnBoundEntityProjection() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
         String categoryName = "New Genre";
         
-        CategoryCreateAndBindRequestDTO request = CategoryCreateAndBindRequestDTO.builder()
-            .name(categoryName)
+        EntityCreateAndBindRequestDTO request = EntityCreateAndBindRequestDTO.builder()
+            .entityName(categoryName)
             .build();
         
         TestBoundEntityProjectionImpl projection = new TestBoundEntityProjectionImpl(
             externalId, dataSource, 101L, categoryName
         );
-        ResponseEntity<ResponseWrapper<BoundEntityProjection>> expectedResponse = 
-            ResponseWrapper.success(projection);
         
         when(categoryService.createAndBind(dataSource, externalId, request))
             .thenReturn(projection);
 
         // When
-        ResponseEntity<ResponseWrapper<BoundEntityProjection>> actualResponse =
-            categoryController.createAndBind(dataSource, externalId, request);
+        BoundEntityProjection result = categoryController.createAndBind(dataSource, externalId, request);
 
         // Then
-        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
+        assertEquals(projection, result);
         verify(categoryService).createAndBind(dataSource, externalId, request);
     }
 
     @Test
-    void createAndBind_whenExceptionThrown_shouldReturnFailureResponse() {
+    void createAndBind_whenExceptionThrown_shouldPassThroughException() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
         String categoryName = "New Genre";
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
         
-        CategoryCreateAndBindRequestDTO request = CategoryCreateAndBindRequestDTO.builder()
-            .name(categoryName)
+        EntityCreateAndBindRequestDTO request = EntityCreateAndBindRequestDTO.builder()
+            .entityName(categoryName)
             .build();
-        ResponseEntity<ResponseWrapper<BoundEntityProjection>> expectedResponse =
-            ResponseWrapper.failure(String.format("Failed to create and bind category: %s", errorMessage));
         
         when(categoryService.createAndBind(dataSource, externalId, request))
-            .thenThrow(new RuntimeException(errorMessage));
+            .thenThrow(expectedException);
 
-        // When
-        ResponseEntity<ResponseWrapper<BoundEntityProjection>> actualResponse =
-            categoryController.createAndBind(dataSource, externalId, request);
-
-        // Then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+            categoryController.createAndBind(dataSource, externalId, request)
+        );
+        
+        assertSame(expectedException, exception);
         verify(categoryService).createAndBind(dataSource, externalId, request);
     }
 
     @Test
-    void unbindCategory_shouldReturnSuccessResponse() {
+    void unbindCategory_shouldReturnBoolean() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
         
         when(categoryService.unbindCategory(dataSource, externalId)).thenReturn(true);
-        ResponseEntity<ResponseWrapper<Boolean>> expectedResponse = ResponseWrapper.success(true);
 
         // When
-        ResponseEntity<ResponseWrapper<Boolean>> actualResponse =
-            categoryController.unbindCategory(dataSource, externalId);
+        boolean result = categoryController.unbindCategory(dataSource, externalId);
 
         // Then
-        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
+        assertTrue(result);
         verify(categoryService).unbindCategory(dataSource, externalId);
     }
 
     @Test
-    void unbindCategory_whenExceptionThrown_shouldReturnFailureResponse() {
+    void unbindCategory_whenExceptionThrown_shouldPassThroughException() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
 
         when(categoryService.unbindCategory(dataSource, externalId))
-            .thenThrow(new RuntimeException(errorMessage));
-        ResponseEntity<ResponseWrapper<Boolean>> expectedResponse =
-            ResponseWrapper.failure(String.format("Failed to unbind category: %s", errorMessage));
+            .thenThrow(expectedException);
 
-        // When
-        ResponseEntity<ResponseWrapper<Boolean>> actualResponse =
-            categoryController.unbindCategory(dataSource, externalId);
-
-        // Then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
-        assertEquals(expectedResponse, actualResponse);
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+            categoryController.unbindCategory(dataSource, externalId)
+        );
+        
+        assertSame(expectedException, exception);
         verify(categoryService).unbindCategory(dataSource, externalId);
     }
     
     @Test
-    void batchLookupCategories_shouldReturnSuccessResponse() {
+    void batchLookupCategories_shouldReturnBatchLookupResponseDTO() {
         // Given
         List<String> names = List.of("rock", "jazz");
         Integer limit = 10;
         
-        CategoryBatchLookupRequestDTO request = CategoryBatchLookupRequestDTO.builder()
-            .names(names)
+        BaseBatchLookupRequestDTO request = BaseBatchLookupRequestDTO.builder()
+            .searchRequests(createLookupRequests(names))
             .limit(limit)
             .build();
         
@@ -505,50 +444,50 @@ class CategoryControllerTest {
             new LookupResultDTO(3L, "Jazz")
         ));
         
-        CategoryBatchLookupResponseDTO expectedResponse = CategoryBatchLookupResponseDTO.builder()
+        BatchLookupResponseDTO expectedResponse = BatchLookupResponseDTO.builder()
             .results(resultMap)
             .build();
         
         when(categoryService.batchLookupCategories(request)).thenReturn(expectedResponse);
         
         // When
-        ResponseEntity<ResponseWrapper<CategoryBatchLookupResponseDTO>> actualResponse =
-            categoryController.batchLookupCategories(request);
+        BatchLookupResponseDTO result = categoryController.batchLookupCategories(request);
         
         // Then
-        assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
-        assertEquals(ResponseWrapper.successBody(expectedResponse), actualResponse.getBody());
-        
+        assertEquals(expectedResponse, result);
         verify(categoryService).batchLookupCategories(request);
     }
     
     @Test
-    void batchLookupCategories_whenExceptionThrown_shouldReturnFailureResponse() {
+    void batchLookupCategories_whenExceptionThrown_shouldPassThroughException() {
         // Given
         List<String> names = List.of("rock", "jazz");
         Integer limit = 10;
-        String errorMessage = "Test error";
+        RuntimeException expectedException = new RuntimeException("Test error");
         
-        CategoryBatchLookupRequestDTO request = CategoryBatchLookupRequestDTO.builder()
-            .names(names)
+        BaseBatchLookupRequestDTO request = BaseBatchLookupRequestDTO.builder()
+            .searchRequests(createLookupRequests(names))
             .limit(limit)
             .build();
         
         when(categoryService.batchLookupCategories(request))
-            .thenThrow(new RuntimeException(errorMessage));
+            .thenThrow(expectedException);
         
-        ResponseEntity<ResponseWrapper<CategoryBatchLookupResponseDTO>> expectedResponse =
-            ResponseWrapper.failure(String.format("Failed to batch lookup categories: %s", errorMessage));
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+            categoryController.batchLookupCategories(request)
+        );
         
-        // When
-        ResponseEntity<ResponseWrapper<CategoryBatchLookupResponseDTO>> actualResponse =
-            categoryController.batchLookupCategories(request);
-        
-        // Then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
-        assertEquals(expectedResponse.getBody().isSuccess(), actualResponse.getBody().isSuccess());
-        assertEquals(expectedResponse.getBody().getMessage(), actualResponse.getBody().getMessage());
-        
+        assertSame(expectedException, exception);
         verify(categoryService).batchLookupCategories(request);
+    }
+    
+    /**
+     * Helper method to convert a list of search terms to a list of LookupRequestDTO
+     */
+    private List<LookupRequestDTO> createLookupRequests(List<String> searchTerms) {
+        return searchTerms.stream()
+            .map(term -> LookupRequestDTO.builder().search(term).build())
+            .collect(Collectors.toList());
     }
 }

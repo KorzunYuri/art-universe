@@ -1,11 +1,9 @@
 package yurykorzun.art.universe.music.data.master.service;
 
-import yurykorzun.art.universe.music.data.master.dto.ArtistBatchLookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.ArtistBatchLookupResponseDTO;
-import yurykorzun.art.universe.music.data.master.dto.LookupResultDTO;
-import yurykorzun.art.universe.music.data.master.dto.ArtistBindToExistingRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.ArtistCreateAndBindRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.lookup.*;
+import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 
 import java.util.List;
@@ -31,7 +29,7 @@ public interface ArtistService {
      * @param request The binding request containing artist ID
      * @return The created binding information
      */
-    BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, ArtistBindToExistingRequestDTO request);
+    BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, EntityBindToExistingRequestDTO request);
     
     /**
      * Create a new artist and bind an external artist to it
@@ -41,7 +39,7 @@ public interface ArtistService {
      * @param request The binding request containing artist information
      * @return The created binding information
      */
-    BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, ArtistCreateAndBindRequestDTO request);
+    BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, EntityCreateAndBindRequestDTO request);
     
     /**
      * Unbinds an external artist from the system.
@@ -55,29 +53,17 @@ public interface ArtistService {
     /**
      * Searches for artists by name (case insensitive, partial match).
      *
-     * @param search The search term to look for in artist names
-     * @param limit Maximum number of results to return (default: 20)
+     * @param request The lookup request containing search term and optional limit
      * @return List of artist DTOs matching the search term
      */
-    List<LookupResultDTO> searchArtistsByName(String search, Integer limit);
-    
-    /**
-     * Searches for artists by name (case insensitive, partial match).
-     * Uses default limit of 20 results.
-     *
-     * @param search The search term to look for in artist names
-     * @return List of artist DTOs matching the search term
-     */
-    default List<LookupResultDTO> searchArtistsByName(String search) {
-        return searchArtistsByName(search, 20);
-    }
-    
+    List<LookupResultDTO> lookupArtists(LookupRequestDTO request);
+
     /**
      * Batch lookup of artists by multiple search terms.
      * Each search term will have its own limited result set.
      *
-     * @param request The batch lookup request containing search terms and limit
+     * @param request The batch lookup request containing search requests and limit
      * @return A map of search terms to lists of matching artists
      */
-    ArtistBatchLookupResponseDTO batchLookupArtists(ArtistBatchLookupRequestDTO request);
+    BatchLookupResponseDTO batchLookupArtists(BaseBatchLookupRequestDTO request);
 }

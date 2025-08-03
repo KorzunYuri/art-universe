@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 import yurykorzun.art.universe.music.data.master.dto.CategoryHierarchyProjection;
 import yurykorzun.art.universe.music.data.master.entity.Category;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -31,82 +30,28 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
      * @return Page of categories with hierarchy information
      */
     @Query(nativeQuery = true, 
-           countQuery = """
-               WITH RECURSIVE category_hierarchy AS (
-                   -- Base case: root categories (no parent)
-                   SELECT
-                       c.id,
-                       c.name,
-                       c.dimension_id,
-                       c.dimension_id AS effective_dimension_id,
-                       c.parent_id,
-                       1 AS hierarchy_level
-                   FROM
-                       category c
-                   WHERE
-                       c.parent_id IS NULL
-           
-                   UNION ALL
-           
-                   -- Recursive case: child categories
-                   SELECT
-                       c.id,
-                       c.name,
-                       c.dimension_id,
-                       COALESCE(c.dimension_id, ch.effective_dimension_id) AS effective_dimension_id,
-                       c.parent_id,
-                       ch.hierarchy_level + 1 AS hierarchy_level
-                   FROM
-                       category c
-                   JOIN
-                       category_hierarchy ch ON c.parent_id = ch.id
-               )
-               SELECT COUNT(*)
-               FROM
-                   category_hierarchy ch
-               LEFT JOIN
-                   dimension d ON ch.dimension_id = d.id
-               LEFT JOIN
-                   dimension ed ON ch.effective_dimension_id = ed.id
-               LEFT JOIN
-                   category parent ON ch.parent_id = parent.id
-               WHERE
-                   (:search IS NULL OR :search = '' OR 
-                    LOWER(ch.name) LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(parent.name) LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(d.name) LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(ed.name) LIKE LOWER(CONCAT('%', :search, '%')))
-               """,
+            countQuery = """
+                SELECT COUNT(*)
+                FROM
+                    mv_category_hierarchy ch
+                LEFT JOIN
+                    dimension d
+                        ON ch.dimension_id = d.id
+                LEFT JOIN
+                    dimension ed
+                        ON ch.effective_dimension_id = ed.id
+                LEFT JOIN
+                    category parent
+                        ON ch.parent_id = parent.id
+                WHERE
+                (
+                :search IS NULL OR :search = ''
+                OR   LOWER(ch.name)      LIKE LOWER(CONCAT('%', :search, '%'))
+                OR   LOWER(parent.name)  LIKE LOWER(CONCAT('%', :search, '%'))
+                OR   LOWER(d.name)       LIKE LOWER(CONCAT('%', :search, '%'))
+                OR   LOWER(ed.name)      LIKE LOWER(CONCAT('%', :search, '%')))
+                """,
            value = """
-               WITH RECURSIVE category_hierarchy AS (
-                   -- Base case: root categories (no parent)
-                   SELECT
-                       c.id,
-                       c.name,
-                       c.dimension_id,
-                       c.dimension_id AS effective_dimension_id,
-                       c.parent_id,
-                       1 AS hierarchy_level
-                   FROM
-                       category c
-                   WHERE
-                       c.parent_id IS NULL
-           
-                   UNION ALL
-           
-                   -- Recursive case: child categories
-                   SELECT
-                       c.id,
-                       c.name,
-                       c.dimension_id,
-                       COALESCE(c.dimension_id, ch.effective_dimension_id) AS effective_dimension_id,
-                       c.parent_id,
-                       ch.hierarchy_level + 1 AS hierarchy_level
-                   FROM
-                       category c
-                   JOIN
-                       category_hierarchy ch ON c.parent_id = ch.id
-               )
                SELECT
                    ch.id AS id,
                    ch.name AS name,
@@ -118,7 +63,7 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
                    ed.name AS effectiveDimensionName,
                    parent.name AS parentName
                FROM
-                   category_hierarchy ch
+                   mv_category_hierarchy ch
                LEFT JOIN
                    dimension d ON ch.dimension_id = d.id
                LEFT JOIN
@@ -126,13 +71,15 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
                LEFT JOIN
                    category parent ON ch.parent_id = parent.id
                WHERE
-                   (:search IS NULL OR :search = '' OR 
-                    LOWER(ch.name) LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(parent.name) LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(d.name) LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(ed.name) LIKE LOWER(CONCAT('%', :search, '%')))
+                   (    :search IS NULL
+                    OR  :search = ''
+                    OR  LOWER(ch.name)      LIKE LOWER(CONCAT('%', :search, '%'))
+                    OR  LOWER(parent.name)  LIKE LOWER(CONCAT('%', :search, '%'))
+                    OR  LOWER(d.name)       LIKE LOWER(CONCAT('%', :search, '%'))
+                    OR  LOWER(ed.name)      LIKE LOWER(CONCAT('%', :search, '%'))
+                    )
                """)
-    Page<CategoryHierarchyProjection> searchCategories(@Param("search") String search, Pageable pageable);
+    Page<CategoryHierarchyProjection> findCategories(@Param("search") String search, Pageable pageable);
 
     /**
      * Find a single category with hierarchy information by ID
@@ -141,35 +88,6 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
      * @return Category with hierarchy information if found
      */
     @Query(nativeQuery = true, value = """
-        WITH RECURSIVE category_hierarchy AS (
-            -- Base case: root categories (no parent)
-            SELECT
-                c.id,
-                c.name,
-                c.dimension_id,
-                c.dimension_id AS effective_dimension_id,
-                c.parent_id,
-                1 AS hierarchy_level
-            FROM
-                category c
-            WHERE
-                c.parent_id IS NULL
-    
-            UNION ALL
-
-            -- Recursive case: child categories
-            SELECT
-                c.id,
-                c.name,
-                c.dimension_id,
-                COALESCE(c.dimension_id, ch.effective_dimension_id) AS effective_dimension_id,
-                c.parent_id,
-                ch.hierarchy_level + 1 AS hierarchy_level
-            FROM
-                category c
-            JOIN
-                category_hierarchy ch ON c.parent_id = ch.id
-        )
         SELECT
             ch.id AS id,
             ch.name AS name,
@@ -181,7 +99,7 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
             ed.name AS effectiveDimensionName,
             parent.name AS parentName
         FROM
-            category_hierarchy ch
+            mv_category_hierarchy ch
         LEFT JOIN
             dimension d ON ch.dimension_id = d.id
         LEFT JOIN
@@ -192,16 +110,4 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
             ch.id = :id
     """)
     Optional<CategoryHierarchyProjection> findByIdWithHierarchy(@Param("id") Long id);
-    
-    /**
-     * Find categories by name containing the search term (case insensitive)
-     * with sorting by name in ascending order and limiting results
-     * 
-     * @param searchTerm The search term to look for in category names
-     * @param limit Maximum number of results to return
-     * @return List of categories matching the search term, sorted by name
-     */
-    @Query(value = "SELECT c.* FROM category c WHERE LOWER(c.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) ORDER BY c.name ASC LIMIT :limit", 
-           nativeQuery = true)
-    List<Category> findByNameContainingIgnoreCase(@Param("searchTerm") String searchTerm, @Param("limit") int limit);
 }

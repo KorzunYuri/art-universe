@@ -93,9 +93,9 @@ class CategoryRepositoryTest extends JpaOnlyTest {
     }
 
     @Test
-    void searchCategories_withNoSearch_shouldReturnAllCategories() {
+    void searchCategories_withNoFind_shouldReturnAllCategories() {
         // When
-        Page<CategoryHierarchyProjection> result = categoryRepository.searchCategories(null, PageRequest.of(0, 10));
+        Page<CategoryHierarchyProjection> result = categoryRepository.findCategories(null, PageRequest.of(0, 10));
 
         // Then
         assertThat(result.getContent()).hasSize(5);
@@ -103,9 +103,9 @@ class CategoryRepositoryTest extends JpaOnlyTest {
     }
 
     @Test
-    void searchCategories_withEmptySearch_shouldReturnAllCategories() {
+    void searchCategories_withEmptyFind_shouldReturnAllCategories() {
         // When
-        Page<CategoryHierarchyProjection> result = categoryRepository.searchCategories("", PageRequest.of(0, 10));
+        Page<CategoryHierarchyProjection> result = categoryRepository.findCategories("", PageRequest.of(0, 10));
 
         // Then
         assertThat(result.getContent()).hasSize(5);
@@ -113,9 +113,9 @@ class CategoryRepositoryTest extends JpaOnlyTest {
     }
 
     @Test
-    void searchCategories_byName_shouldReturnMatchingCategories() {
+    void findCategories_byName_shouldReturnMatchingCategories() {
         // When
-        Page<CategoryHierarchyProjection> result = categoryRepository.searchCategories("rock", PageRequest.of(0, 10));
+        Page<CategoryHierarchyProjection> result = categoryRepository.findCategories("rock", PageRequest.of(0, 10));
 
         // Then - should find "Rock", "Alternative Rock", and "Melancholic Alternative" (child of Alternative Rock)
         assertThat(result.getContent()).hasSize(3);
@@ -126,9 +126,9 @@ class CategoryRepositoryTest extends JpaOnlyTest {
     }
 
     @Test
-    void searchCategories_byParentName_shouldReturnMatchingCategories() {
+    void findCategories_byParentName_shouldReturnMatchingCategories() {
         // When - search for categories that have "Rock" as parent
-        Page<CategoryHierarchyProjection> result = categoryRepository.searchCategories("rock", PageRequest.of(0, 10));
+        Page<CategoryHierarchyProjection> result = categoryRepository.findCategories("rock", PageRequest.of(0, 10));
 
         // Then - should find "Rock" itself, "Alternative Rock" (child of Rock), and "Melancholic Alternative" (child of Alternative Rock)
         assertThat(result.getContent()).hasSize(3);
@@ -139,9 +139,9 @@ class CategoryRepositoryTest extends JpaOnlyTest {
     }
 
     @Test
-    void searchCategories_byDimensionName_shouldReturnMatchingCategories() {
+    void findCategories_byDimensionName_shouldReturnMatchingCategories() {
         // When
-        Page<CategoryHierarchyProjection> result = categoryRepository.searchCategories("genre", PageRequest.of(0, 10));
+        Page<CategoryHierarchyProjection> result = categoryRepository.findCategories("genre", PageRequest.of(0, 10));
 
         // Then - should find categories with Genre dimension (direct) and effective dimension (inherited)
         assertThat(result.getContent()).hasSize(3);
@@ -152,9 +152,9 @@ class CategoryRepositoryTest extends JpaOnlyTest {
     }
 
     @Test
-    void searchCategories_byEffectiveDimensionName_shouldReturnMatchingCategories() {
+    void findCategories_byEffectiveDimensionName_shouldReturnMatchingCategories() {
         // When
-        Page<CategoryHierarchyProjection> result = categoryRepository.searchCategories("mood", PageRequest.of(0, 10));
+        Page<CategoryHierarchyProjection> result = categoryRepository.findCategories("mood", PageRequest.of(0, 10));
 
         // Then - should find categories with Mood as effective dimension
         assertThat(result.getContent()).hasSize(2);
@@ -165,10 +165,10 @@ class CategoryRepositoryTest extends JpaOnlyTest {
     }
 
     @Test
-    void searchCategories_withPagination_shouldReturnCorrectPage() {
+    void findCategories_withPagination_shouldReturnCorrectPage() {
         // When
-        Page<CategoryHierarchyProjection> firstPage = categoryRepository.searchCategories(null, PageRequest.of(0, 2));
-        Page<CategoryHierarchyProjection> secondPage = categoryRepository.searchCategories(null, PageRequest.of(1, 2));
+        Page<CategoryHierarchyProjection> firstPage = categoryRepository.findCategories(null, PageRequest.of(0, 2));
+        Page<CategoryHierarchyProjection> secondPage = categoryRepository.findCategories(null, PageRequest.of(1, 2));
 
         // Then
         assertThat(firstPage.getContent()).hasSize(2);
@@ -179,10 +179,10 @@ class CategoryRepositoryTest extends JpaOnlyTest {
     }
 
     @Test
-    void searchCategories_sortedByName_shouldReturnSortedResults() {
+    void findCategories_sortedByName_shouldReturnSortedResults() {
         // When
         Pageable pageable = PageRequest.of(0, 10, Sort.by("name").ascending());
-        Page<CategoryHierarchyProjection> result = categoryRepository.searchCategories(null, pageable);
+        Page<CategoryHierarchyProjection> result = categoryRepository.findCategories(null, pageable);
 
         // Then
         List<String> names = result.getContent().stream()
@@ -195,10 +195,10 @@ class CategoryRepositoryTest extends JpaOnlyTest {
     }
 
     @Test
-    void searchCategories_sortedByNameDescending_shouldReturnSortedResults() {
+    void findCategories_sortedByNameDescending_shouldReturnSortedResults() {
         // When
         Pageable pageable = PageRequest.of(0, 10, Sort.by("name").descending());
-        Page<CategoryHierarchyProjection> result = categoryRepository.searchCategories(null, pageable);
+        Page<CategoryHierarchyProjection> result = categoryRepository.findCategories(null, pageable);
 
         // Then
         List<String> names = result.getContent().stream()
@@ -211,10 +211,10 @@ class CategoryRepositoryTest extends JpaOnlyTest {
     }
 
     @Test
-    void searchCategories_sortedByDimensionName_shouldReturnSortedResults() {
+    void findCategories_sortedByDimensionName_shouldReturnSortedResults() {
         // When
         Pageable pageable = PageRequest.of(0, 10, Sort.by("dimensionName").ascending().and(Sort.by("name").ascending()));
-        Page<CategoryHierarchyProjection> result = categoryRepository.searchCategories(null, pageable);
+        Page<CategoryHierarchyProjection> result = categoryRepository.findCategories(null, pageable);
 
         // Then
         List<CategoryHierarchyProjection> content = result.getContent();
@@ -234,10 +234,10 @@ class CategoryRepositoryTest extends JpaOnlyTest {
     }
 
     @Test
-    void searchCategories_sortedByEffectiveDimensionName_shouldReturnSortedResults() {
+    void findCategories_sortedByEffectiveDimensionName_shouldReturnSortedResults() {
         // When
         Pageable pageable = PageRequest.of(0, 10, Sort.by("effectiveDimensionName").ascending().and(Sort.by("name").ascending()));
-        Page<CategoryHierarchyProjection> result = categoryRepository.searchCategories(null, pageable);
+        Page<CategoryHierarchyProjection> result = categoryRepository.findCategories(null, pageable);
 
         // Then
         List<CategoryHierarchyProjection> content = result.getContent();
@@ -251,9 +251,9 @@ class CategoryRepositoryTest extends JpaOnlyTest {
     }
 
     @Test
-    void searchCategories_shouldReturnCorrectHierarchyInformation() {
+    void findCategories_shouldReturnCorrectHierarchyInformation() {
         // When
-        Page<CategoryHierarchyProjection> result = categoryRepository.searchCategories(null, PageRequest.of(0, 10));
+        Page<CategoryHierarchyProjection> result = categoryRepository.findCategories(null, PageRequest.of(0, 10));
 
         // Then
         Map<String, CategoryHierarchyProjection> categoryMap = result.getContent().stream()

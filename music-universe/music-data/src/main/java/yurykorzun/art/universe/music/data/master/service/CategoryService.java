@@ -3,13 +3,11 @@ package yurykorzun.art.universe.music.data.master.service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import yurykorzun.art.universe.music.data.master.dto.CategoryHierarchyProjection;
-import yurykorzun.art.universe.music.data.master.dto.LookupResultDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.*;
 import yurykorzun.art.universe.music.data.master.dto.CategorySaveRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryBindToExistingRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryCreateAndBindRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryBatchLookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryBatchLookupResponseDTO;
-import yurykorzun.art.universe.music.data.master.dto.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 
 import java.util.List;
@@ -23,35 +21,28 @@ public interface CategoryService {
      * @param pageable Pagination and sorting parameters
      * @return Page of categories with hierarchy information
      */
-    Page<CategoryHierarchyProjection> searchCategories(String search, Pageable pageable);
-    
+    Page<CategoryHierarchyProjection> findCategories(String search, Pageable pageable);
+
+    /**
+     * Returns a single category with a provided id
+     */
+    CategoryHierarchyProjection getCategory(Long id);
+
     /**
      * Lookup categories by name for dropdown lists
      * 
-     * @param name Search term to look for in category names (case insensitive, partial match)
-     * @param limit Maximum number of results to return (default: 20)
+     * @param request The lookup request containing search term and optional limit
      * @return List of lightweight category DTOs with id and name only
      */
-    List<LookupResultDTO> lookupCategories(String name, Integer limit);
+    List<LookupResultDTO> lookupCategories(LookupRequestDTO request);
     
     /**
-     * Lookup categories by name for dropdown lists
-     * Uses default limit of 20 results.
+     * Batch lookup categories by multiple search requests
      * 
-     * @param name Search term to look for in category names (case insensitive, partial match)
-     * @return List of lightweight category DTOs with id and name only
+     * @param request The batch lookup request containing search requests and optional limit
+     * @return Map of search terms to lists of matching categories
      */
-    default List<LookupResultDTO> lookupCategories(String name) {
-        return lookupCategories(name, 20);
-    }
-    
-    /**
-     * Batch lookup categories by multiple names
-     * 
-     * @param request The batch lookup request containing category names and optional limit
-     * @return Map of category names to lists of matching categories
-     */
-    CategoryBatchLookupResponseDTO batchLookupCategories(CategoryBatchLookupRequestDTO request);
+    BatchLookupResponseDTO batchLookupCategories(BaseBatchLookupRequestDTO request);
     
     /**
      * Save a category (create new or update existing)
@@ -85,7 +76,7 @@ public interface CategoryService {
      * @param externalId The ID of the category in the external system
      * @return The bound category information, or null if not found
      */
-    BoundEntityProjection findCategory(DataSource dataSource, Long externalId);
+    BoundEntityProjection findBoundCategory(DataSource dataSource, Long externalId);
     
     /**
      * Bind an external category to an existing category in the system
@@ -95,7 +86,7 @@ public interface CategoryService {
      * @param request The binding request containing category ID
      * @return The created binding information
      */
-    BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, CategoryBindToExistingRequestDTO request);
+    BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, EntityBindToExistingRequestDTO request);
     
     /**
      * Create a new category and bind an external category to it
@@ -105,7 +96,7 @@ public interface CategoryService {
      * @param request The binding request containing category information
      * @return The created binding information
      */
-    BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, CategoryCreateAndBindRequestDTO request);
+    BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, EntityCreateAndBindRequestDTO request);
     
     /**
      * Unbind an external category from the system
@@ -115,4 +106,5 @@ public interface CategoryService {
      * @return true if the unbinding was successful, false otherwise
      */
     boolean unbindCategory(DataSource dataSource, Long externalId);
+
 }

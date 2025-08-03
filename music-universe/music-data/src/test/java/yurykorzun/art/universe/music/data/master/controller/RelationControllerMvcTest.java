@@ -7,12 +7,11 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.music.data.master.config.WebMvcTestConfig;
-import yurykorzun.art.universe.music.data.master.dto.EntityDTO;
-import yurykorzun.art.universe.music.data.master.dto.RelationBindingDTO;
-import yurykorzun.art.universe.music.data.master.dto.RelationBindingStatusDTO;
-import yurykorzun.art.universe.music.data.master.dto.TargetEntityBindingDTO;
+import yurykorzun.art.universe.music.data.master.dto.relation.RelatedEntityDTO;
+import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingDTO;
+import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingStatusDTO;
+import yurykorzun.art.universe.music.data.master.dto.relation.TargetEntityBindingDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.entity.EntityType;
 import yurykorzun.art.universe.music.data.master.service.RelationService;
@@ -23,6 +22,7 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -44,7 +44,7 @@ class RelationControllerMvcTest {
     private RelationService relationService;
 
     @Test
-    void bindExternalRelation_shouldReturnSuccessResponse() throws Exception {
+    void bindExternalRelation_shouldReturnBindingDTO() throws Exception {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         EntityType sourceEntityType = EntityType.ARTIST;
@@ -67,7 +67,7 @@ class RelationControllerMvcTest {
             eq(dataSource), eq(sourceEntityType), eq(sourceExternalEntityId), eq(targetEntityType), eq(targetExternalEntityId)
         )).thenReturn(binding);
 
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(binding));
+        String expectedJson = objectMapper.writeValueAsString(binding);
 
         // When & Then
         mockMvc.perform(post("/api/v1/relations/bind/{dataSource}/{sourceEntityType}/{sourceExternalEntityId}/{targetEntityType}/{targetExternalEntityId}",
@@ -82,7 +82,7 @@ class RelationControllerMvcTest {
     }
 
     @Test
-    void bindExternalRelation_whenExceptionThrown_shouldReturnFailureResponse() throws Exception {
+    void bindExternalRelation_whenExceptionThrown_shouldBeHandledByGlobalExceptionHandler() throws Exception {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         EntityType sourceEntityType = EntityType.ARTIST;
@@ -95,15 +95,11 @@ class RelationControllerMvcTest {
             eq(dataSource), eq(sourceEntityType), eq(sourceExternalEntityId), eq(targetEntityType), eq(targetExternalEntityId)
         )).thenThrow(new RuntimeException(errorMessage));
 
-        String expectedJson = objectMapper.writeValueAsString(
-            ResponseWrapper.failureBody("Failed to bind relation: " + errorMessage));
-
         // When & Then
         mockMvc.perform(post("/api/v1/relations/bind/{dataSource}/{sourceEntityType}/{sourceExternalEntityId}/{targetEntityType}/{targetExternalEntityId}",
                 dataSource.name(), sourceEntityType.getName(), sourceExternalEntityId, targetEntityType.getName(), targetExternalEntityId))
             .andDo(print())
-            .andExpect(status().isInternalServerError())
-            .andExpect(content().json(expectedJson));
+            .andExpect(status().isInternalServerError());
 
         verify(relationService).bindExternalRelation(
             eq(dataSource), eq(sourceEntityType), eq(sourceExternalEntityId), eq(targetEntityType), eq(targetExternalEntityId)
@@ -111,7 +107,7 @@ class RelationControllerMvcTest {
     }
 
     @Test
-    void unbindExternalRelation_shouldReturnSuccessResponse() throws Exception {
+    void unbindExternalRelation_shouldReturnBoolean() throws Exception {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         EntityType sourceEntityType = EntityType.ARTIST;
@@ -123,14 +119,14 @@ class RelationControllerMvcTest {
             eq(dataSource), eq(sourceEntityType), eq(sourceExternalEntityId), eq(targetEntityType), eq(targetExternalEntityId)
         )).thenReturn(true);
 
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(true));
+        String expectedJson = "true";
 
         // When & Then
         mockMvc.perform(delete("/api/v1/relations/unbind/{dataSource}/{sourceEntityType}/{sourceExternalEntityId}/{targetEntityType}/{targetExternalEntityId}",
                 dataSource.name(), sourceEntityType.getName(), sourceExternalEntityId, targetEntityType.getName(), targetExternalEntityId))
             .andDo(print())
             .andExpect(status().isOk())
-            .andExpect(content().json(expectedJson));
+            .andExpect(content().string(expectedJson));
 
         verify(relationService).unbindExternalRelation(
             eq(dataSource), eq(sourceEntityType), eq(sourceExternalEntityId), eq(targetEntityType), eq(targetExternalEntityId)
@@ -138,7 +134,7 @@ class RelationControllerMvcTest {
     }
 
     @Test
-    void unbindExternalRelation_whenExceptionThrown_shouldReturnFailureResponse() throws Exception {
+    void unbindExternalRelation_whenExceptionThrown_shouldBeHandledByGlobalExceptionHandler() throws Exception {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         EntityType sourceEntityType = EntityType.ARTIST;
@@ -151,15 +147,11 @@ class RelationControllerMvcTest {
             eq(dataSource), eq(sourceEntityType), eq(sourceExternalEntityId), eq(targetEntityType), eq(targetExternalEntityId)
         )).thenThrow(new RuntimeException(errorMessage));
 
-        String expectedJson = objectMapper.writeValueAsString(
-            ResponseWrapper.failureBody("Failed to unbind relation: " + errorMessage));
-
         // When & Then
         mockMvc.perform(delete("/api/v1/relations/unbind/{dataSource}/{sourceEntityType}/{sourceExternalEntityId}/{targetEntityType}/{targetExternalEntityId}",
                 dataSource.name(), sourceEntityType.getName(), sourceExternalEntityId, targetEntityType.getName(), targetExternalEntityId))
             .andDo(print())
-            .andExpect(status().isInternalServerError())
-            .andExpect(content().json(expectedJson));
+            .andExpect(status().isInternalServerError());
 
         verify(relationService).unbindExternalRelation(
             eq(dataSource), eq(sourceEntityType), eq(sourceExternalEntityId), eq(targetEntityType), eq(targetExternalEntityId)
@@ -167,7 +159,7 @@ class RelationControllerMvcTest {
     }
 
     @Test
-    void findBoundExternalRelations_shouldReturnSuccessResponse() throws Exception {
+    void findBoundExternalRelations_shouldReturnBindingStatusDTO() throws Exception {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         EntityType sourceEntityType = EntityType.ARTIST;
@@ -208,7 +200,7 @@ class RelationControllerMvcTest {
             eq(dataSource), eq(sourceEntityType), eq(sourceExternalEntityId), eq(targetEntityType), anyList()
         )).thenReturn(status);
 
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(status));
+        String expectedJson = objectMapper.writeValueAsString(status);
 
         // When & Then
         mockMvc.perform(get("/api/v1/relations/bound/{dataSource}/{sourceEntityType}/{sourceExternalEntityId}/{targetEntityType}",
@@ -224,7 +216,7 @@ class RelationControllerMvcTest {
     }
 
     @Test
-    void findBoundExternalRelations_whenExceptionThrown_shouldReturnFailureResponse() throws Exception {
+    void findBoundExternalRelations_whenExceptionThrown_shouldBeHandledByGlobalExceptionHandler() throws Exception {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         EntityType sourceEntityType = EntityType.ARTIST;
@@ -236,16 +228,12 @@ class RelationControllerMvcTest {
             eq(dataSource), eq(sourceEntityType), eq(sourceExternalEntityId), eq(targetEntityType), anyList()
         )).thenThrow(new RuntimeException(errorMessage));
 
-        String expectedJson = objectMapper.writeValueAsString(
-            ResponseWrapper.failureBody("Failed to get bound relations: " + errorMessage));
-
         // When & Then
         mockMvc.perform(get("/api/v1/relations/bound/{dataSource}/{sourceEntityType}/{sourceExternalEntityId}/{targetEntityType}",
                 dataSource.name(), sourceEntityType.getName(), sourceExternalEntityId, targetEntityType.getName())
                 .param("ids", "456", "789"))
             .andDo(print())
-            .andExpect(status().isInternalServerError())
-            .andExpect(content().json(expectedJson));
+            .andExpect(status().isInternalServerError());
 
         verify(relationService).findBoundExternalRelations(
             eq(dataSource), eq(sourceEntityType), eq(sourceExternalEntityId), eq(targetEntityType), anyList()
@@ -253,19 +241,19 @@ class RelationControllerMvcTest {
     }
 
     @Test
-    void getRelatedEntities_shouldReturnSuccessResponse() throws Exception {
+    void getRelatedEntities_shouldReturnEntityDTOList() throws Exception {
         // Given
         EntityType sourceEntityType = EntityType.ARTIST;
         Long sourceEntityId = 123L;
         EntityType targetEntityType = EntityType.CATEGORY;
 
-        List<EntityDTO> entities = Arrays.asList(
-            EntityDTO.builder()
+        List<RelatedEntityDTO> entities = Arrays.asList(
+            RelatedEntityDTO.builder()
                 .id(1L)
                 .name("Category 1")
                 .entityType(targetEntityType)
                 .build(),
-            EntityDTO.builder()
+            RelatedEntityDTO.builder()
                 .id(2L)
                 .name("Category 2")
                 .entityType(targetEntityType)
@@ -276,7 +264,7 @@ class RelationControllerMvcTest {
             eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType)
         )).thenReturn(entities);
 
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(entities));
+        String expectedJson = objectMapper.writeValueAsString(entities);
 
         // When & Then
         mockMvc.perform(get("/api/v1/relations/{sourceEntityType}/{sourceEntityId}/{targetEntityType}",
@@ -291,7 +279,7 @@ class RelationControllerMvcTest {
     }
 
     @Test
-    void getRelatedEntities_whenExceptionThrown_shouldReturnFailureResponse() throws Exception {
+    void getRelatedEntities_whenExceptionThrown_shouldBeHandledByGlobalExceptionHandler() throws Exception {
         // Given
         EntityType sourceEntityType = EntityType.ARTIST;
         Long sourceEntityId = 123L;
@@ -302,15 +290,11 @@ class RelationControllerMvcTest {
             eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType)
         )).thenThrow(new RuntimeException(errorMessage));
 
-        String expectedJson = objectMapper.writeValueAsString(
-            ResponseWrapper.failureBody("Failed to get related entities: " + errorMessage));
-
         // When & Then
         mockMvc.perform(get("/api/v1/relations/{sourceEntityType}/{sourceEntityId}/{targetEntityType}",
                 sourceEntityType.getName(), sourceEntityId, targetEntityType.getName()))
             .andDo(print())
-            .andExpect(status().isInternalServerError())
-            .andExpect(content().json(expectedJson));
+            .andExpect(status().isInternalServerError());
 
         verify(relationService).getRelatedEntities(
             eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType)
@@ -318,7 +302,7 @@ class RelationControllerMvcTest {
     }
 
     @Test
-    void createInternalRelation_shouldReturnSuccessResponse() throws Exception {
+    void createInternalRelation_shouldReturnLong() throws Exception {
         // Given
         EntityType sourceEntityType = EntityType.ARTIST;
         Long sourceEntityId = 123L;
@@ -330,7 +314,7 @@ class RelationControllerMvcTest {
             eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId)
         )).thenReturn(relationId);
 
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(relationId));
+        String expectedJson = objectMapper.writeValueAsString(relationId);
 
         // When & Then
         mockMvc.perform(post("/api/v1/relations/internal/{sourceEntityType}/{sourceEntityId}/{targetEntityType}/{targetEntityId}",
@@ -345,7 +329,7 @@ class RelationControllerMvcTest {
     }
 
     @Test
-    void createInternalRelation_whenExceptionThrown_shouldReturnFailureResponse() throws Exception {
+    void createInternalRelation_whenExceptionThrown_shouldBeHandledByGlobalExceptionHandler() throws Exception {
         // Given
         EntityType sourceEntityType = EntityType.ARTIST;
         Long sourceEntityId = 123L;
@@ -357,15 +341,11 @@ class RelationControllerMvcTest {
             eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId)
         )).thenThrow(new RuntimeException(errorMessage));
 
-        String expectedJson = objectMapper.writeValueAsString(
-            ResponseWrapper.failureBody("Failed to create relation: " + errorMessage));
-
         // When & Then
         mockMvc.perform(post("/api/v1/relations/internal/{sourceEntityType}/{sourceEntityId}/{targetEntityType}/{targetEntityId}",
                 sourceEntityType.getName(), sourceEntityId, targetEntityType.getName(), targetEntityId))
             .andDo(print())
-            .andExpect(status().isInternalServerError())
-            .andExpect(content().json(expectedJson));
+            .andExpect(status().isInternalServerError());
 
         verify(relationService).createInternalRelation(
             eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId)
@@ -373,7 +353,7 @@ class RelationControllerMvcTest {
     }
     
     @Test
-    void deleteInternalRelation_shouldReturnSuccessResponse() throws Exception {
+    void deleteInternalRelation_shouldReturnBoolean() throws Exception {
         // Given
         EntityType sourceEntityType = EntityType.ARTIST;
         Long sourceEntityId = 123L;
@@ -384,14 +364,14 @@ class RelationControllerMvcTest {
             eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId)
         )).thenReturn(true);
 
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(true));
+        String expectedJson = "true";
 
         // When & Then
         mockMvc.perform(delete("/api/v1/relations/internal/{sourceEntityType}/{sourceEntityId}/{targetEntityType}/{targetEntityId}",
                 sourceEntityType.getName(), sourceEntityId, targetEntityType.getName(), targetEntityId))
             .andDo(print())
             .andExpect(status().isOk())
-            .andExpect(content().json(expectedJson));
+            .andExpect(content().string(expectedJson));
 
         verify(relationService).deleteInternalRelation(
             eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId)
@@ -399,7 +379,7 @@ class RelationControllerMvcTest {
     }
 
     @Test
-    void deleteInternalRelation_whenExceptionThrown_shouldReturnFailureResponse() throws Exception {
+    void deleteInternalRelation_whenExceptionThrown_shouldBeHandledByGlobalExceptionHandler() throws Exception {
         // Given
         EntityType sourceEntityType = EntityType.ARTIST;
         Long sourceEntityId = 123L;
@@ -411,15 +391,11 @@ class RelationControllerMvcTest {
             eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId)
         )).thenThrow(new RuntimeException(errorMessage));
 
-        String expectedJson = objectMapper.writeValueAsString(
-            ResponseWrapper.failureBody("Failed to delete relation: " + errorMessage));
-
         // When & Then
         mockMvc.perform(delete("/api/v1/relations/internal/{sourceEntityType}/{sourceEntityId}/{targetEntityType}/{targetEntityId}",
                 sourceEntityType.getName(), sourceEntityId, targetEntityType.getName(), targetEntityId))
             .andDo(print())
-            .andExpect(status().isInternalServerError())
-            .andExpect(content().json(expectedJson));
+            .andExpect(status().isInternalServerError());
 
         verify(relationService).deleteInternalRelation(
             eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId)
@@ -427,39 +403,35 @@ class RelationControllerMvcTest {
     }
     
     @Test
-    void deleteInternalRelationById_shouldReturnSuccessResponse() throws Exception {
+    void deleteInternalRelationById_shouldReturnBoolean() throws Exception {
         // Given
         Long relationId = 123L;
 
         when(relationService.deleteInternalRelationById(eq(relationId))).thenReturn(true);
 
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(true));
+        String expectedJson = "true";
 
         // When & Then
         mockMvc.perform(delete("/api/v1/relations/internal/{relationId}", relationId))
             .andDo(print())
             .andExpect(status().isOk())
-            .andExpect(content().json(expectedJson));
+            .andExpect(content().string(expectedJson));
 
         verify(relationService).deleteInternalRelationById(eq(relationId));
     }
 
     @Test
-    void deleteInternalRelationById_whenExceptionThrown_shouldReturnFailureResponse() throws Exception {
+    void deleteInternalRelationById_whenExceptionThrown_shouldBeHandledByGlobalExceptionHandler() throws Exception {
         // Given
         Long relationId = 123L;
         String errorMessage = "Test error";
 
         when(relationService.deleteInternalRelationById(eq(relationId))).thenThrow(new RuntimeException(errorMessage));
 
-        String expectedJson = objectMapper.writeValueAsString(
-            ResponseWrapper.failureBody("Failed to delete relation: " + errorMessage));
-
         // When & Then
         mockMvc.perform(delete("/api/v1/relations/internal/{relationId}", relationId))
             .andDo(print())
-            .andExpect(status().isInternalServerError())
-            .andExpect(content().json(expectedJson));
+            .andExpect(status().isInternalServerError());
 
         verify(relationService).deleteInternalRelationById(eq(relationId));
     }

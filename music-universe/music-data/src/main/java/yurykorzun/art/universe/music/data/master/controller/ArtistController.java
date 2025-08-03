@@ -1,15 +1,14 @@
 package yurykorzun.art.universe.music.data.master.controller;
 
 import jakarta.validation.Valid;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import yurykorzun.art.universe.common.controller.ResponseWrapper;
-import yurykorzun.art.universe.music.data.master.dto.ArtistBatchLookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.ArtistBatchLookupResponseDTO;
-import yurykorzun.art.universe.music.data.master.dto.ArtistBindToExistingRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.ArtistCreateAndBindRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.LookupResultDTO;
-import yurykorzun.art.universe.music.data.master.dto.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BaseBatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.service.ArtistService;
 
@@ -26,83 +25,55 @@ public class ArtistController {
     }
 
     @GetMapping("/bound/{dataSource}")
-    public ResponseEntity<ResponseWrapper<List<BoundEntityProjection>>> findBoundArtists(
+    public List<BoundEntityProjection> findBoundArtists(
         @PathVariable DataSource dataSource,
         @RequestParam List<Long> externalIds
     ) {
-        try {
-            List<BoundEntityProjection> result = artistService.findBoundArtists(dataSource, externalIds);
-            return ResponseWrapper.success(result);
-        } catch (Exception e) {
-            return ResponseWrapper.failure(String.format("Failed to get bound artists: %s", e.getMessage()));
-        }
+        return artistService.findBoundArtists(dataSource, externalIds);
     }
     
     @GetMapping("/lookup")
-    public ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> lookupArtists(
-        @RequestParam String name,
+    public List<LookupResultDTO> lookupArtists(
+        @RequestParam String search,
         @RequestParam(required = false) Integer limit
     ) {
-        try {
-            List<LookupResultDTO> result = limit != null
-                ? artistService.searchArtistsByName(name, limit)
-                : artistService.searchArtistsByName(name);
-            return ResponseWrapper.success(result);
-        } catch (Exception e) {
-            return ResponseWrapper.failure(String.format("Failed to lookup artists: %s", e.getMessage()));
-        }
+        LookupRequestDTO request = LookupRequestDTO.builder()
+            .search(search)
+            .limit(limit)
+            .build();
+        return artistService.lookupArtists(request);
     }
     
     @PostMapping("/lookup/batch")
-    public ResponseEntity<ResponseWrapper<ArtistBatchLookupResponseDTO>> batchLookupArtists(
-        @Valid @RequestBody ArtistBatchLookupRequestDTO request
+    public BatchLookupResponseDTO batchLookupArtists(
+        @Valid @RequestBody BaseBatchLookupRequestDTO request
     ) {
-        try {
-            ArtistBatchLookupResponseDTO result = artistService.batchLookupArtists(request);
-            return ResponseWrapper.success(result);
-        } catch (Exception e) {
-            return ResponseWrapper.failure(String.format("Failed to batch lookup artists: %s", e.getMessage()));
-        }
+        return artistService.batchLookupArtists(request);
     }
     
     @PostMapping("/bind/existing/{dataSource}/{externalId}")
-    public ResponseEntity<ResponseWrapper<BoundEntityProjection>> bindToExisting(
+    public BoundEntityProjection bindToExisting(
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId,
-        @Valid @RequestBody ArtistBindToExistingRequestDTO request
+        @Valid @RequestBody EntityBindToExistingRequestDTO request
     ) {
-        try {
-            BoundEntityProjection result = artistService.bindToExisting(dataSource, externalId, request);
-            return ResponseWrapper.success(result);
-        } catch (Exception e) {
-            return ResponseWrapper.failure(String.format("Failed to bind artist to existing: %s", e.getMessage()));
-        }
+        return artistService.bindToExisting(dataSource, externalId, request);
     }
     
     @PostMapping("/bind/new/{dataSource}/{externalId}")
-    public ResponseEntity<ResponseWrapper<BoundEntityProjection>> createAndBind(
+    public BoundEntityProjection createAndBind(
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId,
-        @Valid @RequestBody ArtistCreateAndBindRequestDTO request
+        @Valid @RequestBody EntityCreateAndBindRequestDTO request
     ) {
-        try {
-            BoundEntityProjection result = artistService.createAndBind(dataSource, externalId, request);
-            return ResponseWrapper.success(result);
-        } catch (Exception e) {
-            return ResponseWrapper.failure(String.format("Failed to create and bind artist: %s", e.getMessage()));
-        }
+        return artistService.createAndBind(dataSource, externalId, request);
     }
     
     @DeleteMapping("/unbind/{dataSource}/{externalId}")
-    public ResponseEntity<ResponseWrapper<Boolean>> unbindArtist(
+    public boolean unbindArtist(
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId
     ) {
-        try {
-            boolean result = artistService.unbindArtist(dataSource, externalId);
-            return ResponseWrapper.success(result);
-        } catch (Exception e) {
-            return ResponseWrapper.failure(String.format("Failed to unbind artist: %s", e.getMessage()));
-        }
+        return artistService.unbindArtist(dataSource, externalId);
     }
 }

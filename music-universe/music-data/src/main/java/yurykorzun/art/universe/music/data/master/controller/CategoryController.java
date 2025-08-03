@@ -3,18 +3,18 @@ package yurykorzun.art.universe.music.data.master.controller;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.music.data.master.dto.CategoryHierarchyProjection;
-import yurykorzun.art.universe.music.data.master.dto.LookupResultDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategorySaveRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryBindToExistingRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryCreateAndBindRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryBatchLookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryBatchLookupResponseDTO;
-import yurykorzun.art.universe.music.data.master.dto.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BaseBatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.service.CategoryService;
 
 import java.util.List;
@@ -29,123 +29,87 @@ public class CategoryController {
         this.categoryService = categoryService;
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<ResponseWrapper<Page<CategoryHierarchyProjection>>> searchCategories(
+    @GetMapping
+    public Page<CategoryHierarchyProjection> findCategories(
         @RequestParam(required = false) String query,
         Pageable pageable
     ) {
-        try {
-            Page<CategoryHierarchyProjection> categories = categoryService.searchCategories(query, pageable);
-            return ResponseWrapper.success(categories);
-        } catch (Exception e) {
-            return ResponseWrapper.failure(String.format("Failed to search categories: %s", e.getMessage()));
-        }
+        return categoryService.findCategories(query, pageable);
+    }
+
+    @GetMapping("/{id}")
+    public CategoryHierarchyProjection getCategory(
+        @PathVariable Long id
+    ) {
+        return categoryService.getCategory(id);
     }
 
     @GetMapping("/lookup")
-    public ResponseEntity<ResponseWrapper<List<LookupResultDTO>>> lookupCategories(
-        @RequestParam String name,
+    public List<LookupResultDTO> lookupCategories(
+        @RequestParam String search,
         @RequestParam(required = false) Integer limit
     ) {
-        try {
-            List<LookupResultDTO> categories = limit != null
-                ? categoryService.lookupCategories(name, limit)
-                : categoryService.lookupCategories(name);
-            return ResponseWrapper.success(categories);
-        } catch (Exception e) {
-            return ResponseWrapper.failure(String.format("Failed to lookup categories: %s", e.getMessage()));
-        }
+        LookupRequestDTO request = LookupRequestDTO.builder()
+            .search(search)
+            .limit(limit)
+            .build();
+        return categoryService.lookupCategories(request);
     }
     
     @PostMapping("/lookup/batch")
-    public ResponseEntity<ResponseWrapper<CategoryBatchLookupResponseDTO>> batchLookupCategories(
-        @Valid @RequestBody CategoryBatchLookupRequestDTO request
+    public BatchLookupResponseDTO batchLookupCategories(
+        @Valid @RequestBody BaseBatchLookupRequestDTO request
     ) {
-        try {
-            CategoryBatchLookupResponseDTO result = categoryService.batchLookupCategories(request);
-            return ResponseWrapper.success(result);
-        } catch (Exception e) {
-            return ResponseWrapper.failure(String.format("Failed to batch lookup categories: %s", e.getMessage()));
-        }
+        return categoryService.batchLookupCategories(request);
     }
 
     @PostMapping
-    public ResponseEntity<ResponseWrapper<CategoryHierarchyProjection>> saveCategory(
+    public CategoryHierarchyProjection saveCategory(
         @Valid @RequestBody CategorySaveRequestDTO request
     ) {
-        try {
-            CategoryHierarchyProjection savedCategory = categoryService.saveCategory(request);
-            return ResponseWrapper.success(savedCategory);
-        } catch (Exception e) {
-            return ResponseWrapper.failure(String.format("Failed to save category: %s", e.getMessage()));
-        }
+        return categoryService.saveCategory(request);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ResponseWrapper<Boolean>> deleteCategory(@PathVariable Long id) {
-        try {
-            boolean deleted = categoryService.deleteCategory(id);
-            if (deleted) {
-                return ResponseWrapper.success(true);
-            } else {
-                return ResponseWrapper.failure("Category not found with id: " + id);
-            }
-        } catch (Exception e) {
-            return ResponseWrapper.failure(String.format("Failed to delete category: %s", e.getMessage()));
+    public boolean deleteCategory(@PathVariable Long id) {
+        boolean deleted = categoryService.deleteCategory(id);
+        if (!deleted) {
+            throw new CustomEntityNotFoundException("Category", id);
         }
+        return true;
     }
 
     @GetMapping("/bound/{dataSource}")
-    public ResponseEntity<ResponseWrapper<List<BoundEntityProjection>>> findBoundCategories(
+    public List<BoundEntityProjection> findBoundCategories(
         @PathVariable DataSource dataSource,
         @RequestParam List<Long> externalIds
     ) {
-        try {
-            List<BoundEntityProjection> result = categoryService.findBoundCategories(dataSource, externalIds);
-            return ResponseWrapper.success(result);
-        } catch (Exception e) {
-            return ResponseWrapper.failure(String.format("Failed to get bound categories: %s", e.getMessage()));
-        }
+        return categoryService.findBoundCategories(dataSource, externalIds);
     }
 
     @PostMapping("/bind/existing/{dataSource}/{externalId}")
-    public ResponseEntity<ResponseWrapper<BoundEntityProjection>> bindToExisting(
+    public BoundEntityProjection bindToExisting(
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId,
-        @Valid @RequestBody CategoryBindToExistingRequestDTO request
+        @Valid @RequestBody EntityBindToExistingRequestDTO request
     ) {
-        try {
-            BoundEntityProjection result = categoryService.bindToExisting(dataSource, externalId, request);
-            return ResponseWrapper.success(result);
-        } catch (Exception e) {
-            return ResponseWrapper.failure(String.format("Failed to bind category to existing: %s", e.getMessage()));
-        }
+        return categoryService.bindToExisting(dataSource, externalId, request);
     }
 
     @PostMapping("/bind/new/{dataSource}/{externalId}")
-    public ResponseEntity<ResponseWrapper<BoundEntityProjection>> createAndBind(
+    public BoundEntityProjection createAndBind(
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId,
-        @Valid @RequestBody CategoryCreateAndBindRequestDTO request
+        @Valid @RequestBody EntityCreateAndBindRequestDTO request
     ) {
-        try {
-            BoundEntityProjection result = categoryService.createAndBind(dataSource, externalId, request);
-            return ResponseWrapper.success(result);
-        } catch (Exception e) {
-            return ResponseWrapper.failure(String.format("Failed to create and bind category: %s", e.getMessage()));
-        }
+        return categoryService.createAndBind(dataSource, externalId, request);
     }
 
     @DeleteMapping("/unbind/{dataSource}/{externalId}")
-    public ResponseEntity<ResponseWrapper<Boolean>> unbindCategory(
+    public boolean unbindCategory(
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId
     ) {
-        try {
-            boolean result = categoryService.unbindCategory(dataSource, externalId);
-            return ResponseWrapper.success(result);
-        } catch (Exception e) {
-            return ResponseWrapper.failure(String.format("Failed to unbind category: %s", e.getMessage()));
-        }
+        return categoryService.unbindCategory(dataSource, externalId);
     }
 }
