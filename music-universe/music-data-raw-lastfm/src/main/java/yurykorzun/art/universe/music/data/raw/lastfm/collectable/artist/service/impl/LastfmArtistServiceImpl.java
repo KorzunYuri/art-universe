@@ -67,7 +67,7 @@ public class LastfmArtistServiceImpl implements LastfmArtistService {
     }
 
     @Override
-    public List<LastfmArtist> findAllToGetInfoFor() {
+    public List<LastfmArtist> findArtistsForGetInfo() {
         return artistRepository.findAllToGetInfoFor();
     }
 

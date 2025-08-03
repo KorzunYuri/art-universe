@@ -104,7 +104,7 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
         LastfmArtist artist = updateArtist(dtoRoot, sourceApiCall);
 
         // Step 2. Create similar artists and relations between artists
-        var artistsBindingResult = updateSimilarArtists(dtoRoot, sourceApiCall);
+        var artistsBindingResult = updateSimilarArtists(dtoRoot, sourceApiCall, artist);
 
         // Step 3.
         bindArtistsToArtist(artistsBindingResult, artist, sourceApiCall);
@@ -114,6 +114,30 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
 
         // bind artist's tags to artist
         bindTagsToArtist(tagsBindingResult, artist, sourceApiCall);
+    }
+
+    /**
+     * Returns DTOs of similar artists for saving, excluding source artist.
+     */
+    private List<ArtistGetInfoSimilarArtistDto> filterDtosForSaving(ArtistGetInfoDtoRoot dtoRoot, LastfmArtist sourceArtist) {
+        return dtoRoot.getArtist().getSimilarArtistsObject().getArtists().stream()
+            .filter(dto -> !isSameArtist(dto, sourceArtist))
+            .toList();
+    }
+    
+    /**
+     * Checks if the DTO represents the same artist as the source artist.
+     * Compares by MBID if both have it, otherwise by name.
+     */
+    private boolean isSameArtist(ArtistGetInfoSimilarArtistDto dto, LastfmArtist sourceArtist) {
+        // If both have MBID, compare by MBID
+        if (dto.getMbid() != null && !dto.getMbid().trim().isEmpty() && 
+            sourceArtist.getMbid() != null && !sourceArtist.getMbid().trim().isEmpty()) {
+            return dto.getMbid().equals(sourceArtist.getMbid());
+        }
+        
+        // Otherwise compare by name (case-insensitive)
+        return dto.getName().equalsIgnoreCase(sourceArtist.getName());
     }
 
     private LastfmArtist updateArtist(ArtistGetInfoDtoRoot dtoRoot, LastfmApiCall sourceApiCall) {
@@ -130,15 +154,18 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
         log.info("saved artist {}", dto.getName());
         log.info("saved {} artists' attributes", result.savedAttributeValues().size());
 
-        if (result.savedEntities().size() != 1) {
-            throw new IllegalArgumentException(String.format("Expected 1 artists to be saved, got %s", result.savedEntities().size()));
+        if (result.actualEntities().size() != 1) {
+            throw new IllegalArgumentException(String.format("Expected 1 artists to be saved, got %s", result.actualEntities().size()));
         }
-        return result.savedEntities().get(0);
+        return result.actualEntities().get(0);
     }
 
-    private LastfmApiDtoProcessingResult<LastfmArtist, ArtistGetInfoSimilarArtistDto> updateSimilarArtists(ArtistGetInfoDtoRoot dtoRoot, LastfmApiCall sourceApiCall) {
-
-        List<ArtistGetInfoSimilarArtistDto> artistDtos = dtoRoot.getArtist().getSimilarArtistsObject().getArtists();
+    private LastfmApiDtoProcessingResult<LastfmArtist, ArtistGetInfoSimilarArtistDto> updateSimilarArtists(
+        ArtistGetInfoDtoRoot dtoRoot, 
+        LastfmApiCall sourceApiCall,
+        LastfmArtist sourceArtist
+    ) {
+        List<ArtistGetInfoSimilarArtistDto> artistDtos = filterDtosForSaving(dtoRoot, sourceArtist);
 
         LastfmApiDtoProcessingResult<LastfmArtist, ArtistGetInfoSimilarArtistDto> result = dtoProcessingService.process(
             sourceApiCall,
@@ -147,7 +174,7 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
             similarArtistAttrHandlers,
             artistService
         );
-        log.info("saved {} artist's similar artists", result.savedEntities().size());
+        log.info("saved {} artist's similar artists", result.actualEntities().size());
         log.info("saved {} artist's similar artists' attributes", result.savedAttributeValues().size());
 
         return result;
@@ -164,7 +191,7 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
             tagAttrHandlers,
             tagService
         );
-        log.info("saved {} tags", result.savedEntities().size());
+        log.info("saved {} tags", result.actualEntities().size());
         log.info("saved {} tags' attributes", result.savedAttributeValues().size());
 
         return result;
@@ -175,7 +202,7 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
         LastfmArtist artist,
         LastfmApiCall sourceApiCall
     ) {
-        List<LastfmArtistsRelation> relations = artistsMappingResult.savedEntities().stream()
+        List<LastfmArtistsRelation> relations = artistsMappingResult.actualEntities().stream()
             .map((similarArtist) -> LastfmArtistsRelation.builder()
                     .apiCall(sourceApiCall)
                     .sourceArtist(similarArtist)
@@ -192,7 +219,7 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
         LastfmArtist artist,
         LastfmApiCall sourceApiCall
     ) {
-        List<LastfmArtistTag> relations = tagsMappingResult.savedEntities().stream()
+        List<LastfmArtistTag> relations = tagsMappingResult.actualEntities().stream()
             .map((tag) -> LastfmArtistTag.builder()
                 .apiCall(sourceApiCall)
                 .artist(artist)

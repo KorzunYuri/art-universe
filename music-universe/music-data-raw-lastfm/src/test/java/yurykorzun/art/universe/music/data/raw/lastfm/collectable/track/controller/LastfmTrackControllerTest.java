@@ -6,9 +6,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.dto.ApprovalStatusRequestDto;
@@ -17,6 +14,9 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.dto.Track
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.service.LastfmTrackService;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.exception.DataFetchException;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.exception.DataUpdateException;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.exception.EntityNotFoundException;
 
 import java.util.HashSet;
 import java.util.List;
@@ -75,55 +75,43 @@ class LastfmTrackControllerTest {
         when(trackService.findById(trackId)).thenReturn(Optional.of(track));
 
         // when
-        ResponseEntity<ResponseWrapper<LastfmTrackResponseDto>> response = controller.getTrackById(trackId);
+        LastfmTrackResponseDto result = controller.getTrackById(trackId);
 
         // then
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        ResponseWrapper<LastfmTrackResponseDto> body = response.getBody();
-        assertNotNull(body);
-        assertTrue(body.isSuccess());
-
-        LastfmTrackResponseDto data = body.getData();
-        assertNotNull(data);
-        compareDtoAgainstEntity(data, track);
+        assertNotNull(result);
+        compareDtoAgainstEntity(result, track);
     }
 
     @Test
-    void getTrackById_shouldReturnNotFoundWhenTrackDoesNotExist() {
+    void getTrackById_shouldThrowEntityNotFoundExceptionWhenTrackDoesNotExist() {
         // given
         Long trackId = 999L;
         when(trackService.findById(trackId)).thenReturn(Optional.empty());
 
-        // when
-        ResponseEntity<ResponseWrapper<LastfmTrackResponseDto>> response = controller.getTrackById(trackId);
-
-        // then
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        ResponseWrapper<LastfmTrackResponseDto> body = response.getBody();
-        assertNotNull(body);
-        assertFalse(body.isSuccess());
-        assertTrue(body.getMessage().contains("Track not found"));
+        // when & then
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
+            controller.getTrackById(trackId);
+        });
+        
+        assertTrue(exception.getMessage().contains("Track not found"));
     }
 
     @Test
-    void getTrackById_shouldReturnErrorWhenExceptionOccurs() {
+    void getTrackById_shouldThrowDataFetchExceptionWhenExceptionOccurs() {
         // given
         Long trackId = 1L;
         when(trackService.findById(trackId)).thenThrow(new RuntimeException("Database error"));
 
-        // when
-        ResponseEntity<ResponseWrapper<LastfmTrackResponseDto>> response = controller.getTrackById(trackId);
-
-        // then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        ResponseWrapper<LastfmTrackResponseDto> body = response.getBody();
-        assertNotNull(body);
-        assertFalse(body.isSuccess());
-        assertTrue(body.getMessage().contains("Failed to fetch track"));
+        // when & then
+        DataFetchException exception = assertThrows(DataFetchException.class, () -> {
+            controller.getTrackById(trackId);
+        });
+        
+        assertTrue(exception.getMessage().contains("Failed to fetch track"));
     }
 
     @Test
-    void getTracks_shouldReturnDtoPageWrappedInResponse() {
+    void getTracks_shouldReturnDtoPage() {
         // given
         String search = "test track";
         Long minPlayCount = 1000L;
@@ -168,21 +156,14 @@ class LastfmTrackControllerTest {
             .thenReturn(dtoPage);
 
         // when
-        ResponseEntity<ResponseWrapper<Page<LastfmTrackResponseDto>>> response = 
-            controller.getTracks(search, minPlayCount, minListenersCount, artistId, approvalStatuses, pageable);
+        Page<LastfmTrackResponseDto> result = controller.getTracks(search, minPlayCount, minListenersCount, artistId, approvalStatuses, pageable);
 
         // then
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        ResponseWrapper<Page<LastfmTrackResponseDto>> body = response.getBody();
-        assertNotNull(body);
-        assertTrue(body.isSuccess());
-
-        Page<LastfmTrackResponseDto> data = body.getData();
-        assertNotNull(data);
-        assertEquals(2, data.getTotalElements());
+        assertNotNull(result);
+        assertEquals(2, result.getTotalElements());
 
         for (int i = 0; i < trackList.size(); i++) {
-            LastfmTrackResponseDto dto = data.getContent().get(i);
+            LastfmTrackResponseDto dto = result.getContent().get(i);
             LastfmTrack entity = trackList.get(i);
             
             assertEquals(entity.getId(), dto.id());
@@ -199,6 +180,7 @@ class LastfmTrackControllerTest {
 
         verify(trackService).findAll(expectedParams, pageable);
     }
+    
     @Test
     void getTracks_shouldHandleNullFilters() {
         // given
@@ -212,36 +194,25 @@ class LastfmTrackControllerTest {
             .thenReturn(dtoPage);
 
         // when
-        ResponseEntity<ResponseWrapper<Page<LastfmTrackResponseDto>>> response = 
-            controller.getTracks(null, null, null, null, null, pageable);
+        Page<LastfmTrackResponseDto> result = controller.getTracks(null, null, null, null, null, pageable);
 
         // then
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        ResponseWrapper<Page<LastfmTrackResponseDto>> body = response.getBody();
-        assertNotNull(body);
-        assertTrue(body.isSuccess());
-        
-        Page<LastfmTrackResponseDto> data = body.getData();
-        assertNotNull(data);
-        assertEquals(1, data.getTotalElements());
+        assertNotNull(result);
+        assertEquals(1, result.getTotalElements());
     }
 
     @Test
-    void getTracks_shouldReturnFailureOnException() {
+    void getTracks_shouldThrowDataFetchExceptionOnException() {
         // given
         Pageable pageable = PageRequest.of(0, 10);
         when(trackService.findAll(any(TrackSearchParams.class), any())).thenThrow(new RuntimeException("Fail"));
 
-        // when
-        ResponseEntity<ResponseWrapper<Page<LastfmTrackResponseDto>>> response = 
+        // when & then
+        DataFetchException exception = assertThrows(DataFetchException.class, () -> {
             controller.getTracks("abc", null, null, null, null, pageable);
-
-        // then
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        ResponseWrapper<?> body = response.getBody();
-        assertNotNull(body);
-        assertFalse(body.isSuccess());
-        assertTrue(body.getMessage().contains("Failed to fetch tracks"));
+        });
+        
+        assertTrue(exception.getMessage().contains("Failed to fetch tracks"));
     }
 
     @Test
@@ -259,34 +230,24 @@ class LastfmTrackControllerTest {
         when(trackService.updateApprovalStatus(trackId, approvalStatusCode))
             .thenReturn(dto);
 
-        ResponseEntity<ResponseWrapper<LastfmTrackResponseDto>> response =
-            controller.updateApprovalStatus(trackId, new ApprovalStatusRequestDto(approvalStatusCode));
+        LastfmTrackResponseDto result = controller.updateApprovalStatus(trackId, new ApprovalStatusRequestDto(approvalStatusCode));
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        ResponseWrapper<LastfmTrackResponseDto> body = response.getBody();
-        assertNotNull(body);
-        assertTrue(body.isSuccess());
-
-        LastfmTrackResponseDto data = body.getData();
-        assertNotNull(data);
-        assertEquals(newApprovalStatus.getCode(), data.approvalStatus());
-        assertNotNull(data.artist());
-        assertEquals(artist.getId(), data.artist().id());
+        assertNotNull(result);
+        assertEquals(newApprovalStatus.getCode(), result.approvalStatus());
+        assertNotNull(result.artist());
+        assertEquals(artist.getId(), result.artist().id());
     }
 
     @Test
-    void updateApprovalStatus_shouldHandleServiceException() {
+    void updateApprovalStatus_shouldThrowDataUpdateExceptionOnServiceException() {
         Long trackId = 1L;
         when(trackService.updateApprovalStatus(anyLong(), anyInt()))
             .thenThrow(new IllegalArgumentException("Invalid status"));
 
-        ResponseEntity<ResponseWrapper<LastfmTrackResponseDto>> response =
+        DataUpdateException exception = assertThrows(DataUpdateException.class, () -> {
             controller.updateApprovalStatus(trackId, new ApprovalStatusRequestDto(999));
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        ResponseWrapper<LastfmTrackResponseDto> body = response.getBody();
-        assertNotNull(body);
-        assertFalse(body.isSuccess());
-        assertTrue(body.getMessage().contains("Failed to update approval status"));
+        });
+        
+        assertTrue(exception.getMessage().contains("Failed to update approval status"));
     }
 }

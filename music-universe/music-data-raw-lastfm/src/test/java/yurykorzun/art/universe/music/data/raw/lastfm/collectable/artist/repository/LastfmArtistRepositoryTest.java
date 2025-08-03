@@ -64,7 +64,6 @@ class LastfmArtistRepositoryTest extends JpaOnlyTest {
         final String name = "Queen";
         final String url = "https://www.last.fm/music/Queen";
         final String mbid = "cc197bad-dc9c-440d-a5b5-d52ba2e14234";
-        final boolean isStreamable = true;
 
         LastfmApiCall apiCall = consistencyHelper.createAndSaveApiCall();
         LastfmArtist artist = LastfmArtist.builder()
@@ -72,14 +71,12 @@ class LastfmArtistRepositoryTest extends JpaOnlyTest {
                 .url(url)
                 .mbid(mbid)
                 .apiCall(apiCall)
-                .isStreamable(isStreamable)
             .build();
         LastfmArtist saved = artistRepository.save(artist);
 
         assertEquals(name, saved.getName());
         assertEquals(url, saved.getUrl());
         assertEquals(mbid, saved.getMbid());
-        assertEquals(isStreamable, saved.getIsStreamable());
     }
 
     @Test

@@ -42,5 +42,4 @@ public class LastfmApiDtoProcessingService {
             attributeHistoryService::upsertCandidateValues
         );
     }
-
 }

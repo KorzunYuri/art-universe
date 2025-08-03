@@ -97,6 +97,9 @@ lastfm:
       initial-delay-ms: 500
       multiplier: 1.5
     methods:
+      album:
+        getInfo:
+          dueDurationDays: 28
       artist:
         getInfo:
           dueDurationDays: 7
@@ -123,3 +126,6 @@ lastfm:
         topTracks:
           dueDurationDays: 7
           usageToPageRatio: 50000 # for each N usages of the tag, ONE 50-items api call will be generated
+      track:
+        getInfo:
+          dueDurationDays: 28

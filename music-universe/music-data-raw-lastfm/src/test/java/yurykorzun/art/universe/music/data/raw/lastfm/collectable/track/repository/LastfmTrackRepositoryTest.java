@@ -120,7 +120,6 @@ class LastfmTrackRepositoryTest extends JpaOnlyTest {
                 .url(url)
                 .mbid(mbid)
                 .duration(duration)
-                .isStreamable(streamable)
                 .apiCall(apiCall)
             .build();
         LastfmTrack saved = trackRepository.save(track);
@@ -129,7 +128,6 @@ class LastfmTrackRepositoryTest extends JpaOnlyTest {
         assertEquals(url, saved.getUrl());
         assertEquals(mbid, saved.getMbid());
         assertEquals(duration, saved.getDuration());
-        assertEquals(streamable, saved.getIsStreamable());
     }
 
     @Test

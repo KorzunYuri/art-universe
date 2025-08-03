@@ -12,16 +12,21 @@ Data storage system for art-related information designed to create quizzes. Prim
 │   APIs          │───▶│   Collection     │───▶│   Data          │
 │                 │    │                  │    │   Management    │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
-                                                        │
-                       ┌─────────────────┐             │
-                       │   Quiz          │◀────────────┘
-                       │   Generation    │
-                       └─────────────────┘
-                                │
-                       ┌─────────────────┐
-                       │   UI            │
-                       │   Management    │
-                       └─────────────────┘
+                                │                  │        │
+                                │                  ▼        │
+                                │       ┌─────────────────┐ │
+                                │       │   Quiz          │ │
+                                │       │   Generation    │ │
+                                │       └─────────────────┘ │
+                                │               │           │
+                                ▼               ▼           ▼
+                       ┌─────────────────────────────────────┐
+                       │          UI Management              │
+                       │   ┌─────────┬─────────┬─────────┐   │
+                       │   │Raw Data │ Curated │  Quiz   │   │
+                       │   │ Admin   │  Data   │ Config  │   │
+                       │   └─────────┴─────────┴─────────┘   │
+                       └─────────────────────────────────────┘
 ```
 
 ## Module Dependencies
@@ -30,16 +35,28 @@ Data storage system for art-related information designed to create quizzes. Prim
 1. **Raw Data Modules** collect from external APIs (LastFM, MusicBrainz, etc.)
 2. **Music Data** manages approved/curated entities and bindings
 3. **Music Quiz** generates quizzes from approved data subset
-4. **UI** provides management interface for all modules
+4. **UI** provides unified management interface for all three modules
 
 ### Dependency Graph
 ```
 music-data-raw-* ──┐
                    ├──▶ music-data ──▶ music-quiz
-art-universe-commons ──┘                   │
-                                           ▼
-                                    music-universe-ui
+art-universe-commons ──┘        │           │
+                                │           │
+                                ▼           ▼
+                       ┌─────────────────────────┐
+                       │   music-universe-ui     │
+                       │  ┌─────┬─────┬─────┐    │
+                       │  │Raw  │Data │Quiz │    │
+                       │  │Admin│Mgmt │Cfg  │    │
+                       │  └─────┴─────┴─────┘    │
+                       └─────────────────────────┘
 ```
+
+### UI Module Responsibilities
+- **Raw Data Administration**: Approve/decline entities, manage API collection settings
+- **Curated Data Management**: Create bindings, manage approved entity relationships  
+- **Quiz Configuration**: Set up quiz parameters, manage quiz-specific entity selections
 
 ## Data Architecture
 

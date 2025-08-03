@@ -2,17 +2,15 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.process
 
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.EntityDto;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityFactory;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityMappingBuilder;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityMappingResult;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.*;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.AttributeHistoryBuilder;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandler;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.persistence.EntityPersister;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttributeHistoryRecord;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
 
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class LastfmApiDtoProcessor<E extends BaseLastfmEntity, D extends EntityDto<E>> {
 
@@ -49,12 +47,30 @@ public class LastfmApiDtoProcessor<E extends BaseLastfmEntity, D extends EntityD
         EntityMappingResult<E, D> mappings = EntityMappingBuilder.buildMapping(dtos, existingEntities, sourceApiCall, entityFactory, attrHandlers);
 
         // Persist new/updated entities and update mapping with new IDs
-        List<E> savedEntities = processEntities(mappings, entitySaver);
+        List<E> savedEntities = saveChangedEntities(mappings, entitySaver);
+        savedEntities.forEach(entity -> {
+            EntityMapping<E, D> mapping = mappings.get(entity.getUniqueKey());
+            if (mapping != null) {
+                mapping.setNewEntity(entity);
+                mapping.setStage(EntityMappingStage.ENTITY_SAVED);
+            }
+        });
+
+        // collect actual states
+        List<E> actualEntities = mappings.values().stream()
+            .map(mapping -> {
+                E entity = mapping.getNewEntity();
+                if (entity == null) {
+                    entity = mapping.getOldEntity();
+                }
+                return entity;
+            })
+            .collect(Collectors.toList());
 
         // Build and persist attribute history records
         List<LastfmAttributeHistoryRecord> attrRecords = processAttributeRecords(mappings, attrHandlers, sourceApiCall, attrSaver);
 
-        return new LastfmApiDtoProcessingResult<>(savedEntities, attrRecords, mappings);
+        return new LastfmApiDtoProcessingResult<>(actualEntities, attrRecords, mappings);
     }
 
     /**
@@ -65,11 +81,16 @@ public class LastfmApiDtoProcessor<E extends BaseLastfmEntity, D extends EntityD
      *
      * @return  List of records returned by saver method
      */
-    private List<E> processEntities(
+    private List<E> saveChangedEntities(
         EntityMappingResult<E, D> mappings,
         Function<List<E>, List<E>> entitySaver
     ) {
-        return EntityPersister.persistEntities(mappings, entitySaver);
+        // find entities to be saved
+        List<E> entitiesToSave = mappings.values().stream()
+            .filter(EntityMapping::isShouldBeSaved)
+            .map(EntityMapping::getNewEntity)
+            .collect(Collectors.toList());
+        return entitySaver.apply(entitiesToSave);
     }
 
     /**

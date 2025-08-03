@@ -82,7 +82,7 @@ public class LastfmTagTopTagResponseProcessor extends LastfmApiResponseProcessor
             attrHandlers,
             tagService
         );
-        log.info("saved {} top tags", result.savedEntities().size());
+        log.info("saved {} top tags", result.actualEntities().size());
         log.info("saved {} top tags' attributes", result.savedAttributeValues().size());
     }
 

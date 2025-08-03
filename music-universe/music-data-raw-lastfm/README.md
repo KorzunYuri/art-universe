@@ -1,77 +1,94 @@
-# Music universe: LastFm data collector
+# LastFM Data Collector
 
-A Spring Boot application for collecting data about tags, artists, albums and tracks from last.fm public API
-for further processing.
+A Spring Boot application that collects music data from LastFM API for the Art Universe project.
 
-## Database initialization
+## What it does
 
-Application uses _postgres_ as database. Required steps for DB initialization can be seen in
-_src/main/resources/docker/compose/initdb/templates/init.sql.template_ - 
-template for initial script used for initialization of _postgres_ container in local Docker environment:
+- **Discovers music entities** - Artists, albums, tracks, and tags from LastFM API
+- **Builds relationships** - Creates connections between artists, tracks, tags, and albums
+- **Change tracking** - Maintains attribute history over time (SCD2 pattern)
 
-- create database named _music_universe_ 
-- under _music_universe_ db, create schema named _mu_raw_lastfm_
-- create user _mu_raw_lastfm_dm_ (_dm_ stands for _data manager_)
+## Key Features
 
-## Application parameters
+- **Rate-limited API client** - 1 call/sec with exponential backoff retry
+- **Intelligent prioritization** - Approved entities first, then by popularity
+- **Quality filtering** - Configurable thresholds for listeners, play counts, similarity scores
+- **RESTful management API** - Search, filter, and approve entities via REST endpoints
 
-Application requires the following parameters to run:
+## Data Collection Flow
 
-| Parameter name            | Description                                       | Is mandatory | Default value |
-|---------------------------|---------------------------------------------------|--------------|---------------|
-| MURAW_LASTFM_DB_PASSWORD  | Password of the main user of Lastfm schema        | Yes          |               |
-| MURAW_LASTFM_DB_HOST      | Database host                                     | No           | localhost     |
-| MURAW_LASTFM_API_KEY      | API key obtained from Lastfm for public API calls | Yes          |               |
-| MURAW_LASTFM_PORT         | Port to run the app's web server on               | No           | 8080          |
-| SPRING_PROFILES_ACTIVE    | Spring active profile                             | No           |               |
+1. **Tag Discovery** - Start with `tag.getTopTags` to find popular music tags
+2. **Entity Discovery** - Use tags to find artists (`tag.getTopArtists`) and tracks (`tag.getTopTracks`)
+3. **Entity Enrichment** - Get detailed info for artists (`artist.getInfo`, `artist.getTopAlbums`, etc.)
+4. **Relationship Building** - Create connections between artists, tracks, tags, and albums
+5. **Quality Control** - Manual approval workflow for collected entities
 
-Database host and port default values are currently pointing to a local database instance run via Docker.
+## Documenation
 
-## Build
+See **[Technical Documentation](docs/README.md)** for details
 
-Application tests are using TestContainers whenever DB is involved.
-Thus, to build the app you need Docker engine to be up and running.
+## Quick Start
 
-Now, from project root, run
-```
-./gradlew clean build
-```
+### Prerequisites
+- Java 17+
+- Docker (for database and testing)
+- LastFM API key
 
-> **Important**: All Gradle commands must be executed from the project root directory where the Gradle Wrapper (`gradlew`/`gradlew.bat`) is located, not from this module directory.
+### Environment Setup
 
-## Run 
+Create env files with secrets:
+* POSTGRES_USER - postgres main user
+* POSTGRES_PASSWORD - password of postgres main user
+* MURAW_LASTFM_DB_PASSWORD - password of module's main user in postgres  
+* MURAW_LASTFM_API_KEY - this is crucial
 
-### Locally
+Secrets should be saved under the following paths:
+* env/docker/local/music-data-raw-lastfm.secrets.env - dev & local env
+* env/docker/prod/music-data-raw-lastfm.secrets.env - prod env
 
-The most convenient way to run application environment locally is via Docker Compose.
-Docker Compose for Spring Boot is configured for profile 'local' - with this profile active,
-when you execute Gradle _bootRun_ task, it will launch containers from _src/main/resources/docker/compose/docker-compose.yml_.
-For convenience, you can keep env variables in _.env_ file used by Docker Compose 
-and read them to your terminal session whenever you need to run the app. 
-Env variables not used by Docker Compose will do no harm there.
 
-Here is how to do it:
-
-For the first time, create _.env_ file under _src/main/resources/docker/compose/local/_ with the following variables at least:
-```
-MURAW_LASTFM_DB_PASSWORD='your_password'
-MURAW_LASTFM_API_KEY='your_lastfm_api_key'
-SPRING_PROFILES_ACTIVE='local'
+### Run Locally
+```bash
+# From project root directory
+./scripts/run-module-dev.sh music-universe:music-data-raw-lastfm
+# Application runs on http://localhost:7081
 ```
 
-Make sure the file is ignored by VCS!
+or, create an IDE run configuration that uses the following env files:
+* .project-root.env
+* ./env/docker/local/music-data-raw-lastfm.env
+* ./env/docker/local/music-data-raw-lastfm.secrets.env
+* ./music-universe/music-data-raw-lastfm/dev.override.env
 
-Then, any time you open the new terminal window, you can read variables from _.env_ file.
-Open the terminal in project's root and execute:
+### Docker Deployment
+Deploy the whole stack using the following command.
 
-```
-get-content music-universe/music-data-raw-lastfm/src/main/resources/docker/compose/local/.env | foreach {
-  $name, $value = $_.split('=')
-  set-content env:\$name $value
-}
+```bash
+# From project root directory
+./env/docker/deploy.sh local    # Port 9081
+./env/docker/deploy.sh prod     # Port 8081
 ```
 
-Then, to launch the application, execute from the project root:
-```
-./gradlew :music-universe:music-data-raw-lastfm:bootRun
-```
+## Management API
+
+- **Artists**: `GET /api/v1/artists` - Search and filter artists
+- **Tracks**: `GET /api/v1/tracks` - Search and filter tracks  
+- **Tags**: `GET /api/v1/tags` - Search and filter tags
+- **Approval**: `PATCH /api/v1/{entity}/{id}/approval` - Update approval status
+
+## Configuration
+
+Key configuration properties:
+- **API Rate Limiting**: `lastfm.client.callsPerSec` (default: 1.0)
+- **Quality Thresholds**: `lastfm.client.methods.*.threshold` 
+- **Refresh Intervals**: `lastfm.client.methods.*.dueDurationDays`
+- **Batch Sizes**: Various limits for API call generation
+
+See [Configuration Reference](docs/api/README.md#configuration) for complete details.
+
+## Integration
+
+This module provides raw data for:
+- **Music Data Module** - Consumes approved entities for binding
+- **Music Universe UI** - Management interface for data approval
+- **Music Quiz Module** - Uses approved data for quiz generation

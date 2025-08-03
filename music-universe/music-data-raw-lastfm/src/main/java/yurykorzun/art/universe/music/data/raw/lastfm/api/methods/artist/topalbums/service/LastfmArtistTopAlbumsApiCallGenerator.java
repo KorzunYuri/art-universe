@@ -5,13 +5,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallService;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.service.LastfmArtistApiCallsGenerator;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.service.LastfmArtistApiCallGenerator;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmDataSnapshotService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityService;
 
 @Component
 @Slf4j
-public class LastfmArtistTopAlbumsApiCallGenerator extends LastfmArtistApiCallsGenerator {
+public class LastfmArtistTopAlbumsApiCallGenerator extends LastfmArtistApiCallGenerator {
 
     @Value("${lastfm.client.methods.artist.topAlbums.dueDurationDays}")
     private int dueDurationDays;

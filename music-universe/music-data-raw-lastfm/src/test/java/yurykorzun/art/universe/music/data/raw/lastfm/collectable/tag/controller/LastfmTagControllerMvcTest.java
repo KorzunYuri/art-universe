@@ -9,7 +9,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import yurykorzun.art.universe.common.controller.ResponseWrapper;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.EntityTagDto;
@@ -18,6 +17,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.LastfmT
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.service.LastfmTagService;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.exception.ErrorResponse;
 
 import java.util.Collections;
 import java.util.List;
@@ -66,7 +66,7 @@ class LastfmTagControllerMvcTest {
         when(tagService.findById(eq(tagId)))
             .thenReturn(Optional.of(mockTag));
 
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(responseDto));
+        String expectedJson = objectMapper.writeValueAsString(responseDto);
 
         // When & Then
         mockMvc.perform(get("/api/v1/tags/{id}", tagId)
@@ -85,7 +85,7 @@ class LastfmTagControllerMvcTest {
         when(tagService.findById(eq(tagId)))
             .thenReturn(Optional.empty());
 
-        String expectedJson = objectMapper.writeValueAsString(new ResponseWrapper<>(false, errorMessage, null));
+        String expectedJson = objectMapper.writeValueAsString(new ErrorResponse(errorMessage));
 
         // When & Then
         mockMvc.perform(get("/api/v1/tags/{id}", tagId)
@@ -104,7 +104,7 @@ class LastfmTagControllerMvcTest {
         when(tagService.findById(eq(tagId)))
             .thenThrow(new RuntimeException("Database error"));
 
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.failureBody(errorMessage));
+        String expectedJson = objectMapper.writeValueAsString(new ErrorResponse(errorMessage));
 
         // When & Then
         mockMvc.perform(get("/api/v1/tags/{id}", tagId)
@@ -132,7 +132,7 @@ class LastfmTagControllerMvcTest {
         when(tagService.findAllByEntity(eq(entityType), eq(entityId), any(EntityTagSearchParams.class), any(Pageable.class)))
             .thenReturn(tags);
 
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(tags));
+        String expectedJson = objectMapper.writeValueAsString(tags);
 
         // When & Then
         mockMvc.perform(get("/api/v1/tags/entity/{entityType}/456", entityType.getName())
@@ -151,7 +151,7 @@ class LastfmTagControllerMvcTest {
         when(tagService.findAllByEntity(eq(entityType), eq(entityId), any(EntityTagSearchParams.class), any(Pageable.class)))
             .thenReturn(Collections.emptyList());
 
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(Collections.emptyList()));
+        String expectedJson = objectMapper.writeValueAsString(Collections.emptyList());
 
         // When & Then
         mockMvc.perform(get("/api/v1/tags/entity/{entityType}/789", entityType.getName())
@@ -164,13 +164,17 @@ class LastfmTagControllerMvcTest {
     @Test
     void GET_entityTags_shouldReturnError_whenInvalidEntityTypeName() throws Exception {
         // Given
-        String errorMessage = "Invalid entity type: Unknown entity type: INVALID. Expected one of: ARTIST, ALBUM, TRACK, TAG or their numeric codes (1, 2, 3, 4)";
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.failureBody(errorMessage));
+        String errorMessage = "Unknown entity type: INVALID. Expected one of: ARTIST, ALBUM, TRACK, TAG or their numeric codes (1, 2, 3, 4)";
+        
+        when(tagService.findAllByEntity(any(), any(), any(), any()))
+            .thenThrow(new IllegalArgumentException(errorMessage));
+
+        String expectedJson = objectMapper.writeValueAsString(new ErrorResponse("Invalid entity type: " + errorMessage));
 
         // When & Then
         mockMvc.perform(get("/api/v1/tags/entity/INVALID/123")
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError())
+                .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(expectedJson));
     }
@@ -193,10 +197,10 @@ class LastfmTagControllerMvcTest {
         when(tagService.findAllByEntity(eq(entityType), eq(entityId), any(EntityTagSearchParams.class), any(Pageable.class)))
             .thenReturn(tags);
 
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(tags));
+        String expectedJson = objectMapper.writeValueAsString(tags);
 
         // When & Then
-        mockMvc.perform(get("/api/v1/tags/entity/{entityType}/123", entityType.getName())
+        mockMvc.perform(get("/api/v1/tags/entity/{entityType}/123", entityType.getName().toLowerCase())
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -213,7 +217,7 @@ class LastfmTagControllerMvcTest {
             .thenThrow(new RuntimeException("Database error"));
 
         String errorMessage = "Failed to fetch entity tags: service error occurred";
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.failureBody(errorMessage));
+        String expectedJson = objectMapper.writeValueAsString(new ErrorResponse(errorMessage));
 
         // When & Then
         mockMvc.perform(get("/api/v1/tags/entity/{entityType}/123", entityType.getName())
@@ -240,7 +244,7 @@ class LastfmTagControllerMvcTest {
         when(tagService.findAllByEntity(eq(entityType), eq(entityId), any(EntityTagSearchParams.class), any(Pageable.class)))
             .thenReturn(tags);
 
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(tags));
+        String expectedJson = objectMapper.writeValueAsString(tags);
 
         // When & Then
         mockMvc.perform(get("/api/v1/tags/entity/{entityType}/{entityId}", entityType.getName(), entityId)
@@ -268,7 +272,7 @@ class LastfmTagControllerMvcTest {
         when(tagService.findAllByEntity(eq(entityType), eq(entityId), any(EntityTagSearchParams.class), any(Pageable.class)))
             .thenReturn(tags);
 
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(tags));
+        String expectedJson = objectMapper.writeValueAsString(tags);
 
         // When & Then
         mockMvc.perform(get("/api/v1/tags/entity/{entityType}/{entityId}", entityType.getName(), entityId)
@@ -295,7 +299,7 @@ class LastfmTagControllerMvcTest {
         when(tagService.findAllByEntity(eq(entityType), eq(entityId), any(EntityTagSearchParams.class), any(Pageable.class)))
             .thenReturn(tags);
 
-        String expectedJson = objectMapper.writeValueAsString(ResponseWrapper.successBody(tags));
+        String expectedJson = objectMapper.writeValueAsString(tags);
 
         // When & Then
         mockMvc.perform(get("/api/v1/tags/entity/{entityType}/{entityId}", entityType.getName(), entityId)
