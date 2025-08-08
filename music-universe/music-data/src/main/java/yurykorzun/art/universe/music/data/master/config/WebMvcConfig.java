@@ -1,8 +1,10 @@
 package yurykorzun.art.universe.music.data.master.config;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import yurykorzun.art.universe.common.config.CommonWebConfig;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.entity.EntityType;
 
@@ -10,6 +12,9 @@ import yurykorzun.art.universe.music.data.master.entity.EntityType;
  * Configuration for WebMvc to handle enum conversion
  */
 @Configuration
+@Import(
+    CommonWebConfig.class
+)
 public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
