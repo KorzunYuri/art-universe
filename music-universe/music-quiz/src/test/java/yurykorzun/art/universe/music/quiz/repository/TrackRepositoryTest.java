@@ -7,6 +7,9 @@ import org.springframework.dao.DataIntegrityViolationException;
 import yurykorzun.art.universe.music.quiz.common.archetypes.JpaOnlyTest;
 import yurykorzun.art.universe.music.quiz.entity.Track;
 
+import java.util.List;
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class TrackRepositoryTest extends JpaOnlyTest {
@@ -66,5 +69,90 @@ class TrackRepositoryTest extends JpaOnlyTest {
 
         // then
         assertEquals(2, trackRepository.count());
+    }
+
+    @Test
+    void findByMasterId_shouldReturnTrack_whenExists() {
+        // given
+        Track track = new Track();
+        track.setMasterId(5L);
+        trackRepository.save(track);
+        entityManager.flush();
+
+        // when
+        Optional<Track> result = trackRepository.findByMasterId(5L);
+
+        // then
+        assertTrue(result.isPresent());
+        assertEquals(5L, result.get().getMasterId());
+    }
+
+    @Test
+    void findByMasterId_shouldReturnEmpty_whenNotExists() {
+        // when
+        Optional<Track> result = trackRepository.findByMasterId(999L);
+
+        // then
+        assertFalse(result.isPresent());
+    }
+
+    @Test
+    void findByMasterIdIn_shouldReturnMatchingTracks() {
+        // given
+        Track track1 = new Track();
+        track1.setMasterId(10L);
+        Track track2 = new Track();
+        track2.setMasterId(20L);
+        Track track3 = new Track();
+        track3.setMasterId(30L);
+
+        trackRepository.save(track1);
+        trackRepository.save(track2);
+        trackRepository.save(track3);
+        entityManager.flush();
+
+        // when
+        List<Track> result = trackRepository.findByMasterIdIn(List.of(10L, 20L, 999L));
+
+        // then
+        assertEquals(2, result.size());
+        assertTrue(result.stream().anyMatch(t -> t.getMasterId().equals(10L)));
+        assertTrue(result.stream().anyMatch(t -> t.getMasterId().equals(20L)));
+        assertFalse(result.stream().anyMatch(t -> t.getMasterId().equals(30L)));
+    }
+
+    @Test
+    void findByMasterIdIn_shouldReturnEmpty_whenNoMatches() {
+        // when
+        List<Track> result = trackRepository.findByMasterIdIn(List.of(999L, 888L));
+
+        // then
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void deleteByMasterId_shouldRemoveTrack_whenExists() {
+        // given
+        Track track = new Track();
+        track.setMasterId(100L);
+        trackRepository.save(track);
+        entityManager.flush();
+
+        // when
+        trackRepository.deleteByMasterId(100L);
+        entityManager.flush();
+
+        // then
+        Optional<Track> result = trackRepository.findByMasterId(100L);
+        assertFalse(result.isPresent());
+    }
+
+    @Test
+    void deleteByMasterId_shouldNotThrow_whenNotExists() {
+        // when & then
+        assertDoesNotThrow(() -> {
+            trackRepository.deleteByMasterId(999L);
+            entityManager.flush();
+        });
     }
 }
