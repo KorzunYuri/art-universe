@@ -1,24 +1,25 @@
 // hooks
 import {useCallback, useState} from "react";
+import {useLastfmEntity} from "@/music-universe/sources/lastfm/hooks/useLastfmEntity.tsx";
 // components
 import {
-    ApprovalToggle, type BaseEntityTableRow, EntityTagPanel,
+    type BaseEntityTableRow, EntityTagPanel,
     ExternalLink,
     ReadonlyAttr
 } from "@/music-universe/shared/components";
 // backend services
 import { LastfmConfig } from "@/music-universe/sources/lastfm/config/lastfmconfig.ts";
+import {updateRawEntityApprovalStatus} from "@/music-universe/sources/shared/api/approval.tsx";
 // types
-// styles
-import sharedTableStyles from "@/music-universe/shared/styles/EntityTableStyles.module.scss";
-import trackTableStyles from "../LastfmTracksTable/LastfmTracksTable.module.css";
+import {ApprovalToggle, EntityBinding} from "@/music-universe/sources/lastfm/components";
 import {ApprovalStatus, type ApprovalStatusType} from "@/music-universe/sources/lastfm/constants/approvalStatus.ts";
 import type {DataSource} from "@/music-universe/sources/shared/types/data-sources.ts";
 import type {MasterEntityType} from "@/music-universe/shared/types/entities.ts";
-import {useLastfmEntity} from "@/music-universe/sources/lastfm/hooks/useLastfmEntity.tsx";
-import {updateRawEntityApprovalStatus} from "@/music-universe/sources/shared/api/approval.tsx";
-import {EntityBinding} from "@/music-universe/sources/lastfm/components";
+// styles
 import styles from "@/music-universe/sources/lastfm/components/LastfmArtistsTableRow/LastfmArtistsTableRow.module.scss";
+import sharedTableStyles from "@/music-universe/shared/styles/EntityTableStyles.module.scss";
+import trackTableStyles from "../LastfmTracksTable/LastfmTracksTable.module.css";
+import artistTableStyles from "@/music-universe/sources/lastfm/components/LastfmArtistsTable/LastfmArtistsTable.module.css";
 
 interface LastfmTrackTableRowProps extends BaseEntityTableRow {
 }

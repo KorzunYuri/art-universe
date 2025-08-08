@@ -2,12 +2,11 @@
 import { useState, memo } from "react";
 // components
 import {
-    ApprovalToggle,
     ExternalLink,
     ReadonlyAttr,
     type BaseEntityTableRow
 } from "@/music-universe/shared/components";
-import { EntityBinding } from "@/music-universe/sources/lastfm/components";
+import {ApprovalToggle, EntityBinding} from "@/music-universe/sources/lastfm/components";
 // types
 import type { DataSource } from "@/music-universe/sources/shared/types/data-sources.ts";
 import type { MasterEntityType } from "@/music-universe/shared/types/entities.ts";
