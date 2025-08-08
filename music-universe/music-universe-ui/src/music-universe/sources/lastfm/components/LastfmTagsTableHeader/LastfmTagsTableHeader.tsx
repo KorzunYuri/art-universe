@@ -33,7 +33,7 @@ export const LastfmTagsTableHeader = ({ sort = '', setSort }: Props) => {
                 {renderLabel('Tag Name', 'name')}
             </div>
             <div className={`${sharedStyles.cell} ${tagStyles.status}`}>Approval</div>
-            <div className={`${sharedStyles.cell} ${tagStyles.binding}`}>Music Data</div>
+            <div className={`${sharedStyles.cell} ${tagStyles.masterBinding}`}>Master</div>
             <div className={`${sharedStyles.cell} ${tagStyles.count}`} onClick={() => toggleSort('usageCount')}>
                 {renderLabel('Usage', 'usageCount')}
             </div>

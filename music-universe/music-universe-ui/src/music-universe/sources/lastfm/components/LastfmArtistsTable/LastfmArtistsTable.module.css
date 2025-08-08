@@ -88,13 +88,13 @@
     justify-content: center;
 }
 
-.binding {
+.masterBinding {
     flex: 8;
     display: flex;
     text-align: left;
 }
 
-.quiz {
+.quizBinding {
     flex: 3;
     display: flex;
     justify-content: center;

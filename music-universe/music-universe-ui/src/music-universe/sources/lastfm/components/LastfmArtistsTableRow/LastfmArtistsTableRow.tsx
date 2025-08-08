@@ -7,7 +7,7 @@ import {
     EntityTagPanel,
     type BaseEntityTableRow
 } from "@/music-universe/shared/components";
-import { EntityBinding } from "@/music-universe/sources/lastfm/components";
+import {QuizBinding} from "@/music-universe/music-quiz/components";
 import {ApprovalToggle, EntityBinding} from "@/music-universe/sources/lastfm/components";
 // types
 import type { DataSource } from "@/music-universe/sources/shared/types/data-sources.ts";
@@ -124,7 +124,7 @@ export const LastfmArtistsTableRow = memo((
                     />
                 </div>
 
-                <div className={`${sharedTableStyles.cell}  ${artistTableStyles.binding}`}
+                <div className={`${sharedTableStyles.cell}  ${artistTableStyles.masterBinding}`}
                      onClick={(e) => e.stopPropagation()}>
                     <EntityBinding
                         dataSource={dataSource}
@@ -133,6 +133,14 @@ export const LastfmArtistsTableRow = memo((
                         onBeforeBind={ensureIsValidForBinding}
                         onAfterBind={invalidateEntity}
                         onAfterUnbind={invalidateEntity}
+                    />
+                </div>
+
+                <div className={`${sharedTableStyles.cell}  ${artistTableStyles.quizBinding}`}
+                     onClick={(e) => e.stopPropagation()}>
+                    <QuizBinding
+                        entityType="artist"
+                        masterId={entity.getMasterEntity()?.id ?? null}
                     />
                 </div>
 

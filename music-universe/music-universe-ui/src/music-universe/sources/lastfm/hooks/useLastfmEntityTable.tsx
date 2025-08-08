@@ -10,6 +10,9 @@ import {
 import {LookupRequestSourceParams} from "@/music-universe/music-data/types/master-entities-lookup.ts";
 import {fetchBoundMasterEntities} from "@/music-universe/music-data/api/music-data-common-binding.ts";
 import {batchLookupMasterEntities} from "@/music-universe/music-data/api/music-data-common-lookup.ts";
+import {getQuizBindings} from "@/music-universe/music-quiz/api/music-quiz-common-binding";
+import {quizBindingKeys} from "@/music-universe/music-quiz/hooks/useQuizBinding";
+import type {MusicQuizSupportedEntityType} from "@/music-universe/music-quiz/types/music-quiz-entity";
 
 export function useLastfmEntityTable<T extends LastfmSupportedEntityType>(
     entityType: T,
@@ -65,6 +68,26 @@ export function useLastfmEntityTable<T extends LastfmSupportedEntityType>(
                 console.log(`Failed to batch update master entities lookup: ${error}`)
             }
 
+            // batch-initialize quiz bindings cache (only for supported entity types)
+            if (entityType === 'artist' || entityType === 'track') {
+                try {
+                    const masterIds = rawEntities
+                        .map(entity => entity.getMasterEntity()?.id)
+                        .filter((id): id is number => id !== undefined);
+                    
+                    if (masterIds.length > 0) {
+                        const quizBindings = await getQuizBindings(entityType as MusicQuizSupportedEntityType, masterIds);
+                        quizBindings.forEach(binding => {
+                            queryClient.setQueryData(
+                                quizBindingKeys.detail(entityType as MusicQuizSupportedEntityType, binding.masterId),
+                                binding
+                            );
+                        });
+                    }
+                } catch (error) {
+                    console.log(`Failed to batch update quiz bindings: ${error}`);
+                }
+            }
             return {
                 page: { ...rawEntitiesPage, content: rawEntities },
                 rawEntityIds: rawEntityIds,

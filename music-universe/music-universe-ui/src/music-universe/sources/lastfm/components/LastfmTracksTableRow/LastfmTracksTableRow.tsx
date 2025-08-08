@@ -7,6 +7,7 @@ import {
     ExternalLink,
     ReadonlyAttr
 } from "@/music-universe/shared/components";
+import {QuizBinding} from "@/music-universe/music-quiz/components";
 // backend services
 import { LastfmConfig } from "@/music-universe/sources/lastfm/config/lastfmconfig.ts";
 import {updateRawEntityApprovalStatus} from "@/music-universe/sources/shared/api/approval.tsx";
@@ -123,7 +124,7 @@ export const LastfmTracksTableRow = (
                 />
             </div>
 
-            <div className={`${sharedTableStyles.cell}  ${trackTableStyles.binding}`}
+            <div className={`${sharedTableStyles.cell}  ${trackTableStyles.masterBinding}`}
                  onClick={(e) => e.stopPropagation()}>
                 <EntityBinding
                     dataSource={dataSource}
@@ -132,6 +133,14 @@ export const LastfmTracksTableRow = (
                     onBeforeBind={ensureIsValidForBinding}
                     onAfterBind={invalidateEntity}
                     onAfterUnbind={invalidateEntity}
+                />
+            </div>
+
+            <div className={`${sharedTableStyles.cell}  ${artistTableStyles.quizBinding}`}
+                 onClick={(e) => e.stopPropagation()}>
+                <QuizBinding
+                    entityType="track"
+                    masterId={entity.getMasterEntity()?.id ?? null}
                 />
             </div>
 

@@ -34,7 +34,8 @@ export const LastfmArtistsTableHeader = ({ sort = '', setSort }: Props) => {
             </div>
             <div className={`${sharedStyles.cell} ${artistStyles.mbid}`}>MusicBrainz</div>
             <div className={`${sharedStyles.cell} ${artistStyles.status}`}>Approval</div>
-            <div className={`${sharedStyles.cell} ${artistStyles.binding}`}>Music Data</div>
+            <div className={`${sharedStyles.cell} ${artistStyles.masterBinding}`}>Master</div>
+            <div className={`${sharedStyles.cell} ${artistStyles.quizBinding}`}>Quiz</div>
             <div className={`${sharedStyles.cell} ${artistStyles.count}`} onClick={() => toggleSort('playCount')}>
                 {renderLabel('Plays', 'playCount')}
             </div>

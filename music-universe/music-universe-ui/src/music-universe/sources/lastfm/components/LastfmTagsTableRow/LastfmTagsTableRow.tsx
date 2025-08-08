@@ -110,7 +110,7 @@ export const LastfmTagsTableRow = memo((
                 />
             </div>
 
-            <div className={`${sharedTableStyles.cell} ${tagTableStyles.binding}`}
+            <div className={`${sharedTableStyles.cell} ${tagTableStyles.masterBinding}`}
                  onClick={(e) => e.stopPropagation()}>
                 <EntityBinding
                     dataSource={dataSource}
