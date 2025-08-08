@@ -1,8 +1,8 @@
-FROM openjdk:17-jdk-alpine
+FROM openjdk:21-jdk-slim
 WORKDIR /app
 
 # Install curl for healthcheck
-RUN apk add --no-cache curl
+RUN apt-get update && apt-get install -y --no-install-recommends curl
 
 ARG JAR_SOURCE=build/libs/*.jar
 ARG JAR_TARGET=mu-quiz.jar
