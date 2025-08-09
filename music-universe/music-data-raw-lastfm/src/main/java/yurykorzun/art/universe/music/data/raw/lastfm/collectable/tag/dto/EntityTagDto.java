@@ -7,7 +7,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto;
 public record EntityTagDto(
     long id,
     String name,
-    Integer approvalStatus,
+    Integer relationApprovalStatus,
     Integer tagApprovalStatus,
     Integer entityApprovalStatus,
     Integer usageCount

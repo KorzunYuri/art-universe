@@ -1,5 +1,7 @@
 export * from "./ApprovalToggle"
 export * from "./EntityBinding"
+export * from "./EntityTagItem"
+export * from "./EntityTagPanel"
 export * from "./LastfmArtistsTable"
 export * from "./LastfmArtistsTableHeader"
 export * from "./LastfmArtistsTableRow"

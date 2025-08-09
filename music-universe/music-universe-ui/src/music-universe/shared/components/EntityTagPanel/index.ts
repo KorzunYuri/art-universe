@@ -1,1 +1,0 @@
-export { EntityTagPanel } from './EntityTagPanel';

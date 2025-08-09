@@ -1,5 +1,6 @@
 package yurykorzun.art.universe.music.data.master.dto.relation;
 
+import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,8 +21,8 @@ public class RelationBindingStatusDTO {
     private Long sourceExternalId;
     private EntityType sourceEntityType;
     private String sourceEntityName;
-    private Long sourceInternalId; // Internal entity ID if bound
-    private boolean sourceEntityBound; // Whether source entity is bound
+    private boolean isSourceEntityBound;
+    @Nullable private Long sourceInternalId;
     
     // Information about target entities
     private EntityType targetEntityType;

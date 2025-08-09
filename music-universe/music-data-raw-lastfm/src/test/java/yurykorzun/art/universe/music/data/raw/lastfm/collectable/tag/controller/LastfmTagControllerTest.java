@@ -126,7 +126,7 @@ class LastfmTagControllerTest {
         assertEquals(1, response.size());
         assertEquals(3L, response.get(0).id());
         assertEquals("electronic", response.get(0).name());
-        assertEquals(ApprovalStatus.APPROVED.getCode(), response.get(0).approvalStatus());
+        assertEquals(ApprovalStatus.APPROVED.getCode(), response.get(0).relationApprovalStatus());
         assertEquals(ApprovalStatus.APPROVED.getCode(), response.get(0).tagApprovalStatus());
         assertEquals(ApprovalStatus.PENDING.getCode(), response.get(0).entityApprovalStatus());
         assertEquals(50, response.get(0).usageCount());
@@ -271,10 +271,18 @@ class LastfmTagControllerTest {
         String entityTypeParam = entityType.getName();
         
         List<EntityTagDto> tags = List.of(
-            new EntityTagDto(1L, "alternative", ApprovalStatus.APPROVED.getCode(), 
-                ApprovalStatus.APPROVED.getCode(), ApprovalStatus.APPROVED.getCode(), 75),
-            new EntityTagDto(2L, "rock", ApprovalStatus.APPROVED.getCode(), 
-                ApprovalStatus.APPROVED.getCode(), ApprovalStatus.APPROVED.getCode(), 100)
+            new EntityTagDto(1L,
+                "alternative",
+                ApprovalStatus.APPROVED.getCode(),
+                ApprovalStatus.APPROVED.getCode(),
+                ApprovalStatus.APPROVED.getCode(),
+                75),
+            new EntityTagDto(2L,
+                "rock",
+                ApprovalStatus.APPROVED.getCode(),
+                ApprovalStatus.APPROVED.getCode(),
+                ApprovalStatus.APPROVED.getCode(),
+                100)
         );
         
         when(tagService.findAllByEntity(

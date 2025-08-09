@@ -4,11 +4,10 @@ import {useState, memo, useCallback} from "react";
 import {
     ExternalLink,
     ReadonlyAttr,
-    EntityTagPanel,
     type BaseEntityTableRow
 } from "@/music-universe/shared/components";
 import {QuizBinding} from "@/music-universe/music-quiz/components";
-import {ApprovalToggle, EntityBinding} from "@/music-universe/sources/lastfm/components";
+import {ApprovalToggle, EntityBinding, EntityTagPanel} from "@/music-universe/sources/lastfm/components";
 // types
 import type { DataSource } from "@/music-universe/sources/shared/types/data-sources.ts";
 import type { MasterEntityType } from "@/music-universe/shared/types/entities.ts";

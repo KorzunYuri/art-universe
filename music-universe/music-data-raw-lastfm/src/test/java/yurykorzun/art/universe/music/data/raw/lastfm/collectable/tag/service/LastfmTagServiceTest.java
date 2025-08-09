@@ -73,14 +73,14 @@ class LastfmTagServiceTest {
         
         assertEquals(1L, result.get(0).id());
         assertEquals("rock", result.get(0).name());
-        assertEquals(ApprovalStatus.PENDING.getCode(), result.get(0).approvalStatus());
+        assertEquals(ApprovalStatus.PENDING.getCode(), result.get(0).relationApprovalStatus());
         assertEquals(ApprovalStatus.PENDING.getCode(), result.get(0).tagApprovalStatus());
         assertEquals(ApprovalStatus.APPROVED.getCode(), result.get(0).entityApprovalStatus());
         assertEquals(50, result.get(0).usageCount());
         
         assertEquals(2L, result.get(1).id());
         assertEquals("pop", result.get(1).name());
-        assertEquals(ApprovalStatus.APPROVED.getCode(), result.get(1).approvalStatus());
+        assertEquals(ApprovalStatus.APPROVED.getCode(), result.get(1).relationApprovalStatus());
         assertEquals(ApprovalStatus.APPROVED.getCode(), result.get(1).tagApprovalStatus());
         assertEquals(ApprovalStatus.APPROVED.getCode(), result.get(1).entityApprovalStatus());
         assertEquals(100, result.get(1).usageCount());
@@ -155,7 +155,6 @@ class LastfmTagServiceTest {
         assertEquals(1, result.size());
         assertEquals(3L, result.get(0).id());
         assertEquals("electronic", result.get(0).name());
-        assertEquals(ApprovalStatus.APPROVED.getCode(), result.get(0).approvalStatus());
         assertEquals(ApprovalStatus.APPROVED.getCode(), result.get(0).tagApprovalStatus());
         assertEquals(ApprovalStatus.PENDING.getCode(), result.get(0).entityApprovalStatus());
         assertEquals(75, result.get(0).usageCount());

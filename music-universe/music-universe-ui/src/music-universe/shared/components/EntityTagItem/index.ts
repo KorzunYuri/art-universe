@@ -1,1 +1,0 @@
-export { EntityTagItem } from './EntityTagItem';

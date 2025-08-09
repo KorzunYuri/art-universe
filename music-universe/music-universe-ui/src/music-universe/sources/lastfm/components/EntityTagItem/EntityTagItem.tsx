@@ -1,11 +1,11 @@
-import { ApprovalStatus } from '@/music-universe/sources/lastfm/constants/approvalStatus';
+import {ApprovalStatus, type ApprovalStatusType} from '@/music-universe/sources/lastfm/constants/approvalStatus.ts';
 import styles from './EntityTagItem.module.scss';
 
 export const TagRelationStatus = {
-  NOT_APPROVED: 1,  // Серый - артист или тег не одобрены в LastFM
-  NOT_BOUND: 2,     // Оранжевый - артист или тег не привязаны к music-data
-  PENDING: 3,       // Желтый - артист и тег одобрены и привязаны, связь не одобрена
-  APPROVED: 4       // Зеленый - связь одобрена
+  NOT_APPROVED: 1,  // gray - not approved
+  NOT_BOUND: 2,     // orange - entity or tag are not bound to master
+  PENDING: 3,       // yellow - both entity and tag are bound to master but the relation itself is not bound
+  APPROVED: 4       // green - entity-tag relation is bound to master
 } as const;
 
 export type TagRelationStatus = typeof TagRelationStatus[keyof typeof TagRelationStatus];
@@ -13,8 +13,8 @@ export type TagRelationStatus = typeof TagRelationStatus[keyof typeof TagRelatio
 export interface EntityTagItemProps {
   id: number;
   name: string;
-  tagApprovalStatus: number;
-  entityApprovalStatus: number;
+  tagApprovalStatus: ApprovalStatusType;
+  entityApprovalStatus: ApprovalStatusType;
   isBound: boolean;
   usageCount: number;
   relationStatus: number;

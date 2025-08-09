@@ -11,7 +11,7 @@ export interface RelationBindingStatusDTO {
     sourceEntityType: string;
     sourceEntityName: string;
     sourceInternalId: number;
-    sourceEntityBound: boolean;
+    isSourceEntityBound: boolean;
     targetEntityType: string;
     targetBindings: TargetBindingDTO[];
 }
@@ -23,10 +23,10 @@ export interface TargetBindingDTO {
     targetExternalId: number;
     targetEntityName: string;
     targetInternalId: number | null;
-    targetEntityBound: boolean;
-    internalRelationBound: boolean;
+    isTargetEntityBound: boolean;
+    isInternalRelationBound: boolean;
     internalRelationId: number | null;
-    externalRelationBound: boolean;
+    isExternalRelationBound: boolean;
 }
 
 /**

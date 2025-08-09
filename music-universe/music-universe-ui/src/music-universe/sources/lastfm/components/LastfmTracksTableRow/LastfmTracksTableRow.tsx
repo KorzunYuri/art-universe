@@ -3,7 +3,7 @@ import {useCallback, useState} from "react";
 import {useLastfmEntity} from "@/music-universe/sources/lastfm/hooks/useLastfmEntity.tsx";
 // components
 import {
-    type BaseEntityTableRow, EntityTagPanel,
+    type BaseEntityTableRow,
     ExternalLink,
     ReadonlyAttr
 } from "@/music-universe/shared/components";
@@ -12,7 +12,7 @@ import {QuizBinding} from "@/music-universe/music-quiz/components";
 import { LastfmConfig } from "@/music-universe/sources/lastfm/config/lastfmconfig.ts";
 import {updateRawEntityApprovalStatus} from "@/music-universe/sources/shared/api/approval.tsx";
 // types
-import {ApprovalToggle, EntityBinding} from "@/music-universe/sources/lastfm/components";
+import {ApprovalToggle, EntityBinding, EntityTagPanel} from "@/music-universe/sources/lastfm/components";
 import {ApprovalStatus, type ApprovalStatusType} from "@/music-universe/sources/lastfm/constants/approvalStatus.ts";
 import type {DataSource} from "@/music-universe/sources/shared/types/data-sources.ts";
 import type {MasterEntityType} from "@/music-universe/shared/types/entities.ts";

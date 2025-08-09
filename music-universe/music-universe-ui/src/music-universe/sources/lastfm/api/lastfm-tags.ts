@@ -39,8 +39,7 @@ export interface LastfmTagsPageSearchParams extends BaseLastfmPageSearchParams{
 export interface EntityTagDto {
     id: number;
     name: string;
-    approvalStatus: ApprovalStatusType;
-    tagApprovalStatus: number;
+    tagApprovalStatus: ApprovalStatusType;
     entityApprovalStatus: ApprovalStatusType;
     usageCount: number | null;
 }

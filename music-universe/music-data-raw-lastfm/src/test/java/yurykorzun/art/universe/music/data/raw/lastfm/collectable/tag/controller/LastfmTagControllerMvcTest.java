@@ -235,10 +235,18 @@ class LastfmTagControllerMvcTest {
         Integer minUsageCount = 50;
         
         List<EntityTagDto> tags = List.of(
-            new EntityTagDto(1L, "rock", ApprovalStatus.PENDING.getCode(), 
-                ApprovalStatus.PENDING.getCode(), ApprovalStatus.APPROVED.getCode(), 100),
-            new EntityTagDto(2L, "pop", ApprovalStatus.APPROVED.getCode(), 
-                ApprovalStatus.APPROVED.getCode(), ApprovalStatus.APPROVED.getCode(), 75)
+            new EntityTagDto(1L,
+                "rock",
+                ApprovalStatus.PENDING.getCode(),
+                ApprovalStatus.PENDING.getCode(),
+                ApprovalStatus.APPROVED.getCode(),
+                100),
+            new EntityTagDto(2L,
+                "pop",
+                ApprovalStatus.PENDING.getCode(),
+                ApprovalStatus.APPROVED.getCode(),
+                ApprovalStatus.APPROVED.getCode(),
+                75)
         );
         
         when(tagService.findAllByEntity(eq(entityType), eq(entityId), any(EntityTagSearchParams.class), any(Pageable.class)))
@@ -263,10 +271,18 @@ class LastfmTagControllerMvcTest {
         Set<Integer> approvalStatuses = Set.of(ApprovalStatus.APPROVED.getCode());
         
         List<EntityTagDto> tags = List.of(
-            new EntityTagDto(1L, "alternative", ApprovalStatus.APPROVED.getCode(), 
-                ApprovalStatus.APPROVED.getCode(), ApprovalStatus.APPROVED.getCode(), 75),
-            new EntityTagDto(2L, "rock", ApprovalStatus.APPROVED.getCode(), 
-                ApprovalStatus.APPROVED.getCode(), ApprovalStatus.APPROVED.getCode(), 100)
+            new EntityTagDto(1L,
+                "alternative",
+                ApprovalStatus.APPROVED.getCode(),
+                ApprovalStatus.APPROVED.getCode(),
+                ApprovalStatus.APPROVED.getCode(),
+                75),
+            new EntityTagDto(2L,
+                "rock",
+                ApprovalStatus.APPROVED.getCode(),
+                ApprovalStatus.APPROVED.getCode(),
+                ApprovalStatus.APPROVED.getCode(),
+                100)
         );
         
         when(tagService.findAllByEntity(eq(entityType), eq(entityId), any(EntityTagSearchParams.class), any(Pageable.class)))
@@ -290,10 +306,18 @@ class LastfmTagControllerMvcTest {
         LastfmEntityType entityType = LastfmEntityType.ARTIST;
         
         List<EntityTagDto> tags = List.of(
-            new EntityTagDto(1L, "alternative", ApprovalStatus.APPROVED.getCode(), 
-                ApprovalStatus.APPROVED.getCode(), ApprovalStatus.APPROVED.getCode(), 75),
-            new EntityTagDto(2L, "rock", ApprovalStatus.APPROVED.getCode(), 
-                ApprovalStatus.APPROVED.getCode(), ApprovalStatus.APPROVED.getCode(), 100)
+            new EntityTagDto(1L,
+                "alternative",
+                ApprovalStatus.APPROVED.getCode(),
+                ApprovalStatus.APPROVED.getCode(),
+                ApprovalStatus.APPROVED.getCode(),
+                75),
+            new EntityTagDto(2L,
+                "rock",
+                ApprovalStatus.APPROVED.getCode(),
+                ApprovalStatus.APPROVED.getCode(),
+                ApprovalStatus.APPROVED.getCode(),
+                100)
         );
         
         when(tagService.findAllByEntity(eq(entityType), eq(entityId), any(EntityTagSearchParams.class), any(Pageable.class)))

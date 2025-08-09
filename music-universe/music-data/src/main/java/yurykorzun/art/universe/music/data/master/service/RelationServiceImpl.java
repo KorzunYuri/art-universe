@@ -153,7 +153,7 @@ public class RelationServiceImpl implements RelationService {
             .sourceEntityType(sourceEntityType)
             .sourceEntityName(sourceInfo.name)
             .sourceInternalId(sourceInfo.internalId)
-            .sourceEntityBound(sourceInfo.isBound)
+            .isSourceEntityBound(sourceInfo.isBound)
             .targetEntityType(targetEntityType)
             .targetBindings(new ArrayList<>())
             .build();
@@ -204,9 +204,9 @@ public class RelationServiceImpl implements RelationService {
                 .targetExternalId(targetExternalId)
                 .targetEntityName(targetInfo.name)
                 .targetInternalId(targetInfo.internalId)
-                .targetEntityBound(targetInfo.isBound)
-                .internalRelationBound(isInternalRelationBound)
-                .externalRelationBound(isExternalRelationBound)
+                .isTargetEntityBound(targetInfo.isBound)
+                .isInternalRelationBound(isInternalRelationBound)
+                .isExternalRelationBound(isExternalRelationBound)
                 .internalRelationId(relationId)
                 .build());
         }

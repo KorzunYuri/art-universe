@@ -88,7 +88,7 @@ public class LastfmTagRepositoryCustomImpl implements LastfmTagRepositoryCustom 
         }
         
         StringBuilder queryBuilder = new StringBuilder();
-        queryBuilder.append("SELECT t, e.approvalStatus, COALESCE(rel.usageCount, 0) FROM tag t ");
+        queryBuilder.append("SELECT t, rel.approvalStatus, e.approvalStatus, COALESCE(rel.usageCount, 0) FROM tag t ");
         queryBuilder.append("JOIN ").append(relationTableName).append(" rel ");
         queryBuilder.append("ON t.id = rel.tag.id ");
         queryBuilder.append("JOIN rel.").append(entityFieldName).append(" e ");
@@ -154,13 +154,14 @@ public class LastfmTagRepositoryCustomImpl implements LastfmTagRepositoryCustom 
         List<EntityTagDto> result = new ArrayList<>(resultList.size());
         for (Object[] row : resultList) {
             LastfmTag tag = (LastfmTag) row[0];
-            ApprovalStatus entityApprovalStatus = (ApprovalStatus) row[1];
-            Integer usageCount = (Integer) row[2];
+            ApprovalStatus relationApprovalStatus = (ApprovalStatus) row[1];
+            ApprovalStatus entityApprovalStatus = (ApprovalStatus) row[2];
+            Integer usageCount = (Integer) row[3];
             
             result.add(new EntityTagDto(
                 tag.getId(),
                 tag.getName(),
-                tag.getApprovalStatus().getCode(),
+                relationApprovalStatus.getCode(),
                 tag.getApprovalStatus().getCode(),
                 entityApprovalStatus.getCode(),
                 usageCount

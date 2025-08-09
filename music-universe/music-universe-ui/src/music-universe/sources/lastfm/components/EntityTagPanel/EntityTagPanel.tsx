@@ -1,19 +1,19 @@
 import { useState, useEffect } from 'react';
-import { EntityTagItem, TagRelationStatus } from '@/music-universe/shared/components/EntityTagItem/EntityTagItem';
-import { fetchEntityTags, type EntityTagDto } from '@/music-universe/sources/lastfm/api/lastfm-tags';
+import { EntityTagItem, TagRelationStatus } from '@/music-universe/sources/lastfm/components/EntityTagItem/EntityTagItem.tsx';
+import { fetchEntityTags, type EntityTagDto } from '@/music-universe/sources/lastfm/api/lastfm-tags.ts';
 import { 
   findBoundExternalRelations, 
   bindExternalRelation, 
   unbindExternalRelation
-} from '@/music-universe/music-data/api/music-data-relations';
-import { ApprovalStatus } from '@/music-universe/sources/lastfm/constants/approvalStatus';
+} from '@/music-universe/music-data/api/music-data-relations.ts';
+import {ApprovalStatus, type ApprovalStatusType} from '@/music-universe/sources/lastfm/constants/approvalStatus.ts';
 import styles from './EntityTagPanel.module.scss';
 import type {MasterEntityType} from "@/music-universe/shared/types/entities.ts";
 
 export interface EntityTagPanelProps {
   entityType: MasterEntityType;
   entityId: number;
-  entityApprovalStatus: number;
+  entityApprovalStatus: ApprovalStatusType;
   tagPageBaseUrl?: string; // Base URL for tag pages, e.g. '/lastfm/tags/'
   onClose?: () => void;
 }
@@ -76,9 +76,9 @@ export const EntityTagPanel = ({
         );
         
         // Use isExternalRelationBound instead of relationBound
-        const isBound = binding?.externalRelationBound || false;
-        const isSourceBound = boundRelationsStatus.sourceEntityBound;
-        const isTargetBound = binding?.targetEntityBound || false;
+        const isBound = binding?.isExternalRelationBound || false;
+        const isSourceBound = boundRelationsStatus.isSourceEntityBound;
+        const isTargetBound = binding?.isTargetEntityBound || false;
         
         // Determine relation status
         let relationStatus: TagRelationStatus;
