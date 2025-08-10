@@ -12,6 +12,7 @@ import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.service.BindingService;
 import yurykorzun.art.universe.music.data.master.service.CategoryService;
 
 import java.util.Arrays;
@@ -33,6 +34,9 @@ class CategoryControllerMvcTest {
 
     @MockitoBean
     private CategoryService categoryService;
+
+    @MockitoBean
+    private BindingService bindingService;
 
     @Autowired
     private MockMvc mockMvc;

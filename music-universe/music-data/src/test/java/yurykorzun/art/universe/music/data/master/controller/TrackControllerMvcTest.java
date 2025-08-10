@@ -10,6 +10,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.service.BindingService;
 import yurykorzun.art.universe.music.data.master.service.TrackService;
 
 import java.util.Arrays;
@@ -31,6 +32,9 @@ class TrackControllerMvcTest {
 
     @MockitoBean
     private TrackService trackService;
+
+    @MockitoBean
+    private BindingService bindingService;
 
     @Autowired
     private MockMvc mockMvc;

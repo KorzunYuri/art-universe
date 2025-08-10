@@ -22,6 +22,7 @@ import yurykorzun.art.universe.music.data.master.dto.TestCategoryHierarchyProjec
 import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.exception.CustomEntityNotFoundException;
+import yurykorzun.art.universe.music.data.master.service.BindingService;
 import yurykorzun.art.universe.music.data.master.service.CategoryService;
 
 import java.util.Arrays;
@@ -38,6 +39,9 @@ class CategoryControllerTest {
 
     @Mock
     private CategoryService categoryService;
+
+    @Mock
+    private BindingService bindingService;
 
     @InjectMocks
     private CategoryController categoryController;

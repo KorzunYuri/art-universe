@@ -5,12 +5,16 @@ import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindResponseDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedBatchLookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.entity.EntityType;
 import yurykorzun.art.universe.music.data.master.service.AlbumService;
+import yurykorzun.art.universe.music.data.master.service.BindingService;
 
 import java.util.List;
 
@@ -19,9 +23,11 @@ import java.util.List;
 public class AlbumController {
 
     private final AlbumService albumService;
+    private final BindingService bindingService;
 
-    public AlbumController(AlbumService albumService) {
+    public AlbumController(AlbumService albumService, BindingService bindingService) {
         this.albumService = albumService;
+        this.bindingService = bindingService;
     }
 
     @GetMapping("/bound/{dataSource}")
@@ -81,5 +87,13 @@ public class AlbumController {
         @PathVariable Long externalId
     ) {
         return albumService.unbindAlbum(dataSource, externalId);
+    }
+    
+    @DeleteMapping("/unbind/{dataSource}/batch")
+    public BatchUnbindResponseDTO batchUnbindAlbums(
+        @PathVariable DataSource dataSource,
+        @Valid @RequestBody BatchUnbindRequestDTO request
+    ) {
+        return bindingService.batchUnbind(EntityType.ALBUM, dataSource, request);
     }
 }

@@ -13,6 +13,7 @@ import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjecti
 import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.service.ArtistService;
+import yurykorzun.art.universe.music.data.master.service.BindingService;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,6 +34,9 @@ class ArtistControllerMvcTest {
 
     @MockitoBean
     private ArtistService artistService;
+
+    @MockitoBean
+    private BindingService bindingService;
 
     @Autowired
     private MockMvc mockMvc;

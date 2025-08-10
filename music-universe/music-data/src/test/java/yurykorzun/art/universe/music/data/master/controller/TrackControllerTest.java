@@ -14,6 +14,7 @@ import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupR
 import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.service.BindingService;
 import yurykorzun.art.universe.music.data.master.service.TrackService;
 
 import java.util.Arrays;
@@ -33,6 +34,9 @@ public class TrackControllerTest {
 
     @Mock
     private TrackService trackService;
+
+    @Mock
+    private BindingService bindingService;
 
     @InjectMocks
     private TrackController trackController;

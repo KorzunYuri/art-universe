@@ -9,8 +9,12 @@ import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBind
 import yurykorzun.art.universe.music.data.master.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindResponseDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.entity.EntityType;
 import yurykorzun.art.universe.music.data.master.service.ArtistService;
+import yurykorzun.art.universe.music.data.master.service.BindingService;
 
 import java.util.List;
 
@@ -19,9 +23,11 @@ import java.util.List;
 public class ArtistController {
 
     private final ArtistService artistService;
+    private final BindingService bindingService;
 
-    public ArtistController(ArtistService artistService) {
+    public ArtistController(ArtistService artistService, BindingService bindingService) {
         this.artistService = artistService;
+        this.bindingService = bindingService;
     }
 
     @GetMapping("/bound/{dataSource}")
@@ -75,5 +81,13 @@ public class ArtistController {
         @PathVariable Long externalId
     ) {
         return artistService.unbindArtist(dataSource, externalId);
+    }
+    
+    @DeleteMapping("/unbind/{dataSource}/batch")
+    public BatchUnbindResponseDTO batchUnbindArtists(
+        @PathVariable DataSource dataSource,
+        @Valid @RequestBody BatchUnbindRequestDTO request
+    ) {
+        return bindingService.batchUnbind(EntityType.ARTIST, dataSource, request);
     }
 }

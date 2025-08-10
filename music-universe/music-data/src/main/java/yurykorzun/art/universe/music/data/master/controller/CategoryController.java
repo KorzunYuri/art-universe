@@ -12,10 +12,14 @@ import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseD
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindResponseDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.entity.EntityType;
 import yurykorzun.art.universe.music.data.master.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.service.CategoryService;
+import yurykorzun.art.universe.music.data.master.service.BindingService;
 
 import java.util.List;
 
@@ -24,9 +28,11 @@ import java.util.List;
 public class CategoryController {
 
     private final CategoryService categoryService;
+    private final BindingService bindingService;
 
-    public CategoryController(CategoryService categoryService) {
+    public CategoryController(CategoryService categoryService, BindingService bindingService) {
         this.categoryService = categoryService;
+        this.bindingService = bindingService;
     }
 
     @GetMapping
@@ -111,5 +117,13 @@ public class CategoryController {
         @PathVariable Long externalId
     ) {
         return categoryService.unbindCategory(dataSource, externalId);
+    }
+    
+    @DeleteMapping("/unbind/{dataSource}/batch")
+    public BatchUnbindResponseDTO batchUnbindCategories(
+        @PathVariable DataSource dataSource,
+        @Valid @RequestBody BatchUnbindRequestDTO request
+    ) {
+        return bindingService.batchUnbind(EntityType.CATEGORY, dataSource, request);
     }
 }

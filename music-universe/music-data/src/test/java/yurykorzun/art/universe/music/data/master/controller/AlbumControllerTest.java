@@ -12,7 +12,11 @@ import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupR
 import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindResponseDTO;
+import yurykorzun.art.universe.music.data.master.entity.EntityType;
 import yurykorzun.art.universe.music.data.master.service.AlbumService;
+import yurykorzun.art.universe.music.data.master.service.BindingService;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,6 +34,9 @@ public class AlbumControllerTest {
 
     @Mock
     private AlbumService albumService;
+
+    @Mock
+    private BindingService bindingService;
 
     @InjectMocks
     private AlbumController albumController;
