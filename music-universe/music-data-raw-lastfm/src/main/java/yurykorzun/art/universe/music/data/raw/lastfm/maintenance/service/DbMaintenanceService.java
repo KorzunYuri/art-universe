@@ -5,7 +5,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import yurykorzun.art.universe.common.CodedRegistry;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
+
+import java.util.List;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -13,6 +17,7 @@ public class DbMaintenanceService {
 
     private final DbMaintenanceCoordinator dbMaintenanceCoordinator;
     private final JdbcTemplate jdbc;
+    private final MusicDataIntegrationService musicDataIntegrationService;
 
     @Value("${lastfm.threshold.artist.listenersCount}")
     private int artistThreshold;
@@ -23,9 +28,13 @@ public class DbMaintenanceService {
     @Value("${lastfm.threshold.tag.usageCount}")
     private int tagThreshold;
 
-    public DbMaintenanceService(DbMaintenanceCoordinator dbMaintenanceCoordinator, JdbcTemplate jdbc) {
+    public DbMaintenanceService(
+            DbMaintenanceCoordinator dbMaintenanceCoordinator, 
+            JdbcTemplate jdbc,
+            MusicDataIntegrationService musicDataIntegrationService) {
         this.dbMaintenanceCoordinator = dbMaintenanceCoordinator;
         this.jdbc = jdbc;
+        this.musicDataIntegrationService = musicDataIntegrationService;
     }
 
     @Scheduled(cron = "${scheduling.lastfm.tasks.maintenance.cron}", scheduler = "maintenanceScheduler")
@@ -41,11 +50,19 @@ public class DbMaintenanceService {
     }
 
     private void executeMaintenanceTasks() {
-        cleanupEntity(LastfmEntityType.ARTIST,  artistThreshold);
-        cleanupEntity(LastfmEntityType.ALBUM,   albumThreshold);
-        cleanupEntity(LastfmEntityType.TRACK,   trackThreshold);
-        cleanupEntity(LastfmEntityType.TAG,     tagThreshold);
+        // Execute cleanup for each entity type and collect cleanup run IDs
+        Long artistCleanupRunId = cleanupEntity(LastfmEntityType.ARTIST, artistThreshold);
+        Long albumCleanupRunId = cleanupEntity(LastfmEntityType.ALBUM, albumThreshold);
+        Long trackCleanupRunId = cleanupEntity(LastfmEntityType.TRACK, trackThreshold);
+        Long tagCleanupRunId = cleanupEntity(LastfmEntityType.TAG, tagThreshold);
 
+        // Unbind deleted entities from music-data
+        unbindDeletedEntitiesFromCleanupRun(artistCleanupRunId);
+        unbindDeletedEntitiesFromCleanupRun(albumCleanupRunId);
+        unbindDeletedEntitiesFromCleanupRun(trackCleanupRunId);
+        unbindDeletedEntitiesFromCleanupRun(tagCleanupRunId);
+
+        // Database maintenance
         jdbc.execute("VACUUM FULL");
         jdbc.execute("ANALYZE");
         // cannot reindex - ownership required
@@ -53,7 +70,62 @@ public class DbMaintenanceService {
         //     jdbc.queryForObject("SELECT current_database()", String.class));
     }
 
-    private void cleanupEntity(LastfmEntityType entityType, int popularityAttrThreshold) {
-        jdbc.execute(String.format("SELECT cleanup_entity(%d, %d, false)", entityType.getCode(), popularityAttrThreshold));
+    private Long cleanupEntity(LastfmEntityType entityType, int popularityAttrThreshold) {
+        log.info("Starting cleanup for entity type {} with threshold {}", entityType, popularityAttrThreshold);
+        
+        List<Map<String, Object>> results = jdbc.queryForList(
+            "SELECT * FROM mtnc_cleanup_entity(?, ?, ?)",
+            entityType.getCode(), popularityAttrThreshold, false
+        );
+
+        if (results.isEmpty()) {
+            log.warn("No cleanup history returned for entity type {}", entityType);
+            return null;
+        }
+
+        // Extract cleanup run ID from the first result
+        Long cleanupRunId = (Long) results.get(0).get("cleanup_run_id");
+        
+        log.info("Completed cleanup for entity type {} with run ID {}", entityType, cleanupRunId);
+        
+        // Log cleanup summary
+        results.forEach(row -> {
+            String message = (String) row.get("message");
+            log.debug("Cleanup {}: {}", entityType, message);
+        });
+
+        return cleanupRunId;
     }
+
+    private void unbindDeletedEntitiesFromCleanupRun(Long cleanupRunId) {
+        if (cleanupRunId == null) {
+            return;
+        }
+
+        log.info("Starting unbind process for cleanup run {}", cleanupRunId);
+
+        // Get all entity types that were deleted in this cleanup run
+        List<Integer> entityTypes = jdbc.queryForList(
+            "SELECT DISTINCT entity_type FROM mtnc_deleted_entities WHERE cleanup_run_id = ?",
+            Integer.class, cleanupRunId
+        );
+
+        for (Integer entityTypeCode : entityTypes) {
+            LastfmEntityType entityType = CodedRegistry.getByCode(entityTypeCode, LastfmEntityType.class)
+                .orElseThrow(() -> new IllegalArgumentException("Unknown entity type code: " + entityTypeCode));
+
+            // Get entity IDs to unbind
+            List<Long> entityIds = jdbc.queryForList(
+                "SELECT entity_id FROM mtnc_deleted_entities WHERE cleanup_run_id = ? AND entity_type = ?",
+                Long.class, cleanupRunId, entityType.getCode()
+            );
+
+            if (!entityIds.isEmpty()) {
+                musicDataIntegrationService.unbindEntities(entityType, entityIds);
+            }
+        }
+
+        log.info("Completed unbind process for cleanup run {}", cleanupRunId);
+    }
+
 }

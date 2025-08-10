@@ -29,5 +29,6 @@
     <include file="changelogs/0022-restore-track-artist-id.xml" relativeToChangelogFile="true"/>
     <include file="changelogs/0023-fix-track-duration.xml" relativeToChangelogFile="true"/>
     <include file="changelogs/0024-add-artist-id-to-album.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0025-maintenance-improvements.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
