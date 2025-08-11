@@ -81,6 +81,8 @@ scheduling:
 
 music-data-master:
   base-url: ${MU_DATA_APP_HOST:localhost}:${MU_DATA_APP_PORT:8080}
+  unbind:
+    batch-size: 1000
 
 lastfm:
   baseUrl: "http://ws.audioscrobbler.com/2.0/"

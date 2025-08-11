@@ -13,9 +13,11 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.L
 import yurykorzun.art.universe.music.data.raw.lastfm.maintenance.dto.MasterBatchUnbindRequestDTO;
 import yurykorzun.art.universe.music.data.raw.lastfm.maintenance.dto.MasterBatchUnbindResponseDTO;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -45,6 +47,7 @@ class MusicDataIntegrationServiceTest {
     private MusicDataIntegrationService service;
 
     private static final String MUSIC_DATA_BASE_URL = "localhost:7082";
+    private static final int MUSIC_DATA_UNBIND_BATCH_SIZE = 1000;
 
     @BeforeEach
     void setUp() {
@@ -53,7 +56,7 @@ class MusicDataIntegrationServiceTest {
         when(restClientBuilder.build()).thenReturn(restClient);
         
         // Create service with mocked RestClient.Builder
-        service = new MusicDataIntegrationService(restClientBuilder, MUSIC_DATA_BASE_URL);
+        service = new MusicDataIntegrationService(restClientBuilder, MUSIC_DATA_BASE_URL, MUSIC_DATA_UNBIND_BATCH_SIZE);
     }
 
     /**
@@ -183,5 +186,200 @@ class MusicDataIntegrationServiceTest {
 
         // Then: Verify content type is set correctly
         verify(requestBodySpec).contentType(MediaType.APPLICATION_JSON);
+    }
+
+    @Test
+    void unbindEntities_shouldSplitLargeListIntoBatches() {
+        // Given
+        LastfmEntityType entityType = LastfmEntityType.ARTIST;
+        List<Long> entityIds = IntStream.rangeClosed(1, 2500)
+            .mapToLong(i -> (long) i)
+            .boxed()
+            .toList();
+
+        // Mock the REST client chain
+        setupSuccessfulApiCallMocks();
+        //when(restClient.method(HttpMethod.DELETE)).thenReturn(requestBodyUriSpec);
+        //when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
+        //when(requestBodySpec.contentType(MediaType.APPLICATION_JSON)).thenReturn(requestBodySpec);
+        //when(requestBodySpec.body(any(MasterBatchUnbindRequestDTO.class))).thenReturn(requestBodySpec);
+        //when(requestBodySpec.retrieve()).thenReturn(responseSpec);
+
+        // Create mock response
+        MasterBatchUnbindResponseDTO mockResponse = MasterBatchUnbindResponseDTO.builder()
+            .totalProcessed(1000)
+            .successCount(800)
+            .notFoundCount(200)
+            .build();
+
+        when(responseSpec.toEntity(MasterBatchUnbindResponseDTO.class))
+            .thenReturn(ResponseEntity.ok(mockResponse));
+
+        // When
+        service.unbindEntities(entityType, entityIds);
+
+        // Then
+        // Verify that the method was called 3 times (2500 / 1000 = 3 batches: 1000, 1000, 500)
+        ArgumentCaptor<MasterBatchUnbindRequestDTO> requestCaptor =
+            ArgumentCaptor.forClass(MasterBatchUnbindRequestDTO.class);
+
+        verify(requestBodySpec, times(3)).body(requestCaptor.capture());
+
+        List<MasterBatchUnbindRequestDTO> capturedRequests = requestCaptor.getAllValues();
+
+        // Verify batch sizes
+        assertEquals(3, capturedRequests.size(), "Should create 3 batches");
+        assertEquals(1000, capturedRequests.get(0).getExternalIds().size(), "First batch should have 1000 items");
+        assertEquals(1000, capturedRequests.get(1).getExternalIds().size(), "Second batch should have 1000 items");
+        assertEquals(500, capturedRequests.get(2).getExternalIds().size(), "Third batch should have 500 items");
+
+        // Verify that all IDs are included and in correct order
+        List<Long> allCapturedIds = new ArrayList<>();
+        for (MasterBatchUnbindRequestDTO request : capturedRequests) {
+            allCapturedIds.addAll(request.getExternalIds());
+        }
+
+        assertEquals(entityIds.size(), allCapturedIds.size(), "All entity IDs should be included");
+        assertEquals(entityIds, allCapturedIds, "Entity IDs should be in the same order");
+    }
+
+    @Test
+    void unbindEntities_shouldHandleExactlyMaxBatchSize() {
+        // Given
+        LastfmEntityType entityType = LastfmEntityType.TRACK;
+        List<Long> entityIds = IntStream.rangeClosed(1, 1000)
+            .mapToLong(i -> (long) i)
+            .boxed()
+            .toList();
+
+        // Mock the REST client chain
+        setupSuccessfulApiCallMocks();
+        //when(restClient.method(HttpMethod.DELETE)).thenReturn(requestBodyUriSpec);
+        //when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
+        //when(requestBodySpec.contentType(MediaType.APPLICATION_JSON)).thenReturn(requestBodySpec);
+        //when(requestBodySpec.body(any(MasterBatchUnbindRequestDTO.class))).thenReturn(requestBodySpec);
+        //when(requestBodySpec.retrieve()).thenReturn(responseSpec);
+
+        MasterBatchUnbindResponseDTO mockResponse = MasterBatchUnbindResponseDTO.builder()
+            .totalProcessed(1000)
+            .successCount(1000)
+            .notFoundCount(0)
+            .build();
+
+        when(responseSpec.toEntity(MasterBatchUnbindResponseDTO.class))
+            .thenReturn(ResponseEntity.ok(mockResponse));
+
+        // When
+        service.unbindEntities(entityType, entityIds);
+
+        // Then
+        ArgumentCaptor<MasterBatchUnbindRequestDTO> requestCaptor =
+            ArgumentCaptor.forClass(MasterBatchUnbindRequestDTO.class);
+
+        verify(requestBodySpec, times(1)).body(requestCaptor.capture());
+
+        List<MasterBatchUnbindRequestDTO> capturedRequests = requestCaptor.getAllValues();
+        assertEquals(1, capturedRequests.size(), "Should create exactly 1 batch");
+        assertEquals(1000, capturedRequests.get(0).getExternalIds().size(), "Batch should have exactly 1000 items");
+    }
+
+    @Test
+    void unbindEntities_shouldHandleSmallList() {
+        // Given
+        LastfmEntityType entityType = LastfmEntityType.ALBUM;
+        List<Long> entityIds = List.of(1L, 2L, 3L, 4L, 5L);
+
+        // Mock the REST client chain
+        setupSuccessfulApiCallMocks();
+        //when(restClient.method(HttpMethod.DELETE)).thenReturn(requestBodyUriSpec);
+        //when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
+        //when(requestBodySpec.contentType(MediaType.APPLICATION_JSON)).thenReturn(requestBodySpec);
+        //when(requestBodySpec.body(any(MasterBatchUnbindRequestDTO.class))).thenReturn(requestBodySpec);
+        //when(requestBodySpec.retrieve()).thenReturn(responseSpec);
+
+        MasterBatchUnbindResponseDTO mockResponse = MasterBatchUnbindResponseDTO.builder()
+            .totalProcessed(5)
+            .successCount(5)
+            .notFoundCount(0)
+            .build();
+
+        when(responseSpec.toEntity(MasterBatchUnbindResponseDTO.class))
+            .thenReturn(ResponseEntity.ok(mockResponse));
+
+        // When
+        service.unbindEntities(entityType, entityIds);
+
+        // Then
+        ArgumentCaptor<MasterBatchUnbindRequestDTO> requestCaptor =
+            ArgumentCaptor.forClass(MasterBatchUnbindRequestDTO.class);
+
+        verify(requestBodySpec, times(1)).body(requestCaptor.capture());
+
+        List<MasterBatchUnbindRequestDTO> capturedRequests = requestCaptor.getAllValues();
+        assertEquals(1, capturedRequests.size(), "Should create exactly 1 batch");
+        assertEquals(5, capturedRequests.get(0).getExternalIds().size(), "Batch should have exactly 5 items");
+        assertEquals(entityIds, capturedRequests.get(0).getExternalIds(), "Should contain all original IDs");
+    }
+
+    @Test
+    void unbindEntities_shouldContinueOnBatchFailure() {
+        // Given
+        LastfmEntityType entityType = LastfmEntityType.ARTIST;
+        List<Long> entityIds = IntStream.rangeClosed(1, 1500)
+            .mapToLong(i -> (long) i)
+            .boxed()
+            .toList();
+
+        // Mock the REST client chain
+        setupSuccessfulApiCallMocks();
+        //when(restClient.method(HttpMethod.DELETE)).thenReturn(requestBodyUriSpec);
+        //when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
+        //when(requestBodySpec.contentType(MediaType.APPLICATION_JSON)).thenReturn(requestBodySpec);
+        //when(requestBodySpec.body(any(MasterBatchUnbindRequestDTO.class))).thenReturn(requestBodySpec);
+        //when(requestBodySpec.retrieve()).thenReturn(responseSpec);
+
+        // First call succeeds, second fails, third succeeds
+        MasterBatchUnbindResponseDTO successResponse = MasterBatchUnbindResponseDTO.builder()
+            .totalProcessed(1000)
+            .successCount(800)
+            .notFoundCount(200)
+            .build();
+
+        when(responseSpec.toEntity(MasterBatchUnbindResponseDTO.class))
+            .thenReturn(ResponseEntity.ok(successResponse))
+            .thenThrow(new RuntimeException("Network error"))
+            .thenReturn(ResponseEntity.ok(successResponse));
+
+        // When
+        assertDoesNotThrow(() -> service.unbindEntities(entityType, entityIds));
+
+        // Then
+        verify(requestBodySpec, times(2)).body(any(MasterBatchUnbindRequestDTO.class));
+    }
+
+    @Test
+    void unbindEntities_shouldHandleEmptyList() {
+        // Given
+        LastfmEntityType entityType = LastfmEntityType.TAG;
+        List<Long> entityIds = List.of();
+
+        // When
+        service.unbindEntities(entityType, entityIds);
+
+        // Then
+        verify(restClient, never()).method(any());
+    }
+
+    @Test
+    void unbindEntities_shouldHandleNullList() {
+        // Given
+        LastfmEntityType entityType = LastfmEntityType.ARTIST;
+        List<Long> entityIds = null;
+
+        // When
+        service.unbindEntities(entityType, entityIds);
+
+        // Then
+        verify(restClient, never()).method(any());
     }
 }
