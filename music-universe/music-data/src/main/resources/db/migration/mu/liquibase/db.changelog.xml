@@ -5,6 +5,17 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-    <includeAll path="changelogs" relativeToChangelogFile="true"/>
+    <include file="changelogs/0001-artist.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0002-album.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0003-dictionary.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0004-track.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0005-dimension.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0006-category.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0007-category-binding.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0008-artist-track.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0009-rename-reference-to-master.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0011-category-hierarchy-view.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0012-cascade-delete-constraints.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0013-readonly-schema.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
