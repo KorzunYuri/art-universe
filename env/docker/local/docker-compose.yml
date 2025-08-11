@@ -157,6 +157,7 @@ services:
         - VITE_MU_QUIZ_APP_EXTERNAL_PORT=${MU_QUIZ_APP_EXTERNAL_PORT}
     env_file:
       - ./music-universe-ui.env
+      - ./music-universe-ui.secrets.env
     ports:
       - "${MU_UI_EXTERNAL_PORT}:80"
     depends_on:
