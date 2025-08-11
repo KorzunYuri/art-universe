@@ -9,7 +9,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiResponseStatus;
+import yurykorzun.art.universe.common.exception.EntityNotFoundException;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiResponseCreateRequest;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmApiResponseRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiResponseService;
@@ -126,6 +128,13 @@ public class LastfmApiResponseServiceImpl implements LastfmApiResponseService {
             response.setUpdatedAt(Instant.now());
             repository.save(response);
         }
+    }
+
+    @Override
+    public LastfmApiResponseDto getApiResponseById(long id) {
+        return repository.findById(id)
+            .map(LastfmApiResponseDto::from)
+            .orElseThrow(() -> new EntityNotFoundException("response", id));
     }
 
     private static LastfmApiResponse dtoToApiResponse(LastfmApiResponseCreateRequest dto) {

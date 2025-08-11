@@ -8,12 +8,15 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiResponseStatus;
+import yurykorzun.art.universe.common.exception.EntityNotFoundException;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiResponseCreateRequest;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmApiResponseRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -87,6 +90,33 @@ class LastfmApiResponseServiceImplTest {
         verify(apiResponseRepository).getReferenceById(id);
         verify(apiResponseRepository).save(apiResponse);
         assertEquals(ApiResponseStatus.PENDING, apiResponse.getStatus());
+    }
+
+    @Test
+    void getApiResponseById_shouldReturnApiResponseDto_whenResponseExists() {
+        // given
+        long id = 1L;
+        LastfmApiResponse response = getMockResponse(validCreateResponseRequestSupplier().get(), id);
+        when(apiResponseRepository.findById(id)).thenReturn(Optional.of(response));
+
+        // when
+        LastfmApiResponseDto dto = apiResponseService.getApiResponseById(id);
+
+        // then
+        assertNotNull(dto);
+        assertEquals(id, dto.id());
+        assertEquals(response.getResponseBody(), dto.responseBody());
+        assertEquals(response.getStatus(), dto.status());
+    }
+
+    @Test
+    void getApiResponseById_shouldThrowException_whenResponseDoesNotExist() {
+        // given
+        long id = 999L;
+        when(apiResponseRepository.findById(id)).thenReturn(Optional.empty());
+
+        // when
+        assertThrows(EntityNotFoundException.class, () -> apiResponseService.getApiResponseById(id));
     }
 
 }

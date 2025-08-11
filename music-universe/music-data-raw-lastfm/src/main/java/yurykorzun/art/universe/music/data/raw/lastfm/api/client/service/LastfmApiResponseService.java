@@ -2,6 +2,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.client.service;
 
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiResponseStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiResponseCreateRequest;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiResponseDto;
 
 public interface LastfmApiResponseService {
 
@@ -10,4 +11,6 @@ public interface LastfmApiResponseService {
     void setStatus(long id, ApiResponseStatus status) throws IllegalStateException;
 
     void processResponses();
+
+    LastfmApiResponseDto getApiResponseById(long id);
 }
