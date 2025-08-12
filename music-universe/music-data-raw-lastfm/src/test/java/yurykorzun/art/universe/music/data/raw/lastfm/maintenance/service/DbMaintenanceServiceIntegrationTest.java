@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.entity.LastfmAlbum;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.repository.LastfmArtistRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.blacklist.repository.BlacklistedEntityUrlRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
@@ -17,6 +19,7 @@ import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("integration")
@@ -30,6 +33,12 @@ public class DbMaintenanceServiceIntegrationTest extends JpaOnlyTest {
 
     @Autowired
     private EntityManager entityManager;
+
+    @Autowired
+    private LastfmArtistRepository artistRepository;
+
+    @Autowired
+    private BlacklistedEntityUrlRepository blacklistRepository;
 
     @BeforeEach
     void setUp() {
@@ -292,6 +301,187 @@ public class DbMaintenanceServiceIntegrationTest extends JpaOnlyTest {
         assertTrue(results.stream().allMatch(row -> 
             firstRunId.equals(row.get("cleanup_run_id"))));
     }
+    @Test
+    void shouldAddArtistsToBlacklistDuringCleanup() {
+        // Given - create artists with low listener counts (below threshold of 1000)
+        LastfmArtist lowPopularityArtist1 = dbHelper.createAndSaveArtist(builder -> builder
+            .name("Low Popularity Artist 1")
+            .url("https://www.last.fm/music/Low+Popularity+Artist+1")
+            .listenersCount(500));
+
+        LastfmArtist lowPopularityArtist2 = dbHelper.createAndSaveArtist(builder -> builder
+            .name("Low Popularity Artist 2")
+            .url("https://www.last.fm/music/Low+Popularity+Artist+2")
+            .listenersCount(300));
+
+        LastfmArtist highPopularityArtist = dbHelper.createAndSaveArtist(builder -> builder
+            .name("High Popularity Artist")
+            .url("https://www.last.fm/music/High+Popularity+Artist")
+            .listenersCount(5000));
+
+        // Verify initial state
+        assertThat(artistRepository.count()).isEqualTo(3);
+        assertThat(blacklistRepository.count()).isEqualTo(0);
+
+        // When - run cleanup with threshold 1000 (dry run first)
+        List<Map<String, Object>> dryRunResults = jdbcTemplate.queryForList(
+            "SELECT * FROM mtnc_cleanup_entity(1, 1000, true)"
+        );
+
+        // Then - verify dry run shows what would be blacklisted
+        assertThat(dryRunResults).isNotEmpty();
+        boolean foundBlacklistMessage = dryRunResults.stream()
+            .anyMatch(row -> row.get("message").toString().contains("2 URLs will be added to blacklist"));
+        assertThat(foundBlacklistMessage).isTrue();
+
+        // Verify nothing was actually deleted or blacklisted in dry run
+        assertThat(artistRepository.count()).isEqualTo(3);
+        assertThat(blacklistRepository.count()).isEqualTo(0);
+
+        // When - run actual cleanup
+        List<Map<String, Object>> actualResults = jdbcTemplate.queryForList(
+            "SELECT * FROM mtnc_cleanup_entity(1, 1000, false)"
+        );
+
+        // Then - verify cleanup results
+        assertThat(actualResults).isNotEmpty();
+        boolean foundBlacklistAddedMessage = actualResults.stream()
+            .anyMatch(row -> row.get("message").toString().contains("added 2 URLs to blacklist"));
+        assertThat(foundBlacklistAddedMessage).isTrue();
+
+        // Verify low popularity artists were deleted
+        assertThat(artistRepository.count()).isEqualTo(1);
+        assertThat(artistRepository.existsById(highPopularityArtist.getId())).isTrue();
+        assertThat(artistRepository.existsById(lowPopularityArtist1.getId())).isFalse();
+        assertThat(artistRepository.existsById(lowPopularityArtist2.getId())).isFalse();
+
+        // Verify URLs were added to blacklist
+        assertThat(blacklistRepository.count()).isEqualTo(2);
+        assertThat(blacklistRepository.existsByEntityTypeAndUrl(LastfmEntityType.ARTIST, lowPopularityArtist1.getUrl())).isTrue();
+        assertThat(blacklistRepository.existsByEntityTypeAndUrl(LastfmEntityType.ARTIST, lowPopularityArtist2.getUrl())).isTrue();
+        assertThat(blacklistRepository.existsByEntityTypeAndUrl(LastfmEntityType.ARTIST, highPopularityArtist.getUrl())).isFalse();
+    }
+
+    @Test
+    void shouldHandleArtistsWithNullUrls() {
+        // Given - create artist with null URL
+        LastfmArtist artistWithNullUrl = dbHelper.createAndSaveArtist(builder -> builder
+            .name("Artist With Null URL")
+            .url(null)
+            .listenersCount(500));
+
+        LastfmArtist artistWithEmptyUrl = dbHelper.createAndSaveArtist(builder -> builder
+            .name("Artist With Empty URL")
+            .url("")
+            .listenersCount(300));
+
+        LastfmArtist artistWithValidUrl = dbHelper.createAndSaveArtist(builder -> builder
+            .name("Artist With Valid URL")
+            .url("https://www.last.fm/music/Valid+Artist")
+            .listenersCount(200));
+
+        // Flush to ensure entity is persisted to database
+        entityManager.flush();
+
+        // When - run cleanup
+        List<Map<String, Object>> results = jdbcTemplate.queryForList(
+            "SELECT * FROM mtnc_cleanup_entity(1, 1000, false)"
+        );
+
+        // Then - verify only valid URL was added to blacklist
+        assertThat(results).isNotEmpty();
+        boolean foundBlacklistAddedMessage = results.stream()
+            .anyMatch(row -> row.get("message").toString().contains("added 1 URLs to blacklist"));
+        assertThat(foundBlacklistAddedMessage).isTrue();
+
+        // Verify all artists were deleted (they all have low popularity)
+        assertThat(artistRepository.count()).isEqualTo(0);
+
+        // Verify only the valid URL was blacklisted
+        assertThat(blacklistRepository.count()).isEqualTo(1);
+        assertThat(blacklistRepository.existsByEntityTypeAndUrl(LastfmEntityType.ARTIST, artistWithValidUrl.getUrl())).isTrue();
+    }
+
+    @Test
+    void shouldHandleDuplicateUrlsInBlacklist() {
+        // Given - create artist with URL that's already blacklisted
+        String existingBlacklistedUrl = "https://www.last.fm/music/Already+Blacklisted";
+        blacklistRepository.insertIgnoreDuplicate(LastfmEntityType.ARTIST, existingBlacklistedUrl);
+
+        LastfmArtist artistWithBlacklistedUrl = dbHelper.createAndSaveArtist(builder -> builder
+            .name("Artist With Blacklisted URL")
+            .url(existingBlacklistedUrl)
+            .listenersCount(500));
+
+        // Verify initial state
+        assertThat(blacklistRepository.count()).isEqualTo(1);
+
+        // Flush to ensure entity is persisted to database
+        entityManager.flush();
+
+        // When - run cleanup
+        List<Map<String, Object>> results = jdbcTemplate.queryForList(
+            "SELECT * FROM mtnc_cleanup_entity(1, 1000, false)"
+        );
+
+        // Then - verify no duplicate was added
+        assertThat(results).isNotEmpty();
+        boolean foundBlacklistAddedMessage = results.stream()
+            .anyMatch(row -> row.get("message").toString().contains("added 0 URLs to blacklist"));
+        assertThat(foundBlacklistAddedMessage).isTrue();
+
+        // Verify artist was deleted but no duplicate blacklist entry was created
+        assertThat(artistRepository.count()).isEqualTo(0);
+        assertThat(blacklistRepository.count()).isEqualTo(1); // Still only 1 entry
+    }
+
+    @Test
+    void shouldNotBlacklistApprovedArtists() {
+        // Given - create approved artist with low popularity (should not be cleaned up)
+        LastfmArtist approvedLowPopularityArtist = dbHelper.createAndSaveArtist(builder -> builder
+            .name("Approved Low Popularity Artist")
+            .url("https://www.last.fm/music/Approved+Low+Popularity+Artist")
+            .listenersCount(500));
+
+        // Flush to ensure entity is persisted to database
+        entityManager.flush();
+
+        // Manually approve the artist (simulate manual approval)
+        jdbcTemplate.update(
+            "UPDATE artist SET approval_status = 2 WHERE id = ?",
+            approvedLowPopularityArtist.getId()
+        );
+
+        LastfmArtist pendingLowPopularityArtist = dbHelper.createAndSaveArtist(builder -> builder
+            .name("Pending Low Popularity Artist")
+            .url("https://www.last.fm/music/Pending+Low+Popularity+Artist")
+            .listenersCount(300));
+
+        // Flush to ensure entity is persisted to database
+        entityManager.flush();
+
+        // When - run cleanup
+        List<Map<String, Object>> results = jdbcTemplate.queryForList(
+            "SELECT * FROM mtnc_cleanup_entity(1, 1000, false)"
+        );
+
+        // Then - verify only pending artist was processed
+        assertThat(results).isNotEmpty();
+        boolean foundBlacklistAddedMessage = results.stream()
+            .anyMatch(row -> row.get("message").toString().contains("added 1 URLs to blacklist"));
+        assertThat(foundBlacklistAddedMessage).isTrue();
+
+        // Verify approved artist was not deleted
+        assertThat(artistRepository.count()).isEqualTo(1);
+        assertThat(artistRepository.existsById(approvedLowPopularityArtist.getId())).isTrue();
+        assertThat(artistRepository.existsById(pendingLowPopularityArtist.getId())).isFalse();
+
+        // Verify only pending artist's URL was blacklisted
+        assertThat(blacklistRepository.count()).isEqualTo(1);
+        assertThat(blacklistRepository.existsByEntityTypeAndUrl(LastfmEntityType.ARTIST, approvedLowPopularityArtist.getUrl())).isFalse();
+        assertThat(blacklistRepository.existsByEntityTypeAndUrl(LastfmEntityType.ARTIST, pendingLowPopularityArtist.getUrl())).isTrue();
+    }
+
 
     private void testEntityTypeCleanup(LastfmEntityType entityType, int threshold, Long entityId) {
         // Execute cleanup

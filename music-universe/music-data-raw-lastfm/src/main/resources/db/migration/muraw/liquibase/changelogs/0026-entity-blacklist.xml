@@ -5,12 +5,18 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
 
-    <changeSet id="0026-0010-create-entity-blacklist-url" author="system">
+    <changeSet id="0026-0010-create-entity-blacklist-url" author="amazon-q">
         <sqlFile path="../changesets/0026-entity-blacklist/0026-0010-entity_blacklist_url$initial.sql" relativeToChangelogFile="true"/>
     </changeSet>
 
-    <changeSet id="0026-0020-create-indexes" author="system">
+    <changeSet id="0026-0020-create-indexes" author="amazon-q">
         <sqlFile path="../changesets/0026-entity-blacklist/0026-0020-entity_blacklist_url$indexes.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0026-0030-mtnc-cleanup-entity-blacklist-integration" author="amazon-q">
+        <sqlFile path="../changesets/0026-entity-blacklist/0026-0030-mtnc-cleanup-entity-blacklist-integration.sql" relativeToChangelogFile="true"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
     </changeSet>
 
 </databaseChangeLog>
