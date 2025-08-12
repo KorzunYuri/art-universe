@@ -14,6 +14,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityMappingResult;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandlerFactory;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.service.DtoQualityService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.TagTopArtistsArtistDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.TagTopArtistsDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
@@ -34,6 +35,7 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
 
     private final LastfmArtistService artistService;
     private final LastfmApiDtoProcessingService dtoProcessingService;
+    private final DtoQualityService dtoQualityService;
     private final EntityFactory<LastfmArtist, TagTopArtistsArtistDto> artistFactory;
     private final LastfmTagService tagService;
     private final LastfmArtistTagService artistTagService;
@@ -43,7 +45,8 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
         LastfmTagService tagService,
         LastfmArtistTagService artistTagService,
         EntityFactory<LastfmArtist, TagTopArtistsArtistDto> artistFactory,
-        LastfmApiDtoProcessingService dtoProcessingService
+        LastfmApiDtoProcessingService dtoProcessingService,
+        DtoQualityService dtoQualityService
     ) {
         super(TagTopArtistsDtoRoot.class);
 
@@ -52,6 +55,7 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
         this.tagService = tagService;
         this.dtoProcessingService = dtoProcessingService;
         this.artistTagService = artistTagService;
+        this.dtoQualityService = dtoQualityService;
     }
 
     private static final List<EntityAttributeHandler<LastfmArtist, ?, TagTopArtistsArtistDto>> attrHandlers;
@@ -85,10 +89,23 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
         TagTopArtistsDtoRoot dtoRoot,
         LastfmApiCall sourceApiCall
     ) {
-        List<TagTopArtistsArtistDto> dtos = dtoRoot.getTopArtists().getArtists();
+        List<TagTopArtistsArtistDto> allArtistDtos = dtoRoot.getTopArtists().getArtists();
+        
+        // Validate artists against blacklist
+        var qualityArtistDtos = dtoQualityService.validateAgainstBlacklist(allArtistDtos)
+            .stream()
+            .filter(DtoQualityService.Result::isAccepted)
+            .map(DtoQualityService.Result::getDto)
+            .toList();
+
+        if (qualityArtistDtos.size() < allArtistDtos.size()) {
+            log.info("Filtered out {} blacklisted artists from tag's top artists", 
+                allArtistDtos.size() - qualityArtistDtos.size());
+        }
+
         LastfmApiDtoProcessingResult<LastfmArtist, TagTopArtistsArtistDto> result = dtoProcessingService.process(
             sourceApiCall,
-            dtos,
+            qualityArtistDtos,
             artistFactory,
             attrHandlers,
             artistService

@@ -1,17 +1,21 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.repository;
 
 import jakarta.annotation.Nullable;
+import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 
 import java.util.*;
+import java.util.function.Function;
 
 @Repository
 public interface LastfmArtistRepository extends JpaRepository<LastfmArtist, Long> {
@@ -19,6 +23,8 @@ public interface LastfmArtistRepository extends JpaRepository<LastfmArtist, Long
     Optional<LastfmArtist> findByName(String name);
 
     List<LastfmArtist> findAllByNameIn(Collection<String> strings);
+
+    List<LastfmArtist> findAllByUrlIn(List<String> urls);
 
     /**
      *  Returns artists for artist.getInfo method, in the following priority order:
@@ -258,4 +264,13 @@ public interface LastfmArtistRepository extends JpaRepository<LastfmArtist, Long
             return findArtistsWithApprovalStatus(search, minPlayCount, minListenersCount, approvalStatuses, pageable);
         }
     }
+
+    Function<List<String>, List<? extends BaseLastfmEntity>> findAllByUrlIn(Collection<String> urls, Sort sort, Limit limit);
+
+    @Query("""
+        SELECT  a.url
+        FROM    artist a
+        WHERE   a.url in :urls
+    """)
+    List<String> findExistingUrls(@Param("urls") List<String> strings);
 }

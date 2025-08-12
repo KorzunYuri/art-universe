@@ -6,22 +6,23 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.track.common.dto.TrackDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.track.common.dto.TrackDtoWithMetrics;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ArtistTopTracksTrackDto extends TrackDto {
+public class ArtistTopTracksTrackDto extends TrackDto implements TrackDtoWithMetrics {
 
     @JsonProperty("artist")
     private ArtistTopTracksTrackArtistDto artist;
 
     @JsonProperty("streamable")
-    private int streamable;
+    private Integer streamable;
 
     @JsonProperty("playcount")
-    private long playCount;
+    private Long playCount;
 
     @JsonProperty("listeners")
-    private int listenersCount;
+    private Integer listenersCount;
 }

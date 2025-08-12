@@ -18,6 +18,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandlerFactory;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.service.DtoQualityService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.entity.LastfmAlbum;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.service.LastfmAlbumService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
@@ -29,7 +30,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.se
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Component
@@ -40,6 +40,7 @@ public class LastfmArtistTopAlbumsResponseProcessor extends LastfmApiResponsePro
     private final LastfmAlbumService albumService;
     private final LastfmArtistAlbumService artistAlbumService;
     private final LastfmApiDtoProcessingService dtoProcessingService;
+    private final DtoQualityService dtoQualityService;
 
     @Value("${lastfm.client.methods.artist.topAlbums.albumPlayCountThreshold:10000}")
     private long albumPlayCountThreshold;
@@ -71,7 +72,8 @@ public class LastfmArtistTopAlbumsResponseProcessor extends LastfmApiResponsePro
         LastfmArtistService artistService,
         LastfmAlbumService albumService,
         LastfmArtistAlbumService artistAlbumService,
-        LastfmApiDtoProcessingService dtoProcessingService
+        LastfmApiDtoProcessingService dtoProcessingService, 
+        DtoQualityService dtoQualityService
     ) {
         super(ArtistTopAlbumsDtoRoot.class);
 
@@ -79,6 +81,7 @@ public class LastfmArtistTopAlbumsResponseProcessor extends LastfmApiResponsePro
         this.albumService = albumService;
         this.artistAlbumService = artistAlbumService;
         this.dtoProcessingService = dtoProcessingService;
+        this.dtoQualityService = dtoQualityService;
     }
 
     @Override
@@ -96,31 +99,98 @@ public class LastfmArtistTopAlbumsResponseProcessor extends LastfmApiResponsePro
             .orElseThrow(() -> new EntityNotFoundException(
                 String.format("Source artist with ID=%s not found", sourceApiCall.getEntityId())));
 
-        // Filter albums by threshold and artist match
-        List<ArtistTopAlbumsAlbumDto> filteredAlbums = getAlbumsToSave(dtoRoot, sourceArtist);
-        if (filteredAlbums.isEmpty()) {
-            log.info("No albums to process after filtering");
+        // Step 1: Filter and validate albums
+        List<ArtistTopAlbumsAlbumDto> qualityAlbums = getQualityAlbums(dtoRoot);
+        if (qualityAlbums.isEmpty()) {
+            log.info("No quality albums found for artist {} after validation", sourceArtist.getName());
             return;
         }
 
-        // Step 1: Extract all artists from album DTOs
-        List<ArtistDto> artistDtos = extractArtistsFromAlbums(filteredAlbums);
+        // Step 2: Extract and validate artists from albums
+        List<ArtistDto> qualityArtists = extractQualityArtists(qualityAlbums);
+        if (qualityArtists.isEmpty()) {
+            log.info("No quality artists found after validation");
+            return;
+        }
         
-        // Step 2: Process artists first
-        var artistsResult = processArtists(artistDtos, sourceApiCall);
+        // Step 3: Process artists first
+        var artistsResult = processArtists(qualityArtists, sourceApiCall);
         Map<String, LastfmArtist> artistsByName = createArtistNameMap(artistsResult.actualEntities());
         
-        // Step 3: Process albums with artist references
-        var albumsResult = processAlbums(filteredAlbums, sourceApiCall, artistsByName);
+        // Step 4: Process albums with artist references
+        var albumsToProcess = filterAlbumsWithValidArtists(qualityAlbums, artistsByName);
+        var albumsResult = processAlbums(albumsToProcess, sourceApiCall, artistsByName);
         
-        // Step 4: Create artist-album relationships for consistency
+        // Step 5: Create artist-album relationships
         createArtistAlbumRelationships(albumsResult, sourceApiCall, artistsByName);
     }
 
-    private List<ArtistDto> extractArtistsFromAlbums(List<ArtistTopAlbumsAlbumDto> albums) {
-        return albums.stream()
+    /**
+     * Filters and validates albums by quality metrics and blacklist
+     */
+    private List<ArtistTopAlbumsAlbumDto> getQualityAlbums(ArtistTopAlbumsDtoRoot dtoRoot) {
+        if (dtoRoot.getTopAlbumsObject() == null || dtoRoot.getTopAlbumsObject().getAlbums() == null) {
+            return Collections.emptyList();
+        }
+        
+        List<ArtistTopAlbumsAlbumDto> allAlbums = dtoRoot.getTopAlbumsObject().getAlbums();
+        
+        // First validate against blacklist and metrics
+        var qualityAlbums = dtoQualityService.validateAndBlacklist(allAlbums)
+            .stream()
+            .filter(DtoQualityService.Result::isAccepted)
+            .map(DtoQualityService.Result::getDto)
+            .toList();
+
+        // Then filter by play count threshold
+        var thresholdFilteredAlbums = qualityAlbums.stream()
+            .filter(dto -> dto.getPlayCount() > albumPlayCountThreshold)
+            .toList();
+
+        if (thresholdFilteredAlbums.size() < allAlbums.size()) {
+            log.info("Filtered {} albums: {} failed validation, {} below play count threshold", 
+                allAlbums.size() - thresholdFilteredAlbums.size(),
+                allAlbums.size() - qualityAlbums.size(),
+                qualityAlbums.size() - thresholdFilteredAlbums.size());
+        }
+
+        return thresholdFilteredAlbums;
+    }
+
+    /**
+     * Extracts unique artists from albums and validates them against blacklist
+     */
+    private List<ArtistDto> extractQualityArtists(List<ArtistTopAlbumsAlbumDto> albums) {
+        List<ArtistDto> artistDtos = albums.stream()
             .map(ArtistTopAlbumsAlbumDto::getArtist)
+            .filter(Objects::nonNull)
             .distinct()
+            .toList();
+
+        var qualityArtists = dtoQualityService.validateAgainstBlacklist(artistDtos)
+            .stream()
+            .filter(DtoQualityService.Result::isAccepted)
+            .map(DtoQualityService.Result::getDto)
+            .toList();
+
+        if (qualityArtists.size() < artistDtos.size()) {
+            log.info("Filtered out {} blacklisted artists from albums", 
+                artistDtos.size() - qualityArtists.size());
+        }
+
+        return qualityArtists;
+    }
+
+    /**
+     * Filters albums to only include those with valid artists
+     */
+    private List<ArtistTopAlbumsAlbumDto> filterAlbumsWithValidArtists(
+        List<ArtistTopAlbumsAlbumDto> albums, 
+        Map<String, LastfmArtist> artistsByName
+    ) {
+        return albums.stream()
+            .filter(album -> album.getArtist() != null && 
+                           artistsByName.containsKey(album.getArtist().getName()))
             .toList();
     }
 
@@ -208,7 +278,7 @@ public class LastfmArtistTopAlbumsResponseProcessor extends LastfmApiResponsePro
             LastfmAlbum album = mapping.getNewEntity();
             ArtistTopAlbumsAlbumDto dto = mapping.getDto();
             
-            // get artist by name
+            // Get artist by name
             if (dto.getArtist() != null && dto.getArtist().getName() != null) {
                 LastfmArtist artist = artistsByName.get(dto.getArtist().getName());
                 if (artist == null) {
@@ -216,7 +286,7 @@ public class LastfmArtistTopAlbumsResponseProcessor extends LastfmApiResponsePro
                     return;
                 }
 
-                // create relation
+                // Create relation
                 LastfmArtistAlbum relation = LastfmArtistAlbum.builder()
                     .apiCall(sourceApiCall)
                     .artist(artist)
@@ -231,25 +301,5 @@ public class LastfmArtistTopAlbumsResponseProcessor extends LastfmApiResponsePro
             artistAlbumService.upsertAll(relations);
             log.info("Saved {} artist-album relations", relations.size());
         }
-    }
-
-    private List<ArtistTopAlbumsAlbumDto> getAlbumsToSave(ArtistTopAlbumsDtoRoot dtoRoot, LastfmArtist sourceArtist) {
-        if (dtoRoot.getTopAlbumsObject() == null || dtoRoot.getTopAlbumsObject().getAlbums() == null) {
-            return Collections.emptyList();
-        }
-        
-        return dtoRoot.getTopAlbumsObject().getAlbums().stream()
-            .filter(albumFilter(sourceArtist))
-            .toList();
-    }
-
-    private Predicate<ArtistTopAlbumsAlbumDto> albumFilter(LastfmArtist sourceArtist) {
-        return dto -> {
-            if (dto.getPlayCount() < albumPlayCountThreshold) {
-                return false;
-            }
-
-            return true;
-        };
     }
 }

@@ -14,6 +14,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityMapping;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandlerFactory;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.service.DtoQualityService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.dto.TagTopTracksDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.dto.TagTopTracksTrackArtistDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.dto.TagTopTracksTrackDto;
@@ -40,6 +41,7 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
     private final LastfmArtistService artistService;
     private final LastfmTrackService trackService;
     private final LastfmArtistTrackService artistTrackService;
+    private final DtoQualityService dtoQualityService;
     private final EntityFactory<LastfmArtist, TagTopTracksTrackArtistDto> artistFactory;
     private final LastfmApiDtoProcessingService dtoProcessingService;
 
@@ -51,6 +53,7 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
         LastfmTrackService trackService,
         LastfmArtistTrackService artistTrackService,
         LastfmApiDtoProcessingService dtoProcessingService,
+        DtoQualityService dtoQualityService,
         EntityFactory<LastfmArtist, TagTopTracksTrackArtistDto> artistFactory
     ) {
         super(TagTopTracksDtoRoot.class);
@@ -59,6 +62,7 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
         this.trackService = trackService;
         this.tagService = tagService;
         this.artistTrackService = artistTrackService;
+        this.dtoQualityService = dtoQualityService;
         this.artistFactory = artistFactory;
         this.dtoProcessingService = dtoProcessingService;
     }
@@ -96,26 +100,43 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
         LastfmTag sourceTag = tagService.findById(sourceApiCall.getEntityId())
             .orElseThrow(() -> new EntityNotFoundException(String.format("Source tag with ID=%s not found", sourceApiCall.getEntityId())));
 
-        //  first save new artists
+        // First validate and save artists from ALL tracks (no filtering by track validity)
         var artistMappingResult = updateArtists(dtoRoot, sourceApiCall);
 
-        //  then save new tracks with artist references
+        // Then validate and save tracks using validated artists
         var trackMappingResult = updateTracks(dtoRoot, sourceApiCall, artistMappingResult);
 
-        //  finally, bind all tracks to artists
+        // Finally, bind all tracks to artists
         updateArtistTrackRelations(trackMappingResult, artistMappingResult, sourceApiCall);
 
-        //  clean cache
+        // Clean cache
         rootsWithMissingAttrsLogged.remove(dtoRoot);
     }
 
     private LastfmApiDtoProcessingResult<LastfmArtist, TagTopTracksTrackArtistDto> updateArtists(TagTopTracksDtoRoot dtoRoot, LastfmApiCall sourceApiCall) {
 
-        List<TagTopTracksTrackArtistDto> artistDtos = getArtistDtos(dtoRoot);
+        // Extract ALL artists from tracks (no filtering by track validity)
+        List<TagTopTracksTrackArtistDto> allArtistDtos = dtoRoot.getRootObject().getTracks().stream()
+            .map(TagTopTracksTrackDto::getArtist)
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+
+        // Validate artists against blacklist
+        var qualityArtistDtos = dtoQualityService.validateAgainstBlacklist(allArtistDtos)
+            .stream()
+            .filter(DtoQualityService.Result::isAccepted)
+            .map(DtoQualityService.Result::getDto)
+            .toList();
+
+        if (qualityArtistDtos.size() < allArtistDtos.size()) {
+            log.info("Filtered out {} blacklisted artists from tag's top tracks", 
+                allArtistDtos.size() - qualityArtistDtos.size());
+        }
 
         LastfmApiDtoProcessingResult<LastfmArtist, TagTopTracksTrackArtistDto> result = dtoProcessingService.process(
             sourceApiCall,
-            artistDtos,
+            qualityArtistDtos,
             artistFactory,
             artistAttrHandlers,
             artistService
@@ -131,14 +152,35 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
         LastfmApiCall sourceApiCall,
         LastfmApiDtoProcessingResult<LastfmArtist, TagTopTracksTrackArtistDto> artistMappingResult
     ) {
-        List<TagTopTracksTrackDto> trackDtos = getTrackDtos(dtoRoot);
+        // Get all valid tracks (with URL and artist)
+        List<TagTopTracksTrackDto> allValidTrackDtos = getValidTrackDtos(dtoRoot);
+
+        // Filter tracks to only include those with valid (non-blacklisted) artists
+        List<TagTopTracksTrackDto> tracksWithValidArtists = allValidTrackDtos.stream()
+            .filter(track -> track.getArtist() != null && 
+                           artistMappingResult.entityMapping().getMap().containsKey(track.getArtist().getName()))
+            .toList();
+
+        // Validate tracks against blacklist
+        var qualityTrackDtos = dtoQualityService.validateAgainstBlacklist(tracksWithValidArtists)
+            .stream()
+            .filter(DtoQualityService.Result::isAccepted)
+            .map(DtoQualityService.Result::getDto)
+            .toList();
+
+        if (qualityTrackDtos.size() < allValidTrackDtos.size()) {
+            log.info("Filtered {} tracks: {} due to blacklisted artists, {} due to blacklisted tracks",
+                allValidTrackDtos.size() - qualityTrackDtos.size(),
+                allValidTrackDtos.size() - tracksWithValidArtists.size(),
+                tracksWithValidArtists.size() - qualityTrackDtos.size());
+        }
 
         // Create track factory with artists from the previous step
         LastfmTagTopTracksTrackFactory trackFactory = new LastfmTagTopTracksTrackFactory(artistMappingResult);
 
         LastfmApiDtoProcessingResult<LastfmTrack, TagTopTracksTrackDto> result = dtoProcessingService.process(
             sourceApiCall,
-            trackDtos,
+            qualityTrackDtos,
             trackFactory,
             trackAttrHandlers,
             trackService
@@ -180,18 +222,13 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
         log.info("saved {} artist-track relations", relations.size());
     }
 
-    private List<TagTopTracksTrackDto> getTrackDtos(TagTopTracksDtoRoot dtoRoot) {
+    /**
+     * Gets valid track DTOs (with URL and artist) and logs missing attributes
+     */
+    private List<TagTopTracksTrackDto> getValidTrackDtos(TagTopTracksDtoRoot dtoRoot) {
         return dtoRoot.getRootObject().getTracks().stream()
                 .peek(logMissingAttributes(dtoRoot))
                 .filter(t -> t.getUrl() != null)
-            .toList();
-    }
-
-    private List<TagTopTracksTrackArtistDto> getArtistDtos(TagTopTracksDtoRoot dtoRoot) {
-        return getTrackDtos(dtoRoot).stream()
-            .map(TagTopTracksTrackDto::getArtist)
-            .filter(Objects::nonNull)
-            .distinct()
             .toList();
     }
 

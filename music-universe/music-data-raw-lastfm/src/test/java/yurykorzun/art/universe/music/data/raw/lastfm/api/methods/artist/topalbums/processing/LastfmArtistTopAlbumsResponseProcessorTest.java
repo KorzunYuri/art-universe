@@ -12,9 +12,11 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.util.ReflectionTestUtils;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.config.LastfmThresholdConfig;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.topalbums.dto.ArtistTopAlbumsDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.LastfmApiResponseProcessorTestHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.service.DtoQualityService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.entity.LastfmAlbum;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.repository.LastfmAlbumRepository;
@@ -26,6 +28,8 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entit
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repository.LastfmAttributeHistoryRecordRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repository.LastfmAttributeTypeSynchronizer;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.impl.LastfmAttributeHistoryServiceImpl;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.blacklist.service.BlacklistedEntityUrlService;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.entity.LastfmArtistAlbum;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.repository.LastfmArtistAlbumRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.service.LastfmArtistAlbumServiceImpl;
@@ -43,6 +47,10 @@ import static org.junit.jupiter.api.Assertions.*;
     // processing
     LastfmArtistTopAlbumsResponseProcessor.class,
     LastfmApiDtoProcessingService.class,
+    // quality control
+    BlacklistedEntityUrlService.class,
+    DtoQualityService.class,
+    LastfmThresholdConfig.class,
     // entities
     LastfmAlbumServiceImpl.class,
     LastfmArtistServiceImpl.class,
@@ -70,6 +78,9 @@ class LastfmArtistTopAlbumsResponseProcessorTest extends JpaOnlyTest {
 
     @Autowired
     private LastfmAttributeHistoryRecordRepository attributeHistoryRepository;
+
+    @Autowired
+    private BlacklistedEntityUrlService blacklistService;
 
     @Autowired
     private LastfmArtistAlbumRepository artistAlbumRepository;
@@ -140,7 +151,7 @@ class LastfmArtistTopAlbumsResponseProcessorTest extends JpaOnlyTest {
 
         // then
         // Verify new albums were created
-        int expectedAlbumsCount = dtoRoot.getTopAlbumsObject().getAlbums().size();
+        int expectedAlbumsCount = 20; // after Blacklisting, was dtoRoot.getTopAlbumsObject().getAlbums().size(); before
         assertEquals(initialAlbumCount + expectedAlbumsCount, albumRepository.count(),
             "New albums should be created");
 
@@ -375,5 +386,146 @@ class LastfmArtistTopAlbumsResponseProcessorTest extends JpaOnlyTest {
         for (LastfmAlbum album : savedAlbums) {
             assertNotNull(album.getArtist(), "Album should have artist reference set");
         }
+    }
+
+    @Test
+    void process_shouldSkipBlacklistedAlbums_whenSomeAlbumsAreBlacklisted() throws Exception {
+        // given
+        LastfmArtist sourceArtist = consistencyHelper.createAndSaveArtist();
+        
+        // Blacklist some albums from the response
+        var albums = dtoRoot.getTopAlbumsObject().getAlbums();
+        if (albums.size() > 1) {
+            blacklistService.addToBlacklist(
+                yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType.ALBUM, 
+                albums.get(0).getUrl());
+        }
+
+        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
+            responseJsonString, LastfmApiCallType.ARTIST_TOP_ALBUMS, sourceArtist);
+
+        // Record initial state
+        long initialAlbumCount = albumRepository.count();
+        long initialArtistCount = artistRepository.count();
+
+        // when
+        processor.processResponse(apiResponse);
+
+        // then
+        // Verify some but not all albums were created
+        long finalAlbumCount = albumRepository.count();
+        assertTrue(finalAlbumCount > initialAlbumCount, "Some albums should be created");
+        assertTrue(finalAlbumCount < initialAlbumCount + albums.size(), 
+            "Not all albums should be created due to blacklist");
+
+        // Verify artists and relationships were created
+        assertTrue(artistRepository.count() > initialArtistCount, "Artists should be created");
+        assertTrue(artistAlbumRepository.count() > 0, "Artist-album relationships should be created");
+    }
+
+    @Test
+    void process_shouldHandleAllAlbumsBlacklisted_whenAllAlbumsAreBlacklisted() throws Exception {
+        // given
+        LastfmArtist sourceArtist = consistencyHelper.createAndSaveArtist();
+        
+        // Blacklist ALL albums from the response
+        var albums = dtoRoot.getTopAlbumsObject().getAlbums();
+        for (var album : albums) {
+            blacklistService.addToBlacklist(
+                yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType.ALBUM, 
+                album.getUrl());
+        }
+
+        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
+            responseJsonString, LastfmApiCallType.ARTIST_TOP_ALBUMS, sourceArtist);
+
+        // when - should not throw exception
+        assertDoesNotThrow(() -> processor.processResponse(apiResponse));
+
+        // then
+        // Verify no albums or relationships were created
+        assertEquals(1, artistRepository.count(), "Only source artist should exist");
+        assertEquals(0, albumRepository.count(), "No albums should be created");
+        assertEquals(0, artistAlbumRepository.count(), "No artist-album relationships should be created");
+    }
+
+    @Test
+    void process_shouldHandleAllArtistsBlacklisted_whenAllArtistsAreBlacklisted() throws Exception {
+        // given
+        LastfmArtist sourceArtist = consistencyHelper.createAndSaveArtist();
+        
+        // Blacklist ALL artists from the response
+        var albums = dtoRoot.getTopAlbumsObject().getAlbums();
+        var uniqueArtistUrls = albums.stream()
+            .map(album -> album.getArtist().getUrl())
+            .distinct()
+            .toList();
+            
+        for (String artistUrl : uniqueArtistUrls) {
+            blacklistService.addToBlacklist(
+                yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType.ARTIST, 
+                artistUrl);
+        }
+
+        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
+            responseJsonString, LastfmApiCallType.ARTIST_TOP_ALBUMS, sourceArtist);
+
+        // when - should not throw exception
+        assertDoesNotThrow(() -> processor.processResponse(apiResponse));
+
+        // then
+        // Verify no albums or relationships were created
+        assertEquals(1, artistRepository.count(), "Only source artist should exist");
+        assertEquals(0, albumRepository.count(), "No albums should be created");
+        assertEquals(0, artistAlbumRepository.count(), "No artist-album relationships should be created");
+    }
+
+    @Test
+    void process_shouldProcessNormally_whenNoEntitiesAreBlacklisted() throws Exception {
+        // given
+        LastfmArtist sourceArtist = consistencyHelper.createAndSaveArtist();
+
+        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
+            responseJsonString, LastfmApiCallType.ARTIST_TOP_ALBUMS, sourceArtist);
+
+        // Record initial state
+        long initialAlbumCount = albumRepository.count();
+        long initialArtistCount = artistRepository.count();
+
+        // when
+        processor.processResponse(apiResponse);
+
+        // then
+        // Verify albums and artists were created (those above threshold)
+        assertTrue(albumRepository.count() > initialAlbumCount, "Albums should be created");
+        assertTrue(artistRepository.count() > initialArtistCount, "Artists should be created");
+        assertTrue(artistAlbumRepository.count() > 0, "Artist-album relationships should be created");
+        assertTrue(attributeHistoryRepository.count() > 0, "Attribute history records should be created");
+    }
+
+    @Test
+    void process_shouldFilterByPlayCountThreshold_whenAlbumsAreBelowThreshold() throws Exception {
+        // given
+        LastfmArtist sourceArtist = consistencyHelper.createAndSaveArtist();
+        
+        // Modify response to have albums with low play counts
+        ObjectMapper objectMapper = new ObjectMapper();
+        ArtistTopAlbumsDtoRoot modifiedDtoRoot = objectMapper.readValue(responseJsonString, ArtistTopAlbumsDtoRoot.class);
+        
+        // Set all albums to have low play counts (below threshold of 10000)
+        modifiedDtoRoot.getTopAlbumsObject().getAlbums().forEach(album -> album.setPlayCount(5000L));
+        String modifiedResponse = objectMapper.writeValueAsString(modifiedDtoRoot);
+
+        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
+            modifiedResponse, LastfmApiCallType.ARTIST_TOP_ALBUMS, sourceArtist);
+
+        // when
+        processor.processResponse(apiResponse);
+
+        // then
+        // Verify no albums were created due to low play counts
+        assertEquals(1, artistRepository.count(), "Only source artist should exist");
+        assertEquals(0, albumRepository.count(), "No albums should be created due to low play counts");
+        assertEquals(0, artistAlbumRepository.count(), "No artist-album relationships should be created");
     }
 }

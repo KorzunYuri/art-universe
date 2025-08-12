@@ -7,15 +7,19 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getinfo.dto.*;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.EntityDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingResult;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiResponseProcessor;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityFactory;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityMappingResult;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandlerFactory;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.service.DtoQualityService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityRelationType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.entity.LastfmArtistTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.entity.LastfmArtistsRelation;
@@ -42,6 +46,7 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
     private final EntityFactory<LastfmTag, ArtistGetInfoArtistTagDto> tagFactory;
 
     private final LastfmApiDtoProcessingService dtoProcessingService;
+    private final DtoQualityService dtoQualityService;
 
     protected LastfmArtistGetInfoResponseProcessor(
         LastfmArtistService artistService,
@@ -51,7 +56,8 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
         EntityFactory<LastfmArtist, ArtistGetInfoArtistDto> artistFactory,
         EntityFactory<LastfmArtist, ArtistGetInfoSimilarArtistDto> similarArtistFactory,
         EntityFactory<LastfmTag, ArtistGetInfoArtistTagDto> tagFactory,
-        LastfmApiDtoProcessingService dtoProcessingService
+        LastfmApiDtoProcessingService dtoProcessingService,
+        DtoQualityService dtoQualityService
     ) {
         super(ArtistGetInfoDtoRoot.class);
 
@@ -63,6 +69,7 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
         this.similarArtistFactory = similarArtistFactory;
         this.tagFactory = tagFactory;
         this.dtoProcessingService = dtoProcessingService;
+        this.dtoQualityService = dtoQualityService;
     }
 
     private static final List<EntityAttributeHandler<LastfmArtist, ?, ArtistGetInfoArtistDto>> artistAttrHandlers;
@@ -99,6 +106,15 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
         
         ArtistGetInfoDtoRoot dtoRoot = parseResponse(sourceApiResponse);
         LastfmApiCall sourceApiCall = sourceApiResponse.getApiCall();
+
+        // Validate main artist first - if it fails, skip entire processing
+        ArtistGetInfoArtistDto artistDto = dtoRoot.getArtist();
+        var artistValidationResult = dtoQualityService.validateAndBlacklist(artistDto);
+        if (artistValidationResult.isRejected()) {
+            log.info("Skipping artist.getInfo processing for artist '{}': {}", 
+                artistDto.getName(), artistValidationResult.getMessage());
+            return;
+        }
 
         // Step 1. Update source artist
         LastfmArtist artist = updateArtist(dtoRoot, sourceApiCall);
@@ -157,7 +173,7 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
         if (result.actualEntities().size() != 1) {
             throw new IllegalArgumentException(String.format("Expected 1 artists to be saved, got %s", result.actualEntities().size()));
         }
-        return result.actualEntities().get(0);
+        return result.actualEntities().getFirst();
     }
 
     private LastfmApiDtoProcessingResult<LastfmArtist, ArtistGetInfoSimilarArtistDto> updateSimilarArtists(
@@ -167,9 +183,26 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
     ) {
         List<ArtistGetInfoSimilarArtistDto> artistDtos = filterDtosForSaving(dtoRoot, sourceArtist);
 
+        // Validate similar artists against blacklist only (no metrics available)
+        var qualitySimilarArtistDtos = dtoQualityService.validateAgainstBlacklist(artistDtos)
+            .stream()
+            .filter(DtoQualityService.Result::isAccepted)
+            .map(DtoQualityService.Result::getDto)
+            .toList();
+
+        if (qualitySimilarArtistDtos.isEmpty()) {
+            log.info("No quality similar artists found after validation for artist {}", sourceArtist.getName());
+            return LastfmApiDtoProcessingResult.empty(sourceApiCall);
+        }
+
+        if (qualitySimilarArtistDtos.size() < artistDtos.size()) {
+            log.info("Filtered out {} low-quality similar artists for artist {}",
+                artistDtos.size() - qualitySimilarArtistDtos.size(), sourceArtist.getName());
+        }
+
         LastfmApiDtoProcessingResult<LastfmArtist, ArtistGetInfoSimilarArtistDto> result = dtoProcessingService.process(
             sourceApiCall,
-            artistDtos,
+            qualitySimilarArtistDtos,
             similarArtistFactory,
             similarArtistAttrHandlers,
             artistService
@@ -184,9 +217,25 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
 
         List<ArtistGetInfoArtistTagDto> dtos = dtoRoot.getArtist().getTagsObject().getTags();
 
+        // Validate tags against blacklist only (no metrics available)
+        var qualityTagDtos = dtoQualityService.validateAgainstBlacklist(dtos)
+            .stream()
+            .filter(DtoQualityService.Result::isAccepted)
+            .map(DtoQualityService.Result::getDto)
+            .toList();
+
+        if (qualityTagDtos.isEmpty()) {
+            log.info("No quality tags found after validation");
+            return LastfmApiDtoProcessingResult.empty(sourceApiCall);
+        }
+
+        if (qualityTagDtos.size() < dtos.size()) {
+            log.info("Filtered out {} low-quality tags", dtos.size() - qualityTagDtos.size());
+        }
+
         LastfmApiDtoProcessingResult<LastfmTag, ArtistGetInfoArtistTagDto> result = dtoProcessingService.process(
             sourceApiCall,
-            dtos,
+            qualityTagDtos,
             tagFactory,
             tagAttrHandlers,
             tagService

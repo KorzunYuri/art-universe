@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Tag("integration")
 @Import({
     // processing
-    LastfmTagTopTagResponseProcessor.class,
+    LastfmTagTopTagsResponseProcessor.class,
     LastfmTagTopTagsTagFactory.class,
     LastfmApiDtoProcessingService.class,
     // entities
@@ -45,13 +45,13 @@ import static org.junit.jupiter.api.Assertions.*;
     // helpers
     LastfmApiResponseProcessorTestHelper.class
 })
-class LastfmTagTopTagResponseProcessorTest extends JpaOnlyTest {
+class LastfmTagTopTagsResponseProcessorTest extends JpaOnlyTest {
 
     @Autowired
     private DbConsistencyHelper consistencyHelper;
 
     @Autowired
-    private LastfmTagTopTagResponseProcessor processor;
+    private LastfmTagTopTagsResponseProcessor processor;
 
     @Autowired
     private LastfmTagRepository tagRepository;
@@ -71,9 +71,9 @@ class LastfmTagTopTagResponseProcessorTest extends JpaOnlyTest {
     @BeforeEach
     public void setUp() throws IOException {
         consistencyHelper.cleanup();
-        
-        // Load test data once for all tests
+
         responseJsonString = LastfmApiClientResourceUtil.getApiClientResponse(TEST_RESPONSE_KEY);
+        // Load test data once for all tests
         dtoRoot = parseResponse(responseJsonString);
     }
 

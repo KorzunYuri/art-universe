@@ -1,5 +1,6 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.blacklist.service;
 
+import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,9 +14,14 @@ import java.util.List;
 public class BlacklistedEntityUrlService {
 
     private final BlacklistedEntityUrlRepository blacklistRepository;
+    private final EntityManager entityManager;
 
-    public BlacklistedEntityUrlService(BlacklistedEntityUrlRepository blacklistRepository) {
+    public BlacklistedEntityUrlService(
+        BlacklistedEntityUrlRepository blacklistRepository,
+        EntityManager entityManager
+    ) {
         this.blacklistRepository = blacklistRepository;
+        this.entityManager = entityManager;
     }
 
     /**
@@ -102,5 +108,65 @@ public class BlacklistedEntityUrlService {
         
         log.info("Added {} new {} URLs to blacklist out of {} provided", 
             inserted, entityType, validUrls.size());
+    }
+
+    /**
+     * Return list of URLs that should not be blacklisted due to two reasons:
+     * <ul>
+     *     <li>They are already in blacklist</li>
+     *     <li>They are (pre)approved entities (approval_status = 2 or 4)</li>
+     * </ul>
+     */
+    public List<String> findAllNonBlackListable(LastfmEntityType entityType, List<String> urls) {
+        if (urls == null || urls.isEmpty()) {
+            return List.of();
+        }
+
+        // Filter out null and empty URLs
+        List<String> validUrls = urls.stream()
+            .filter(url -> url != null && !url.trim().isEmpty())
+            .distinct()
+            .toList();
+            
+        if (validUrls.isEmpty()) {
+            return List.of();
+        }
+
+        String tableName = entityType.getName().toLowerCase();
+
+        // Query to find URLs that should NOT be blacklisted:
+        // 1. URLs of approved/pre-approved entities (approval_status = 2 or 4)
+        // 2. URLs already in blacklist
+        String sql = """
+            SELECT DISTINCT url_to_exclude
+            FROM (
+                -- URLs of approved/pre-approved entities
+                SELECT  e.url as url_to_exclude
+                FROM    %s e
+                WHERE   e.url IN :urls
+                  AND   e.approval_status IN (2, 4)  -- APPROVED = 2, PRE_APPROVED = 4
+                
+                UNION
+                
+                -- URLs already in blacklist
+                SELECT  b.url as url_to_exclude
+                FROM    blacklist_entity_url b
+                WHERE   b.entity_type = :entityType
+                  AND   b.url IN :urls
+            ) combined_exclusions
+        """.formatted(tableName);
+
+        @SuppressWarnings("unchecked")
+        List<String> result = entityManager.createNativeQuery(sql)
+            .setParameter("urls", validUrls)
+            .setParameter("entityType", entityType.getCode())
+            .getResultList();
+
+        if (!result.isEmpty()) {
+            log.debug("Found {} non-blacklistable {} URLs out of {} candidates", 
+                result.size(), entityType, validUrls.size());
+        }
+
+        return result;
     }
 }

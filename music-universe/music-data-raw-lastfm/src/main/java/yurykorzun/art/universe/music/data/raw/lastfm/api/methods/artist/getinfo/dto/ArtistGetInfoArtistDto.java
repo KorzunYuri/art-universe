@@ -6,13 +6,14 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.dto.ArtistDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.dto.ArtistDtoWithMetrics;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.StatsDto;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ArtistGetInfoArtistDto extends ArtistDto {
+public class ArtistGetInfoArtistDto extends ArtistDto implements ArtistDtoWithMetrics {
 
     @JsonProperty("streamable")
     private int streamable;
@@ -29,4 +30,8 @@ public class ArtistGetInfoArtistDto extends ArtistDto {
     @JsonProperty("tags")
     private ArtistGetInfoArtistTagsDto tagsObject;
 
+    @Override
+    public Integer getListenersCount() {
+        return stats.getListeners();
+    }
 }

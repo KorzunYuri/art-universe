@@ -13,9 +13,11 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.util.ReflectionTestUtils;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.config.LastfmThresholdConfig;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptracks.dto.ArtistTopTracksDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.LastfmApiResponseProcessorTestHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.service.DtoQualityService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.repository.LastfmArtistRepository;
@@ -24,6 +26,8 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entit
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repository.LastfmAttributeHistoryRecordRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repository.LastfmAttributeTypeSynchronizer;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.impl.LastfmAttributeHistoryServiceImpl;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.blacklist.service.BlacklistedEntityUrlService;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.entity.LastfmArtistTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.repository.LastfmArtistTrackRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.service.LastfmArtistTrackServiceImpl;
@@ -35,6 +39,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTe
 
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -44,6 +49,10 @@ import static org.junit.jupiter.api.Assertions.*;
     LastfmArtistTopTracksResponseProcessor.class,
     LastfmArtistTopTracksArtistFactory.class,
     LastfmApiDtoProcessingService.class,
+    // quality control
+    BlacklistedEntityUrlService.class,
+    DtoQualityService.class,
+    LastfmThresholdConfig.class,
     // entities
     LastfmTrackServiceImpl.class,
     LastfmArtistServiceImpl.class,
@@ -73,6 +82,9 @@ class LastfmArtistTopTracksResponseProcessorTest extends JpaOnlyTest {
     private LastfmAttributeHistoryRecordRepository attributeHistoryRepository;
 
     @Autowired
+    private BlacklistedEntityUrlService blacklistService;
+
+    @Autowired
     private LastfmArtistTrackRepository artistTrackRepository;
     
     @Autowired
@@ -81,7 +93,7 @@ class LastfmArtistTopTracksResponseProcessorTest extends JpaOnlyTest {
     private static final String TEST_RESPONSE_KEY = "artist.getTopTracks";
     private String responseJsonString;
     private ArtistTopTracksDtoRoot dtoRoot;
-    private static final int DEFAULT_THRESHOLD = 0;
+
     
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -94,7 +106,7 @@ class LastfmArtistTopTracksResponseProcessorTest extends JpaOnlyTest {
         dtoRoot = parseResponse(responseJsonString);
         
         // Set threshold to 0 to process all tracks by default
-        ReflectionTestUtils.setField(processor, "trackListenersThreshold", DEFAULT_THRESHOLD);
+
     }
 
     @AfterEach
@@ -201,54 +213,6 @@ class LastfmArtistTopTracksResponseProcessorTest extends JpaOnlyTest {
     }
 
     @Test
-    void process_shouldFilterTracksByListenersCount_whenThresholdIsSet() throws IOException {
-        // given
-        // Create source artist
-        LastfmArtist sourceArtist = consistencyHelper.createAndSaveArtist(builder -> 
-            builder.name(dtoRoot.getRootObject().getArtistMetadata().getArtistName())
-        );
-        
-        // Create API response
-        LastfmApiResponse apiResponse = createApiResponse(sourceArtist);
-        
-        // Set high threshold to filter some tracks
-        int threshold = 1000000; // High threshold to filter out some tracks
-        ReflectionTestUtils.setField(processor, "trackListenersThreshold", threshold);
-        
-        // Record initial state
-        long initialTrackCount = trackRepository.count();
-        
-        // Count how many tracks should pass the threshold
-        long expectedTracksCount = dtoRoot.getRootObject().getTracks().stream()
-            .filter(track -> track.getListenersCount() >= threshold)
-            .count();
-        
-        // when
-        processor.processResponse(apiResponse);
-        
-        // then
-        // Verify only tracks above threshold were processed
-        assertEquals(initialTrackCount + expectedTracksCount, trackRepository.count(), 
-            "Only tracks above threshold should be created");
-        
-        // Verify all created tracks have listeners count above threshold
-        List<LastfmTrack> savedTracks = trackRepository.findAll();
-        for (LastfmTrack track : savedTracks) {
-            // Get listeners count attribute
-            List<Long> listenersCountValues = attributeHistoryRepository.findAttributeValuesForEntity(
-                LastfmAttribute.LISTENERS_COUNT, track.getType(), track.getId())
-                .stream()
-                .map(record -> record.getNumericValue())
-                .toList();
-                
-            if (!listenersCountValues.isEmpty()) {
-                assertTrue(listenersCountValues.get(0) >= threshold,
-                    "Track listeners count should be above threshold");
-            }
-        }
-    }
-
-    @Test
     void process_shouldBeIdempotent_whenProcessingSameResponseTwice() throws IOException {
         // given
         // Create source artist
@@ -333,5 +297,96 @@ class LastfmArtistTopTracksResponseProcessorTest extends JpaOnlyTest {
         // Verify no entities were created
         assertEquals(1, artistRepository.count(), "Only source artist should exist");
         assertEquals(0, trackRepository.count(), "No tracks should be created");
+    }
+
+    @Test
+    void process_shouldSkipBlacklistedTracks_whenSomeTracksAreBlacklisted() throws IOException {
+        // given
+        // Create source artist
+        LastfmArtist sourceArtist = consistencyHelper.createAndSaveArtist(builder -> 
+            builder.name(UUID.randomUUID().toString()) // different artist from the one from response, to test artist creation
+        );
+        
+        // Blacklist some tracks from the response
+        var tracks = dtoRoot.getRootObject().getTracks();
+        blacklistService.addToBlacklist(LastfmEntityType.TRACK, tracks.getFirst().getUrl());
+
+        // Create API response
+        LastfmApiResponse apiResponse = createApiResponse(sourceArtist);
+        
+        // Record initial state
+        long initialTrackCount = trackRepository.count();
+        long initialArtistCount = artistRepository.count();
+        
+        // when
+        processor.processResponse(apiResponse);
+        
+        // then
+        // Verify some but not all tracks were created
+        long finalTrackCount = trackRepository.count();
+        assertTrue(finalTrackCount > initialTrackCount, "Some tracks should be created");
+        assertTrue(finalTrackCount < initialTrackCount + tracks.size(), 
+            "Not all tracks should be created due to blacklist");
+
+        // Verify artists and relationships were created
+        assertTrue(artistRepository.count() > initialArtistCount, "Artists should be created");
+        assertTrue(artistTrackRepository.count() > 0, "Artist-track relationships should be created");
+    }
+
+    @Test
+    void process_shouldSkipBlacklistedArtists_whenSomeArtistsAreBlacklisted() throws IOException {
+        // given
+        // Create source artist
+        LastfmArtist sourceArtist = consistencyHelper.createAndSaveArtist(builder -> 
+            builder.name(dtoRoot.getRootObject().getArtistMetadata().getArtistName())
+        );
+        
+        // Blacklist the artist from tracks (all tracks have same artist in test data)
+        var tracks = dtoRoot.getRootObject().getTracks();
+        if (!tracks.isEmpty()) {
+            blacklistService.addToBlacklist(LastfmEntityType.ARTIST, tracks.getFirst().getArtist().getUrl());
+        }
+
+        // Create API response
+        LastfmApiResponse apiResponse = createApiResponse(sourceArtist);
+        
+        // Record initial state
+        long initialTrackCount = trackRepository.count();
+        long initialArtistCount = artistRepository.count();
+        
+        // when
+        processor.processResponse(apiResponse);
+        
+        // then
+        // Verify no tracks were created due to blacklisted artist
+        assertEquals(initialTrackCount, trackRepository.count(), "No tracks should be created");
+        assertEquals(initialArtistCount, artistRepository.count(), "No new artists should be created");
+        assertEquals(0, artistTrackRepository.count(), "No artist-track relationships should be created");
+    }
+
+    @Test
+    void process_shouldProcessNormally_whenNoEntitiesAreBlacklisted() throws IOException {
+        // given
+        // Create source artist
+        LastfmArtist sourceArtist = consistencyHelper.createAndSaveArtist(builder -> 
+            builder.name(UUID.randomUUID().toString()) // different artist from the one from response, to test artist creation
+        );
+
+        // Create API response
+        LastfmApiResponse apiResponse = createApiResponse(sourceArtist);
+        
+        // Record initial state
+        long initialTrackCount = trackRepository.count();
+        long initialArtistCount = artistRepository.count();
+        
+        // when
+        processor.processResponse(apiResponse);
+        
+        // then
+        // Verify tracks and artists were created (those passing DtoQualityService validation)
+        assertTrue(trackRepository.count() > initialTrackCount, "Tracks should be created");
+        assertTrue(artistRepository.count() > initialArtistCount, "Artists should be created");
+        assertTrue(artistTrackRepository.count() > 0, "Artist-track relationships should be created");
+        assertTrue(attributeHistoryRepository.count() > 0, "Attribute history records should be created");
     }
 }

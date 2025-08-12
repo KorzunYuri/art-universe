@@ -23,7 +23,7 @@ import java.util.List;
 
 @Component
 @Slf4j
-public class LastfmTagTopTagResponseProcessor extends LastfmApiResponseProcessor<TagTopTagsDtoRoot> {
+public class LastfmTagTopTagsResponseProcessor extends LastfmApiResponseProcessor<TagTopTagsDtoRoot> {
 
     private final LastfmTagService tagService;
     private final LastfmApiDtoProcessingService dtoProcessingService;
@@ -33,12 +33,12 @@ public class LastfmTagTopTagResponseProcessor extends LastfmApiResponseProcessor
     static {
         EntityAttributeHandlerFactory<LastfmTag, TagTopTagsTagDto> factory = new EntityAttributeHandlerFactory<>(LastfmTag.class, TagTopTagsTagDto.class);
         attrHandlers = List.of(
-            factory.createHandler(LastfmAttribute.RELATIONS_COUNT,  false, "usageCount", "count"),
-            factory.createHandler(LastfmAttribute.USAGE_COUNT,  false, "usageUsersCount", "reach")
+            factory.createHandler(LastfmAttribute.RELATIONS_COUNT,  false, "usageCount"),
+            factory.createHandler(LastfmAttribute.USAGE_COUNT,  false, "usageUsersCount")
         );
     }
 
-    protected LastfmTagTopTagResponseProcessor(
+    protected LastfmTagTopTagsResponseProcessor(
         LastfmTagService tagService,
         EntityFactory<LastfmTag, TagTopTagsTagDto> tagFactory,
         LastfmApiDtoProcessingService dtoProcessingService

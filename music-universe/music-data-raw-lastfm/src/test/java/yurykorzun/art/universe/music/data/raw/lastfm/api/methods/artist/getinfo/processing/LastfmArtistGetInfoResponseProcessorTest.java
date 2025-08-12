@@ -14,8 +14,10 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getinfo.dto.ArtistGetInfoArtistDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getinfo.dto.ArtistGetInfoDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.service.DtoQualityService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.LastfmApiResponseProcessorTestHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.config.LastfmThresholdConfig;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.repository.LastfmArtistRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.impl.LastfmArtistServiceImpl;
@@ -24,6 +26,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entit
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repository.LastfmAttributeHistoryRecordRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repository.LastfmAttributeTypeSynchronizer;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.impl.LastfmAttributeHistoryServiceImpl;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.blacklist.service.BlacklistedEntityUrlService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityRelationType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.entity.LastfmArtistTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.entity.LastfmArtistsRelation;
@@ -51,6 +54,10 @@ import static org.junit.jupiter.api.Assertions.*;
     LastfmArtistGetInfoSimilarArtistFactory.class,
     LastfmArtistGetInfoTagFactory.class,
     LastfmApiDtoProcessingService.class,
+    // quality control
+    BlacklistedEntityUrlService.class,
+    DtoQualityService.class,
+    LastfmThresholdConfig.class,
     // entities
     LastfmArtistServiceImpl.class,
     LastfmTagServiceImpl.class,
@@ -85,6 +92,9 @@ class LastfmArtistGetInfoResponseProcessorTest extends JpaOnlyTest {
 
     @Autowired
     private LastfmAttributeHistoryRecordRepository attributeHistoryRepository;
+    
+    @Autowired
+    private BlacklistedEntityUrlService blacklistService;
     
     @Autowired
     private LastfmApiResponseProcessorTestHelper testHelper;
@@ -397,6 +407,193 @@ class LastfmArtistGetInfoResponseProcessorTest extends JpaOnlyTest {
             "Artist should have " + expectedCount + " tags");
     }
 
+    @Test
+    void process_shouldSkipProcessing_whenMainArtistFailsValidation() throws Exception {
+        // given
+        // Create a modified response with low listeners count for main artist
+        ObjectMapper objectMapper = new ObjectMapper();
+        ArtistGetInfoDtoRoot modifiedDtoRoot = objectMapper.readValue(responseJsonString, ArtistGetInfoDtoRoot.class);
+        modifiedDtoRoot.getArtist().getStats().setListeners(500); // Below threshold of 1000
+        String modifiedResponse = objectMapper.writeValueAsString(modifiedDtoRoot);
+
+        // Create existing artist
+        LastfmArtist existingArtist = consistencyHelper.createAndSaveArtist(builder ->
+            builder.name(dtoRoot.getArtist().getName())
+                .url(dtoRoot.getArtist().getUrl())
+                .approvalStatus(ApprovalStatus.APPROVED)
+        );
+
+        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
+            modifiedResponse, LastfmApiCallType.ARTIST_GET_INFO, existingArtist);
+
+        // when/then
+        assertDoesNotThrow(() -> processor.processResponse(apiResponse), "Should not throw exception when main artist fails validation");
+
+        // Verify no entities were processed
+        assertEquals(1, artistRepository.count(), "Only the existing artist should remain");
+        assertEquals(0, tagRepository.count(), "No tags should be created");
+        assertEquals(0, artistTagRepository.count(), "No artist-tag relationships should be created");
+        assertEquals(0, artistsRelationRepository.count(), "No artist-artist relationships should be created");
+    }
+
+    @Test
+    void process_shouldSkipBlacklistedSimilarArtists_whenSomeArtistsAreBlacklisted() throws Exception {
+        // given
+        // Create existing artist
+        LastfmArtist existingArtist = consistencyHelper.createAndSaveArtist(builder ->
+            builder.name(dtoRoot.getArtist().getName())
+                .url(dtoRoot.getArtist().getUrl())
+                .approvalStatus(ApprovalStatus.APPROVED)
+        );
+
+        // Blacklist some similar artists from the response
+        var similarArtists = dtoRoot.getArtist().getSimilarArtistsObject().getArtists();
+        if (similarArtists.size() > 1) {
+            // Blacklist the first similar artist
+            blacklistService.addToBlacklist(yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType.ARTIST, 
+                similarArtists.get(0).getUrl());
+        }
+
+        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
+            responseJsonString, LastfmApiCallType.ARTIST_GET_INFO, existingArtist);
+
+        // Record initial state
+        long initialArtistCount = artistRepository.count();
+
+        // when
+        processor.processResponse(apiResponse);
+
+        // then
+        // Verify main artist was updated
+        Optional<LastfmArtist> updatedArtist = artistRepository.findById(existingArtist.getId());
+        assertTrue(updatedArtist.isPresent(), "Main artist should still exist");
+
+        // Verify some but not all similar artists were created
+        long finalArtistCount = artistRepository.count();
+        assertTrue(finalArtistCount > initialArtistCount, "Some similar artists should be created");
+        assertTrue(finalArtistCount < initialArtistCount + similarArtists.size(), 
+            "Not all similar artists should be created due to blacklist");
+
+        // Verify tags were still processed
+        assertTrue(tagRepository.count() > 0, "Tags should be processed");
+        assertTrue(artistTagRepository.count() > 0, "Artist-tag relationships should be created");
+    }
+
+    @Test
+    void process_shouldSkipBlacklistedTags_whenSomeTagsAreBlacklisted() throws Exception {
+        // given
+        // Create existing artist
+        LastfmArtist existingArtist = consistencyHelper.createAndSaveArtist(builder ->
+            builder.name(dtoRoot.getArtist().getName())
+                .url(dtoRoot.getArtist().getUrl())
+                .approvalStatus(ApprovalStatus.APPROVED)
+        );
+
+        // Blacklist some tags from the response
+        var tags = dtoRoot.getArtist().getTagsObject().getTags();
+        if (tags.size() > 1) {
+            // Blacklist the first tag
+            blacklistService.addToBlacklist(yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType.TAG, 
+                tags.get(0).getUrl());
+        }
+
+        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
+            responseJsonString, LastfmApiCallType.ARTIST_GET_INFO, existingArtist);
+
+        // Record initial state
+        long initialTagCount = tagRepository.count();
+
+        // when
+        processor.processResponse(apiResponse);
+
+        // then
+        // Verify main artist was updated
+        Optional<LastfmArtist> updatedArtist = artistRepository.findById(existingArtist.getId());
+        assertTrue(updatedArtist.isPresent(), "Main artist should still exist");
+
+        // Verify some but not all tags were created
+        long finalTagCount = tagRepository.count();
+        assertTrue(finalTagCount > initialTagCount, "Some tags should be created");
+        assertTrue(finalTagCount < initialTagCount + tags.size(), 
+            "Not all tags should be created due to blacklist");
+
+        // Verify similar artists were still processed
+        assertTrue(artistRepository.count() > 1, "Similar artists should be processed");
+        assertTrue(artistsRelationRepository.count() > 0, "Artist-artist relationships should be created");
+    }
+
+    @Test
+    void process_shouldHandleAllSimilarArtistsBlacklisted_whenAllArtistsAreBlacklisted() throws Exception {
+        // given
+        // Create existing artist
+        LastfmArtist existingArtist = consistencyHelper.createAndSaveArtist(builder ->
+            builder.name(dtoRoot.getArtist().getName())
+                .url(dtoRoot.getArtist().getUrl())
+                .approvalStatus(ApprovalStatus.APPROVED)
+        );
+
+        // Blacklist ALL similar artists from the response
+        dtoRoot.getArtist().getSimilarArtistsObject().getArtists().stream()
+            .map(artist -> artist.getUrl())
+            .forEach(artistUrl -> blacklistService.addToBlacklist(
+                yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType.ARTIST, artistUrl));
+
+        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
+            responseJsonString, LastfmApiCallType.ARTIST_GET_INFO, existingArtist);
+
+        // when - should not throw exception
+        assertDoesNotThrow(() -> processor.processResponse(apiResponse));
+
+        // then
+        // Verify main artist was still updated
+        Optional<LastfmArtist> updatedArtist = artistRepository.findById(existingArtist.getId());
+        assertTrue(updatedArtist.isPresent(), "Main artist should still exist");
+
+        // Verify no similar artists were created
+        assertEquals(1, artistRepository.count(), "Only main artist should exist");
+        assertEquals(0, artistsRelationRepository.count(), "No artist-artist relationships should be created");
+
+        // Verify tags were still processed
+        assertTrue(tagRepository.count() > 0, "Tags should still be processed");
+        assertTrue(artistTagRepository.count() > 0, "Artist-tag relationships should still be created");
+    }
+
+    @Test
+    void process_shouldHandleAllTagsBlacklisted_whenAllTagsAreBlacklisted() throws Exception {
+        // given
+        // Create existing artist
+        LastfmArtist existingArtist = consistencyHelper.createAndSaveArtist(builder ->
+            builder.name(dtoRoot.getArtist().getName())
+                .url(dtoRoot.getArtist().getUrl())
+                .approvalStatus(ApprovalStatus.APPROVED)
+        );
+
+        // Blacklist ALL tags from the response
+        dtoRoot.getArtist().getTagsObject().getTags().stream()
+            .map(tag -> tag.getUrl())
+            .forEach(tagUrl -> blacklistService.addToBlacklist(
+                yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType.TAG, tagUrl));
+
+        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
+            responseJsonString, LastfmApiCallType.ARTIST_GET_INFO, existingArtist);
+
+        // when - should not throw exception
+        assertDoesNotThrow(() -> processor.processResponse(apiResponse));
+
+        // then
+        // Verify main artist was still updated
+        Optional<LastfmArtist> updatedArtist = artistRepository.findById(existingArtist.getId());
+        assertTrue(updatedArtist.isPresent(), "Main artist should still exist");
+
+        // Verify no tags were created
+        assertEquals(0, tagRepository.count(), "No tags should be created");
+        assertEquals(0, artistTagRepository.count(), "No artist-tag relationships should be created");
+
+        // Verify similar artists were still processed
+        assertTrue(artistRepository.count() > 1, "Similar artists should still be processed");
+        assertTrue(artistsRelationRepository.count() > 0, "Artist-artist relationships should still be created");
+    }
+
     /**
      * Verify that artist has the expected number of similar artists
      *
@@ -408,5 +605,4 @@ class LastfmArtistGetInfoResponseProcessorTest extends JpaOnlyTest {
         assertEquals(expectedCount, relations.size(),
             "Artist should have " + expectedCount + " similar artists");
     }
-
 }

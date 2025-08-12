@@ -1,7 +1,6 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptracks.processing;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
@@ -17,6 +16,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityMapping;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandlerFactory;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.service.DtoQualityService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
@@ -38,10 +38,8 @@ public class LastfmArtistTopTracksResponseProcessor extends LastfmApiResponsePro
     private final LastfmTrackService trackService;
     private final LastfmArtistService artistService;
     private final LastfmArtistTrackService artistTrackService;
+    private final DtoQualityService dtoQualityService;
     private final EntityFactory<LastfmArtist, ArtistTopTracksTrackArtistDto> artistFactory;
-
-    @Value("${lastfm.client.methods.artist.topTracks.trackListenersThreshold:1000}")
-    private int trackListenersThreshold;
 
     private static final List<EntityAttributeHandler<LastfmArtist, ?, ArtistTopTracksTrackArtistDto>> artistAttrHandlers;
     static {
@@ -70,6 +68,7 @@ public class LastfmArtistTopTracksResponseProcessor extends LastfmApiResponsePro
         LastfmArtistService artistService,
         LastfmArtistTrackService artistTrackService,
         LastfmApiDtoProcessingService dtoProcessingService,
+        DtoQualityService dtoQualityService,
         LastfmArtistTopTracksArtistFactory artistFactory
     ) {
         super(ArtistTopTracksDtoRoot.class);
@@ -78,6 +77,7 @@ public class LastfmArtistTopTracksResponseProcessor extends LastfmApiResponsePro
         this.artistService = artistService;
         this.artistTrackService = artistTrackService;
         this.dtoProcessingService = dtoProcessingService;
+        this.dtoQualityService = dtoQualityService;
         this.artistFactory = artistFactory;
     }
 
@@ -91,13 +91,11 @@ public class LastfmArtistTopTracksResponseProcessor extends LastfmApiResponsePro
         ArtistTopTracksDtoRoot dtoRoot = parseResponse(sourceApiResponse);
         LastfmApiCall sourceApiCall = sourceApiResponse.getApiCall();
 
-        // First, extract and save artists from track metadata
-        // We shouldn't use the artist we generated api call for:
-        // some artists share mbid (which is used as api call parameter),
-        // but the 'true' artist will always be in track's metadata
+        // First, extract and validate artists from track metadata
+        // We get ALL artists and then validate them against blacklist
         var artistMappingResult = updateArtists(dtoRoot, sourceApiCall);
 
-        // Then use the saved artists when creating tracks
+        // Then validate and process tracks using DtoQualityService
         var trackMappingResult = updateTracks(dtoRoot, sourceApiCall, artistMappingResult);
 
         // Finally, create relationships between tracks and their artists
@@ -105,24 +103,35 @@ public class LastfmArtistTopTracksResponseProcessor extends LastfmApiResponsePro
     }
 
     /**
-     * Extracts artists from track metadata and saves them
+     * Extracts all artists from track metadata, validates them against blacklist, and saves them
      */
     private LastfmApiDtoProcessingResult<LastfmArtist, ArtistTopTracksTrackArtistDto> updateArtists(
         ArtistTopTracksDtoRoot dtoRoot,
         LastfmApiCall sourceApiCall
     ) {
-        // Extract artist DTOs from tracks
-        List<ArtistTopTracksTrackArtistDto> artistDtos = dtoRoot.getRootObject().getTracks().stream()
-            .filter(dto -> dto.getListenersCount() >= trackListenersThreshold)
+        // Extract ALL artist DTOs from tracks (no filtering by track metrics)
+        List<ArtistTopTracksTrackArtistDto> allArtistDtos = dtoRoot.getRootObject().getTracks().stream()
             .map(ArtistTopTracksTrackDto::getArtist)
             .filter(Objects::nonNull)
             .distinct()
             .toList();
 
+        // Validate artists against blacklist
+        var qualityArtistDtos = dtoQualityService.validateAgainstBlacklist(allArtistDtos)
+            .stream()
+            .filter(DtoQualityService.Result::isAccepted)
+            .map(DtoQualityService.Result::getDto)
+            .toList();
+
+        if (qualityArtistDtos.size() < allArtistDtos.size()) {
+            log.info("Filtered out {} blacklisted artists from tracks", 
+                allArtistDtos.size() - qualityArtistDtos.size());
+        }
+
         // Process and save artists
         LastfmApiDtoProcessingResult<LastfmArtist, ArtistTopTracksTrackArtistDto> result = dtoProcessingService.process(
             sourceApiCall,
-            artistDtos,
+            qualityArtistDtos,
             artistFactory,
             artistAttrHandlers,
             artistService
@@ -134,14 +143,24 @@ public class LastfmArtistTopTracksResponseProcessor extends LastfmApiResponsePro
     }
 
     /**
-     * Creates and saves tracks using artist information from the previous step
+     * Validates tracks using DtoQualityService and creates them using artist information from the previous step
      */
     private LastfmApiDtoProcessingResult<LastfmTrack, ArtistTopTracksTrackDto> updateTracks(
         ArtistTopTracksDtoRoot dtoRoot,
         LastfmApiCall sourceApiCall,
         LastfmApiDtoProcessingResult<LastfmArtist, ArtistTopTracksTrackArtistDto> artistMappingResult
     ) {
-        List<ArtistTopTracksTrackDto> trackDtos = filterTracksForSaving(dtoRoot.getRootObject().getTracks());
+        List<ArtistTopTracksTrackDto> allTrackDtos = dtoRoot.getRootObject().getTracks().stream()
+            .filter(track -> track.getArtist() != null
+                && artistMappingResult.entityMapping().getMap().containsKey(track.getArtist().getName()))
+            .toList();
+
+        // Validate tracks using DtoQualityService (includes threshold and blacklist validation)
+        var qualityTrackDtos = dtoQualityService.validateAndBlacklist(allTrackDtos)
+            .stream()
+            .filter(DtoQualityService.Result::isAccepted)
+            .map(DtoQualityService.Result::getDto)
+            .toList();
 
         // Create track factory with artist mapping results
         LastfmArtistTopTracksTrackFactory trackFactory = new LastfmArtistTopTracksTrackFactory(artistMappingResult);
@@ -149,7 +168,7 @@ public class LastfmArtistTopTracksResponseProcessor extends LastfmApiResponsePro
         // Process DTOs and save tracks
         LastfmApiDtoProcessingResult<LastfmTrack, ArtistTopTracksTrackDto> result = dtoProcessingService.process(
             sourceApiCall,
-            trackDtos,
+            qualityTrackDtos,
             trackFactory,
             trackAttrHandlers,
             trackService
@@ -199,14 +218,5 @@ public class LastfmArtistTopTracksResponseProcessor extends LastfmApiResponsePro
         
         artistTrackService.upsertAll(relations);
         log.info("saved {} artist-track relations", relations.size());
-    }
-
-    /**
-     * Filters tracks based on listeners count threshold
-     */
-    private List<ArtistTopTracksTrackDto> filterTracksForSaving(List<ArtistTopTracksTrackDto> dtos) {
-        return dtos.stream()
-            .filter(dto -> dto.getListenersCount() >= trackListenersThreshold)
-            .toList();
     }
 }

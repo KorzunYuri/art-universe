@@ -13,8 +13,11 @@ import org.springframework.context.annotation.Import;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.LastfmApiResponseProcessorTestHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.config.LastfmThresholdConfig;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.service.DtoQualityService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.dto.TagTopTracksDtoRoot;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.repository.LastfmArtistRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.impl.LastfmArtistServiceImpl;
@@ -22,6 +25,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entit
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repository.LastfmAttributeHistoryRecordRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repository.LastfmAttributeTypeSynchronizer;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.impl.LastfmAttributeHistoryServiceImpl;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.blacklist.service.BlacklistedEntityUrlService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.entity.LastfmArtistTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.repository.LastfmArtistTrackRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.service.LastfmArtistTrackServiceImpl;
@@ -45,6 +49,10 @@ import static org.junit.jupiter.api.Assertions.*;
     LastfmTagTopTracksResponseProcessor.class,
     LastfmTagTopTracksArtistFactory.class,
     LastfmApiDtoProcessingService.class,
+    // quality control
+    BlacklistedEntityUrlService.class,
+    DtoQualityService.class,
+    LastfmThresholdConfig.class,
     // entities
     LastfmArtistServiceImpl.class,
     LastfmTrackServiceImpl.class,
@@ -79,19 +87,25 @@ class LastfmTagTopTracksResponseProcessorTest extends JpaOnlyTest {
 
     @Autowired
     private LastfmArtistTrackRepository artistTrackRepository;
+
+    @Autowired
+    private BlacklistedEntityUrlService blacklistService;
     
     @Autowired
     private LastfmApiResponseProcessorTestHelper testHelper;
 
+    private static final String TEST_RESPONSE_KEY = "tag.getTopTracks";
+    private String responseJsonString;
     private TagTopTracksDtoRoot dtoRoot;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
     public void setUp() throws IOException {
         consistencyHelper.cleanup();
-        
+
         // Parse test data once for all tests
-        dtoRoot = parseResponse(TEST_DTO_ROOT);
+        responseJsonString = LastfmApiClientResourceUtil.getApiClientResponse(TEST_RESPONSE_KEY);
+        dtoRoot = parseResponse(responseJsonString);
     }
 
     @AfterEach
@@ -113,8 +127,8 @@ class LastfmTagTopTracksResponseProcessorTest extends JpaOnlyTest {
     /**
      * Helper method to create API response for testing
      */
-    private LastfmApiResponse createApiResponse(LastfmTag tag) {
-        return consistencyHelper.createAndSaveApiResponse(TEST_DTO_ROOT, LastfmApiCallType.TAG_TOP_TRACKS, tag);
+    private LastfmApiResponse createApiResponse(String responseString, LastfmTag tag) {
+        return consistencyHelper.createAndSaveApiResponse(responseString, LastfmApiCallType.TAG_TOP_TRACKS, tag);
     }
 
     @Test
@@ -124,7 +138,7 @@ class LastfmTagTopTracksResponseProcessorTest extends JpaOnlyTest {
         LastfmTag sourceTag = consistencyHelper.createAndSaveTag();
         
         // Create API response
-        LastfmApiResponse apiResponse = createApiResponse(sourceTag);
+        LastfmApiResponse apiResponse = createApiResponse(responseJsonString, sourceTag);
         
         // Record initial state
         long initialTrackCount = trackRepository.count();
@@ -142,7 +156,7 @@ class LastfmTagTopTracksResponseProcessorTest extends JpaOnlyTest {
             "New tracks should be created");
         
         // Verify new artists were created (should be 2 unique artists)
-        int expectedArtistsCount = 2; // Nirvana and Radiohead
+        int expectedArtistsCount = 27;
         assertEquals(initialArtistCount + expectedArtistsCount, artistRepository.count(), 
             "New artists should be created");
         
@@ -225,7 +239,7 @@ class LastfmTagTopTracksResponseProcessorTest extends JpaOnlyTest {
         LastfmTag sourceTag = consistencyHelper.createAndSaveTag();
         
         // Create API response
-        LastfmApiResponse apiResponse = createApiResponse(sourceTag);
+        LastfmApiResponse apiResponse = createApiResponse(responseJsonString, sourceTag);
         
         // First processing
         processor.processResponse(apiResponse);
@@ -257,7 +271,7 @@ class LastfmTagTopTracksResponseProcessorTest extends JpaOnlyTest {
         LastfmTag sourceTag = consistencyHelper.createAndSaveTag();
         
         // Create API response with the tag
-        LastfmApiResponse apiResponse = createApiResponse(sourceTag);
+        LastfmApiResponse apiResponse = createApiResponse(responseJsonString, sourceTag);
         
         // Now delete the tag to simulate non-existent tag
         tagRepository.delete(sourceTag);
@@ -272,7 +286,7 @@ class LastfmTagTopTracksResponseProcessorTest extends JpaOnlyTest {
     void process_shouldHandleEmptyTracksList() throws IOException {
         // given
         // Create empty tracks response
-        ObjectNode jsonNode = (ObjectNode) objectMapper.readTree(TEST_DTO_ROOT);
+        ObjectNode jsonNode = (ObjectNode) objectMapper.readTree(responseJsonString);
         ObjectNode tracksNode = (ObjectNode) jsonNode.path("tracks");
         tracksNode.putArray("track"); // Replace tracks with empty array
         String emptyResponseBody = objectMapper.writeValueAsString(jsonNode);
@@ -329,7 +343,7 @@ class LastfmTagTopTracksResponseProcessorTest extends JpaOnlyTest {
         LastfmTag sourceTag = consistencyHelper.createAndSaveTag();
         
         // Create API response
-        LastfmApiResponse apiResponse = createApiResponse(sourceTag);
+        LastfmApiResponse apiResponse = createApiResponse(responseJsonString, sourceTag);
         
         // when
         processor.processResponse(apiResponse);
@@ -344,139 +358,192 @@ class LastfmTagTopTracksResponseProcessorTest extends JpaOnlyTest {
             "Artist should be deduplicated when appearing multiple times");
             
         // Verify both Nirvana tracks are associated with the same artist
-        LastfmArtist nirvanaArtist = nirvanaArtists.get(0);
+        LastfmArtist nirvanaArtist = nirvanaArtists.getFirst();
         List<LastfmArtistTrack> nirvanaRelations = artistTrackRepository.findAll().stream()
             .filter(relation -> relation.getArtist().getId() == nirvanaArtist.getId())
             .toList();
             
-        assertEquals(2, nirvanaRelations.size(), 
+        assertEquals(5, nirvanaRelations.size(),
             "Both tracks should be associated with the same artist");
     }
 
-    /**
-     * Test dto root example contains three tracks, two of which belong to the same artist, to test deduplication
-     */
-    private final static String TEST_DTO_ROOT = """
-        {
-          "tracks": {
-            "track": [
-              {
-                "name": "Smells Like Teen Spirit",
-                "duration": "301",
-                "mbid": "0ebe2d92-a11d-4b2b-9922-806383074ed7",
-                "url": "https://www.last.fm/music/Nirvana/_/Smells+Like+Teen+Spirit",
-                "streamable": {
-                  "#text": "0",
-                  "fulltrack": "0"
-                },
-                "artist": {
-                  "name": "Nirvana",
-                  "mbid": "9282c8b4-ca0b-4c6b-b7e3-4f7762dfc4d6",
-                  "url": "https://www.last.fm/music/Nirvana"
-                },
-                "image": [
-                  {
-                    "#text": "https://lastfm.freetls.fastly.net/i/u/34s/2a96cbd8b46e442fc41c2b86b821562f.png",
-                    "size": "small"
-                  },
-                  {
-                    "#text": "https://lastfm.freetls.fastly.net/i/u/64s/2a96cbd8b46e442fc41c2b86b821562f.png",
-                    "size": "medium"
-                  },
-                  {
-                    "#text": "https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png",
-                    "size": "large"
-                  },
-                  {
-                    "#text": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png",
-                    "size": "extralarge"
-                  }
-                ],
-                "@attr": {
-                  "rank": "1"
-                }
-              },
-              {
-                "name": "Creep",
-                "duration": "239",
-                "mbid": "d11fcceb-dfc5-4d19-b45d-f4e8f6d3eaa6",
-                "url": "https://www.last.fm/music/Radiohead/_/Creep",
-                "streamable": {
-                  "#text": "0",
-                  "fulltrack": "0"
-                },
-                "artist": {
-                  "name": "Radiohead",
-                  "mbid": "a74b1b7f-71a5-4011-9441-d0b5e4122711",
-                  "url": "https://www.last.fm/music/Radiohead"
-                },
-                "image": [
-                  {
-                    "#text": "https://lastfm.freetls.fastly.net/i/u/34s/2a96cbd8b46e442fc41c2b86b821562f.png",
-                    "size": "small"
-                  },
-                  {
-                    "#text": "https://lastfm.freetls.fastly.net/i/u/64s/2a96cbd8b46e442fc41c2b86b821562f.png",
-                    "size": "medium"
-                  },
-                  {
-                    "#text": "https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png",
-                    "size": "large"
-                  },
-                  {
-                    "#text": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png",
-                    "size": "extralarge"
-                  }
-                ],
-                "@attr": {
-                  "rank": "3"
-                }
-              },
-              {
-                "name": "Come as You Are",
-                "duration": "208",
-                "mbid": "e05035a3-14ac-4f88-a160-0a144530004e",
-                "url": "https://www.last.fm/music/Nirvana/_/Come+as+You+Are",
-                "streamable": {
-                  "#text": "0",
-                  "fulltrack": "0"
-                },
-                "artist": {
-                  "name": "Nirvana",
-                  "mbid": "9282c8b4-ca0b-4c6b-b7e3-4f7762dfc4d6",
-                  "url": "https://www.last.fm/music/Nirvana"
-                },
-                "image": [
-                  {
-                    "#text": "https://lastfm.freetls.fastly.net/i/u/34s/2a96cbd8b46e442fc41c2b86b821562f.png",
-                    "size": "small"
-                  },
-                  {
-                    "#text": "https://lastfm.freetls.fastly.net/i/u/64s/2a96cbd8b46e442fc41c2b86b821562f.png",
-                    "size": "medium"
-                  },
-                  {
-                    "#text": "https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png",
-                    "size": "large"
-                  },
-                  {
-                    "#text": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png",
-                    "size": "extralarge"
-                  }
-                ],
-                "@attr": {
-                  "rank": "4"
-                }
-              }
-            ],
-            "@attr": {
-              "tag": "rock",
-              "page": "1",
-              "perPage": "50",
-              "totalPages": "10385",
-              "total": "519209"
-            }
-          }
+    @Test
+    void process_shouldSkipBlacklistedArtists_whenSomeArtistsAreBlacklisted() throws IOException {
+        // given
+        LastfmTag sourceTag = consistencyHelper.createAndSaveTag();
+        
+        // Blacklist some artists from the response
+        var tracks = dtoRoot.getRootObject().getTracks();
+        if (tracks.size() > 1) {
+            // Blacklist the first artist (Nirvana)
+            blacklistService.addToBlacklist(
+                yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType.ARTIST, 
+                tracks.get(0).getArtist().getUrl());
         }
-        """;
+
+        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
+            responseJsonString, LastfmApiCallType.TAG_TOP_TRACKS, sourceTag);
+
+        // Record initial state
+        long initialArtistCount = artistRepository.count();
+        long initialTrackCount = trackRepository.count();
+
+        // when
+        processor.processResponse(apiResponse);
+
+        // then
+        // Verify some but not all artists were created
+        long finalArtistCount = artistRepository.count();
+        assertTrue(finalArtistCount > initialArtistCount, "Some artists should be created");
+        
+        // Count unique artists in response
+        long uniqueArtists = tracks.stream()
+            .map(track -> track.getArtist().getName())
+            .distinct()
+            .count();
+        assertTrue(finalArtistCount < initialArtistCount + uniqueArtists, 
+            "Not all artists should be created due to blacklist");
+
+        // Verify tracks from non-blacklisted artists were created
+        long finalTrackCount = trackRepository.count();
+        assertTrue(finalTrackCount > initialTrackCount, "Some tracks should be created");
+        
+        // But tracks from blacklisted artists should not be created
+        assertTrue(finalTrackCount < initialTrackCount + tracks.size(), 
+            "Not all tracks should be created due to blacklisted artists");
+
+        // Verify relationships were created
+        assertTrue(artistTrackRepository.count() > 0, "Artist-track relationships should be created");
+    }
+
+    @Test
+    void process_shouldSkipBlacklistedTracks_whenSomeTracksAreBlacklisted() throws IOException {
+        // given
+        LastfmTag sourceTag = consistencyHelper.createAndSaveTag();
+        
+        // Blacklist some tracks from the response
+        var tracks = dtoRoot.getRootObject().getTracks();
+        if (tracks.size() > 1) {
+            // Blacklist the first track (Smells Like Teen Spirit)
+            blacklistService.addToBlacklist(
+                yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType.TRACK, 
+                tracks.get(0).getUrl());
+        }
+
+        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
+            responseJsonString, LastfmApiCallType.TAG_TOP_TRACKS, sourceTag);
+
+        // Record initial state
+        long initialArtistCount = artistRepository.count();
+        long initialTrackCount = trackRepository.count();
+
+        // when
+        processor.processResponse(apiResponse);
+
+        // then
+        // Verify artists were created (not affected by track blacklist)
+        long finalArtistCount = artistRepository.count();
+        assertTrue(finalArtistCount > initialArtistCount, "Artists should be created");
+
+        // Verify some but not all tracks were created
+        long finalTrackCount = trackRepository.count();
+        assertTrue(finalTrackCount > initialTrackCount, "Some tracks should be created");
+        assertTrue(finalTrackCount < initialTrackCount + tracks.size(), 
+            "Not all tracks should be created due to blacklist");
+
+        // Verify relationships were created
+        assertTrue(artistTrackRepository.count() > 0, "Artist-track relationships should be created");
+    }
+
+    @Test
+    void process_shouldSkipTracksFromBlacklistedArtists_whenArtistIsBlacklistedButTrackIsNot() throws IOException {
+        // given
+        LastfmTag sourceTag = consistencyHelper.createAndSaveTag();
+        
+        var tracks = dtoRoot.getRootObject().getTracks();
+        if (tracks.size() > 1) {
+            // Blacklist an artist but not their track
+            String artistUrl = tracks.getFirst().getArtist().getUrl();
+            blacklistService.addToBlacklist(
+                yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType.ARTIST, 
+                artistUrl);
+            
+            // Verify the track itself is not blacklisted
+            String trackUrl = tracks.getFirst().getUrl();
+            // Don't blacklist the track - we want to test that tracks are filtered due to blacklisted artists
+        }
+
+        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
+            responseJsonString, LastfmApiCallType.TAG_TOP_TRACKS, sourceTag);
+
+        // Record initial state
+        long initialTrackCount = trackRepository.count();
+
+        // when
+        processor.processResponse(apiResponse);
+
+        // then
+        // Verify tracks from blacklisted artists were not created
+        long finalTrackCount = trackRepository.count();
+        
+        // Should have fewer tracks than total tracks in response
+        assertTrue(finalTrackCount < initialTrackCount + tracks.size(), 
+            "Tracks from blacklisted artists should not be created");
+    }
+
+    @Test
+    void process_shouldHandleAllArtistsBlacklisted_whenAllArtistsAreBlacklisted() throws IOException {
+        // given
+        LastfmTag sourceTag = consistencyHelper.createAndSaveTag();
+        
+        // Blacklist ALL unique artists from the response
+        var tracks = dtoRoot.getRootObject().getTracks();
+        var uniqueArtistUrls = tracks.stream()
+            .map(track -> track.getArtist().getUrl())
+            .distinct()
+            .toList();
+            
+        for (String artistUrl : uniqueArtistUrls) {
+            blacklistService.addToBlacklist(
+                yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType.ARTIST, 
+                artistUrl);
+        }
+
+        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
+            responseJsonString, LastfmApiCallType.TAG_TOP_TRACKS, sourceTag);
+
+        // when - should not throw exception
+        assertDoesNotThrow(() -> processor.processResponse(apiResponse));
+
+        // then
+        // Verify no artists, tracks or relationships were created
+        assertEquals(1, tagRepository.count(), "Only source tag should exist");
+        assertEquals(0, artistRepository.count(), "No artists should be created");
+        assertEquals(0, trackRepository.count(), "No tracks should be created");
+        assertEquals(0, artistTrackRepository.count(), "No artist-track relationships should be created");
+        assertEquals(0, attributeHistoryRepository.count(), "No attribute history records should be created");
+    }
+
+    @Test
+    void process_shouldProcessNormally_whenNoEntitiesAreBlacklisted() throws IOException {
+        // given
+        LastfmTag sourceTag = consistencyHelper.createAndSaveTag();
+
+        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
+            responseJsonString, LastfmApiCallType.TAG_TOP_TRACKS, sourceTag);
+
+        // Record initial state
+        long initialArtistCount = artistRepository.count();
+        long initialTrackCount = trackRepository.count();
+
+        // when
+        processor.processResponse(apiResponse);
+
+        // then
+        // Verify artists and tracks were created
+        assertTrue(artistRepository.count() > initialArtistCount, "Artists should be created");
+        assertTrue(trackRepository.count() > initialTrackCount, "Tracks should be created");
+        assertTrue(artistTrackRepository.count() > 0, "Artist-track relationships should be created");
+        assertTrue(attributeHistoryRepository.count() > 0, "Attribute history records should be created");
+    }
 }

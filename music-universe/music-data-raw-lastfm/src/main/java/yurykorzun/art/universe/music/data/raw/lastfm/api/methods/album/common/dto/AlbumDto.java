@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.EntityDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.entity.LastfmAlbum;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 
 import java.beans.Transient;
 
@@ -26,6 +27,11 @@ public class AlbumDto implements EntityDto<LastfmAlbum> {
     @Override
     public String getName() {
         return name;
+    }
+
+    @Override
+    public LastfmEntityType getEntityType() {
+        return LastfmEntityType.ALBUM;
     }
 
     @Override

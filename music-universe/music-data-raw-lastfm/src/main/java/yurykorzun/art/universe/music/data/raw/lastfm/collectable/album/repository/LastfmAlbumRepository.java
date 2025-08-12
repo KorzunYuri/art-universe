@@ -70,4 +70,11 @@ public interface LastfmAlbumRepository extends JpaRepository<LastfmAlbum, Long> 
     default List<LastfmAlbum> findAlbumsForGetInfo() {
         return findAlbumsForGetInfo(LastfmConstants.HIBERNATE_BATCH_SIZE);
     }
+
+    @Query("""
+        SELECT  a.url
+        FROM    album a
+        WHERE   a.url in :urls
+    """)
+    List<String> findExistingUrls(@Param("urls") List<String> strings);
 }

@@ -13,8 +13,11 @@ import org.springframework.context.annotation.Import;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.LastfmApiResponseProcessorTestHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.config.LastfmThresholdConfig;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.service.DtoQualityService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.topartists.dto.TagTopArtistsDtoRoot;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.repository.LastfmArtistRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.impl.LastfmArtistServiceImpl;
@@ -22,6 +25,8 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entit
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repository.LastfmAttributeHistoryRecordRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repository.LastfmAttributeTypeSynchronizer;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.impl.LastfmAttributeHistoryServiceImpl;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.blacklist.service.BlacklistedEntityUrlService;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.entity.LastfmArtistTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.repository.LastfmArtistTagRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.service.LastfmArtistTagServiceImpl;
@@ -42,6 +47,10 @@ import static org.junit.jupiter.api.Assertions.*;
     LastfmTagTopArtistsResponseProcessor.class,
     LastfmTagTopArtistsArtistFactory.class,
     LastfmApiDtoProcessingService.class,
+    // quality control
+    BlacklistedEntityUrlService.class,
+    DtoQualityService.class,
+    LastfmThresholdConfig.class,
     // entities
     LastfmArtistServiceImpl.class,
     LastfmTagServiceImpl.class,
@@ -71,11 +80,16 @@ class LastfmTagTopArtistsResponseProcessorTest extends JpaOnlyTest {
     private LastfmAttributeHistoryRecordRepository attributeHistoryRepository;
 
     @Autowired
+    private BlacklistedEntityUrlService blacklistService;
+
+    @Autowired
     private LastfmArtistTagRepository artistTagRepository;
     
     @Autowired
     private LastfmApiResponseProcessorTestHelper testHelper;
 
+    private static final String TEST_RESPONSE_KEY = "tag.getTopArtists";
+    private String responseJsonString;
     private TagTopArtistsDtoRoot dtoRoot;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -84,7 +98,8 @@ class LastfmTagTopArtistsResponseProcessorTest extends JpaOnlyTest {
         consistencyHelper.cleanup();
         
         // Parse test data once for all tests
-        dtoRoot = parseResponse(TEST_DTO_ROOT);
+        responseJsonString = LastfmApiClientResourceUtil.getApiClientResponse(TEST_RESPONSE_KEY);
+        dtoRoot = parseResponse(responseJsonString);
     }
 
     @AfterEach
@@ -106,8 +121,8 @@ class LastfmTagTopArtistsResponseProcessorTest extends JpaOnlyTest {
     /**
      * Helper method to create API response for testing
      */
-    private LastfmApiResponse createApiResponse(LastfmTag tag) {
-        return consistencyHelper.createAndSaveApiResponse(TEST_DTO_ROOT, LastfmApiCallType.TAG_TOP_ARTISTS, tag);
+    private LastfmApiResponse createApiResponse(String responseString, LastfmTag tag) {
+        return consistencyHelper.createAndSaveApiResponse(responseString, LastfmApiCallType.TAG_TOP_ARTISTS, tag);
     }
 
     @Test
@@ -117,7 +132,7 @@ class LastfmTagTopArtistsResponseProcessorTest extends JpaOnlyTest {
         LastfmTag sourceTag = consistencyHelper.createAndSaveTag();
         
         // Create API response
-        LastfmApiResponse apiResponse = createApiResponse(sourceTag);
+        LastfmApiResponse apiResponse = createApiResponse(responseJsonString, sourceTag);
         
         // Record initial state
         long initialArtistCount = artistRepository.count();
@@ -177,7 +192,7 @@ class LastfmTagTopArtistsResponseProcessorTest extends JpaOnlyTest {
         LastfmTag sourceTag = consistencyHelper.createAndSaveTag();
         
         // Create API response
-        LastfmApiResponse apiResponse = createApiResponse(sourceTag);
+        LastfmApiResponse apiResponse = createApiResponse(responseJsonString,sourceTag);
         
         // First processing
         processor.processResponse(apiResponse);
@@ -206,7 +221,7 @@ class LastfmTagTopArtistsResponseProcessorTest extends JpaOnlyTest {
         LastfmTag sourceTag = consistencyHelper.createAndSaveTag();
         
         // Create API response with the tag
-        LastfmApiResponse apiResponse = createApiResponse(sourceTag);
+        LastfmApiResponse apiResponse = createApiResponse(responseJsonString, sourceTag);
         
         // Now delete the tag to simulate non-existent tag
         tagRepository.delete(sourceTag);
@@ -221,7 +236,7 @@ class LastfmTagTopArtistsResponseProcessorTest extends JpaOnlyTest {
     void process_shouldHandleEmptyArtistsList() throws IOException {
         // given
         // Create empty artists response
-        ObjectNode jsonNode = (ObjectNode) objectMapper.readTree(TEST_DTO_ROOT);
+        ObjectNode jsonNode = (ObjectNode) objectMapper.readTree(responseJsonString);
         ObjectNode topArtistsNode = (ObjectNode) jsonNode.path("topartists");
         topArtistsNode.putArray("artist"); // Replace artists with empty array
         String emptyResponseBody = objectMapper.writeValueAsString(jsonNode);
@@ -267,82 +282,81 @@ class LastfmTagTopArtistsResponseProcessorTest extends JpaOnlyTest {
         assertEquals(0, artistRepository.count(), "No artists should be created");
     }
 
-    // "image" array is ignored but is left here to make it realistic
-    private static final String TEST_DTO_ROOT = """
-        {
-          "topartists": {
-            "artist": [
-              {
-                "name": "Coldplay",
-                "mbid": "cc197bad-dc9c-440d-a5b5-d52ba2e14234",
-                "url": "https://www.last.fm/music/Coldplay",
-                "streamable": "0",
-                "image": [
-                  {
-                    "#text": "https://lastfm.freetls.fastly.net/i/u/34s/2a96cbd8b46e442fc41c2b86b821562f.png",
-                    "size": "small"
-                  },
-                  {
-                    "#text": "https://lastfm.freetls.fastly.net/i/u/64s/2a96cbd8b46e442fc41c2b86b821562f.png",
-                    "size": "medium"
-                  },
-                  {
-                    "#text": "https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png",
-                    "size": "large"
-                  },
-                  {
-                    "#text": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png",
-                    "size": "extralarge"
-                  },
-                  {
-                    "#text": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png",
-                    "size": "mega"
-                  }
-                ],
-                "@attr": {
-                  "rank": "1"
-                }
-              },
-              {
-                "name": "Linkin Park",
-                "mbid": "f59c5520-5f46-4d2c-b2c4-822eabf53419",
-                "url": "https://www.last.fm/music/Linkin+Park",
-                "streamable": "0",
-                "image": [
-                  {
-                    "#text": "https://lastfm.freetls.fastly.net/i/u/34s/2a96cbd8b46e442fc41c2b86b821562f.png",
-                    "size": "small"
-                  },
-                  {
-                    "#text": "https://lastfm.freetls.fastly.net/i/u/64s/2a96cbd8b46e442fc41c2b86b821562f.png",
-                    "size": "medium"
-                  },
-                  {
-                    "#text": "https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png",
-                    "size": "large"
-                  },
-                  {
-                    "#text": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png",
-                    "size": "extralarge"
-                  },
-                  {
-                    "#text": "https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png",
-                    "size": "mega"
-                  }
-                ],
-                "@attr": {
-                  "rank": "2"
-                }
-              }
-            ],
-            "@attr": {
-              "tag": "rock",
-              "page": "1",
-              "perPage": "50",
-              "totalPages": "3578",
-              "total": "178853"
-            }
-          }
+    @Test
+    void process_shouldSkipBlacklistedArtists_whenSomeArtistsAreBlacklisted() throws IOException {
+        // given
+        LastfmTag sourceTag = consistencyHelper.createAndSaveTag();
+        
+        // Blacklist some artists from the response
+        var artists = dtoRoot.getTopArtists().getArtists();
+        // Blacklist the first artist
+        blacklistService.addToBlacklist(LastfmEntityType.ARTIST, artists.getFirst().getUrl());
+
+        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
+            responseJsonString, LastfmApiCallType.TAG_TOP_ARTISTS, sourceTag);
+
+        // Record initial state
+        long initialArtistCount = artistRepository.count();
+
+        // when
+        processor.processResponse(apiResponse);
+
+        // then
+        // Verify some but not all artists were created
+        long finalArtistCount = artistRepository.count();
+        assertTrue(finalArtistCount > initialArtistCount, "Some artists should be created");
+        assertTrue(finalArtistCount < initialArtistCount + artists.size(), 
+            "Not all artists should be created due to blacklist");
+
+        // Verify relationships were created
+        assertTrue(artistTagRepository.count() > 0, "Artist-tag relationships should be created");
+        assertTrue(attributeHistoryRepository.count() > 0, "Attribute history records should be created");
+    }
+
+    @Test
+    void process_shouldHandleAllArtistsBlacklisted_whenAllArtistsAreBlacklisted() throws IOException {
+        // given
+        LastfmTag sourceTag = consistencyHelper.createAndSaveTag();
+        
+        // Blacklist ALL artists from the response
+        TagTopArtistsDtoRoot dtoFromRealResponse = parseResponse(responseJsonString);
+        var artists = dtoFromRealResponse.getTopArtists().getArtists();
+        for (var artist : artists) {
+            blacklistService.addToBlacklist(LastfmEntityType.ARTIST, artist.getUrl());
         }
-        """;
+
+        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
+            responseJsonString, LastfmApiCallType.TAG_TOP_ARTISTS, sourceTag);
+
+        // when - should not throw exception
+        assertDoesNotThrow(() -> processor.processResponse(apiResponse));
+
+        // then
+        // Verify no artists or relationships were created
+        assertEquals(1, tagRepository.count(), "Only source tag should exist");
+        assertEquals(0, artistRepository.count(), "No artists should be created");
+        assertEquals(0, artistTagRepository.count(), "No artist-tag relationships should be created");
+        assertEquals(0, attributeHistoryRepository.count(), "No attribute history records should be created");
+    }
+
+    @Test
+    void process_shouldProcessNormally_whenNoArtistsAreBlacklisted() throws IOException {
+        // given
+        LastfmTag sourceTag = consistencyHelper.createAndSaveTag();
+
+        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
+            responseJsonString, LastfmApiCallType.TAG_TOP_ARTISTS, sourceTag);
+
+        // Record initial state
+        long initialArtistCount = artistRepository.count();
+
+        // when
+        processor.processResponse(apiResponse);
+
+        // then
+        // Verify artists were created
+        assertTrue(artistRepository.count() > initialArtistCount, "Artists should be created");
+        assertTrue(artistTagRepository.count() > 0, "Artist-tag relationships should be created");
+        assertTrue(attributeHistoryRepository.count() > 0, "Attribute history records should be created");
+    }
 }

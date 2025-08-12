@@ -17,6 +17,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.DefaultEntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandlerFactory;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.service.DtoQualityService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
@@ -41,6 +42,7 @@ public class LastfmArtistTopTagsResponseProcessor extends LastfmApiResponseProce
     private final LastfmArtistTagService artistTagService;
     private final LastfmAttributeHistoryService attributeHistoryService;
     private final LastfmApiDtoProcessingService dtoProcessingService;
+    private final DtoQualityService dtoQualityService;
     private final EntityFactory<LastfmTag, ArtistTopTagsTagDto> tagEntityFactory;
 
     @Value("${lastfm.client.methods.artist.topTags.tagUsageCountThreshold:10}")
@@ -62,7 +64,8 @@ public class LastfmArtistTopTagsResponseProcessor extends LastfmApiResponseProce
         LastfmArtistTagService artistTagService,
         LastfmAttributeHistoryService attributeHistoryService,
         EntityFactory<LastfmTag, ArtistTopTagsTagDto> tagEntityFactory,
-        LastfmApiDtoProcessingService dtoProcessingService
+        LastfmApiDtoProcessingService dtoProcessingService,
+        DtoQualityService dtoQualityService
     ) {
         super(ArtistTopTagsDtoRoot.class);
 
@@ -72,6 +75,7 @@ public class LastfmArtistTopTagsResponseProcessor extends LastfmApiResponseProce
         this.attributeHistoryService = attributeHistoryService;
         this.tagEntityFactory = tagEntityFactory;
         this.dtoProcessingService = dtoProcessingService;
+        this.dtoQualityService = dtoQualityService;
     }
 
     @Override
@@ -117,9 +121,26 @@ public class LastfmArtistTopTagsResponseProcessor extends LastfmApiResponseProce
     }
 
     private List<ArtistTopTagsTagDto> filterDtosForSaving(List<ArtistTopTagsTagDto> dtos) {
-        return dtos.stream()
+        // First filter by usage count threshold
+        List<ArtistTopTagsTagDto> thresholdFilteredTags = dtos.stream()
             .filter(dto -> dto.getUsageCount() >= tagUsageCountThreshold)
             .toList();
+
+        // Then validate against blacklist
+        var qualityTags = dtoQualityService.validateAgainstBlacklist(thresholdFilteredTags)
+            .stream()
+            .filter(DtoQualityService.Result::isAccepted)
+            .map(DtoQualityService.Result::getDto)
+            .toList();
+
+        if (qualityTags.size() < dtos.size()) {
+            log.info("Filtered {} tags: {} below usage count threshold, {} blacklisted",
+                dtos.size() - qualityTags.size(),
+                dtos.size() - thresholdFilteredTags.size(),
+                thresholdFilteredTags.size() - qualityTags.size());
+        }
+
+        return qualityTags;
     }
 
     private void bindTagsToArtist(

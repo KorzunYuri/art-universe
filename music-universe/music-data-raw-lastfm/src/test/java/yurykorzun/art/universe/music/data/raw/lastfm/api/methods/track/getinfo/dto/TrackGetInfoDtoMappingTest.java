@@ -27,8 +27,8 @@ public class TrackGetInfoDtoMappingTest {
         assertNotNull(track.getMbid());
         assertNotNull(track.getUrl());
         assertTrue(track.getDuration() > 0);
-        assertTrue(track.getListeners() > 0);
-        assertTrue(track.getPlaycount() > 0);
+        assertTrue(track.getListenersCount() > 0);
+        assertTrue(track.getPlayCount() > 0);
         
         // Check artist
         TrackGetInfoArtistDto artist = track.getArtist();

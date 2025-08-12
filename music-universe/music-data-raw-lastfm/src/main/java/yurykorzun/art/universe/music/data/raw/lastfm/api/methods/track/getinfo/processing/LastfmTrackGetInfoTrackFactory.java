@@ -18,7 +18,7 @@ class LastfmTrackGetInfoTrackFactory extends LastfmTrackEntityFactory<TrackGetIn
         return builder
             .artist(artist)
             .duration(dto.getDuration())
-            .listenersCount(dto.getListeners())
-            .playCount(dto.getPlaycount());
+            .listenersCount(dto.getListenersCount())
+            .playCount(dto.getPlayCount());
     }
 }

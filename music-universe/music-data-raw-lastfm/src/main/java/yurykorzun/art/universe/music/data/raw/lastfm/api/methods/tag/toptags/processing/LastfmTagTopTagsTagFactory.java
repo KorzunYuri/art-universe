@@ -11,7 +11,7 @@ class LastfmTagTopTagsTagFactory extends LastfmTagEntityFactory<TagTopTagsTagDto
     @Override
     protected LastfmTag.LastfmTagBuilder<?, ?> setExtensionFields(LastfmTag.LastfmTagBuilder<?, ?> builder, TagTopTagsTagDto dto) {
         return builder
-            .usageCount(dto.getCount())
-            .usageUsersCount(dto.getReach());
+            .usageCount(dto.getUsageCount())
+            .usageUsersCount(dto.getUsageUsersCount());
     }
 }

@@ -5,15 +5,16 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.common.dto.TagDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.common.dto.TagDtoWithMetrics;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public class ArtistTopTagsTagDto extends TagDto {
+public class ArtistTopTagsTagDto extends TagDto implements TagDtoWithMetrics {
 
     @JsonProperty("url")
     private String url;
 
     @JsonProperty("count")
-    private int usageCount;
+    private Integer usageCount;
 }

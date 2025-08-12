@@ -37,7 +37,7 @@ public class TagTopTagsDtoMappingTest {
         TagTopTagsTagDto tagDto = tags.get(0);
         assertNotNull(tagDto);
         assertEquals("rock", tagDto.getName());
-        assertEquals(4050770, tagDto.getCount());
-        assertEquals(401715, tagDto.getReach());
+        assertEquals(4050770, tagDto.getUsageCount());
+        assertEquals(401715, tagDto.getUsageUsersCount());
     }
 }

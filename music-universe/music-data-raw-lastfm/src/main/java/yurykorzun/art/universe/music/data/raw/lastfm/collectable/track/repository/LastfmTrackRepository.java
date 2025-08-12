@@ -135,4 +135,11 @@ public interface LastfmTrackRepository extends JpaRepository<LastfmTrack, Long> 
     default List<LastfmTrack> findTracksForGetInfo() {
         return findTracksForGetInfo(LastfmConstants.HIBERNATE_BATCH_SIZE);
     }
+
+    @Query("""
+        SELECT  t.url
+        FROM    track t
+        WHERE   t.url in :urls
+    """)
+    List<String> findExistingUrls(@Param("urls") List<String> strings);
 }

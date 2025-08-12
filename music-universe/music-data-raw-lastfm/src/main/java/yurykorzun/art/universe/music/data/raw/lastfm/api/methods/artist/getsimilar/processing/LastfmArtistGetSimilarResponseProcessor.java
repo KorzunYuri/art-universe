@@ -16,6 +16,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandlerFactory;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.service.DtoQualityService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
@@ -40,6 +41,7 @@ public class LastfmArtistGetSimilarResponseProcessor extends LastfmApiResponsePr
     private final EntityFactory<LastfmArtist, ArtistGetSimilarArtistDto> artistFactory;
     private final LastfmArtistsRelationService artistsRelationService;
     private final LastfmAttributeHistoryService attributeHistoryService;
+    private final DtoQualityService dtoQualityService;
 
     // TODO provide default value to injected values
     // TODO implement on-the-fly value management
@@ -61,7 +63,8 @@ public class LastfmArtistGetSimilarResponseProcessor extends LastfmApiResponsePr
         LastfmApiDtoProcessingService dtoProcessingService,
         EntityFactory<LastfmArtist, ArtistGetSimilarArtistDto> artistFactory,
         LastfmArtistsRelationService artistsRelationService,
-        LastfmAttributeHistoryService attributeHistoryService
+        LastfmAttributeHistoryService attributeHistoryService,
+        DtoQualityService dtoQualityService
     ) {
         super(ArtistGetSimilarDtoRoot.class);
 
@@ -70,6 +73,7 @@ public class LastfmArtistGetSimilarResponseProcessor extends LastfmApiResponsePr
         this.artistFactory = artistFactory;
         this.artistsRelationService = artistsRelationService;
         this.attributeHistoryService = attributeHistoryService;
+        this.dtoQualityService = dtoQualityService;
     }
 
     @Override
@@ -142,13 +146,27 @@ public class LastfmArtistGetSimilarResponseProcessor extends LastfmApiResponsePr
     }
 
     /**
-     * Returns DTOs of artists for saving, filtered by match coefficient and excluding source artist.
+     * Returns DTOs of artists for saving, filtered by match coefficient, blacklist validation, and excluding source artist.
      */
     private List<ArtistGetSimilarArtistDto> filterDtosForSaving(ArtistGetSimilarDtoRoot dtoRoot, LastfmArtist sourceArtist) {
-        return dtoRoot.getRootObject().getArtists().stream()
+        List<ArtistGetSimilarArtistDto> candidateDtos = dtoRoot.getRootObject().getArtists().stream()
             .filter(a -> a.getMatchCoeff() > artistMatchThreshold)
             .filter(a -> !isSameArtist(a, sourceArtist))
             .toList();
+
+        // Validate against blacklist
+        var qualityArtistDtos = dtoQualityService.validateAgainstBlacklist(candidateDtos)
+            .stream()
+            .filter(DtoQualityService.Result::isAccepted)
+            .map(DtoQualityService.Result::getDto)
+            .toList();
+
+        if (qualityArtistDtos.size() < candidateDtos.size()) {
+            log.info("Filtered out {} blacklisted similar artists for artist {}",
+                candidateDtos.size() - qualityArtistDtos.size(), sourceArtist.getName());
+        }
+
+        return qualityArtistDtos;
     }
     
     /**
