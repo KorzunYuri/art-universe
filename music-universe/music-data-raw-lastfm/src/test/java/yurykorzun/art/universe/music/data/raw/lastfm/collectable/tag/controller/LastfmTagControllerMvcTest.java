@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
+import yurykorzun.art.universe.common.exception.ErrorResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.EntityTagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.EntityTagSearchParams;
@@ -17,7 +18,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.LastfmT
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.service.LastfmTagService;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.exception.ErrorResponse;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.BaseMvcTest;
 
 import java.util.Collections;
 import java.util.List;
@@ -31,7 +32,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(LastfmTagController.class)
-class LastfmTagControllerMvcTest {
+class LastfmTagControllerMvcTest extends BaseMvcTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -164,12 +165,10 @@ class LastfmTagControllerMvcTest {
     @Test
     void GET_entityTags_shouldReturnError_whenInvalidEntityTypeName() throws Exception {
         // Given
-        String errorMessage = "Unknown entity type: INVALID. Expected one of: ARTIST, ALBUM, TRACK, TAG or their numeric codes (1, 2, 3, 4)";
+        String errorMessage = "Invalid entity type: Unknown entity type: INVALID. Expected one of: ARTIST, ALBUM, TRACK, TAG or their numeric codes (1, 2, 3, 4)";
         
-        when(tagService.findAllByEntity(any(), any(), any(), any()))
-            .thenThrow(new IllegalArgumentException(errorMessage));
 
-        String expectedJson = objectMapper.writeValueAsString(new ErrorResponse("Invalid entity type: " + errorMessage));
+        String expectedJson = objectMapper.writeValueAsString(new ErrorResponse(errorMessage));
 
         // When & Then
         mockMvc.perform(get("/api/v1/tags/entity/INVALID/123")

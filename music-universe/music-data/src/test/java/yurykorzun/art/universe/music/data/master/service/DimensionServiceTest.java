@@ -12,7 +12,7 @@ import org.springframework.data.domain.Pageable;
 import yurykorzun.art.universe.music.data.master.dto.DimensionDto;
 import yurykorzun.art.universe.music.data.master.dto.DimensionSaveRequestDTO;
 import yurykorzun.art.universe.music.data.master.entity.Dimension;
-import yurykorzun.art.universe.music.data.master.exception.CustomEntityNotFoundException;
+import yurykorzun.art.universe.common.exception.EntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.repository.DimensionRepository;
 
 import java.util.List;
@@ -180,7 +180,7 @@ class DimensionServiceTest {
         when(dimensionRepository.findById(dimensionId)).thenReturn(Optional.empty());
         
         // When & Then
-        CustomEntityNotFoundException exception = assertThrows(CustomEntityNotFoundException.class,
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
             () -> dimensionService.saveDimension(request));
         
         assertEquals("Dimension not found with id: 999", exception.getMessage());

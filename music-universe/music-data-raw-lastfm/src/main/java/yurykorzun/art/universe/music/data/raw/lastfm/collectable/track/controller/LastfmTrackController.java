@@ -6,13 +6,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import yurykorzun.art.universe.common.exception.EntityNotFoundException;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.dto.ApprovalStatusRequestDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.dto.LastfmTrackResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.dto.TrackSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.service.LastfmTrackService;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.exception.DataFetchException;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.exception.DataUpdateException;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.exception.EntityNotFoundException;
+import yurykorzun.art.universe.common.exception.DataFetchException;
+import yurykorzun.art.universe.common.exception.DataUpdateException;
 
 import java.util.Set;
 
@@ -62,7 +62,7 @@ public class LastfmTrackController {
         try {
             return trackService.findById(id)
                 .map(LastfmTrackResponseDto::from)
-                .orElseThrow(() -> new EntityNotFoundException("Track not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Track", id));
         } catch (EntityNotFoundException e) {
             throw e;
         } catch (Exception e) {

@@ -1,8 +1,9 @@
-package yurykorzun.art.universe.music.data.master.exception;
+package yurykorzun.art.universe.common.exception;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -19,27 +20,45 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Global exception handler for all API exceptions
+ * Common global exception handler for all API exceptions.
+ * This handler has the lowest priority to allow module-specific handlers to take precedence.
+ * It handles standard Spring/JPA exceptions and common business exceptions.
  */
 @RestControllerAdvice
+@Order(Ordered.LOWEST_PRECEDENCE)
 @Slf4j
-public class GlobalExceptionHandler {
+public class CommonGlobalExceptionHandler {
 
-    /**
-     * Handle custom API exceptions
-     */
-    @ExceptionHandler(BaseApiException.class)
-    public ResponseEntity<ErrorResponse> handleBaseApiException(BaseApiException ex) {
-        // Log the full exception with stack trace for debugging
-        if (ex.getCause() != null) {
-            log.error("API exception occurred: {}", ex.getMessage(), ex);
-        }
-        
+    // === Business Exceptions Mapping ===
+
+    @ExceptionHandler(DataFetchException.class)
+    public ResponseEntity<ErrorResponse> handleDataFetch(DataFetchException ex) {
+        log.error("Data fetch error: {}", ex.getMessage());
         return new ResponseEntity<>(
                 new ErrorResponse(ex.getMessage()),
-                ex.getStatus()
+                HttpStatus.INTERNAL_SERVER_ERROR
         );
     }
+
+    @ExceptionHandler(DataUpdateException.class)
+    public ResponseEntity<ErrorResponse> handleDataUpdate(DataUpdateException ex) {
+        log.error("Data update error: {}", ex.getMessage());
+        return new ResponseEntity<>(
+                new ErrorResponse(ex.getMessage()),
+                HttpStatus.INTERNAL_SERVER_ERROR
+        );
+    }
+
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<ErrorResponse> handleValidation(ValidationException ex) {
+        log.error("Validation error: {}", ex.getMessage());
+        return new ResponseEntity<>(
+                new ErrorResponse(ex.getMessage()),
+                HttpStatus.BAD_REQUEST
+        );
+    }
+    
+    // === Spring Framework Exceptions ===
     
     /**
      * Handle validation exceptions from @Valid annotations
@@ -56,7 +75,7 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST
         );
     }
-    
+
     /**
      * Handle constraint violations
      */
@@ -72,7 +91,7 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST
         );
     }
-    
+
     /**
      * Handle type mismatch exceptions (e.g., passing a string where a number is expected)
      */
@@ -86,7 +105,7 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST
         );
     }
-    
+
     /**
      * Handle missing request parameters
      */
@@ -100,7 +119,7 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST
         );
     }
-    
+
     /**
      * Handle malformed JSON requests
      */
@@ -114,10 +133,22 @@ public class GlobalExceptionHandler {
     }
     
     /**
-     * Handle JPA entity not found exceptions
+     * Handle custom entity not found exceptions
      */
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleEntityNotFound(EntityNotFoundException ex) {
+    public ResponseEntity<ErrorResponse> handleCustomEntityNotFound(EntityNotFoundException ex) {
+        log.error("Entity not found: {}", ex.getMessage());
+        return new ResponseEntity<>(
+                new ErrorResponse(ex.getMessage()),
+                HttpStatus.NOT_FOUND
+        );
+    }
+    
+    /**
+     * Handle JPA entity not found exceptions
+     */
+    @ExceptionHandler(jakarta.persistence.EntityNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleEntityNotFound(jakarta.persistence.EntityNotFoundException ex) {
         log.error("Entity not found", ex);
         return new ResponseEntity<>(
                 new ErrorResponse("Requested entity could not be found"),
@@ -175,6 +206,7 @@ public class GlobalExceptionHandler {
     
     /**
      * Handle all other exceptions
+     * This is the fallback handler for any unhandled exceptions
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
@@ -186,31 +218,5 @@ public class GlobalExceptionHandler {
                 new ErrorResponse("An unexpected error occurred. Details can be found in server logs."),
                 HttpStatus.INTERNAL_SERVER_ERROR
         );
-    }
-    
-    /**
-     * Standard error response format
-     */
-    public static class ErrorResponse {
-        private final String message;
-        private final Map<String, String> errors;
-        
-        public ErrorResponse(String message) {
-            this.message = message;
-            this.errors = null;
-        }
-        
-        public ErrorResponse(String message, Map<String, String> errors) {
-            this.message = message;
-            this.errors = errors;
-        }
-        
-        public String getMessage() {
-            return message;
-        }
-        
-        public Map<String, String> getErrors() {
-            return errors;
-        }
     }
 }

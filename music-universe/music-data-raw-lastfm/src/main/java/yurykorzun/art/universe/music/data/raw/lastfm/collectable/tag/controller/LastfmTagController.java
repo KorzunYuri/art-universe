@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import yurykorzun.art.universe.common.exception.EntityNotFoundException;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.dto.ApprovalStatusRequestDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.EntityTagDto;
@@ -13,10 +14,9 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.EntityT
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.LastfmTagResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.TagSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.service.LastfmTagService;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.exception.DataFetchException;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.exception.DataUpdateException;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.exception.EntityNotFoundException;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.exception.ValidationException;
+import yurykorzun.art.universe.common.exception.DataFetchException;
+import yurykorzun.art.universe.common.exception.DataUpdateException;
+import yurykorzun.art.universe.common.exception.ValidationException;
 
 import java.util.List;
 import java.util.Set;
@@ -57,7 +57,7 @@ public class LastfmTagController {
         try {
             return tagService.findById(id)
                 .map(LastfmTagResponseDto::from)
-                .orElseThrow(() -> new EntityNotFoundException("Tag not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Tag", id));
         } catch (EntityNotFoundException e) {
             throw e;
         } catch (Exception e) {

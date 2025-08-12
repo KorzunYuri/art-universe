@@ -18,7 +18,7 @@ import yurykorzun.art.universe.music.data.master.entity.Category;
 import yurykorzun.art.universe.music.data.master.entity.CategoryBinding;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.entity.EntityType;
-import yurykorzun.art.universe.music.data.master.exception.CustomEntityNotFoundException;
+import yurykorzun.art.universe.common.exception.EntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.relation.RelationRegistry;
 
 import java.util.Arrays;
@@ -243,7 +243,7 @@ class RelationServiceIntegrationTest extends JpaOnlyTest {
         Long targetEntityId = category1.getId();
         
         // When & Then
-        assertThrows(CustomEntityNotFoundException.class, () ->
+        assertThrows(EntityNotFoundException.class, () ->
             relationService.createInternalRelation(sourceEntityType, sourceEntityId, targetEntityType, targetEntityId));
     }
     

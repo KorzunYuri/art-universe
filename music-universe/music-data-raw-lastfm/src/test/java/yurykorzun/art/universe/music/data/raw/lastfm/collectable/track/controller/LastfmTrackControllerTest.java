@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
+import yurykorzun.art.universe.common.exception.EntityNotFoundException;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.dto.ApprovalStatusRequestDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.dto.LastfmTrackResponseDto;
@@ -14,9 +15,8 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.dto.Track
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.service.LastfmTrackService;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.exception.DataFetchException;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.exception.DataUpdateException;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.exception.EntityNotFoundException;
+import yurykorzun.art.universe.common.exception.DataFetchException;
+import yurykorzun.art.universe.common.exception.DataUpdateException;
 
 import java.util.HashSet;
 import java.util.List;

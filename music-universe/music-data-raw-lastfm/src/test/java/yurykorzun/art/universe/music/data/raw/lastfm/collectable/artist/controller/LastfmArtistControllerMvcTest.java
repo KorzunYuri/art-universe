@@ -10,13 +10,14 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
+import yurykorzun.art.universe.common.exception.ErrorResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto.ArtistSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto.LastfmArtistResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.dto.ApprovalStatusRequestDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.exception.ErrorResponse;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.BaseMvcTest;
 
 import java.util.Arrays;
 import java.util.List;
@@ -30,7 +31,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(LastfmArtistController.class)
-class LastfmArtistControllerMvcTest {
+class LastfmArtistControllerMvcTest extends BaseMvcTest {
 
     @Autowired
     private MockMvc mockMvc;

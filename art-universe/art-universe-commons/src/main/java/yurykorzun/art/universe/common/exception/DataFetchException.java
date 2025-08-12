@@ -1,9 +1,9 @@
-package yurykorzun.art.universe.music.data.raw.lastfm.common.exception;
+package yurykorzun.art.universe.common.exception;
 
 /**
  * Exception thrown when there's an error fetching data from the database or external API.
  */
-public class DataFetchException extends ApplicationException {
+public class DataFetchException extends RuntimeException {
     
     public DataFetchException(String message) {
         super(message);

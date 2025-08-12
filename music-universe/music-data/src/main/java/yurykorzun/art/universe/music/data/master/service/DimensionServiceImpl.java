@@ -12,7 +12,7 @@ import yurykorzun.art.universe.music.data.master.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.entity.Dimension;
 import yurykorzun.art.universe.music.data.master.entity.EntityType;
-import yurykorzun.art.universe.music.data.master.exception.CustomEntityNotFoundException;
+import yurykorzun.art.universe.common.exception.EntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.repository.DimensionRepository;
 import yurykorzun.art.universe.music.data.master.service.lookup.DimensionLookupService;
 
@@ -46,7 +46,7 @@ public class DimensionServiceImpl implements DimensionService {
     public DimensionDto getDimension(Long id) {
         return dimensionRepository.findById(id)
             .map(this::toDto)
-            .orElseThrow(() -> new CustomEntityNotFoundException("Dimension", id));
+            .orElseThrow(() -> new EntityNotFoundException("Dimension", id));
     }
 
     @Override
@@ -67,7 +67,7 @@ public class DimensionServiceImpl implements DimensionService {
         if (request.getId() != null) {
             // Update existing dimension
             dimension = dimensionRepository.findById(request.getId())
-                .orElseThrow(() -> new CustomEntityNotFoundException("Dimension", request.getId()));
+                .orElseThrow(() -> new EntityNotFoundException("Dimension", request.getId()));
             
             dimension.setName(request.getName());
         } else {

@@ -14,7 +14,7 @@ import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProj
 import yurykorzun.art.universe.music.data.master.entity.Artist;
 import yurykorzun.art.universe.music.data.master.entity.ArtistBinding;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.exception.CustomEntityNotFoundException;
+import yurykorzun.art.universe.common.exception.EntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.repository.ArtistBindingRepository;
 import yurykorzun.art.universe.music.data.master.repository.ArtistRepository;
 
@@ -190,7 +190,7 @@ class ArtistServiceTest {
         when(artistRepository.findById(artistId)).thenReturn(Optional.empty());
 
         // When & Then
-        assertThrows(CustomEntityNotFoundException.class, () ->
+        assertThrows(EntityNotFoundException.class, () ->
             artistService.bindToExisting(dataSource, externalId, request));
         
         verify(artistRepository).findById(artistId);

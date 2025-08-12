@@ -6,13 +6,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import yurykorzun.art.universe.common.exception.EntityNotFoundException;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto.ArtistSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto.LastfmArtistResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.dto.ApprovalStatusRequestDto;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.exception.DataFetchException;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.exception.DataUpdateException;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.exception.EntityNotFoundException;
+import yurykorzun.art.universe.common.exception.DataFetchException;
+import yurykorzun.art.universe.common.exception.DataUpdateException;
 
 import java.util.Set;
 
@@ -54,7 +54,7 @@ public class LastfmArtistController {
         try {
             return artistService.findById(id)
                 .map(LastfmArtistResponseDto::from)
-                .orElseThrow(() -> new EntityNotFoundException("Artist not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Artist", id));
         } catch (EntityNotFoundException e) {
             throw e;
         } catch (Exception e) {

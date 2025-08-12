@@ -7,6 +7,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import yurykorzun.art.universe.music.quiz.common.archetypes.BaseMvcTest;
 import yurykorzun.art.universe.music.quiz.dto.BindingDto;
 import yurykorzun.art.universe.music.quiz.service.ArtistService;
 
@@ -17,7 +18,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ArtistController.class)
-class ArtistControllerTest {
+class ArtistControllerTest extends BaseMvcTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -179,9 +180,10 @@ class ArtistControllerTest {
     @Test
     void getBindings_shouldReturnBadRequest_whenMalformedJson() throws Exception {
         // when & then
+        String malformedJson = "invalid json";
         mockMvc.perform(post("/api/v1/artists/bindings")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("invalid json"))
+                .content(malformedJson))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.message").value("Malformed JSON request. Please check your request body."));
     }

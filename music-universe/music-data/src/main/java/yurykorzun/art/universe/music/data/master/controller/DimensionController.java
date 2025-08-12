@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.music.data.master.dto.DimensionDto;
 import yurykorzun.art.universe.music.data.master.dto.DimensionSaveRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
-import yurykorzun.art.universe.music.data.master.exception.CustomEntityNotFoundException;
+import yurykorzun.art.universe.common.exception.EntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.service.DimensionService;
 
 import java.util.List;
@@ -57,7 +57,7 @@ public class DimensionController {
     public boolean deleteDimension(@PathVariable Long id) {
         boolean deleted = dimensionService.deleteDimension(id);
         if (!deleted) {
-            throw new CustomEntityNotFoundException("Dimension", id);
+            throw new EntityNotFoundException("Dimension", id);
         }
         return true;
     }

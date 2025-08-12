@@ -1,9 +1,9 @@
-package yurykorzun.art.universe.music.data.raw.lastfm.common.exception;
+package yurykorzun.art.universe.common.exception;
 
 /**
- * Exception thrown when input validation fails.
+ * Exception thrown when validation fails.
  */
-public class ValidationException extends ApplicationException {
+public class ValidationException extends RuntimeException {
     
     public ValidationException(String message) {
         super(message);

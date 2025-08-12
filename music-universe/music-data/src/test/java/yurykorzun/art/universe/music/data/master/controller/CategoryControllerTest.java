@@ -21,7 +21,7 @@ import yurykorzun.art.universe.music.data.master.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.TestCategoryHierarchyProjectionImpl;
 import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.exception.CustomEntityNotFoundException;
+import yurykorzun.art.universe.common.exception.EntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.service.BindingService;
 import yurykorzun.art.universe.music.data.master.service.CategoryService;
 
@@ -227,7 +227,7 @@ class CategoryControllerTest {
         when(categoryService.deleteCategory(id)).thenReturn(false);
 
         // When & Then
-        CustomEntityNotFoundException exception = assertThrows(CustomEntityNotFoundException.class, () ->
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () ->
             categoryController.deleteCategory(id)
         );
         
