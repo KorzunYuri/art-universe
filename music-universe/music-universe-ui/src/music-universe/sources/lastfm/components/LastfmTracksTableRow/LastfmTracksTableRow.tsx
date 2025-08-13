@@ -97,59 +97,61 @@ export const LastfmTracksTableRow = (
     };
 
     return (
-        <div key={entity.id}
-             className={sharedTableStyles.row}
-             onClick={toggleTagPanel}
-        >
-            <div className={`${sharedTableStyles.cell} ${trackTableStyles.artist}`}>
-                {entity.artist && <ReadonlyAttr value={entity.artist.name}/>}
-            </div>
+        <>
+            <div key={entity.id}
+                 className={`${sharedTableStyles.row} ${isTagPanelOpen ? styles.activeRow : ''}`}
+                 onClick={toggleTagPanel}
+            >
+                <div className={`${sharedTableStyles.cell} ${trackTableStyles.artist}`}>
+                    {entity.artist && <ReadonlyAttr value={entity.artist.name}/>}
+                </div>
 
-            <div className={`${sharedTableStyles.cell} ${trackTableStyles.name}`}>
-                {entity.url && <ExternalLink href={entity.url} label={entity.name}/>}
-            </div>
+                <div className={`${sharedTableStyles.cell} ${trackTableStyles.name}`}>
+                    {entity.url && <ExternalLink href={entity.url} label={entity.name}/>}
+                </div>
 
-            <div className={`${sharedTableStyles.cell} ${trackTableStyles.mbid}`}>
-                {entity.mbid && <ExternalLink
-                    href={`${LastfmConfig.mbBaseUrls.track}${entity.mbid}`}
-                    label="MusicBrainz"/>}
-            </div>
+                <div className={`${sharedTableStyles.cell} ${trackTableStyles.mbid}`}>
+                    {entity.mbid && <ExternalLink
+                        href={`${LastfmConfig.mbBaseUrls.track}${entity.mbid}`}
+                        label="MusicBrainz"/>}
+                </div>
 
-            <div className={`${sharedTableStyles.cell} ${trackTableStyles.status}`}
-                 onClick={(e) => e.stopPropagation()}>
-                <ApprovalToggle
-                    status={entity.approvalStatus}
-                    onChange={setApprovalStatus}
-                    disabled={isApproving}
-                />
-            </div>
+                <div className={`${sharedTableStyles.cell} ${trackTableStyles.status}`}
+                     onClick={(e) => e.stopPropagation()}>
+                    <ApprovalToggle
+                        status={entity.approvalStatus}
+                        onChange={setApprovalStatus}
+                        disabled={isApproving}
+                    />
+                </div>
 
-            <div className={`${sharedTableStyles.cell}  ${trackTableStyles.masterBinding}`}
-                 onClick={(e) => e.stopPropagation()}>
-                <EntityBinding
-                    dataSource={dataSource}
-                    entityType={entityType}
-                    entityId={entityId}
-                    onBeforeBind={ensureIsValidForBinding}
-                    onAfterBind={invalidateEntity}
-                    onAfterUnbind={invalidateEntity}
-                />
-            </div>
+                <div className={`${sharedTableStyles.cell}  ${trackTableStyles.masterBinding}`}
+                     onClick={(e) => e.stopPropagation()}>
+                    <EntityBinding
+                        dataSource={dataSource}
+                        entityType={entityType}
+                        entityId={entityId}
+                        onBeforeBind={ensureIsValidForBinding}
+                        onAfterBind={invalidateEntity}
+                        onAfterUnbind={invalidateEntity}
+                    />
+                </div>
 
-            <div className={`${sharedTableStyles.cell}  ${artistTableStyles.quizBinding}`}
-                 onClick={(e) => e.stopPropagation()}>
-                <QuizBinding
-                    entityType="track"
-                    masterId={entity.getMasterEntity()?.id ?? null}
-                />
-            </div>
+                <div className={`${sharedTableStyles.cell}  ${artistTableStyles.quizBinding}`}
+                     onClick={(e) => e.stopPropagation()}>
+                    <QuizBinding
+                        entityType="track"
+                        masterId={entity.getMasterEntity()?.id ?? null}
+                    />
+                </div>
 
-            <div className={`${sharedTableStyles.cell} ${trackTableStyles.count}`}>
-                <ReadonlyAttr value={entity.playCount}/>
-            </div>
+                <div className={`${sharedTableStyles.cell} ${trackTableStyles.count}`}>
+                    <ReadonlyAttr value={entity.playCount}/>
+                </div>
 
-            <div className={`${sharedTableStyles.cell} ${trackTableStyles.count}`}>
-                <ReadonlyAttr value={entity.listenersCount}/>
+                <div className={`${sharedTableStyles.cell} ${trackTableStyles.count}`}>
+                    <ReadonlyAttr value={entity.listenersCount}/>
+                </div>
             </div>
 
             {isTagPanelOpen && (
@@ -163,6 +165,6 @@ export const LastfmTracksTableRow = (
                     />
                 </div>
             )}
-        </div>
+        </>
     );
 };
