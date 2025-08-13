@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 
 import java.util.Collection;
@@ -61,11 +60,4 @@ public interface LastfmTagRepository extends JpaRepository<LastfmTag, Long>, Las
             return findTagsWithApprovalStatus(search, approvalStatuses, pageable);
         }
     }
-
-    @Query("""
-        SELECT  t.url
-        FROM    tag t
-        WHERE   t.url in :urls
-    """)
-    List<String> findExistingUrls(@Param("urls") List<String> strings);
 }

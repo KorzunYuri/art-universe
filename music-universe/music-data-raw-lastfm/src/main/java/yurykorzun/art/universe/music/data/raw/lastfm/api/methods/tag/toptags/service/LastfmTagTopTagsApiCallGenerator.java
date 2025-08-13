@@ -24,7 +24,7 @@ import static yurykorzun.art.universe.music.data.raw.lastfm.api.LastfmApiConstan
 
 @Component
 @Slf4j
-public class LastfmTagTopTagApiCallGenerator extends LastfmApiCallGenerator {
+public class LastfmTagTopTagsApiCallGenerator extends LastfmApiCallGenerator {
 
     private final LastfmApiCallService apiCallService;
     private final LastfmApiCallRepository apiCallRepository;
@@ -36,7 +36,7 @@ public class LastfmTagTopTagApiCallGenerator extends LastfmApiCallGenerator {
     @Value("${lastfm.client.methods.tag.topTags.dueDurationDays}")
     private int dueDurationDays;
 
-    public LastfmTagTopTagApiCallGenerator(
+    public LastfmTagTopTagsApiCallGenerator(
             LastfmApiCallRepository apiCallRepository,
             LastfmApiCallService apiCallService,
             LastfmDataSnapshotService snapshotService,

@@ -10,6 +10,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.entity.LastfmAlbum;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
 
@@ -188,5 +189,77 @@ class LastfmAlbumRepositoryTest extends JpaOnlyTest {
         assertEquals(2, result.size(), "Should return only 2 albums per artist");
         assertEquals("Album 1", result.get(0).getName(), "Should return albums in order of creation");
         assertEquals("Album 2", result.get(1).getName(), "Should return albums in order of creation");
+    }
+
+    @Test
+    void findAlbumsForGetInfo_shouldExcludeBlacklistedAlbums() {
+        // Create an artist
+        LastfmArtist artist = consistencyHelper.createAndSaveArtist(builder -> 
+            builder.name("Test Artist")
+                   .listenersCount(5000)
+                   .approvalStatus(ApprovalStatus.APPROVED));
+
+        // Create albums
+        LastfmAlbum album1 = consistencyHelper.createAndSaveAlbum(builder -> 
+            builder.name("Album 1")
+                   .url("https://www.last.fm/music/Test+Artist/Album+1")
+                   .artist(artist));
+        
+        LastfmAlbum album2 = consistencyHelper.createAndSaveAlbum(builder -> 
+            builder.name("Album 2")
+                   .url("https://www.last.fm/music/Test+Artist/Album+2")
+                   .artist(artist));
+        
+        LastfmAlbum album3 = consistencyHelper.createAndSaveAlbum(builder -> 
+            builder.name("Album 3")
+                   .url("https://www.last.fm/music/Test+Artist/Album+3")
+                   .artist(artist));
+
+        // Add album2 to blacklist
+        consistencyHelper.addToBlacklist(LastfmEntityType.ALBUM, album2.getUrl());
+
+        // Execute query
+        List<LastfmAlbum> result = albumRepository.findAlbumsForGetInfo(10);
+
+        // Verify results - should exclude blacklisted album2
+        assertEquals(2, result.size(), "Should return 2 albums (excluding blacklisted)");
+        assertTrue(result.stream().anyMatch(a -> "Album 1".equals(a.getName())), 
+                  "Should include Album 1");
+        assertTrue(result.stream().anyMatch(a -> "Album 3".equals(a.getName())), 
+                  "Should include Album 3");
+        assertFalse(result.stream().anyMatch(a -> "Album 2".equals(a.getName())), 
+                   "Should exclude blacklisted Album 2");
+    }
+
+    @Test
+    void findAlbumsForGetInfo_shouldNotExcludeAlbumsWithNullUrls() {
+        // Create an artist
+        LastfmArtist artist = consistencyHelper.createAndSaveArtist(builder -> 
+            builder.name("Test Artist")
+                   .listenersCount(5000)
+                   .approvalStatus(ApprovalStatus.APPROVED));
+
+        // Create album with null URL
+        LastfmAlbum albumWithNullUrl = consistencyHelper.createAndSaveAlbum(builder -> 
+            builder.name("Album With Null URL")
+                   .url(null)
+                   .artist(artist));
+        
+        // Create album with valid URL and blacklist it
+        LastfmAlbum albumWithUrl = consistencyHelper.createAndSaveAlbum(builder -> 
+            builder.name("Album With URL")
+                   .url("https://www.last.fm/music/Test+Artist/Album")
+                   .artist(artist));
+
+        // Add album with URL to blacklist
+        consistencyHelper.addToBlacklist(LastfmEntityType.ALBUM, albumWithUrl.getUrl());
+
+        // Execute query
+        List<LastfmAlbum> result = albumRepository.findAlbumsForGetInfo(10);
+
+        // Verify results - should include album with null URL, exclude blacklisted album
+        assertEquals(1, result.size(), "Should return 1 album");
+        assertEquals("Album With Null URL", result.get(0).getName(), 
+                    "Should include album with null URL");
     }
 }

@@ -2,6 +2,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.common;
 
 import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
@@ -13,9 +14,13 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.entity.La
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.repository.LastfmAlbumRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.repository.LastfmArtistRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.blacklist.entity.BlacklistedEntityUrl;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.blacklist.repository.BlacklistedEntityUrlRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.blacklist.service.BlacklistedEntityUrlService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmDataSnapshot;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityRelationType;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.repository.LastfmDataSnapshotRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.entity.*;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.repository.*;
@@ -58,6 +63,7 @@ public class DbConsistencyHelper {
     private final LastfmAlbumTrackRepository albumTrackRepository;
     
     private final EntityManager entityManager;
+    private final BlacklistedEntityUrlRepository blacklistedEntityUrlRepository;
 
     public DbConsistencyHelper(
         LastfmDataSnapshotRepository snapshotRepository,
@@ -74,7 +80,8 @@ public class DbConsistencyHelper {
         LastfmAlbumTrackRepository albumTrackRepository,
         LastfmAlbumTagRepository albumTagRepository,
         LastfmTrackTagRepository trackTagRepository,
-        EntityManager entityManager
+        EntityManager entityManager,
+        BlacklistedEntityUrlRepository blacklistedEntityUrlRepository
     ) {
         this.snapshotRepository = snapshotRepository;
         this.apiCallRepository = apiCallRepository;
@@ -94,6 +101,7 @@ public class DbConsistencyHelper {
         this.trackTagRepository = trackTagRepository;
 
         this.entityManager = entityManager;
+        this.blacklistedEntityUrlRepository = blacklistedEntityUrlRepository;
     }
 
     public void cleanup() {
@@ -106,6 +114,20 @@ public class DbConsistencyHelper {
         apiResponseRepository.deleteAll();
         apiCallRepository.deleteAll();
         snapshotRepository.deleteAll();
+
+        artistsRelationRepository.deleteAll();
+        artistAlbumRepository.deleteAll();
+        artistTrackRepository.deleteAll();
+        artistTagRepository.deleteAll();
+        albumTrackRepository.deleteAll();
+        albumTagRepository.deleteAll();
+        trackTagRepository.deleteAll();
+
+        blacklistedEntityUrlRepository.deleteAll();
+    }
+
+    public void flush() {
+        entityManager.flush();
     }
 
     public BaseLastfmEntity createAndSaveDummyEntity() {
@@ -522,5 +544,11 @@ public class DbConsistencyHelper {
             .album(album)
             .track(track)
             .position(1));
+    }
+
+    // Blacklist helper methods
+
+    public void addToBlacklist(LastfmEntityType entityType, String url) {
+        blacklistedEntityUrlRepository.insertIgnoreDuplicate(entityType, url);
     }
 }

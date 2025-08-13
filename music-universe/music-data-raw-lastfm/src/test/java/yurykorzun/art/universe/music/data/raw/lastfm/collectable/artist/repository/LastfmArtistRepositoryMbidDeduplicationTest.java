@@ -32,21 +32,24 @@ class LastfmArtistRepositoryMbidDeduplicationTest extends JpaOnlyTest {
             .name("Artist Name 1")
             .mbid("same-mbid-123")
             .approvalStatus(ApprovalStatus.PENDING)
-            .listenersCount(1000)
+            .listenersCount(null)  // Missing stats - needs getInfo
+            .playCount(null)
         );
 
         LastfmArtist artist2 = dbHelper.createAndSaveArtist(builder -> builder
             .name("Artist Name 2")
             .mbid("same-mbid-123")
             .approvalStatus(ApprovalStatus.APPROVED)
-            .listenersCount(500)
+            .listenersCount(500)   // Has some stats but missing playCount
+            .playCount(null)       // Missing - needs getInfo
         );
 
         LastfmArtist artist3 = dbHelper.createAndSaveArtist(builder -> builder
             .name("Artist Name 3")
             .mbid("same-mbid-123")
             .approvalStatus(ApprovalStatus.APPROVED)
-            .listenersCount(2000)
+            .listenersCount(2000)  // Has some stats but missing playCount
+            .playCount(null)       // Missing - needs getInfo
         );
 
         // Different MBID artist for control
@@ -54,7 +57,8 @@ class LastfmArtistRepositoryMbidDeduplicationTest extends JpaOnlyTest {
             .name("Different Artist")
             .mbid("different-mbid-456")
             .approvalStatus(ApprovalStatus.APPROVED)
-            .listenersCount(1500)
+            .listenersCount(null)  // Missing stats - needs getInfo
+            .playCount(null)
         );
 
         // When
@@ -86,14 +90,16 @@ class LastfmArtistRepositoryMbidDeduplicationTest extends JpaOnlyTest {
             .name("Artist 1")
             .mbid(null)
             .approvalStatus(ApprovalStatus.APPROVED)
-            .listenersCount(1000)
+            .listenersCount(null)  // Missing stats - needs getInfo
+            .playCount(null)
         );
 
         LastfmArtist artist2 = dbHelper.createAndSaveArtist(builder -> builder
             .name("Artist 2")
             .mbid(null)
             .approvalStatus(ApprovalStatus.APPROVED)
-            .listenersCount(2000)
+            .listenersCount(2000)  // Has some stats but missing playCount
+            .playCount(null)       // Missing - needs getInfo
         );
 
         // When
@@ -112,14 +118,16 @@ class LastfmArtistRepositoryMbidDeduplicationTest extends JpaOnlyTest {
             .name("Pending Artist")
             .mbid("test-mbid")
             .approvalStatus(ApprovalStatus.PENDING)
-            .listenersCount(10000)
+            .listenersCount(null)  // Missing stats - needs getInfo
+            .playCount(null)
         );
 
         LastfmArtist approvedWithLowListeners = dbHelper.createAndSaveArtist(builder -> builder
             .name("Approved Artist")
             .mbid("test-mbid")
             .approvalStatus(ApprovalStatus.APPROVED)
-            .listenersCount(1000)
+            .listenersCount(null)  // Missing stats - needs getInfo
+            .playCount(null)
         );
 
         // When
@@ -138,14 +146,16 @@ class LastfmArtistRepositoryMbidDeduplicationTest extends JpaOnlyTest {
             .name("Low Listeners")
             .mbid("test-mbid")
             .approvalStatus(ApprovalStatus.APPROVED)
-            .listenersCount(1000)
+            .listenersCount(null)  // Missing stats - needs getInfo
+            .playCount(null)
         );
 
         LastfmArtist artistHighListeners = dbHelper.createAndSaveArtist(builder -> builder
             .name("High Listeners")
             .mbid("test-mbid")
             .approvalStatus(ApprovalStatus.APPROVED)
-            .listenersCount(5000)
+            .listenersCount(5000)  // Has some stats but missing playCount
+            .playCount(null)       // Missing - needs getInfo
         );
 
         // When
@@ -165,14 +175,16 @@ class LastfmArtistRepositoryMbidDeduplicationTest extends JpaOnlyTest {
             .name("First Artist")
             .mbid("test-mbid")
             .approvalStatus(ApprovalStatus.APPROVED)
-            .listenersCount(1000)
+            .listenersCount(null)  // Missing stats - needs getInfo
+            .playCount(null)
         );
 
         LastfmArtist secondArtist = dbHelper.createAndSaveArtist(builder -> builder
             .name("Second Artist")
             .mbid("test-mbid")
             .approvalStatus(ApprovalStatus.APPROVED)
-            .listenersCount(1000)
+            .listenersCount(null)  // Missing stats - needs getInfo
+            .playCount(null)
         );
 
         // When

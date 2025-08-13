@@ -34,8 +34,8 @@ import static org.mockito.Mockito.*;
 import static yurykorzun.art.universe.music.data.raw.lastfm.api.LastfmApiConstants.PAGE_SIZE;
 
 @Tag("integration")
-@Import(LastfmTagTopTagApiCallGenerator.class)
-class LastfmTagTopTagApiCallGeneratorTest extends JpaOnlyTest {
+@Import(LastfmTagTopTagsApiCallGenerator.class)
+class LastfmTagTopTagsApiCallGeneratorTest extends JpaOnlyTest {
 
     @MockitoBean
     private LastfmApiCallService apiCallService;
@@ -47,7 +47,7 @@ class LastfmTagTopTagApiCallGeneratorTest extends JpaOnlyTest {
     private LastfmTagRepository tagRepository;
 
     @Autowired
-    private LastfmTagTopTagApiCallGenerator generator;
+    private LastfmTagTopTagsApiCallGenerator generator;
 
     private static final int ALL_API_CALLS_NUMBER = 5;
     private static final int RECORDS_LIMIT = ALL_API_CALLS_NUMBER * (PAGE_SIZE - 1) + 1; // -1 validates 'non-full' pages

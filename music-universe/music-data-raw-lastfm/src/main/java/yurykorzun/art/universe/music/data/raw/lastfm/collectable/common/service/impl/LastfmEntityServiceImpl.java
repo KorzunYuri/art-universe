@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.blacklist.entity.BlacklistedEntityUrl;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityQueryConfig;
@@ -51,13 +52,14 @@ public class LastfmEntityServiceImpl implements LastfmEntityService {
         Path<Object>    apiCallEntityType = apiCallRoot.get("entityType");
         Path<Timestamp> apiCallDueDttm = apiCallRoot.get("dueDttm");
 
-        // predicates
+        // predicates for API call subquery
         List<Predicate> subQueryPredicates = new ArrayList<>();
         subQueryPredicates.add(cb.equal(apiCallTypeField, apiCallType.getCode()));
         subQueryPredicates.add(cb.equal(apiCallEntityType, entityType.getCode()));
         subQueryPredicates.add(cb.equal(apiCallEntityIdRef, entityId));
         subQueryPredicates.add(cb.greaterThan(apiCallDueDttm, cb.currentTimestamp()));
 
+        // Approval status filter for main query
         Path<Integer> entityApprovalStatus = entityRoot.get("approvalStatus");
         Predicate entityApprovalFilter;
         if (config.isApprovedEntitiesOnly()) {
@@ -69,12 +71,26 @@ public class LastfmEntityServiceImpl implements LastfmEntityService {
                 .value(ApprovalStatus.PENDING.getCode());
             entityApprovalFilter = entityApprovalStatusIn;
         }
-        subQueryPredicates.add(entityApprovalFilter);
 
         // build subquery
         idsWithPendingCallsQuery
             .select(apiCallEntityIdRef)
             .where(subQueryPredicates.toArray(new Predicate[]{}));
+
+        // subquery for blacklisted URLs
+        Subquery<String> blacklistedUrlsQuery = query.subquery(String.class);
+        Root<BlacklistedEntityUrl> blacklistRoot = blacklistedUrlsQuery.from(BlacklistedEntityUrl.class);
+        
+        Path<String> entityUrl = entityRoot.get("url");
+        Path<String> blacklistUrl = blacklistRoot.get("url");
+        Path<Object> blacklistEntityType = blacklistRoot.get("entityType");
+        
+        blacklistedUrlsQuery
+            .select(blacklistUrl)
+            .where(
+                cb.equal(blacklistEntityType, entityType.getCode()),
+                cb.equal(blacklistUrl, entityUrl)
+            );
 
         // build sorting based on ROOT entity
         List<Order> jpaOrders = buildOrders(config, entityRoot, cb);
@@ -83,7 +99,8 @@ public class LastfmEntityServiceImpl implements LastfmEntityService {
         query.select(entityRoot)
             .where(
                 entityApprovalFilter,
-                cb.not(cb.exists(idsWithPendingCallsQuery))
+                cb.not(cb.exists(idsWithPendingCallsQuery)),
+                cb.not(cb.exists(blacklistedUrlsQuery))
             )
             .orderBy(jpaOrders);
 

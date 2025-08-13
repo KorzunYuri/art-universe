@@ -15,7 +15,8 @@ public interface LastfmAlbumRepository extends JpaRepository<LastfmAlbum, Long> 
     List<LastfmAlbum> findAllByUrlIn(List<String> urls);
 
     /**
-     * Find albums with missing playCount and listenersCount that haven't been processed by album.getInfo yet
+     * Find albums with missing playCount and listenersCount that haven't been processed by album.getInfo yet.
+     * Excludes albums that are blacklisted.
      */
     @Query(value = """
     WITH ranked_albums AS (
@@ -39,6 +40,12 @@ public interface LastfmAlbumRepository extends JpaRepository<LastfmAlbum, Long> 
                   AND ac.entity_type    = 2     -- album
                   AND ac.entity_id      = a.id
                   AND ac.due_dttm > CURRENT_TIMESTAMP
+            )
+            AND NOT EXISTS (
+                SELECT 1
+                FROM blacklist_entity_url bl
+                WHERE bl.entity_type = 2        -- ALBUM
+                  AND bl.url = a.url
             )
     )
     SELECT
@@ -70,11 +77,4 @@ public interface LastfmAlbumRepository extends JpaRepository<LastfmAlbum, Long> 
     default List<LastfmAlbum> findAlbumsForGetInfo() {
         return findAlbumsForGetInfo(LastfmConstants.HIBERNATE_BATCH_SIZE);
     }
-
-    @Query("""
-        SELECT  a.url
-        FROM    album a
-        WHERE   a.url in :urls
-    """)
-    List<String> findExistingUrls(@Param("urls") List<String> strings);
 }

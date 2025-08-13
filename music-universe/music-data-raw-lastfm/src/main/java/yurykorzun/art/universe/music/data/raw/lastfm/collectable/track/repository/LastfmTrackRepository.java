@@ -80,7 +80,8 @@ public interface LastfmTrackRepository extends JpaRepository<LastfmTrack, Long> 
     }
 
     /**
-     * Find tracks with missing playCount and listenersCount that haven't been processed by track.getInfo yet
+     * Find tracks with missing playCount and listenersCount that haven't been processed by track.getInfo yet.
+     * Excludes tracks that are blacklisted.
      */
     @Query(value = """
     WITH ranked_tracks AS (
@@ -104,6 +105,12 @@ public interface LastfmTrackRepository extends JpaRepository<LastfmTrack, Long> 
                   AND ac.entity_type    = 3     -- track
                   AND ac.entity_id      = t.id
                   AND ac.due_dttm > CURRENT_TIMESTAMP
+            )
+            AND NOT EXISTS (
+                SELECT 1
+                FROM blacklist_entity_url bl
+                WHERE bl.entity_type = 3        -- TRACK
+                  AND bl.url = t.url
             )
     )
     SELECT
@@ -135,11 +142,4 @@ public interface LastfmTrackRepository extends JpaRepository<LastfmTrack, Long> 
     default List<LastfmTrack> findTracksForGetInfo() {
         return findTracksForGetInfo(LastfmConstants.HIBERNATE_BATCH_SIZE);
     }
-
-    @Query("""
-        SELECT  t.url
-        FROM    track t
-        WHERE   t.url in :urls
-    """)
-    List<String> findExistingUrls(@Param("urls") List<String> strings);
 }
