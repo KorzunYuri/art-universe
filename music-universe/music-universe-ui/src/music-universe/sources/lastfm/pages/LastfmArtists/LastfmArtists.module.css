@@ -1,15 +1,31 @@
 .page {
-    /* override text-align: center */
-    text-align: left;
+    padding: 20px;
+}
 
-    width: 100%;
-    max-width: 1200px;
+.page h2 {
+    margin-bottom: 20px;
+    color: #333;
+}
 
-    /* center horizontally */
-    margin: 1rem auto;
+/* Responsive design for mobile */
+@media (max-width: 768px) {
+    .page {
+        padding: 10px;
+    }
+    
+    .page h2 {
+        margin-bottom: 15px;
+        font-size: 1.5rem;
+    }
+}
 
-    /* let content fill all the width */
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
+@media (max-width: 480px) {
+    .page {
+        padding: 8px;
+    }
+    
+    .page h2 {
+        margin-bottom: 12px;
+        font-size: 1.3rem;
+    }
 }
