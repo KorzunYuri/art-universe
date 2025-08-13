@@ -25,9 +25,13 @@ public interface LastfmTagRepository extends JpaRepository<LastfmTag, Long>, Las
         FROM    tag t
         WHERE   1=1
             AND ((LOWER(t.name)  LIKE LOWER(CONCAT('%', :search, '%'))) OR :search  IS NULL)
+            AND (t.usageCount >= :minUsageCount OR :minUsageCount IS NULL)
+            AND (t.usageUsersCount >= :minUsageUsersCount OR :minUsageUsersCount IS NULL)
         """)
     Page<LastfmTag> findTagsWithoutApprovalStatus(
         @Nullable @Param("search") String search,
+        @Nullable @Param("minUsageCount") Integer minUsageCount,
+        @Nullable @Param("minUsageUsersCount") Integer minUsageUsersCount,
         Pageable pageable);
 
     @Query(value = """
@@ -36,10 +40,14 @@ public interface LastfmTagRepository extends JpaRepository<LastfmTag, Long>, Las
         WHERE   1=1
             AND ((LOWER(t.name)  LIKE LOWER(CONCAT('%', :search, '%'))) OR :search  IS NULL)
             AND t.approvalStatus IN (:approvalStatuses)
+            AND (t.usageCount >= :minUsageCount OR :minUsageCount IS NULL)
+            AND (t.usageUsersCount >= :minUsageUsersCount OR :minUsageUsersCount IS NULL)
         """)
     Page<LastfmTag> findTagsWithApprovalStatus(
         @Nullable @Param("search") String search,
         @Param("approvalStatuses") List<ApprovalStatus> approvalStatuses,
+        @Nullable @Param("minUsageCount") Integer minUsageCount,
+        @Nullable @Param("minUsageUsersCount") Integer minUsageUsersCount,
         Pageable pageable);
 
     /**
@@ -52,12 +60,14 @@ public interface LastfmTagRepository extends JpaRepository<LastfmTag, Long>, Las
     default Page<LastfmTag> findTags(
         String search,
         List<ApprovalStatus> approvalStatuses,
+        Integer minUsageCount,
+        Integer minUsageUsersCount,
         Pageable pageable
     ) {
         if (approvalStatuses == null || approvalStatuses.isEmpty()) {
-            return findTagsWithoutApprovalStatus(search, pageable);
+            return findTagsWithoutApprovalStatus(search, minUsageCount, minUsageUsersCount, pageable);
         } else {
-            return findTagsWithApprovalStatus(search, approvalStatuses, pageable);
+            return findTagsWithApprovalStatus(search, approvalStatuses, minUsageCount, minUsageUsersCount, pageable);
         }
     }
 }

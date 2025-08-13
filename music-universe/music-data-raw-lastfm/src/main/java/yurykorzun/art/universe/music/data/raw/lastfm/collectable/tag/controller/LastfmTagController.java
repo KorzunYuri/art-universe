@@ -32,9 +32,11 @@ public class LastfmTagController {
     public Page<LastfmTagResponseDto> getTags(
         @RequestParam(required = false) String search,
         @RequestParam(required = false) Set<Integer> approvalStatuses,
+        @RequestParam(required = false) Integer minUsageCount,
+        @RequestParam(required = false) Integer minUsageUsersCount,
         @PageableDefault(size = 20, sort = "name") Pageable pageable
     ) {
-        TagSearchParams params = new TagSearchParams(search, approvalStatuses);
+        TagSearchParams params = new TagSearchParams(search, approvalStatuses, minUsageCount, minUsageUsersCount);
         return tagService.findAll(params, pageable);
     }
 

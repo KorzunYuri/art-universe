@@ -5,7 +5,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -14,6 +18,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.L
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.EntityTagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.EntityTagSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.LastfmTagResponseDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.TagSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.service.LastfmTagService;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
@@ -253,6 +258,117 @@ class LastfmTagControllerMvcTest extends BaseMvcTest {
                 .param("page", "0")
                 .param("size", "10")
                 .param("sort", "name,desc")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().json(expectedJson));
+    }
+    
+    @Test
+    void GET_tags_shouldAcceptMinUsageCountParameter() throws Exception {
+        // Given
+        Integer minUsageCount = 100;
+        
+        List<LastfmTag> tags = List.of(
+            LastfmTag.builder()
+                .id(1L)
+                .name("rock")
+                .url("https://example.com/rock")
+                .usageCount(150)
+                .usageUsersCount(75)
+                .approvalStatus(ApprovalStatus.APPROVED)
+                .apiCall(EntityCreationHelper.createApiCall())
+                .build()
+        );
+        
+        Pageable pageable = PageRequest.of(0, 20, Sort.by("name"));
+        Page<LastfmTag> tagPage = new PageImpl<>(tags, pageable, tags.size());
+        Page<LastfmTagResponseDto> dtoPage = tagPage.map(LastfmTagResponseDto::from);
+        
+        when(tagService.findAll(any(TagSearchParams.class), any(Pageable.class)))
+            .thenReturn(dtoPage);
+
+        String expectedJson = objectMapper.writeValueAsString(dtoPage);
+
+        // When & Then
+        mockMvc.perform(get("/api/v1/tags")
+                .param("minUsageCount", minUsageCount.toString())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().json(expectedJson));
+    }
+    
+    @Test
+    void GET_tags_shouldAcceptMinUsageUsersCountParameter() throws Exception {
+        // Given
+        Integer minUsageUsersCount = 50;
+        
+        List<LastfmTag> tags = List.of(
+            LastfmTag.builder()
+                .id(1L)
+                .name("pop")
+                .url("https://example.com/pop")
+                .usageCount(200)
+                .usageUsersCount(100)
+                .approvalStatus(ApprovalStatus.APPROVED)
+                .apiCall(EntityCreationHelper.createApiCall())
+                .build()
+        );
+        
+        Pageable pageable = PageRequest.of(0, 20, Sort.by("name"));
+        Page<LastfmTag> tagPage = new PageImpl<>(tags, pageable, tags.size());
+        Page<LastfmTagResponseDto> dtoPage = tagPage.map(LastfmTagResponseDto::from);
+        
+        when(tagService.findAll(any(TagSearchParams.class), any(Pageable.class)))
+            .thenReturn(dtoPage);
+
+        String expectedJson = objectMapper.writeValueAsString(dtoPage);
+
+        // When & Then
+        mockMvc.perform(get("/api/v1/tags")
+                .param("minUsageUsersCount", minUsageUsersCount.toString())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().json(expectedJson));
+    }
+    
+    @Test
+    void GET_tags_shouldAcceptAllFilterParameters() throws Exception {
+        // Given
+        String search = "rock";
+        Set<Integer> approvalStatuses = Set.of(ApprovalStatus.APPROVED.getCode());
+        Integer minUsageCount = 100;
+        Integer minUsageUsersCount = 50;
+        
+        List<LastfmTag> tags = List.of(
+            LastfmTag.builder()
+                .id(1L)
+                .name("rock")
+                .url("https://example.com/rock")
+                .usageCount(150)
+                .usageUsersCount(75)
+                .approvalStatus(ApprovalStatus.APPROVED)
+                .apiCall(EntityCreationHelper.createApiCall())
+                .build()
+        );
+        
+        Pageable pageable = PageRequest.of(0, 20, Sort.by("name"));
+        Page<LastfmTag> tagPage = new PageImpl<>(tags, pageable, tags.size());
+        Page<LastfmTagResponseDto> dtoPage = tagPage.map(LastfmTagResponseDto::from);
+        
+        when(tagService.findAll(any(TagSearchParams.class), any(Pageable.class)))
+            .thenReturn(dtoPage);
+
+        String expectedJson = objectMapper.writeValueAsString(dtoPage);
+
+        // When & Then
+        mockMvc.perform(get("/api/v1/tags")
+                .param("search", search)
+                .param("approvalStatuses", String.valueOf(ApprovalStatus.APPROVED.getCode()))
+                .param("minUsageCount", minUsageCount.toString())
+                .param("minUsageUsersCount", minUsageUsersCount.toString())
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))

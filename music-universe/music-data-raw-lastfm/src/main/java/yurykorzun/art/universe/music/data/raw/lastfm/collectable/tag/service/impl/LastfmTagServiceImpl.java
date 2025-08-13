@@ -60,6 +60,8 @@ public class LastfmTagServiceImpl implements LastfmTagService {
         Page<LastfmTag> tagsPage = tagRepository.findTags(
             params.search(),
             approvalStatuses,
+            params.minUsageCount(),
+            params.minUsageUsersCount(),
             pageable);
         return tagsPage.map(LastfmTagResponseDto::from);
     }

@@ -7,6 +7,8 @@ import java.util.Set;
  */
 public record TagSearchParams(
         String search,
-        Set<Integer> approvalStatuses
+        Set<Integer> approvalStatuses,
+        Integer minUsageCount,
+        Integer minUsageUsersCount
 ) {
 }

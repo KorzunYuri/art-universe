@@ -141,8 +141,10 @@ class LastfmTagServiceImplTest {
         String search = "test";
         Set<Integer> approvalStatusCodes = Set.of(ApprovalStatus.APPROVED.getCode());
         List<ApprovalStatus> approvalStatuses = CodedRegistry.getByCodes(approvalStatusCodes, ApprovalStatus.class);
+        Integer minUsageCount = 100;
+        Integer minUsageUsersCount = 50;
         
-        TagSearchParams params = new TagSearchParams(search, approvalStatusCodes);
+        TagSearchParams params = new TagSearchParams(search, approvalStatusCodes, minUsageCount, minUsageUsersCount);
         Pageable pageable = PageRequest.of(0, 10);
         
         List<LastfmTag> tags = List.of(createTag(), createTag());
@@ -151,6 +153,8 @@ class LastfmTagServiceImplTest {
         when(tagRepository.findTags(
             eq(search), 
             eq(approvalStatuses),
+            eq(minUsageCount),
+            eq(minUsageUsersCount),
             eq(pageable)
         )).thenReturn(tagPage);
         
@@ -163,6 +167,8 @@ class LastfmTagServiceImplTest {
         verify(tagRepository).findTags(
             eq(search), 
             eq(approvalStatuses),
+            eq(minUsageCount),
+            eq(minUsageUsersCount),
             eq(pageable)
         );
     }
@@ -170,7 +176,7 @@ class LastfmTagServiceImplTest {
     @Test
     void findAll_withNullParams_shouldCallRepositoryWithNullValues() {
         // Given
-        TagSearchParams params = new TagSearchParams(null, null);
+        TagSearchParams params = new TagSearchParams(null, null, null, null);
         Pageable pageable = PageRequest.of(0, 10);
         List<ApprovalStatus> expectedApprovalStatuses = Collections.emptyList();
 
@@ -180,6 +186,8 @@ class LastfmTagServiceImplTest {
         when(tagRepository.findTags(
             eq(null), 
             eq(expectedApprovalStatuses),
+            eq(null),
+            eq(null),
             eq(pageable)
         )).thenReturn(tagPage);
         
@@ -192,6 +200,8 @@ class LastfmTagServiceImplTest {
         verify(tagRepository).findTags(
             eq(null), 
             eq(expectedApprovalStatuses),
+            eq(null),
+            eq(null),
             eq(pageable)
         );
     }

@@ -61,6 +61,8 @@ class LastfmTagControllerTest {
         // Given
         String search = "rock";
         Set<Integer> approvalStatuses = Set.of(ApprovalStatus.APPROVED.getCode());
+        Integer minUsageCount = 100;
+        Integer minUsageUsersCount = 50;
         Pageable pageable = PageRequest.of(0, 2);
 
         LastfmTag tag1 = LastfmTag.builder()
@@ -91,7 +93,7 @@ class LastfmTagControllerTest {
             .thenReturn(dtoPage);
 
         // When
-        Page<LastfmTagResponseDto> result = controller.getTags(search, approvalStatuses, pageable);
+        Page<LastfmTagResponseDto> result = controller.getTags(search, approvalStatuses, minUsageCount, minUsageUsersCount, pageable);
 
         // Then
         assertNotNull(result);
@@ -129,7 +131,7 @@ class LastfmTagControllerTest {
             .thenReturn(dtoPage);
 
         // When
-        Page<LastfmTagResponseDto> result = controller.getTags(null, null, pageable);
+        Page<LastfmTagResponseDto> result = controller.getTags(null, null, null, null, pageable);
 
         // Then
         assertNotNull(result);
