@@ -1,23 +1,30 @@
 // hooks
 import { useLastfmEntityTable } from "@/music-universe/sources/lastfm/hooks/useLastfmEntityTable";
+import { useApprovalStatusFilter, useCountFilters, useAdditionalSearchFields } from "@/music-universe/shared/hooks/useAdditionalSearchFields";
 // components
-import {
-    LastfmAlbumsTableHeader,
-    LastfmAlbumsTableRow
-} from "@/music-universe/sources/lastfm/components";
+import { EntityTable, type EntityTableColumn } from "@/music-universe/shared/components/EntityTable/EntityTable";
+import { LastfmAlbumsTableRow } from "@/music-universe/sources/lastfm/components";
+// types
+import type { AdditionalSearchConfig } from "@/music-universe/shared/components/EntityTable/types";
 // styles
-import commonStyles from '@/music-universe/shared/styles/common.module.scss';
-import styles from './LastfmAlbumsTable.module.css';
+import albumStyles from "./LastfmAlbumsTable.module.css";
+import { useState } from "react";
+
+const columns: EntityTableColumn[] = [
+    { key: 'artist', label: 'Artist', className: albumStyles.artist },
+    { key: 'name', label: 'Album name', sortable: true, className: albumStyles.name },
+    { key: 'mbid', label: 'MusicBrainz', className: albumStyles.mbid },
+    { key: 'status', label: 'Approval', className: albumStyles.status },
+    { key: 'masterBinding', label: 'Master', className: albumStyles.masterBinding },
+    { key: 'playCount', label: 'Plays', sortable: true, className: albumStyles.count },
+    { key: 'listenersCount', label: 'Listeners', sortable: true, className: albumStyles.count },
+];
 
 interface LastfmAlbumsTableProps {
     artistId?: number;
 }
 
-export const LastfmAlbumsTable = (
-    {
-        artistId = undefined
-    }: LastfmAlbumsTableProps) =>
-{
+export const LastfmAlbumsTable = ({ artistId }: LastfmAlbumsTableProps) => {
     const {
         rawEntityIds,
         pagination,
@@ -28,85 +35,92 @@ export const LastfmAlbumsTable = (
         setSort,
         nextPage,
         prevPage,
+        goToPage,
+        updateParams,
         refresh
-    } = useLastfmEntityTable("album", { artistId: artistId });
+    } = useLastfmEntityTable("album", { artistId });
+
+    // Additional search fields
+    const { 
+        approvalStatuses, 
+        approvalStatusField 
+    } = useApprovalStatusFilter();
+    
+    const { 
+        minPlayCount, 
+        minListenersCount,
+        minPlayCountField,
+        minListenersCountField 
+    } = useCountFilters();
+
+    // Artist ID field (if not already filtered by artistId prop)
+    const [artistIdFilter, setArtistIdFilter] = useState<number | ''>('');
+    const { createNumberField } = useAdditionalSearchFields();
+    
+    const artistIdField = createNumberField(
+        'artistId',
+        'Artist ID',
+        artistIdFilter,
+        setArtistIdFilter,
+        { placeholder: 'Filter by artist ID', min: 1 }
+    );
+
+    const handleSearchSubmit = () => {
+        updateParams({
+            approvalStatuses: approvalStatuses.length > 0 ? approvalStatuses : undefined,
+            minPlayCount: minPlayCount || undefined,
+            minListenersCount: minListenersCount || undefined,
+            artistId: artistIdFilter || undefined
+        });
+    };
+
+    const additionalSearchConfig: AdditionalSearchConfig = {
+        title: "Advanced Filters",
+        collapsible: true,
+        defaultCollapsed: true,
+        fields: [
+            minPlayCountField,
+            minListenersCountField,
+            approvalStatusField,
+            // Only show artist ID filter if not already filtered by prop
+            ...(artistId ? [] : [artistIdField])
+        ]
+    };
 
     return (
-        <div className={styles.container}>
-            {/* Search bar */}
-            <div className={styles.searchBar}>
-                <input
-                    type="text"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && refresh()}
-                    placeholder="Search album name..."
-                    className={commonStyles.muInput}
+        <EntityTable
+            search={search}
+            onSearchChange={setSearch}
+            onSearchSubmit={handleSearchSubmit}
+            searchPlaceholder="Search album name..."
+            
+            additionalSearch={additionalSearchConfig}
+            
+            columns={columns}
+            emptyMessage="No albums found"
+            
+            sort={sort}
+            onSortChange={setSort}
+            
+            pagination={{
+                page: pagination.page,
+                totalPages: pagination.totalPages,
+                hasNextPage: pagination.hasNextPage,
+                hasPrevPage: pagination.hasPrevPage,
+            }}
+            onNextPage={nextPage}
+            onPrevPage={prevPage}
+            onGoToPage={goToPage}
+            
+            isLoading={isLoading}
+            onRefresh={refresh}
+        >
+            {rawEntityIds?.map(rawEntityId => (
+                <LastfmAlbumsTableRow
+                    key={rawEntityId}
+                    entityId={rawEntityId}
                 />
-                <button
-                    onClick={refresh}
-                    className={styles.searchButton}
-                    disabled={isLoading}
-                >
-                    Search
-                </button>
-                <button
-                    onClick={refresh}
-                    className={styles.refreshButton}
-                    disabled={isLoading}
-                >
-                    Refresh
-                </button>
-            </div>
-
-            {/* Loading indicator */}
-            {isLoading && (
-                <div className={styles.loading}>Loading...</div>
-            )}
-
-            {/* Table */}
-            {!isLoading && rawEntityIds && (
-                <>
-                    <div className={styles.table}>
-                        {/* Header */}
-                        <LastfmAlbumsTableHeader sort={sort} setSort={setSort} />
-
-                        {/* Rows */}
-                        {rawEntityIds.map(rawEntityId => (
-                            <LastfmAlbumsTableRow
-                                key={rawEntityId}
-                                entityId={rawEntityId}
-                            />
-                        ))}
-
-                        {/* Empty state */}
-                        {rawEntityIds.length === 0 && (
-                            <div className={styles.emptyState}>No albums found</div>
-                        )}
-                    </div>
-
-                    {/* Pagination */}
-                    <div className={styles.pagination}>
-                        <button
-                            onClick={prevPage}
-                            disabled={!pagination.hasPrevPage || isLoading}
-                            className={styles.paginationButton}
-                        >
-                            Previous
-                        </button>
-                        <span className={styles.pageInfo}>
-                          Page {pagination.page + 1} of {pagination.totalPages}
-                        </span>
-                        <button
-                            onClick={nextPage}
-                            disabled={!pagination.hasNextPage || isLoading}
-                            className={styles.paginationButton}
-                        >
-                            Next
-                        </button>
-                    </div>
-                </>
-            )}
-        </div>
-    )
-}
+            ))}
+        </EntityTable>
+    );
+};

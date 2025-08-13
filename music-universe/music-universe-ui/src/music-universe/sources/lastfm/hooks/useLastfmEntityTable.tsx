@@ -135,6 +135,20 @@ export function useLastfmEntityTable<T extends LastfmSupportedEntityType>(
         }
     };
 
+    const goToPage = (page: number) => {
+        if (page >= 0 && rawEntitiesPageQuery.data && page < rawEntitiesPageQuery.data.page.totalPages) {
+            setParams(prev => ({ ...prev, page }));
+        }
+    };
+
+    const updateParams = (updates: Partial<LastfmPageSearchParamsMap[T]>) => {
+        setParams(prev => ({
+            ...prev,
+            ...updates,
+            page: 0 // Reset to first page when filters change
+        }));
+    };
+
     const refresh = () => {
         rawEntitiesPageQuery.refetch();
     };
@@ -148,13 +162,15 @@ export function useLastfmEntityTable<T extends LastfmSupportedEntityType>(
             hasNextPage: rawEntitiesPageQuery.data ? params.page < rawEntitiesPageQuery.data.page.totalPages - 1 : false,
             hasPrevPage: params.page > 0,
         },
-        search: params.search,
-        sort: params.sort,
+        search: params.search || '',
+        sort: params.sort || 'name,asc',
         isLoading: rawEntitiesPageQuery.isLoading,
         setSearch,
         setSort,
         nextPage,
         prevPage,
+        goToPage,
+        updateParams,
         refresh,
     };
 }

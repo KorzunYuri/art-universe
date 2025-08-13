@@ -31,6 +31,8 @@ export function createLastfmTagFromDto(dto: LastfmTagDto, masterEntity?: Categor
 }
 
 export interface LastfmTagsPageSearchParams extends BaseLastfmPageSearchParams{
+    minUsageCount?: number;
+    minUsageUsersCount?: number;
 }
 
 /**

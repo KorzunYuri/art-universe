@@ -1,15 +1,21 @@
 // hooks
-import {useMasterEntityTable} from "@/music-universe/music-data/hooks/useMasterEntityTable.ts";
+import { useMasterEntityTable } from "@/music-universe/music-data/hooks/useMasterEntityTable";
+import { useMasterEntitiesLookup } from "@/music-universe/music-data/hooks/useMasterEntitiesLookup";
 // components
-import {CategoriesTableHeader} from "@/music-universe/music-data/components/CategoriesTableHeader";
-import {CategoriesTableRow} from "@/music-universe/music-data/components/CategoriesTableRow";
+import { EntityTable, type EntityTableColumn } from "@/music-universe/shared/components/EntityTable/EntityTable";
+import { CategoriesTableRow } from "@/music-universe/music-data/components/CategoriesTableRow";
 // styles
-import styles from './CategoriesTable.module.css'
-import commonStyles from "@/music-universe/shared/styles/common.module.scss";
-import {useMasterEntitiesLookup} from "@/music-universe/music-data/hooks/useMasterEntitiesLookup.ts";
+import styles from './CategoriesTable.module.css';
+
+const columns: EntityTableColumn[] = [
+    { key: 'name', label: 'Name', sortable: true, className: styles.name },
+    { key: 'parent', label: 'Parent', className: styles.parent },
+    { key: 'dimension', label: 'Dimension', className: styles.dimension },
+    { key: 'effectiveDimension', label: 'Effective Dimension', className: styles.effectiveDimension },
+    { key: 'actions', label: 'Actions', className: styles.actions },
+];
 
 export const CategoriesTable = () => {
-
     const {
         entityIds,
         pagination,
@@ -20,88 +26,45 @@ export const CategoriesTable = () => {
         setSort,
         nextPage,
         prevPage,
+        goToPage,
         refresh
     } = useMasterEntityTable("category");
 
-    // init dimensions cache
-    useMasterEntitiesLookup('dimension', { search: '' }); // we need all dimensions at once
+    // Initialize dimensions cache
+    useMasterEntitiesLookup('dimension', { search: '' });
 
     return (
-        <div className={styles.container}>
-            {/* Search bar */}
-            <div className={styles.searchBar}>
-                <input
-                    type="text"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && refresh()}
-                    placeholder="Search category name..."
-                    className={commonStyles.muInput}
+        <EntityTable
+            search={search}
+            onSearchChange={setSearch}
+            onSearchSubmit={refresh}
+            searchPlaceholder="Search category name..."
+            
+            columns={columns}
+            emptyMessage="No categories found"
+            
+            sort={sort}
+            onSortChange={setSort}
+            
+            pagination={{
+                page: pagination.page,
+                totalPages: pagination.totalPages,
+                hasNextPage: pagination.hasNextPage,
+                hasPrevPage: pagination.hasPrevPage,
+            }}
+            onNextPage={nextPage}
+            onPrevPage={prevPage}
+            onGoToPage={goToPage}
+            
+            isLoading={isLoading}
+            onRefresh={refresh}
+        >
+            {entityIds?.map(entityId => (
+                <CategoriesTableRow
+                    key={entityId}
+                    entityId={entityId}
                 />
-                <button
-                    onClick={refresh}
-                    className={styles.searchButton}
-                    disabled={isLoading}
-                >
-                    Search
-                </button>
-                <button
-                    onClick={refresh}
-                    className={styles.refreshButton}
-                    disabled={isLoading}
-                >
-                    Refresh
-                </button>
-            </div>
-
-            {/* Loading indicator */}
-            {isLoading && (
-                <div className={styles.loading}>Loading...</div>
-            )}
-
-            {/* Table */}
-            {!isLoading && entityIds && (
-                <>
-                    <div className={styles.table}>
-                        {/* Header */}
-                        <CategoriesTableHeader sort={sort} setSort={setSort}/>
-
-                        {/* Rows */}
-                        {entityIds.map(entityId => (
-                            <CategoriesTableRow
-                                key={entityId}
-                                entityId={entityId}
-                            />
-                        ))}
-
-                        {/* Empty state */}
-                        {entityIds.length === 0 && (
-                            <div className={styles.emptyState}>No categories found</div>
-                        )}
-                    </div>
-
-                    {/* Pagination */}
-                    <div className={styles.pagination}>
-                        <button
-                            onClick={prevPage}
-                            disabled={!pagination.hasPrevPage || isLoading}
-                            className={styles.paginationButton}
-                        >
-                            Previous
-                        </button>
-                        <span className={styles.pageInfo}>
-                          Page {pagination.page + 1} of {pagination.totalPages}
-                        </span>
-                        <button
-                            onClick={nextPage}
-                            disabled={!pagination.hasNextPage || isLoading}
-                            className={styles.paginationButton}
-                        >
-                            Next
-                        </button>
-                    </div>
-                </>
-            )}
-        </div>
+            ))}
+        </EntityTable>
     );
-}
+};

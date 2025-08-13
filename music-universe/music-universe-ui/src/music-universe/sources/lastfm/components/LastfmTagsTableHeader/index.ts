@@ -1,1 +1,0 @@
-export { LastfmTagsTableHeader } from './LastfmTagsTableHeader';

@@ -1,11 +1,15 @@
 // hooks
-import {useMasterEntityTable} from "@/music-universe/music-data/hooks/useMasterEntityTable.ts";
+import { useMasterEntityTable } from "@/music-universe/music-data/hooks/useMasterEntityTable";
 // components
-import {DimensionsTableHeader} from "@/music-universe/music-data/components/DimensionsTableHeader";
-import {DimensionsTableRow} from "@/music-universe/music-data/components/DimensionsTableRow";
+import { EntityTable, type EntityTableColumn } from "@/music-universe/shared/components/EntityTable/EntityTable";
+import { DimensionsTableRow } from "@/music-universe/music-data/components/DimensionsTableRow";
 // styles
-import styles from './DimensionsTable.module.css'
-import commonStyles from "@/music-universe/shared/styles/common.module.scss";
+import styles from './DimensionsTable.module.css';
+
+const columns: EntityTableColumn[] = [
+    { key: 'name', label: 'Name', sortable: true, className: styles.name },
+    { key: 'actions', label: 'Actions', className: styles.actions },
+];
 
 export const DimensionsTable = () => {
     const {
@@ -18,85 +22,42 @@ export const DimensionsTable = () => {
         setSort,
         nextPage,
         prevPage,
+        goToPage,
         refresh
     } = useMasterEntityTable("dimension");
 
     return (
-        <div className={styles.container}>
-            {/* Search bar */}
-            <div className={styles.searchBar}>
-                <input
-                    type="text"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && refresh()}
-                    placeholder="Search category name..."
-                    className={commonStyles.muInput}
+        <EntityTable
+            search={search}
+            onSearchChange={setSearch}
+            onSearchSubmit={refresh}
+            searchPlaceholder="Search dimension name..."
+            
+            columns={columns}
+            emptyMessage="No dimensions found"
+            
+            sort={sort}
+            onSortChange={setSort}
+            
+            pagination={{
+                page: pagination.page,
+                totalPages: pagination.totalPages,
+                hasNextPage: pagination.hasNextPage,
+                hasPrevPage: pagination.hasPrevPage,
+            }}
+            onNextPage={nextPage}
+            onPrevPage={prevPage}
+            onGoToPage={goToPage}
+            
+            isLoading={isLoading}
+            onRefresh={refresh}
+        >
+            {entityIds?.map(entityId => (
+                <DimensionsTableRow
+                    key={entityId}
+                    entityId={entityId}
                 />
-                <button
-                    onClick={refresh}
-                    className={styles.searchButton}
-                    disabled={isLoading}
-                >
-                    Search
-                </button>
-                <button
-                    onClick={refresh}
-                    className={styles.refreshButton}
-                    disabled={isLoading}
-                >
-                    Refresh
-                </button>
-            </div>
-
-            {/* Loading indicator */}
-            {isLoading && (
-                <div className={styles.loading}>Loading...</div>
-            )}
-
-            {/* Table */}
-            {!isLoading && entityIds && (
-                <>
-                    <div className={styles.table}>
-                        {/* Header */}
-                        <DimensionsTableHeader sort={sort} setSort={setSort}/>
-
-                        {/* Rows */}
-                        {entityIds.map(entityId => (
-                            <DimensionsTableRow
-                                key={entityId}
-                                entityId={entityId}
-                            />
-                        ))}
-
-                        {/* Empty state */}
-                        {entityIds.length === 0 && (
-                            <div className={styles.emptyState}>No dimensions found</div>
-                        )}
-                    </div>
-
-                    {/* Pagination */}
-                    <div className={styles.pagination}>
-                        <button
-                            onClick={prevPage}
-                            disabled={!pagination.hasPrevPage || isLoading}
-                            className={styles.paginationButton}
-                        >
-                            Previous
-                        </button>
-                        <span className={styles.pageInfo}>
-                          Page {pagination.page + 1} of {pagination.totalPages}
-                        </span>
-                        <button
-                            onClick={nextPage}
-                            disabled={!pagination.hasNextPage || isLoading}
-                            className={styles.paginationButton}
-                        >
-                            Next
-                        </button>
-                    </div>
-                </>
-            )}
-        </div>
+            ))}
+        </EntityTable>
     );
-}
+};

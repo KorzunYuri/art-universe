@@ -1,24 +1,28 @@
 // hooks
 import { useLastfmEntityTable } from "@/music-universe/sources/lastfm/hooks/useLastfmEntityTable";
+import { useApprovalStatusFilter, useAdditionalSearchFields } from "@/music-universe/shared/hooks/useAdditionalSearchFields";
 // components
-import {
-    LastfmTagsTableHeader,
-    LastfmTagsTableRow
-} from "@/music-universe/sources/lastfm/components";
+import { EntityTable, type EntityTableColumn } from "@/music-universe/shared/components/EntityTable/EntityTable";
+import { LastfmTagsTableRow } from "@/music-universe/sources/lastfm/components";
+// types
+import type { AdditionalSearchConfig } from "@/music-universe/shared/components/EntityTable/types";
 // styles
-import commonStyles from '@/music-universe/shared/styles/common.module.scss';
-import styles from './LastfmTagsTable.module.css';
+import tagStyles from "./LastfmTagsTable.module.css";
+import { useState } from "react";
+
+const columns: EntityTableColumn[] = [
+    { key: 'name', label: 'Tag Name', sortable: true, className: tagStyles.name },
+    { key: 'status', label: 'Approval', className: tagStyles.status },
+    { key: 'masterBinding', label: 'Master', className: tagStyles.masterBinding },
+    { key: 'usageCount', label: 'Usage', sortable: true, className: tagStyles.count },
+    { key: 'usageUsersCount', label: 'Users', sortable: true, className: tagStyles.count },
+];
 
 interface LastfmTagsTableProps {
     initialSearch?: string;
 }
 
-export const LastfmTagsTable = (
-    {
-        initialSearch = ''
-    }: LastfmTagsTableProps
-) => {
-
+export const LastfmTagsTable = ({ initialSearch = '' }: LastfmTagsTableProps) => {
     const {
         rawEntityIds,
         pagination,
@@ -29,85 +33,92 @@ export const LastfmTagsTable = (
         setSort,
         nextPage,
         prevPage,
+        goToPage,
+        updateParams,
         refresh
-    } = useLastfmEntityTable("category", { search: initialSearch});
+    } = useLastfmEntityTable("category", { search: initialSearch });
+
+    // Additional search fields
+    const { 
+        approvalStatuses, 
+        approvalStatusField 
+    } = useApprovalStatusFilter();
+    
+    // Usage count filters
+    const [minUsageCount, setMinUsageCount] = useState<number | ''>('');
+    const [minUsageUsersCount, setMinUsageUsersCount] = useState<number | ''>('');
+    
+    const { createNumberField } = useAdditionalSearchFields();
+    
+    const minUsageCountField = createNumberField(
+        'minUsageCount',
+        'Min Usage Count',
+        minUsageCount,
+        setMinUsageCount,
+        { placeholder: 'e.g. 10', min: 0 }
+    );
+    
+    const minUsageUsersCountField = createNumberField(
+        'minUsageUsersCount',
+        'Min Users Count',
+        minUsageUsersCount,
+        setMinUsageUsersCount,
+        { placeholder: 'e.g. 5', min: 0 }
+    );
+
+    const handleSearchSubmit = () => {
+        updateParams({
+            approvalStatuses: approvalStatuses.length > 0 ? approvalStatuses : undefined,
+            minUsageCount: minUsageCount || undefined,
+            minUsageUsersCount: minUsageUsersCount || undefined
+        });
+    };
+
+    const additionalSearchConfig: AdditionalSearchConfig = {
+        title: "Advanced Filters",
+        collapsible: true,
+        defaultCollapsed: true,
+        fields: [
+            minUsageCountField,
+            minUsageUsersCountField,
+            approvalStatusField
+        ]
+    };
 
     return (
-        <div className={styles.container}>
-            {/* Search bar */}
-            <div className={styles.searchBar}>
-                <input
-                    type="text"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && refresh()}
-                    placeholder="Search tag name..."
-                    className={commonStyles.muInput}
+        <EntityTable
+            search={search}
+            onSearchChange={setSearch}
+            onSearchSubmit={handleSearchSubmit}
+            searchPlaceholder="Search tag name..."
+            
+            additionalSearch={additionalSearchConfig}
+            
+            columns={columns}
+            emptyMessage="No tags found"
+            
+            sort={sort}
+            onSortChange={setSort}
+            
+            pagination={{
+                page: pagination.page,
+                totalPages: pagination.totalPages,
+                hasNextPage: pagination.hasNextPage,
+                hasPrevPage: pagination.hasPrevPage,
+            }}
+            onNextPage={nextPage}
+            onPrevPage={prevPage}
+            onGoToPage={goToPage}
+            
+            isLoading={isLoading}
+            onRefresh={refresh}
+        >
+            {rawEntityIds?.map(rawEntityId => (
+                <LastfmTagsTableRow
+                    key={rawEntityId}
+                    entityId={rawEntityId}
                 />
-                <button
-                    onClick={refresh}
-                    className={styles.searchButton}
-                    disabled={isLoading}
-                >
-                    Search
-                </button>
-                <button
-                    onClick={refresh}
-                    className={styles.refreshButton}
-                    disabled={isLoading}
-                >
-                    Refresh
-                </button>
-            </div>
-
-            {/* Loading indicator */}
-            {isLoading && (
-                <div className={styles.loading}>Loading...</div>
-            )}
-
-            {/* Table */}
-            {!isLoading && rawEntityIds && (
-                <>
-                    <div className={styles.table}>
-                        {/* Header */}
-                        <LastfmTagsTableHeader sort={sort} setSort={setSort}/>
-
-                        {/* Rows */}
-                        {rawEntityIds.map(rawEntityId => (
-                            <LastfmTagsTableRow
-                                key={rawEntityId}
-                                entityId={rawEntityId}
-                            />
-                        ))}
-
-                        {/* Empty state */}
-                        {rawEntityIds.length === 0 && (
-                            <div className={styles.emptyState}>No tags found</div>
-                        )}
-                    </div>
-
-                    {/* Pagination */}
-                    <div className={styles.pagination}>
-                        <button
-                            onClick={prevPage}
-                            disabled={!pagination.hasPrevPage || isLoading}
-                            className={styles.paginationButton}
-                        >
-                            Previous
-                        </button>
-                        <span className={styles.pageInfo}>
-                          Page {pagination.page + 1} of {pagination.totalPages}
-                        </span>
-                        <button
-                            onClick={nextPage}
-                            disabled={!pagination.hasNextPage || isLoading}
-                            className={styles.paginationButton}
-                        >
-                            Next
-                        </button>
-                    </div>
-                </>
-            )}
-        </div>
-    )
-}
+            ))}
+        </EntityTable>
+    );
+};

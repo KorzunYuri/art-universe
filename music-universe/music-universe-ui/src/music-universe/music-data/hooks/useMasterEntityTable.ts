@@ -90,6 +90,12 @@ export function useMasterEntityTable<T extends MasterEntityType>(
         }
     };
 
+    const goToPage = (page: number) => {
+        if (page >= 0 && masterEntitiesPageQuery.data && page < masterEntitiesPageQuery.data.totalPages) {
+            setParams(prev => ({ ...prev, page }));
+        }
+    };
+
     const refresh = () => {
         masterEntitiesPageQuery.refetch();
     };
@@ -103,13 +109,14 @@ export function useMasterEntityTable<T extends MasterEntityType>(
             hasNextPage: masterEntitiesPageQuery.data ? params.page < masterEntitiesPageQuery.data.totalPages - 1 : false,
             hasPrevPage: params.page > 0,
         },
-        search: params.search,
-        sort: params.sort,
+        search: params.search || '',
+        sort: params.sort || 'name,asc',
         isLoading: masterEntitiesPageQuery.isLoading,
         setSearch,
         setSort,
         nextPage,
         prevPage,
+        goToPage,
         refresh,
     };
 }

@@ -1,1 +1,0 @@
-export { DimensionsTableHeader } from './DimensionsTableHeader';
