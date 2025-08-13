@@ -17,6 +17,8 @@ public interface LastfmArtistService extends EntityService<LastfmArtist> {
     Page<LastfmArtistResponseDto> findAll(ArtistSearchParams params, Pageable pageable);
 
     Optional<LastfmArtist> findById(Long id);
+    
+    LastfmArtistResponseDto findDtoById(Long id);
 
     Optional<LastfmArtist> findByName(String name);
 

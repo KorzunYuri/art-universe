@@ -12,6 +12,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import yurykorzun.art.universe.common.CodedRegistry;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.EntityTagDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.EntityTagSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.LastfmTagResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.TagSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
@@ -58,6 +61,37 @@ class LastfmTagServiceImplTest {
     }
 
     @Test
+    void findDtoById_shouldReturnDtoWhenTagExists() {
+        // Given
+        long tagId = 42L;
+        LastfmTag tag = createTag(b -> b.id(tagId).name("Test Tag"));
+        when(tagRepository.findById(tagId)).thenReturn(Optional.of(tag));
+
+        // When
+        LastfmTagResponseDto result = tagService.findDtoById(tagId);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(tagId, result.id());
+        assertEquals("Test Tag", result.name());
+        verify(tagRepository).findById(tagId);
+    }
+
+    @Test
+    void findDtoById_shouldThrowEntityNotFoundException_whenTagDoesNotExist() {
+        // Given
+        long tagId = 999L;
+        when(tagRepository.findById(tagId)).thenReturn(Optional.empty());
+
+        // When & Then
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, 
+            () -> tagService.findDtoById(tagId));
+        
+        assertEquals("Tag not found with id: " + tagId, exception.getMessage());
+        verify(tagRepository).findById(tagId);
+    }
+
+    @Test
     void findById_shouldReturnEmptyOptionalWhenTagDoesNotExist() {
         // Given
         long tagId = 999L;
@@ -72,7 +106,7 @@ class LastfmTagServiceImplTest {
     }
 
     @Test
-    void saveAll_withValidAll_shouldCallRepository() {
+    void saveAll_withValidTags_shouldCallRepository() {
         List<LastfmTag> tags = List.of(createTag(), createTag());
         when(tagRepository.saveAll(tags)).thenReturn(tags);
 
@@ -193,6 +227,177 @@ class LastfmTagServiceImplTest {
     void updateApprovalStatus_withInvalidApprovalStatusCode_shouldThrowException() {
         assertThrows(IllegalArgumentException.class,
             () -> tagService.updateApprovalStatus(1L, -1)
+        );
+    }
+
+    @Test
+    void findAllByEntity_shouldReturnEntityTagDtos() {
+        // Given
+        Long entityId = 123L;
+        LastfmEntityType entityType = LastfmEntityType.ARTIST;
+        
+        EntityTagDto dto1 = new EntityTagDto(
+            1L, 
+            "rock", 
+            ApprovalStatus.PENDING.getCode(),
+            ApprovalStatus.PENDING.getCode(),
+            ApprovalStatus.APPROVED.getCode(),
+            50
+        );
+        
+        EntityTagDto dto2 = new EntityTagDto(
+            2L, 
+            "pop", 
+            ApprovalStatus.APPROVED.getCode(),
+            ApprovalStatus.APPROVED.getCode(),
+            ApprovalStatus.APPROVED.getCode(),
+            100
+        );
+        
+        List<EntityTagDto> dtos = Arrays.asList(dto1, dto2);
+        
+        when(tagRepository.findTagsByEntityWithFilters(
+            eq(entityType), 
+            eq(entityId), 
+            isNull(), 
+            isNull(),
+            isNull()
+        )).thenReturn(dtos);
+
+        // When
+        List<EntityTagDto> result = tagService.findAllByEntity(entityType, entityId);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        
+        assertEquals(1L, result.get(0).id());
+        assertEquals("rock", result.get(0).name());
+        assertEquals(ApprovalStatus.PENDING.getCode(), result.get(0).relationApprovalStatus());
+        assertEquals(ApprovalStatus.PENDING.getCode(), result.get(0).tagApprovalStatus());
+        assertEquals(ApprovalStatus.APPROVED.getCode(), result.get(0).entityApprovalStatus());
+        assertEquals(50, result.get(0).usageCount());
+        
+        assertEquals(2L, result.get(1).id());
+        assertEquals("pop", result.get(1).name());
+        assertEquals(ApprovalStatus.APPROVED.getCode(), result.get(1).relationApprovalStatus());
+        assertEquals(ApprovalStatus.APPROVED.getCode(), result.get(1).tagApprovalStatus());
+        assertEquals(ApprovalStatus.APPROVED.getCode(), result.get(1).entityApprovalStatus());
+        assertEquals(100, result.get(1).usageCount());
+        
+        verify(tagRepository).findTagsByEntityWithFilters(
+            eq(entityType), 
+            eq(entityId), 
+            isNull(), 
+            isNull(),
+            isNull()
+        );
+    }
+
+    @Test
+    void findAllByEntity_shouldReturnEmptyListWhenNoTagsFound() {
+        // Given
+        Long entityId = 123L;
+        LastfmEntityType entityType = LastfmEntityType.ARTIST;
+        
+        when(tagRepository.findTagsByEntityWithFilters(
+            eq(entityType), 
+            eq(entityId), 
+            isNull(), 
+            isNull(),
+            isNull()
+        )).thenReturn(Collections.emptyList());
+
+        // When
+        List<EntityTagDto> result = tagService.findAllByEntity(entityType, entityId);
+
+        // Then
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        
+        verify(tagRepository).findTagsByEntityWithFilters(
+            eq(entityType), 
+            eq(entityId), 
+            isNull(), 
+            isNull(),
+            isNull()
+        );
+    }
+
+    @Test
+    void findAllByEntity_shouldHandleDifferentEntityTypes() {
+        // Given
+        Long entityId = 456L;
+        LastfmEntityType entityType = LastfmEntityType.TRACK;
+        
+        EntityTagDto dto = new EntityTagDto(
+            3L, 
+            "electronic", 
+            ApprovalStatus.APPROVED.getCode(),
+            ApprovalStatus.APPROVED.getCode(),
+            ApprovalStatus.PENDING.getCode(),
+            75
+        );
+        
+        when(tagRepository.findTagsByEntityWithFilters(
+            eq(entityType), 
+            eq(entityId), 
+            isNull(), 
+            isNull(),
+            isNull()
+        )).thenReturn(List.of(dto));
+
+        // When
+        List<EntityTagDto> result = tagService.findAllByEntity(entityType, entityId);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(3L, result.get(0).id());
+        assertEquals("electronic", result.get(0).name());
+        assertEquals(ApprovalStatus.APPROVED.getCode(), result.get(0).tagApprovalStatus());
+        assertEquals(ApprovalStatus.PENDING.getCode(), result.get(0).entityApprovalStatus());
+        assertEquals(75, result.get(0).usageCount());
+        
+        verify(tagRepository).findTagsByEntityWithFilters(
+            eq(entityType), 
+            eq(entityId), 
+            isNull(), 
+            isNull(),
+            isNull()
+        );
+    }
+    
+    @Test
+    void findAllByEntity_shouldPassSearchParamsAndPageable() {
+        // Given
+        Long entityId = 123L;
+        LastfmEntityType entityType = LastfmEntityType.ARTIST;
+        Integer minUsageCount = 50;
+        EntityTagSearchParams searchParams = new EntityTagSearchParams(minUsageCount, null);
+        Pageable pageable = mock(Pageable.class);
+        
+        // Use specific values for non-null parameters and isNull() for null parameters
+        when(tagRepository.findTagsByEntityWithFilters(
+            eq(entityType), 
+            eq(entityId), 
+            eq(minUsageCount), 
+            isNull(), 
+            eq(pageable)
+        )).thenReturn(Collections.emptyList());
+
+        // When
+        List<EntityTagDto> result = tagService.findAllByEntity(entityType, entityId, searchParams, pageable);
+
+        // Then
+        assertNotNull(result);
+        
+        verify(tagRepository).findTagsByEntityWithFilters(
+            eq(entityType), 
+            eq(entityId), 
+            eq(minUsageCount), 
+            isNull(), 
+            eq(pageable)
         );
     }
 }

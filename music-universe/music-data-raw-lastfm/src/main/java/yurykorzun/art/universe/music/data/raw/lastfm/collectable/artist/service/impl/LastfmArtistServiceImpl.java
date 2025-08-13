@@ -40,6 +40,13 @@ public class LastfmArtistServiceImpl implements LastfmArtistService {
     }
 
     @Override
+    public LastfmArtistResponseDto findDtoById(Long id) {
+        return artistRepository.findById(id)
+            .map(LastfmArtistResponseDto::from)
+            .orElseThrow(() -> new EntityNotFoundException("Artist not found with id: " + id));
+    }
+
+    @Override
     public Optional<LastfmArtist> findByName(String name) {
         return artistRepository.findByName(name);
     }

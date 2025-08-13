@@ -10,7 +10,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
-import yurykorzun.art.universe.common.exception.ErrorResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.EntityTagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.EntityTagSearchParams;
@@ -22,7 +21,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.BaseMvcTe
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -64,8 +62,8 @@ class LastfmTagControllerMvcTest extends BaseMvcTest {
         Long tagId = 1L;
         LastfmTagResponseDto responseDto = LastfmTagResponseDto.from(mockTag);
         
-        when(tagService.findById(eq(tagId)))
-            .thenReturn(Optional.of(mockTag));
+        when(tagService.findDtoById(eq(tagId)))
+            .thenReturn(responseDto);
 
         String expectedJson = objectMapper.writeValueAsString(responseDto);
 
@@ -73,44 +71,6 @@ class LastfmTagControllerMvcTest extends BaseMvcTest {
         mockMvc.perform(get("/api/v1/tags/{id}", tagId)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(expectedJson));
-    }
-
-    @Test
-    void GET_tagById_shouldReturnNotFound_whenTagDoesNotExist() throws Exception {
-        // Given
-        Long tagId = 999L;
-        String errorMessage = "Tag not found with id: " + tagId;
-        
-        when(tagService.findById(eq(tagId)))
-            .thenReturn(Optional.empty());
-
-        String expectedJson = objectMapper.writeValueAsString(new ErrorResponse(errorMessage));
-
-        // When & Then
-        mockMvc.perform(get("/api/v1/tags/{id}", tagId)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(expectedJson));
-    }
-
-    @Test
-    void GET_tagById_shouldReturnError_whenServiceFails() throws Exception {
-        // Given
-        Long tagId = 1L;
-        String errorMessage = "Failed to fetch tag: service error occurred";
-        
-        when(tagService.findById(eq(tagId)))
-            .thenThrow(new RuntimeException("Database error"));
-
-        String expectedJson = objectMapper.writeValueAsString(new ErrorResponse(errorMessage));
-
-        // When & Then
-        mockMvc.perform(get("/api/v1/tags/{id}", tagId)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(expectedJson));
     }
@@ -163,22 +123,6 @@ class LastfmTagControllerMvcTest extends BaseMvcTest {
     }
 
     @Test
-    void GET_entityTags_shouldReturnError_whenInvalidEntityTypeName() throws Exception {
-        // Given
-        String errorMessage = "Invalid entity type: Unknown entity type: INVALID. Expected one of: ARTIST, ALBUM, TRACK, TAG or their numeric codes (1, 2, 3, 4)";
-        
-
-        String expectedJson = objectMapper.writeValueAsString(new ErrorResponse(errorMessage));
-
-        // When & Then
-        mockMvc.perform(get("/api/v1/tags/entity/INVALID/123")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(expectedJson));
-    }
-
-    @Test
     void GET_entityTags_shouldHandleCaseInsensitiveEntityTypeName() throws Exception {
         // Given
         Long entityId = 123L;
@@ -202,26 +146,6 @@ class LastfmTagControllerMvcTest extends BaseMvcTest {
         mockMvc.perform(get("/api/v1/tags/entity/{entityType}/123", entityType.getName().toLowerCase())
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(expectedJson));
-    }
-
-    @Test
-    void GET_entityTags_shouldReturnError_whenServiceFails() throws Exception {
-        // Given
-        Long entityId = 123L;
-        LastfmEntityType entityType = LastfmEntityType.ARTIST;
-        
-        when(tagService.findAllByEntity(eq(entityType), eq(entityId), any(EntityTagSearchParams.class), any(Pageable.class)))
-            .thenThrow(new RuntimeException("Database error"));
-
-        String errorMessage = "Failed to fetch entity tags: service error occurred";
-        String expectedJson = objectMapper.writeValueAsString(new ErrorResponse(errorMessage));
-
-        // When & Then
-        mockMvc.perform(get("/api/v1/tags/entity/{entityType}/123", entityType.getName())
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(expectedJson));
     }

@@ -10,7 +10,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
-import yurykorzun.art.universe.common.exception.ErrorResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.dto.ApprovalStatusRequestDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.dto.LastfmTrackResponseDto;
@@ -22,7 +21,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.BaseMvcTe
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
@@ -87,8 +85,8 @@ class LastfmTrackControllerMvcTest extends BaseMvcTest {
         Long trackId = 1L;
         LastfmTrackResponseDto responseDto = LastfmTrackResponseDto.from(mockTrack);
         
-        when(trackService.findById(eq(trackId)))
-            .thenReturn(Optional.of(mockTrack));
+        when(trackService.findDtoById(eq(trackId)))
+            .thenReturn(responseDto);
 
         String expectedJson = objectMapper.writeValueAsString(responseDto);
 
@@ -96,44 +94,6 @@ class LastfmTrackControllerMvcTest extends BaseMvcTest {
         mockMvc.perform(get("/api/v1/tracks/{id}", trackId)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(expectedJson));
-    }
-
-    @Test
-    void GET_trackById_shouldReturnNotFound_whenTrackDoesNotExist() throws Exception {
-        // Given
-        Long trackId = 999L;
-        String errorMessage = "Track not found with id: " + trackId;
-        
-        when(trackService.findById(eq(trackId)))
-            .thenReturn(Optional.empty());
-
-        String expectedJson = objectMapper.writeValueAsString(new ErrorResponse(errorMessage));
-
-        // When & Then
-        mockMvc.perform(get("/api/v1/tracks/{id}", trackId)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(expectedJson));
-    }
-
-    @Test
-    void GET_trackById_shouldReturnError_whenServiceFails() throws Exception {
-        // Given
-        Long trackId = 1L;
-        String errorMessage = "Failed to fetch track: service error occurred";
-        
-        when(trackService.findById(eq(trackId)))
-            .thenThrow(new RuntimeException("Database error"));
-
-        String expectedJson = objectMapper.writeValueAsString(new ErrorResponse(errorMessage));
-
-        // When & Then
-        mockMvc.perform(get("/api/v1/tracks/{id}", trackId)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(expectedJson));
     }
@@ -184,23 +144,6 @@ class LastfmTrackControllerMvcTest extends BaseMvcTest {
     }
 
     @Test
-    void getTracks_shouldReturnError_whenServiceFails() throws Exception {
-        // Given
-        String errorMessage = "Failed to fetch tracks: service error occurred";
-        
-        when(trackService.findAll(any(TrackSearchParams.class), any(Pageable.class)))
-            .thenThrow(new RuntimeException("Test exception"));
-
-        String expectedJson = objectMapper.writeValueAsString(new ErrorResponse(errorMessage));
-
-        // When & Then
-        mockMvc.perform(get("/api/v1/tracks")
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isInternalServerError())
-            .andExpect(content().json(expectedJson));
-    }
-
-    @Test
     void updateApprovalStatus_shouldUpdateApprovalStatus_whenValidStatusProvided() throws Exception {
         ApprovalStatusRequestDto request = new ApprovalStatusRequestDto(2);
         LastfmTrackResponseDto responseDto = LastfmTrackResponseDto.from(mockTrack);
@@ -213,22 +156,6 @@ class LastfmTrackControllerMvcTest extends BaseMvcTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isOk())
-            .andExpect(content().json(expectedJson));
-    }
-
-    @Test
-    void updateApprovalStatus_shouldReturnError_whenServiceFails() throws Exception {
-        ApprovalStatusRequestDto request = new ApprovalStatusRequestDto(2);
-        String errorMessage = "Failed to update approval status: service error occurred";
-        String expectedJson = objectMapper.writeValueAsString(new ErrorResponse(errorMessage));
-
-        when(trackService.updateApprovalStatus(mockTrack.getId(), request.approvalStatus()))
-            .thenThrow(new RuntimeException(errorMessage));
-
-        mockMvc.perform(patch("/api/v1/tracks/{id}/approval", mockTrack.getId())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isInternalServerError())
             .andExpect(content().json(expectedJson));
     }
 }

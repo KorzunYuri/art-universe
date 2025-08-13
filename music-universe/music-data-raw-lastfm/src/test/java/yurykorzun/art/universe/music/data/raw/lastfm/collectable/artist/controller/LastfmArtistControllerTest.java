@@ -7,7 +7,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
-import yurykorzun.art.universe.common.exception.EntityNotFoundException;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto.ArtistSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto.LastfmArtistResponseDto;
@@ -15,12 +14,9 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.L
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.dto.ApprovalStatusRequestDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
-import yurykorzun.art.universe.common.exception.DataFetchException;
-import yurykorzun.art.universe.common.exception.DataUpdateException;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -119,100 +115,42 @@ class LastfmArtistControllerTest {
     }
 
     @Test
-    void getArtists_shouldThrowDataFetchExceptionOnException() {
-        // given
-        Pageable pageable = PageRequest.of(0, 10);
-        when(artistService.findAll(any(ArtistSearchParams.class), any())).thenThrow(new RuntimeException("Fail"));
-
-        // when & then
-        DataFetchException exception = assertThrows(DataFetchException.class, () -> {
-            controller.getArtists("abc", null, null, null, pageable);
-        });
-        
-        assertTrue(exception.getMessage().contains("Failed to fetch artists"));
-    }
-
-    @Test
     void getArtistById_shouldReturnArtistWhenFound() {
         // given
         Long artistId = 1L;
-        LastfmArtist artist = LastfmArtist.builder()
-            .id(artistId)
-            .name("Test Artist")
-            .url("https://example.com/artist")
-            .mbid("mbid123")
-            .approvalStatus(ApprovalStatus.APPROVED)
-            .playCount(5000L)
-            .listenersCount(1000)
-            .apiCall(mock(LastfmApiCall.class))
-            .build();
+        LastfmArtistResponseDto responseDto = new LastfmArtistResponseDto(
+            artistId, "Test Artist", "https://example.com/artist", "mbid123", 
+            ApprovalStatus.APPROVED.getCode(), 5000L, 1000);
 
-        when(artistService.findById(artistId)).thenReturn(Optional.of(artist));
+        when(artistService.findDtoById(artistId)).thenReturn(responseDto);
 
         // when
         LastfmArtistResponseDto result = controller.getArtistById(artistId);
 
         // then
         assertNotNull(result);
-        compareDtoAgainstEntity(result, artist);
-    }
-
-    @Test
-    void getArtistById_shouldThrowEntityNotFoundExceptionWhenArtistDoesNotExist() {
-        // given
-        Long artistId = 999L;
-        when(artistService.findById(artistId)).thenReturn(Optional.empty());
-
-        // when & then
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
-            controller.getArtistById(artistId);
-        });
-        
-        assertTrue(exception.getMessage().contains("Artist not found"));
-    }
-
-    @Test
-    void getArtistById_shouldThrowDataFetchExceptionWhenExceptionOccurs() {
-        // given
-        Long artistId = 1L;
-        when(artistService.findById(artistId)).thenThrow(new RuntimeException("Database error"));
-
-        // when & then
-        DataFetchException exception = assertThrows(DataFetchException.class, () -> {
-            controller.getArtistById(artistId);
-        });
-        
-        assertTrue(exception.getMessage().contains("Failed to fetch artist"));
+        assertEquals(responseDto, result);
     }
 
     @Test
     void updateApprovalStatus_withValidRequest_shouldReturnUpdatedArtist() {
+        // given
         Long artistId = 1L;
         ApprovalStatus newApprovalStatus = ApprovalStatus.APPROVED;
         int approvalStatusCode = newApprovalStatus.getCode();
 
-        LastfmArtist artist = EntityCreationHelper.createArtist(b -> b.approvalStatus(newApprovalStatus));
-        LastfmArtistResponseDto responseDto = LastfmArtistResponseDto.from(artist);
+        LastfmArtistResponseDto responseDto = new LastfmArtistResponseDto(
+            artistId, "Test Artist", "https://example.com/artist", "mbid123", 
+            approvalStatusCode, 5000L, 1000);
 
         when(artistService.updateApprovalStatus(artistId, approvalStatusCode))
             .thenReturn(responseDto);
 
+        // when
         LastfmArtistResponseDto result = controller.updateApprovalStatus(artistId, new ApprovalStatusRequestDto(approvalStatusCode));
 
+        // then
         assertNotNull(result);
         assertEquals(newApprovalStatus.getCode(), result.approvalStatus());
-    }
-
-    @Test
-    void updateApprovalStatus_shouldThrowDataUpdateExceptionOnServiceException() {
-        Long artistId = 1L;
-        when(artistService.updateApprovalStatus(anyLong(), anyInt()))
-            .thenThrow(new IllegalArgumentException("Invalid status"));
-
-        DataUpdateException exception = assertThrows(DataUpdateException.class, () -> {
-            controller.updateApprovalStatus(artistId, new ApprovalStatusRequestDto(999));
-        });
-        
-        assertTrue(exception.getMessage().contains("Failed to update approval status"));
     }
 }

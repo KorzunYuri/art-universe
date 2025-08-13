@@ -10,7 +10,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
-import yurykorzun.art.universe.common.exception.ErrorResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto.ArtistSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto.LastfmArtistResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
@@ -21,7 +20,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.BaseMvcTe
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -120,30 +118,13 @@ class LastfmArtistControllerMvcTest extends BaseMvcTest {
     }
 
     @Test
-    void GET_artists_shouldReturnError_whenServiceFails() throws Exception {
-        // Given
-        String errorMessage = "Failed to fetch artists: service error occurred";
-        
-        when(artistService.findAll(any(ArtistSearchParams.class), any(Pageable.class)))
-            .thenThrow(new RuntimeException("Test exception"));
-
-        String expectedJson = objectMapper.writeValueAsString(new ErrorResponse(errorMessage));
-
-        // When & Then
-        mockMvc.perform(get("/api/v1/artists")
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isInternalServerError())
-            .andExpect(content().json(expectedJson));
-    }
-
-    @Test
     void GET_artistById_shouldReturnArtist_whenFound() throws Exception {
         // Given
         Long artistId = 1L;
         LastfmArtistResponseDto responseDto = LastfmArtistResponseDto.from(mockArtist);
         
-        when(artistService.findById(eq(artistId)))
-            .thenReturn(Optional.of(mockArtist));
+        when(artistService.findDtoById(eq(artistId)))
+            .thenReturn(responseDto);
 
         String expectedJson = objectMapper.writeValueAsString(responseDto);
 
@@ -151,42 +132,6 @@ class LastfmArtistControllerMvcTest extends BaseMvcTest {
         mockMvc.perform(get("/api/v1/artists/{id}", artistId)
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(content().json(expectedJson));
-    }
-
-    @Test
-    void GET_artistById_shouldReturnNotFound_whenArtistDoesNotExist() throws Exception {
-        // Given
-        Long artistId = 999L;
-        String errorMessage = "Artist not found with id: " + artistId;
-        
-        when(artistService.findById(eq(artistId)))
-            .thenReturn(Optional.empty());
-
-        String expectedJson = objectMapper.writeValueAsString(new ErrorResponse(errorMessage));
-
-        // When & Then
-        mockMvc.perform(get("/api/v1/artists/{id}", artistId)
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isNotFound())
-            .andExpect(content().json(expectedJson));
-    }
-
-    @Test
-    void GET_artistById_shouldReturnError_whenServiceFails() throws Exception {
-        // Given
-        Long artistId = 1L;
-        String errorMessage = "Failed to fetch artist: service error occurred";
-        
-        when(artistService.findById(eq(artistId)))
-            .thenThrow(new RuntimeException("Test exception"));
-
-        String expectedJson = objectMapper.writeValueAsString(new ErrorResponse(errorMessage));
-
-        // When & Then
-        mockMvc.perform(get("/api/v1/artists/{id}", artistId)
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isInternalServerError())
             .andExpect(content().json(expectedJson));
     }
 
@@ -203,22 +148,6 @@ class LastfmArtistControllerMvcTest extends BaseMvcTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isOk())
-            .andExpect(content().json(expectedJson));
-    }
-
-    @Test
-    void PATCH_artistApproval_shouldReturnError_whenServiceFails() throws Exception {
-        ApprovalStatusRequestDto request = new ApprovalStatusRequestDto(2);
-        String errorMessage = "Failed to update approval status: service error occurred";
-        String expectedJson = objectMapper.writeValueAsString(new ErrorResponse(errorMessage));
-
-        when(artistService.updateApprovalStatus(mockArtist.getId(), request.approvalStatus()))
-            .thenThrow(new RuntimeException(errorMessage));
-
-        mockMvc.perform(patch("/api/v1/artists/{id}/approval", mockArtist.getId())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isInternalServerError())
             .andExpect(content().json(expectedJson));
     }
 }

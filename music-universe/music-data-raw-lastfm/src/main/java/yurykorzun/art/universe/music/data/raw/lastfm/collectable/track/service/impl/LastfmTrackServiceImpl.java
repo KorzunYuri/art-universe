@@ -11,7 +11,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.dto.Track
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.repository.LastfmTrackRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.service.LastfmTrackService;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 
 import java.util.List;
 import java.util.Optional;
@@ -51,6 +50,13 @@ public class LastfmTrackServiceImpl implements LastfmTrackService {
     }
 
     @Override
+    public LastfmTrackResponseDto findDtoById(Long id) {
+        return trackRepository.findById(id)
+            .map(LastfmTrackResponseDto::from)
+            .orElseThrow(() -> new EntityNotFoundException("Track not found with id: " + id));
+    }
+
+    @Override
     public Page<LastfmTrackResponseDto> findAll(TrackSearchParams params, Pageable pageable) {
         List<ApprovalStatus> approvalStatuses = getApprovalStatusesFromCodes(params);
         Page<LastfmTrack> tracksPage = trackRepository.findTracks(
@@ -73,7 +79,7 @@ public class LastfmTrackServiceImpl implements LastfmTrackService {
             .orElseThrow(() -> new IllegalArgumentException(String.format("ApprovalStatus with code %s not found", approvalStatusCode)));
         
         LastfmTrack track = trackRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Track not found"));
+            .orElseThrow(() -> new EntityNotFoundException("Track not found with id: " + id));
         
         track.updateApprovalStatus(approvalStatus);
         LastfmTrack updated = trackRepository.save(track);

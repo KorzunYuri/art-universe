@@ -17,6 +17,8 @@ public interface LastfmTagService extends EntityService<LastfmTag> {
 
     Optional<LastfmTag> findById(Long id);
 
+    LastfmTagResponseDto findDtoById(Long id);
+
     Page<LastfmTagResponseDto> findAll(TagSearchParams params, Pageable pageable);
 
     List<LastfmTag> findAllByNameIn(List<String> tagNames);

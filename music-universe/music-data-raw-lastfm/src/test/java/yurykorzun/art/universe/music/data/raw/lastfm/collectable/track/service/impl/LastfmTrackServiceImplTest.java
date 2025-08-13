@@ -64,6 +64,37 @@ class LastfmTrackServiceImplTest {
     }
 
     @Test
+    void findDto_shouldReturnDtoByIdWhenTrackExists() {
+        // Given
+        long trackId = 42L;
+        LastfmTrack track = createTrack(b -> b.id(trackId).name("Test Track"));
+        when(trackRepository.findById(trackId)).thenReturn(Optional.of(track));
+
+        // When
+        LastfmTrackResponseDto result = trackService.findDtoById(trackId);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(trackId, result.id());
+        assertEquals("Test Track", result.name());
+        verify(trackRepository).findById(trackId);
+    }
+
+    @Test
+    void findDto_ById_shouldThrowEntityNotFoundException_whenTrackDoesNotExist() {
+        // Given
+        long trackId = 999L;
+        when(trackRepository.findById(trackId)).thenReturn(Optional.empty());
+
+        // When & Then
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, 
+            () -> trackService.findDtoById(trackId));
+        
+        assertEquals("Track not found with id: " + trackId, exception.getMessage());
+        verify(trackRepository).findById(trackId);
+    }
+
+    @Test
     void findById_shouldReturnEmptyOptionalWhenTrackDoesNotExist() {
         // Given
         long trackId = 999L;

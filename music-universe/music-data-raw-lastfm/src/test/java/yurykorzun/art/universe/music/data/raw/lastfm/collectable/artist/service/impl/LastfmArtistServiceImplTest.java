@@ -70,6 +70,37 @@ class LastfmArtistServiceImplTest {
     }
 
     @Test
+    void findDto_shouldReturnDtoByIdWhenArtistExists() {
+        // Given
+        long artistId = 42L;
+        LastfmArtist artist = createArtist(b -> b.id(artistId).name("Test Artist"));
+        when(artistRepository.findById(artistId)).thenReturn(Optional.of(artist));
+
+        // When
+        LastfmArtistResponseDto result = artistService.findDtoById(artistId);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(artistId, result.id());
+        assertEquals("Test Artist", result.name());
+        verify(artistRepository).findById(artistId);
+    }
+
+    @Test
+    void findDto_ById_shouldThrowEntityNotFoundException_whenArtistDoesNotExist() {
+        // Given
+        long artistId = 999L;
+        when(artistRepository.findById(artistId)).thenReturn(Optional.empty());
+
+        // When & Then
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, 
+            () -> artistService.findDtoById(artistId));
+        
+        assertEquals("Artist not found with id: " + artistId, exception.getMessage());
+        verify(artistRepository).findById(artistId);
+    }
+
+    @Test
     void findById_shouldReturnEmptyOptionalWhenArtistDoesNotExist() {
         // Given
         long artistId = 999L;

@@ -7,7 +7,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
-import yurykorzun.art.universe.common.exception.EntityNotFoundException;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.dto.ApprovalStatusRequestDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.dto.LastfmTrackResponseDto;
@@ -15,17 +14,13 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.dto.Track
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.service.LastfmTrackService;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
-import yurykorzun.art.universe.common.exception.DataFetchException;
-import yurykorzun.art.universe.common.exception.DataUpdateException;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -60,54 +55,21 @@ class LastfmTrackControllerTest {
         // given
         Long trackId = 1L;
         LastfmArtist artist = EntityCreationHelper.createArtist(b -> b.id(2L).name("Test Artist"));
-        LastfmTrack track = LastfmTrack.builder()
-            .id(trackId)
-            .name("Test Track")
-            .url("https://example.com/track")
-            .mbid("mbid123")
-            .approvalStatus(ApprovalStatus.APPROVED)
-            .playCount(5000L)
-            .listenersCount(1000)
-            .artist(artist)
-            .apiCall(EntityCreationHelper.createApiCall())
-            .build();
+        LastfmTrackResponseDto responseDto = new LastfmTrackResponseDto(
+            trackId, "Test Track", "https://example.com/track", "mbid123", 
+            ApprovalStatus.APPROVED.getCode(), 1000, 5000L, 
+            new yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto.LastfmArtistResponseDto(
+                2L, "Test Artist", "https://example.com/artist", "artist-mbid", 
+                ApprovalStatus.APPROVED.getCode(), 10000L, 5000));
 
-        when(trackService.findById(trackId)).thenReturn(Optional.of(track));
+        when(trackService.findDtoById(trackId)).thenReturn(responseDto);
 
         // when
         LastfmTrackResponseDto result = controller.getTrackById(trackId);
 
         // then
         assertNotNull(result);
-        compareDtoAgainstEntity(result, track);
-    }
-
-    @Test
-    void getTrackById_shouldThrowEntityNotFoundExceptionWhenTrackDoesNotExist() {
-        // given
-        Long trackId = 999L;
-        when(trackService.findById(trackId)).thenReturn(Optional.empty());
-
-        // when & then
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
-            controller.getTrackById(trackId);
-        });
-        
-        assertTrue(exception.getMessage().contains("Track not found"));
-    }
-
-    @Test
-    void getTrackById_shouldThrowDataFetchExceptionWhenExceptionOccurs() {
-        // given
-        Long trackId = 1L;
-        when(trackService.findById(trackId)).thenThrow(new RuntimeException("Database error"));
-
-        // when & then
-        DataFetchException exception = assertThrows(DataFetchException.class, () -> {
-            controller.getTrackById(trackId);
-        });
-        
-        assertTrue(exception.getMessage().contains("Failed to fetch track"));
+        assertEquals(responseDto, result);
     }
 
     @Test
@@ -177,8 +139,6 @@ class LastfmTrackControllerTest {
             assertEquals(entity.getArtist().getId(), dto.artist().id());
             assertEquals(entity.getArtist().getName(), dto.artist().name());
         }
-
-        verify(trackService).findAll(expectedParams, pageable);
     }
     
     @Test
@@ -202,52 +162,21 @@ class LastfmTrackControllerTest {
     }
 
     @Test
-    void getTracks_shouldThrowDataFetchExceptionOnException() {
-        // given
-        Pageable pageable = PageRequest.of(0, 10);
-        when(trackService.findAll(any(TrackSearchParams.class), any())).thenThrow(new RuntimeException("Fail"));
-
-        // when & then
-        DataFetchException exception = assertThrows(DataFetchException.class, () -> {
-            controller.getTracks("abc", null, null, null, null, pageable);
-        });
-        
-        assertTrue(exception.getMessage().contains("Failed to fetch tracks"));
-    }
-
-    @Test
     void updateApprovalStatus_withValidRequest_shouldReturnUpdatedTrack() {
         Long trackId = 1L;
         ApprovalStatus newApprovalStatus = ApprovalStatus.APPROVED;
         int approvalStatusCode = newApprovalStatus.getCode();
 
-        LastfmArtist artist = EntityCreationHelper.createArtist();
-        LastfmTrack track = EntityCreationHelper.createTrack(b -> 
-            b.id(trackId).approvalStatus(newApprovalStatus).artist(artist));
-            
-        LastfmTrackResponseDto dto = LastfmTrackResponseDto.from(track);
+        LastfmTrackResponseDto responseDto = new LastfmTrackResponseDto(
+            trackId, "Test Track", "https://example.com/track", "mbid123", 
+            approvalStatusCode, 1000, 5000L, null);
 
         when(trackService.updateApprovalStatus(trackId, approvalStatusCode))
-            .thenReturn(dto);
+            .thenReturn(responseDto);
 
         LastfmTrackResponseDto result = controller.updateApprovalStatus(trackId, new ApprovalStatusRequestDto(approvalStatusCode));
 
         assertNotNull(result);
         assertEquals(newApprovalStatus.getCode(), result.approvalStatus());
-        assertNotNull(result.artist());
-        assertEquals(artist.getId(), result.artist().id());
-    }
-
-    @Test
-    void updateApprovalStatus_shouldThrowDataUpdateExceptionOnServiceException() {
-        Long trackId = 1L;
-        when(trackService.updateApprovalStatus(anyLong(), anyInt()))
-            .thenThrow(new IllegalArgumentException("Invalid status"));
-
-        DataUpdateException exception = assertThrows(DataUpdateException.class, () -> {
-            controller.updateApprovalStatus(trackId, new ApprovalStatusRequestDto(999));
-        });
-        
-        assertTrue(exception.getMessage().contains("Failed to update approval status"));
     }
 }

@@ -22,6 +22,8 @@ public interface LastfmTrackService extends EntityService<LastfmTrack> {
     
     Optional<LastfmTrack> findById(Long id);
     
+    LastfmTrackResponseDto findDtoById(Long id);
+    
     /**
      * Find tracks for track.getInfo API call with the following priority:
      * 1. Tracks with missing playCount and listenersCount

@@ -6,22 +6,23 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
-import yurykorzun.art.universe.common.exception.EntityNotFoundException;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.dto.ApprovalStatusRequestDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.EntityTagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.EntityTagSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.LastfmTagResponseDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.TagSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.service.LastfmTagService;
-import yurykorzun.art.universe.common.exception.DataFetchException;
-import yurykorzun.art.universe.common.exception.ValidationException;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -41,57 +42,120 @@ class LastfmTagControllerTest {
     void getTagById_shouldReturnTagWhenFound() {
         // Given
         Long tagId = 1L;
-        LastfmTag tag = LastfmTag.builder()
-            .id(tagId)
+        LastfmTagResponseDto responseDto = new LastfmTagResponseDto(
+            tagId, "rock", "https://example.com/tag/rock", 
+            ApprovalStatus.APPROVED.getCode(), 5000, 1000);
+
+        when(tagService.findDtoById(tagId)).thenReturn(responseDto);
+
+        // When
+        LastfmTagResponseDto result = controller.getTagById(tagId);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(responseDto, result);
+    }
+
+    @Test
+    void getTags_shouldReturnDtoPage() {
+        // Given
+        String search = "rock";
+        Set<Integer> approvalStatuses = Set.of(ApprovalStatus.APPROVED.getCode());
+        Pageable pageable = PageRequest.of(0, 2);
+
+        LastfmTag tag1 = LastfmTag.builder()
+            .id(1L)
             .name("rock")
-            .url("https://example.com/tag/rock")
+            .url("https://example.com/rock")
+            .approvalStatus(ApprovalStatus.APPROVED)
             .usageCount(5000)
             .usageUsersCount(1000)
-            .approvalStatus(ApprovalStatus.APPROVED)
             .apiCall(mock(LastfmApiCall.class))
             .build();
 
-        when(tagService.findById(tagId)).thenReturn(Optional.of(tag));
+        LastfmTag tag2 = LastfmTag.builder()
+            .id(2L)
+            .name("alternative rock")
+            .url("https://example.com/alternative-rock")
+            .approvalStatus(ApprovalStatus.PENDING)
+            .usageCount(null)
+            .usageUsersCount(null)
+            .apiCall(mock(LastfmApiCall.class))
+            .build();
+
+        List<LastfmTag> tagList = List.of(tag1, tag2);
+        Page<LastfmTag> tagPage = new PageImpl<>(tagList, pageable, tagList.size());
+        Page<LastfmTagResponseDto> dtoPage = tagPage.map(LastfmTagResponseDto::from);
+
+        when(tagService.findAll(any(TagSearchParams.class), eq(pageable)))
+            .thenReturn(dtoPage);
 
         // When
-        LastfmTagResponseDto response = controller.getTagById(tagId);
+        Page<LastfmTagResponseDto> result = controller.getTags(search, approvalStatuses, pageable);
 
         // Then
-        assertNotNull(response);
-        assertEquals(tagId, response.id());
-        assertEquals("rock", response.name());
-        assertEquals("https://example.com/tag/rock", response.url());
-        assertEquals(ApprovalStatus.APPROVED.getCode(), response.approvalStatus());
-        assertEquals(5000, response.usageCount());
-        assertEquals(1000, response.usageUsersCount());
-    }
+        assertNotNull(result);
+        assertEquals(2, result.getTotalElements());
 
+        for (int i = 0; i < tagList.size(); i++) {
+            LastfmTagResponseDto dto = result.getContent().get(i);
+            LastfmTag entity = tagList.get(i);
+            
+            assertEquals(entity.getId(), dto.id());
+            assertEquals(entity.getName(), dto.name());
+            assertEquals(entity.getUrl(), dto.url());
+            assertEquals(entity.getApprovalStatus().getCode(), dto.approvalStatus());
+            assertEquals(entity.getUsageCount(), dto.usageCount());
+            assertEquals(entity.getUsageUsersCount(), dto.usageUsersCount());
+        }
+    }
+    
     @Test
-    void getTagById_shouldThrowEntityNotFoundExceptionWhenTagDoesNotExist() {
+    void getTags_shouldHandleNullFilters() {
         // Given
-        Long tagId = 999L;
-        when(tagService.findById(tagId)).thenReturn(Optional.empty());
-
-        // When & Then
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
-            controller.getTagById(tagId);
-        });
+        Pageable pageable = PageRequest.of(0, 10);
         
-        assertTrue(exception.getMessage().contains("Tag not found"));
+        LastfmTag tag = LastfmTag.builder()
+            .id(1L)
+            .name("test")
+            .approvalStatus(ApprovalStatus.PENDING)
+            .apiCall(mock(LastfmApiCall.class))
+            .build();
+        
+        Page<LastfmTag> tagPage = new PageImpl<>(List.of(tag), pageable, 1);
+        Page<LastfmTagResponseDto> dtoPage = tagPage.map(LastfmTagResponseDto::from);
+        
+        when(tagService.findAll(any(TagSearchParams.class), eq(pageable)))
+            .thenReturn(dtoPage);
+
+        // When
+        Page<LastfmTagResponseDto> result = controller.getTags(null, null, pageable);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(1, result.getTotalElements());
     }
 
     @Test
-    void getTagById_shouldThrowDataFetchExceptionWhenExceptionOccurs() {
+    void updateApprovalStatus_withValidRequest_shouldReturnUpdatedTag() {
         // Given
         Long tagId = 1L;
-        when(tagService.findById(tagId)).thenThrow(new RuntimeException("Database error"));
+        ApprovalStatus newApprovalStatus = ApprovalStatus.APPROVED;
+        int approvalStatusCode = newApprovalStatus.getCode();
 
-        // When & Then
-        DataFetchException exception = assertThrows(DataFetchException.class, () -> {
-            controller.getTagById(tagId);
-        });
-        
-        assertTrue(exception.getMessage().contains("Failed to fetch tag"));
+        LastfmTagResponseDto responseDto = new LastfmTagResponseDto(
+            tagId, "rock", "https://example.com/tag/rock", 
+            approvalStatusCode, 5000, 1000);
+
+        when(tagService.updateApprovalStatus(tagId, approvalStatusCode))
+            .thenReturn(responseDto);
+
+        // When
+        LastfmTagResponseDto result = controller.updateApprovalStatus(tagId, new ApprovalStatusRequestDto(approvalStatusCode));
+
+        // Then
+        assertNotNull(result);
+        assertEquals(newApprovalStatus.getCode(), result.approvalStatus());
     }
 
     @Test
@@ -110,12 +174,11 @@ class LastfmTagControllerTest {
             50
         ));
         
-        // Use isNull() instead of any() for null parameters
         when(tagService.findAllByEntity(
             eq(entityType),
             eq(entityId),
             any(EntityTagSearchParams.class),
-            isNull(Pageable.class)
+            nullable(Pageable.class)
         )).thenReturn(tags);
 
         // When
@@ -143,7 +206,7 @@ class LastfmTagControllerTest {
             eq(entityType),
             eq(entityId),
             any(EntityTagSearchParams.class),
-            isNull(Pageable.class)
+            nullable(Pageable.class)
         )).thenReturn(Collections.emptyList());
 
         // When
@@ -155,17 +218,17 @@ class LastfmTagControllerTest {
     }
 
     @Test
-    void getEntityTags_shouldThrowValidationExceptionForInvalidEntityTypeName() {
+    void getEntityTags_shouldThrowIllegalArgumentExceptionForInvalidEntityTypeName() {
         // Given
         Long entityId = 123L;
         String entityTypeParam = "INVALID";
 
         // When & Then
-        ValidationException exception = assertThrows(ValidationException.class, () -> {
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             controller.getEntityTags(entityTypeParam, entityId, null, null, null);
         });
         
-        assertTrue(exception.getMessage().contains("Invalid entity type"));
+        assertTrue(exception.getMessage().contains("Unknown entity type"));
     }
 
     @Test
@@ -188,7 +251,7 @@ class LastfmTagControllerTest {
             eq(entityType),
             eq(entityId),
             any(EntityTagSearchParams.class),
-            isNull(Pageable.class)
+            nullable(Pageable.class)
         )).thenReturn(tags);
 
         // When
@@ -197,28 +260,6 @@ class LastfmTagControllerTest {
         // Then
         assertNotNull(response);
         assertEquals(1, response.size());
-    }
-
-    @Test
-    void getEntityTags_shouldThrowDataFetchExceptionWhenServiceThrowsException() {
-        // Given
-        Long entityId = 123L;
-        LastfmEntityType entityType = LastfmEntityType.ARTIST;
-        String entityTypeParam = entityType.getName();
-        
-        when(tagService.findAllByEntity(
-            eq(entityType),
-            eq(entityId),
-            any(EntityTagSearchParams.class),
-            isNull(Pageable.class)
-        )).thenThrow(new RuntimeException("Database error"));
-
-        // When & Then
-        DataFetchException exception = assertThrows(DataFetchException.class, () -> {
-            controller.getEntityTags(entityTypeParam, entityId, null, null, null);
-        });
-        
-        assertTrue(exception.getMessage().contains("Failed to fetch entity tags"));
     }
     
     @Test
@@ -243,7 +284,7 @@ class LastfmTagControllerTest {
             eq(entityType),
             eq(entityId),
             any(EntityTagSearchParams.class),
-            isNull(Pageable.class)
+            nullable(Pageable.class)
         )).thenReturn(tags);
 
         // When
@@ -256,7 +297,7 @@ class LastfmTagControllerTest {
             eq(entityType),
             eq(entityId),
             searchParamsCaptor.capture(),
-            isNull(Pageable.class));
+            isNull());
         
         EntityTagSearchParams capturedParams = searchParamsCaptor.getValue();
         assertEquals(minUsageCount, capturedParams.minUsageCount());
@@ -269,6 +310,7 @@ class LastfmTagControllerTest {
         Long entityId = 123L;
         LastfmEntityType entityType = LastfmEntityType.ARTIST;
         String entityTypeParam = entityType.getName();
+        Pageable pageable = PageRequest.of(0, 10);
         
         List<EntityTagDto> tags = List.of(
             new EntityTagDto(1L,
@@ -289,18 +331,18 @@ class LastfmTagControllerTest {
             eq(entityType),
             eq(entityId),
             any(EntityTagSearchParams.class),
-            isNull(Pageable.class)
+            eq(pageable)
         )).thenReturn(tags);
 
         // When
-        List<EntityTagDto> response = controller.getEntityTags(entityTypeParam, entityId, null, null, null);
+        List<EntityTagDto> response = controller.getEntityTags(entityTypeParam, entityId, null, null, pageable);
 
         // Then
         verify(tagService).findAllByEntity(
             eq(entityType),
             eq(entityId),
             any(EntityTagSearchParams.class),
-            isNull(Pageable.class));
+            eq(pageable));
         
         assertNotNull(response);
         assertEquals(2, response.size());
