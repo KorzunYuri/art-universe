@@ -1,4 +1,5 @@
 import type {LastfmArtistsPageSearchParams} from "@/music-universe/sources/lastfm/api/lastfm-artists.ts";
+import type {LastfmAlbumsPageSearchParams} from "@/music-universe/sources/lastfm/api/lastfm-albums.ts";
 import type {LastfmTracksPageSearchParams} from "@/music-universe/sources/lastfm/api/lastfm-tracks.ts";
 import type {LastfmTagsPageSearchParams} from "@/music-universe/sources/lastfm/api/lastfm-tags.ts";
 import type {
@@ -20,6 +21,7 @@ export interface BaseLastfmPageSearchParams extends BasePageSearchParams {
 
 export type LastfmPageSearchParamsMap = {
     artist: LastfmArtistsPageSearchParams,
+    album: LastfmAlbumsPageSearchParams,
     track: LastfmTracksPageSearchParams,
     category: LastfmTagsPageSearchParams,
 }

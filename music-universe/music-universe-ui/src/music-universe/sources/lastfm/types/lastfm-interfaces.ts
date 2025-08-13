@@ -15,5 +15,5 @@ export interface LastfmEntity<T extends MasterEntityType> extends RawEntity<T>, 
  */
 export type LastfmSupportedEntityType = Extract<
     MasterEntityType,
-    'artist' | 'track' | 'category'
+    'artist' | 'album' | 'track' | 'category'
 >;

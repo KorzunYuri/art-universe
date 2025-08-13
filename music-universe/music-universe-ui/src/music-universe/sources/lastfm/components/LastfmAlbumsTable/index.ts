@@ -1,0 +1,1 @@
+export { LastfmAlbumsTable } from './LastfmAlbumsTable';

@@ -4,6 +4,7 @@ import {LastfmConfig} from '@/music-universe/sources/lastfm/config/lastfmconfig'
 import type {ApprovalStatusType} from "@/music-universe/sources/lastfm/constants/approvalStatus.ts";
 
 import {createLastfmArtistFromDto, type LastfmArtistDto} from "@/music-universe/sources/lastfm/api/lastfm-artists.ts";
+import {createLastfmAlbumFromDto, type LastfmAlbumDto} from "@/music-universe/sources/lastfm/api/lastfm-albums.ts";
 import {createLastfmTrackFromDto, type LastfmTrackDto} from "@/music-universe/sources/lastfm/api/lastfm-tracks.ts";
 import {createLastfmTagFromDto, type LastfmTagDto} from "@/music-universe/sources/lastfm/api/lastfm-tags.ts";
 import type {
@@ -14,12 +15,14 @@ import type {
 
 export const lastfmEntityTypeToEndpoint: Record<LastfmSupportedEntityType, string> = {
     'artist': 'artists',
+    'album': 'albums',
     'track': 'tracks',
     'category': 'tags'
 };
 
 export type LastfmEntityDtoMap = {
     artist:     LastfmArtistDto;
+    album:      LastfmAlbumDto;
     track:      LastfmTrackDto;
     category:   LastfmTagDto;
 };
@@ -28,6 +31,7 @@ export const lastfmEntityMappers: {
     [K in LastfmSupportedEntityType]: (dto: LastfmEntityDtoMap[K]) => LastfmSupportedEntityTypeMap[K];
 } = {
     artist:     createLastfmArtistFromDto,
+    album:      createLastfmAlbumFromDto,
     track:      createLastfmTrackFromDto,
     category:   createLastfmTagFromDto,
 };
