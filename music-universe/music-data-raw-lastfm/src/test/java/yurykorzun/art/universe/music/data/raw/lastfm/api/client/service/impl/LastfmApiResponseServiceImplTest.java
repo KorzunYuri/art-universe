@@ -1,5 +1,7 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,6 +17,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmApiResponseRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.config.TestBeansConfig;
 
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -35,6 +38,7 @@ class LastfmApiResponseServiceImplTest {
     void setUp() {
         apiResponseService = new LastfmApiResponseServiceImpl(
             apiResponseRepository,
+            TestBeansConfig.getObjectMapper(),
             null
         );
 
@@ -105,7 +109,6 @@ class LastfmApiResponseServiceImplTest {
         // then
         assertNotNull(dto);
         assertEquals(id, dto.id());
-        assertEquals(response.getResponseBody(), dto.responseBody());
         assertEquals(response.getStatus(), dto.status());
     }
 
@@ -117,6 +120,32 @@ class LastfmApiResponseServiceImplTest {
 
         // when
         assertThrows(EntityNotFoundException.class, () -> apiResponseService.getApiResponseById(id));
+    }
+
+    @Test
+    void getApiResponseBody_shouldReturnApiResponseBody_whenResponseExists() throws JsonProcessingException {
+        // given
+        long id = 1L;
+        LastfmApiResponse response = getMockResponse(validCreateResponseRequestSupplier().get(), id);
+        JsonNode expectedJson = TestBeansConfig.getObjectMapper().readTree(response.getResponseBody());
+        when(apiResponseRepository.findById(id)).thenReturn(Optional.of(response));
+
+        // when
+        JsonNode actualJson = apiResponseService.getApiResponseBody(id);
+
+        // then
+        assertNotNull(actualJson);
+        assertEquals(expectedJson, actualJson);
+    }
+
+    @Test
+    void getApiResponseBody_shouldThrowException_whenResponseDoesNotExist() {
+        // given
+        long id = 999L;
+        when(apiResponseRepository.findById(id)).thenReturn(Optional.empty());
+
+        // when
+        assertThrows(EntityNotFoundException.class, () -> apiResponseService.getApiResponseBody(id));
     }
 
 }

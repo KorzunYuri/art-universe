@@ -14,7 +14,6 @@ public record LastfmApiResponseDto(
     // API Response fields
     Long id,
     ApiResponseStatus status,
-    String responseBody,
     Instant createdAt,
     Instant updatedAt,
     
@@ -41,7 +40,6 @@ public record LastfmApiResponseDto(
             // API Response fields
             response.getId(),
             response.getStatus(),
-            response.getResponseBody(),
             response.getCreatedAt(),
             response.getUpdatedAt(),
             

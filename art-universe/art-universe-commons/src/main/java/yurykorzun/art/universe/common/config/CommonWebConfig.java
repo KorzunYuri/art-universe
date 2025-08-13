@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -21,12 +22,16 @@ public class CommonWebConfig {
     @Primary
     public ObjectMapper objectMapper() {
         ObjectMapper mapper = new ObjectMapper();
+
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        // don't change the name of boolean properties
         mapper.setPropertyNamingStrategy(new PropertyNamingStrategy() {
             @Override
             public String nameForGetterMethod(MapperConfig<?> config,
                                               AnnotatedMethod method,
                                               String defaultName) {
-                // don't change the name of boolean properties
                 String methodName = method.getName();
                 if (methodName.startsWith("is") && method.getRawReturnType().equals(boolean.class)) {
                     return methodName;

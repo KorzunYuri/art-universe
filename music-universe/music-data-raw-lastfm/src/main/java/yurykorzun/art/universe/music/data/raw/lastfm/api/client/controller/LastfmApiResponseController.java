@@ -1,5 +1,6 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.client.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +11,8 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmAp
 @RequestMapping("/api/v1/api/responses")
 @Slf4j
 public class LastfmApiResponseController {
+
+    public static final String SUB_URL_RESPONSE_BODY = "/body";
 
     private final LastfmApiResponseService apiResponseService;
 
@@ -23,5 +26,10 @@ public class LastfmApiResponseController {
     )
     public LastfmApiResponseDto getApiResponse(@PathVariable Long id) {
         return apiResponseService.getApiResponseById(id);
+    }
+
+    @GetMapping(value = "/{id}" + SUB_URL_RESPONSE_BODY)
+    public JsonNode getApiResponseBody(@PathVariable Long id) {
+        return apiResponseService.getApiResponseBody(id);
     }
 }

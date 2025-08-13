@@ -1,5 +1,6 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.client.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,15 +40,31 @@ class LastfmApiResponseControllerMvcTest extends BaseMvcTest {
     private LastfmApiResponseService apiResponseService;
 
     @Test
-    void GET_apiResponse_shouldReturnApiResponseDto_whenFound() throws Exception {
+    void GET_apiResponseBody_shouldReturnApiResponseBody_whenFound() throws Exception {
         // Given
         Long responseId = 1L;
         String responseBody = "{\"artist\":{\"name\":\"Test Artist\",\"mbid\":\"test-mbid\"}}";
-        
+        JsonNode expectedResponse = objectMapper.readTree(responseBody);
+
+        when(apiResponseService.getApiResponseBody(eq(responseId)))
+            .thenReturn(expectedResponse);
+
+        // When & Then
+        mockMvc.perform(get("/api/v1/api/responses/{id}/body", responseId)
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(content().json(responseBody));
+    }
+
+    @Test
+    void GET_apiResponse_shouldReturnApiResponseDto_whenFound() throws Exception {
+        // Given
+        Long responseId = 1L;
+
         LastfmApiResponseDto expectedDto = new LastfmApiResponseDto(
             responseId,
             ApiResponseStatus.COMPLETED,
-            responseBody,
             Instant.parse("2025-08-11T14:00:00Z"),
             Instant.parse("2025-08-11T14:30:00Z"),
             10L,

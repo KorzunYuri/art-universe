@@ -8,7 +8,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.DtoR
 
 /**
  * Basic class incorporating common logic for all processors of Lastfm API methods responses
- * @param <T> parsed responseBody, basically a DTO
+ * @param <T> parsed responseBodySubUrl, basically a DTO
  */
 public abstract class LastfmApiResponseProcessor<T extends DtoRoot>
         extends BaseApiResponseProcessor<LastfmApiResponse> {

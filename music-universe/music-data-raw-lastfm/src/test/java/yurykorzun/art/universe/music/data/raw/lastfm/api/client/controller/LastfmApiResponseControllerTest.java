@@ -1,5 +1,8 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.client.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -12,6 +15,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiRes
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiResponseService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.config.TestBeansConfig;
 
 import java.time.Instant;
 import java.util.Map;
@@ -30,15 +34,31 @@ class LastfmApiResponseControllerTest {
     private LastfmApiResponseController controller;
 
     @Test
-    void getApiResponse_shouldReturnApiResponseDto_whenFound() {
+    void getApiResponseBody_shouldReturnApiResponseBody_whenFound() throws JsonProcessingException {
         // Given
         Long responseId = 1L;
         String responseBody = "{\"artist\":{\"name\":\"Test Artist\",\"mbid\":\"test-mbid\"}}";
-        
+        ObjectMapper objectMapper = TestBeansConfig.getObjectMapper();
+        JsonNode expectedResponse = objectMapper.readTree(responseBody);
+
+        when(apiResponseService.getApiResponseBody(eq(responseId)))
+            .thenReturn(expectedResponse);
+
+        // When
+        JsonNode actualResponse = controller.getApiResponseBody(responseId);
+
+        // Then
+        assertEquals(expectedResponse, actualResponse);
+    }
+
+    @Test
+    void getApiResponse_shouldReturnApiResponseDto_whenFound() {
+        // Given
+        Long responseId = 1L;
+
         LastfmApiResponseDto expectedDto = new LastfmApiResponseDto(
             responseId,
             ApiResponseStatus.COMPLETED,
-            responseBody,
             Instant.parse("2025-08-11T14:00:00Z"),
             Instant.parse("2025-08-11T14:30:00Z"),
             10L,
@@ -64,7 +84,6 @@ class LastfmApiResponseControllerTest {
         assertNotNull(result);
         assertEquals(responseId, result.id());
         assertEquals(ApiResponseStatus.COMPLETED, result.status());
-        assertEquals(responseBody, result.responseBody());
         assertEquals(10L, result.apiCallId());
         assertEquals(LastfmApiCallType.ARTIST_GET_INFO, result.apiCallType());
         assertEquals("artist.getInfo", result.apiCallMethod());

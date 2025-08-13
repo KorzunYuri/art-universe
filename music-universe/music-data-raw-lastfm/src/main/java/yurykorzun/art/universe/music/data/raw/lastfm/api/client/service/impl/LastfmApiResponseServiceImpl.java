@@ -27,17 +27,17 @@ import java.util.List;
 public class LastfmApiResponseServiceImpl implements LastfmApiResponseService {
 
     private final LastfmApiResponseRepository repository;
-    private final LastfmApiResponseServiceImpl self;
     private final ObjectMapper objectMapper;
+    private final LastfmApiResponseServiceImpl self;
 
     public LastfmApiResponseServiceImpl(
         LastfmApiResponseRepository repository,
+        ObjectMapper objectMapper,
         @Lazy LastfmApiResponseServiceImpl self
     ) {
         this.repository = repository;
+        this.objectMapper = objectMapper;
         this.self = self;
-
-        this.objectMapper = new ObjectMapper();
     }
 
     @Override
@@ -135,6 +135,22 @@ public class LastfmApiResponseServiceImpl implements LastfmApiResponseService {
         return repository.findById(id)
             .map(LastfmApiResponseDto::from)
             .orElseThrow(() -> new EntityNotFoundException("response", id));
+    }
+
+    @Override
+    public JsonNode getApiResponseBody(Long id) {
+        return repository.findById(id)
+            .map(LastfmApiResponse::getResponseBody)
+            .map(this::responseBodyToJson)
+            .orElseThrow(() -> new EntityNotFoundException("response", id));
+    }
+
+    private JsonNode responseBodyToJson(String responseBody) {
+        try {
+            return objectMapper.readTree(responseBody);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static LastfmApiResponse dtoToApiResponse(LastfmApiResponseCreateRequest dto) {
