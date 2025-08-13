@@ -113,12 +113,12 @@ class LastfmTrackControllerTest {
         Page<LastfmTrack> trackPage = new PageImpl<>(trackList, pageable, trackList.size());
         Page<LastfmTrackResponseDto> dtoPage = trackPage.map(LastfmTrackResponseDto::from);
 
-        TrackSearchParams expectedParams = new TrackSearchParams(search, minPlayCount, minListenersCount, artistId, approvalStatuses);
+        TrackSearchParams expectedParams = new TrackSearchParams(search, minPlayCount, minListenersCount, artistId, approvalStatuses, null);
         when(trackService.findAll(any(TrackSearchParams.class), eq(pageable)))
             .thenReturn(dtoPage);
 
         // when
-        Page<LastfmTrackResponseDto> result = controller.getTracks(search, minPlayCount, minListenersCount, artistId, approvalStatuses, pageable);
+        Page<LastfmTrackResponseDto> result = controller.getTracks(search, minPlayCount, minListenersCount, artistId, approvalStatuses, null, pageable);
 
         // then
         assertNotNull(result);
@@ -154,7 +154,7 @@ class LastfmTrackControllerTest {
             .thenReturn(dtoPage);
 
         // when
-        Page<LastfmTrackResponseDto> result = controller.getTracks(null, null, null, null, null, pageable);
+        Page<LastfmTrackResponseDto> result = controller.getTracks(null, null, null, null, null, null, pageable);
 
         // then
         assertNotNull(result);

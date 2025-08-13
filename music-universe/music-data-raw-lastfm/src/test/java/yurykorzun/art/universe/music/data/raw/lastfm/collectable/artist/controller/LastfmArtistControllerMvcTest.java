@@ -94,6 +94,7 @@ class LastfmArtistControllerMvcTest extends BaseMvcTest {
                 .param("search", search)
                 .param("minPlayCount", minPlayCount.toString())
                 .param("minListenersCount", minListenersCount.toString())
+                .param("tagId", "123")
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(content().json(expectedJson));

@@ -31,6 +31,7 @@ public class LastfmTrackController {
             @RequestParam(required = false) Long minListenersCount,
             @RequestParam(required = false) Long artistId,
             @RequestParam(required = false) Set<Integer> approvalStatuses,
+            @RequestParam(required = false) Long tagId,
             @PageableDefault(size = 20, sort = "name") Pageable pageable
     ) {
         TrackSearchParams params = new TrackSearchParams(
@@ -38,7 +39,8 @@ public class LastfmTrackController {
                 minPlayCount,
                 minListenersCount,
                 artistId,
-                approvalStatuses
+                approvalStatuses,
+                tagId
         );
         
         return trackService.findAll(params, pageable);

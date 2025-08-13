@@ -115,12 +115,12 @@ class LastfmAlbumControllerTest {
         Page<LastfmAlbum> albumPage = new PageImpl<>(albumList, pageable, albumList.size());
         Page<LastfmAlbumResponseDto> dtoPage = albumPage.map(LastfmAlbumResponseDto::from);
 
-        AlbumSearchParams expectedParams = new AlbumSearchParams(search, minPlayCount, minListenersCount, artistId, approvalStatuses);
+        AlbumSearchParams expectedParams = new AlbumSearchParams(search, minPlayCount, minListenersCount, artistId, approvalStatuses, null);
         when(albumService.findAll(any(AlbumSearchParams.class), eq(pageable)))
             .thenReturn(dtoPage);
 
         // when
-        Page<LastfmAlbumResponseDto> result = controller.getAlbums(search, minPlayCount, minListenersCount, artistId, approvalStatuses, pageable);
+        Page<LastfmAlbumResponseDto> result = controller.getAlbums(search, minPlayCount, minListenersCount, artistId, approvalStatuses, null, pageable);
 
         // then
         assertNotNull(result);
@@ -156,7 +156,7 @@ class LastfmAlbumControllerTest {
             .thenReturn(dtoPage);
 
         // when
-        Page<LastfmAlbumResponseDto> result = controller.getAlbums(null, null, null, null, null, pageable);
+        Page<LastfmAlbumResponseDto> result = controller.getAlbums(null, null, null, null, null, null, pageable);
 
         // then
         assertNotNull(result);

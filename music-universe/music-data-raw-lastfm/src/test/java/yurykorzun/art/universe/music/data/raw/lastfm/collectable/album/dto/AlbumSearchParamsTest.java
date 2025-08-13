@@ -1,4 +1,4 @@
-package yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto;
+package yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.dto;
 
 import org.junit.jupiter.api.Test;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
@@ -8,7 +8,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ArtistSearchParamsTest {
+class AlbumSearchParamsTest {
 
     @Test
     void constructor_shouldCreateInstanceWithAllParameters() {
@@ -16,17 +16,19 @@ class ArtistSearchParamsTest {
         String search = "test";
         Long minPlayCount = 1000L;
         Long minListenersCount = 500L;
+        Long artistId = 123L;
         Set<Integer> approvalStatuses = new HashSet<>();
         approvalStatuses.add(ApprovalStatus.APPROVED.getCode());
-        Long tagId = 123L;
+        Long tagId = 456L;
 
         // When
-        ArtistSearchParams params = new ArtistSearchParams(search, minPlayCount, minListenersCount, approvalStatuses, tagId);
+        AlbumSearchParams params = new AlbumSearchParams(search, minPlayCount, minListenersCount, artistId, approvalStatuses, tagId);
 
         // Then
         assertEquals(search, params.search());
         assertEquals(minPlayCount, params.minPlayCount());
         assertEquals(minListenersCount, params.minListenersCount());
+        assertEquals(artistId, params.artistId());
         assertEquals(approvalStatuses, params.approvalStatuses());
         assertEquals(tagId, params.tagId());
     }
@@ -34,12 +36,13 @@ class ArtistSearchParamsTest {
     @Test
     void constructor_shouldHandleNullParameters() {
         // When
-        ArtistSearchParams params = new ArtistSearchParams(null, null, null, null, null);
+        AlbumSearchParams params = new AlbumSearchParams(null, null, null, null, null, null);
 
         // Then
         assertNull(params.search());
         assertNull(params.minPlayCount());
         assertNull(params.minListenersCount());
+        assertNull(params.artistId());
         assertNull(params.approvalStatuses());
         assertNull(params.tagId());
     }
@@ -48,16 +51,35 @@ class ArtistSearchParamsTest {
     void constructor_shouldHandlePartialParameters() {
         // Given
         String search = "test";
+        Long artistId = 123L;
         
         // When
-        ArtistSearchParams params = new ArtistSearchParams(search, null, null, null, null);
+        AlbumSearchParams params = new AlbumSearchParams(search, null, null, artistId, null, null);
         
         // Then
         assertEquals(search, params.search());
         assertNull(params.minPlayCount());
         assertNull(params.minListenersCount());
+        assertEquals(artistId, params.artistId());
         assertNull(params.approvalStatuses());
         assertNull(params.tagId());
+    }
+    
+    @Test
+    void constructor_shouldHandleTagIdParameter() {
+        // Given
+        Long tagId = 789L;
+        
+        // When
+        AlbumSearchParams params = new AlbumSearchParams(null, null, null, null, null, tagId);
+        
+        // Then
+        assertNull(params.search());
+        assertNull(params.minPlayCount());
+        assertNull(params.minListenersCount());
+        assertNull(params.artistId());
+        assertNull(params.approvalStatuses());
+        assertEquals(tagId, params.tagId());
     }
     
     @Test
@@ -66,11 +88,13 @@ class ArtistSearchParamsTest {
         String search = "test";
         Long minPlayCount = 1000L;
         Long minListenersCount = 500L;
+        Long artistId = 123L;
         Set<Integer> approvalStatuses = new HashSet<>();
         approvalStatuses.add(ApprovalStatus.APPROVED.getCode());
+        Long tagId = 456L;
         
-        ArtistSearchParams params1 = new ArtistSearchParams(search, minPlayCount, minListenersCount, approvalStatuses, null);
-        ArtistSearchParams params2 = new ArtistSearchParams(search, minPlayCount, minListenersCount, approvalStatuses, null);
+        AlbumSearchParams params1 = new AlbumSearchParams(search, minPlayCount, minListenersCount, artistId, approvalStatuses, tagId);
+        AlbumSearchParams params2 = new AlbumSearchParams(search, minPlayCount, minListenersCount, artistId, approvalStatuses, tagId);
         
         // When & Then
         assertEquals(params1, params2);
@@ -80,8 +104,8 @@ class ArtistSearchParamsTest {
     @Test
     void equals_shouldReturnFalse_whenObjectsAreDifferent() {
         // Given
-        ArtistSearchParams params1 = new ArtistSearchParams("test1", 1000L, 500L, null, null);
-        ArtistSearchParams params2 = new ArtistSearchParams("test2", 1000L, 500L, null, null);
+        AlbumSearchParams params1 = new AlbumSearchParams("test1", 1000L, 500L, 123L, null, null);
+        AlbumSearchParams params2 = new AlbumSearchParams("test2", 1000L, 500L, 123L, null, null);
         
         // When & Then
         assertNotEquals(params1, params2);
@@ -90,7 +114,7 @@ class ArtistSearchParamsTest {
     @Test
     void toString_shouldReturnNonEmptyString() {
         // Given
-        ArtistSearchParams params = new ArtistSearchParams("test", 1000L, 500L, null, null);
+        AlbumSearchParams params = new AlbumSearchParams("test", 1000L, 500L, 123L, null, 456L);
         
         // When
         String result = params.toString();
@@ -101,21 +125,7 @@ class ArtistSearchParamsTest {
         assertTrue(result.contains("test"));
         assertTrue(result.contains("1000"));
         assertTrue(result.contains("500"));
-    }
-    
-    @Test
-    void constructor_shouldHandleTagIdParameter() {
-        // Given
-        Long tagId = 456L;
-        
-        // When
-        ArtistSearchParams params = new ArtistSearchParams(null, null, null, null, tagId);
-        
-        // Then
-        assertNull(params.search());
-        assertNull(params.minPlayCount());
-        assertNull(params.minListenersCount());
-        assertNull(params.approvalStatuses());
-        assertEquals(tagId, params.tagId());
+        assertTrue(result.contains("123"));
+        assertTrue(result.contains("456"));
     }
 }

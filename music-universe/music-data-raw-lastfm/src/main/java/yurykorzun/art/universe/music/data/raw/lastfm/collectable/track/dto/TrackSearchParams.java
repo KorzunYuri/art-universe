@@ -10,6 +10,7 @@ public record TrackSearchParams(
         Long minPlayCount,
         Long minListenersCount,
         Long artistId,
-        Set<Integer> approvalStatuses
+        Set<Integer> approvalStatuses,
+        Long tagId
 ) {
 }

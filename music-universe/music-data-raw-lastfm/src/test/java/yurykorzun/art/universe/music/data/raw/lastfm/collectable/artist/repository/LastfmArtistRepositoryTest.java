@@ -108,7 +108,7 @@ class LastfmArtistRepositoryTest extends JpaOnlyTest {
         
         // When
         Page<LastfmArtist> result = artistRepository.findArtists(
-            "radio", null, null, null, pageable);
+            "radio", null, null, null, null, pageable);
             
         // Then
         assertEquals(2, result.getTotalElements());
@@ -124,7 +124,7 @@ class LastfmArtistRepositoryTest extends JpaOnlyTest {
         
         // When
         Page<LastfmArtist> result = artistRepository.findArtists(
-            null, 10000L, null, null, pageable);
+            null, 10000L, null, null, null, pageable);
             
         // Then
         assertEquals(2, result.getTotalElements());
@@ -140,7 +140,7 @@ class LastfmArtistRepositoryTest extends JpaOnlyTest {
         
         // When
         Page<LastfmArtist> result = artistRepository.findArtists(
-            null, null, 5000L, null, pageable);
+            null, null, 5000L, null, null, pageable);
             
         // Then
         assertEquals(2, result.getTotalElements());
@@ -157,7 +157,7 @@ class LastfmArtistRepositoryTest extends JpaOnlyTest {
         
         // When
         Page<LastfmArtist> result = artistRepository.findArtists(
-            null, null, null, approvalStatuses, pageable);
+            null, null, null, approvalStatuses, null, pageable);
             
         // Then
         assertEquals(2, result.getTotalElements());
@@ -174,7 +174,7 @@ class LastfmArtistRepositoryTest extends JpaOnlyTest {
         
         // When
         Page<LastfmArtist> result = artistRepository.findArtists(
-            "radio", 10000L, null, approvalStatuses, pageable);
+            "radio", 10000L, null, approvalStatuses, null, pageable);
             
         // Then
         assertEquals(1, result.getTotalElements());
@@ -190,7 +190,7 @@ class LastfmArtistRepositoryTest extends JpaOnlyTest {
         
         // When
         Page<LastfmArtist> result = artistRepository.findArtists(
-            null, null, null, null, pageable);
+            null, null, null, null, null, pageable);
             
         // Then
         assertEquals(3, result.getTotalElements());
@@ -211,7 +211,7 @@ class LastfmArtistRepositoryTest extends JpaOnlyTest {
         
         // When
         Page<LastfmArtist> firstPage = artistRepository.findArtists(
-            null, null, null, null, firstPageable);
+            null, null, null, null, null, firstPageable);
             
         // Then
         assertEquals(5, firstPage.getTotalElements()); // Total of 5 artists
@@ -221,14 +221,14 @@ class LastfmArtistRepositoryTest extends JpaOnlyTest {
         // Check second page
         Pageable secondPageable = PageRequest.of(1, 2, Sort.by("name"));
         Page<LastfmArtist> secondPage = artistRepository.findArtists(
-            null, null, null, null, secondPageable);
+            null, null, null, null, null, secondPageable);
             
         assertEquals(2, secondPage.getContent().size()); // Second page has 2 artists
         
         // Check third page
         Pageable thirdPageable = PageRequest.of(2, 2, Sort.by("name"));
         Page<LastfmArtist> thirdPage = artistRepository.findArtists(
-            null, null, null, null, thirdPageable);
+            null, null, null, null, null, thirdPageable);
             
         assertEquals(1, thirdPage.getContent().size()); // Third page has 1 artist
     }
@@ -241,7 +241,7 @@ class LastfmArtistRepositoryTest extends JpaOnlyTest {
         
         // When
         Page<LastfmArtist> result = artistRepository.findArtists(
-            null, null, null, null, pageable);
+            null, null, null, null, null, pageable);
             
         // Then
         assertEquals(3, result.getTotalElements());
@@ -260,21 +260,21 @@ class LastfmArtistRepositoryTest extends JpaOnlyTest {
         
         // When - search with lowercase
         Page<LastfmArtist> result1 = artistRepository.findArtists(
-            "radio", null, null, null, pageable);
+            "radio", null, null, null, null, pageable);
             
         // Then
         assertEquals(2, result1.getTotalElements());
         
         // When - search with uppercase
         Page<LastfmArtist> result2 = artistRepository.findArtists(
-            "RADIO", null, null, null, pageable);
+            "RADIO", null, null, null, null, pageable);
             
         // Then
         assertEquals(2, result2.getTotalElements());
         
         // When - search with mixed case
         Page<LastfmArtist> result3 = artistRepository.findArtists(
-            "RaDiO", null, null, null, pageable);
+            "RaDiO", null, null, null, null, pageable);
             
         // Then
         assertEquals(2, result3.getTotalElements());
@@ -288,7 +288,7 @@ class LastfmArtistRepositoryTest extends JpaOnlyTest {
         
         // When
         Page<LastfmArtist> result = artistRepository.findArtists(
-            null, null, null, approvalStatuses, pageable);
+            null, null, null, approvalStatuses, null, pageable);
             
         // Then
         assertEquals(3, result.getTotalElements());

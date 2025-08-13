@@ -32,5 +32,6 @@
     <include file="changelogs/0025-maintenance-improvements.xml" relativeToChangelogFile="true"/>
     <include file="changelogs/0026-entity-blacklist.xml" relativeToChangelogFile="true"/>
     <include file="changelogs/0027-maintenance.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0028-tag-search-optimization.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

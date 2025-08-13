@@ -178,7 +178,7 @@ class LastfmTrackRepositoryTest extends JpaOnlyTest {
         
         // Execute query
         Page<LastfmTrack> result = trackRepository.findTracks(
-            null, null, null, null, Collections.emptyList(), pageable);
+            null, null, null, null, Collections.emptyList(), null, pageable);
             
         // Verify results
         List<LastfmTrack> sortedTracks = result.getContent();
@@ -200,7 +200,7 @@ class LastfmTrackRepositoryTest extends JpaOnlyTest {
         
         // Execute query
         Page<LastfmTrack> result = trackRepository.findTracks(
-            null, null, null, null, Collections.emptyList(), pageable);
+            null, null, null, null, Collections.emptyList(), null, pageable);
             
         // Verify results
         List<LastfmTrack> sortedTracks = result.getContent();
@@ -222,7 +222,7 @@ class LastfmTrackRepositoryTest extends JpaOnlyTest {
         
         // Execute query
         Page<LastfmTrack> result = trackRepository.findTracks(
-            null, null, null, null, Collections.emptyList(), pageable);
+            null, null, null, null, Collections.emptyList(), null, pageable);
             
         // Verify results
         List<LastfmTrack> sortedTracks = result.getContent();
@@ -242,7 +242,7 @@ class LastfmTrackRepositoryTest extends JpaOnlyTest {
         
         // Execute query
         Page<LastfmTrack> result = trackRepository.findTracks(
-            null, null, null, null, Collections.emptyList(), pageable);
+            null, null, null, null, Collections.emptyList(), null, pageable);
             
         // Verify results
         List<LastfmTrack> sortedTracks = result.getContent();

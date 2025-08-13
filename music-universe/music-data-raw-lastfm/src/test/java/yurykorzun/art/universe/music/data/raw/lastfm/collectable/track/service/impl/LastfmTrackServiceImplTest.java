@@ -160,7 +160,7 @@ class LastfmTrackServiceImplTest {
         Set<Integer> approvalStatusCodes = Set.of(ApprovalStatus.APPROVED.getCode());
         List<ApprovalStatus> approvalStatuses = CodedRegistry.getByCodes(approvalStatusCodes, ApprovalStatus.class);
         
-        TrackSearchParams params = new TrackSearchParams(search, minPlayCount, minListenersCount, artistId, approvalStatusCodes);
+        TrackSearchParams params = new TrackSearchParams(search, minPlayCount, minListenersCount, artistId, approvalStatusCodes, null);
         Pageable pageable = PageRequest.of(0, 10);
         
         LastfmArtist artist = EntityCreationHelper.createArtist(b -> b.id(artistId));
@@ -176,6 +176,7 @@ class LastfmTrackServiceImplTest {
             eq(minListenersCount),
             eq(artistId),
             eq(approvalStatuses),
+            eq(params.tagId()),
             eq(pageable)
         )).thenReturn(trackPage);
         
@@ -198,6 +199,7 @@ class LastfmTrackServiceImplTest {
             eq(minListenersCount),
             eq(artistId),
             eq(approvalStatuses),
+            eq(params.tagId()),
             eq(pageable)
         );
     }
@@ -205,7 +207,7 @@ class LastfmTrackServiceImplTest {
     @Test
     void findAll_withNullParams_shouldCallRepositoryWithNullValues() {
         // Given
-        TrackSearchParams params = new TrackSearchParams(null, null, null, null, null);
+        TrackSearchParams params = new TrackSearchParams(null, null, null, null, null, null);
         Pageable pageable = PageRequest.of(0, 10);
         List<ApprovalStatus> expectedApprovalStatuses = Collections.emptyList();
 
@@ -222,6 +224,7 @@ class LastfmTrackServiceImplTest {
             eq(null),
             eq(null),
             eq(expectedApprovalStatuses),
+            eq(params.tagId()),
             eq(pageable)
         )).thenReturn(trackPage);
         
@@ -244,6 +247,7 @@ class LastfmTrackServiceImplTest {
             eq(null),
             eq(null),
             eq(expectedApprovalStatuses),
+            eq(params.tagId()),
             eq(pageable)
         );
     }

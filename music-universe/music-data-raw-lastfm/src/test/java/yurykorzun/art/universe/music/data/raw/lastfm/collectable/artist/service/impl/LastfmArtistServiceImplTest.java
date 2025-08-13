@@ -199,7 +199,7 @@ class LastfmArtistServiceImplTest {
         Set<Integer> approvalStatusCodes = Set.of(ApprovalStatus.APPROVED.getCode());
         List<ApprovalStatus> approvalStatuses = getApprovalStatusesFromCodes(approvalStatusCodes);
         
-        ArtistSearchParams params = new ArtistSearchParams(search, minPlayCount, minListenersCount, approvalStatusCodes);
+        ArtistSearchParams params = new ArtistSearchParams(search, minPlayCount, minListenersCount, approvalStatusCodes, null);
         Pageable pageable = PageRequest.of(0, 10);
         
         List<LastfmArtist> artists = List.of(createArtist(), createArtist());
@@ -210,6 +210,7 @@ class LastfmArtistServiceImplTest {
             eq(minPlayCount), 
             eq(minListenersCount), 
             eq(approvalStatuses),
+            eq(params.tagId()),
             eq(pageable)
         )).thenReturn(artistPage);
         
@@ -224,6 +225,7 @@ class LastfmArtistServiceImplTest {
             eq(minPlayCount), 
             eq(minListenersCount), 
             eq(approvalStatuses),
+            eq(params.tagId()),
             eq(pageable)
         );
     }
@@ -231,7 +233,7 @@ class LastfmArtistServiceImplTest {
     @Test
     void findAll_withNullParams_shouldCallRepositoryWithNullValues() {
         // Given
-        ArtistSearchParams params = new ArtistSearchParams(null, null, null, null);
+        ArtistSearchParams params = new ArtistSearchParams(null, null, null, null, null);
         Pageable pageable = PageRequest.of(0, 10);
         List<ApprovalStatus> expectedApprovalStatuses = Collections.emptyList();
 
@@ -243,6 +245,7 @@ class LastfmArtistServiceImplTest {
             eq(null), 
             eq(null), 
             eq(expectedApprovalStatuses),
+            eq(params.tagId()),
             eq(pageable)
         )).thenReturn(artistPage);
         
@@ -257,6 +260,7 @@ class LastfmArtistServiceImplTest {
             eq(null), 
             eq(null), 
             eq(expectedApprovalStatuses),
+            eq(params.tagId()),
             eq(pageable)
         );
     }

@@ -50,6 +50,7 @@ class LastfmArtistControllerTest {
         Long minListenersCount = 500L;
         Set<Integer> approvalStatuses = new HashSet<>();
         approvalStatuses.add(ApprovalStatus.APPROVED.getCode());
+        Long tagId = 123L;
         Pageable pageable = PageRequest.of(0, 2, Sort.by("name"));
 
         LastfmArtist artist1 = LastfmArtist.builder()
@@ -78,12 +79,12 @@ class LastfmArtistControllerTest {
         Page<LastfmArtist> artistPage = new PageImpl<>(artistList, pageable, artistList.size());
         Page<LastfmArtistResponseDto> dtoPage = artistPage.map(LastfmArtistResponseDto::from);
 
-        ArtistSearchParams expectedParams = new ArtistSearchParams(search, minPlayCount, minListenersCount, approvalStatuses);
+        ArtistSearchParams expectedParams = new ArtistSearchParams(search, minPlayCount, minListenersCount, approvalStatuses, tagId);
         when(artistService.findAll(eq(expectedParams), eq(pageable)))
             .thenReturn(dtoPage);
 
         // when
-        Page<LastfmArtistResponseDto> result = controller.getArtists(search, minPlayCount, minListenersCount, approvalStatuses, pageable);
+        Page<LastfmArtistResponseDto> result = controller.getArtists(search, minPlayCount, minListenersCount, approvalStatuses, tagId, pageable);
 
         // then
         assertNotNull(result);
@@ -107,7 +108,7 @@ class LastfmArtistControllerTest {
             .thenReturn(dtoPage);
 
         // when
-        Page<LastfmArtistResponseDto> result = controller.getArtists(null, null, null, null, pageable);
+        Page<LastfmArtistResponseDto> result = controller.getArtists(null, null, null, null, null, pageable);
 
         // then
         assertNotNull(result);

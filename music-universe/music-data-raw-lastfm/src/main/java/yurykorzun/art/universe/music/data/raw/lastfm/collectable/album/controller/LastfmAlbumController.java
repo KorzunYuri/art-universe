@@ -31,9 +31,10 @@ public class LastfmAlbumController {
         @RequestParam(required = false) Long minListenersCount,
         @RequestParam(required = false) Long artistId,
         @RequestParam(required = false) Set<Integer> approvalStatuses,
+        @RequestParam(required = false) Long tagId,
         @PageableDefault(size = 20, sort = "name") Pageable pageable
     ) {
-        AlbumSearchParams params = new AlbumSearchParams(search, minPlayCount, minListenersCount, artistId, approvalStatuses);
+        AlbumSearchParams params = new AlbumSearchParams(search, minPlayCount, minListenersCount, artistId, approvalStatuses, tagId);
         return albumService.findAll(params, pageable);
     }
 

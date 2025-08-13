@@ -83,11 +83,16 @@ public interface LastfmArtistRepository extends JpaRepository<LastfmArtist, Long
             AND ((LOWER(a.name)  LIKE LOWER(CONCAT('%', :search, '%'))) OR :search  IS NULL)
             AND (:minPlayCount          IS NULL     OR a.playCount >= :minPlayCount)
             AND (:minListenersCount     IS NULL     OR a.listenersCount >= :minListenersCount)
+            AND (:tagId IS NULL OR EXISTS (
+                SELECT 1 FROM artist_tag at 
+                WHERE at.artist.id = a.id AND at.tag.id = :tagId
+            ))
         """)
     Page<LastfmArtist> findArtistsWithoutApprovalStatus(
         @Nullable @Param("search")              String search,
         @Nullable @Param("minPlayCount")        Long minPlayCount,
         @Nullable @Param("minListenersCount")   Long minListenersCount,
+        @Nullable @Param("tagId")               Long tagId,
         Pageable pageable);
 
     @Query(value = """
@@ -98,12 +103,17 @@ public interface LastfmArtistRepository extends JpaRepository<LastfmArtist, Long
             AND (:minPlayCount          IS NULL     OR a.playCount >= :minPlayCount)
             AND (:minListenersCount     IS NULL     OR a.listenersCount >= :minListenersCount)
             AND a.approvalStatus IN (:approvalStatuses)
+            AND (:tagId IS NULL OR EXISTS (
+                SELECT 1 FROM artist_tag at 
+                WHERE at.artist.id = a.id AND at.tag.id = :tagId
+            ))
         """)
     Page<LastfmArtist> findArtistsWithApprovalStatus(
         @Nullable @Param("search")              String search,
         @Nullable @Param("minPlayCount")        Long minPlayCount,
         @Nullable @Param("minListenersCount")   Long minListenersCount,
         @Param("approvalStatuses")              List<ApprovalStatus> approvalStatuses,
+        @Nullable @Param("tagId")               Long tagId,
         Pageable pageable);
 
     /**
@@ -122,12 +132,13 @@ public interface LastfmArtistRepository extends JpaRepository<LastfmArtist, Long
         Long minPlayCount,
         Long minListenersCount,
         List<ApprovalStatus> approvalStatuses,
+        Long tagId,
         Pageable pageable
     ) {
         if (approvalStatuses == null || approvalStatuses.isEmpty()) {
-            return findArtistsWithoutApprovalStatus(search, minPlayCount, minListenersCount, pageable);
+            return findArtistsWithoutApprovalStatus(search, minPlayCount, minListenersCount, tagId, pageable);
         } else {
-            return findArtistsWithApprovalStatus(search, minPlayCount, minListenersCount, approvalStatuses, pageable);
+            return findArtistsWithApprovalStatus(search, minPlayCount, minListenersCount, approvalStatuses, tagId, pageable);
         }
     }
 

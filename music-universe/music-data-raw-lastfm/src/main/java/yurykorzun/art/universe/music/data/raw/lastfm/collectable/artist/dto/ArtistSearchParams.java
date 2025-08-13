@@ -9,6 +9,7 @@ public record ArtistSearchParams(
         String search,
         Long minPlayCount,
         Long minListenersCount,
-        Set<Integer> approvalStatuses
+        Set<Integer> approvalStatuses,
+        Long tagId
 ) {
 }

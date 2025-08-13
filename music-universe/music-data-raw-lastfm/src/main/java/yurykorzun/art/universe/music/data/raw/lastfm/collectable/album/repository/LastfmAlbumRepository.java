@@ -27,12 +27,17 @@ public interface LastfmAlbumRepository extends JpaRepository<LastfmAlbum, Long> 
             AND (:minPlayCount          IS NULL     OR a.playCount >= :minPlayCount)
             AND (:minListenersCount     IS NULL     OR a.listenersCount >= :minListenersCount)
             AND (:artistId              IS NULL     OR a.artist.id = :artistId)
+            AND (:tagId IS NULL OR EXISTS (
+                SELECT 1 FROM album_tag at 
+                WHERE at.album.id = a.id AND at.tag.id = :tagId
+            ))
         """)
     Page<LastfmAlbum> findAlbumsWithoutApprovalStatus(
         @Nullable @Param("search")              String search,
         @Nullable @Param("minPlayCount")        Long minPlayCount,
         @Nullable @Param("minListenersCount")   Long minListenersCount,
         @Nullable @Param("artistId")            Long artistId,
+        @Nullable @Param("tagId")               Long tagId,
         Pageable pageable);
 
     @Query(value = """
@@ -45,6 +50,10 @@ public interface LastfmAlbumRepository extends JpaRepository<LastfmAlbum, Long> 
             AND (:minListenersCount     IS NULL     OR a.listenersCount >= :minListenersCount)
             AND (:artistId              IS NULL     OR a.artist.id = :artistId)
             AND a.approvalStatus IN (:approvalStatuses)
+            AND (:tagId IS NULL OR EXISTS (
+                SELECT 1 FROM album_tag at 
+                WHERE at.album.id = a.id AND at.tag.id = :tagId
+            ))
         """)
     Page<LastfmAlbum> findAlbumsWithApprovalStatus(
         @Nullable @Param("search")              String search,
@@ -52,6 +61,7 @@ public interface LastfmAlbumRepository extends JpaRepository<LastfmAlbum, Long> 
         @Nullable @Param("minListenersCount")   Long minListenersCount,
         @Nullable @Param("artistId")            Long artistId,
         @Param("approvalStatuses")              List<ApprovalStatus> approvalStatuses,
+        @Nullable @Param("tagId")               Long tagId,
         Pageable pageable);
 
     /**
@@ -67,12 +77,13 @@ public interface LastfmAlbumRepository extends JpaRepository<LastfmAlbum, Long> 
         Long minListenersCount,
         Long artistId,
         List<ApprovalStatus> approvalStatuses,
+        Long tagId,
         Pageable pageable
     ) {
         if (approvalStatuses == null || approvalStatuses.isEmpty()) {
-            return findAlbumsWithoutApprovalStatus(search, minPlayCount, minListenersCount, artistId, pageable);
+            return findAlbumsWithoutApprovalStatus(search, minPlayCount, minListenersCount, artistId, tagId, pageable);
         } else {
-            return findAlbumsWithApprovalStatus(search, minPlayCount, minListenersCount, artistId, approvalStatuses, pageable);
+            return findAlbumsWithApprovalStatus(search, minPlayCount, minListenersCount, artistId, approvalStatuses, tagId, pageable);
         }
     }
 

@@ -65,6 +65,7 @@ public class LastfmTrackServiceImpl implements LastfmTrackService {
                 params.minListenersCount(),
                 params.artistId(),
                 approvalStatuses,
+                params.tagId(),
                 pageable);
         return tracksPage.map(LastfmTrackResponseDto::from);
     }
