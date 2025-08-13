@@ -1,9 +1,13 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.repository;
 
+import jakarta.annotation.Nullable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.entity.LastfmAlbum;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 
@@ -13,6 +17,64 @@ import java.util.List;
 public interface LastfmAlbumRepository extends JpaRepository<LastfmAlbum, Long> {
 
     List<LastfmAlbum> findAllByUrlIn(List<String> urls);
+
+    @Query(value = """
+        SELECT  a
+        FROM    album a
+        LEFT JOIN FETCH a.artist
+        WHERE   1=1
+            AND ((LOWER(a.name)  LIKE LOWER(CONCAT('%', :search, '%'))) OR :search  IS NULL)
+            AND (:minPlayCount          IS NULL     OR a.playCount >= :minPlayCount)
+            AND (:minListenersCount     IS NULL     OR a.listenersCount >= :minListenersCount)
+            AND (:artistId              IS NULL     OR a.artist.id = :artistId)
+        """)
+    Page<LastfmAlbum> findAlbumsWithoutApprovalStatus(
+        @Nullable @Param("search")              String search,
+        @Nullable @Param("minPlayCount")        Long minPlayCount,
+        @Nullable @Param("minListenersCount")   Long minListenersCount,
+        @Nullable @Param("artistId")            Long artistId,
+        Pageable pageable);
+
+    @Query(value = """
+        SELECT  a
+        FROM    album a
+        LEFT JOIN FETCH a.artist
+        WHERE   1=1
+            AND ((LOWER(a.name)  LIKE LOWER(CONCAT('%', :search, '%'))) OR :search  IS NULL)
+            AND (:minPlayCount          IS NULL     OR a.playCount >= :minPlayCount)
+            AND (:minListenersCount     IS NULL     OR a.listenersCount >= :minListenersCount)
+            AND (:artistId              IS NULL     OR a.artist.id = :artistId)
+            AND a.approvalStatus IN (:approvalStatuses)
+        """)
+    Page<LastfmAlbum> findAlbumsWithApprovalStatus(
+        @Nullable @Param("search")              String search,
+        @Nullable @Param("minPlayCount")        Long minPlayCount,
+        @Nullable @Param("minListenersCount")   Long minListenersCount,
+        @Nullable @Param("artistId")            Long artistId,
+        @Param("approvalStatuses")              List<ApprovalStatus> approvalStatuses,
+        Pageable pageable);
+
+    /**
+     * A wrapper for findAlbums for correct collection parameters resolution.
+     * This implementation avoids Hibernate bugs with:
+     * 1. Null String parameters being recognized as bytea
+     * 2. Empty collections handling
+     * 3. Ensures null values are sorted last for numeric fields
+     */
+    default Page<LastfmAlbum> findAlbums(
+        String search,
+        Long minPlayCount,
+        Long minListenersCount,
+        Long artistId,
+        List<ApprovalStatus> approvalStatuses,
+        Pageable pageable
+    ) {
+        if (approvalStatuses == null || approvalStatuses.isEmpty()) {
+            return findAlbumsWithoutApprovalStatus(search, minPlayCount, minListenersCount, artistId, pageable);
+        } else {
+            return findAlbumsWithApprovalStatus(search, minPlayCount, minListenersCount, artistId, approvalStatuses, pageable);
+        }
+    }
 
     /**
      * Find albums with missing playCount and listenersCount that haven't been processed by album.getInfo yet.
