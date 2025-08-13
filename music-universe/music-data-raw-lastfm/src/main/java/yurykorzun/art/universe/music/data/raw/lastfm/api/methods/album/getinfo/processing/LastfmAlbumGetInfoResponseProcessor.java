@@ -7,12 +7,10 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.album.getinfo.dto.*;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.EntityDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingResult;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiResponseProcessor;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityFactory;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityMappingResult;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandlerFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.service.DtoQualityService;
@@ -21,7 +19,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.service.L
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.entity.LastfmAlbumTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.entity.LastfmAlbumTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.entity.LastfmArtistTrack;
@@ -182,7 +179,7 @@ public class LastfmAlbumGetInfoResponseProcessor extends LastfmApiResponseProces
 
         // Step 6: Process tags if available
         if (hasTags(albumDto)) {
-            processAlbumTags(updatedAlbum, albumDto.getTags().getTag(), sourceApiCall);
+            processAlbumTags(updatedAlbum, albumDto.getTags().getTags(), sourceApiCall);
         } else {
             log.info("Album {} has no tags, skipping tag processing", albumDto.getName());
         }
@@ -196,8 +193,8 @@ public class LastfmAlbumGetInfoResponseProcessor extends LastfmApiResponseProces
     
     private static boolean hasTags(AlbumGetInfoAlbumDto albumDto) {
         return albumDto.getTags() != null 
-            && albumDto.getTags().getTag() != null 
-            && !albumDto.getTags().getTag().isEmpty();
+            && albumDto.getTags().getTags() != null
+            && !albumDto.getTags().getTags().isEmpty();
     }
 
     private void validateRootDto(AlbumGetInfoDtoRoot dtoRoot, LastfmApiResponse sourceApiResponse) {

@@ -55,7 +55,7 @@ public class AlbumGetInfoDtoMappingTest {
         // Check tags
         AlbumGetInfoTagsDto tagsObject = album.getTags();
         assertNotNull(tagsObject);
-        List<AlbumGetInfoTagDto> tags = tagsObject.getTag();
+        List<AlbumGetInfoTagDto> tags = tagsObject.getTags();
         assertNotNull(tags);
         assertFalse(tags.isEmpty());
         

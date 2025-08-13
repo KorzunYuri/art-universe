@@ -1,0 +1,42 @@
+{
+  "album": {
+    "artist": "Disturbed",
+    "listeners": "11341",
+    "image": [
+      {
+        "size": "small",
+        "#text": "https://lastfm.freetls.fastly.net/i/u/34s/ce663cff36c31e600aad2af07fb2d607.jpg"
+      }
+    ],
+    "tracks": {
+      "track": {
+        "streamable": {
+          "fulltrack": "0",
+          "#text": "0"
+        },
+        "duration": 274,
+        "url": "https://www.last.fm/music/Disturbed/If+I+Ever+Lose+My+Faith+in+You/If+I+Ever+Lose+My+Faith+in+You",
+        "name": "If I Ever Lose My Faith in You",
+        "@attr": {
+          "rank": 1
+        },
+        "artist": {
+          "url": "https://www.last.fm/music/Disturbed",
+          "name": "Disturbed",
+          "mbid": ""
+        }
+      }
+    },
+    "tags": {
+      "tag": [
+        {
+          "url": "https://www.last.fm/tag/hard+rock",
+          "name": "hard rock"
+        }
+      ]
+    },
+    "name": "If I Ever Lose My Faith in You",
+    "playcount": "48358",
+    "url": "https://www.last.fm/music/Disturbed/If+I+Ever+Lose+My+Faith+in+You"
+  }
+}

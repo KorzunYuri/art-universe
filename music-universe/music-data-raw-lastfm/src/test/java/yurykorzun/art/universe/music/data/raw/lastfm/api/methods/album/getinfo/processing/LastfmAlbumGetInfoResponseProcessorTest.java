@@ -215,7 +215,7 @@ class LastfmAlbumGetInfoResponseProcessorTest extends JpaOnlyTest {
             "Artist-track relationships should be created");
         
         // Verify tags were created
-        int expectedTagsCount = dtoRoot.getAlbum().getTags().getTag().size();
+        int expectedTagsCount = dtoRoot.getAlbum().getTags().getTags().size();
         assertEquals(expectedTagsCount, tagRepository.count() - initialTagCount, "All tags should be saved to database");
         
         // Verify album-tag relationships were created
@@ -290,7 +290,7 @@ class LastfmAlbumGetInfoResponseProcessorTest extends JpaOnlyTest {
         // Create a modified response with empty tags
         ObjectMapper objectMapper = new ObjectMapper();
         AlbumGetInfoDtoRoot modifiedDtoRoot = objectMapper.readValue(responseJsonString, AlbumGetInfoDtoRoot.class);
-        modifiedDtoRoot.getAlbum().getTags().setTag(List.of()); // Set empty tags list
+        modifiedDtoRoot.getAlbum().getTags().setTags(List.of()); // Set empty tags list
         String modifiedResponse = objectMapper.writeValueAsString(modifiedDtoRoot);
         
         // Create existing album
@@ -607,7 +607,7 @@ class LastfmAlbumGetInfoResponseProcessorTest extends JpaOnlyTest {
             "Artist-track relationships should be created");
 
         // Verify tags were created
-        int expectedTagsCount = dtoRoot.getAlbum().getTags().getTag().size();
+        int expectedTagsCount = dtoRoot.getAlbum().getTags().getTags().size();
         assertEquals(expectedTagsCount, tagRepository.count() - initialTagCount, "All tags should be saved to database");
 
         // Verify album-tag relationships were created
