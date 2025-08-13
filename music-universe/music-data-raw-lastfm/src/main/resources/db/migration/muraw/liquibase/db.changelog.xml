@@ -31,5 +31,6 @@
     <include file="changelogs/0024-add-artist-id-to-album.xml" relativeToChangelogFile="true"/>
     <include file="changelogs/0025-maintenance-improvements.xml" relativeToChangelogFile="true"/>
     <include file="changelogs/0026-entity-blacklist.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0027-maintenance.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
