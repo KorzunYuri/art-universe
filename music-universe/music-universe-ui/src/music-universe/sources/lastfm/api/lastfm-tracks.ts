@@ -37,4 +37,5 @@ export interface LastfmTracksPageSearchParams extends BaseLastfmPageSearchParams
     minPlayCount?: number;
     minListenersCount?: number;
     artistId?: number;
+    tagId?: number;
 }

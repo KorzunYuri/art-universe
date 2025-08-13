@@ -1,6 +1,7 @@
 // hooks
 import { useLastfmEntityTable } from "@/music-universe/sources/lastfm/hooks/useLastfmEntityTable";
-import { useApprovalStatusFilter, useCountFilters } from "@/music-universe/shared/hooks/useAdditionalSearchFields";
+import { useApprovalStatusFilter } from "@/music-universe/sources/shared/hooks";
+import { usePlayCountFilter, useListenersCountFilter, useTagIdFilter } from "@/music-universe/sources/lastfm/hooks/useLastfmFilters";
 // components
 import { EntityTable, type EntityTableColumn } from "@/music-universe/shared/components/EntityTable/EntityTable";
 import { LastfmArtistsTableRow } from "@/music-universe/sources/lastfm/components";
@@ -35,26 +36,19 @@ export const LastfmArtistsTable = () => {
         refresh
     } = useLastfmEntityTable("artist");
 
-    // Additional search fields
-    const { 
-        approvalStatuses, 
-        approvalStatusField 
-    } = useApprovalStatusFilter();
-    
-    const { 
-        minPlayCount, 
-        minListenersCount,
-        minPlayCountField,
-        minListenersCountField 
-    } = useCountFilters();
+    // Filter hooks
+    const { approvalStatuses, approvalStatusField } = useApprovalStatusFilter();
+    const { minPlayCount, minPlayCountField } = usePlayCountFilter();
+    const { minListenersCount, minListenersCountField } = useListenersCountFilter();
+    const { tagId, tagIdField } = useTagIdFilter();
 
     // Handle search submit with additional parameters
     const handleSearchSubmit = () => {
-        // Update params with additional search criteria
         updateParams({
             approvalStatuses: approvalStatuses.length > 0 ? approvalStatuses : undefined,
             minPlayCount: minPlayCount || undefined,
             minListenersCount: minListenersCount || undefined,
+            tagId: tagId || undefined,
         });
     };
 
@@ -65,6 +59,7 @@ export const LastfmArtistsTable = () => {
         fields: [
             minPlayCountField,
             minListenersCountField,
+            tagIdField,
             approvalStatusField
         ]
     };

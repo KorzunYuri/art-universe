@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import type { SearchField } from '@/music-universe/shared/components/EntityTable/types';
 
 /**
@@ -104,6 +104,32 @@ export function useAdditionalSearchFields() {
     }), []);
 
     /**
+     * Creates a typed multi-select search field for numbers only
+     */
+    const createNumberMultiSelectField = useCallback((
+        key: string,
+        label: string,
+        value: number[],
+        onChange: (value: number[]) => void,
+        options: Array<{ value: number; label: string }>,
+        fieldOptions?: {
+            disabled?: boolean;
+        }
+    ): SearchField => ({
+        type: 'multiselect',
+        key,
+        label,
+        value,
+        onChange: (newValue: (string | number)[]) => {
+            // Filter and convert to numbers only
+            const numberValues = newValue.filter((v): v is number => typeof v === 'number');
+            onChange(numberValues);
+        },
+        options,
+        disabled: fieldOptions?.disabled
+    }), []);
+
+    /**
      * Creates a custom search field
      */
     const createCustomField = useCallback((
@@ -126,73 +152,7 @@ export function useAdditionalSearchFields() {
         createTextField,
         createSelectField,
         createMultiSelectField,
+        createNumberMultiSelectField,
         createCustomField
-    };
-}
-
-/**
- * Hook for managing approval status filter
- * Common pattern across LastFM tables
- */
-export function useApprovalStatusFilter() {
-    const [approvalStatuses, setApprovalStatuses] = useState<number[]>([]);
-    
-    const { createMultiSelectField } = useAdditionalSearchFields();
-    
-    const approvalStatusOptions = [
-        { value: 1, label: 'Pending' },
-        { value: 2, label: 'Approved' },
-        { value: 3, label: 'Declined' },
-        { value: 4, label: 'Auto-approved' }
-    ];
-    
-    const approvalStatusField = createMultiSelectField(
-        'approvalStatuses',
-        'Approval Status',
-        approvalStatuses,
-        setApprovalStatuses,
-        approvalStatusOptions
-    );
-    
-    return {
-        approvalStatuses,
-        setApprovalStatuses,
-        approvalStatusField
-    };
-}
-
-/**
- * Hook for managing count filters (play count, listeners count)
- * Common pattern across LastFM tables
- */
-export function useCountFilters() {
-    const [minPlayCount, setMinPlayCount] = useState<number | ''>('');
-    const [minListenersCount, setMinListenersCount] = useState<number | ''>('');
-    
-    const { createNumberField } = useAdditionalSearchFields();
-    
-    const minPlayCountField = createNumberField(
-        'minPlayCount',
-        'Min Play Count',
-        minPlayCount,
-        setMinPlayCount,
-        { placeholder: 'e.g. 1000', min: 0 }
-    );
-    
-    const minListenersCountField = createNumberField(
-        'minListenersCount',
-        'Min Listeners Count',
-        minListenersCount,
-        setMinListenersCount,
-        { placeholder: 'e.g. 500', min: 0 }
-    );
-    
-    return {
-        minPlayCount,
-        setMinPlayCount,
-        minListenersCount,
-        setMinListenersCount,
-        minPlayCountField,
-        minListenersCountField
     };
 }

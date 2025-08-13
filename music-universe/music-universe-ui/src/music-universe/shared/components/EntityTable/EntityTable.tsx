@@ -1,4 +1,4 @@
-import { ReactNode, useState } from 'react';
+import {type ReactNode, useState } from 'react';
 import { Pagination } from '../Pagination';
 import { AdditionalSearchFields } from './AdditionalSearchFields';
 import type { AdditionalSearchConfig } from './types';

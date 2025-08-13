@@ -32,4 +32,5 @@ export function createLastfmArtistFromDto(dto: LastfmArtistDto, masterEntity?: A
 export interface LastfmArtistsPageSearchParams extends BaseLastfmPageSearchParams {
     minPlayCount?: number;
     minListenersCount?: number;
+    tagId?: number;
 }

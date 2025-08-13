@@ -1,6 +1,7 @@
 // hooks
 import { useLastfmEntityTable } from "@/music-universe/sources/lastfm/hooks/useLastfmEntityTable";
-import { useApprovalStatusFilter, useAdditionalSearchFields } from "@/music-universe/shared/hooks/useAdditionalSearchFields";
+import { useApprovalStatusFilter } from "@/music-universe/sources/shared/hooks";
+import { useUsageCountFilter, useUsageUsersCountFilter } from "@/music-universe/sources/lastfm/hooks/useLastfmFilters";
 // components
 import { EntityTable, type EntityTableColumn } from "@/music-universe/shared/components/EntityTable/EntityTable";
 import { LastfmTagsTableRow } from "@/music-universe/sources/lastfm/components";
@@ -8,7 +9,6 @@ import { LastfmTagsTableRow } from "@/music-universe/sources/lastfm/components";
 import type { AdditionalSearchConfig } from "@/music-universe/shared/components/EntityTable/types";
 // styles
 import tagStyles from "./LastfmTagsTable.module.css";
-import { useState } from "react";
 
 const columns: EntityTableColumn[] = [
     { key: 'name', label: 'Tag Name', sortable: true, className: tagStyles.name },
@@ -38,33 +38,10 @@ export const LastfmTagsTable = ({ initialSearch = '' }: LastfmTagsTableProps) =>
         refresh
     } = useLastfmEntityTable("category", { search: initialSearch });
 
-    // Additional search fields
-    const { 
-        approvalStatuses, 
-        approvalStatusField 
-    } = useApprovalStatusFilter();
-    
-    // Usage count filters
-    const [minUsageCount, setMinUsageCount] = useState<number | ''>('');
-    const [minUsageUsersCount, setMinUsageUsersCount] = useState<number | ''>('');
-    
-    const { createNumberField } = useAdditionalSearchFields();
-    
-    const minUsageCountField = createNumberField(
-        'minUsageCount',
-        'Min Usage Count',
-        minUsageCount,
-        setMinUsageCount,
-        { placeholder: 'e.g. 10', min: 0 }
-    );
-    
-    const minUsageUsersCountField = createNumberField(
-        'minUsageUsersCount',
-        'Min Users Count',
-        minUsageUsersCount,
-        setMinUsageUsersCount,
-        { placeholder: 'e.g. 5', min: 0 }
-    );
+    // Filter hooks
+    const { approvalStatuses, approvalStatusField } = useApprovalStatusFilter();
+    const { minUsageCount, minUsageCountField } = useUsageCountFilter();
+    const { minUsageUsersCount, minUsageUsersCountField } = useUsageUsersCountFilter();
 
     const handleSearchSubmit = () => {
         updateParams({
