@@ -8,7 +8,7 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import yurykorzun.art.universe.music.data.master.controller.RelationController;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.entity.EntityType;
+import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.service.RelationService;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -31,16 +31,16 @@ class WebMvcConfigTest {
         String categoryString = "category";
         
         // When
-        EntityType artistType = conversionService.convert(artistString, EntityType.class);
-        EntityType albumType = conversionService.convert(albumString, EntityType.class);
-        EntityType trackType = conversionService.convert(trackString, EntityType.class);
-        EntityType categoryType = conversionService.convert(categoryString, EntityType.class);
+        MasterEntityType artistType = conversionService.convert(artistString, MasterEntityType.class);
+        MasterEntityType albumType = conversionService.convert(albumString, MasterEntityType.class);
+        MasterEntityType trackType = conversionService.convert(trackString, MasterEntityType.class);
+        MasterEntityType categoryType = conversionService.convert(categoryString, MasterEntityType.class);
         
         // Then
-        assertEquals(EntityType.ARTIST, artistType);
-        assertEquals(EntityType.ALBUM, albumType);
-        assertEquals(EntityType.TRACK, trackType);
-        assertEquals(EntityType.CATEGORY, categoryType);
+        assertEquals(MasterEntityType.ARTIST, artistType);
+        assertEquals(MasterEntityType.ALBUM, albumType);
+        assertEquals(MasterEntityType.TRACK, trackType);
+        assertEquals(MasterEntityType.CATEGORY, categoryType);
     }
     
     @Test
@@ -50,12 +50,12 @@ class WebMvcConfigTest {
         String albumString = "Album";
         
         // When
-        EntityType artistType = conversionService.convert(artistString, EntityType.class);
-        EntityType albumType = conversionService.convert(albumString, EntityType.class);
+        MasterEntityType artistType = conversionService.convert(artistString, MasterEntityType.class);
+        MasterEntityType albumType = conversionService.convert(albumString, MasterEntityType.class);
         
         // Then
-        assertEquals(EntityType.ARTIST, artistType);
-        assertEquals(EntityType.ALBUM, albumType);
+        assertEquals(MasterEntityType.ARTIST, artistType);
+        assertEquals(MasterEntityType.ALBUM, albumType);
     }
     
     @Test
@@ -95,7 +95,7 @@ class WebMvcConfigTest {
         
         // When & Then
         ConversionFailedException exception = assertThrows(ConversionFailedException.class, () -> 
-            conversionService.convert(invalidEntityType, EntityType.class));
+            conversionService.convert(invalidEntityType, MasterEntityType.class));
         
         // Verify that the root cause is IllegalArgumentException
         assertTrue(exception.getCause() instanceof IllegalArgumentException);

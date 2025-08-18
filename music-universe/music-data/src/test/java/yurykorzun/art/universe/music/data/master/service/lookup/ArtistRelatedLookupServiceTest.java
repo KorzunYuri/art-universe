@@ -12,10 +12,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedBatchLookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
+import yurykorzun.art.universe.common.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.entity.EntityType;
+import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,8 +44,8 @@ class ArtistRelatedLookupServiceTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = EntityType.class, names = {"TRACK", "ALBUM"})
-    void lookup_shouldBuildCorrectSqlWithArtistJoin(EntityType entityType) {
+    @EnumSource(value = MasterEntityType.class, names = {"TRACK", "ALBUM"})
+    void lookup_shouldBuildCorrectSqlWithArtistJoin(MasterEntityType entityType) {
         // Given
         lookupService = new ArtistRelatedLookupService(entityManager, entityType);
         String searchTerm = "paranoid";
@@ -77,7 +77,7 @@ class ArtistRelatedLookupServiceTest {
     @Test
     void lookup_withExternalArtistId_shouldSetCorrectParameters() {
         // Given
-        lookupService = new ArtistRelatedLookupService(entityManager, EntityType.TRACK);
+        lookupService = new ArtistRelatedLookupService(entityManager, MasterEntityType.TRACK);
         String searchTerm = "paranoid";
         Long externalArtistId = 456L;
         
@@ -104,8 +104,8 @@ class ArtistRelatedLookupServiceTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = EntityType.class, names = {"TRACK", "ALBUM"})
-    void batchLookup_shouldCallLookupForEachRequest(EntityType entityType) {
+    @EnumSource(value = MasterEntityType.class, names = {"TRACK", "ALBUM"})
+    void batchLookup_shouldCallLookupForEachRequest(MasterEntityType entityType) {
         // Given
         lookupService = new ArtistRelatedLookupService(entityManager, entityType);
         
@@ -158,7 +158,7 @@ class ArtistRelatedLookupServiceTest {
     @Test
     void batchLookup_withMixedArtistIdTypes_shouldCreateCorrectQueries() {
         // Given
-        lookupService = new ArtistRelatedLookupService(entityManager, EntityType.TRACK);
+        lookupService = new ArtistRelatedLookupService(entityManager, MasterEntityType.TRACK);
         
         ArtistRelatedLookupRequestDTO request1 = ArtistRelatedLookupRequestDTO.builder()
                 .search("paranoid")
@@ -192,7 +192,7 @@ class ArtistRelatedLookupServiceTest {
     @Test
     void lookup_withEmptySearchTerm_withoutArtistId_shouldReturnEmptyList() {
         // Given
-        lookupService = new ArtistRelatedLookupService(entityManager, EntityType.TRACK);
+        lookupService = new ArtistRelatedLookupService(entityManager, MasterEntityType.TRACK);
         
         ArtistRelatedLookupRequestDTO request = ArtistRelatedLookupRequestDTO.builder()
                 .search("")
@@ -211,7 +211,7 @@ class ArtistRelatedLookupServiceTest {
     @Test
     void lookup_withNullSearchTerm_withoutArtistId_shouldReturnEmptyList() {
         // Given
-        lookupService = new ArtistRelatedLookupService(entityManager, EntityType.TRACK);
+        lookupService = new ArtistRelatedLookupService(entityManager, MasterEntityType.TRACK);
         
         ArtistRelatedLookupRequestDTO request = ArtistRelatedLookupRequestDTO.builder()
                 .search(null)
@@ -230,7 +230,7 @@ class ArtistRelatedLookupServiceTest {
     @Test
     void lookup_withEmptySearchTerm_withMasterArtistId_shouldReturnResults() {
         // Given
-        lookupService = new ArtistRelatedLookupService(entityManager, EntityType.TRACK);
+        lookupService = new ArtistRelatedLookupService(entityManager, MasterEntityType.TRACK);
         
         ArtistRelatedLookupRequestDTO request = ArtistRelatedLookupRequestDTO.builder()
                 .search("")
@@ -256,7 +256,7 @@ class ArtistRelatedLookupServiceTest {
     @Test
     void lookup_withEmptySearchTerm_withExternalArtistId_shouldReturnResults() {
         // Given
-        lookupService = new ArtistRelatedLookupService(entityManager, EntityType.TRACK);
+        lookupService = new ArtistRelatedLookupService(entityManager, MasterEntityType.TRACK);
         
         ArtistRelatedLookupRequestDTO request = ArtistRelatedLookupRequestDTO.builder()
                 .search("")
@@ -282,7 +282,7 @@ class ArtistRelatedLookupServiceTest {
     @Test
     void lookup_withNoSearchTermAndNoArtistId_shouldReturnEmptyList() {
         // Given
-        lookupService = new ArtistRelatedLookupService(entityManager, EntityType.TRACK);
+        lookupService = new ArtistRelatedLookupService(entityManager, MasterEntityType.TRACK);
         
         ArtistRelatedLookupRequestDTO request = ArtistRelatedLookupRequestDTO.builder()
                 .search(null)
@@ -301,7 +301,7 @@ class ArtistRelatedLookupServiceTest {
     @Test
     void batchLookup_withDefaultLimit_shouldUseDefaultLimit() {
         // Given
-        lookupService = new ArtistRelatedLookupService(entityManager, EntityType.TRACK);
+        lookupService = new ArtistRelatedLookupService(entityManager, MasterEntityType.TRACK);
         
         ArtistRelatedLookupRequestDTO request = ArtistRelatedLookupRequestDTO.builder()
                 .search("test")
@@ -328,7 +328,7 @@ class ArtistRelatedLookupServiceTest {
     @Test
     void lookup_withExternalArtistIdButNullDataSource_shouldThrowException() {
         // Given
-        lookupService = new ArtistRelatedLookupService(entityManager, EntityType.TRACK);
+        lookupService = new ArtistRelatedLookupService(entityManager, MasterEntityType.TRACK);
         
         ArtistRelatedLookupRequestDTO request = ArtistRelatedLookupRequestDTO.builder()
                 .search("test")
@@ -346,7 +346,7 @@ class ArtistRelatedLookupServiceTest {
     @ValueSource(ints = {0, -1, Integer.MIN_VALUE})
     void lookup_withInvalidLimit_shouldThrowException(int invalidLimit) {
         // Given
-        lookupService = new ArtistRelatedLookupService(entityManager, EntityType.TRACK);
+        lookupService = new ArtistRelatedLookupService(entityManager, MasterEntityType.TRACK);
         
         ArtistRelatedLookupRequestDTO request = ArtistRelatedLookupRequestDTO.builder()
                 .search("test")

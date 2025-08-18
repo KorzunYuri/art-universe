@@ -18,7 +18,7 @@ class EntityTypeConverterTest {
     @Test
     void convertToDatabaseColumn_shouldReturnCode() {
         // Given
-        EntityType entityType = EntityType.ARTIST;
+        MasterEntityType entityType = MasterEntityType.ARTIST;
         
         // When
         Integer code = converter.convertToDatabaseColumn(entityType);
@@ -39,19 +39,19 @@ class EntityTypeConverterTest {
     @Test
     void convertToEntityAttribute_shouldReturnEntityType() {
         // Given
-        Integer code = EntityType.ARTIST.getCode();
+        Integer code = MasterEntityType.ARTIST.getCode();
         
         // When
-        EntityType entityType = converter.convertToEntityAttribute(code);
+        MasterEntityType entityType = converter.convertToEntityAttribute(code);
         
         // Then
-        assertEquals(EntityType.ARTIST, entityType);
+        assertEquals(MasterEntityType.ARTIST, entityType);
     }
     
     @Test
     void convertToEntityAttribute_withNull_shouldReturnNull() {
         // When
-        EntityType entityType = converter.convertToEntityAttribute(null);
+        MasterEntityType entityType = converter.convertToEntityAttribute(null);
         
         // Then
         assertNull(entityType);
@@ -70,10 +70,10 @@ class EntityTypeConverterTest {
     @Test
     void codedRegistry_shouldContainEntityTypes() {
         // When
-        var artistType = CodedRegistry.getByCode(1, EntityType.class);
-        var albumType = CodedRegistry.getByCode(2, EntityType.class);
-        var trackType = CodedRegistry.getByCode(3, EntityType.class);
-        var categoryType = CodedRegistry.getByCode(4, EntityType.class);
+        var artistType = CodedRegistry.getByCode(1, MasterEntityType.class);
+        var albumType = CodedRegistry.getByCode(2, MasterEntityType.class);
+        var trackType = CodedRegistry.getByCode(3, MasterEntityType.class);
+        var categoryType = CodedRegistry.getByCode(4, MasterEntityType.class);
         
         // Then
         assertTrue(artistType.isPresent());
@@ -81,9 +81,9 @@ class EntityTypeConverterTest {
         assertTrue(trackType.isPresent());
         assertTrue(categoryType.isPresent());
         
-        assertEquals(EntityType.ARTIST, artistType.get());
-        assertEquals(EntityType.ALBUM, albumType.get());
-        assertEquals(EntityType.TRACK, trackType.get());
-        assertEquals(EntityType.CATEGORY, categoryType.get());
+        assertEquals(MasterEntityType.ARTIST, artistType.get());
+        assertEquals(MasterEntityType.ALBUM, albumType.get());
+        assertEquals(MasterEntityType.TRACK, trackType.get());
+        assertEquals(MasterEntityType.CATEGORY, categoryType.get());
     }
 }

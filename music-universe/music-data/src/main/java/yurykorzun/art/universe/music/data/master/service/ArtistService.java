@@ -1,6 +1,9 @@
 package yurykorzun.art.universe.music.data.master.service;
 
-import yurykorzun.art.universe.music.data.master.dto.lookup.*;
+import yurykorzun.art.universe.common.dto.lookup.BaseBatchLookupRequestDTO;
+import yurykorzun.art.universe.common.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
+import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;

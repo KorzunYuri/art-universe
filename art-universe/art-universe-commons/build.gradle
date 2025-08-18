@@ -25,4 +25,10 @@ dependencies {
 
     // reflection
     implementation 'org.reflections:reflections:0.10.2'
+
+    // test dependencies
+    testImplementation 'org.mockito:mockito-core'
+    testImplementation 'org.mockito:mockito-junit-jupiter'
+    testImplementation 'org.hibernate.validator:hibernate-validator'
+    testImplementation 'org.glassfish:jakarta.el:4.0.2'  // EL implementation for validation tests
 }

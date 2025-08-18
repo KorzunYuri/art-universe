@@ -67,7 +67,7 @@ class BindingServiceImplIntegrationTest extends JpaOnlyTest {
             .hasSize(2); // Only 1001 and 1002 exist
 
         // When
-        BatchUnbindResponseDTO response = bindingService.batchUnbind(EntityType.ARTIST, DataSource.LASTFM, request);
+        BatchUnbindResponseDTO response = bindingService.batchUnbind(MasterEntityType.ARTIST, DataSource.LASTFM, request);
 
         // Then
         assertThat(response.getTotalProcessed()).isEqualTo(3);
@@ -95,7 +95,7 @@ class BindingServiceImplIntegrationTest extends JpaOnlyTest {
             .hasSize(2); // Only 2001 and 2002 exist
 
         // When
-        BatchUnbindResponseDTO response = bindingService.batchUnbind(EntityType.CATEGORY, DataSource.LASTFM, request);
+        BatchUnbindResponseDTO response = bindingService.batchUnbind(MasterEntityType.CATEGORY, DataSource.LASTFM, request);
 
         // Then
         assertThat(response.getTotalProcessed()).isEqualTo(3);
@@ -123,7 +123,7 @@ class BindingServiceImplIntegrationTest extends JpaOnlyTest {
             .hasSize(2);
 
         // When
-        BatchUnbindResponseDTO response = bindingService.batchUnbind(EntityType.TRACK, DataSource.LASTFM, request);
+        BatchUnbindResponseDTO response = bindingService.batchUnbind(MasterEntityType.TRACK, DataSource.LASTFM, request);
 
         // Then
         assertThat(response.getTotalProcessed()).isEqualTo(2);
@@ -165,7 +165,7 @@ class BindingServiceImplIntegrationTest extends JpaOnlyTest {
         assertThat(initialArtistTrackBindings).isGreaterThan(0);
 
         // When
-        BatchUnbindResponseDTO response = bindingService.batchUnbind(EntityType.ARTIST, DataSource.LASTFM, request);
+        BatchUnbindResponseDTO response = bindingService.batchUnbind(MasterEntityType.ARTIST, DataSource.LASTFM, request);
 
         // Then
         assertThat(response.getSuccessCount()).isEqualTo(1);
@@ -210,7 +210,7 @@ class BindingServiceImplIntegrationTest extends JpaOnlyTest {
         assertThat(initialArtistCategoryBindings).isGreaterThan(0);
 
         // When
-        BatchUnbindResponseDTO response = bindingService.batchUnbind(EntityType.CATEGORY, DataSource.LASTFM, request);
+        BatchUnbindResponseDTO response = bindingService.batchUnbind(MasterEntityType.CATEGORY, DataSource.LASTFM, request);
 
         // Then
         assertThat(response.getSuccessCount()).isEqualTo(1);
@@ -247,7 +247,7 @@ class BindingServiceImplIntegrationTest extends JpaOnlyTest {
         assertThat(initialArtistTrackBindings).isGreaterThan(0);
 
         // When
-        BatchUnbindResponseDTO response = bindingService.batchUnbind(EntityType.TRACK, DataSource.LASTFM, request);
+        BatchUnbindResponseDTO response = bindingService.batchUnbind(MasterEntityType.TRACK, DataSource.LASTFM, request);
 
         // Then
         assertThat(response.getSuccessCount()).isEqualTo(1);
@@ -272,7 +272,7 @@ class BindingServiceImplIntegrationTest extends JpaOnlyTest {
             .build();
 
         // When
-        BatchUnbindResponseDTO response = bindingService.batchUnbind(EntityType.ARTIST, DataSource.LASTFM, request);
+        BatchUnbindResponseDTO response = bindingService.batchUnbind(MasterEntityType.ARTIST, DataSource.LASTFM, request);
 
         // Then
         assertThat(response.getTotalProcessed()).isEqualTo(0);
@@ -291,7 +291,7 @@ class BindingServiceImplIntegrationTest extends JpaOnlyTest {
             .build();
 
         // When
-        BatchUnbindResponseDTO response = bindingService.batchUnbind(EntityType.ARTIST, DataSource.LASTFM, request);
+        BatchUnbindResponseDTO response = bindingService.batchUnbind(MasterEntityType.ARTIST, DataSource.LASTFM, request);
 
         // Then
         assertThat(response.getTotalProcessed()).isEqualTo(3);

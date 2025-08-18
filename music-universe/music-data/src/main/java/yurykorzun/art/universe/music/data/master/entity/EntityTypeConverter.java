@@ -7,9 +7,9 @@ import yurykorzun.art.universe.common.CodedConverter;
  * JPA converter for EntityType enum
  */
 @Converter(autoApply = true)
-public class EntityTypeConverter extends CodedConverter<EntityType> {
+public class EntityTypeConverter extends CodedConverter<MasterEntityType> {
 
     public EntityTypeConverter() {
-        super(EntityType.class);
+        super(MasterEntityType.class);
     }
 }

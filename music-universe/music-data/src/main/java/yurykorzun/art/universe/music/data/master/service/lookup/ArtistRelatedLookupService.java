@@ -2,25 +2,89 @@ package yurykorzun.art.universe.music.data.master.service.lookup;
 
 import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
+import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
+import yurykorzun.art.universe.common.service.lookup.SqlQueryBuilder;
+import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedBatchLookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
-import yurykorzun.art.universe.music.data.master.entity.EntityMetadata;
-import yurykorzun.art.universe.music.data.master.entity.EntityType;
+import yurykorzun.art.universe.common.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.music.data.master.entity.MasterEntityMetadata;
+import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
  * Implementation for artist-related entity lookup operations
  */
 @Slf4j
-public class ArtistRelatedLookupService extends AbstractLookupService<ArtistRelatedLookupRequestDTO> {
+public class ArtistRelatedLookupService extends MasterEntityLookupService {
 
-    public ArtistRelatedLookupService(EntityManager entityManager, EntityType entityType) {
+    public ArtistRelatedLookupService(EntityManager entityManager, MasterEntityType entityType) {
         super(entityManager, entityType);
     }
 
-    @Override
+    /**
+     * Performs lookup for artist-related entities
+     */
+    public List<LookupResultDTO> lookup(ArtistRelatedLookupRequestDTO request) {
+        if (!isValidSearchRequest(request)) {
+            return List.of();
+        }
+
+        int limit = request.getLimit() != null ? request.getLimit() : 20;
+        
+        // Validate limit
+        if (limit <= 0) {
+            throw new IllegalArgumentException("Limit must be greater than zero");
+        }
+
+        // Create metadata and build query
+        MasterEntityMetadata metadata = createEntityMetadata();
+        SqlQueryBuilder.QueryData queryData = buildArtistRelatedQuery(metadata, request, limit);
+
+        var query = entityManager.createNativeQuery(queryData.getSql());
+        queryData.getParametersSetter().accept(query);
+
+        @SuppressWarnings("unchecked")
+        List<Object[]> results = query.getResultList();
+        return mapArtistRelatedResultsToDto(results);
+    }
+
+    /**
+     * Performs batch lookup for multiple artist-related search requests
+     */
+    public BatchLookupResponseDTO batchLookup(ArtistRelatedBatchLookupRequestDTO request) {
+        if (request.getSearchRequests() == null || request.getSearchRequests().isEmpty()) {
+            return BatchLookupResponseDTO.builder().build();
+        }
+
+        // Apply default batch limit if null
+        int defaultBatchLimit = request.getLimit() != null ? request.getLimit() : 20;
+
+        // Filter and prepare search requests
+        List<ArtistRelatedLookupRequestDTO> validRequests = filterAndPrepareArtistRequests(request.getSearchRequests(), defaultBatchLimit);
+
+        if (validRequests.isEmpty()) {
+            return BatchLookupResponseDTO.builder().build();
+        }
+
+        // Execute individual lookups and collect results
+        Map<String, List<LookupResultDTO>> resultMap = new HashMap<>();
+        
+        for (ArtistRelatedLookupRequestDTO req : validRequests) {
+            String searchTerm = req.getSearch() != null ? req.getSearch() : "";
+            List<LookupResultDTO> results = lookup(req);
+            resultMap.put(searchTerm, results);
+        }
+
+        // Build response
+        return BatchLookupResponseDTO.builder()
+            .results(resultMap)
+            .build();
+    }
+
     protected boolean isValidSearchRequest(ArtistRelatedLookupRequestDTO request) {
         // empty name is applicable if artist is provided
         boolean isValid =
@@ -34,8 +98,7 @@ public class ArtistRelatedLookupService extends AbstractLookupService<ArtistRela
         return isValid;
     }
 
-    @Override
-    protected SqlQueryBuilder.QueryData buildQuery(EntityMetadata metadata, ArtistRelatedLookupRequestDTO request, int limit) {
+    protected SqlQueryBuilder.QueryData buildArtistRelatedQuery(MasterEntityMetadata metadata, ArtistRelatedLookupRequestDTO request, int limit) {
         SqlQueryBuilder sqlQueryBuilder = new SqlQueryBuilder();
         sqlQueryBuilder.append(String.format(
             """
@@ -111,8 +174,7 @@ public class ArtistRelatedLookupService extends AbstractLookupService<ArtistRela
         return sqlQueryBuilder.build();
     }
 
-    @Override
-    protected List<LookupResultDTO> mapResultsToDto(List<Object[]> results) {
+    protected List<LookupResultDTO> mapArtistRelatedResultsToDto(List<Object[]> results) {
         return results.stream()
             .map(row -> {
                 Long id = ((Number) row[0]).longValue();
@@ -127,8 +189,20 @@ public class ArtistRelatedLookupService extends AbstractLookupService<ArtistRela
             .collect(Collectors.toList());
     }
 
-    @Override
-    protected ArtistRelatedLookupRequestDTO prepareRequest(ArtistRelatedLookupRequestDTO request, int defaultLimit) {
+    /**
+     * Filters and prepares artist-related requests for batch processing
+     */
+    protected List<ArtistRelatedLookupRequestDTO> filterAndPrepareArtistRequests(List<ArtistRelatedLookupRequestDTO> requests, int defaultLimit) {
+        return requests.stream()
+            .filter(this::isValidSearchRequest)
+            .map(req -> prepareArtistRequest(req, defaultLimit))
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * Prepares a single artist-related request for processing
+     */
+    protected ArtistRelatedLookupRequestDTO prepareArtistRequest(ArtistRelatedLookupRequestDTO request, int defaultLimit) {
         return ArtistRelatedLookupRequestDTO.builder()
             .search(request.getSearch())
             .dataSource(request.getDataSource())

@@ -7,12 +7,12 @@ import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntity
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedBatchLookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
+import yurykorzun.art.universe.common.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.entity.EntityType;
+import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.entity.Track;
 import yurykorzun.art.universe.music.data.master.entity.TrackBinding;
 import yurykorzun.art.universe.common.exception.EntityNotFoundException;
@@ -43,7 +43,7 @@ public class TrackServiceImpl implements TrackService {
         this.bindingsRepository = bindingsRepository;
         this.artistService = artistService;
         this.relationService = relationService;
-        this.lookupService = new ArtistRelatedLookupService(entityManager, EntityType.TRACK);
+        this.lookupService = new ArtistRelatedLookupService(entityManager, MasterEntityType.TRACK);
     }
 
     @Override
@@ -97,7 +97,7 @@ public class TrackServiceImpl implements TrackService {
         // 4. Create relation between artist and track
         Long artistId = artistBinding.getMasterId();
         Long relationId = relationService.createInternalRelation(
-            EntityType.ARTIST, artistId, EntityType.TRACK, track.getId());
+            MasterEntityType.ARTIST, artistId, MasterEntityType.TRACK, track.getId());
         
         // 5. Bind external relation and return result
         return bindExternalRelationAndGetResult(dataSource, externalId, request.getPrimaryArtistId());
@@ -154,7 +154,7 @@ public class TrackServiceImpl implements TrackService {
         
         // 6. Create relation between artist and track
         Long relationId = relationService.createInternalRelation(
-            EntityType.ARTIST, artistId, EntityType.TRACK, savedTrack.getId());
+            MasterEntityType.ARTIST, artistId, MasterEntityType.TRACK, savedTrack.getId());
         
         // 7. Bind external relation and return result
         return bindExternalRelationAndGetResult(dataSource, externalId, request.getPrimaryArtistId());
@@ -176,8 +176,8 @@ public class TrackServiceImpl implements TrackService {
         // 1. Bind external relation
         RelationBindingDTO binding = relationService.bindExternalRelation(
             dataSource, 
-            EntityType.ARTIST, artistExternalId, 
-            EntityType.TRACK, externalId);
+            MasterEntityType.ARTIST, artistExternalId,
+            MasterEntityType.TRACK, externalId);
         
         // 2. Return the track binding
         return bindingsRepository.findBoundTracksForDataSource(dataSource, List.of(externalId))

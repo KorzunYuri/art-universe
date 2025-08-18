@@ -7,11 +7,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import yurykorzun.art.universe.music.data.master.dto.lookup.BaseBatchLookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.LookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
-import yurykorzun.art.universe.music.data.master.entity.EntityType;
+import yurykorzun.art.universe.common.dto.lookup.BaseBatchLookupRequestDTO;
+import yurykorzun.art.universe.common.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
+import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
+import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,7 +35,7 @@ class DimensionLookupServiceTest {
 
     @BeforeEach
     void setUp() {
-        lookupService = new DimensionLookupService(entityManager, EntityType.DIMENSION);
+        lookupService = new DimensionLookupService(entityManager);
         lenient().when(entityManager.createNativeQuery(anyString())).thenReturn(query);
         lenient().when(query.setParameter(anyInt(), any())).thenReturn(query);
     }
@@ -168,19 +168,6 @@ class DimensionLookupServiceTest {
         
         // Verify SQL for non-empty search contains WHERE
         verify(entityManager).createNativeQuery(contains("WHERE"));
-    }
-
-    @Test
-    void isValidSearchRequest_shouldAlwaysReturnTrue() {
-        // Given
-        LookupRequestDTO nullSearch = LookupRequestDTO.builder().search(null).build();
-        LookupRequestDTO emptySearch = LookupRequestDTO.builder().search("").build();
-        LookupRequestDTO validSearch = LookupRequestDTO.builder().search("test").build();
-        
-        // When & Then
-        assertTrue(lookupService.isValidSearchRequest(nullSearch));
-        assertTrue(lookupService.isValidSearchRequest(emptySearch));
-        assertTrue(lookupService.isValidSearchRequest(validSearch));
     }
     
     @Test

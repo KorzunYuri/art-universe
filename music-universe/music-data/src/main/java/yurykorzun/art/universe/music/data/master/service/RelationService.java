@@ -4,7 +4,7 @@ import yurykorzun.art.universe.music.data.master.dto.relation.RelatedEntityDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingStatusDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.entity.EntityType;
+import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 
 import java.util.List;
 
@@ -24,9 +24,9 @@ public interface RelationService {
      */
     RelationBindingDTO bindExternalRelation(
         DataSource dataSource, 
-        EntityType sourceEntityType, 
+        MasterEntityType sourceEntityType,
         Long sourceExternalEntityId, 
-        EntityType targetEntityType, 
+        MasterEntityType targetEntityType,
         Long targetExternalEntityId
     );
     
@@ -42,9 +42,9 @@ public interface RelationService {
      */
     boolean unbindExternalRelation(
         DataSource dataSource, 
-        EntityType sourceEntityType, 
+        MasterEntityType sourceEntityType,
         Long sourceExternalEntityId, 
-        EntityType targetEntityType, 
+        MasterEntityType targetEntityType,
         Long targetExternalEntityId
     );
     
@@ -60,9 +60,9 @@ public interface RelationService {
      */
     RelationBindingStatusDTO findBoundExternalRelations(
         DataSource dataSource, 
-        EntityType sourceEntityType, 
+        MasterEntityType sourceEntityType,
         Long sourceExternalEntityId, 
-        EntityType targetEntityType, 
+        MasterEntityType targetEntityType,
         List<Long> targetExternalEntityIds
     );
     
@@ -75,9 +75,9 @@ public interface RelationService {
      * @return List of DTOs with related entity information
      */
     List<RelatedEntityDTO> getRelatedEntities(
-        EntityType sourceEntityType, 
+        MasterEntityType sourceEntityType,
         Long sourceEntityId, 
-        EntityType targetEntityType
+        MasterEntityType targetEntityType
     );
     
     /**
@@ -90,9 +90,9 @@ public interface RelationService {
      * @return ID of the created relation
      */
     Long createInternalRelation(
-        EntityType sourceEntityType,
+        MasterEntityType sourceEntityType,
         Long sourceEntityId,
-        EntityType targetEntityType,
+        MasterEntityType targetEntityType,
         Long targetEntityId
     );
     
@@ -106,9 +106,9 @@ public interface RelationService {
      * @return true if deletion was successful, false otherwise
      */
     boolean deleteInternalRelation(
-        EntityType sourceEntityType,
+        MasterEntityType sourceEntityType,
         Long sourceEntityId,
-        EntityType targetEntityType,
+        MasterEntityType targetEntityType,
         Long targetEntityId
     );
     

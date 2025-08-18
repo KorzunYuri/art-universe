@@ -10,7 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindResponseDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.entity.EntityType;
+import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -56,7 +56,7 @@ class BindingServiceImplTest {
         when(query.executeUpdate()).thenReturn(2);
 
         // When
-        BatchUnbindResponseDTO response = bindingService.batchUnbind(EntityType.ARTIST, DataSource.LASTFM, request);
+        BatchUnbindResponseDTO response = bindingService.batchUnbind(MasterEntityType.ARTIST, DataSource.LASTFM, request);
 
         // Then
         assertThat(response.getTotalProcessed()).isEqualTo(3);
@@ -87,7 +87,7 @@ class BindingServiceImplTest {
         when(query.getResultList()).thenReturn(Collections.emptyList());
 
         // When
-        BatchUnbindResponseDTO response = bindingService.batchUnbind(EntityType.CATEGORY, DataSource.SPOTIFY, request);
+        BatchUnbindResponseDTO response = bindingService.batchUnbind(MasterEntityType.CATEGORY, DataSource.SPOTIFY, request);
 
         // Then
         assertThat(response.getTotalProcessed()).isEqualTo(2);
@@ -111,7 +111,7 @@ class BindingServiceImplTest {
             .build();
 
         // When
-        BatchUnbindResponseDTO response = bindingService.batchUnbind(EntityType.TRACK, DataSource.MUSICBRAINZ, request);
+        BatchUnbindResponseDTO response = bindingService.batchUnbind(MasterEntityType.TRACK, DataSource.MUSICBRAINZ, request);
 
         // Then
         assertThat(response.getTotalProcessed()).isEqualTo(0);
@@ -132,7 +132,7 @@ class BindingServiceImplTest {
             .build();
 
         // When
-        BatchUnbindResponseDTO response = bindingService.batchUnbind(EntityType.ARTIST, DataSource.LASTFM, request);
+        BatchUnbindResponseDTO response = bindingService.batchUnbind(MasterEntityType.ARTIST, DataSource.LASTFM, request);
 
         // Then
         assertThat(response.getTotalProcessed()).isEqualTo(0);
@@ -160,7 +160,7 @@ class BindingServiceImplTest {
         when(query.getResultList()).thenThrow(new RuntimeException("Database error"));
 
         // When & Then
-        assertThatThrownBy(() -> bindingService.batchUnbind(EntityType.ARTIST, DataSource.LASTFM, request))
+        assertThatThrownBy(() -> bindingService.batchUnbind(MasterEntityType.ARTIST, DataSource.LASTFM, request))
             .isInstanceOf(RuntimeException.class)
             .hasMessage("Failed to find existing external IDs");
     }
@@ -181,7 +181,7 @@ class BindingServiceImplTest {
         when(query.executeUpdate()).thenThrow(new RuntimeException("Delete failed"));
 
         // When & Then
-        assertThatThrownBy(() -> bindingService.batchUnbind(EntityType.ARTIST, DataSource.LASTFM, request))
+        assertThatThrownBy(() -> bindingService.batchUnbind(MasterEntityType.ARTIST, DataSource.LASTFM, request))
             .isInstanceOf(RuntimeException.class)
             .hasMessage("Failed to delete bindings");
     }
@@ -196,7 +196,7 @@ class BindingServiceImplTest {
             .build();
 
         // Test each entity type separately to avoid mock interaction conflicts
-        for (EntityType entityType : EntityType.values()) {
+        for (MasterEntityType entityType : MasterEntityType.values()) {
             // Reset mocks for each iteration
             reset(entityManager, query);
             
@@ -236,7 +236,7 @@ class BindingServiceImplTest {
             when(query.executeUpdate()).thenReturn(1);
 
             // When
-            BatchUnbindResponseDTO response = bindingService.batchUnbind(EntityType.ARTIST, dataSource, request);
+            BatchUnbindResponseDTO response = bindingService.batchUnbind(MasterEntityType.ARTIST, dataSource, request);
 
             // Then
             assertThat(response.getSuccessCount()).isEqualTo(1);

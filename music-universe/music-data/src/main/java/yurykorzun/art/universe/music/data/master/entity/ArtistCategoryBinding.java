@@ -45,13 +45,13 @@ public class ArtistCategoryBinding extends BaseEntity implements RelationBinding
     private Long externalCategoryId;
     
     @Override
-    public EntityType getFirstEntityType() {
-        return EntityType.ARTIST;
+    public MasterEntityType getFirstEntityType() {
+        return MasterEntityType.ARTIST;
     }
     
     @Override
-    public EntityType getSecondEntityType() {
-        return EntityType.CATEGORY;
+    public MasterEntityType getSecondEntityType() {
+        return MasterEntityType.CATEGORY;
     }
     
     @Override

@@ -10,12 +10,12 @@ import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingDTO
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingStatusDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.TargetEntityBindingDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.entity.EntityType;
+import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 import yurykorzun.art.universe.common.exception.EntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.relation.RelationBindingEntity;
 import yurykorzun.art.universe.music.data.master.relation.RelationEntity;
 import yurykorzun.art.universe.music.data.master.relation.RelationRegistry;
-import yurykorzun.art.universe.music.data.master.entity.EntityMetadata;
+import yurykorzun.art.universe.music.data.master.entity.MasterEntityMetadata;
 import yurykorzun.art.universe.music.data.master.relation.RelationMetadata;
 
 import java.util.ArrayList;
@@ -44,9 +44,9 @@ public class RelationServiceImpl implements RelationService {
     @Transactional
     public RelationBindingDTO bindExternalRelation(
         DataSource dataSource, 
-        EntityType sourceEntityType, 
+        MasterEntityType sourceEntityType,
         Long sourceExternalEntityId, 
-        EntityType targetEntityType, 
+        MasterEntityType targetEntityType,
         Long targetExternalEntityId
     ) {
         // Check that external entities are bound
@@ -110,9 +110,9 @@ public class RelationServiceImpl implements RelationService {
     @Transactional
     public boolean unbindExternalRelation(
         DataSource dataSource, 
-        EntityType sourceEntityType, 
+        MasterEntityType sourceEntityType,
         Long sourceExternalEntityId, 
-        EntityType targetEntityType, 
+        MasterEntityType targetEntityType,
         Long targetExternalEntityId
     ) {
         // Create relation metadata
@@ -135,9 +135,9 @@ public class RelationServiceImpl implements RelationService {
     @Transactional(readOnly = true)
     public RelationBindingStatusDTO findBoundExternalRelations(
         DataSource dataSource, 
-        EntityType sourceEntityType, 
+        MasterEntityType sourceEntityType,
         Long sourceExternalEntityId, 
-        EntityType targetEntityType, 
+        MasterEntityType targetEntityType,
         List<Long> targetExternalEntityIds
     ) {
         // 1. Get information about source entity with name in a single query
@@ -217,9 +217,9 @@ public class RelationServiceImpl implements RelationService {
     @Override
     @Transactional(readOnly = true)
     public List<RelatedEntityDTO> getRelatedEntities(
-        EntityType sourceEntityType, 
+        MasterEntityType sourceEntityType,
         Long sourceEntityId, 
-        EntityType targetEntityType
+        MasterEntityType targetEntityType
     ) {
         // Create relation metadata
         RelationMetadata metadata = createRelationMetadata(sourceEntityType, targetEntityType);
@@ -263,9 +263,9 @@ public class RelationServiceImpl implements RelationService {
     @Override
     @Transactional
     public Long createInternalRelation(
-        EntityType sourceEntityType,
+        MasterEntityType sourceEntityType,
         Long sourceEntityId,
-        EntityType targetEntityType,
+        MasterEntityType targetEntityType,
         Long targetEntityId
     ) {
         // Validate that entities exist
@@ -282,9 +282,9 @@ public class RelationServiceImpl implements RelationService {
     @Override
     @Transactional
     public boolean deleteInternalRelation(
-        EntityType sourceEntityType,
+        MasterEntityType sourceEntityType,
         Long sourceEntityId,
-        EntityType targetEntityType,
+        MasterEntityType targetEntityType,
         Long targetEntityId
     ) {
         // Create relation metadata
@@ -356,7 +356,7 @@ public class RelationServiceImpl implements RelationService {
      * @param targetEntityType Target entity type
      * @return Relation metadata
      */
-    private RelationMetadata createRelationMetadata(EntityType sourceEntityType, EntityType targetEntityType) {
+    private RelationMetadata createRelationMetadata(MasterEntityType sourceEntityType, MasterEntityType targetEntityType) {
         return new RelationMetadata(sourceEntityType, targetEntityType, relationRegistry);
     }
     
@@ -385,14 +385,14 @@ public class RelationServiceImpl implements RelationService {
      */
     private Map<Long, EntityInfo> findEntityInfoByExternalIds(
         DataSource dataSource, 
-        EntityType entityType, 
+        MasterEntityType entityType,
         List<Long> externalIds
     ) {
         if (externalIds == null || externalIds.isEmpty()) {
             return Collections.emptyMap();
         }
         
-        EntityMetadata metadata = new EntityMetadata(entityType);
+        MasterEntityMetadata metadata = new MasterEntityMetadata(entityType);
         
         // Create placeholders for IN clause
         String placeholders = externalIds.stream()
@@ -451,9 +451,9 @@ public class RelationServiceImpl implements RelationService {
      * @return Map of target internal ID to relation ID
      */
     private Map<Long, Long> findRelations(
-        EntityType sourceEntityType,
+        MasterEntityType sourceEntityType,
         Long sourceInternalId,
-        EntityType targetEntityType,
+        MasterEntityType targetEntityType,
         List<Long> targetInternalIds
     ) {
         if (targetInternalIds == null || targetInternalIds.isEmpty()) {
@@ -520,8 +520,8 @@ public class RelationServiceImpl implements RelationService {
      * @param externalId External ID
      * @return Internal ID or null if entity is not found
      */
-    private Long findInternalEntityId(DataSource dataSource, EntityType entityType, Long externalId) {
-        EntityMetadata metadata = new EntityMetadata(entityType);
+    private Long findInternalEntityId(DataSource dataSource, MasterEntityType entityType, Long externalId) {
+        MasterEntityMetadata metadata = new MasterEntityMetadata(entityType);
         
         String query = """
             SELECT master_id 
@@ -741,9 +741,9 @@ public class RelationServiceImpl implements RelationService {
      * @param entityId Entity ID
      * @return Entity name
      */
-    private String getEntityName(EntityType entityType, Long entityId) {
+    private String getEntityName(MasterEntityType entityType, Long entityId) {
         try {
-            EntityMetadata metadata = new EntityMetadata(entityType);
+            MasterEntityMetadata metadata = new MasterEntityMetadata(entityType);
             
             String query = """
                 SELECT name 
@@ -765,9 +765,9 @@ public class RelationServiceImpl implements RelationService {
      * @param entityId Entity ID
      * @throws EntityNotFoundException if entity does not exist
      */
-    private void validateEntityExists(EntityType entityType, Long entityId) {
+    private void validateEntityExists(MasterEntityType entityType, Long entityId) {
         try {
-            EntityMetadata metadata = new EntityMetadata(entityType);
+            MasterEntityMetadata metadata = new MasterEntityMetadata(entityType);
             
             String query = """
                 SELECT COUNT(*) 

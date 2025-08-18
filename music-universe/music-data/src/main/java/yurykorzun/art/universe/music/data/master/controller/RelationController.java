@@ -5,7 +5,7 @@ import yurykorzun.art.universe.music.data.master.dto.relation.RelatedEntityDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingStatusDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.entity.EntityType;
+import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.service.RelationService;
 
 import java.util.List;
@@ -36,9 +36,9 @@ public class RelationController {
     @PostMapping("/bind/{dataSource}/{sourceEntityType}/{sourceExternalEntityId}/{targetEntityType}/{targetExternalEntityId}")
     public RelationBindingDTO bindExternalRelation(
         @PathVariable DataSource dataSource,
-        @PathVariable EntityType sourceEntityType,
+        @PathVariable MasterEntityType sourceEntityType,
         @PathVariable Long sourceExternalEntityId,
-        @PathVariable EntityType targetEntityType,
+        @PathVariable MasterEntityType targetEntityType,
         @PathVariable Long targetExternalEntityId
     ) {
         return relationService.bindExternalRelation(
@@ -58,9 +58,9 @@ public class RelationController {
     @DeleteMapping("/unbind/{dataSource}/{sourceEntityType}/{sourceExternalEntityId}/{targetEntityType}/{targetExternalEntityId}")
     public boolean unbindExternalRelation(
         @PathVariable DataSource dataSource,
-        @PathVariable EntityType sourceEntityType,
+        @PathVariable MasterEntityType sourceEntityType,
         @PathVariable Long sourceExternalEntityId,
-        @PathVariable EntityType targetEntityType,
+        @PathVariable MasterEntityType targetEntityType,
         @PathVariable Long targetExternalEntityId
     ) {
         return relationService.unbindExternalRelation(
@@ -80,9 +80,9 @@ public class RelationController {
     @GetMapping("/bound/{dataSource}/{sourceEntityType}/{sourceExternalEntityId}/{targetEntityType}")
     public RelationBindingStatusDTO findBoundExternalRelations(
         @PathVariable DataSource dataSource,
-        @PathVariable EntityType sourceEntityType,
+        @PathVariable MasterEntityType sourceEntityType,
         @PathVariable Long sourceExternalEntityId,
-        @PathVariable EntityType targetEntityType,
+        @PathVariable MasterEntityType targetEntityType,
         @RequestParam(name = "ids", required = false) List<Long> targetExternalEntityIds
     ) {
         return relationService.findBoundExternalRelations(
@@ -99,9 +99,9 @@ public class RelationController {
      */
     @GetMapping("/{sourceEntityType}/{sourceEntityId}/{targetEntityType}")
     public List<RelatedEntityDTO> getRelatedEntities(
-        @PathVariable EntityType sourceEntityType,
+        @PathVariable MasterEntityType sourceEntityType,
         @PathVariable Long sourceEntityId,
-        @PathVariable EntityType targetEntityType
+        @PathVariable MasterEntityType targetEntityType
     ) {
         return relationService.getRelatedEntities(
             sourceEntityType, sourceEntityId, targetEntityType);
@@ -118,9 +118,9 @@ public class RelationController {
      */
     @PostMapping("/internal/{sourceEntityType}/{sourceEntityId}/{targetEntityType}/{targetEntityId}")
     public Long createInternalRelation(
-        @PathVariable EntityType sourceEntityType,
+        @PathVariable MasterEntityType sourceEntityType,
         @PathVariable Long sourceEntityId,
-        @PathVariable EntityType targetEntityType,
+        @PathVariable MasterEntityType targetEntityType,
         @PathVariable Long targetEntityId
     ) {
         return relationService.createInternalRelation(
@@ -138,9 +138,9 @@ public class RelationController {
      */
     @DeleteMapping("/internal/{sourceEntityType}/{sourceEntityId}/{targetEntityType}/{targetEntityId}")
     public boolean deleteInternalRelation(
-        @PathVariable EntityType sourceEntityType,
+        @PathVariable MasterEntityType sourceEntityType,
         @PathVariable Long sourceEntityId,
-        @PathVariable EntityType targetEntityType,
+        @PathVariable MasterEntityType targetEntityType,
         @PathVariable Long targetEntityId
     ) {
         return relationService.deleteInternalRelation(

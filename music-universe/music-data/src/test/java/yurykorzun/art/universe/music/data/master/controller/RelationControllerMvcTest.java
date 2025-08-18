@@ -13,7 +13,7 @@ import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingDTO
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingStatusDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.TargetEntityBindingDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.entity.EntityType;
+import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.service.RelationService;
 
 import java.util.Arrays;
@@ -47,9 +47,9 @@ class RelationControllerMvcTest {
     void bindExternalRelation_shouldReturnBindingDTO() throws Exception {
         // Given
         DataSource dataSource = DataSource.LASTFM;
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceExternalEntityId = 123L;
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         Long targetExternalEntityId = 456L;
 
         RelationBindingDTO binding = RelationBindingDTO.builder()
@@ -85,9 +85,9 @@ class RelationControllerMvcTest {
     void bindExternalRelation_whenExceptionThrown_shouldBeHandledByGlobalExceptionHandler() throws Exception {
         // Given
         DataSource dataSource = DataSource.LASTFM;
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceExternalEntityId = 123L;
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         Long targetExternalEntityId = 456L;
         String errorMessage = "Test error";
 
@@ -110,9 +110,9 @@ class RelationControllerMvcTest {
     void unbindExternalRelation_shouldReturnBoolean() throws Exception {
         // Given
         DataSource dataSource = DataSource.LASTFM;
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceExternalEntityId = 123L;
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         Long targetExternalEntityId = 456L;
 
         when(relationService.unbindExternalRelation(
@@ -137,9 +137,9 @@ class RelationControllerMvcTest {
     void unbindExternalRelation_whenExceptionThrown_shouldBeHandledByGlobalExceptionHandler() throws Exception {
         // Given
         DataSource dataSource = DataSource.LASTFM;
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceExternalEntityId = 123L;
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         Long targetExternalEntityId = 456L;
         String errorMessage = "Test error";
 
@@ -162,9 +162,9 @@ class RelationControllerMvcTest {
     void findBoundExternalRelations_shouldReturnBindingStatusDTO() throws Exception {
         // Given
         DataSource dataSource = DataSource.LASTFM;
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceExternalEntityId = 123L;
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         List<Long> ids = Arrays.asList(456L, 789L);
 
         RelationBindingStatusDTO status = RelationBindingStatusDTO.builder()
@@ -219,9 +219,9 @@ class RelationControllerMvcTest {
     void findBoundExternalRelations_whenExceptionThrown_shouldBeHandledByGlobalExceptionHandler() throws Exception {
         // Given
         DataSource dataSource = DataSource.LASTFM;
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceExternalEntityId = 123L;
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         String errorMessage = "Test error";
 
         when(relationService.findBoundExternalRelations(
@@ -243,9 +243,9 @@ class RelationControllerMvcTest {
     @Test
     void getRelatedEntities_shouldReturnEntityDTOList() throws Exception {
         // Given
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceEntityId = 123L;
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
 
         List<RelatedEntityDTO> entities = Arrays.asList(
             RelatedEntityDTO.builder()
@@ -281,9 +281,9 @@ class RelationControllerMvcTest {
     @Test
     void getRelatedEntities_whenExceptionThrown_shouldBeHandledByGlobalExceptionHandler() throws Exception {
         // Given
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceEntityId = 123L;
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         String errorMessage = "Test error";
 
         when(relationService.getRelatedEntities(
@@ -304,9 +304,9 @@ class RelationControllerMvcTest {
     @Test
     void createInternalRelation_shouldReturnLong() throws Exception {
         // Given
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceEntityId = 123L;
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         Long targetEntityId = 456L;
         Long relationId = 789L;
 
@@ -331,9 +331,9 @@ class RelationControllerMvcTest {
     @Test
     void createInternalRelation_whenExceptionThrown_shouldBeHandledByGlobalExceptionHandler() throws Exception {
         // Given
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceEntityId = 123L;
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         Long targetEntityId = 456L;
         String errorMessage = "Test error";
 
@@ -355,9 +355,9 @@ class RelationControllerMvcTest {
     @Test
     void deleteInternalRelation_shouldReturnBoolean() throws Exception {
         // Given
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceEntityId = 123L;
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         Long targetEntityId = 456L;
 
         when(relationService.deleteInternalRelation(
@@ -381,9 +381,9 @@ class RelationControllerMvcTest {
     @Test
     void deleteInternalRelation_whenExceptionThrown_shouldBeHandledByGlobalExceptionHandler() throws Exception {
         // Given
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceEntityId = 123L;
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         Long targetEntityId = 456L;
         String errorMessage = "Test error";
 
@@ -442,7 +442,7 @@ class RelationControllerMvcTest {
         DataSource dataSource = DataSource.LASTFM;
         String invalidEntityType = "invalid";
         Long sourceExternalEntityId = 123L;
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         Long targetExternalEntityId = 456L;
 
         // When & Then

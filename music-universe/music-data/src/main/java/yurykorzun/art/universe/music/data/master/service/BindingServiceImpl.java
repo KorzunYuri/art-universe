@@ -7,8 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindResponseDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.entity.EntityMetadata;
-import yurykorzun.art.universe.music.data.master.entity.EntityType;
+import yurykorzun.art.universe.music.data.master.entity.MasterEntityMetadata;
+import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 
 import java.util.Collections;
 import java.util.List;
@@ -28,7 +28,7 @@ public class BindingServiceImpl implements BindingService {
     
     @Override
     @Transactional
-    public BatchUnbindResponseDTO batchUnbind(EntityType entityType, DataSource dataSource, BatchUnbindRequestDTO request) {
+    public BatchUnbindResponseDTO batchUnbind(MasterEntityType entityType, DataSource dataSource, BatchUnbindRequestDTO request) {
         List<Long> externalIds = request.getExternalIds();
         
         if (externalIds == null || externalIds.isEmpty()) {
@@ -41,7 +41,7 @@ public class BindingServiceImpl implements BindingService {
                 .build();
         }
         
-        EntityMetadata metadata = new EntityMetadata(entityType);
+        MasterEntityMetadata metadata = new MasterEntityMetadata(entityType);
         
         // Find existing bindings
         List<Long> existingIds = findExistingExternalIds(metadata, dataSource, externalIds);
@@ -71,7 +71,7 @@ public class BindingServiceImpl implements BindingService {
      * @param externalIds List of external IDs to check
      * @return List of external IDs that exist in bindings table
      */
-    private List<Long> findExistingExternalIds(EntityMetadata metadata, DataSource dataSource, List<Long> externalIds) {
+    private List<Long> findExistingExternalIds(MasterEntityMetadata metadata, DataSource dataSource, List<Long> externalIds) {
         if (externalIds.isEmpty()) {
             return Collections.emptyList();
         }
@@ -113,7 +113,7 @@ public class BindingServiceImpl implements BindingService {
      * @param externalIds List of external IDs to delete
      * @return Number of deleted records
      */
-    private int deleteByDataSourceAndExternalIdIn(EntityMetadata metadata, DataSource dataSource, List<Long> externalIds) {
+    private int deleteByDataSourceAndExternalIdIn(MasterEntityMetadata metadata, DataSource dataSource, List<Long> externalIds) {
         if (externalIds.isEmpty()) {
             return 0;
         }

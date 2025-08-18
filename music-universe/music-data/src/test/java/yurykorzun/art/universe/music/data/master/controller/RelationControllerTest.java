@@ -10,7 +10,7 @@ import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingDTO
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingStatusDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.TargetEntityBindingDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.entity.EntityType;
+import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.service.RelationService;
 
 import java.util.Arrays;
@@ -34,9 +34,9 @@ class RelationControllerTest {
     void bindExternalRelation_shouldReturnBindingDTO() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceExternalEntityId = 123L;
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         Long targetExternalEntityId = 456L;
 
         RelationBindingDTO expectedBinding = RelationBindingDTO.builder()
@@ -70,9 +70,9 @@ class RelationControllerTest {
     void bindExternalRelation_whenExceptionThrown_shouldPassThroughException() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceExternalEntityId = 123L;
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         Long targetExternalEntityId = 456L;
         RuntimeException expectedException = new RuntimeException("Test error");
 
@@ -97,9 +97,9 @@ class RelationControllerTest {
     void unbindExternalRelation_shouldReturnBoolean() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceExternalEntityId = 123L;
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         Long targetExternalEntityId = 456L;
 
         when(relationService.unbindExternalRelation(
@@ -122,9 +122,9 @@ class RelationControllerTest {
     void unbindExternalRelation_whenExceptionThrown_shouldPassThroughException() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceExternalEntityId = 123L;
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         Long targetExternalEntityId = 456L;
         RuntimeException expectedException = new RuntimeException("Test error");
 
@@ -149,9 +149,9 @@ class RelationControllerTest {
     void findBoundExternalRelations_shouldReturnBindingStatusDTO() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceExternalEntityId = 123L;
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         List<Long> targetExternalEntityIds = Arrays.asList(456L, 789L);
 
         RelationBindingStatusDTO expectedStatus = RelationBindingStatusDTO.builder()
@@ -203,9 +203,9 @@ class RelationControllerTest {
     void findBoundExternalRelations_whenExceptionThrown_shouldPassThroughException() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceExternalEntityId = 123L;
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         List<Long> targetExternalEntityIds = Arrays.asList(456L, 789L);
         RuntimeException expectedException = new RuntimeException("Test error");
 
@@ -229,9 +229,9 @@ class RelationControllerTest {
     @Test
     void getRelatedEntities_shouldReturnEntityDTOList() {
         // Given
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceEntityId = 123L;
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
 
         List<RelatedEntityDTO> expectedEntities = Arrays.asList(
             RelatedEntityDTO.builder()
@@ -265,9 +265,9 @@ class RelationControllerTest {
     @Test
     void getRelatedEntities_whenExceptionThrown_shouldPassThroughException() {
         // Given
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceEntityId = 123L;
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         RuntimeException expectedException = new RuntimeException("Test error");
 
         when(relationService.getRelatedEntities(
@@ -290,9 +290,9 @@ class RelationControllerTest {
     @Test
     void createInternalRelation_shouldReturnLong() {
         // Given
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceEntityId = 123L;
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         Long targetEntityId = 456L;
         Long expectedRelationId = 789L;
 
@@ -315,9 +315,9 @@ class RelationControllerTest {
     @Test
     void createInternalRelation_whenExceptionThrown_shouldPassThroughException() {
         // Given
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceEntityId = 123L;
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         Long targetEntityId = 456L;
         RuntimeException expectedException = new RuntimeException("Test error");
 
@@ -341,9 +341,9 @@ class RelationControllerTest {
     @Test
     void deleteInternalRelation_shouldReturnBoolean() {
         // Given
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceEntityId = 123L;
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         Long targetEntityId = 456L;
 
         when(relationService.deleteInternalRelation(
@@ -365,9 +365,9 @@ class RelationControllerTest {
     @Test
     void deleteInternalRelation_whenExceptionThrown_shouldPassThroughException() {
         // Given
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceEntityId = 123L;
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         Long targetEntityId = 456L;
         RuntimeException expectedException = new RuntimeException("Test error");
 

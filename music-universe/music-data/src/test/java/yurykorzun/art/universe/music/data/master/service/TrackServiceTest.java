@@ -8,30 +8,21 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
-import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedBatchLookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.entity.EntityType;
+import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.entity.Track;
 import yurykorzun.art.universe.music.data.master.entity.TrackBinding;
 import yurykorzun.art.universe.music.data.master.repository.TrackBindingRepository;
 import yurykorzun.art.universe.music.data.master.repository.TrackRepository;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -189,13 +180,13 @@ class TrackServiceTest {
             .thenReturn(Optional.empty());
         when(trackBindingRepository.save(any(TrackBinding.class))).thenReturn(trackBinding);
         when(relationService.createInternalRelation(
-            eq(EntityType.ARTIST), eq(artistBinding.getMasterId()),
-            eq(EntityType.TRACK), eq(masterId)
+            eq(MasterEntityType.ARTIST), eq(artistBinding.getMasterId()),
+            eq(MasterEntityType.TRACK), eq(masterId)
         )).thenReturn(500L);
         when(relationService.bindExternalRelation(
             eq(dataSource), 
-            eq(EntityType.ARTIST), eq(primaryArtistId), 
-            eq(EntityType.TRACK), eq(externalId)
+            eq(MasterEntityType.ARTIST), eq(primaryArtistId),
+            eq(MasterEntityType.TRACK), eq(externalId)
         )).thenReturn(relationBinding);
         when(trackBindingRepository.findBoundTracksForDataSource(dataSource, List.of(externalId)))
             .thenReturn(List.of(expectedResult));
@@ -211,13 +202,13 @@ class TrackServiceTest {
         verify(trackBindingRepository).findByDataSourceAndExternalId(dataSource, externalId);
         verify(trackBindingRepository).save(any(TrackBinding.class));
         verify(relationService).createInternalRelation(
-            eq(EntityType.ARTIST), eq(artistBinding.getMasterId()),
-            eq(EntityType.TRACK), eq(masterId)
+            eq(MasterEntityType.ARTIST), eq(artistBinding.getMasterId()),
+            eq(MasterEntityType.TRACK), eq(masterId)
         );
         verify(relationService).bindExternalRelation(
             eq(dataSource), 
-            eq(EntityType.ARTIST), eq(primaryArtistId), 
-            eq(EntityType.TRACK), eq(externalId)
+            eq(MasterEntityType.ARTIST), eq(primaryArtistId),
+            eq(MasterEntityType.TRACK), eq(externalId)
         );
         verify(trackBindingRepository).findBoundTracksForDataSource(dataSource, List.of(externalId));
     }
@@ -381,13 +372,13 @@ class TrackServiceTest {
         when(trackRepository.save(any(Track.class))).thenReturn(newTrack);
         when(trackBindingRepository.save(any(TrackBinding.class))).thenReturn(trackBinding);
         when(relationService.createInternalRelation(
-            eq(EntityType.ARTIST), eq(artistBinding.getMasterId()),
-            eq(EntityType.TRACK), eq(newTrack.getId())
+            eq(MasterEntityType.ARTIST), eq(artistBinding.getMasterId()),
+            eq(MasterEntityType.TRACK), eq(newTrack.getId())
         )).thenReturn(500L);
         when(relationService.bindExternalRelation(
             eq(dataSource), 
-            eq(EntityType.ARTIST), eq(primaryArtistId), 
-            eq(EntityType.TRACK), eq(externalId)
+            eq(MasterEntityType.ARTIST), eq(primaryArtistId),
+            eq(MasterEntityType.TRACK), eq(externalId)
         )).thenReturn(relationBinding);
         when(trackBindingRepository.findBoundTracksForDataSource(dataSource, List.of(externalId)))
             .thenReturn(List.of(expectedResult));
@@ -404,13 +395,13 @@ class TrackServiceTest {
         verify(trackRepository).save(any(Track.class));
         verify(trackBindingRepository).save(any(TrackBinding.class));
         verify(relationService).createInternalRelation(
-            eq(EntityType.ARTIST), eq(artistBinding.getMasterId()),
-            eq(EntityType.TRACK), eq(newTrack.getId())
+            eq(MasterEntityType.ARTIST), eq(artistBinding.getMasterId()),
+            eq(MasterEntityType.TRACK), eq(newTrack.getId())
         );
         verify(relationService).bindExternalRelation(
             eq(dataSource), 
-            eq(EntityType.ARTIST), eq(primaryArtistId), 
-            eq(EntityType.TRACK), eq(externalId)
+            eq(MasterEntityType.ARTIST), eq(primaryArtistId),
+            eq(MasterEntityType.TRACK), eq(externalId)
         );
         verify(trackBindingRepository).findBoundTracksForDataSource(dataSource, List.of(externalId));
     }

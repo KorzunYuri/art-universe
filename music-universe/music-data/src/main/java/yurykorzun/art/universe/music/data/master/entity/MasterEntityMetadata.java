@@ -1,20 +1,19 @@
 package yurykorzun.art.universe.music.data.master.entity;
 
 import lombok.Getter;
+import yurykorzun.art.universe.common.persistence.entity.BaseEntityMetadata;
 
 /**
- * Metadata for an entity, containing information about table names and field names.
+ * Metadata for a master entity, containing information about table names and field names.
  */
 @Getter
-public class EntityMetadata {
-    private final EntityType entityType;
-    private final String tableName;
+public class MasterEntityMetadata extends BaseEntityMetadata<MasterEntityType> {
+
     private final String bindingTableName;
     
-    public EntityMetadata(EntityType entityType) {
-        this.entityType = entityType;
-        this.tableName = entityType.getName();
-        this.bindingTableName = tableName + "_binding";
+    public MasterEntityMetadata(MasterEntityType entityType) {
+        super(entityType);
+        this.bindingTableName = getTableName() + "_binding";
     }
     
     /**
@@ -23,7 +22,7 @@ public class EntityMetadata {
      * @return ID field name
      */
     public String getIdFieldName() {
-        return entityType.getName() + "_id";
+        return getEntityType().getName() + "_id";
     }
     
     /**
@@ -32,6 +31,6 @@ public class EntityMetadata {
      * @return External ID field name
      */
     public String getExternalIdFieldName() {
-        return "external_" + entityType.getName() + "_id";
+        return "external_" + getEntityType().getName() + "_id";
     }
 }

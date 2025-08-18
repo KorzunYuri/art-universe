@@ -1,7 +1,7 @@
 package yurykorzun.art.universe.music.data.master.relation;
 
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.entity.EntityType;
+import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 
 /**
  * Marker interface for relation binding entities.
@@ -11,12 +11,12 @@ public interface RelationBindingEntity {
     /**
      * @return Type of the first entity in the relation
      */
-    EntityType getFirstEntityType();
+    MasterEntityType getFirstEntityType();
     
     /**
      * @return Type of the second entity in the relation
      */
-    EntityType getSecondEntityType();
+    MasterEntityType getSecondEntityType();
     
     /**
      * @return ID of the external first entity

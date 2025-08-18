@@ -17,7 +17,7 @@ import yurykorzun.art.universe.music.data.master.entity.ArtistBinding;
 import yurykorzun.art.universe.music.data.master.entity.Category;
 import yurykorzun.art.universe.music.data.master.entity.CategoryBinding;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.entity.EntityType;
+import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 import yurykorzun.art.universe.common.exception.EntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.relation.RelationRegistry;
 
@@ -102,9 +102,9 @@ class RelationServiceIntegrationTest extends JpaOnlyTest {
     void bindRelation_shouldCreateExternalRelationAndBinding() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceExternalEntityId = 123L;
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         Long targetExternalEntityId = 789L;
         
         // When
@@ -146,9 +146,9 @@ class RelationServiceIntegrationTest extends JpaOnlyTest {
     void unbindExternalRelation_shouldRemoveBinding() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceExternalEntityId = 123L;
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         Long targetExternalEntityId = 789L;
         
         // First create a relation and binding
@@ -186,8 +186,8 @@ class RelationServiceIntegrationTest extends JpaOnlyTest {
     void getRelatedEntities_shouldReturnEntities() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
-        EntityType sourceEntityType = EntityType.ARTIST;
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         
         // Create relations
         relationService.bindExternalRelation(dataSource, sourceEntityType, 123L, targetEntityType, 789L);
@@ -212,9 +212,9 @@ class RelationServiceIntegrationTest extends JpaOnlyTest {
     @Test
     void createRelation_shouldCreateInternalRelation() {
         // Given
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceEntityId = artist1.getId();
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         Long targetEntityId = category1.getId();
         
         // When
@@ -237,9 +237,9 @@ class RelationServiceIntegrationTest extends JpaOnlyTest {
     @Test
     void createInternalRelation_whenEntityDoesNotExist_shouldThrowException() {
         // Given
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceEntityId = 999L; // Non-existent ID
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         Long targetEntityId = category1.getId();
         
         // When & Then
@@ -250,9 +250,9 @@ class RelationServiceIntegrationTest extends JpaOnlyTest {
     @Test
     void deleteRelation_shouldDeleteInternalRelation() {
         // Given
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceEntityId = artist1.getId();
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         Long targetEntityId = category1.getId();
         
         // Create relation
@@ -279,9 +279,9 @@ class RelationServiceIntegrationTest extends JpaOnlyTest {
     @Test
     void deleteRelation_whenInternalRelationDoesNotExist_shouldReturnFalse() {
         // Given
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceEntityId = artist1.getId();
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         Long targetEntityId = category1.getId();
         
         // When
@@ -295,9 +295,9 @@ class RelationServiceIntegrationTest extends JpaOnlyTest {
     @Test
     void deleteRelationById_shouldDeleteInternalInternalRelation() {
         // Given
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceEntityId = artist1.getId();
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         Long targetEntityId = category1.getId();
         
         // Create relation
@@ -335,9 +335,9 @@ class RelationServiceIntegrationTest extends JpaOnlyTest {
     void deleteInternalRelationById_withExternalBindings_shouldCascadeDeleteBindings() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceExternalEntityId = 123L;
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         Long targetExternalEntityId = 789L;
         
         // Create relation and binding
@@ -376,9 +376,9 @@ class RelationServiceIntegrationTest extends JpaOnlyTest {
     void findBoundExternalRelations_withSourceAndTargetIds_shouldReturnBindingStatus() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceExternalEntityId = 123L;
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         List<Long> targetExternalEntityIds = Arrays.asList(789L, 101L, 999L); // 999L doesn't exist
         
         // Create relations
@@ -428,9 +428,9 @@ class RelationServiceIntegrationTest extends JpaOnlyTest {
     void findBoundExternalRelations_withInternalRelationButNoExternalBinding_shouldShowCorrectStatus() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceExternalEntityId = 123L;
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         List<Long> targetExternalEntityIds = Arrays.asList(789L);
         
         // Create internal relation without external binding
@@ -458,9 +458,9 @@ class RelationServiceIntegrationTest extends JpaOnlyTest {
     void findBoundExternalRelations_withNonExistentSourceEntity_shouldReturnUnboundStatus() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceExternalEntityId = 999L; // Non-existent ID
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         List<Long> targetExternalEntityIds = Arrays.asList(789L, 101L);
         
         // When
@@ -479,9 +479,9 @@ class RelationServiceIntegrationTest extends JpaOnlyTest {
     void findBoundExternalRelations_withEmptyTargetList_shouldReturnEmptyBindings() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceExternalEntityId = 123L;
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         List<Long> emptyTargetList = Collections.emptyList();
         
         // When
@@ -501,9 +501,9 @@ class RelationServiceIntegrationTest extends JpaOnlyTest {
     void deleteInternalRelation_withExternalBindings_shouldCascadeDeleteBindings() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
-        EntityType sourceEntityType = EntityType.ARTIST;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceExternalEntityId = 123L;
-        EntityType targetEntityType = EntityType.CATEGORY;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         Long targetExternalEntityId = 789L;
 
         // Create relation and binding

@@ -10,65 +10,65 @@ class EntityTypeTest {
     @Test
     void fromString_withValidName_shouldReturnCorrectEntityType() {
         // When
-        EntityType artistType = EntityType.fromString("artist");
-        EntityType albumType = EntityType.fromString("album");
-        EntityType trackType = EntityType.fromString("track");
-        EntityType categoryType = EntityType.fromString("category");
+        MasterEntityType artistType = MasterEntityType.fromString("artist");
+        MasterEntityType albumType = MasterEntityType.fromString("album");
+        MasterEntityType trackType = MasterEntityType.fromString("track");
+        MasterEntityType categoryType = MasterEntityType.fromString("category");
         
         // Then
-        assertEquals(EntityType.ARTIST, artistType);
-        assertEquals(EntityType.ALBUM, albumType);
-        assertEquals(EntityType.TRACK, trackType);
-        assertEquals(EntityType.CATEGORY, categoryType);
+        assertEquals(MasterEntityType.ARTIST, artistType);
+        assertEquals(MasterEntityType.ALBUM, albumType);
+        assertEquals(MasterEntityType.TRACK, trackType);
+        assertEquals(MasterEntityType.CATEGORY, categoryType);
     }
     
     @Test
     void fromString_withCaseInsensitiveName_shouldReturnCorrectEntityType() {
         // When
-        EntityType artistType = EntityType.fromString("ARTIST");
-        EntityType albumType = EntityType.fromString("Album");
-        EntityType trackType = EntityType.fromString("Track");
-        EntityType categoryType = EntityType.fromString("CATEGORY");
+        MasterEntityType artistType = MasterEntityType.fromString("ARTIST");
+        MasterEntityType albumType = MasterEntityType.fromString("Album");
+        MasterEntityType trackType = MasterEntityType.fromString("Track");
+        MasterEntityType categoryType = MasterEntityType.fromString("CATEGORY");
         
         // Then
-        assertEquals(EntityType.ARTIST, artistType);
-        assertEquals(EntityType.ALBUM, albumType);
-        assertEquals(EntityType.TRACK, trackType);
-        assertEquals(EntityType.CATEGORY, categoryType);
+        assertEquals(MasterEntityType.ARTIST, artistType);
+        assertEquals(MasterEntityType.ALBUM, albumType);
+        assertEquals(MasterEntityType.TRACK, trackType);
+        assertEquals(MasterEntityType.CATEGORY, categoryType);
     }
     
     @Test
     void fromString_withInvalidName_shouldThrowException() {
         // When & Then
         assertThrows(IllegalArgumentException.class, () -> 
-            EntityType.fromString("invalid"));
+            MasterEntityType.fromString("invalid"));
     }
     
     @Test
     void getCode_shouldReturnCorrectCode() {
         // Then
-        assertEquals(1, EntityType.ARTIST.getCode());
-        assertEquals(2, EntityType.ALBUM.getCode());
-        assertEquals(3, EntityType.TRACK.getCode());
-        assertEquals(4, EntityType.CATEGORY.getCode());
+        assertEquals(1, MasterEntityType.ARTIST.getCode());
+        assertEquals(2, MasterEntityType.ALBUM.getCode());
+        assertEquals(3, MasterEntityType.TRACK.getCode());
+        assertEquals(4, MasterEntityType.CATEGORY.getCode());
     }
     
     @Test
     void getName_shouldReturnCorrectName() {
         // Then
-        assertEquals("artist", EntityType.ARTIST.getName());
-        assertEquals("album", EntityType.ALBUM.getName());
-        assertEquals("track", EntityType.TRACK.getName());
-        assertEquals("category", EntityType.CATEGORY.getName());
+        assertEquals("artist", MasterEntityType.ARTIST.getName());
+        assertEquals("album", MasterEntityType.ALBUM.getName());
+        assertEquals("track", MasterEntityType.TRACK.getName());
+        assertEquals("category", MasterEntityType.CATEGORY.getName());
     }
     
     @Test
     void codedRegistry_shouldContainEntityTypes() {
         // When
-        var artistType = CodedRegistry.getByCode(1, EntityType.class);
-        var albumType = CodedRegistry.getByCode(2, EntityType.class);
-        var trackType = CodedRegistry.getByCode(3, EntityType.class);
-        var categoryType = CodedRegistry.getByCode(4, EntityType.class);
+        var artistType = CodedRegistry.getByCode(1, MasterEntityType.class);
+        var albumType = CodedRegistry.getByCode(2, MasterEntityType.class);
+        var trackType = CodedRegistry.getByCode(3, MasterEntityType.class);
+        var categoryType = CodedRegistry.getByCode(4, MasterEntityType.class);
         
         // Then
         assertTrue(artistType.isPresent());
@@ -76,9 +76,9 @@ class EntityTypeTest {
         assertTrue(trackType.isPresent());
         assertTrue(categoryType.isPresent());
         
-        assertEquals(EntityType.ARTIST, artistType.get());
-        assertEquals(EntityType.ALBUM, albumType.get());
-        assertEquals(EntityType.TRACK, trackType.get());
-        assertEquals(EntityType.CATEGORY, categoryType.get());
+        assertEquals(MasterEntityType.ARTIST, artistType.get());
+        assertEquals(MasterEntityType.ALBUM, albumType.get());
+        assertEquals(MasterEntityType.TRACK, trackType.get());
+        assertEquals(MasterEntityType.CATEGORY, categoryType.get());
     }
 }

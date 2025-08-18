@@ -1,8 +1,8 @@
 package yurykorzun.art.universe.music.data.master.relation;
 
 import lombok.Getter;
-import yurykorzun.art.universe.music.data.master.entity.EntityType;
-import yurykorzun.art.universe.music.data.master.entity.EntityMetadata;
+import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
+import yurykorzun.art.universe.music.data.master.entity.MasterEntityMetadata;
 
 /**
  * Metadata for a relation between two entities, containing information about
@@ -10,8 +10,8 @@ import yurykorzun.art.universe.music.data.master.entity.EntityMetadata;
  */
 @Getter
 public class RelationMetadata {
-    private final EntityMetadata sourceMetadata;
-    private final EntityMetadata targetMetadata;
+    private final MasterEntityMetadata sourceMetadata;
+    private final MasterEntityMetadata targetMetadata;
     private final boolean isSourceFirst;
     private final String relationTableName;
     private final String relationBindingTableName;
@@ -24,15 +24,15 @@ public class RelationMetadata {
      * @param targetType Target entity type
      * @param registry Relation registry
      */
-    public RelationMetadata(EntityType sourceType, EntityType targetType, RelationRegistry registry) {
+    public RelationMetadata(MasterEntityType sourceType, MasterEntityType targetType, RelationRegistry registry) {
         this.registry = registry;
         this.isSourceFirst = registry.isFirstEntityInRelation(sourceType, targetType);
         
-        EntityType firstType = isSourceFirst ? sourceType : targetType;
-        EntityType secondType = isSourceFirst ? targetType : sourceType;
+        MasterEntityType firstType = isSourceFirst ? sourceType : targetType;
+        MasterEntityType secondType = isSourceFirst ? targetType : sourceType;
         
-        this.sourceMetadata = new EntityMetadata(sourceType);
-        this.targetMetadata = new EntityMetadata(targetType);
+        this.sourceMetadata = new MasterEntityMetadata(sourceType);
+        this.targetMetadata = new MasterEntityMetadata(targetType);
         
         this.relationTableName = firstType.getName() + "_" + secondType.getName();
         this.relationBindingTableName = relationTableName + "_binding";
@@ -43,7 +43,7 @@ public class RelationMetadata {
      * 
      * @return First entity metadata
      */
-    public EntityMetadata getFirstEntityMetadata() {
+    public MasterEntityMetadata getFirstEntityMetadata() {
         return isSourceFirst ? sourceMetadata : targetMetadata;
     }
     
@@ -52,7 +52,7 @@ public class RelationMetadata {
      * 
      * @return Second entity metadata
      */
-    public EntityMetadata getSecondEntityMetadata() {
+    public MasterEntityMetadata getSecondEntityMetadata() {
         return isSourceFirst ? targetMetadata : sourceMetadata;
     }
     

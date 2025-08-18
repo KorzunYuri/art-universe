@@ -2,17 +2,17 @@ package yurykorzun.art.universe.music.data.master.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
-import yurykorzun.art.universe.music.data.master.dto.lookup.BaseBatchLookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.common.dto.lookup.BaseBatchLookupRequestDTO;
+import yurykorzun.art.universe.common.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.LookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
+import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
+import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindResponseDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.entity.EntityType;
+import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.service.ArtistService;
 import yurykorzun.art.universe.music.data.master.service.BindingService;
 
@@ -88,6 +88,6 @@ public class ArtistController {
         @PathVariable DataSource dataSource,
         @Valid @RequestBody BatchUnbindRequestDTO request
     ) {
-        return bindingService.batchUnbind(EntityType.ARTIST, dataSource, request);
+        return bindingService.batchUnbind(MasterEntityType.ARTIST, dataSource, request);
     }
 }

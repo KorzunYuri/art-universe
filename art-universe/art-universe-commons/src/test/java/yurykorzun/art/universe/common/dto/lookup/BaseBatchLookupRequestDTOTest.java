@@ -1,4 +1,4 @@
-package yurykorzun.art.universe.music.data.master.dto.lookup;
+package yurykorzun.art.universe.common.dto.lookup;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;

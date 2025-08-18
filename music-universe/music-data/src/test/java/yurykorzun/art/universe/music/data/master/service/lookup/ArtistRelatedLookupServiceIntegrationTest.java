@@ -11,8 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import yurykorzun.art.universe.music.data.master.common.archetypes.JpaOnlyTest;
 import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedBatchLookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
+import yurykorzun.art.universe.common.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.entity.*;
 import yurykorzun.art.universe.music.data.master.repository.*;
 
@@ -53,8 +53,8 @@ class ArtistRelatedLookupServiceIntegrationTest extends JpaOnlyTest {
 
     @BeforeEach
     void setUp() {
-        trackLookupService = new ArtistRelatedLookupService(entityManager, EntityType.TRACK);
-        albumLookupService = new ArtistRelatedLookupService(entityManager, EntityType.ALBUM);
+        trackLookupService = new ArtistRelatedLookupService(entityManager, MasterEntityType.TRACK);
+        albumLookupService = new ArtistRelatedLookupService(entityManager, MasterEntityType.ALBUM);
 
         // Clear existing data
         trackRepository.deleteAll();
@@ -427,7 +427,7 @@ class ArtistRelatedLookupServiceIntegrationTest extends JpaOnlyTest {
             String searchTerm, 
             Long masterArtistId, 
             Long externalArtistId,
-            EntityType entityType) {
+            MasterEntityType entityType) {
         
         // Given
         ArtistRelatedLookupRequestDTO request = ArtistRelatedLookupRequestDTO.builder()
@@ -438,7 +438,7 @@ class ArtistRelatedLookupServiceIntegrationTest extends JpaOnlyTest {
             .limit(10)
             .build();
 
-        ArtistRelatedLookupService service = entityType == EntityType.TRACK ? trackLookupService : albumLookupService;
+        ArtistRelatedLookupService service = entityType == MasterEntityType.TRACK ? trackLookupService : albumLookupService;
 
         // When
         List<LookupResultDTO> results = service.lookup(request);
@@ -452,30 +452,30 @@ class ArtistRelatedLookupServiceIntegrationTest extends JpaOnlyTest {
         return Stream.of(
             // Test all combinations of search term, masterArtistId, externalArtistId for tracks
             // Valid search term
-            Arguments.of("a",   null,   null,   EntityType.TRACK),
-            Arguments.of("a",   1L,     null,   EntityType.TRACK),
-            Arguments.of("a",   null,   1001L,  EntityType.TRACK),
-            Arguments.of("a",   1L,     1001L,  EntityType.TRACK),
+            Arguments.of("a",   null,   null,   MasterEntityType.TRACK),
+            Arguments.of("a",   1L,     null,   MasterEntityType.TRACK),
+            Arguments.of("a",   null,   1001L,  MasterEntityType.TRACK),
+            Arguments.of("a",   1L,     1001L,  MasterEntityType.TRACK),
             
             // Empty search term
-            Arguments.of("",    null,   null,   EntityType.TRACK),
-            Arguments.of("",    1L,     null,   EntityType.TRACK),
-            Arguments.of("",    null,   1001L,  EntityType.TRACK),
-            Arguments.of("",    1L,     1001L,  EntityType.TRACK),
+            Arguments.of("",    null,   null,   MasterEntityType.TRACK),
+            Arguments.of("",    1L,     null,   MasterEntityType.TRACK),
+            Arguments.of("",    null,   1001L,  MasterEntityType.TRACK),
+            Arguments.of("",    1L,     1001L,  MasterEntityType.TRACK),
             
             // Null search term
-            Arguments.of(null,  null,   null,   EntityType.TRACK),
-            Arguments.of(null,  1L,     null,   EntityType.TRACK),
-            Arguments.of(null,  null,   1001L,  EntityType.TRACK),
-            Arguments.of(null,  1L,     1001L,  EntityType.TRACK),
+            Arguments.of(null,  null,   null,   MasterEntityType.TRACK),
+            Arguments.of(null,  1L,     null,   MasterEntityType.TRACK),
+            Arguments.of(null,  null,   1001L,  MasterEntityType.TRACK),
+            Arguments.of(null,  1L,     1001L,  MasterEntityType.TRACK),
 
             // Same combinations for albums
-            Arguments.of("a",   null,   null,   EntityType.ALBUM),
-            Arguments.of("a",   1L,     null,   EntityType.ALBUM),
-            Arguments.of("a",   null,   1001L,  EntityType.ALBUM),
-            Arguments.of("",    null,   null,   EntityType.ALBUM),
-            Arguments.of(null,  1L,     null,   EntityType.ALBUM),
-            Arguments.of(null,  null,   1001L,  EntityType.ALBUM)
+            Arguments.of("a",   null,   null,   MasterEntityType.ALBUM),
+            Arguments.of("a",   1L,     null,   MasterEntityType.ALBUM),
+            Arguments.of("a",   null,   1001L,  MasterEntityType.ALBUM),
+            Arguments.of("",    null,   null,   MasterEntityType.ALBUM),
+            Arguments.of(null,  1L,     null,   MasterEntityType.ALBUM),
+            Arguments.of(null,  null,   1001L,  MasterEntityType.ALBUM)
         );
     }
 }

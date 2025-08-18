@@ -45,13 +45,13 @@ public class ArtistTrackBinding extends BaseEntity implements RelationBindingEnt
     private Long externalTrackId;
     
     @Override
-    public EntityType getFirstEntityType() {
-        return EntityType.ARTIST;
+    public MasterEntityType getFirstEntityType() {
+        return MasterEntityType.ARTIST;
     }
     
     @Override
-    public EntityType getSecondEntityType() {
-        return EntityType.TRACK;
+    public MasterEntityType getSecondEntityType() {
+        return MasterEntityType.TRACK;
     }
     
     @Override

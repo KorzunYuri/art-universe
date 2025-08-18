@@ -1,4 +1,4 @@
-package yurykorzun.art.universe.music.data.master.service.lookup;
+package yurykorzun.art.universe.common.service.lookup;
 
 import jakarta.persistence.Query;
 import org.junit.jupiter.api.Test;

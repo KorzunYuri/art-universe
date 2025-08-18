@@ -8,10 +8,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.music.data.master.dto.DimensionDto;
 import yurykorzun.art.universe.music.data.master.dto.DimensionSaveRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.LookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
+import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
+import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.entity.Dimension;
-import yurykorzun.art.universe.music.data.master.entity.EntityType;
+import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 import yurykorzun.art.universe.common.exception.EntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.repository.DimensionRepository;
 import yurykorzun.art.universe.music.data.master.service.lookup.DimensionLookupService;
@@ -28,7 +28,7 @@ public class DimensionServiceImpl implements DimensionService {
 
     public DimensionServiceImpl(DimensionRepository dimensionRepository, EntityManager entityManager) {
         this.dimensionRepository = dimensionRepository;
-        this.lookupService = new DimensionLookupService(entityManager, EntityType.DIMENSION);
+        this.lookupService = new DimensionLookupService(entityManager);
     }
 
     @Override

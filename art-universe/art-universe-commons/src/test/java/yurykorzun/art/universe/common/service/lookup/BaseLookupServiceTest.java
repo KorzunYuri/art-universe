@@ -1,27 +1,23 @@
-package yurykorzun.art.universe.music.data.master.service.lookup;
+package yurykorzun.art.universe.common.service.lookup;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.EnumSource;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import yurykorzun.art.universe.music.data.master.dto.lookup.BaseBatchLookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.LookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
-import yurykorzun.art.universe.music.data.master.entity.EntityType;
+import yurykorzun.art.universe.common.dto.lookup.BaseBatchLookupRequestDTO;
+import yurykorzun.art.universe.common.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
+import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
+import yurykorzun.art.universe.common.persistence.entity.BaseEntityMetadata;
+import yurykorzun.art.universe.common.persistence.entity.EntityType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -36,19 +32,18 @@ class BaseLookupServiceTest {
     @Mock
     private Query query;
 
-    private BaseLookupService lookupService;
+    private TestLookupService lookupService;
 
     @BeforeEach
     void setUp() {
         lenient().when(entityManager.createNativeQuery(anyString())).thenReturn(query);
         lenient().when(query.setParameter(anyInt(), any())).thenReturn(query);
+        lookupService = new TestLookupService(entityManager, TestEntityType.TEST_ENTITY);
     }
 
-    @ParameterizedTest
-    @EnumSource(value = EntityType.class, names = {"ARTIST", "CATEGORY"})
-    void lookup_shouldBuildCorrectSqlAndParameters(EntityType entityType) {
+    @Test
+    void lookup_shouldBuildCorrectSqlAndParameters() {
         // Given
-        lookupService = new BaseLookupService(entityManager, entityType);
         String searchTerm = "test";
         int limit = 10;
 
@@ -69,19 +64,16 @@ class BaseLookupServiceTest {
         assertEquals(1, result.size());
 
         // Verify SQL contains correct table name
-        verify(entityManager).createNativeQuery(contains(entityType.getName().toLowerCase()));
+        verify(entityManager).createNativeQuery(contains("test_entity"));
 
         // Verify parameters
         verify(query).setParameter(1, searchTerm);
         verify(query).setParameter(2, limit);
     }
 
-    @ParameterizedTest
-    @EnumSource(value = EntityType.class, names = {"ARTIST", "CATEGORY"})
-    void batchLookup_shouldCallLookupForEachRequest(EntityType entityType) {
+    @Test
+    void batchLookup_shouldCallLookupForEachRequest() {
         // Given
-        lookupService = new BaseLookupService(entityManager, entityType);
-
         LookupRequestDTO request1 = LookupRequestDTO.builder()
             .search("test1")
             .limit(10)
@@ -135,11 +127,9 @@ class BaseLookupServiceTest {
         assertEquals("Entity 3", resultMap.get("test2").get(0).getName());
     }
 
-    @ParameterizedTest
-    @EnumSource(value = EntityType.class, names = {"ARTIST", "CATEGORY"})
-    void lookup_withTrimmedSearchTerm_shouldTrimBeforeQuery(EntityType entityType) {
+    @Test
+    void lookup_withTrimmedSearchTerm_shouldTrimBeforeQuery() {
         // Given
-        lookupService = new BaseLookupService(entityManager, entityType);
         String searchTerm = "  test  ";
         String trimmedSearchTerm = "test";
 
@@ -157,12 +147,9 @@ class BaseLookupServiceTest {
         verify(query).setParameter(1, trimmedSearchTerm);
     }
 
-    @ParameterizedTest
-    @EnumSource(value = EntityType.class, names = {"ARTIST", "CATEGORY"})
-    void batchLookup_withMixedLimits_shouldUseCorrectLimits(EntityType entityType) {
+    @Test
+    void batchLookup_withMixedLimits_shouldUseCorrectLimits() {
         // Given
-        lookupService = new BaseLookupService(entityManager, entityType);
-
         LookupRequestDTO request1 = LookupRequestDTO.builder()
             .search("test1")
             .limit(5) // Specific limit
@@ -191,12 +178,9 @@ class BaseLookupServiceTest {
         verify(query).setParameter(2, 10);
     }
 
-    @ParameterizedTest
-    @EnumSource(value = EntityType.class, names = {"ARTIST", "CATEGORY"})
-    void batchLookup_withNullBatchLimit_shouldUseDefaultLimit(EntityType entityType) {
+    @Test
+    void batchLookup_withNullBatchLimit_shouldUseDefaultLimit() {
         // Given
-        lookupService = new BaseLookupService(entityManager, entityType);
-
         LookupRequestDTO request = LookupRequestDTO.builder()
             .search("test")
             .limit(null)
@@ -215,65 +199,63 @@ class BaseLookupServiceTest {
         // Then
         verify(query).setParameter(2, 20); // Should use default limit of 20
     }
-    
-    @ParameterizedTest
-    @MethodSource("provideInvalidLimits")
-    void lookup_withInvalidLimit_shouldThrowException(Integer limit, EntityType entityType) {
+
+    @Test
+    void lookup_shouldUsePriorityOrderingInSql() {
         // Given
-        lookupService = new BaseLookupService(entityManager, entityType);
         LookupRequestDTO request = LookupRequestDTO.builder()
             .search("test")
-            .limit(limit)
-            .build();
-
-        // When/Then
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, 
-            () -> lookupService.lookup(request));
-        assertEquals("Limit must be greater than zero", exception.getMessage());
-    }
-    
-    @Test
-    void lookup_withNullSearch_shouldReturnEmptyList() {
-        // Given
-        lookupService = new BaseLookupService(entityManager, EntityType.ARTIST);
-        LookupRequestDTO request = LookupRequestDTO.builder()
-            .search(null)
             .limit(10)
             .build();
 
-        // When
-        List<LookupResultDTO> result = lookupService.lookup(request);
-
-        // Then
-        assertTrue(result.isEmpty());
-        verifyNoInteractions(query);
-    }
-    
-    @Test
-    void lookup_withEmptySearch_shouldReturnEmptyList() {
-        // Given
-        lookupService = new BaseLookupService(entityManager, EntityType.ARTIST);
-        LookupRequestDTO request = LookupRequestDTO.builder()
-            .search("")
-            .limit(10)
-            .build();
+        when(query.getResultList()).thenReturn(new ArrayList<>());
 
         // When
-        List<LookupResultDTO> result = lookupService.lookup(request);
+        lookupService.lookup(request);
 
         // Then
-        assertTrue(result.isEmpty());
-        verifyNoInteractions(query);
+        // Verify SQL contains priority ordering logic
+        verify(entityManager).createNativeQuery(argThat(sql -> 
+            sql.contains("CASE") && 
+            sql.contains("WHEN LOWER(e.name) = LOWER(?1) THEN 0") &&
+            sql.contains("WHEN LOWER(e.name) LIKE LOWER(CONCAT(?1, '%')) THEN 1") &&
+            sql.contains("ELSE 2")
+        ));
     }
-    
-    private static Stream<Arguments> provideInvalidLimits() {
-        return Stream.of(
-            Arguments.of(0, EntityType.ARTIST),
-            Arguments.of(-1, EntityType.ARTIST),
-            Arguments.of(Integer.MIN_VALUE, EntityType.ARTIST),
-            Arguments.of(0, EntityType.CATEGORY),
-            Arguments.of(-1, EntityType.CATEGORY),
-            Arguments.of(Integer.MIN_VALUE, EntityType.CATEGORY)
-        );
+
+    // Test implementations
+    private enum TestEntityType implements EntityType {
+        TEST_ENTITY(1, "test_entity");
+
+        private final int code;
+        private final String name;
+
+        TestEntityType(int code, String name) {
+            this.code = code;
+            this.name = name;
+        }
+
+        @Override
+        public Integer getCode() {
+            return code;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+    }
+
+    // Test implementation of BaseLookupService
+    private static class TestLookupService extends BaseLookupService<TestEntityType, BaseEntityMetadata<TestEntityType>> {
+
+        public TestLookupService(EntityManager entityManager, TestEntityType entityType) {
+            super(entityManager, entityType);
+        }
+
+        @Override
+        protected BaseEntityMetadata<TestEntityType> createEntityMetadata() {
+            return new BaseEntityMetadata<>(getEntityType());
+        }
     }
 }

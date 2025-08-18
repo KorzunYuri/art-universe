@@ -6,7 +6,7 @@ import yurykorzun.art.universe.music.data.master.entity.ArtistCategory;
 import yurykorzun.art.universe.music.data.master.entity.ArtistCategoryBinding;
 import yurykorzun.art.universe.music.data.master.entity.ArtistTrack;
 import yurykorzun.art.universe.music.data.master.entity.ArtistTrackBinding;
-import yurykorzun.art.universe.music.data.master.entity.EntityType;
+import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -70,7 +70,7 @@ public class RelationRegistry {
      * @return Relation entity class
      * @throws IllegalArgumentException if no relation is found
      */
-    public Class<? extends RelationEntity> getRelationEntityClass(EntityType sourceEntityType, EntityType targetEntityType) {
+    public Class<? extends RelationEntity> getRelationEntityClass(MasterEntityType sourceEntityType, MasterEntityType targetEntityType) {
         // Check direct order
         RelationKey directKey = new RelationKey(sourceEntityType, targetEntityType);
         Class<? extends RelationEntity> entityClass = relationEntities.get(directKey);
@@ -99,7 +99,7 @@ public class RelationRegistry {
      * @return Relation binding entity class
      * @throws IllegalArgumentException if no relation binding is found
      */
-    public Class<? extends RelationBindingEntity> getRelationBindingEntityClass(EntityType sourceEntityType, EntityType targetEntityType) {
+    public Class<? extends RelationBindingEntity> getRelationBindingEntityClass(MasterEntityType sourceEntityType, MasterEntityType targetEntityType) {
         // Check direct order
         RelationKey directKey = new RelationKey(sourceEntityType, targetEntityType);
         Class<? extends RelationBindingEntity> entityClass = relationBindingEntities.get(directKey);
@@ -127,7 +127,7 @@ public class RelationRegistry {
      * @param targetEntityType Target entity type
      * @return true if the source entity is the first in the relation, false otherwise
      */
-    public boolean isFirstEntityInRelation(EntityType sourceEntityType, EntityType targetEntityType) {
+    public boolean isFirstEntityInRelation(MasterEntityType sourceEntityType, MasterEntityType targetEntityType) {
         RelationKey directKey = new RelationKey(sourceEntityType, targetEntityType);
         if (relationEntities.containsKey(directKey)) {
             return true;
@@ -144,7 +144,7 @@ public class RelationRegistry {
      * @param targetEntityType Target entity type
      * @return Relation table name
      */
-    public String getRelationTableName(EntityType sourceEntityType, EntityType targetEntityType) {
+    public String getRelationTableName(MasterEntityType sourceEntityType, MasterEntityType targetEntityType) {
         try {
             Class<? extends RelationEntity> entityClass = getRelationEntityClass(sourceEntityType, targetEntityType);
             RelationEntity instance = entityClass.getDeclaredConstructor().newInstance();
@@ -161,7 +161,7 @@ public class RelationRegistry {
      * @param targetEntityType Target entity type
      * @return Relation binding table name
      */
-    public String getRelationBindingTableName(EntityType sourceEntityType, EntityType targetEntityType) {
+    public String getRelationBindingTableName(MasterEntityType sourceEntityType, MasterEntityType targetEntityType) {
         try {
             Class<? extends RelationBindingEntity> entityClass = getRelationBindingEntityClass(sourceEntityType, targetEntityType);
             RelationBindingEntity instance = entityClass.getDeclaredConstructor().newInstance();

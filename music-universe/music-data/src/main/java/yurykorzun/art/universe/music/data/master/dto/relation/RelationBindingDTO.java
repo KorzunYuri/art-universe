@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.entity.EntityType;
+import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 
 /**
  * DTO for relation binding information
@@ -21,6 +21,6 @@ public class RelationBindingDTO {
     private Long relationId;
     private String sourceEntityName;
     private String targetEntityName;
-    private EntityType sourceEntityType;
-    private EntityType targetEntityType;
+    private MasterEntityType sourceEntityType;
+    private MasterEntityType targetEntityType;
 }

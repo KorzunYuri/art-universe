@@ -40,13 +40,13 @@ public class ArtistCategory extends BaseEntity implements RelationEntity {
     private Category category;
     
     @Override
-    public EntityType getFirstEntityType() {
-        return EntityType.ARTIST;
+    public MasterEntityType getFirstEntityType() {
+        return MasterEntityType.ARTIST;
     }
     
     @Override
-    public EntityType getSecondEntityType() {
-        return EntityType.CATEGORY;
+    public MasterEntityType getSecondEntityType() {
+        return MasterEntityType.CATEGORY;
     }
     
     @Override

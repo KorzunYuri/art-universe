@@ -7,6 +7,7 @@ import lombok.experimental.SuperBuilder;
 import yurykorzun.art.universe.common.persistence.entity.BaseEntity;
 
 import jakarta.persistence.*;
+import yurykorzun.art.universe.common.persistence.entity.EntityType;
 
 @MappedSuperclass
 @SuperBuilder
@@ -27,6 +28,5 @@ public abstract class BaseCollectableEntity extends BaseEntity {
     }
 
     @Transient
-    abstract public CollectableEntityType getType();
-
+    public abstract EntityType getEntityType();
 }

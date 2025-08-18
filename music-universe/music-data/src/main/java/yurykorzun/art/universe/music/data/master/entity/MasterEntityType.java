@@ -4,13 +4,14 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import yurykorzun.art.universe.common.Coded;
 import yurykorzun.art.universe.common.CodedRegistry;
+import yurykorzun.art.universe.common.persistence.entity.EntityType;
 
 import java.util.Arrays;
 
 /**
  * Enum representing entity types in the system
  */
-public enum EntityType implements Coded {
+public enum MasterEntityType implements EntityType {
     ARTIST(1, "artist"),
     ALBUM(2, "album"),
     TRACK(3, "track"),
@@ -20,7 +21,7 @@ public enum EntityType implements Coded {
     private final int code;
     private final String name;
 
-    EntityType(int code, String name) {
+    MasterEntityType(int code, String name) {
         this.code = code;
         this.name = name;
     }
@@ -45,12 +46,12 @@ public enum EntityType implements Coded {
      * @throws IllegalArgumentException if name doesn't match any EntityType
      */
     @JsonCreator
-    public static EntityType fromString(String name) {
+    public static MasterEntityType fromString(String name) {
         if (name == null) {
             throw new IllegalArgumentException("Entity type name cannot be null");
         }
         
-        for (EntityType entityType : EntityType.values()) {
+        for (MasterEntityType entityType : MasterEntityType.values()) {
             if (entityType.name.equalsIgnoreCase(name)) {
                 return entityType;
             }
@@ -59,6 +60,6 @@ public enum EntityType implements Coded {
     }
 
     static {
-        CodedRegistry.register(Arrays.asList(values()), EntityType.class);
+        CodedRegistry.register(Arrays.asList(values()), MasterEntityType.class);
     }
 }

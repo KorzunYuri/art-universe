@@ -3,7 +3,7 @@ package yurykorzun.art.universe.music.data.master.service;
 import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindResponseDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.entity.EntityType;
+import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 
 /**
  * Universal service for entity binding operations
@@ -18,5 +18,5 @@ public interface BindingService {
      * @param request Request containing list of external IDs to unbind
      * @return Response with unbinding results
      */
-    BatchUnbindResponseDTO batchUnbind(EntityType entityType, DataSource dataSource, BatchUnbindRequestDTO request);
+    BatchUnbindResponseDTO batchUnbind(MasterEntityType entityType, DataSource dataSource, BatchUnbindRequestDTO request);
 }

@@ -9,10 +9,10 @@ import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindRequestD
 import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindResponseDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedBatchLookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
+import yurykorzun.art.universe.common.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.entity.EntityType;
+import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.service.TrackService;
 import yurykorzun.art.universe.music.data.master.service.BindingService;
 
@@ -94,6 +94,6 @@ public class TrackController {
         @PathVariable DataSource dataSource,
         @Valid @RequestBody BatchUnbindRequestDTO request
     ) {
-        return bindingService.batchUnbind(EntityType.TRACK, dataSource, request);
+        return bindingService.batchUnbind(MasterEntityType.TRACK, dataSource, request);
     }
 }

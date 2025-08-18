@@ -9,12 +9,12 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import yurykorzun.art.universe.music.data.master.common.archetypes.JpaOnlyTest;
-import yurykorzun.art.universe.music.data.master.dto.lookup.BaseBatchLookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.LookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
+import yurykorzun.art.universe.common.dto.lookup.BaseBatchLookupRequestDTO;
+import yurykorzun.art.universe.common.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
+import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.entity.Dimension;
-import yurykorzun.art.universe.music.data.master.entity.EntityType;
+import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.repository.DimensionRepository;
 
 import java.util.Arrays;
@@ -38,7 +38,7 @@ class DimensionLookupServiceIntegrationTest extends JpaOnlyTest {
 
     @BeforeEach
     void setUp() {
-        lookupService = new DimensionLookupService(entityManager, EntityType.DIMENSION);
+        lookupService = new DimensionLookupService(entityManager);
 
         // Clear existing data
         dimensionRepository.deleteAll();

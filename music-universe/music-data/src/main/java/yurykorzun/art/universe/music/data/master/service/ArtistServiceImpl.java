@@ -3,21 +3,21 @@ package yurykorzun.art.universe.music.data.master.service;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import yurykorzun.art.universe.music.data.master.dto.lookup.BaseBatchLookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.BatchLookupResponseDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.LookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.LookupResultDTO;
+import yurykorzun.art.universe.common.dto.lookup.BaseBatchLookupRequestDTO;
+import yurykorzun.art.universe.common.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
+import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.entity.Artist;
 import yurykorzun.art.universe.music.data.master.entity.ArtistBinding;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.entity.EntityType;
+import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 import yurykorzun.art.universe.common.exception.EntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.repository.ArtistBindingRepository;
 import yurykorzun.art.universe.music.data.master.repository.ArtistRepository;
-import yurykorzun.art.universe.music.data.master.service.lookup.BaseLookupService;
+import yurykorzun.art.universe.music.data.master.service.lookup.MasterEntityLookupService;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,7 +27,7 @@ public class ArtistServiceImpl implements ArtistService {
 
     private final ArtistRepository artistRepository;
     private final ArtistBindingRepository bindingsRepository;
-    private final BaseLookupService lookupService;
+    private final MasterEntityLookupService lookupService;
 
     public ArtistServiceImpl(
         ArtistRepository artistRepository,
@@ -36,7 +36,7 @@ public class ArtistServiceImpl implements ArtistService {
     ) {
         this.artistRepository = artistRepository;
         this.bindingsRepository = bindingsRepository;
-        this.lookupService = new BaseLookupService(entityManager, EntityType.ARTIST);
+        this.lookupService = new MasterEntityLookupService(entityManager, MasterEntityType.ARTIST);
     }
 
     @Override
