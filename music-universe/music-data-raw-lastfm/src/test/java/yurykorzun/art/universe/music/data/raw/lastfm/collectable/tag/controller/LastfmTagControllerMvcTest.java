@@ -14,12 +14,15 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
+import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
+import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.EntityTagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.EntityTagSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.LastfmTagResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.TagSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.service.LastfmTagLookupService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.service.LastfmTagService;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.BaseMvcTest;
@@ -42,6 +45,9 @@ class LastfmTagControllerMvcTest extends BaseMvcTest {
 
     @MockitoBean
     private LastfmTagService tagService;
+
+    @MockitoBean
+    private LastfmTagLookupService tagLookupService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -335,43 +341,84 @@ class LastfmTagControllerMvcTest extends BaseMvcTest {
     }
     
     @Test
-    void GET_tags_shouldAcceptAllFilterParameters() throws Exception {
+    void GET_lookupTags_shouldReturnLookupResults() throws Exception {
         // Given
         String search = "rock";
-        Set<Integer> approvalStatuses = Set.of(ApprovalStatus.APPROVED.getCode());
-        Integer minUsageCount = 100;
-        Integer minUsageUsersCount = 50;
+        Integer limit = 10;
         
-        List<LastfmTag> tags = List.of(
-            LastfmTag.builder()
-                .id(1L)
-                .name("rock")
-                .url("https://example.com/rock")
-                .usageCount(150)
-                .usageUsersCount(75)
-                .approvalStatus(ApprovalStatus.APPROVED)
-                .apiCall(EntityCreationHelper.createApiCall())
-                .build()
+        List<LookupResultDTO> expectedResults = List.of(
+            LookupResultDTO.builder().id(1L).name("rock").build(),
+            LookupResultDTO.builder().id(2L).name("rock music").build()
         );
-        
-        Pageable pageable = PageRequest.of(0, 20, Sort.by("name"));
-        Page<LastfmTag> tagPage = new PageImpl<>(tags, pageable, tags.size());
-        Page<LastfmTagResponseDto> dtoPage = tagPage.map(LastfmTagResponseDto::from);
-        
-        when(tagService.findAll(any(TagSearchParams.class), any(Pageable.class)))
-            .thenReturn(dtoPage);
 
-        String expectedJson = objectMapper.writeValueAsString(dtoPage);
+        LookupRequestDTO expectedRequest = LookupRequestDTO.builder()
+            .search(search)
+            .limit(limit)
+            .build();
+
+        when(tagLookupService.lookup(eq(expectedRequest)))
+            .thenReturn(expectedResults);
+
+        String expectedJson = objectMapper.writeValueAsString(expectedResults);
 
         // When & Then
-        mockMvc.perform(get("/api/v1/tags")
+        mockMvc.perform(get("/api/v1/tags/lookup")
                 .param("search", search)
-                .param("approvalStatuses", String.valueOf(ApprovalStatus.APPROVED.getCode()))
-                .param("minUsageCount", minUsageCount.toString())
-                .param("minUsageUsersCount", minUsageUsersCount.toString())
+                .param("limit", limit.toString())
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(expectedJson));
+            .andExpect(status().isOk())
+            .andExpect(content().json(expectedJson));
+    }
+
+    @Test
+    void GET_lookupTags_shouldHandleNullLimit() throws Exception {
+        // Given
+        String search = "jazz";
+        
+        List<LookupResultDTO> expectedResults = List.of(
+            LookupResultDTO.builder().id(1L).name("jazz").build()
+        );
+
+        LookupRequestDTO expectedRequest = LookupRequestDTO.builder()
+            .search(search)
+            .limit(null)
+            .build();
+
+        when(tagLookupService.lookup(eq(expectedRequest)))
+            .thenReturn(expectedResults);
+
+        String expectedJson = objectMapper.writeValueAsString(expectedResults);
+
+        // When & Then
+        mockMvc.perform(get("/api/v1/tags/lookup")
+                .param("search", search)
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().json(expectedJson));
+    }
+
+    @Test
+    void GET_lookupTags_shouldReturnEmptyList_whenNoMatches() throws Exception {
+        // Given
+        String search = "NonExistentTag";
+        Integer limit = 10;
+        
+        LookupRequestDTO expectedRequest = LookupRequestDTO.builder()
+            .search(search)
+            .limit(limit)
+            .build();
+
+        when(tagLookupService.lookup(eq(expectedRequest)))
+            .thenReturn(List.of());
+
+        String expectedJson = objectMapper.writeValueAsString(List.of());
+
+        // When & Then
+        mockMvc.perform(get("/api/v1/tags/lookup")
+                .param("search", search)
+                .param("limit", limit.toString())
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().json(expectedJson));
     }
 }

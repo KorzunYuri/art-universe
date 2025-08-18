@@ -5,11 +5,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
+import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto.ArtistSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto.LastfmArtistResponseDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistLookupService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.dto.ApprovalStatusRequestDto;
 
+import java.util.List;
 import java.util.Set;
 
 @RestController
@@ -17,9 +21,11 @@ import java.util.Set;
 public class LastfmArtistController {
 
     private final LastfmArtistService artistService;
+    private final LastfmArtistLookupService artistLookupService;
 
-    public LastfmArtistController(LastfmArtistService artistService) {
+    public LastfmArtistController(LastfmArtistService artistService, LastfmArtistLookupService artistLookupService) {
         this.artistService = artistService;
+        this.artistLookupService = artistLookupService;
     }
 
     @GetMapping(
@@ -51,5 +57,17 @@ public class LastfmArtistController {
         @RequestBody ApprovalStatusRequestDto request
     ) {
         return artistService.updateApprovalStatus(id, request.approvalStatus());
+    }
+
+    @GetMapping("/lookup")
+    public List<LookupResultDTO> lookupArtists(
+        @RequestParam String search,
+        @RequestParam(required = false) Integer limit
+    ) {
+        LookupRequestDTO request = LookupRequestDTO.builder()
+            .search(search)
+            .limit(limit)
+            .build();
+        return artistLookupService.lookup(request);
     }
 }

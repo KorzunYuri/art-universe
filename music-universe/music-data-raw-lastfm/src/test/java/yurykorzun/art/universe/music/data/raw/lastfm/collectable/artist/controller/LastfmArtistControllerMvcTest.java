@@ -10,9 +10,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
+import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
+import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto.ArtistSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto.LastfmArtistResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistLookupService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.dto.ApprovalStatusRequestDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
@@ -39,6 +42,9 @@ class LastfmArtistControllerMvcTest extends BaseMvcTest {
 
     @MockitoBean
     private LastfmArtistService artistService;
+
+    @MockitoBean
+    private LastfmArtistLookupService artistLookupService;
 
     private List<LastfmArtist> mockArtists;
     private LastfmArtist mockArtist;
@@ -148,6 +154,88 @@ class LastfmArtistControllerMvcTest extends BaseMvcTest {
         mockMvc.perform(patch("/api/v1/artists/{id}/approval", mockArtist.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isOk())
+            .andExpect(content().json(expectedJson));
+    }
+
+    @Test
+    void GET_lookupArtists_shouldReturnLookupResults() throws Exception {
+        // Given
+        String search = "Beatles";
+        Integer limit = 10;
+        
+        List<LookupResultDTO> expectedResults = List.of(
+            LookupResultDTO.builder().id(1L).name("The Beatles").build(),
+            LookupResultDTO.builder().id(2L).name("Beatles Revival").build()
+        );
+
+        LookupRequestDTO expectedRequest = LookupRequestDTO.builder()
+            .search(search)
+            .limit(limit)
+            .build();
+
+        when(artistLookupService.lookup(eq(expectedRequest)))
+            .thenReturn(expectedResults);
+
+        String expectedJson = objectMapper.writeValueAsString(expectedResults);
+
+        // When & Then
+        mockMvc.perform(get("/api/v1/artists/lookup")
+                .param("search", search)
+                .param("limit", limit.toString())
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().json(expectedJson));
+    }
+
+    @Test
+    void GET_lookupArtists_shouldHandleNullLimit() throws Exception {
+        // Given
+        String search = "Beatles";
+        
+        List<LookupResultDTO> expectedResults = List.of(
+            LookupResultDTO.builder().id(1L).name("The Beatles").build()
+        );
+
+        LookupRequestDTO expectedRequest = LookupRequestDTO.builder()
+            .search(search)
+            .limit(null)
+            .build();
+
+        when(artistLookupService.lookup(eq(expectedRequest)))
+            .thenReturn(expectedResults);
+
+        String expectedJson = objectMapper.writeValueAsString(expectedResults);
+
+        // When & Then
+        mockMvc.perform(get("/api/v1/artists/lookup")
+                .param("search", search)
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().json(expectedJson));
+    }
+
+    @Test
+    void GET_lookupArtists_shouldReturnEmptyList_whenNoMatches() throws Exception {
+        // Given
+        String search = "NonExistentArtist";
+        Integer limit = 10;
+        
+        LookupRequestDTO expectedRequest = LookupRequestDTO.builder()
+            .search(search)
+            .limit(limit)
+            .build();
+
+        when(artistLookupService.lookup(eq(expectedRequest)))
+            .thenReturn(List.of());
+
+        String expectedJson = objectMapper.writeValueAsString(List.of());
+
+        // When & Then
+        mockMvc.perform(get("/api/v1/artists/lookup")
+                .param("search", search)
+                .param("limit", limit.toString())
+                .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(content().json(expectedJson));
     }

@@ -11,6 +11,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
+import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
+import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.dto.ApprovalStatusRequestDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
@@ -19,6 +21,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.EntityT
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.LastfmTagResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.TagSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.service.LastfmTagLookupService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.service.LastfmTagService;
 
 import java.util.Collections;
@@ -34,6 +37,9 @@ class LastfmTagControllerTest {
 
     @Mock
     private LastfmTagService tagService;
+
+    @Mock
+    private LastfmTagLookupService tagLookupService;
 
     @InjectMocks
     private LastfmTagController controller;
@@ -348,5 +354,82 @@ class LastfmTagControllerTest {
         
         assertNotNull(response);
         assertEquals(2, response.size());
+    }
+
+    @Test
+    void lookupTags_shouldReturnLookupResults() {
+        // Given
+        String search = "rock";
+        Integer limit = 10;
+        
+        List<LookupResultDTO> expectedResults = List.of(
+            LookupResultDTO.builder().id(1L).name("rock").build(),
+            LookupResultDTO.builder().id(2L).name("rock music").build()
+        );
+
+        LookupRequestDTO expectedRequest = LookupRequestDTO.builder()
+            .search(search)
+            .limit(limit)
+            .build();
+
+        when(tagLookupService.lookup(eq(expectedRequest)))
+            .thenReturn(expectedResults);
+
+        // When
+        List<LookupResultDTO> result = controller.lookupTags(search, limit);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals("rock", result.get(0).getName());
+        assertEquals("rock music", result.get(1).getName());
+    }
+
+    @Test
+    void lookupTags_shouldHandleNullLimit() {
+        // Given
+        String search = "jazz";
+        
+        List<LookupResultDTO> expectedResults = List.of(
+            LookupResultDTO.builder().id(1L).name("jazz").build()
+        );
+
+        LookupRequestDTO expectedRequest = LookupRequestDTO.builder()
+            .search(search)
+            .limit(null)
+            .build();
+
+        when(tagLookupService.lookup(eq(expectedRequest)))
+            .thenReturn(expectedResults);
+
+        // When
+        List<LookupResultDTO> result = controller.lookupTags(search, null);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("jazz", result.get(0).getName());
+    }
+
+    @Test
+    void lookupTags_shouldReturnEmptyListWhenNoMatches() {
+        // Given
+        String search = "NonExistentTag";
+        Integer limit = 10;
+        
+        LookupRequestDTO expectedRequest = LookupRequestDTO.builder()
+            .search(search)
+            .limit(limit)
+            .build();
+
+        when(tagLookupService.lookup(eq(expectedRequest)))
+            .thenReturn(List.of());
+
+        // When
+        List<LookupResultDTO> result = controller.lookupTags(search, limit);
+
+        // Then
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
     }
 }

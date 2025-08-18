@@ -5,12 +5,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
+import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.dto.ApprovalStatusRequestDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.EntityTagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.EntityTagSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.LastfmTagResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.dto.TagSearchParams;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.service.LastfmTagLookupService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.service.LastfmTagService;
 
 import java.util.List;
@@ -21,9 +24,11 @@ import java.util.Set;
 public class LastfmTagController {
 
     private final LastfmTagService tagService;
+    private final LastfmTagLookupService tagLookupService;
 
-    public LastfmTagController(LastfmTagService tagService) {
+    public LastfmTagController(LastfmTagService tagService, LastfmTagLookupService tagLookupService) {
         this.tagService = tagService;
+        this.tagLookupService = tagLookupService;
     }
 
     @GetMapping(
@@ -82,5 +87,17 @@ public class LastfmTagController {
             throw new IllegalArgumentException("Unknown entity type: " + entityTypeStr +
                 ". Expected one of: ARTIST, ALBUM, TRACK, TAG or their numeric codes (1, 2, 3, 4)");
         }
+    }
+
+    @GetMapping("/lookup")
+    public List<LookupResultDTO> lookupTags(
+        @RequestParam String search,
+        @RequestParam(required = false) Integer limit
+    ) {
+        LookupRequestDTO request = LookupRequestDTO.builder()
+            .search(search)
+            .limit(limit)
+            .build();
+        return tagLookupService.lookup(request);
     }
 }

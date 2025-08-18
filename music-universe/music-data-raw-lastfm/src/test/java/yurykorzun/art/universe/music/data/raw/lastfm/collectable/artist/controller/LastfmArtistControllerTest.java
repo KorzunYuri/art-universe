@@ -7,10 +7,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
+import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
+import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto.ArtistSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto.LastfmArtistResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistLookupService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.dto.ApprovalStatusRequestDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
@@ -29,6 +32,9 @@ class LastfmArtistControllerTest {
 
     @Mock
     private LastfmArtistService artistService;
+
+    @Mock
+    private LastfmArtistLookupService artistLookupService;
 
     @InjectMocks
     private LastfmArtistController controller;
@@ -153,5 +159,82 @@ class LastfmArtistControllerTest {
         // then
         assertNotNull(result);
         assertEquals(newApprovalStatus.getCode(), result.approvalStatus());
+    }
+
+    @Test
+    void lookupArtists_shouldReturnLookupResults() {
+        // given
+        String search = "Beatles";
+        Integer limit = 10;
+        
+        List<LookupResultDTO> expectedResults = List.of(
+            LookupResultDTO.builder().id(1L).name("The Beatles").build(),
+            LookupResultDTO.builder().id(2L).name("Beatles Revival").build()
+        );
+
+        LookupRequestDTO expectedRequest = LookupRequestDTO.builder()
+            .search(search)
+            .limit(limit)
+            .build();
+
+        when(artistLookupService.lookup(eq(expectedRequest)))
+            .thenReturn(expectedResults);
+
+        // when
+        List<LookupResultDTO> result = controller.lookupArtists(search, limit);
+
+        // then
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals("The Beatles", result.get(0).getName());
+        assertEquals("Beatles Revival", result.get(1).getName());
+    }
+
+    @Test
+    void lookupArtists_shouldHandleNullLimit() {
+        // given
+        String search = "Beatles";
+        
+        List<LookupResultDTO> expectedResults = List.of(
+            LookupResultDTO.builder().id(1L).name("The Beatles").build()
+        );
+
+        LookupRequestDTO expectedRequest = LookupRequestDTO.builder()
+            .search(search)
+            .limit(null)
+            .build();
+
+        when(artistLookupService.lookup(eq(expectedRequest)))
+            .thenReturn(expectedResults);
+
+        // when
+        List<LookupResultDTO> result = controller.lookupArtists(search, null);
+
+        // then
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("The Beatles", result.get(0).getName());
+    }
+
+    @Test
+    void lookupArtists_shouldReturnEmptyListWhenNoMatches() {
+        // given
+        String search = "NonExistentArtist";
+        Integer limit = 10;
+        
+        LookupRequestDTO expectedRequest = LookupRequestDTO.builder()
+            .search(search)
+            .limit(limit)
+            .build();
+
+        when(artistLookupService.lookup(eq(expectedRequest)))
+            .thenReturn(List.of());
+
+        // when
+        List<LookupResultDTO> result = controller.lookupArtists(search, limit);
+
+        // then
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
     }
 }

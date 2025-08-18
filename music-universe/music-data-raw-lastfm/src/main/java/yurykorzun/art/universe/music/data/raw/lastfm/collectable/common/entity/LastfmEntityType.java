@@ -1,9 +1,8 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity;
 
 import lombok.Getter;
-import yurykorzun.art.universe.common.Coded;
 import yurykorzun.art.universe.common.CodedRegistry;
-import yurykorzun.art.universe.common.data.raw.entity.CollectableEntityType;
+import yurykorzun.art.universe.common.persistence.entity.EntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.entity.LastfmAlbum;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
@@ -12,7 +11,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.La
 import java.util.Arrays;
 
 @Getter
-public enum LastfmEntityType implements Coded, CollectableEntityType {
+public enum LastfmEntityType implements EntityType {
 
     ARTIST(1,   LastfmArtist.class),
     ALBUM(2,    LastfmAlbum.class),
