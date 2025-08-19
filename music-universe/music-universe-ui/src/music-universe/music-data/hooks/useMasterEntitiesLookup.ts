@@ -1,24 +1,16 @@
+import { useEntityLookup } from "@/music-universe/shared/hooks/useEntityLookup";
 import type {MasterEntityType} from "@/music-universe/shared/types/entities.ts";
-import {useQuery} from "@tanstack/react-query";
-import {masterEntityLookupKeys} from "@/music-universe/shared/utils/query-keys.ts";
-import {lookupMasterEntities} from "@/music-universe/music-data/api/music-data-common-lookup.ts";
-import type {LookupRequestSourceParams} from "@/music-universe/music-data/types/master-entities-lookup.ts";
+import type {BasicMasterEntityLookupParams} from "@/music-universe/music-data/types/music-data-lookup-types.ts";
 
-export function useMasterEntitiesLookup<T extends MasterEntityType>(
+
+/**
+ * Hook for looking up master entities
+ * This is a convenience wrapper around useEntityLookup for master entities
+ */
+export function useMasterEntitiesLookup(
     entityType: MasterEntityType,
-    lookupParams: LookupRequestSourceParams<T>
+    params: BasicMasterEntityLookupParams,
+    enableEmptySearch = false
 ) {
-
-    const lookupQueryKey = masterEntityLookupKeys.query(entityType, lookupParams.search);
-    const lookupQuery = useQuery({
-        queryKey: lookupQueryKey,
-        queryFn: async () => {
-            return await lookupMasterEntities(entityType, lookupParams);
-        }
-    });
-
-    return {
-        currentOptions: lookupQuery.data ?? [],
-        isLoading: lookupQuery.isLoading
-    }
+    return useEntityLookup('master', entityType, params, enableEmptySearch);
 }

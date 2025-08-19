@@ -1,19 +1,21 @@
 // hooks
-import {useEffect, useRef, memo, useCallback, useMemo} from 'react';
+import { useEffect, useRef, memo, useCallback } from 'react';
 // components
-import {StaticAutocompleteInput} from "@/music-universe/shared/components";
+import { StaticAutocompleteInput } from "@/music-universe/shared/components";
 // types
-import type {
-    LookupEntity,
-    LookupRequestSourceParams
-} from '@/music-universe/music-data/types/master-entities-lookup.ts';
-import {useMasterEntitiesLookup} from "@/music-universe/music-data/hooks/useMasterEntitiesLookup.ts";
-import type {MasterEntityType} from "@/music-universe/shared/types/entities.ts";
+import type { LookupEntity } from '@/music-universe/shared/types/lookup';
+import type { MasterEntityType } from "@/music-universe/shared/types/entities";
+import type { DataSource } from "@/music-universe/sources/shared/types/data-sources";
+import type { BasicLookupContext } from "@/music-universe/shared/types/lookup-context";
+import type { RawEntityLookupContext } from "@/music-universe/sources/shared/types/lookup-context";
+// hooks
+import { useEntityLookup } from "@/music-universe/shared/hooks/useEntityLookup.ts";
 
-export interface MasterEntityLookupProps<T extends MasterEntityType> {
-    entityType: MasterEntityType,
+export interface EntityLookupProps {
+    dataSource: DataSource | 'master';
+    entityType: MasterEntityType;
     searchString: string;
-    requestFactory: (searchString: string) => LookupRequestSourceParams<T>;
+    context: BasicLookupContext | RawEntityLookupContext;
     onSelect: (entity: LookupEntity | null) => void;
     onChange: (value: string) => void;
     selectedEntity?: LookupEntity | null;
@@ -21,29 +23,35 @@ export interface MasterEntityLookupProps<T extends MasterEntityType> {
     disabled?: boolean;
     className?: string;
     autoSelectExactMatch?: boolean;
+    limit?: number;
 }
 
-export const MasterEntityLookup = memo(<T extends MasterEntityType>({
+export const EntityLookup = memo(({
+    dataSource,
     entityType,
     searchString,
-    requestFactory,
+    context,
     onSelect,
     onChange,
     selectedEntity = null,
     placeholder = "Search...",
     disabled = false,
     className = '',
-    autoSelectExactMatch = true
-}: MasterEntityLookupProps<T>) => {
+    autoSelectExactMatch = true,
+    limit = 20
+}: EntityLookupProps) => {
 
-    const request = useMemo(
-        () => requestFactory(searchString),
-        [requestFactory, searchString]);
+    // Combine search string with context and limit
+    const lookupParams = {
+        search: searchString,
+        context,
+        limit
+    };
 
     const {
         currentOptions,
         isLoading
-    } = useMasterEntitiesLookup(entityType, request);
+    } = useEntityLookup(dataSource, entityType, lookupParams);
 
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
     const lastSearchValue = useRef('');
@@ -80,7 +88,7 @@ export const MasterEntityLookup = memo(<T extends MasterEntityType>({
 
     // Handle entity selection
     const handleEntitySelect = useCallback((entity: LookupEntity | null) => {
-        console.log(`🔄 MasterEntityLookup: handleEntitySelect called with:`, entity?.name || 'null');
+        console.log(`🔄 UniversalEntityLookup: handleEntitySelect called with:`, entity?.name || 'null');
         onSelect(entity);
     }, [onSelect]);
 

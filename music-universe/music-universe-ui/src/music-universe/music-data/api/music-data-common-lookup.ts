@@ -1,29 +1,46 @@
 import type {MasterEntityType, RawEntity, ArtistRelatedRawEntity} from "@/music-universe/shared/types/entities.ts";
-import type {
-    BatchLookupResponseDTO,
-    LookupEntity, LookupRequestMap, LookupRequestSourceParams
-} from "@/music-universe/music-data/types/master-entities-lookup.ts";
 import {MusicDataConfig} from "@/music-universe/music-data/config/musicdataconfig.ts";
 import axios from "axios";
 import {entityToEndpoint} from "@/music-universe/music-data/api/music-data-commons.ts";
+import {
+    LookupRequestSourceParams,
+    type BatchLookupResponseDTO,
+    type LookupRequestMap
+} from "@/music-universe/music-data/types/master-entities-lookup.ts";
+import type {LookupEntity} from "@/music-universe/shared/types/lookup.ts";
+import type {
+    BasicMasterLookupRequest,
+    MasterArtistRelatedLookupRequest
+} from "@/music-universe/music-data/types/music-data-lookup-types";
 
 /**
- * Performs batch lookup of master entities for a specific entity
+ * Direct lookup function for master entities using typed requests
+ * This is the function that should be used in lookup configurations
+ */
+export async function lookupMasterEntities<K extends MasterEntityType>(
+    entityType: K,
+    request: K extends 'album' | 'track' ? MasterArtistRelatedLookupRequest : BasicMasterLookupRequest
+): Promise<LookupEntity[]> {
+    const endpoint = entityToEndpoint[entityType];
+    const url = `${MusicDataConfig.baseApiUrl}/${endpoint}/lookup`;
+    
+    const response = await axios.get<LookupEntity[]>(url, { params: request });
+    return response.data;
+}
+
+/**
+ * Legacy function - performs batch lookup of master entities for a specific entity
+ * Uses the old LookupRequestSourceParams approach
  *
  * @param entityType
  * @param sourceParams parameters used to build the request
  * @returns List of matching categories
  */
-export async function lookupMasterEntities<K extends MasterEntityType>(
+export async function lookupMasterEntitiesWithParams<K extends MasterEntityType>(
     entityType: K,
     sourceParams: LookupRequestSourceParams<K>
 ): Promise<LookupEntity[]> {
-    const endpoint = entityToEndpoint[entityType];
-    const url = `${MusicDataConfig.baseApiUrl}/${endpoint}/lookup`;
-    const params = toLookupRequest(sourceParams);
-
-    const response = await axios.get<LookupEntity[]>(url, { params });
-    return response.data;
+    return lookupMasterEntities(entityType, toLookupRequest(sourceParams));
 }
 
 /**
@@ -35,7 +52,7 @@ export async function lookupMasterEntities<K extends MasterEntityType>(
  * @param limit default row limit for each lookup list
  * @returns Object with lookup results grouped by search strings
  */
-export async function batchLookupMasterEntities<K extends MasterEntityType>(
+export async function batchLookupMasterEntitiesWithParams<K extends MasterEntityType>(
     entityType: K,
     sourceParams: LookupRequestSourceParams<K>[],
     limit: number = 10
@@ -66,9 +83,7 @@ function toLookupRequest<T extends MasterEntityType>(
 
     // For track and album entities, add artist-related parameters if available
     if (
-        entity &&
-        (entity.getEntityType() === 'track' || entity.getEntityType() === 'album')
-        && isArtistRelatedEntity(entity)
+        entity && isArtistRelatedEntity(entity)
     ) {
         const artistRelatedEntity = entity as ArtistRelatedRawEntity<T>;
 
@@ -89,8 +104,8 @@ function toLookupRequest<T extends MasterEntityType>(
  * Type guard to check if an entity implements ArtistRelatedRawEntity
  */
 function isArtistRelatedEntity<T extends MasterEntityType>(entity: RawEntity<T>): entity is ArtistRelatedRawEntity<T> {
-    return 'getExternalArtistId' in entity &&
-           typeof entity.getExternalArtistId === 'function' &&
-           'getMasterArtistId' in entity &&
-           typeof entity.getMasterArtistId === 'function';
+    return (    entity.getEntityType() === 'track'
+            ||  entity.getEntityType() === 'album'  )
+        && 'getExternalArtistId'    in entity && typeof entity.getExternalArtistId  === 'function'
+        && 'getMasterArtistId'      in entity && typeof entity.getMasterArtistId    === 'function';
 }

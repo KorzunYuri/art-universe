@@ -2,13 +2,9 @@
 import {useCallback, useEffect, useState} from "react";
 import {useLastfmEntity} from "@/music-universe/sources/lastfm/hooks/useLastfmEntity.tsx";
 // components
-import {MasterEntityLookup} from "@/music-universe/shared/components";
+import {EntityLookup} from "@/music-universe/shared/components";
 // types
-import {
-    createBaseLookupRequest,
-    type LookupEntity,
-    type LookupRequestSourceParams
-} from "@/music-universe/music-data/types/master-entities-lookup.ts";
+import type { LookupEntity } from "@/music-universe/shared/types/lookup";
 // styles
 import commonStyles from "@/music-universe/shared/styles/common.module.scss";
 import styles from "./EntityBinding.module.scss";
@@ -22,7 +18,9 @@ import {
 } from "@/music-universe/music-data/api/music-data-common-binding.ts";
 import type {LastfmSupportedEntityType} from "@/music-universe/sources/lastfm/types/lastfm-entity.ts";
 import {useQueryClient} from "@tanstack/react-query";
-import {masterEntityLookupKeys} from "@/music-universe/shared/utils/query-keys.ts";
+import {entityLookupKeys} from "@/music-universe/shared/utils/query-keys.ts";
+import { LookupContextFactory } from "@/music-universe/shared/types/lookup-context";
+import { RawEntityLookupContextFactory } from "@/music-universe/sources/shared/types/lookup-context";
 
 interface EntityBindingProps<K extends MasterEntityType> {
     dataSource: DataSource;
@@ -49,8 +47,8 @@ export const EntityBinding = <T extends LastfmSupportedEntityType>(
         dataSource,
         entityType,
         entityId,
-        onBeforeBind = async (hasMasterExisted: boolean) => true,
-        onAfterBind = (hasMasterExisted: boolean) => {},
+        onBeforeBind = async () => true,
+        onAfterBind = () => {},
         onBeforeUnbind = async () => true,
         onAfterUnbind = () => {},
         disabled = false
@@ -77,19 +75,6 @@ export const EntityBinding = <T extends LastfmSupportedEntityType>(
     }, [entity]);
 
     const isDisabled = disabled || isLoading || isBinding || isUnbinding || isError;
-
-    const createLookupRequest: (searchString: string) => LookupRequestSourceParams<T> = useCallback((searchString: string) => {
-        const baseParams = createBaseLookupRequest(searchString);
-        if (!entity) {
-            return baseParams as LookupRequestSourceParams<T>;
-        }
-
-        // @ts-expect-error TS2345: Argument of type A | B is not assignable to type A & B
-        return {
-            ...baseParams,
-            rawEntity: entity
-        } as LookupRequestSourceParams<T>;
-    }, [entity]);
 
     // Handle input change in autocomplete
     const handleInputChange = useCallback((value: string) => {
@@ -188,7 +173,7 @@ export const EntityBinding = <T extends LastfmSupportedEntityType>(
             if (wasCreationRequest) {
                 console.log(`🔄 EntityBinding: Refreshing lookup after create`);
                 // TODO move to onAfterBind on parent side?
-                queryClient.invalidateQueries({ queryKey: masterEntityLookupKeys.type(entityType) });
+                await queryClient.invalidateQueries({ queryKey: entityLookupKeys.type('master', entityType) });
             }
         } catch (error) {
             console.error("Failed to bind entity:", error);
@@ -221,6 +206,13 @@ export const EntityBinding = <T extends LastfmSupportedEntityType>(
             setIsUnbinding(false);
         }
     }
+
+    // Create lookup context based on entity type and available data
+    const getLookupContext = () => {
+        return entity ? 
+            RawEntityLookupContextFactory.fromRawEntity(entity) : 
+            LookupContextFactory.basic();
+    };
 
     // Render button based on current state
     const renderButton = () => {
@@ -276,10 +268,11 @@ export const EntityBinding = <T extends LastfmSupportedEntityType>(
             ) : (
                 // Unbound state
                 <>
-                    <MasterEntityLookup
+                    <EntityLookup
+                        dataSource="master"
                         searchString={inputValue}
                         entityType={entityType}
-                        requestFactory={createLookupRequest}
+                        context={getLookupContext()}
                         onSelect={handleEntitySelect}
                         onChange={handleInputChange}
                         selectedEntity={selectedEntity}
@@ -289,6 +282,7 @@ export const EntityBinding = <T extends LastfmSupportedEntityType>(
                             bindingState === BindingState.UNBOUND_WITH_MATCH ? styles.matchedState : ''
                         }`}
                         autoSelectExactMatch={true}
+                        limit={20}
                     />
                     {renderButton()}
                 </>

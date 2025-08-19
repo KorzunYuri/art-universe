@@ -1,6 +1,6 @@
 import type {MasterEntityType} from "@/music-universe/shared/types/entities.ts";
 import type {DataSource} from "@/music-universe/sources/shared/types/data-sources.ts";
-
+import type { BaseLookupParams } from "@/music-universe/shared/types/lookup.ts";
 /**
  * keys for raw entities
  */
@@ -32,10 +32,12 @@ export const masterEntitiesKeys = {
 /**
  * keys for lookup
  */
-export const masterEntityLookupKeys = {
+export const entityLookupKeys = {
   all: ['lookup'] as const,
-  type:   (entityType: MasterEntityType) =>
-    [...masterEntityLookupKeys.all, entityType] as const,
-  query:  (entityType: MasterEntityType, query: string) =>
-    [...masterEntityLookupKeys.type(entityType), query] as const,
+  dataSource: (dataSource: DataSource | 'master') =>
+      [...entityLookupKeys.all, dataSource] as const,
+  type:   (dataSource: DataSource | 'master', entityType: MasterEntityType) =>
+    [...entityLookupKeys.dataSource(dataSource), entityType] as const,
+  query:  (dataSource: DataSource | 'master', entityType: MasterEntityType, params: BaseLookupParams) =>
+    [...entityLookupKeys.type(dataSource, entityType), params] as const,
 };

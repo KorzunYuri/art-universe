@@ -1,10 +1,11 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { masterEntityLookupKeys, rawEntitiesKeys } from "@/music-universe/shared/utils/query-keys.ts";
+import { entityLookupKeys, rawEntitiesKeys } from "@/music-universe/shared/utils/query-keys.ts";
 import type { DataSource } from "@/music-universe/sources/shared/types/data-sources.ts";
 import { fetchBoundMasterEntities } from "@/music-universe/music-data/api/music-data-common-binding.ts";
-import { lookupMasterEntities } from "@/music-universe/music-data/api/music-data-common-lookup.ts";
+import { lookupMasterEntitiesWithParams } from "@/music-universe/music-data/api/music-data-common-lookup.ts";
 import { LookupRequestSourceParams } from "@/music-universe/music-data/types/master-entities-lookup.ts";
 import type { MasterEntityType, RawEntity } from "@/music-universe/shared/types/entities.ts";
+import {RawEntityLookupContextFactory} from "@/music-universe/sources/shared/types/lookup-context.ts";
 
 /**
  * Generic hook for fetching and managing raw entities from any data source
@@ -59,8 +60,12 @@ export function useRawEntity<M extends MasterEntityType, R extends RawEntity<M>>
             try {
                 // Update the cache for master entities lookup
                 const searchSourceParams = new LookupRequestSourceParams(rawEntity.name, rawEntity);
-                const masterEntityLookup = await lookupMasterEntities(entityType, searchSourceParams);
-                const masterEntityLookupQueryKey = masterEntityLookupKeys.query(entityType, rawEntity.name);
+                const masterEntityLookup = await lookupMasterEntitiesWithParams(entityType, searchSourceParams);
+                const lookupParams = {
+                    search: rawEntity.name,
+                    context: RawEntityLookupContextFactory.fromRawEntity(rawEntity)
+                };
+                const masterEntityLookupQueryKey = entityLookupKeys.query('master', entityType, lookupParams);
                 queryClient.setQueryData(masterEntityLookupQueryKey, masterEntityLookup);
             } catch (error) {
                 console.error(`Failed to update master entities lookup: ${error}`);

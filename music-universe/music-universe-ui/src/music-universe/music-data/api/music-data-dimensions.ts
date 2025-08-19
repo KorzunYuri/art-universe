@@ -2,7 +2,7 @@ import axios from 'axios';
 import { MusicDataConfig } from '../config/musicdataconfig';
 import type {BasePageSearchParams} from '@/music-universe/shared/types/page';
 import { type Dimension, DimensionImpl } from '@/music-universe/shared/types/entities.ts';
-import type {LookupEntity} from "@/music-universe/music-data/types/master-entities-lookup.ts";
+import type {LookupEntity} from "@/music-universe/shared/types/lookup.ts";
 import {type BaseMasterEntityDto, entityToEndpoint} from "@/music-universe/music-data/api/music-data-commons.ts";
 
 export interface DimensionDto extends BaseMasterEntityDto {}

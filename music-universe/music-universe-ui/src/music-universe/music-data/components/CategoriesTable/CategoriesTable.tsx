@@ -4,7 +4,8 @@ import { useMasterEntitiesLookup } from "@/music-universe/music-data/hooks/useMa
 // components
 import { EntityTable, type EntityTableColumn } from "@/music-universe/shared/components/EntityTable/EntityTable";
 import { CategoriesTableRow } from "@/music-universe/music-data/components/CategoriesTableRow";
-// styles
+// types
+import { LookupContextFactory } from "@/music-universe/shared/types/lookup-context";// styles
 import styles from './CategoriesTable.module.css';
 
 const columns: EntityTableColumn[] = [
@@ -31,7 +32,7 @@ export const CategoriesTable = () => {
     } = useMasterEntityTable("category");
 
     // Initialize dimensions cache
-    useMasterEntitiesLookup('dimension', { search: '' });
+    useMasterEntitiesLookup('dimension', { search: '', context: LookupContextFactory.basic() }, true);
 
     return (
         <EntityTable

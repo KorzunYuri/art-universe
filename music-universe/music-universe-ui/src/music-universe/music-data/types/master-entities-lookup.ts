@@ -1,86 +1,35 @@
-import type {MasterEntityType, RawEntity} from "@/music-universe/shared/types/entities.ts";
+import type { MasterEntityType, RawEntity } from "@/music-universe/shared/types/entities";
+import type {
+    BasicMasterLookupRequest,
+    MasterArtistRelatedLookupRequest
+} from "@/music-universe/music-data/types/music-data-lookup-types";
+import type {LookupEntity} from "@/music-universe/shared/types/lookup.ts";
 
 /**
- * Common entity structure returned by lookup operations
+ * Request parameters for lookup operations
  */
-export interface LookupEntity {
-    id: number;
-    name: string;
+export class LookupRequestSourceParams<T extends MasterEntityType = MasterEntityType> {
+    constructor(
+        public search: string,
+        public rawEntity?: RawEntity<T>
+    ) {}
 }
 
 /**
- * Base lookup request interface
+ * Response for batch lookup operations
  */
-export interface BaseLookupRequest {
-    search: string;
-    limit?: number;
-}
-
-export function createBaseLookupRequest(
-    search: string,
-    limit: number = 20
-) {
-    return {
-        search,
-        limit
-    }
-}
-
-/**
- * Artist-related lookup request interface
- */
-export interface ArtistRelatedLookupRequest extends BaseLookupRequest {
-    masterArtistId?: number;
-    externalArtistId?: number;
+export interface BatchLookupResponseDTO {
+    results: Record<string, LookupEntity[]>;
 }
 
 /**
  * Map of entity types to their lookup request types
+ * Uses the existing typed interfaces instead of inline definitions
  */
 export type LookupRequestMap = {
-    artist:     BaseLookupRequest;
-    album:      ArtistRelatedLookupRequest;
-    track:      ArtistRelatedLookupRequest;
-    category:   BaseLookupRequest;
-    dimension:  BaseLookupRequest;
+    artist: BasicMasterLookupRequest;
+    album: MasterArtistRelatedLookupRequest;
+    track: MasterArtistRelatedLookupRequest;
+    category: BasicMasterLookupRequest;
+    dimension: BasicMasterLookupRequest;
 };
-
-/**
- * Wrapper for parameters that are used to make a LookupRequest or BatchLookupRequest item
- */
-export class LookupRequestSourceParams<K extends MasterEntityType> {
-    search: string;
-    rawEntity?: RawEntity<K>;
-
-    constructor(
-        search: string,
-        rawEntity: RawEntity<K>
-    ) {
-        this.search = search;
-        this.rawEntity = rawEntity;
-    }
-}
-
-/**
- * Generic batch lookup request interface
- */
-export interface BatchLookupRequest<T extends BaseLookupRequest> {
-    searchRequests: T[];
-    limit?: number;
-}
-
-/**
- * Map of entity types to their batch lookup request types
- */
-export type BatchLookupRequestMap = {
-    [K in MasterEntityType]: BatchLookupRequest<LookupRequestMap[K]>;
-};
-
-/**
- * Generic response DTO for batch lookup operations
- */
-export interface BatchLookupResponseDTO {
-    results: {
-        [searchTerm: string]: LookupEntity[];
-    };
-}

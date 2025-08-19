@@ -1,7 +1,7 @@
 // hooks
 import {useState, useEffect, useRef, memo, useMemo} from 'react';
 // types
-import type { LookupEntity } from '@/music-universe/music-data/types/master-entities-lookup.ts';
+import type { LookupEntity } from '@/music-universe/shared/types/lookup.ts';
 // styles
 import commonStyles from '@/music-universe/shared/styles/common.module.scss';
 import styles from './StaticAutocompleteInput.module.scss';

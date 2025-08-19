@@ -3,13 +3,13 @@ import {useState} from "react";
 // components
 import {
     EditableText,
-    MasterEntityLookup,
+    EntityLookup,
     StaticAutocompleteInput,
     ReadonlyAttr, type BaseEntityTableRow
 } from "@/music-universe/shared/components";
 // types
 import type { CategorySaveRequest } from "@/music-universe/music-data/api/music-data-categories";
-import {createBaseLookupRequest, type LookupEntity} from "@/music-universe/music-data/types/master-entities-lookup.ts";
+import type {LookupEntity} from "@/music-universe/shared/types/lookup.ts";
 // api
 import {saveCategory} from "@/music-universe/music-data/api/music-data-categories";
 // styles
@@ -20,6 +20,7 @@ import sharedTableStyles from "@/music-universe/shared/styles/EntityTableStyles.
 import artistTableStyles
     from "@/music-universe/sources/lastfm/components/LastfmArtistsTable/LastfmArtistsTable.module.css";
 import {useMasterEntitiesLookup} from "@/music-universe/music-data/hooks/useMasterEntitiesLookup.ts";
+import { LookupContextFactory } from "@/music-universe/shared/types/lookup-context";
 
 interface CategoriesTableRowProps extends BaseEntityTableRow {
 }
@@ -41,7 +42,8 @@ export const CategoriesTableRow = (
     const {
         currentOptions: dimensions,
         isLoading: isLoadingDimensions
-    } = useMasterEntitiesLookup('dimension', { search: '' }); // we need all dimensions at once
+    } = useMasterEntitiesLookup(
+        'dimension', { search: '', context: LookupContextFactory.basic() }, true);
 
     const [editedName, setEditedName] = useState(entity?.name || '');
     const [editedParentName, setEditedParentName] = useState(entity?.parentName || '');
@@ -179,10 +181,11 @@ export const CategoriesTableRow = (
             </div>
 
             <div className={`${sharedTableStyles.cell} ${styles.parent}`}>
-                <MasterEntityLookup
+                <EntityLookup
+                    dataSource="master"
                     entityType={'category'}
                     searchString={editedParentName}
-                    requestFactory={createBaseLookupRequest}
+                    context={LookupContextFactory.basic()}
                     onChange={handleParentChange}
                     onSelect={handleParentSelect}
                     selectedEntity={selectedParent}
