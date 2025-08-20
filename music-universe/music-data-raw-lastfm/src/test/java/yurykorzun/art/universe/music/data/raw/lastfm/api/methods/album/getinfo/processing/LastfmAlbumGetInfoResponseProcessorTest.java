@@ -21,6 +21,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientRe
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.entity.LastfmAlbum;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.repository.LastfmAlbumRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.service.impl.LastfmAlbumServiceImpl;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.repository.LastfmArtistRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.impl.LastfmArtistServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
@@ -155,12 +156,12 @@ class LastfmAlbumGetInfoResponseProcessorTest extends JpaOnlyTest {
     void process_shouldUpdateExistingAlbum_whenAlbumGetInfoResponseProvided() throws Exception {
         // given
         // Create existing album with minimal data
-        LastfmAlbum existingAlbum = consistencyHelper.createAndSaveAlbum(builder -> 
-            builder.name(dtoRoot.getAlbum().getName())
-                   .url(dtoRoot.getAlbum().getUrl())
-                   .playCount(0L)
-                   .listenersCount(0)
-                   .approvalStatus(ApprovalStatus.APPROVED)
+        LastfmAlbum existingAlbum = consistencyHelper.createAndSaveAlbum(builder ->
+            builder .name(dtoRoot.getAlbum().getName())
+                    .url(dtoRoot.getAlbum().getUrl())
+                    .playCount(0L)
+                    .listenersCount(0)
+                    .approvalStatus(ApprovalStatus.APPROVED)
         );
         
         // Create API response
@@ -239,9 +240,13 @@ class LastfmAlbumGetInfoResponseProcessorTest extends JpaOnlyTest {
     void process_shouldBeIdempotent_whenProcessingSameResponseTwice() throws Exception {
         // given
         // Create existing album
+        LastfmArtist existingArtist = consistencyHelper.createAndSaveArtist(builder ->
+            builder.name(dtoRoot.getAlbum().getArtistName()));
+
         LastfmAlbum existingAlbum = consistencyHelper.createAndSaveAlbum(builder -> 
-            builder.name(dtoRoot.getAlbum().getName())
-                   .url(dtoRoot.getAlbum().getUrl())
+            builder .name(dtoRoot.getAlbum().getName())
+                    .url(dtoRoot.getAlbum().getUrl())
+                    .artist(existingArtist)
         );
         
         // Create API response
@@ -294,9 +299,12 @@ class LastfmAlbumGetInfoResponseProcessorTest extends JpaOnlyTest {
         String modifiedResponse = objectMapper.writeValueAsString(modifiedDtoRoot);
         
         // Create existing album
-        LastfmAlbum existingAlbum = consistencyHelper.createAndSaveAlbum(builder -> 
-            builder.name(dtoRoot.getAlbum().getName())
-                   .url(dtoRoot.getAlbum().getUrl())
+        LastfmArtist existingArtist = consistencyHelper.createAndSaveArtist(builder ->
+            builder .name(dtoRoot.getAlbum().getArtistName()));
+        LastfmAlbum existingAlbum = consistencyHelper.createAndSaveAlbum(builder ->
+            builder .name(dtoRoot.getAlbum().getName())
+                    .url(dtoRoot.getAlbum().getUrl())
+                    .artist(existingArtist)
         );
         
         LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
@@ -327,7 +335,10 @@ class LastfmAlbumGetInfoResponseProcessorTest extends JpaOnlyTest {
     void process_shouldHandleErrorGracefully_whenResponseIsInvalid() {
         // given
         // Create existing album
-        LastfmAlbum existingAlbum = consistencyHelper.createAndSaveAlbum();
+        LastfmArtist existingArtist = consistencyHelper.createAndSaveArtist(builder ->
+            builder.name(dtoRoot.getAlbum().getArtistName()));
+        LastfmAlbum existingAlbum = consistencyHelper.createAndSaveAlbum(builder ->
+            builder.artist(existingArtist));
         
         String invalidJson = "{}";
         LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
@@ -375,9 +386,12 @@ class LastfmAlbumGetInfoResponseProcessorTest extends JpaOnlyTest {
         String modifiedResponse = objectMapper.writeValueAsString(modifiedDtoRoot);
 
         // Create existing album
+        LastfmArtist existingArtist = consistencyHelper.createAndSaveArtist(builder ->
+            builder.name(dtoRoot.getAlbum().getArtistName()));
         LastfmAlbum existingAlbum = consistencyHelper.createAndSaveAlbum(builder ->
-            builder.name(dtoRoot.getAlbum().getName())
-                .url(dtoRoot.getAlbum().getUrl())
+            builder .name(dtoRoot.getAlbum().getName())
+                    .url(dtoRoot.getAlbum().getUrl())
+                    .artist(existingArtist)
         );
 
         LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
@@ -426,9 +440,12 @@ class LastfmAlbumGetInfoResponseProcessorTest extends JpaOnlyTest {
         String modifiedResponse = objectMapper.writeValueAsString(modifiedDtoRoot);
 
         // Create existing album
+        LastfmArtist existingArtist = consistencyHelper.createAndSaveArtist(builder ->
+            builder.name(dtoRoot.getAlbum().getArtistName()));
         LastfmAlbum existingAlbum = consistencyHelper.createAndSaveAlbum(builder ->
-            builder.name(dtoRoot.getAlbum().getName())
-                .url(dtoRoot.getAlbum().getUrl())
+            builder .name(dtoRoot.getAlbum().getName())
+                    .url(dtoRoot.getAlbum().getUrl())
+                    .artist(existingArtist)
         );
 
         LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
@@ -474,10 +491,13 @@ class LastfmAlbumGetInfoResponseProcessorTest extends JpaOnlyTest {
     void process_shouldSkipTrackProcessing_whenAllArtistsAreBlacklisted() throws Exception {
         // given
         // Create existing album
+        LastfmArtist existingArtist = consistencyHelper.createAndSaveArtist(builder ->
+            builder.name(dtoRoot.getAlbum().getArtistName()));
         LastfmAlbum existingAlbum = consistencyHelper.createAndSaveAlbum(builder ->
-            builder.name(dtoRoot.getAlbum().getName())
-                .url(dtoRoot.getAlbum().getUrl())
-                .approvalStatus(ApprovalStatus.APPROVED)
+            builder .name(dtoRoot.getAlbum().getName())
+                    .url(dtoRoot.getAlbum().getUrl())
+                    .approvalStatus(ApprovalStatus.APPROVED)
+                    .artist(existingArtist)
         );
 
         // Blacklist all artists from the response
@@ -518,10 +538,13 @@ class LastfmAlbumGetInfoResponseProcessorTest extends JpaOnlyTest {
     void process_shouldProcessPartiallyBlacklistedArtists() throws Exception {
         // given
         // Create existing album
+        LastfmArtist existingArtist = consistencyHelper.createAndSaveArtist(builder ->
+            builder.name(dtoRoot.getAlbum().getArtistName()));
         LastfmAlbum existingAlbum = consistencyHelper.createAndSaveAlbum(builder ->
-            builder.name(dtoRoot.getAlbum().getName())
-                .url(dtoRoot.getAlbum().getUrl())
-                .approvalStatus(ApprovalStatus.APPROVED)
+            builder .name(dtoRoot.getAlbum().getName())
+                    .url(dtoRoot.getAlbum().getUrl())
+                    .approvalStatus(ApprovalStatus.APPROVED)
+                    .artist(existingArtist)
         );
 
         // Get all unique artist URLs from the response
@@ -567,9 +590,9 @@ class LastfmAlbumGetInfoResponseProcessorTest extends JpaOnlyTest {
         // given
         // Create existing album
         LastfmAlbum existingAlbum = consistencyHelper.createAndSaveAlbum(builder ->
-            builder.name(dtoRoot.getAlbum().getName())
-                .url(dtoRoot.getAlbum().getUrl())
-                .approvalStatus(ApprovalStatus.APPROVED)
+            builder .name(dtoRoot.getAlbum().getName())
+                    .url(dtoRoot.getAlbum().getUrl())
+                    .approvalStatus(ApprovalStatus.APPROVED)
         );
 
         // Create API response (no blacklisting)
@@ -620,9 +643,9 @@ class LastfmAlbumGetInfoResponseProcessorTest extends JpaOnlyTest {
         // given
         // Create existing album
         LastfmAlbum existingAlbum = consistencyHelper.createAndSaveAlbum(builder ->
-            builder.name(dtoRoot.getAlbum().getName())
-                .url(dtoRoot.getAlbum().getUrl())
-                .approvalStatus(ApprovalStatus.APPROVED)
+            builder .name(dtoRoot.getAlbum().getName())
+                    .url(dtoRoot.getAlbum().getUrl())
+                    .approvalStatus(ApprovalStatus.APPROVED)
         );
 
         // Blacklist ALL artists from the response

@@ -3,9 +3,11 @@ package yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.ArtistScoped;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.UniquenessSupport;
 
 import java.util.Objects;
 
@@ -13,7 +15,7 @@ import java.util.Objects;
 @SuperBuilder
 @NoArgsConstructor
 @Getter @Setter
-public class LastfmTrack extends BaseLastfmEntity {
+public class LastfmTrack extends BaseLastfmEntity implements ArtistScoped {
 
     @Id
     @SequenceGenerator(
@@ -51,8 +53,8 @@ public class LastfmTrack extends BaseLastfmEntity {
     }
 
     @Override
-    public String getUniqueKey() {
-        return getUrl();
+    public String getArtistName() {
+        return artist != null ? artist.getName() : null;
     }
 
     @Override
@@ -67,5 +69,10 @@ public class LastfmTrack extends BaseLastfmEntity {
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), duration, mbid, url);
+    }
+
+    @Override
+    public String getUniqueKey() {
+        return String.format("%s|%s|%s", name, mbid, url);
     }
 }

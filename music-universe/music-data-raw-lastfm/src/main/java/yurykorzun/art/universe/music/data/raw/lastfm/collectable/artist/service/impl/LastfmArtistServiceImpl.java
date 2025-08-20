@@ -6,13 +6,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import yurykorzun.art.universe.common.CodedRegistry;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.EntityDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto.ArtistSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.dto.LastfmArtistResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.repository.LastfmArtistRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -65,11 +68,6 @@ public class LastfmArtistServiceImpl implements LastfmArtistService {
     }
 
     @Override
-    public List<LastfmArtist> findEntitiesByUniqueKeys(List<String> uniqueKeys) {
-        return findAllByNames(uniqueKeys);
-    }
-
-    @Override
     public List<LastfmArtist> findAllByNames(List<String> names) {
         return artistRepository.findAllByNameIn(names);
     }
@@ -77,6 +75,24 @@ public class LastfmArtistServiceImpl implements LastfmArtistService {
     @Override
     public List<LastfmArtist> findArtistsForGetInfo() {
         return artistRepository.findAllToGetInfoFor();
+    }
+
+    @Override
+    public <D extends EntityDto<LastfmArtist>> Map<D, LastfmArtist> mapDtoToExistingEntities(List<D> dtos) {
+        Map<D, LastfmArtist> result = new HashMap<>();
+
+        Map<String, D> nameToDto = new HashMap<>(); // helper map
+        List<String> names = dtos.stream()
+            .peek(dto -> nameToDto.put(dto.getName(), dto))
+            .peek(dto -> result.put(dto, null))
+            .map(EntityDto::getName)
+            .toList();
+
+        List<LastfmArtist> existingArtists = artistRepository.findAllByNameIn(names);
+        existingArtists.forEach(artist -> result.put(nameToDto.get(artist.getName()), artist));
+
+        return result;
+
     }
 
     @Override

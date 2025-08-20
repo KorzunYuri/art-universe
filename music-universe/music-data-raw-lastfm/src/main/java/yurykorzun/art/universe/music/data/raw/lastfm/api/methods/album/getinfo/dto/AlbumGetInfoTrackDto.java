@@ -21,4 +21,9 @@ public class AlbumGetInfoTrackDto extends TrackDto {
     
     @JsonProperty("artist")
     private AlbumGetInfoTrackArtistDto artist;
+    
+    @Override
+    public String getArtistName() {
+        return artist != null ? artist.getName() : null;
+    }
 }

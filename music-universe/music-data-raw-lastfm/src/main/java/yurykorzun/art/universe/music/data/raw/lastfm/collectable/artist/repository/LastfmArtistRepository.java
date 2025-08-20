@@ -36,6 +36,7 @@ public interface LastfmArtistRepository extends JpaRepository<LastfmArtist, Long
         SELECT DISTINCT ON (COALESCE(a.mbid, 'id_' || a.id::text))
             a.id,
             a.name, 
+            a.is_primary, 
             a.mbid, 
             a.url,
             a.listeners_count, 

@@ -37,7 +37,7 @@ public abstract class LastfmArtistApiCallGenerator extends EntityScopedApiCallGe
      */
     @Override
     protected LastfmEntityQueryConfig getUnprocessedEntitiesQueryConfig() {
-        Sort sort = Sort.by(Sort.Direction.DESC, "listenersCount");
+        Sort sort = Sort.by(Sort.Direction.DESC, "listenersCount", "isPrimary");
         return LastfmEntityQueryConfig.builder().sort(sort).build();
     }
 

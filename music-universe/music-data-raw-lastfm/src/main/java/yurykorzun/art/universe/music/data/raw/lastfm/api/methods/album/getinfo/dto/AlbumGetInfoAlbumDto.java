@@ -15,7 +15,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.album.common.dt
 public class AlbumGetInfoAlbumDto extends AlbumDto implements AlbumDtoWithMetrics {
 
     @JsonProperty("artist")
-    private String artist;
+    private String artistName;
     
     @JsonProperty("listeners")
     private Integer listenersCount;

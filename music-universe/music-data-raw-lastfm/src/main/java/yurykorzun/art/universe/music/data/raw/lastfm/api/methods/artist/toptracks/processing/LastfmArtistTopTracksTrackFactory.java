@@ -36,9 +36,9 @@ public class LastfmArtistTopTracksTrackFactory extends LastfmTrackEntityFactory<
         
         // Find artist by name from the mapping result and set it in the track
         if (dto.getArtist() != null) {
-            String artistName = dto.getArtist().getName();
+            var artistDto = dto.getArtist();
             EntityMapping<LastfmArtist, ArtistTopTracksTrackArtistDto> artistMapping = 
-                artistMappingResult.entityMapping().get(artistName);
+                artistMappingResult.entityMapping().get(artistDto);
             
             if (artistMapping != null && artistMapping.getNewEntity() != null) {
                 builder.artist(artistMapping.getNewEntity());

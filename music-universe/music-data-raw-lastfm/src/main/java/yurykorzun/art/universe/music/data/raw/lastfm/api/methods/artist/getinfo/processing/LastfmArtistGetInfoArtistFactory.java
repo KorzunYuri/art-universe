@@ -11,6 +11,7 @@ class LastfmArtistGetInfoArtistFactory extends LastfmArtistEntityFactory<ArtistG
     @Override
     protected LastfmArtist.LastfmArtistBuilder<?, ?> setExtensionFields(LastfmArtist.LastfmArtistBuilder<?, ?> builder, ArtistGetInfoArtistDto dto) {
         return builder
+            .isPrimary(true) // this is helpful for artists deduplication
             .listenersCount(dto.getStats().getListeners())
             .playCount(dto.getStats().getPlayCount())
             ;

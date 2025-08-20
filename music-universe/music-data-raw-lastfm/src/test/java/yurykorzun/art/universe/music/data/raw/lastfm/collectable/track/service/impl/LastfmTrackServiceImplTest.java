@@ -134,23 +134,6 @@ class LastfmTrackServiceImplTest {
     }
 
     @Test
-    void findAllByUrls_withValidUrls_shouldCallRepository() {
-        final int tracksNumber = 3;
-        List<String> urls = IntStream.range(0, tracksNumber).mapToObj(i -> UUID.randomUUID().toString()).toList();
-        List<LastfmTrack> tracks = urls.stream()
-            .map(this::createTrack)
-            .toList();
-        when(trackRepository.findAllByUrlIn(urls)).thenReturn(tracks);
-
-        List<LastfmTrack> foundTracks = trackService.findAllByUrls(urls);
-
-        assertNotNull(foundTracks);
-        assertEquals(tracks.size(), foundTracks.size());
-        assertEquals(tracks, foundTracks);
-        verify(trackRepository, times(1)).findAllByUrlIn(urls);
-    }
-    
-    @Test
     void findAll_WithCorrectParams_shouldCallRepository() {
         // Given
         String search = "test";

@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.entity.LastfmAlbum;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 
 import java.util.List;
@@ -16,7 +17,24 @@ import java.util.List;
 @Repository
 public interface LastfmAlbumRepository extends JpaRepository<LastfmAlbum, Long> {
 
+    @Query("""
+        SELECT al
+        FROM
+            album al
+        JOIN
+            al.artist ar
+        WHERE   al.name = :albumName
+            AND ar.name = :artistName
+    """)
+    List<LastfmAlbum> findByNameAndArtistName(@Param("albumName") String albumName, @Param("artistName") String artistName);
+
     List<LastfmAlbum> findAllByUrlIn(List<String> urls);
+
+    List<LastfmAlbum> findAllByUrl(String url);
+
+    List<LastfmAlbum> findAllByMbid(String mbid);
+
+    List<LastfmAlbum> findAllByMbidIn(List<String> mbids);
 
     @Query(value = """
         SELECT  a

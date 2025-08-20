@@ -25,4 +25,9 @@ public class ArtistTopTracksTrackDto extends TrackDto implements TrackDtoWithMet
 
     @JsonProperty("listeners")
     private Integer listenersCount;
+    
+    @Override
+    public String getArtistName() {
+        return artist != null ? artist.getName() : null;
+    }
 }

@@ -20,4 +20,9 @@ public class TagTopTracksTrackDto extends TrackDto {
 
     @JsonProperty("@attr")
     private RankInfo rankInfo;
+    
+    @Override
+    public String getArtistName() {
+        return artist != null ? artist.getName() : null;
+    }
 }

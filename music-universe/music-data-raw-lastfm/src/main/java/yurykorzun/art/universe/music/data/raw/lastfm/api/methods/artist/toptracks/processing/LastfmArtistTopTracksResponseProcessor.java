@@ -152,7 +152,7 @@ public class LastfmArtistTopTracksResponseProcessor extends LastfmApiResponsePro
     ) {
         List<ArtistTopTracksTrackDto> allTrackDtos = dtoRoot.getRootObject().getTracks().stream()
             .filter(track -> track.getArtist() != null
-                && artistMappingResult.entityMapping().getMap().containsKey(track.getArtist().getName()))
+                && artistMappingResult.entityMapping().getMap().containsKey(track.getArtist()))
             .toList();
 
         // Validate tracks using DtoQualityService (includes threshold and blacklist validation)
@@ -190,20 +190,20 @@ public class LastfmArtistTopTracksResponseProcessor extends LastfmApiResponsePro
         List<LastfmArtistTrack> relations = trackMappingResult.entityMapping().values().stream()
             .map(trackMapping -> {
                 // Get artist name from track DTO
-                String artistName = trackMapping.getDto().getArtist().getName();
+                var artistDto = trackMapping.getDto().getArtist();
                 
                 // Find corresponding artist mapping
                 EntityMapping<LastfmArtist, ArtistTopTracksTrackArtistDto> artistMapping = 
-                    artistMappingResult.entityMapping().get(artistName);
+                    artistMappingResult.entityMapping().get(artistDto);
                 
                 if (artistMapping == null) {
-                    log.warn("Artist not found for track {}", trackMapping.getDto().getName());
+                    log.warn("Artist not found for track {} - {} ", artistDto.getName(), trackMapping.getDto().getName());
                     return null;
                 }
                 
                 LastfmArtist artist = artistMapping.getNewEntity();
                 if (artist == null) {
-                    log.warn("Artist {} wasn't saved", artistName);
+                    log.warn("Artist {} wasn't saved", artistDto);
                     return null;
                 }
                 

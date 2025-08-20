@@ -12,15 +12,21 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.La
 import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface LastfmTrackRepository extends JpaRepository<LastfmTrack, Long> {
 
+    @Query("SELECT t FROM track t JOIN t.artist a WHERE t.name = :trackName AND a.name = :artistName")
+    List<LastfmTrack> findByNameAndArtistName(@Param("trackName") String trackName, @Param("artistName") String artistName);
+
+    List<LastfmTrack> findAllByUrl(String url);
+
+    List<LastfmTrack> findAllByMbid(String mbid);
+
     List<LastfmTrack> findAllByUrlIn(List<String> urls);
-    
-    Optional<LastfmTrack> findByUrl(String url);
-    
+
+    List<LastfmTrack> findAllByMbidIn(List<String> mbids);
+
     @Query(value = """
         SELECT  t
         FROM    track t

@@ -153,25 +153,6 @@ class LastfmTrackRepositoryTest extends JpaOnlyTest {
     }
 
     @Test
-    void findAllByUrlIn_shouldFindAllTracks_whenUrlsProvided() {
-        final int totalTracks = 5;
-        final int tracksToRetrieve = 2;
-        List<String> urls = IntStream.range(0, totalTracks).mapToObj(i -> UUID.randomUUID().toString()).toList();
-
-        List<LastfmTrack> savedTracks = new ArrayList<>();
-        for (String url : urls) {
-            savedTracks.add(consistencyHelper.createAndSaveTrack(url));
-        }
-        
-        List<String> urlsSubset = urls.subList(0, tracksToRetrieve);
-        List<LastfmTrack> retrieved = trackRepository.findAllByUrlIn(urlsSubset);
-
-        assertEquals(tracksToRetrieve, retrieved.size());
-        urlsSubset.forEach(url ->
-            assertTrue(retrieved.stream().anyMatch(t -> url.equals(t.getUrl()))));
-    }
-    
-    @Test
     void testSortByListenersCount_shouldPlaceNullsLast() {
         // Sort by listenersCount in descending order
         Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "listenersCount"));

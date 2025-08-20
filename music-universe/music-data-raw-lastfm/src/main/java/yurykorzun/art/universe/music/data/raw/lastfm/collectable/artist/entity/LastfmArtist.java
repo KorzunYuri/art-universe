@@ -1,10 +1,7 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
@@ -39,25 +36,33 @@ public class LastfmArtist extends BaseLastfmEntity {
     @Column(name = "play_count")
     private Long playCount;
 
+    /**
+     * A field to distinguish a 'canonical' artist from the artists with the same mbid
+     */
+    @Builder.Default
+    @Column(name = "is_primary")
+    private Boolean isPrimary = false;
+
     @Override
     public LastfmEntityType getType() {
         return LastfmEntityType.ARTIST;
     }
 
     @Override
-    public String getUniqueKey() {
-        return getName();
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (!(o instanceof LastfmArtist artist)) return false;
         if (!super.equals(o)) return false;
-        return Objects.equals(mbid, artist.mbid) && Objects.equals(url, artist.url);
+        return Objects.equals(mbid, artist.mbid)
+            && Objects.equals(url, artist.url);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), mbid, url);
+    }
+
+    @Override
+    public String getUniqueKey() {
+        return name;
     }
 }

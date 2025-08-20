@@ -31,4 +31,9 @@ public class TrackGetInfoTrackDto extends TrackDto implements TrackDtoWithMetric
 
     @JsonProperty("toptags")
     private TrackGetInfoTagsDto topTags;
+
+    @Override
+    public String getArtistName() {
+        return artist != null ? artist.getName() : null;
+    }
 }

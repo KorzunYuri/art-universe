@@ -63,6 +63,6 @@ public class LastfmAlbum extends BaseLastfmEntity {
 
     @Override
     public String getUniqueKey() {
-        return url;
+        return String.format("%s|%s|%s", name, mbid, url);
     }
 }

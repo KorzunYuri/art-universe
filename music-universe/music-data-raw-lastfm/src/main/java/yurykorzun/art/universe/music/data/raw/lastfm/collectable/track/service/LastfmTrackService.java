@@ -15,8 +15,6 @@ public interface LastfmTrackService extends EntityService<LastfmTrack> {
     LastfmTrack save(LastfmTrack lastfmTrack);
 
     Page<LastfmTrackResponseDto> findAll(TrackSearchParams params, Pageable pageable);
-
-    List<LastfmTrack> findAllByUrls(List<String> urls);
     
     LastfmTrackResponseDto updateApprovalStatus(Long id, Integer approvalStatusCode);
     

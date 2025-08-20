@@ -16,12 +16,6 @@ public abstract class TagDto implements EntityDto<LastfmTag> {
 
     @Override
     @Transient
-    public String getUniqueKey() {
-        return name;
-    }
-
-    @Override
-    @Transient
     public LastfmEntityType getEntityType() {
         return LastfmEntityType.TAG;
     }

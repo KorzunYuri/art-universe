@@ -2,6 +2,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.track.common.p
 
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityFactory;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.utils.DataQualityUtil;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.track.common.dto.TrackDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
 
@@ -12,7 +13,7 @@ public class LastfmTrackEntityFactory<D extends TrackDto>  implements EntityFact
         return setExtensionFields(
             LastfmTrack.builder()
                 .name(dto.getName())
-                .url(dto.getUrl())
+                .url(DataQualityUtil.normalizeTrackUrl(dto.getUrl()))
                 .mbid(dto.getMbid())
                 .apiCall(sourceApiCall),
             dto

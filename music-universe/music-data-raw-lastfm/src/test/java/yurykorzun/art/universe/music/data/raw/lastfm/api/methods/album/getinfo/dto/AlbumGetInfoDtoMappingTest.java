@@ -26,7 +26,7 @@ public class AlbumGetInfoDtoMappingTest {
         assertNotNull(album.getName());
         assertNotNull(album.getMbid());
         assertNotNull(album.getUrl());
-        assertNotNull(album.getArtist());
+        assertNotNull(album.getArtistName());
         assertTrue(album.getPlayCount() > 0);
         assertTrue(album.getListenersCount() > 0);
         

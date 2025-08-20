@@ -158,7 +158,7 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
         // Filter tracks to only include those with valid (non-blacklisted) artists
         List<TagTopTracksTrackDto> tracksWithValidArtists = allValidTrackDtos.stream()
             .filter(track -> track.getArtist() != null && 
-                           artistMappingResult.entityMapping().getMap().containsKey(track.getArtist().getName()))
+                           artistMappingResult.entityMapping().getMap().containsKey(track.getArtist()))
             .toList();
 
         // Validate tracks against blacklist
@@ -198,16 +198,16 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
     ) {
         List<LastfmArtistTrack> relations = trackMappingResult.entityMapping().values().stream()
             .map(trackMapping -> {
-                String artistName = trackMapping.getDto().getArtist().getName();
+                var artistDto = trackMapping.getDto().getArtist();
                 EntityMapping<LastfmArtist, TagTopTracksTrackArtistDto> artistMapping =
-                    artistMappingResult.entityMapping().get(artistName);
+                    artistMappingResult.entityMapping().get(artistDto);
                 if (artistMapping == null) {
-                    log.warn("Artist not found for track {} - {}", artistName, trackMapping.getDto().getName());
+                    log.warn("Artist not found for track {} - {}", artistDto.getName(), trackMapping.getDto().getName());
                     return null;
                 }
                 LastfmArtist artist = artistMapping.getNewEntity();
                 if (artist == null) {
-                    log.warn("Artist {} wasn't saved", artistName);
+                    log.warn("Artist {} wasn't saved", artistDto);
                     return null;
                 }
                 return LastfmArtistTrack.builder()

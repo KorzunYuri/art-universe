@@ -44,6 +44,6 @@ public class LastfmTag extends BaseLastfmEntity {
 
     @Override
     public String getUniqueKey() {
-        return getName();
+        return name;
     }
 }

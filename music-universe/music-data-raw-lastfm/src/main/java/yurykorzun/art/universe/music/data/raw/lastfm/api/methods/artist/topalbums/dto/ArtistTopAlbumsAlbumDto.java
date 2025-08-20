@@ -21,4 +21,8 @@ public class ArtistTopAlbumsAlbumDto extends AlbumDto implements AlbumDtoWithMet
     @JsonProperty("artist")
     private ArtistDto artist;
 
+    @Override
+    public String getArtistName() {
+        return artist != null ? artist.getName() : null;
+    }
 }

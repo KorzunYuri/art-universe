@@ -30,7 +30,7 @@ class AlbumGetInfoDeserializersTest {
         assertNotNull(result);
         assertNotNull(result.getAlbum());
         assertEquals("Everything Is Peaceful Love", result.getAlbum().getName());
-        assertEquals("Bon Iver", result.getAlbum().getArtist());
+        assertEquals("Bon Iver", result.getAlbum().getArtistName());
         
         // Tags should be empty list, not null
         assertNotNull(result.getAlbum().getTags());
@@ -57,7 +57,7 @@ class AlbumGetInfoDeserializersTest {
         assertNotNull(result);
         assertNotNull(result.getAlbum());
         assertEquals("If I Ever Lose My Faith in You", result.getAlbum().getName());
-        assertEquals("Disturbed", result.getAlbum().getArtist());
+        assertEquals("Disturbed", result.getAlbum().getArtistName());
         
         // Single track should be converted to list with one element
         AlbumGetInfoTracksDto tracksObject = result.getAlbum().getTracksObject();
