@@ -34,5 +34,6 @@
     <include file="changelogs/0027-maintenance.xml" relativeToChangelogFile="true"/>
     <include file="changelogs/0028-tag-search-optimization.xml" relativeToChangelogFile="true"/>
     <include file="changelogs/0029-fix-track-duplicates.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0030-artist-primary-flag.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
