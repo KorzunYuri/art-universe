@@ -205,7 +205,7 @@ export const StaticAutocompleteInput = memo(({
                 onFocus={handleFocus}
                 placeholder={placeholder}
                 disabled={disabled}
-                className={`${commonStyles.muLabel} ${styles.input} ${shouldStyleAsMatched ? styles.exactMatch : ''}`}
+                className={`${commonStyles.muInput} ${styles.input} ${shouldStyleAsMatched ? styles.exactMatch : ''}`}
             />
 
             {filteredOptions.length > 0 && (
