@@ -275,7 +275,8 @@ public class LastfmAlbumGetInfoResponseProcessor extends LastfmApiResponseProces
             return LastfmApiDtoProcessingResult.empty(sourceApiCall);
         }
 
-        var qualityTracks = dtoQualityService.validateAgainstBlacklist(trackDtos).stream()
+        var dedupedDtos = DeduplicationUtils.deduplicateTrackDtos(trackDtos);
+        var qualityTracks = dtoQualityService.validateAgainstBlacklist(dedupedDtos).stream()
             .filter(DtoQualityService.Result::isAccepted)
             .map(DtoQualityService.Result::getDto)
             .filter(track -> track.getArtist() != null)
@@ -294,7 +295,7 @@ public class LastfmAlbumGetInfoResponseProcessor extends LastfmApiResponseProces
         // Process tracks
         LastfmApiDtoProcessingResult<LastfmTrack, AlbumGetInfoTrackDto> result = dtoProcessingService.process(
             sourceApiCall,
-            trackDtos,
+            qualityTracks,
             trackFactory,
             trackAttrHandlers,
             trackService
