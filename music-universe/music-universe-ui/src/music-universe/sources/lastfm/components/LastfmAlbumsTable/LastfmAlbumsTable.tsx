@@ -1,7 +1,7 @@
 // hooks
 import { useLastfmEntityTable } from "@/music-universe/sources/lastfm/hooks/useLastfmEntityTable";
 import { useApprovalStatusFilter } from "@/music-universe/sources/shared/hooks";
-import { usePlayCountFilter, useListenersCountFilter, useArtistIdFilter, useTagIdFilter } from "@/music-universe/sources/lastfm/hooks/useLastfmFilters";
+import { usePlayCountFilter, useListenersCountFilter, useArtistFilter, useTagFilter } from "@/music-universe/sources/lastfm/hooks/useLastfmFilters";
 // components
 import { EntityTable, type EntityTableColumn } from "@/music-universe/shared/components/EntityTable/EntityTable";
 import { LastfmAlbumsTableRow } from "@/music-universe/sources/lastfm/components";
@@ -44,8 +44,8 @@ export const LastfmAlbumsTable = ({ artistId }: LastfmAlbumsTableProps) => {
     const { approvalStatuses, approvalStatusField } = useApprovalStatusFilter();
     const { minPlayCount, minPlayCountField } = usePlayCountFilter();
     const { minListenersCount, minListenersCountField } = useListenersCountFilter();
-    const { artistId: artistIdFilter, artistIdField } = useArtistIdFilter();
-    const { tagId, tagIdField } = useTagIdFilter();
+    const { artistId: artistIdFilter, artistField } = useArtistFilter();
+    const { tagId, tagField } = useTagFilter();
 
     const handleSearchSubmit = () => {
         updateParams({
@@ -65,8 +65,8 @@ export const LastfmAlbumsTable = ({ artistId }: LastfmAlbumsTableProps) => {
             minPlayCountField,
             minListenersCountField,
             // Only show artist ID filter if not already filtered by prop
-            ...(artistId ? [] : [artistIdField]),
-            tagIdField,
+            ...(artistId ? [] : [artistField]),
+            tagField,
             approvalStatusField
         ]
     };

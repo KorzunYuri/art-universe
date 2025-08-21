@@ -1,7 +1,7 @@
 // hooks
 import { useLastfmEntityTable } from "@/music-universe/sources/lastfm/hooks/useLastfmEntityTable";
 import { useApprovalStatusFilter } from "@/music-universe/sources/shared/hooks";
-import { usePlayCountFilter, useListenersCountFilter, useTagIdFilter } from "@/music-universe/sources/lastfm/hooks/useLastfmFilters";
+import { usePlayCountFilter, useListenersCountFilter, useTagFilter } from "@/music-universe/sources/lastfm/hooks/useLastfmFilters";
 // components
 import { EntityTable, type EntityTableColumn } from "@/music-universe/shared/components/EntityTable/EntityTable";
 import { LastfmArtistsTableRow } from "@/music-universe/sources/lastfm/components";
@@ -40,7 +40,7 @@ export const LastfmArtistsTable = () => {
     const { approvalStatuses, approvalStatusField } = useApprovalStatusFilter();
     const { minPlayCount, minPlayCountField } = usePlayCountFilter();
     const { minListenersCount, minListenersCountField } = useListenersCountFilter();
-    const { tagId, tagIdField } = useTagIdFilter();
+    const { tagId, tagField } = useTagFilter();
 
     // Handle search submit with additional parameters
     const handleSearchSubmit = () => {
@@ -59,7 +59,7 @@ export const LastfmArtistsTable = () => {
         fields: [
             minPlayCountField,
             minListenersCountField,
-            tagIdField,
+            tagField,
             approvalStatusField
         ]
     };
