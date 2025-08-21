@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.LastfmApiResponseProcessorTestHelper;
@@ -545,5 +546,130 @@ class LastfmTagTopTracksResponseProcessorTest extends JpaOnlyTest {
         assertTrue(trackRepository.count() > initialTrackCount, "Tracks should be created");
         assertTrue(artistTrackRepository.count() > 0, "Artist-track relationships should be created");
         assertTrue(attributeHistoryRepository.count() > 0, "Attribute history records should be created");
+    }
+
+    @Test
+    void processResponse_shouldDeduplicateArtistsByName_whenMultipleTracksHaveSameArtist() throws IOException {
+        // Given
+        String responseJson = """
+            {
+              "tracks": {
+                "track": [
+                  {
+                    "name": "Feeling Sorry",
+                    "url": "https://www.last.fm/music/Paramore/_/Feeling+Sorry",
+                    "artist": {
+                      "name": "Paramore",
+                      "mbid": "44cf61b8-5197-448a-b82b-cef6ee89fac5",
+                      "url": "https://www.last.fm/music/Paramore"
+                    },
+                    "@attr": {"rank": "41"}
+                  },
+                  {
+                    "name": "Hallelujah",
+                    "url": "https://www.last.fm/music/Paramore/_/Hallelujah",
+                    "artist": {
+                      "name": "Paramore",
+                      "mbid": "44cf61b8-5197-448a-b82b-cef6ee89fac5",
+                      "url": "https://www.last.fm/music/Paramore"
+                    },
+                    "@attr": {"rank": "49"}
+                  },
+                  {
+                    "name": "Born for This",
+                    "url": "https://www.last.fm/music/Paramore/_/Born+for+This",
+                    "artist": {
+                      "name": "Paramore",
+                      "mbid": "44cf61b8-5197-448a-b82b-cef6ee89fac5",
+                      "url": "https://www.last.fm/music/Paramore"
+                    },
+                    "@attr": {"rank": "50"}
+                  },
+                  {
+                    "name": "Chasing Cars",
+                    "url": "https://www.last.fm/music/Snow+Patrol/_/Chasing+Cars",
+                    "artist": {
+                      "name": "Snow Patrol",
+                      "mbid": "a66999a7-ae5c-460e-ba94-1a01143ae847",
+                      "url": "https://www.last.fm/music/Snow+Patrol"
+                    },
+                    "@attr": {"rank": "1"}
+                  }
+                ]
+              }
+            }
+            """;
+
+        LastfmTag sourceTag = consistencyHelper.createAndSaveTag(builder ->
+            builder.name("rock")
+        );
+        LastfmApiCall sourceApiCall = consistencyHelper.createAndSaveApiCall(builder ->
+            builder .type(LastfmApiCallType.TAG_TOP_TRACKS)
+                    .entityId(sourceTag.getId())
+        );
+        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(responseJson, sourceApiCall);
+
+
+        // When
+        processor.processResponse(apiResponse);
+
+        // Then
+        assertEquals(2, artistRepository.count(), "Artists should be deduplicated");
+    }
+
+    @Test
+    void processResponse_shouldPreserveSingleArtistInstance_whenNoDeduplicationNeeded() throws IOException {
+        // Given
+        String responseJson = """
+            {
+              "tracks": {
+                "track": [
+                  {
+                    "name": "Chasing Cars",
+                    "url": "https://www.last.fm/music/Snow+Patrol/_/Chasing+Cars",
+                    "artist": {
+                      "name": "Snow Patrol",
+                      "mbid": "a66999a7-ae5c-460e-ba94-1a01143ae847",
+                      "url": "https://www.last.fm/music/Snow+Patrol"
+                    },
+                    "@attr": {"rank": "1"}
+                  },
+                  {
+                    "name": "Hells Bells",
+                    "url": "https://www.last.fm/music/AC%2FDC/_/Hells+Bells",
+                    "artist": {
+                      "name": "AC/DC",
+                      "mbid": "66c662b6-6e2f-4930-8610-912e24c63ed1",
+                      "url": "https://www.last.fm/music/AC%2FDC"
+                    },
+                    "@attr": {"rank": "3"}
+                  }
+                ]
+              }
+            }
+            """;
+
+        LastfmTag sourceTag = consistencyHelper.createAndSaveTag(builder ->
+            builder.name("rock")
+        );
+        LastfmApiCall sourceApiCall = consistencyHelper.createAndSaveApiCall(builder ->
+            builder .type(LastfmApiCallType.TAG_TOP_TRACKS)
+                .entityId(sourceTag.getId())
+        );
+        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(responseJson, sourceApiCall);
+
+        // When
+        processor.processResponse(apiResponse);
+
+        // Then
+        assertEquals(2, artistRepository.count(), "Should have exactly 2 artists when no deduplication needed");
+
+        List<String> artistNames = artistRepository.findAll().stream()
+            .map(LastfmArtist::getName)
+            .sorted()
+            .toList();
+
+        assertEquals(List.of("AC/DC", "Snow Patrol"), artistNames,
+            "Should contain AC/DC and Snow Patrol");
     }
 }

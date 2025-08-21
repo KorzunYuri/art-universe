@@ -14,6 +14,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandlerFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.service.DtoQualityService;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.utils.DeduplicationUtils;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.entity.LastfmAlbum;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.service.LastfmAlbumService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
@@ -157,13 +158,13 @@ public class LastfmAlbumGetInfoResponseProcessor extends LastfmApiResponseProces
         // Step 2: Process artists from tracks (if available)
         if (hasTracks(albumDto)) {
             var artistsResult = processArtists(albumDto, sourceApiCall);
-            Map<String, LastfmArtist> artistsByUrl = artistsResult.actualEntities().stream()
-                .collect(Collectors.toMap(LastfmArtist::getUrl, Function.identity(), (a1, a2) -> a1));
+            Map<String, LastfmArtist> artistsByName = artistsResult.actualEntities().stream()
+                .collect(Collectors.toMap(LastfmArtist::getName, Function.identity(), (a1, a2) -> a1));
 
             // If no quality artists were found, skip track processing
-            if (!artistsByUrl.isEmpty()) {
+            if (!artistsByName.isEmpty()) {
                 // Step 3: Process tracks (if available)
-                var trackResult = processTracks(albumDto.getTracksObject().getTracks(), artistsByUrl, sourceApiCall);
+                var trackResult = processTracks(albumDto.getTracksObject().getTracks(), artistsByName, sourceApiCall);
 
                 // Step 4: Create artist-track relationships
                 createArtistTrackRelationships(trackResult.actualEntities(), sourceApiCall);
@@ -211,6 +212,7 @@ public class LastfmAlbumGetInfoResponseProcessor extends LastfmApiResponseProces
             .filter(Objects::nonNull)
             .distinct()
             .toList();
+        artistDtos = DeduplicationUtils.deduplicateArtistDtos(artistDtos);
 
         if (artistDtos.isEmpty()) {
             log.info("No valid artists found in tracks for album {}", albumDto.getName());
@@ -265,7 +267,7 @@ public class LastfmAlbumGetInfoResponseProcessor extends LastfmApiResponseProces
 
     private LastfmApiDtoProcessingResult<LastfmTrack, AlbumGetInfoTrackDto> processTracks(
         List<AlbumGetInfoTrackDto> trackDtos,
-        Map<String, LastfmArtist> artistsByUrl,
+        Map<String, LastfmArtist> artistsByName,
         LastfmApiCall sourceApiCall
     ) {
         if (trackDtos == null || trackDtos.isEmpty()) {
@@ -277,7 +279,7 @@ public class LastfmAlbumGetInfoResponseProcessor extends LastfmApiResponseProces
             .filter(DtoQualityService.Result::isAccepted)
             .map(DtoQualityService.Result::getDto)
             .filter(track -> track.getArtist() != null)
-            .filter(track -> artistsByUrl.containsKey(track.getArtist().getUrl()))
+            .filter(track -> artistsByName.containsKey(track.getArtist().getName()))
             .toList();
 
         if (qualityTracks.isEmpty()) {
@@ -287,7 +289,7 @@ public class LastfmAlbumGetInfoResponseProcessor extends LastfmApiResponseProces
 
         // Create track factory with artist map
         EntityFactory<LastfmTrack, AlbumGetInfoTrackDto> trackFactory =
-            new LastfmAlbumGetInfoTrackFactory(artistsByUrl);
+            new LastfmAlbumGetInfoTrackFactory(artistsByName);
 
         // Process tracks
         LastfmApiDtoProcessingResult<LastfmTrack, AlbumGetInfoTrackDto> result = dtoProcessingService.process(

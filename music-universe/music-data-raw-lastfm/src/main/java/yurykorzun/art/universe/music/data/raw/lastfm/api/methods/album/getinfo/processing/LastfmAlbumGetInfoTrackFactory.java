@@ -9,10 +9,10 @@ import java.util.Map;
 
 public class LastfmAlbumGetInfoTrackFactory extends LastfmTrackEntityFactory<AlbumGetInfoTrackDto> {
 
-    private final Map<String, LastfmArtist> artistsByUrl;
+    private final Map<String, LastfmArtist> artistsByName;
 
-    public LastfmAlbumGetInfoTrackFactory(Map<String, LastfmArtist> artistsByUrl) {
-        this.artistsByUrl = artistsByUrl;
+    public LastfmAlbumGetInfoTrackFactory(Map<String, LastfmArtist> artistsByName) {
+        this.artistsByName = artistsByName;
     }
 
     @Override
@@ -26,9 +26,9 @@ public class LastfmAlbumGetInfoTrackFactory extends LastfmTrackEntityFactory<Alb
         }
         
         // Set artist reference if available
-        if (dto.getArtist() != null && dto.getArtist().getUrl() != null) {
-            String artistUrl = dto.getArtist().getUrl();
-            LastfmArtist artist = artistsByUrl.get(artistUrl);
+        if (dto.getArtist() != null) {
+            String artistName = dto.getArtist().getName();
+            LastfmArtist artist = artistsByName.get(artistName);
             if (artist != null) {
                 builder.artist(artist);
             }

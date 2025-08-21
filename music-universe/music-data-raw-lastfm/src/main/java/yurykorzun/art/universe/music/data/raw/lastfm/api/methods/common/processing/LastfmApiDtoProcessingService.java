@@ -1,5 +1,6 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.EntityDto;
@@ -19,6 +20,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class LastfmApiDtoProcessingService {
 
     private final LastfmAttributeHistoryService attributeHistoryService;
@@ -54,7 +56,7 @@ public class LastfmApiDtoProcessingService {
     ) {
         // Get DTO -> existing entities mapping from service
         Map<D, E> dtoToEntityMap = entityService.mapDtoToExistingEntities(dtos);
-        
+
         // Build complete mapping with found entities
         EntityMappingResult<E, D> mappings = buildMapping(
             dtos, 

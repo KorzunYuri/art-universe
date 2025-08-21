@@ -9,6 +9,8 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.Enti
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.entity.LastfmAlbum;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
 
+import java.beans.Transient;
+
 @Data
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -24,6 +26,7 @@ public abstract class AlbumDto implements EntityDto<LastfmAlbum>, ArtistScoped {
     private String mbid;
 
     @Override
+    @Transient
     public LastfmEntityType getEntityType() {
         return LastfmEntityType.ALBUM;
     }

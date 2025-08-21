@@ -27,6 +27,7 @@ public class ArtistDto implements EntityDto<LastfmArtist> {
     private String url;
 
     @Override
+    @Transient
     public LastfmEntityType getEntityType() {
         return LastfmEntityType.ARTIST;
     }
