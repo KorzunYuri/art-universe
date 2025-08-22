@@ -23,8 +23,8 @@ public interface LastfmAlbumRepository extends JpaRepository<LastfmAlbum, Long> 
             album al
         JOIN
             al.artist ar
-        WHERE   al.name = :albumName
-            AND ar.name = :artistName
+        WHERE   lower(al.name) = lower(:albumName)
+            AND lower(ar.name) = lower(:artistName)
     """)
     List<LastfmAlbum> findByNameAndArtistName(@Param("albumName") String albumName, @Param("artistName") String artistName);
 

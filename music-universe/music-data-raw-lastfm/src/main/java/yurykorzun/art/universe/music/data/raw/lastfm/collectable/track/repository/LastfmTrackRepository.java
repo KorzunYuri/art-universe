@@ -16,7 +16,14 @@ import java.util.List;
 @Repository
 public interface LastfmTrackRepository extends JpaRepository<LastfmTrack, Long> {
 
-    @Query("SELECT t FROM track t JOIN t.artist a WHERE t.name = :trackName AND a.name = :artistName")
+    @Query("""
+        SELECT  t
+        FROM track t
+        JOIN t.artist a
+        WHERE   lower(t.name) = lower(:trackName)
+            AND lower(a.name) = lower(:artistName)
+
+    """)
     List<LastfmTrack> findByNameAndArtistName(@Param("trackName") String trackName, @Param("artistName") String artistName);
 
     List<LastfmTrack> findAllByUrl(String url);
