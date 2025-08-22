@@ -1,5 +1,6 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.service;
 
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -21,12 +22,15 @@ class MetadataExtractionUnitTest {
 
     @Mock
     private JdbcTemplate jdbcTemplate;
+    
+    @Mock
+    private EntityManager entityManager;
 
     @Test
     void extractTableName_shouldWorkForAllServices() {
 
         // ArtistTag
-        LastfmArtistTagServiceImpl artistTagService = new LastfmArtistTagServiceImpl(jdbcTemplate);
+        LastfmArtistTagServiceImpl artistTagService = new LastfmArtistTagServiceImpl(jdbcTemplate, entityManager);
         artistTagService.initializeMetadata();
         String artistTagSql = artistTagService.buildUpsertSql(
             LastfmArtistTag.builder()
@@ -37,7 +41,7 @@ class MetadataExtractionUnitTest {
         assertTrue(artistTagSql.contains("INSERT INTO artist_tag"), "ArtistTag table name should be 'artist_tag'");
 
         // ArtistsRelation
-        LastfmArtistsRelationServiceImpl artistsRelationService = new LastfmArtistsRelationServiceImpl(jdbcTemplate);
+        LastfmArtistsRelationServiceImpl artistsRelationService = new LastfmArtistsRelationServiceImpl(jdbcTemplate, entityManager);
         artistsRelationService.initializeMetadata();
         String artistsRelationSql = artistsRelationService.buildUpsertSql(
             LastfmArtistsRelation.builder()
@@ -49,7 +53,7 @@ class MetadataExtractionUnitTest {
         assertTrue(artistsRelationSql.contains("INSERT INTO artist_artist"), "ArtistsRelation table name should be 'artist_artist'");
 
         // ArtistAlbum
-        LastfmArtistAlbumServiceImpl artistAlbumService = new LastfmArtistAlbumServiceImpl(jdbcTemplate);
+        LastfmArtistAlbumServiceImpl artistAlbumService = new LastfmArtistAlbumServiceImpl(jdbcTemplate, entityManager);
         artistAlbumService.initializeMetadata();
         String artistAlbumSql = artistAlbumService.buildUpsertSql(
             LastfmArtistAlbum.builder()
@@ -63,7 +67,7 @@ class MetadataExtractionUnitTest {
     @Test
     void extractConflictColumns_shouldHandleDifferentEntityTypes() {
         // Given - ArtistTag (different entity types)
-        LastfmArtistTagServiceImpl service = new LastfmArtistTagServiceImpl(jdbcTemplate);
+        LastfmArtistTagServiceImpl service = new LastfmArtistTagServiceImpl(jdbcTemplate, entityManager);
         service.initializeMetadata();
 
         String sql = service.buildUpsertSql(
@@ -81,7 +85,7 @@ class MetadataExtractionUnitTest {
     @Test
     void extractConflictColumns_shouldHandleSameEntityTypes() {
         // Given - ArtistsRelation (same entity types)
-        LastfmArtistsRelationServiceImpl service = new LastfmArtistsRelationServiceImpl(jdbcTemplate);
+        LastfmArtistsRelationServiceImpl service = new LastfmArtistsRelationServiceImpl(jdbcTemplate, entityManager);
         service.initializeMetadata();
 
         String sql = service.buildUpsertSql(
@@ -100,7 +104,7 @@ class MetadataExtractionUnitTest {
     @Test
     void extractInsertColumns_shouldIncludeAllRelevantFields() {
         // Given
-        LastfmArtistTagServiceImpl service = new LastfmArtistTagServiceImpl(jdbcTemplate);
+        LastfmArtistTagServiceImpl service = new LastfmArtistTagServiceImpl(jdbcTemplate, entityManager);
         service.initializeMetadata();
 
         String sql = service.buildUpsertSql(
@@ -127,7 +131,7 @@ class MetadataExtractionUnitTest {
     @Test
     void parameterMapper_shouldBeBuiltAutomatically() {
         // Given
-        LastfmArtistTagServiceImpl service = new LastfmArtistTagServiceImpl(jdbcTemplate);
+        LastfmArtistTagServiceImpl service = new LastfmArtistTagServiceImpl(jdbcTemplate, entityManager);
         service.initializeMetadata();
 
         // When - create a sample entity
@@ -147,7 +151,7 @@ class MetadataExtractionUnitTest {
     @Test
     void sameEntityRelation_shouldExtractCorrectTypes() {
         // Given - ArtistsRelation extends BaseLastfmSameEntityRelation<LastfmArtist>
-        LastfmArtistsRelationServiceImpl service = new LastfmArtistsRelationServiceImpl(jdbcTemplate);
+        LastfmArtistsRelationServiceImpl service = new LastfmArtistsRelationServiceImpl(jdbcTemplate, entityManager);
         service.initializeMetadata();
 
         // When

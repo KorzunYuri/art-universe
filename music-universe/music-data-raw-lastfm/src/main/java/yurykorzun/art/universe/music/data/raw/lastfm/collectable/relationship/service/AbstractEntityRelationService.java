@@ -18,12 +18,14 @@ public abstract class AbstractEntityRelationService<T extends BaseLastfmEntityRe
     implements BaseLastfmEntityRelationService<T>{
 
     protected final JdbcTemplate jdbcTemplate;
+    protected final EntityManager entityManager;
     private EntityRelationMetadata<T> metadata;
 
     private static final Set<String> IGNORED_INSERT_COLUMNS = Set.of("createdAt", "updatedAt");
 
-    protected AbstractEntityRelationService(JdbcTemplate jdbcTemplate) {
+    protected AbstractEntityRelationService(JdbcTemplate jdbcTemplate, EntityManager entityManager) {
         this.jdbcTemplate = jdbcTemplate;
+        this.entityManager = entityManager;
     }
 
     @PostConstruct
@@ -49,6 +51,7 @@ public abstract class AbstractEntityRelationService<T extends BaseLastfmEntityRe
                 .map(paramMapper)
                 .toList();
 
+        entityManager.flush(); // flush dependent entities, if any
         jdbcTemplate.batchUpdate(sql, batchArgs);
     }
 

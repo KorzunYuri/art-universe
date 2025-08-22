@@ -116,7 +116,7 @@ class LastfmArtistSearchResponseProcessorTest extends JpaOnlyTest {
     }
 
     @Test
-    void process_shouldCreateNewEntities_whenArtistSearchApiResponseAndEmptyDatabaseProvided() throws IOException {
+    void process_shouldCreateNewEntities_whenArtistSearchApiResponseProvided() throws IOException {
         // given
         // Create API response
         LastfmApiResponse apiResponse = createApiResponse();
@@ -132,8 +132,8 @@ class LastfmArtistSearchResponseProcessorTest extends JpaOnlyTest {
         long initialAttributeCount = attributeHistoryRepository.count();
         
         // Calculate expected attribute count
-        // Each artist has 3 attributes (MBID, URL, LISTENERS_COUNT) from artistAttrHandlers
-        int expectedAttributesPerArtist = 3;
+        // Each artist has 1 attributes (LISTENERS_COUNT) from artistAttrHandlers. URL & MBID have been excluded from history
+        int expectedAttributesPerArtist = 1;
         int expectedTotalAttributeCount = expectedArtistsCount * expectedAttributesPerArtist;
         
         // when
@@ -162,12 +162,10 @@ class LastfmArtistSearchResponseProcessorTest extends JpaOnlyTest {
                 // Verify attributes if this is one of the artists from the response
                 if (artistDto.get().getMbid() != null && !artistDto.get().getMbid().isEmpty()) {
                     assertEquals(artistDto.get().getMbid(), artist.getMbid(), "Artist MBID should match");
-                    testHelper.verifyStringAttribute(artist, LastfmAttribute.MBID, artistDto.get().getMbid());
                 }
                 
                 assertEquals(artistDto.get().getUrl(), artist.getUrl(), "Artist URL should match");
-                testHelper.verifyStringAttribute(artist, LastfmAttribute.URL, artistDto.get().getUrl());
-                
+
                 assertEquals(artistDto.get().getListenersCount(), artist.getListenersCount(),
                     "Artist listeners count should match");
                 testHelper.verifyNumericAttribute(artist, LastfmAttribute.LISTENERS_COUNT,
@@ -196,7 +194,7 @@ class LastfmArtistSearchResponseProcessorTest extends JpaOnlyTest {
             .count();
         
         // Calculate expected attribute count
-        int expectedAttributesPerArtist = 3; // MBID, URL, LISTENERS_COUNT
+        int expectedAttributesPerArtist = 1; // LISTENERS_COUNT. MBID & URL have been excluded
         long expectedTotalAttributeCount = expectedArtistsCount * expectedAttributesPerArtist;
         
         // when

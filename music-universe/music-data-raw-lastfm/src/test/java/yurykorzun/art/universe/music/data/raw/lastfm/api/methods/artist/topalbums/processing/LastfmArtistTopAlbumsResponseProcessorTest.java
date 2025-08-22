@@ -170,21 +170,10 @@ class LastfmArtistTopAlbumsResponseProcessorTest extends JpaOnlyTest {
             assertNotNull(album.getUrl(), "Album URL should be set");
             
             // Find corresponding album in the DTO to get the original values
-            var albumDto = dtoRoot.getTopAlbumsObject().getAlbums().stream()
-                .filter(dto -> dto.getName().equals(album.getName()) && 
-                       dto.getUrl().equals(album.getUrl()))
+            dtoRoot.getTopAlbumsObject().getAlbums().stream()
+                .filter(dto -> dto.getName().equals(album.getName()) && dto.getUrl().equals(album.getUrl()))
                 .findFirst()
-                .orElse(null);
-                
-            if (albumDto != null) {
-                // Verify attributes using the test helper
-                testHelper.verifyStringAttribute(album, LastfmAttribute.URL, albumDto.getUrl());
-                testHelper.verifyNumericAttribute(album, LastfmAttribute.PLAY_COUNT, albumDto.getPlayCount());
-                
-                if (albumDto.getMbid() != null && !albumDto.getMbid().isEmpty()) {
-                    testHelper.verifyStringAttribute(album, LastfmAttribute.MBID, albumDto.getMbid());
-                }
-            }
+                .ifPresent(albumDto -> testHelper.verifyNumericAttribute(album, LastfmAttribute.PLAY_COUNT, albumDto.getPlayCount()));
         }
 
         // Verify relation properties

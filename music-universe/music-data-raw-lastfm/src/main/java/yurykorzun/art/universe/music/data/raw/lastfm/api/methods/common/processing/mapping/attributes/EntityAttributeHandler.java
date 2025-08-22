@@ -50,6 +50,11 @@ public abstract class EntityAttributeHandler<E extends BaseLastfmEntity, T, D ex
     }
 
     private boolean shouldCreateNewRecord(@Nullable E oldEntity, D newDto) {
+        // CONSTANT attributes should never create history records
+        if (getAttribute().getHistoryType() == LastfmAttribute.HistoryType.CONSTANT) {
+            return false;
+        }
+        
         return shouldCreateNewValueUnconditionally()
             || isAttributeExternal() // cannot extract external attribute from entity, thus cannot compare
             || hasAttributeChanged(oldEntity, newDto);
@@ -66,7 +71,89 @@ public abstract class EntityAttributeHandler<E extends BaseLastfmEntity, T, D ex
     }
 
     public boolean hasAttributeChanged(EntityMapping<E, D> mapping) {
+        if (getAttribute().getHistoryType() == LastfmAttribute.HistoryType.CONSTANT) {
+            return shouldUpdateConstantAttribute(mapping.getOldEntity(), mapping.getDto());
+        }
+        if (getAttribute().getHistoryType() == LastfmAttribute.HistoryType.INCREASING) {
+            return shouldUpdateIncreasingAttribute(mapping.getOldEntity(), mapping.getDto());
+        }
         return hasAttributeChanged(mapping.getOldEntity(), mapping.getDto());
+    }
+
+    /**
+     * For CONSTANT attributes, only update if the old value is null or empty.
+     * This prevents overwriting existing URLs/MBIDs with different encodings.
+     */
+    private boolean shouldUpdateConstantAttribute(@Nullable E oldEntity, D dto) {
+        if (oldEntity == null) {
+            return extractFrom(dto) != null; // New entity, always set value
+        }
+        
+        return isNullOrEmpty(extractFrom(oldEntity))
+            && !isNullOrEmpty(extractFrom(dto));
+    }
+
+    /**
+     * For INCREASING attributes, only update if the new value is bigger than the old value or old value is null/empty.
+     * This ensures that counters (listeners_count, play_count, etc.) only increase over time.
+     */
+    private boolean shouldUpdateIncreasingAttribute(@Nullable E oldEntity, D dto) {
+        if (oldEntity == null) {
+            return extractFrom(dto) != null; // New entity, always set value if available
+        }
+
+        T oldValueRaw = extractFrom(oldEntity);
+        T newValueRaw = extractFrom(dto);
+        
+        // Convert to Long for comparison, handling both Integer and Long types
+        Long oldValue = convertToLong(oldValueRaw);
+        Long newValue = convertToLong(newValueRaw);
+        
+        // If new value is null, don't update
+        if (newValue == null) {
+            return false;
+        }
+        
+        // If old value is null or zero, update with any positive new value
+        if (oldValue == null || oldValue <= 0) {
+            return newValue > 0;
+        }
+        
+        // Only update if new value is greater than old value
+        return newValue > oldValue;
+    }
+
+    /**
+     * Safely converts numeric values to Long for comparison.
+     * Handles both Integer and Long types commonly used in numeric attributes.
+     */
+    private Long convertToLong(T value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Long) {
+            return (Long) value;
+        }
+        if (value instanceof Integer) {
+            return ((Integer) value).longValue();
+        }
+        if (value instanceof Number) {
+            return ((Number) value).longValue();
+        }
+        throw new IllegalArgumentException("Cannot convert value to Long: " + value.getClass().getSimpleName());
+    }
+
+    /**
+     * Checks if a value is null or empty (for strings).
+     */
+    private boolean isNullOrEmpty(T value) {
+        if (value == null) {
+            return true;
+        }
+        if (value instanceof String) {
+            return ((String) value).trim().isEmpty();
+        }
+        return false;
     }
 
 }

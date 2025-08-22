@@ -19,21 +19,21 @@ public enum LastfmAttribute implements Coded {
             "Relations number",
             "Number of entities associated with entity",
             DataType.NUMERIC,
-            HistoryType.SCD2,
+            HistoryType.INCREASING,
             List.of(LastfmEntityType.TAG))
     ,   USAGE_COUNT(
             2,
             "Usage count",
             "Number of users that used entity",
             DataType.NUMERIC,
-            HistoryType.SCD2,
+            HistoryType.INCREASING,
             List.of(LastfmEntityType.TAG))
     ,   URL(
             3,
             "URL",
             "Entity's URL",
             DataType.STRING,
-            HistoryType.SCD2,
+            HistoryType.CONSTANT,
             List.of(LastfmEntityType.values()))
     ,   RANK(
             4,
@@ -47,14 +47,14 @@ public enum LastfmAttribute implements Coded {
             "mbid",
             "MusicBrainz ID",
             DataType.STRING,
-            HistoryType.SCD2,
+            HistoryType.CONSTANT,
             List.of(LastfmEntityType.ARTIST))
     ,   DURATION(
             6,
             "duration",
             "Track duration",
             DataType.NUMERIC,
-            HistoryType.SCD2,
+            HistoryType.CONSTANT,
             List.of(LastfmEntityType.TRACK))
     ,   @Deprecated IS_STREAMABLE(
             7,
@@ -75,14 +75,14 @@ public enum LastfmAttribute implements Coded {
             "listeners_count",
             "Number of listeners",
             DataType.NUMERIC,
-            HistoryType.SCD2,
+            HistoryType.INCREASING,
             List.of(LastfmEntityType.values()))
     ,   PLAY_COUNT(
             10,
             "play_count",
             "How many times track(s) were scrobbled",
             DataType.NUMERIC,
-            HistoryType.SCD2,
+            HistoryType.INCREASING,
             List.of(LastfmEntityType.values()))
     ,   MATCH_COEFF(
             11,
@@ -142,12 +142,20 @@ public enum LastfmAttribute implements Coded {
 
     public enum HistoryType {
         /**
+         * Never changed over time
+         */
+        CONSTANT,
+        /**
          * Add new attribute value record only if the value has changed
          */
         SCD2, // SlowlyChangingDimension
         /**
          * Add new attribute value record with every snapshot
          */
-        SNAPSHOT
+        SNAPSHOT,
+        /**
+         * Attribute that only increases over time
+         */
+        INCREASING
     }
 }

@@ -162,8 +162,8 @@ class LastfmTagTopTracksResponseProcessorTest extends JpaOnlyTest {
             "New artists should be created");
         
         // Verify attribute history records were created
-        assertTrue(attributeHistoryRepository.count() > initialAttributeCount, 
-            "New attribute history records should be created");
+        assertFalse(attributeHistoryRepository.count() > initialAttributeCount,
+            "New attribute history records should not be created");
         
         // Verify artist-track relations were created
         assertEquals(initialArtistTrackCount + expectedTracksCount, artistTrackRepository.count(), 
@@ -182,12 +182,10 @@ class LastfmTagTopTracksResponseProcessorTest extends JpaOnlyTest {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Saved track doesn't correspond to any DTO"));
 
-            // Verify attributes using the test helper
-            testHelper.verifyStringAttribute(track, LastfmAttribute.URL, trackDto.getUrl());
-            testHelper.verifyNumericAttribute(track, LastfmAttribute.DURATION, trackDto.getDuration());
-
+            assertEquals(trackDto.getUrl(), track.getUrl());
+            assertEquals(trackDto.getDuration(), track.getDuration());
             if (trackDto.getMbid() != null && !trackDto.getMbid().isEmpty()) {
-                testHelper.verifyStringAttribute(track, LastfmAttribute.MBID, trackDto.getMbid());
+                assertEquals(trackDto.getMbid(), track.getMbid());
             }
         }
         
@@ -205,11 +203,9 @@ class LastfmTagTopTracksResponseProcessorTest extends JpaOnlyTest {
                 .orElse(null);
                 
             if (artistDto != null) {
-                // Verify attributes using the test helper
-                testHelper.verifyStringAttribute(artist, LastfmAttribute.URL, artistDto.getUrl());
-                
+                assertEquals(artistDto.getUrl(), artist.getUrl());
                 if (artistDto.getMbid() != null && !artistDto.getMbid().isEmpty()) {
-                    testHelper.verifyStringAttribute(artist, LastfmAttribute.MBID, artistDto.getMbid());
+                    assertEquals(artistDto.getMbid(), artist.getMbid());
                 }
             }
         }
@@ -545,7 +541,7 @@ class LastfmTagTopTracksResponseProcessorTest extends JpaOnlyTest {
         assertTrue(artistRepository.count() > initialArtistCount, "Artists should be created");
         assertTrue(trackRepository.count() > initialTrackCount, "Tracks should be created");
         assertTrue(artistTrackRepository.count() > 0, "Artist-track relationships should be created");
-        assertTrue(attributeHistoryRepository.count() > 0, "Attribute history records should be created");
+        assertFalse(attributeHistoryRepository.count() > 0, "Attribute history records should not be created");
     }
 
     @Test

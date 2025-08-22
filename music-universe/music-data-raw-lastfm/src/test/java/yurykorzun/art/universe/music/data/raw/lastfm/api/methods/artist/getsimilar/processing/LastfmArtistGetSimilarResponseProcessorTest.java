@@ -148,8 +148,8 @@ class LastfmArtistGetSimilarResponseProcessorTest extends JpaOnlyTest {
             "New artists should be created");
 
         // Calculate expected attribute counts
-        // Each similar artist has 2 attributes (MBID, URL) from artistAttrHandlers
-        int expectedNonScopedAttributeCount = expectedNewArtistsCount * 2;
+        // Each similar artist has 0 attributes for attribute_history (previously URL, MBID)
+        int expectedNonScopedAttributeCount = expectedNewArtistsCount * 0;
         // Each relation has 1 scoped attribute (MATCH_COEFF)
         int expectedScopedAttributeCount = expectedNewArtistsCount;
         int expectedTotalAttributeCount = expectedNonScopedAttributeCount + expectedScopedAttributeCount;
@@ -204,10 +204,6 @@ class LastfmArtistGetSimilarResponseProcessorTest extends JpaOnlyTest {
             // Verify attributes
             assertEquals(similarArtistDto.getMbid(), similarArtist.getMbid(), "MBID should match");
             assertEquals(similarArtistDto.getUrl(), similarArtist.getUrl(), "URL should match");
-
-            // Verify attribute history records
-            testHelper.verifyStringAttribute(similarArtist, LastfmAttribute.MBID, similarArtistDto.getMbid());
-            testHelper.verifyStringAttribute(similarArtist, LastfmAttribute.URL, similarArtistDto.getUrl());
         }
     }
 

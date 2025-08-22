@@ -159,6 +159,7 @@ class LastfmAlbumGetInfoResponseProcessorTest extends JpaOnlyTest {
         LastfmAlbum existingAlbum = consistencyHelper.createAndSaveAlbum(builder ->
             builder .name(dtoRoot.getAlbum().getName())
                     .url(dtoRoot.getAlbum().getUrl())
+                    .mbid(null)
                     .playCount(0L)
                     .listenersCount(0)
                     .approvalStatus(ApprovalStatus.APPROVED)
@@ -189,13 +190,12 @@ class LastfmAlbumGetInfoResponseProcessorTest extends JpaOnlyTest {
         assertEquals(dtoRoot.getAlbum().getMbid(), album.getMbid(), "Album MBID should be updated");
         assertEquals(dtoRoot.getAlbum().getPlayCount(), album.getPlayCount(), "Album play count should be updated");
         assertEquals(dtoRoot.getAlbum().getListenersCount(), album.getListenersCount(), "Album listeners count should be updated");
-        // Verify specific album attributes
-        testHelper.verifyStringAttribute(album, LastfmAttribute.MBID, album.getMbid());
-        testHelper.verifyNumericAttribute(album, LastfmAttribute.PLAY_COUNT, album.getPlayCount());
-        testHelper.verifyNumericAttribute(album, LastfmAttribute.LISTENERS_COUNT, album.getListenersCount());
         // verify non-changed fields
         assertEquals(dtoRoot.getAlbum().getName(), album.getName(), "Album name should remain the same");
         assertEquals(dtoRoot.getAlbum().getUrl(), album.getUrl(), "Album URL should remain the same");
+        // Verify attribute history records
+        testHelper.verifyNumericAttribute(album, LastfmAttribute.PLAY_COUNT, album.getPlayCount());
+        testHelper.verifyNumericAttribute(album, LastfmAttribute.LISTENERS_COUNT, album.getListenersCount());
         
         // Verify approval status is preserved
         assertEquals(ApprovalStatus.APPROVED, album.getApprovalStatus(), "Album approval status should be preserved");

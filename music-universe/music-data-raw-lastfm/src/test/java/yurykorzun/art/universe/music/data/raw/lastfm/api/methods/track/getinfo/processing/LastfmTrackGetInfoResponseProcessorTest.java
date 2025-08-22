@@ -78,7 +78,7 @@ import static org.junit.jupiter.api.Assertions.*;
     // helpers
     LastfmApiResponseProcessorTestHelper.class
 })
-class LastfmTrackGetInfoResponseProcessorTest_Updated extends JpaOnlyTest {
+class LastfmTrackGetInfoResponseProcessorTest extends JpaOnlyTest {
 
     @Autowired
     private DbConsistencyHelper consistencyHelper;
@@ -179,6 +179,10 @@ class LastfmTrackGetInfoResponseProcessorTest_Updated extends JpaOnlyTest {
         assertEquals(dtoRoot.getTrack().getMbid(), track.getMbid(), "Track MBID should match");
         assertEquals(dtoRoot.getTrack().getUrl(), track.getUrl(), "Track URL should match");
         assertEquals(dtoRoot.getTrack().getDuration(), track.getDuration(), "Track duration should match");
+        // Verify attribute history records were created
+        assertFalse(attributeHistoryRepository.findAll().isEmpty(), "Attribute history records should be created");
+        testHelper.verifyNumericAttribute(track, LastfmAttribute.PLAY_COUNT, dtoRoot.getTrack().getPlayCount());
+        testHelper.verifyNumericAttribute(track, LastfmAttribute.LISTENERS_COUNT, dtoRoot.getTrack().getListenersCount());
 
         // Verify artist was created
         List<LastfmArtist> savedArtists = artistRepository.findAll();
@@ -227,15 +231,6 @@ class LastfmTrackGetInfoResponseProcessorTest_Updated extends JpaOnlyTest {
         List<LastfmTrackTag> trackTags = trackTagRepository.findAll();
         assertEquals(expectedTagsCount, trackTags.size(), "Track-tag relationships should be created");
 
-        // Verify attribute history records were created
-        assertFalse(attributeHistoryRepository.findAll().isEmpty(), "Attribute history records should be created");
-
-        // Verify specific track attributes
-        testHelper.verifyStringAttribute(track, LastfmAttribute.URL, track.getUrl());
-        testHelper.verifyStringAttribute(track, LastfmAttribute.MBID, track.getMbid());
-        testHelper.verifyNumericAttribute(track, LastfmAttribute.DURATION, track.getDuration());
-        testHelper.verifyNumericAttribute(track, LastfmAttribute.PLAY_COUNT, dtoRoot.getTrack().getPlayCount());
-        testHelper.verifyNumericAttribute(track, LastfmAttribute.LISTENERS_COUNT, dtoRoot.getTrack().getListenersCount());
     }
 
     // ========== Blacklist validation tests ==========

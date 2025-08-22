@@ -179,13 +179,8 @@ class LastfmArtistTopTracksResponseProcessorTest extends JpaOnlyTest {
                 .orElseThrow(() -> new IllegalArgumentException("Saved track doesn't correspond to any DTO"));
 
             // Verify attributes using the test helper
-            testHelper.verifyStringAttribute(track, LastfmAttribute.URL, trackDto.getUrl());
             testHelper.verifyNumericAttribute(track, LastfmAttribute.LISTENERS_COUNT, trackDto.getListenersCount());
             testHelper.verifyNumericAttribute(track, LastfmAttribute.PLAY_COUNT, trackDto.getPlayCount());
-
-            if (trackDto.getMbid() != null && !trackDto.getMbid().isEmpty()) {
-                testHelper.verifyStringAttribute(track, LastfmAttribute.MBID, trackDto.getMbid());
-            }
         }
         
         // Verify relation properties

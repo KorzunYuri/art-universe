@@ -149,8 +149,8 @@ class LastfmTagTopArtistsResponseProcessorTest extends JpaOnlyTest {
             "New artists should be created");
         
         // Verify attribute history records were created
-        assertTrue(attributeHistoryRepository.count() > initialAttributeCount, 
-            "New attribute history records should be created");
+        assertFalse(attributeHistoryRepository.count() > initialAttributeCount,
+            "New attribute history records should not be created");
         
         // Verify artist-tag relations were created
         assertEquals(initialArtistTagCount + expectedArtistsCount, artistTagRepository.count(), 
@@ -169,10 +169,9 @@ class LastfmTagTopArtistsResponseProcessorTest extends JpaOnlyTest {
                 .orElseThrow(() -> new IllegalArgumentException("Saved artist doesn't correspond to any DTO"));
 
             // Verify attributes using the test helper
-            testHelper.verifyStringAttribute(artist, LastfmAttribute.URL, artistDto.getUrl());
-
+            assertEquals(artistDto.getUrl(), artist.getUrl());
             if (artistDto.getMbid() != null && !artistDto.getMbid().isEmpty()) {
-                testHelper.verifyStringAttribute(artist, LastfmAttribute.MBID, artistDto.getMbid());
+                assertEquals(artistDto.getMbid(), artist.getMbid());
             }
         }
         
@@ -310,7 +309,7 @@ class LastfmTagTopArtistsResponseProcessorTest extends JpaOnlyTest {
 
         // Verify relationships were created
         assertTrue(artistTagRepository.count() > 0, "Artist-tag relationships should be created");
-        assertTrue(attributeHistoryRepository.count() > 0, "Attribute history records should be created");
+        assertFalse(attributeHistoryRepository.count() > 0, "Attribute history records should not be created");
     }
 
     @Test
@@ -357,6 +356,6 @@ class LastfmTagTopArtistsResponseProcessorTest extends JpaOnlyTest {
         // Verify artists were created
         assertTrue(artistRepository.count() > initialArtistCount, "Artists should be created");
         assertTrue(artistTagRepository.count() > 0, "Artist-tag relationships should be created");
-        assertTrue(attributeHistoryRepository.count() > 0, "Attribute history records should be created");
+        assertFalse(attributeHistoryRepository.count() > 0, "Attribute history records should not be created");
     }
 }

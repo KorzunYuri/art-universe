@@ -98,17 +98,17 @@ class MetadataExtractionIntegrationTest extends JpaOnlyTest {
     void initializeMetadata_shouldWorkForAllServiceTypes() {
         // Given & When - services should initialize without errors
         assertDoesNotThrow(() -> {
-            LastfmArtistTagServiceImpl artistTagService = new LastfmArtistTagServiceImpl(null);
+            LastfmArtistTagServiceImpl artistTagService = new LastfmArtistTagServiceImpl(null, null);
             artistTagService.initializeMetadata();
         }, "ArtistTag service metadata initialization should not throw");
 
         assertDoesNotThrow(() -> {
-            LastfmArtistsRelationServiceImpl artistsRelationService = new LastfmArtistsRelationServiceImpl(null);
+            LastfmArtistsRelationServiceImpl artistsRelationService = new LastfmArtistsRelationServiceImpl(null, null);
             artistsRelationService.initializeMetadata();
         }, "ArtistsRelation service metadata initialization should not throw");
 
         assertDoesNotThrow(() -> {
-            LastfmArtistAlbumServiceImpl artistAlbumService = new LastfmArtistAlbumServiceImpl(null);
+            LastfmArtistAlbumServiceImpl artistAlbumService = new LastfmArtistAlbumServiceImpl(null, null);
             artistAlbumService.initializeMetadata();
         }, "ArtistAlbum service metadata initialization should not throw");
     }
@@ -116,7 +116,7 @@ class MetadataExtractionIntegrationTest extends JpaOnlyTest {
     @Test
     void initializeMetadata_shouldHandleInheritance_correctly() {
         // Given - services with inherited fields
-        LastfmArtistTagServiceImpl service = new LastfmArtistTagServiceImpl(null);
+        LastfmArtistTagServiceImpl service = new LastfmArtistTagServiceImpl(null, null);
         
         // When
         assertDoesNotThrow(() -> service.initializeMetadata());
@@ -161,7 +161,7 @@ class MetadataExtractionIntegrationTest extends JpaOnlyTest {
     @Test
     void metadataExtraction_shouldValidateAnnotations() {
         // Given
-        LastfmArtistTagServiceImpl service = new LastfmArtistTagServiceImpl(null);
+        LastfmArtistTagServiceImpl service = new LastfmArtistTagServiceImpl(null, null);
         service.initializeMetadata();
         
         // When

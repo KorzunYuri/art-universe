@@ -1,5 +1,6 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.service;
 
+import jakarta.persistence.EntityManager;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.entity.LastfmArtistAlbum;
@@ -8,7 +9,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.en
 public class LastfmArtistAlbumServiceImpl extends AbstractEntityRelationService<LastfmArtistAlbum>
         implements LastfmArtistAlbumService {
 
-    public LastfmArtistAlbumServiceImpl(JdbcTemplate jdbcTemplate) {
-        super(jdbcTemplate);
+    public LastfmArtistAlbumServiceImpl(JdbcTemplate jdbcTemplate, EntityManager entityManager) {
+        super(jdbcTemplate, entityManager);
     }
 }

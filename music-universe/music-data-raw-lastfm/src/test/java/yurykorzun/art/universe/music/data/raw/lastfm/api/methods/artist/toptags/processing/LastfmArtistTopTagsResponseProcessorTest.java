@@ -174,9 +174,6 @@ class LastfmArtistTopTagsResponseProcessorTest extends JpaOnlyTest {
                 .filter(dto -> dto.getName().equals(tag.getName()))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Saved tag doesn't correspond to any DTO"));
-
-            // Verify attributes using the test helper
-            testHelper.verifyStringAttribute(tag, LastfmAttribute.URL, tagDto.getUrl());
         }
 
         // Verify relation properties

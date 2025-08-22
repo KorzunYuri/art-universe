@@ -194,8 +194,6 @@ class LastfmArtistGetInfoResponseProcessorTest extends JpaOnlyTest {
         assertEquals(artistDto.getStats().getPlayCount(), artist.getPlayCount(), "Artist play count should match");
         
         // Verify specific attribute history records using the test helper
-        testHelper.verifyStringAttribute(artist, LastfmAttribute.MBID, artistDto.getMbid());
-        testHelper.verifyStringAttribute(artist, LastfmAttribute.URL, artistDto.getUrl());
         testHelper.verifyNumericAttribute(artist, LastfmAttribute.LISTENERS_COUNT, artistDto.getStats().getListeners());
         testHelper.verifyNumericAttribute(artist, LastfmAttribute.PLAY_COUNT, artistDto.getStats().getPlayCount());
     }
@@ -210,6 +208,7 @@ class LastfmArtistGetInfoResponseProcessorTest extends JpaOnlyTest {
         LastfmArtist existingArtist = consistencyHelper.createAndSaveArtist(builder -> 
             builder.name(artistName)
                    .url("http://old-url.com")
+                   .mbid("mbid")
                    .listenersCount(100)
                    .playCount(200L)
                    .approvalStatus(ApprovalStatus.APPROVED)
@@ -234,13 +233,14 @@ class LastfmArtistGetInfoResponseProcessorTest extends JpaOnlyTest {
         // Verify artist data was updated
         LastfmArtist artist = updatedArtist.get();
         assertEquals(artistName, artist.getName(), "Artist name should remain the same");
-        assertNotEquals("http://old-url.com", artist.getUrl(), "Artist URL should be updated");
-        assertEquals(artistDto.getUrl(), artist.getUrl(), "Artist URL should match the response");
         assertNotEquals(100, artist.getListenersCount(), "Artist listeners count should be updated");
         assertEquals(artistDto.getStats().getListeners(), artist.getListenersCount(), "Artist listeners count should match the response");
         assertNotEquals(200, artist.getPlayCount(), "Artist play count should be updated");
         assertEquals(artistDto.getStats().getPlayCount(), artist.getPlayCount(), "Artist play count should match the response");
-        
+        // constant attributes
+        assertEquals("http://old-url.com", artist.getUrl(), "Existing URL should not be updated");
+        assertEquals("mbid", artist.getMbid(), "Existing MBID should not be updated");
+
         // Verify approval status is preserved
         assertEquals(ApprovalStatus.APPROVED, artist.getApprovalStatus(), "Artist approval status should be preserved");
         
