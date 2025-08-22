@@ -15,8 +15,9 @@ public class PostgresTestContainerHolder {
     static {
         container = new PostgreSQLContainer<>(POSTGRES_IMAGE_NAME)
                 .withDatabaseName("music_universe")
-                .withUsername("test")
-                .withPassword("test")
+                .withUsername("mu_raw_lastfm_dm")
+                .withPassword("mu_raw_lastfm_dm_password")
+                .withInitScript("db/init-schema.sql")
                 .withReuse(true);
         container.start();
     }
