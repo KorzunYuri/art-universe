@@ -53,20 +53,28 @@ REM Stop and remove existing containers and images
 echo Step 1: Stopping and removing existing containers...
 docker compose -f "%COMPOSE_FILE%" down --remove-orphans
 
-REM Build the project
-echo.
-echo Step 2: Building project...
-cd /d "%PROJECT_ROOT%"
-call gradlew.bat clean build -x test
+REM Build the project only for local environment
+if "%ENVIRONMENT%"=="local" (
+    echo.
+    echo Step 2: Building project for local environment...
+    cd /d "%PROJECT_ROOT%"
+    call gradlew.bat clean build extractLayers -x test
 
-if !errorlevel! neq 0 (
-    echo ❌ Build failed! Aborting deployment.
-    exit /b 1
+    if !errorlevel! neq 0 (
+        echo ❌ Build failed! Aborting deployment.
+        exit /b 1
+    )
+    
+    set "STEP_NUMBER=Step 3"
+) else (
+    echo.
+    echo Step 2: Skipping Gradle build for production environment (will build inside Docker)
+    set "STEP_NUMBER=Step 2"
 )
 
 REM Start with rebuilding images
 echo.
-echo Step 3: Starting %ENVIRONMENT% environment...
+echo !STEP_NUMBER!: Starting %ENVIRONMENT% environment...
 docker compose -f "%COMPOSE_FILE%" up -d --build --force-recreate
 
 if !errorlevel! equ 0 (

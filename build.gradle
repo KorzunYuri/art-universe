@@ -65,8 +65,40 @@ subprojects {
         testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
     }
 
-    tasks.matching { it.name in ['jar', 'bootJar'] }.configureEach {
-        enabled = false
+    tasks.matching { it.name == 'jar' }.configureEach { enabled = false }
+    tasks.matching { it.name == 'bootJar' }.configureEach {
+        enabled = true
+        layered {
+            enabled = true
+        }
+    }
+
+    tasks.register('extractLayers') {
+        group = 'build'
+        description = 'Extract layered bootJar for Docker caching'
+
+        def bootJarTask = tasks.findByName('bootJar')
+        if (bootJarTask != null) {
+            dependsOn bootJarTask
+        }
+
+        doLast {
+            def bootJarTaskInstance = tasks.findByName('bootJar')
+            if (bootJarTaskInstance == null) {
+                println "No bootJar task in project ${project.name}, skipping"
+                return
+            }
+
+            def jarFile = bootJarTaskInstance.archiveFile.get().asFile
+            def outputDir = layout.buildDirectory.dir("docker-layers").get().asFile
+
+            println "Extracting layered JAR for project '${project.name}': $jarFile -> $outputDir"
+            outputDir.mkdirs()
+
+            exec {
+                commandLine 'java', "-Djarmode=tools", '-jar', jarFile, 'extract', '--layers', '--destination', outputDir
+            }
+        }
     }
 
     tasks.withType(Test).configureEach {

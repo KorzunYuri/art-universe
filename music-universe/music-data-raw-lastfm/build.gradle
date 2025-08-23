@@ -4,9 +4,6 @@ plugins {
     id 'org.liquibase.gradle'
 }
 
-tasks.matching { it.name == 'jar' }.configureEach { enabled = true }
-tasks.matching { it.name == 'bootJar' }.configureEach { enabled = true }
-
 dependencyManagement {
     imports {
         mavenBom "org.springframework.boot:spring-boot-dependencies:${springBootVersion}"

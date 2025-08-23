@@ -92,20 +92,28 @@ echo ""
 echo "Step 1: Stopping and removing existing containers..."
 docker compose -f "$COMPOSE_FILE" down --remove-orphans
 
-# Build the project
-echo ""
-echo "Step 2: Building project..."
-cd "$PROJECT_ROOT" || exit
-$GRADLEW_CMD clean build -x test
+# Build the project only for local environment
+if [ "$ENVIRONMENT" == "local" ]; then
+    echo ""
+    echo "Step 2: Building project for local environment..."
+    cd "$PROJECT_ROOT" || exit
+    $GRADLEW_CMD clean build -x test
 
-if [ $? -ne 0 ]; then
-    echo "❌ Build failed! Aborting deployment."
-    exit 1
+    if [ $? -ne 0 ]; then
+        echo "❌ Build failed! Aborting deployment."
+        exit 1
+    fi
+    
+    STEP_NUMBER="Step 3"
+else
+    echo ""
+    echo "Step 2: Skipping Gradle build for production environment (will build inside Docker)"
+    STEP_NUMBER="Step 2"
 fi
 
 # Start with rebuilding images
 echo ""
-echo "Step 3: Starting $ENVIRONMENT environment..."
+echo "$STEP_NUMBER: Starting $ENVIRONMENT environment..."
 docker compose -f "$COMPOSE_FILE" up -d --build --force-recreate
 
 if [ $? -eq 0 ]; then

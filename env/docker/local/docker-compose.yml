@@ -62,7 +62,7 @@ services:
     restart: unless-stopped
     build:
       context: ../../../music-universe/music-data-raw-lastfm
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.local
     env_file:
       - ./music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.secrets.env
@@ -90,7 +90,7 @@ services:
     restart: unless-stopped
     build:
       context: ../../../music-universe/music-data
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.local
     env_file:
       - ./music-data.env
       - ./music-data.secrets.env
@@ -118,7 +118,7 @@ services:
     restart: unless-stopped
     build:
       context: ../../../music-universe/music-quiz
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.local
     env_file:
       - ./music-quiz.env
       - ./music-quiz.secrets.env

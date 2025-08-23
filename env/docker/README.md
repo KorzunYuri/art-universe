@@ -5,7 +5,11 @@ This directory contains cross-platform scripts for managing Docker environments 
 ## Scripts
 
 ### deploy.sh / deploy.bat
-Deploys the specified environment (local or production).
+Deploys the specified environment (local or production) with optimized build strategies:
+
+- **Local environment**: Pre-builds the project with Gradle, then uses `Dockerfile.local` for fast container builds
+- **Production environment**: Skips Gradle build and uses `Dockerfile.prod` with multi-stage build inside Docker
+- Both envs use docker layers caching with the help of Spring Boot layered jar
 
 **Usage:**
 ```bash
@@ -91,7 +95,7 @@ After successful deployment, the following services will be available:
 
 ### Build Failures
 If the build fails, check:
-- Java 17 is installed and available
+- Java 21 is installed and available
 - Docker is running
 - No port conflicts with existing services
 
@@ -103,3 +107,13 @@ chmod +x env/docker/*.sh
 
 ### WSL Path Issues
 The scripts automatically handle WSL path conversion. If you encounter issues, ensure you're running from the project root directory.
+
+### Docker Layer Caching
+For production builds, first build may take longer but subsequent builds should be faster due to layer caching. To verify layers:
+```bash
+# Check if layered JAR is properly configured
+java -Djarmode=layered -jar build/libs/mu-data-*.jar list
+
+# Monitor image sizes
+docker images | grep mu-
+```

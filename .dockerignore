@@ -1,0 +1,46 @@
+# Build artifacts
+**/build/
+**/target/
+**/.gradle/
+**/node_modules/
+**/dist/
+
+# IDE files
+**/.idea/
+**/.vscode/
+**/*.iml
+**/*.ipr
+**/*.iws
+
+# OS files
+**/.DS_Store
+**/Thumbs.db
+
+# Git
+**/.git/
+**/.gitignore
+
+# Docker files
+**/Dockerfile*
+**/.dockerignore
+
+# Environment files
+**/*.env
+**/*.secrets.env
+
+# Logs
+**/logs/
+**/*.log
+
+# Test files
+**/src/test/
+
+# Documentation
+**/README.md
+**/docs/
+
+# CI/CD
+**/.github/
+
+# Exclude everything except what we need for prod build
+# We'll explicitly COPY what we need in Dockerfile.prod

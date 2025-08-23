@@ -4,9 +4,6 @@ plugins {
     id 'org.liquibase.gradle'
 }
 
-tasks.matching { it.name == 'jar' }.configureEach { enabled = true }
-tasks.matching { it.name == 'bootJar' }.configureEach { enabled = true }
-
 dependencyManagement {
     imports {
         mavenBom "org.springframework.boot:spring-boot-dependencies:${springBootVersion}"
@@ -28,14 +25,16 @@ dependencies {
     
     implementation 'org.postgresql:postgresql'
     implementation 'org.liquibase:liquibase-core'
+
+    implementation 'org.springframework.boot:spring-boot-docker-compose'
     
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
-    
+
+    testImplementation project(':art-universe:art-universe-commons')
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.testcontainers:postgresql'
     testImplementation 'org.testcontainers:testcontainers'
     testImplementation 'org.testcontainers:junit-jupiter'
 
-    implementation 'org.springframework.boot:spring-boot-docker-compose'
 }
