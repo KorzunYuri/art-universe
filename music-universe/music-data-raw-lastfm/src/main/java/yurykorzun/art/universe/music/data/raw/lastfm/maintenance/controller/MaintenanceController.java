@@ -8,7 +8,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.common.exception.Maintenanc
 import yurykorzun.art.universe.music.data.raw.lastfm.maintenance.service.DbMaintenanceService;
 
 @RestController
-@RequestMapping("maintenance")
+@RequestMapping("/api/v1/maintenance")
 @Slf4j
 public class MaintenanceController {
 
@@ -18,7 +18,7 @@ public class MaintenanceController {
         this.maintenanceService = maintenanceService;
     }
 
-    @GetMapping("/trigger")
+    @GetMapping(value = "/trigger")
     public String triggerDbMaintenance() {
         if (maintenanceService.enqueueMaintenance()) {
             return "maintenance requested";

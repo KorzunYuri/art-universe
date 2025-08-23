@@ -1,5 +1,6 @@
 import styles from './LastfmHome.module.css';
 import { NavigationCard } from "@/music-universe/shared/components";
+import { MaintenanceButton } from "@/music-universe/sources/lastfm/components/MaintenanceButton/MaintenanceButton";
 
 export function LastfmHome() {
     return (
@@ -9,6 +10,7 @@ export function LastfmHome() {
             <NavigationCard to="/lastfm/artists"    label="Artists" />
             <NavigationCard to="/lastfm/albums"     label="Albums" />
             <NavigationCard to="/lastfm/tracks"     label="Tracks" />
+            <MaintenanceButton />
         </div>
     )
 }

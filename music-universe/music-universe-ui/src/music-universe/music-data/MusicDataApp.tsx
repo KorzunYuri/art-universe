@@ -4,6 +4,8 @@ import { Dimensions } from './pages/Dimensions'
 import { MusicDataHome } from './pages/MusicDataHome'
 import { QueryProvider } from "@/music-universe/shared/providers/QueryProvider.tsx";
 import { registerMasterLookups } from "./services/registerMasterLookups";
+import {NotificationProvider} from "@/music-universe/shared/providers/NotificationProvider.tsx";
+import {NotificationContainer} from "@/music-universe/shared/components/NotificationContainer";
 
 // Register master entity lookups on module load
 registerMasterLookups();
@@ -15,7 +17,12 @@ export default function MusicDataApp() {
         { path: 'dimensions',   element: <Dimensions /> },
     ]
 
-    return <QueryProvider>
-        { useRoutes(routes) }
-    </QueryProvider>
+    return (
+        <QueryProvider>
+            <NotificationProvider>
+                { useRoutes(routes) }
+                <NotificationContainer />
+            </NotificationProvider>
+        </QueryProvider>
+    )
 }
