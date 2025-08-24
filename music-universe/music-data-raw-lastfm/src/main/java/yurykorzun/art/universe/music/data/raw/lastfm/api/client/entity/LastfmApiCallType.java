@@ -15,11 +15,11 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.dto
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.dto.TagTopTracksDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.track.getinfo.dto.TrackGetInfoDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.album.getinfo.dto.AlbumGetInfoDtoRoot;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.entity.LastfmAlbum;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmAlbum;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.BaseLastfmEntity;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTag;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTrack;
 
 import javax.annotation.Nullable;
 import java.util.*;

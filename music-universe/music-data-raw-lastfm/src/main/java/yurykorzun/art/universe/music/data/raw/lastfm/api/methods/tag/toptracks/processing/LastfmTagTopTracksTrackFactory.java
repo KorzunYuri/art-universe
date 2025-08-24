@@ -4,8 +4,8 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.dto.TagTopTracksTrackArtistDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.dto.TagTopTracksTrackDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.track.common.processing.LastfmTrackEntityFactory;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTrack;
 
 import java.util.Map;
 import java.util.function.Function;

@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.processing.LastfmArtistEntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.search.dto.ArtistSearchArtistDto;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;
 
 @Component
 public class LastfmArtistSearchArtistFactory extends LastfmArtistEntityFactory<ArtistSearchArtistDto> {

@@ -3,7 +3,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.process
 import lombok.Getter;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.EntityDto;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.BaseLastfmEntity;
 
 import java.util.Collection;
 import java.util.Map;

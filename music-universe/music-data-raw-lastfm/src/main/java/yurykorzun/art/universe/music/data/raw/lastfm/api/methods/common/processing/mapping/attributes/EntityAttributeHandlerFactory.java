@@ -2,8 +2,8 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.process
 
 import org.springframework.util.Assert;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.EntityDto;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.attribute.LastfmAttribute;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.BaseLastfmEntity;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;

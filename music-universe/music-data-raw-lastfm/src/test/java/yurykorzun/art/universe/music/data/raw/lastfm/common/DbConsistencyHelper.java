@@ -2,7 +2,6 @@ package yurykorzun.art.universe.music.data.raw.lastfm.common;
 
 import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
@@ -10,24 +9,22 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmApiCallRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmApiResponseRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.entity.LastfmAlbum;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.repository.LastfmAlbumRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.repository.LastfmArtistRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.blacklist.entity.BlacklistedEntityUrl;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.blacklist.repository.BlacklistedEntityUrlRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.blacklist.service.BlacklistedEntityUrlService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmDataSnapshot;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityRelationType;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.repository.LastfmDataSnapshotRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.entity.*;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.repository.*;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.repository.LastfmTagRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.repository.LastfmTrackRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmAlbum;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.relationship.*;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.LastfmAlbumRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.LastfmArtistRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.BlacklistedEntityUrlRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.BaseLastfmEntity;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.attribute.LastfmDataSnapshot;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityRelationType;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.attribute.LastfmDataSnapshotRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTag;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.LastfmTagRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTrack;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.LastfmTrackRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.relationship.*;
 
 import java.util.function.Consumer;
 

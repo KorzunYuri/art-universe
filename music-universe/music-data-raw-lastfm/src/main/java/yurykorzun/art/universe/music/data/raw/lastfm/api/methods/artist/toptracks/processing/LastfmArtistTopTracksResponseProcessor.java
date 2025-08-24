@@ -18,13 +18,13 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandlerFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.service.DtoQualityService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.utils.DeduplicationUtils;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.entity.LastfmArtistTrack;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.service.LastfmArtistTrackService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.service.LastfmTrackService;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.LastfmArtistService;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.attribute.LastfmAttribute;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.relationship.LastfmArtistTrack;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.relationship.LastfmArtistTrackService;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTrack;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.LastfmTrackService;
 
 import java.io.IOException;
 import java.util.List;

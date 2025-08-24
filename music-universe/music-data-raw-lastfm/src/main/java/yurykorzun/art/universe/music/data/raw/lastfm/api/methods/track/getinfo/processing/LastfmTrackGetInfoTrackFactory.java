@@ -2,8 +2,8 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.track.getinfo.
 
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.track.common.processing.LastfmTrackEntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.track.getinfo.dto.TrackGetInfoTrackDto;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTrack;
 
 class LastfmTrackGetInfoTrackFactory extends LastfmTrackEntityFactory<TrackGetInfoTrackDto> {
 

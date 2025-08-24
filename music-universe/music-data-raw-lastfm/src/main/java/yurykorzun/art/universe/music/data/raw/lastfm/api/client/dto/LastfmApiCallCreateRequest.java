@@ -6,7 +6,7 @@ import lombok.NonNull;
 import lombok.experimental.SuperBuilder;
 import yurykorzun.art.universe.common.data.raw.api.client.dto.ApiCallCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
 
 import java.util.Map;
 

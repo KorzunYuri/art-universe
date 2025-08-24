@@ -13,11 +13,11 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiCal
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmDataSnapshot;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmDataSnapshotService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.service.LastfmTrackService;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.attribute.LastfmDataSnapshot;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.LastfmDataSnapshotService;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTrack;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.LastfmTrackService;
 
 import java.time.LocalDate;
 import java.util.List;

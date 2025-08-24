@@ -3,7 +3,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.common.pro
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.common.dto.TagDto;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTag;
 
 public class LastfmTagEntityFactory <D extends TagDto> implements EntityFactory<LastfmTag, D> {
 

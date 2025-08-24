@@ -3,7 +3,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.pr
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.common.processing.LastfmTagEntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.dto.TagTopTagsTagDto;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTag;
 
 @Component
 class LastfmTagTopTagsTagFactory extends LastfmTagEntityFactory<TagTopTagsTagDto> {

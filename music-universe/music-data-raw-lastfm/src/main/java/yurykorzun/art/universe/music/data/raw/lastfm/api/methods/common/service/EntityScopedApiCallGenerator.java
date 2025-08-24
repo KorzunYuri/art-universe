@@ -8,13 +8,13 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiCal
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallGenerator;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.utils.TimeUtil;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttributeSnapshot;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmDataSnapshot;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmDataSnapshotService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityQueryConfig;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityService;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.attribute.LastfmAttributeSnapshot;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.BaseLastfmEntity;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.attribute.LastfmDataSnapshot;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.LastfmDataSnapshotService;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallEntityQueryConfig;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallEntityService;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,12 +35,12 @@ public abstract class EntityScopedApiCallGenerator<SE extends BaseLastfmEntity> 
 
     protected final LastfmApiCallService apiCallService;
     protected final LastfmDataSnapshotService snapshotService;
-    protected final LastfmEntityService entityService;
+    protected final LastfmApiCallEntityService entityService;
 
     protected EntityScopedApiCallGenerator(
         LastfmApiCallService lastfmApiCallService,
         LastfmDataSnapshotService snapshotService,
-        LastfmEntityService entityService
+        LastfmApiCallEntityService entityService
     ) {
         this.apiCallService = lastfmApiCallService;
         this.snapshotService = snapshotService;
@@ -49,8 +49,8 @@ public abstract class EntityScopedApiCallGenerator<SE extends BaseLastfmEntity> 
 
     protected abstract LastfmEntityType getScopeEntityType();
 
-    protected LastfmEntityQueryConfig getUnprocessedEntitiesQueryConfig() {
-        return LastfmEntityQueryConfig.builder().build();
+    protected LastfmApiCallEntityQueryConfig getUnprocessedEntitiesQueryConfig() {
+        return LastfmApiCallEntityQueryConfig.builder().build();
     }
 
     /**

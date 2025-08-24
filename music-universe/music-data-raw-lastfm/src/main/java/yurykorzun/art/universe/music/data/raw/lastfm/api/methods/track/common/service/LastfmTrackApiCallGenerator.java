@@ -6,10 +6,10 @@ import lombok.extern.slf4j.Slf4j;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.LastfmApiConstants;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.service.EntityScopedApiCallGenerator;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmDataSnapshotService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.LastfmDataSnapshotService;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallEntityService;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTrack;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +20,7 @@ public abstract class LastfmTrackApiCallGenerator extends EntityScopedApiCallGen
     protected LastfmTrackApiCallGenerator(
         LastfmApiCallService lastfmApiCallService,
         LastfmDataSnapshotService snapshotService,
-        LastfmEntityService entityService
+        LastfmApiCallEntityService entityService
     ) {
         super(lastfmApiCallService, snapshotService, entityService);
     }

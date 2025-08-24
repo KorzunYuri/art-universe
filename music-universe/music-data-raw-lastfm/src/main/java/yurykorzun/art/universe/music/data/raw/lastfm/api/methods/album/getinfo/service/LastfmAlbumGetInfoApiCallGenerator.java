@@ -6,10 +6,10 @@ import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.album.common.service.LastfmAlbumApiCallGenerator;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.entity.LastfmAlbum;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.service.LastfmAlbumService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmDataSnapshotService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityService;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmAlbum;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.LastfmAlbumService;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.LastfmDataSnapshotService;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallEntityService;
 
 import java.util.List;
 
@@ -25,7 +25,7 @@ public class LastfmAlbumGetInfoApiCallGenerator extends LastfmAlbumApiCallGenera
     public LastfmAlbumGetInfoApiCallGenerator(
         LastfmApiCallService apiCallService,
         LastfmDataSnapshotService snapshotService,
-        LastfmEntityService entityService,
+        LastfmApiCallEntityService entityService,
         LastfmAlbumService albumService
     ) {
         super(apiCallService, snapshotService, entityService);

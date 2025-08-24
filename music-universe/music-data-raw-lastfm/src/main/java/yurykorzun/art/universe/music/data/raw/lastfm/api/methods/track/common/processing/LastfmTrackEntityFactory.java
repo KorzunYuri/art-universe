@@ -4,7 +4,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.utils.DataQualityUtil;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.track.common.dto.TrackDto;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.track.entity.LastfmTrack;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTrack;
 
 public class LastfmTrackEntityFactory<D extends TrackDto>  implements EntityFactory<LastfmTrack, D> {
 

@@ -18,25 +18,26 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.service.
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.LastfmApiResponseProcessorTestHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.config.LastfmThresholdConfig;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.repository.LastfmArtistRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.impl.LastfmArtistServiceImpl;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttributeHistoryRecord;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repository.LastfmAttributeHistoryRecordRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.repository.LastfmAttributeTypeSynchronizer;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.impl.LastfmAttributeHistoryServiceImpl;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.blacklist.service.BlacklistedEntityUrlService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityRelationType;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.entity.LastfmArtistTag;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.entity.LastfmArtistsRelation;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.repository.LastfmArtistTagRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.repository.LastfmArtistsRelationRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.service.LastfmArtistTagServiceImpl;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.relationship.service.LastfmArtistsRelationServiceImpl;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.repository.LastfmTagRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.service.impl.LastfmTagServiceImpl;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.LastfmArtistRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl.LastfmArtistServiceImpl;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.attribute.LastfmAttribute;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.attribute.LastfmAttributeHistoryRecord;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.attribute.LastfmAttributeHistoryRecordRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.attribute.LastfmAttributeTypeSynchronizer;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.attribute.LastfmAttributeHistoryServiceImpl;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.BlacklistedEntityUrlService;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityRelationType;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.relationship.LastfmArtistTag;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.relationship.LastfmArtistsRelation;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.relationship.LastfmArtistTagRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.relationship.LastfmArtistsRelationRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.relationship.impl.LastfmArtistTagServiceImpl;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.relationship.impl.LastfmArtistsRelationServiceImpl;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTag;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.LastfmTagRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl.LastfmTagServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
 
@@ -450,7 +451,7 @@ class LastfmArtistGetInfoResponseProcessorTest extends JpaOnlyTest {
         var similarArtists = dtoRoot.getArtist().getSimilarArtistsObject().getArtists();
         if (similarArtists.size() > 1) {
             // Blacklist the first similar artist
-            blacklistService.addToBlacklist(yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType.ARTIST, 
+            blacklistService.addToBlacklist(LastfmEntityType.ARTIST,
                 similarArtists.get(0).getUrl());
         }
 
@@ -493,7 +494,7 @@ class LastfmArtistGetInfoResponseProcessorTest extends JpaOnlyTest {
         var tags = dtoRoot.getArtist().getTagsObject().getTags();
         if (tags.size() > 1) {
             // Blacklist the first tag
-            blacklistService.addToBlacklist(yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType.TAG, 
+            blacklistService.addToBlacklist(LastfmEntityType.TAG,
                 tags.get(0).getUrl());
         }
 
@@ -536,7 +537,7 @@ class LastfmArtistGetInfoResponseProcessorTest extends JpaOnlyTest {
         dtoRoot.getArtist().getSimilarArtistsObject().getArtists().stream()
             .map(artist -> artist.getUrl())
             .forEach(artistUrl -> blacklistService.addToBlacklist(
-                yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType.ARTIST, artistUrl));
+                LastfmEntityType.ARTIST, artistUrl));
 
         LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
             responseJsonString, LastfmApiCallType.ARTIST_GET_INFO, existingArtist);
@@ -572,7 +573,7 @@ class LastfmArtistGetInfoResponseProcessorTest extends JpaOnlyTest {
         dtoRoot.getArtist().getTagsObject().getTags().stream()
             .map(tag -> tag.getUrl())
             .forEach(tagUrl -> blacklistService.addToBlacklist(
-                yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType.TAG, tagUrl));
+                LastfmEntityType.TAG, tagUrl));
 
         LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
             responseJsonString, LastfmApiCallType.ARTIST_GET_INFO, existingArtist);

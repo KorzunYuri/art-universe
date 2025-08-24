@@ -1,6 +1,6 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto;
 
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.BaseLastfmEntity;
 
 /**
  * Interface for DTOs that contain quality metrics for validation.

@@ -2,7 +2,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.service
 
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.EntityDto;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.BaseLastfmEntity;
 
 import java.util.List;
 import java.util.Map;

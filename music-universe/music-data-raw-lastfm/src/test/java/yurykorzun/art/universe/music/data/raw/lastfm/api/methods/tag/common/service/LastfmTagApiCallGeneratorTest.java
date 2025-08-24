@@ -9,12 +9,9 @@ import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.BaseLastfmEntity;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmDataSnapshotService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityQueryConfig;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.tag.entity.LastfmTag;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.LastfmDataSnapshotService;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallEntityService;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTag;
 
 import java.util.List;
 import java.util.Map;
@@ -22,7 +19,6 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class LastfmTagApiCallGeneratorTest {
@@ -34,7 +30,7 @@ class LastfmTagApiCallGeneratorTest {
     private LastfmDataSnapshotService snapshotService;
 
     @Mock
-    private LastfmEntityService entityService;
+    private LastfmApiCallEntityService entityService;
 
     private TestableLastfmTagApiCallGenerator generator;
 
@@ -165,7 +161,7 @@ class LastfmTagApiCallGeneratorTest {
         public TestableLastfmTagApiCallGenerator(
             LastfmApiCallService apiCallService,
             LastfmDataSnapshotService snapshotService,
-            LastfmEntityService entityService
+            LastfmApiCallEntityService entityService
         ) {
             super(apiCallService, snapshotService, entityService);
         }

@@ -7,10 +7,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.entity.LastfmAlbum;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.service.LastfmAlbumService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmDataSnapshotService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityService;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmAlbum;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.LastfmAlbumService;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.LastfmDataSnapshotService;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallEntityService;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
 
 import java.util.List;
@@ -28,7 +28,7 @@ class LastfmAlbumGetInfoApiCallGeneratorTest {
     private LastfmDataSnapshotService snapshotService;
     
     @Mock
-    private LastfmEntityService entityService;
+    private LastfmApiCallEntityService entityService;
     
     @Mock
     private LastfmAlbumService albumService;

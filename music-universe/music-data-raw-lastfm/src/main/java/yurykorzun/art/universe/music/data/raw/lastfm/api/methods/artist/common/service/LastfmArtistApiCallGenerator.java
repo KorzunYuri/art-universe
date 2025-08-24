@@ -7,11 +7,11 @@ import org.springframework.data.domain.Sort;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.LastfmApiConstants;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.service.EntityScopedApiCallGenerator;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmDataSnapshotService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityQueryConfig;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityService;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.LastfmDataSnapshotService;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallEntityQueryConfig;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallEntityService;
 
 import java.util.*;
 
@@ -21,7 +21,7 @@ public abstract class LastfmArtistApiCallGenerator extends EntityScopedApiCallGe
     protected LastfmArtistApiCallGenerator(
         LastfmApiCallService lastfmApiCallService,
         LastfmDataSnapshotService snapshotService,
-        LastfmEntityService entityService
+        LastfmApiCallEntityService entityService
     ) {
         super(lastfmApiCallService, snapshotService, entityService);
     }
@@ -36,9 +36,9 @@ public abstract class LastfmArtistApiCallGenerator extends EntityScopedApiCallGe
      * return those not having API calls of corresponding type, ordered by popularity.
      */
     @Override
-    protected LastfmEntityQueryConfig getUnprocessedEntitiesQueryConfig() {
+    protected LastfmApiCallEntityQueryConfig getUnprocessedEntitiesQueryConfig() {
         Sort sort = Sort.by(Sort.Direction.DESC, "listenersCount", "isPrimary");
-        return LastfmEntityQueryConfig.builder().sort(sort).build();
+        return LastfmApiCallEntityQueryConfig.builder().sort(sort).build();
     }
 
     @Override

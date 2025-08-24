@@ -2,8 +2,8 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.topalbu
 
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.album.common.processing.LastfmAlbumEntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.topalbums.dto.ArtistTopAlbumsAlbumDto;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.album.entity.LastfmAlbum;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmAlbum;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;
 
 import java.util.Map;
 

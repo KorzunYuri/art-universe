@@ -22,14 +22,14 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.topalbum
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptags.service.LastfmArtistTopTagsApiCallGenerator;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptracks.service.LastfmArtistTopTracksApiCallGenerator;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.ExpectedAttributeSnapshotInfo;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.entity.LastfmArtist;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.artist.service.LastfmArtistService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.entity.LastfmAttribute;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.attribute.service.LastfmAttributeSnapshotService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmDataSnapshot;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.entity.LastfmEntityType;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmDataSnapshotService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.common.service.LastfmEntityService;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.LastfmArtistService;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.attribute.LastfmAttribute;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.attribute.LastfmAttributeSnapshotService;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.attribute.LastfmDataSnapshot;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.LastfmDataSnapshotService;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallEntityService;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
@@ -82,7 +82,7 @@ public class LastfmArtistApiCallGeneratorIntegrationTest extends JpaOnlyTest {
     @MockitoBean
     protected LastfmAttributeSnapshotService attributeSnapshotService;
     @MockitoBean
-    protected LastfmEntityService entityService;
+    protected LastfmApiCallEntityService entityService;
     @MockitoBean
     protected LastfmArtistService artistService;
 
