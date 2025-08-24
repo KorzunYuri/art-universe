@@ -44,3 +44,8 @@ lastfm:
           recordsLimit: 250
         topArtists:
           dueDurationDays: 1
+
+# Metrics configuration
+metrics:
+  update:
+    interval: 60000

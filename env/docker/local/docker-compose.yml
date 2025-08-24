@@ -61,18 +61,21 @@ services:
     container_name: local__mu-data-raw-lastfm__app
     restart: unless-stopped
     build:
-      context: ../../../music-universe/music-data-raw-lastfm
-      dockerfile: Dockerfile.local
+      context: ../../../
+      dockerfile: music-universe/music-data-raw-lastfm/Dockerfile.prod
+
     env_file:
       - ./music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.secrets.env
     environment:
       - SPRING_PROFILES_ACTIVE=fast
+      - metrics.update.interval=60000
     ports:
       - "${MURAW_LASTFM_APP_EXTERNAL_PORT}:${MURAW_LASTFM_APP_INTERNAL_PORT}"
       - "${MURAW_LASTFM_ACTUATOR_EXTERNAL_PORT}:${MURAW_LASTFM_ACTUATOR_INTERNAL_PORT}"
     volumes:
       - local__mu-data-raw-lastfm__app-logs:/app/logs
+      - ../../../music-universe/music-data-raw-lastfm/src/main/resources/metrics:/app/src/main/resources/metrics
     depends_on:
       postgres-lastfm:
         condition: service_healthy
@@ -89,8 +92,9 @@ services:
     container_name: local__mu-data__app
     restart: unless-stopped
     build:
-      context: ../../../music-universe/music-data
-      dockerfile: Dockerfile.local
+      context: ../../../
+      dockerfile: music-universe/music-data/Dockerfile.prod
+
     env_file:
       - ./music-data.env
       - ./music-data.secrets.env
@@ -117,8 +121,9 @@ services:
     container_name: local__mu-quiz__app
     restart: unless-stopped
     build:
-      context: ../../../music-universe/music-quiz
-      dockerfile: Dockerfile.local
+      context: ../../../
+      dockerfile: music-universe/music-quiz/Dockerfile.prod
+
     env_file:
       - ./music-quiz.env
       - ./music-quiz.secrets.env
@@ -170,6 +175,58 @@ services:
     networks:
       - mu__network
 
+  # Monitoring
+  prometheus:
+    container_name: local__mu__prometheus
+    image: prom/prometheus:v2.45.6
+    restart: unless-stopped
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - local__mu__prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    ports:
+      - "${PROMETHEUS_PORT}:9090"
+    depends_on:
+      music-data-raw-lastfm:
+        condition: service_healthy
+      music-data:
+        condition: service_healthy
+      music-quiz:
+        condition: service_healthy
+    networks:
+      - mu__network
+
+  grafana:
+    container_name: local__mu__grafana
+    build:
+      dockerfile: grafana.dockerfile
+      context: ../../../music-universe/music-data-raw-lastfm/src/main/resources/docker/compose/common
+    restart: unless-stopped
+    volumes:
+      - local__mu__grafana-data:/var/lib/grafana
+      - ../../../music-universe/music-data-raw-lastfm/src/main/resources/docker/compose/common/grafana/provisioning/dashboards:/tmp/dashboard-templates
+      - ../../../music-universe/music-data-raw-lastfm/src/main/resources/docker/compose/common/grafana/provisioning/datasources:/tmp/datasource-templates
+      - ../../../music-universe/music-data-raw-lastfm/src/main/resources/docker/compose/common/grafana-provision.sh:/tmp/grafana-provision.sh
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - PROMETHEUS_DATASOURCE_UID=${PROMETHEUS_DATASOURCE_UID}
+    entrypoint: /tmp/grafana-provision.sh
+    ports:
+      - "${GRAFANA_PORT}:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - mu__network
+
   # Admin tools
   db-adminer:
     container_name: local__mu__db-adminer
@@ -197,3 +254,7 @@ volumes:
     name: local__mu-data__app-logs
   local__mu-quiz__app-logs:
     name: local__mu-quiz__app-logs
+  local__mu__prometheus-data:
+    name: local__mu__prometheus-data
+  local__mu__grafana-data:
+    name: local__mu__grafana-data

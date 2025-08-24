@@ -30,6 +30,9 @@ dependencies {
     implementation 'org.springframework:spring-aspects'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui'
 
+    // Prometheus and Micrometer
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+
     implementation 'com.google.guava:guava'
     implementation 'info.debatty:java-string-similarity'
 

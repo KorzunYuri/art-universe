@@ -65,19 +65,27 @@ GRADLEW_CMD=$(get_gradlew_cmd)
 if [ "$ENVIRONMENT" == "local" ]; then
     COMPOSE_FILE="$PROJECT_ROOT/env/docker/local/docker-compose.yml"
     ENV_NAME="Local"
+    # Source the environment file to get the ports
+    source "$PROJECT_ROOT/env/docker/local/.env"
     SERVICES_INFO="  - LastFM Raw Data: http://localhost:9081
   - Music Data: http://localhost:9082
   - Music Quiz: http://localhost:9083
   - UI: http://localhost:4000
-  - Adminer: http://localhost:9980"
+  - Adminer: http://localhost:9980
+  - Prometheus: http://localhost:${PROMETHEUS_PORT}
+  - Grafana: http://localhost:${GRAFANA_PORT} "
 else
     COMPOSE_FILE="$PROJECT_ROOT/env/docker/prod/docker-compose.yml"
     ENV_NAME="Production"
+    # Source the environment file to get the ports
+    source "$PROJECT_ROOT/env/docker/prod/.env"
     SERVICES_INFO="  - LastFM Raw Data: http://localhost:8081
   - Music Data: http://localhost:8082
   - Music Quiz: http://localhost:8083
   - UI: http://localhost:3000
   - Adminer: http://localhost:8880
+  - Prometheus: http://localhost:${PROMETHEUS_PORT}
+  - Grafana: http://localhost:${GRAFANA_PORT}
 
 Note: Applications connect to external databases on host machine"
 fi

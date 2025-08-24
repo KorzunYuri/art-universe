@@ -38,9 +38,19 @@ REM Set environment-specific variables
 if "%ENVIRONMENT%"=="local" (
     set "COMPOSE_FILE=%PROJECT_ROOT%\env\docker\local\docker-compose.yml"
     set "ENV_NAME=Local"
+    REM Source the environment file to get the ports
+    for /f "tokens=1,* delims==" %%a in (%PROJECT_ROOT%\env\docker\local\.env) do (
+        if "%%a"=="PROMETHEUS_PORT" set "PROMETHEUS_PORT=%%b"
+        if "%%a"=="GRAFANA_PORT" set "GRAFANA_PORT=%%b"
+    )
 ) else (
     set "COMPOSE_FILE=%PROJECT_ROOT%\env\docker\prod\docker-compose.yml"
     set "ENV_NAME=Production"
+    REM Source the environment file to get the ports
+    for /f "tokens=1,* delims==" %%a in (%PROJECT_ROOT%\env\docker\prod\.env) do (
+        if "%%a"=="PROMETHEUS_PORT" set "PROMETHEUS_PORT=%%b"
+        if "%%a"=="GRAFANA_PORT" set "GRAFANA_PORT=%%b"
+    )
 )
 
 echo === Art Universe %ENV_NAME% Environment Deployment ===
@@ -90,12 +100,16 @@ if !errorlevel! equ 0 (
         echo   - Music Quiz: http://localhost:9083
         echo   - UI: http://localhost:4000
         echo   - Adminer: http://localhost:9980
+        echo   - Prometheus: http://localhost:!PROMETHEUS_PORT!
+        echo   - Grafana: http://localhost:!GRAFANA_PORT!
     ) else (
         echo   - LastFM Raw Data: http://localhost:8081
         echo   - Music Data: http://localhost:8082
         echo   - Music Quiz: http://localhost:8083
         echo   - UI: http://localhost:3000
         echo   - Adminer: http://localhost:8880
+        echo   - Prometheus: http://localhost:!PROMETHEUS_PORT!
+        echo   - Grafana: http://localhost:!GRAFANA_PORT!
         echo.
         echo Note: Applications connect to external databases on host machine
     )
