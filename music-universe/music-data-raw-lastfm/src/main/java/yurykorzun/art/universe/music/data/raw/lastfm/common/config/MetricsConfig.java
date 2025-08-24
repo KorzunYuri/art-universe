@@ -29,13 +29,9 @@ public class MetricsConfig {
     private final JdbcTemplate jdbcTemplate;
     private final ResourceLoader resourceLoader;
 
-    // Cache for entity counts
+    // Metrics cache
     private final Map<String, AtomicInteger> entityCountsCache = new HashMap<>();
-    
-    // Cache for API call counts by type and status
     private final Map<String, AtomicInteger> apiCallCountsCache = new HashMap<>();
-    
-    // Cache for API response counts by type and status
     private final Map<String, AtomicInteger> apiResponseCountsCache = new HashMap<>();
 
     @Autowired
@@ -49,17 +45,15 @@ public class MetricsConfig {
     public void init() {
         log.info("Initializing custom metrics");
         
-        // Register entity count metrics
+        // Register metrics
         registerEntityCountMetrics();
-        
-        // Register API call count metrics
         registerApiCallCountMetrics();
-        
-        // Register API response count metrics
         registerApiResponseCountMetrics();
         
         // Initial update of metrics
-        updateAllMetrics();
+        updateEntityCountMetrics();
+        updateApiCallCountMetrics();
+        updateApiResponseCountMetrics();
     }
     
     private void registerEntityCountMetrics() {
@@ -134,16 +128,9 @@ public class MetricsConfig {
         }
     }
     
-    @Scheduled(fixedRateString = "${metrics.update.interval:60000}")
-    public void updateAllMetrics() {
-        log.debug("Updating all metrics");
-        
-        updateEntityCountMetrics();
-        updateApiCallCountMetrics();
-        updateApiResponseCountMetrics();
-    }
-    
-    private void updateEntityCountMetrics() {
+    @Scheduled(fixedRateString = "${metrics.update.entity-counts.interval:60000}")
+    public void updateEntityCountMetrics() {
+        log.debug("Updating entity count metrics");
         try {
             String sql = loadSqlFromFile("entity_counts.sql");
             List<Map<String, Object>> results = jdbcTemplate.queryForList(sql);
@@ -162,7 +149,9 @@ public class MetricsConfig {
         }
     }
     
-    private void updateApiCallCountMetrics() {
+    @Scheduled(fixedRateString = "${metrics.update.api-call-counts.interval:60000}")
+    public void updateApiCallCountMetrics() {
+        log.debug("Updating API call count metrics");
         try {
             String sql = loadSqlFromFile("api_call_counts.sql");
             List<Map<String, Object>> results = jdbcTemplate.queryForList(sql);
@@ -183,7 +172,9 @@ public class MetricsConfig {
         }
     }
     
-    private void updateApiResponseCountMetrics() {
+    @Scheduled(fixedRateString = "${metrics.update.api-response-counts.interval:60000}")
+    public void updateApiResponseCountMetrics() {
+        log.debug("Updating API response count metrics");
         try {
             String sql = loadSqlFromFile("api_response_counts.sql");
             List<Map<String, Object>> results = jdbcTemplate.queryForList(sql);

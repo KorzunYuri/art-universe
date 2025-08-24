@@ -123,3 +123,14 @@ lastfm:
       track:
         getInfo:
           dueDurationDays: 28
+
+# Metrics collection configuration
+metrics:
+  update:
+    # Low impact queries - simple COUNT queries with existing indexes
+    entity-counts:
+      interval: 15000
+    api-call-counts:
+      interval: 15000
+    api-response-counts:
+      interval: 15000
