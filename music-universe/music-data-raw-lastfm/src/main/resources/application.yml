@@ -134,3 +134,7 @@ metrics:
       interval: 15000
     api-response-counts:
       interval: 15000
+    
+    # Medium impact queries
+    table-sizes:
+      interval: 300000

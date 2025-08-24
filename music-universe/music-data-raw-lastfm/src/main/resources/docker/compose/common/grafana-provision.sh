@@ -54,6 +54,13 @@ else
     echo "WARNING: lastfm_system_metrics_dashboard.json.template not found"
 fi
 
+if [ -f "/tmp/dashboard-templates/lastfm_database_metrics_dashboard.json.template" ]; then
+    envsubst < /tmp/dashboard-templates/lastfm_database_metrics_dashboard.json.template > /etc/grafana/provisioning/dashboards/lastfm_database_metrics_dashboard.json
+    echo "Database metrics dashboard generated successfully"
+else
+    echo "WARNING: lastfm_database_metrics_dashboard.json.template not found"
+fi
+
 # Generate datasource from template
 echo "Generating datasource configuration..."
 if [ -f "/tmp/datasource-templates/datasource.yml.template" ]; then
