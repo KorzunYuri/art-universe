@@ -34,6 +34,9 @@ public class MetricsConfig {
     
     // Cache for API call counts by type and status
     private final Map<String, AtomicInteger> apiCallCountsCache = new HashMap<>();
+    
+    // Cache for API response counts by type and status
+    private final Map<String, AtomicInteger> apiResponseCountsCache = new HashMap<>();
 
     @Autowired
     public MetricsConfig(MeterRegistry registry, JdbcTemplate jdbcTemplate, ResourceLoader resourceLoader) {
@@ -51,6 +54,9 @@ public class MetricsConfig {
         
         // Register API call count metrics
         registerApiCallCountMetrics();
+        
+        // Register API response count metrics
+        registerApiResponseCountMetrics();
         
         // Initial update of metrics
         updateAllMetrics();
@@ -99,12 +105,42 @@ public class MetricsConfig {
         }
     }
     
+    private void registerApiResponseCountMetrics() {
+        try {
+            // Get all possible API call types and response statuses from dictionary
+            String apiCallTypesSql = "SELECT name FROM mu_raw_lastfm.dictionary WHERE domain = 'ApiCallType' ORDER BY name";
+            String statusesSql = "SELECT name FROM mu_raw_lastfm.dictionary WHERE domain = 'ApiResponseStatus' ORDER BY name";
+            
+            List<String> apiCallTypes = jdbcTemplate.queryForList(apiCallTypesSql, String.class);
+            List<String> statuses = jdbcTemplate.queryForList(statusesSql, String.class);
+            
+            // Register metrics for all possible combinations
+            for (String apiCallType : apiCallTypes) {
+                for (String status : statuses) {
+                    String key = apiCallType + ":" + status;
+                    
+                    AtomicInteger count = new AtomicInteger(0);
+                    apiResponseCountsCache.put(key, count);
+                    
+                    Gauge.builder("lastfm.api_response.count", count::get)
+                        .tag("api_call_type", apiCallType)
+                        .tag("status", status)
+                        .description("Number of API responses of type " + apiCallType + " with status " + status)
+                        .register(registry);
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error registering API response count metrics", e);
+        }
+    }
+    
     @Scheduled(fixedRateString = "${metrics.update.interval:60000}")
     public void updateAllMetrics() {
         log.debug("Updating all metrics");
         
         updateEntityCountMetrics();
         updateApiCallCountMetrics();
+        updateApiResponseCountMetrics();
     }
     
     private void updateEntityCountMetrics() {
@@ -144,6 +180,27 @@ public class MetricsConfig {
             }
         } catch (Exception e) {
             log.error("Error updating API call count metrics", e);
+        }
+    }
+    
+    private void updateApiResponseCountMetrics() {
+        try {
+            String sql = loadSqlFromFile("api_response_counts.sql");
+            List<Map<String, Object>> results = jdbcTemplate.queryForList(sql);
+            
+            for (Map<String, Object> row : results) {
+                String apiCallType = (String) row.get("api_call_type");
+                String status = (String) row.get("status");
+                Number count = (Number) row.get("count");
+                String key = apiCallType + ":" + status;
+                
+                AtomicInteger atomicCount = apiResponseCountsCache.get(key);
+                if (atomicCount != null) {
+                    atomicCount.set(count.intValue());
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error updating API response count metrics", e);
         }
     }
 
