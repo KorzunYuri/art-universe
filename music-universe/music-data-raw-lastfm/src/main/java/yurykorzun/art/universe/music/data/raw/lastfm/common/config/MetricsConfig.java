@@ -72,22 +72,27 @@ public class MetricsConfig {
     
     private void registerApiCallCountMetrics() {
         try {
-            String sql = loadSqlFromFile("api_call_counts.sql");
-            List<Map<String, Object>> results = jdbcTemplate.queryForList(sql);
+            // Get all possible API call types and statuses from dictionary
+            String apiCallTypesSql = "SELECT name FROM mu_raw_lastfm.dictionary WHERE domain = 'ApiCallType'    ORDER BY name";
+            String statusesSql =     "SELECT name FROM mu_raw_lastfm.dictionary WHERE domain = 'ApiCallStatus'  ORDER BY name";
             
-            for (Map<String, Object> row : results) {
-                String apiCallType = (String) row.get("api_call_type");
-                String status = (String) row.get("status");
-                String key = apiCallType + ":" + status;
-                
-                AtomicInteger count = new AtomicInteger(0);
-                apiCallCountsCache.put(key, count);
-                
-                Gauge.builder("lastfm.api_call.count", count::get)
-                    .tag("api_call_type", apiCallType)
-                    .tag("status", status)
-                    .description("Number of API calls of type " + apiCallType + " with status " + status)
-                    .register(registry);
+            List<String> apiCallTypes = jdbcTemplate.queryForList(apiCallTypesSql, String.class);
+            List<String> statuses = jdbcTemplate.queryForList(statusesSql, String.class);
+            
+            // Register metrics for all possible combinations
+            for (String apiCallType : apiCallTypes) {
+                for (String status : statuses) {
+                    String key = apiCallType + ":" + status;
+                    
+                    AtomicInteger count = new AtomicInteger(0);
+                    apiCallCountsCache.put(key, count);
+                    
+                    Gauge.builder("lastfm.api_call.count", count::get)
+                        .tag("api_call_type", apiCallType)
+                        .tag("status", status)
+                        .description("Number of API calls of type " + apiCallType + " with status " + status)
+                        .register(registry);
+                }
             }
         } catch (Exception e) {
             log.error("Error registering API call count metrics", e);
