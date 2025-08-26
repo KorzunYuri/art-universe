@@ -14,7 +14,8 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandlerFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.service.DtoQualityService;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.utils.DeduplicationUtils;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.utils.dedup.ArtistDeduplicationUtils;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.utils.dedup.TrackDeduplicationUtils;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmAlbum;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.LastfmAlbumService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;
@@ -212,7 +213,7 @@ public class LastfmAlbumGetInfoResponseProcessor extends LastfmApiResponseProces
             .filter(Objects::nonNull)
             .distinct()
             .toList();
-        artistDtos = DeduplicationUtils.deduplicateArtistDtos(artistDtos);
+        artistDtos = ArtistDeduplicationUtils.deduplicateArtistDtos(artistDtos);
 
         if (artistDtos.isEmpty()) {
             log.info("No valid artists found in tracks for album {}", albumDto.getName());
@@ -275,7 +276,7 @@ public class LastfmAlbumGetInfoResponseProcessor extends LastfmApiResponseProces
             return LastfmApiDtoProcessingResult.empty(sourceApiCall);
         }
 
-        var dedupedDtos = DeduplicationUtils.deduplicateTrackDtos(trackDtos);
+        var dedupedDtos = TrackDeduplicationUtils.deduplicateTrackDtos(trackDtos);
         var qualityTracks = dtoQualityService.validateAgainstBlacklist(dedupedDtos).stream()
             .filter(DtoQualityService.Result::isAccepted)
             .map(DtoQualityService.Result::getDto)

@@ -15,7 +15,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandlerFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.service.DtoQualityService;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.utils.DeduplicationUtils;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.utils.dedup.ArtistDeduplicationUtils;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.dto.TagTopTracksDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.dto.TagTopTracksTrackArtistDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.dto.TagTopTracksTrackDto;
@@ -121,7 +121,7 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
             .map(TagTopTracksTrackDto::getArtist)
             .filter(Objects::nonNull)
             .toList();
-        allArtistDtos = DeduplicationUtils.deduplicateArtistDtos(allArtistDtos);
+        allArtistDtos = ArtistDeduplicationUtils.deduplicateArtistDtos(allArtistDtos);
 
         // Validate artists against blacklist
         var qualityArtistDtos = dtoQualityService.validateAgainstBlacklist(allArtistDtos)
