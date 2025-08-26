@@ -85,15 +85,13 @@ class LastfmApiResponseServiceImplTest {
         // given
         long id = 1L;
         LastfmApiResponse apiResponse = getMockResponse(validCreateResponseRequestSupplier().get(), id);
-        when(apiResponseRepository.getReferenceById(id)).thenReturn(apiResponse);
 
         // when
-        apiResponseService.setStatus(id, ApiResponseStatus.PENDING);
+        apiResponseService.setStatus(apiResponse, ApiResponseStatus.PROCESSING);
 
         // then
-        verify(apiResponseRepository).getReferenceById(id);
         verify(apiResponseRepository).save(apiResponse);
-        assertEquals(ApiResponseStatus.PENDING, apiResponse.getStatus());
+        assertEquals(ApiResponseStatus.PROCESSING, apiResponse.getStatus());
     }
 
     @Test

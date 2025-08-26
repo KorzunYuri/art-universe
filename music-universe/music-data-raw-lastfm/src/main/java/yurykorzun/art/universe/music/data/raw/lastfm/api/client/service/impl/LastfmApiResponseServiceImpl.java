@@ -64,70 +64,53 @@ public class LastfmApiResponseServiceImpl implements LastfmApiResponseService {
     }
 
     @Override
-    public void setStatus(long id, ApiResponseStatus status) throws IllegalStateException {
-        LastfmApiResponse response = repository.getReferenceById(id);
-        response.setStatus(status);
-        repository.save(response);
-    }
-
-    @Override
     public void processResponses() {
         List<LastfmApiResponse> unprocessed = repository.findAllPending();
-        log.info("unprocessed API responses left: {}", unprocessed.size());
-        
-        // Process each response in a separate transaction
+        log.info("Unprocessed API responses left: {}", unprocessed.size());
+
         for (LastfmApiResponse response : unprocessed) {
-            try {
-                self.processResponse(response);
-            } catch (Exception e) {
-                // one error doesn't prevent the other responses from being parsed
-                log.error("Failed to process response with ID {}: {}", response.getId(), e.getMessage(), e);
+            self.processResponse(response);
+        }
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void processResponse(LastfmApiResponse response) {
+        try {
+            self.setStatus(response, ApiResponseStatus.PROCESSING);
+
+            LastfmApiResponseProcessor<?> processor =
+                    LastfmApiResponseProcessorsRegistry.get(response.getApiCall().getType().getResponseDtoClass());
+
+            if (processor == null) {
+                log.warn("No processor found for response type: {}", response.getApiCall().getType());
+                self.setStatus(response, ApiResponseStatus.PROCESSING_ERROR);
+                return;
             }
+
+            log.info("Start processing API response ID {} from method {}",
+                    response.getId(), processor.getApiCallType().getMethod());
+
+            processor.process(response);
+
+            self.setStatus(response, ApiResponseStatus.COMPLETED);
+
+            log.info("Successfully processed API response ID {} from method {}",
+                    response.getId(), processor.getApiCallType().getMethod());
+
+        } catch (Exception e) {
+            log.error("Error processing API response ID {}: {}", response.getId(), e.getMessage(), e);
+            self.setStatus(response, ApiResponseStatus.PROCESSING_ERROR);
         }
     }
 
     /**
-     * Process each response in a separate transaction
+     * Update response status in a separate transaction
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void processResponse(LastfmApiResponse response) {
-        LastfmApiResponseProcessor<?> processor = LastfmApiResponseProcessorsRegistry.get(
-                response.getApiCall().getType().getResponseDtoClass());
-        
-        if (processor == null) {
-            log.warn("No processor found for response type: {}", response.getApiCall().getType());
-            response.setStatus(ApiResponseStatus.PROCESSING_ERROR);
-            response.setUpdatedAt(Instant.now());
-            repository.save(response);
-            return;
-        }
-
-        try {
-            log.info("Start processing API response ID {} from method {}", 
-                response.getId(), processor.getApiCallType().getMethod());
-            
-            response.setStatus(ApiResponseStatus.PROCESSING);
-            repository.save(response);
-            
-            processor.process(response);
-            
-            response.setStatus(ApiResponseStatus.COMPLETED);
-            log.info("Successfully processed API response ID {} from method {}", 
-                response.getId(), processor.getApiCallType().getMethod());
-                
-        } catch (IOException e) {
-            log.error("Processing error for API response ID {} from method {}: {}", 
-                response.getId(), processor.getApiCallType().getMethod(), e.getMessage(), e);
-            response.setStatus(ApiResponseStatus.PROCESSING_ERROR);
-        } catch (Exception e) {
-            log.error("Unexpected error for API response ID {} from method {}: {}", 
-                response.getId(), processor.getApiCallType().getMethod(), e.getMessage(), e);
-            response.setStatus(ApiResponseStatus.PROCESSING_ERROR);
-            throw e; // propagate for transaction rollback
-        } finally {
-            response.setUpdatedAt(Instant.now());
-            repository.save(response);
-        }
+    public void setStatus(LastfmApiResponse response, ApiResponseStatus status) {
+        response.setStatus(status);
+        response.setUpdatedAt(Instant.now());
+        repository.save(response);
     }
 
     @Override
