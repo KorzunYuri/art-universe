@@ -18,6 +18,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandlerFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.service.DtoQualityService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.utils.dedup.ArtistDeduplicationUtils;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.utils.dedup.TrackDeduplicationUtils;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.attribute.LastfmAttribute;
@@ -151,7 +152,7 @@ public class LastfmArtistTopTracksResponseProcessor extends LastfmApiResponsePro
         LastfmApiCall sourceApiCall,
         LastfmApiDtoProcessingResult<LastfmArtist, ArtistTopTracksTrackArtistDto> artistMappingResult
     ) {
-        List<ArtistTopTracksTrackDto> allTrackDtos = dtoRoot.getRootObject().getTracks().stream()
+        List<ArtistTopTracksTrackDto> allTrackDtos = TrackDeduplicationUtils.deduplicateTrackDtos(dtoRoot.getRootObject().getTracks()).stream()
             .filter(track -> track.getArtist() != null
                 && artistMappingResult.entityMapping().getMap().containsKey(track.getArtist()))
             .toList();

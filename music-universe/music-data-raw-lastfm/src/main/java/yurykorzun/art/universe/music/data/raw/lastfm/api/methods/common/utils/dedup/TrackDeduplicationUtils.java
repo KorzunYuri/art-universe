@@ -17,6 +17,23 @@ public class TrackDeduplicationUtils {
             return new ArrayList<>();
         }
 
+        // First pass: deduplicate by artistName + name
+        List<D> firstPassResult = deduplicateByArtistAndName(trackDtos);
+        
+        // Second pass: deduplicate by URL
+        List<D> finalResult = deduplicateByUrl(firstPassResult);
+
+        int originalCount = trackDtos.size();
+        int finalCount = finalResult.size();
+        if (originalCount > finalCount) {
+            log.info("Deduplicated {} tracks to {} (removed {} duplicates)", 
+                originalCount, finalCount, originalCount - finalCount);
+        }
+
+        return finalResult;
+    }
+
+    private static <D extends TrackDto> List<D> deduplicateByArtistAndName(Collection<D> trackDtos) {
         Map<String, D> deduplicatedTracks = new LinkedHashMap<>();
 
         for (D trackDto : trackDtos) {
@@ -41,11 +58,28 @@ public class TrackDeduplicationUtils {
             }
         }
 
-        int originalCount = trackDtos.size();
-        int deduplicatedCount = deduplicatedTracks.size();
-        if (originalCount > deduplicatedCount) {
-            log.info("Deduplicated {} tracks to {} (removed {} duplicates)", 
-                originalCount, deduplicatedCount, originalCount - deduplicatedCount);
+        return new ArrayList<>(deduplicatedTracks.values());
+    }
+
+    private static <D extends TrackDto> List<D> deduplicateByUrl(Collection<D> trackDtos) {
+        Map<String, D> deduplicatedTracks = new LinkedHashMap<>();
+
+        for (D trackDto : trackDtos) {
+            String url = trackDto.getUrl();
+            
+            if (!isValidString(url)) {
+                log.warn("Skipping track DTO with null or empty URL: {}", trackDto);
+                continue;
+            }
+
+            D existingTrack = deduplicatedTracks.get(url);
+
+            if (existingTrack == null) {
+                deduplicatedTracks.put(url, trackDto);
+            } else {
+                D betterTrack = selectBetterTrack(existingTrack, trackDto);
+                deduplicatedTracks.put(url, betterTrack);
+            }
         }
 
         return new ArrayList<>(deduplicatedTracks.values());
