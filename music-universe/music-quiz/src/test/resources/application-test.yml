@@ -1,0 +1,24 @@
+spring:
+  jpa:
+    properties:
+      hibernate:
+        show-sql: true
+  docker:
+    compose:
+      enabled: false
+
+logging:
+  level:
+    org:
+      springframework:
+        transaction: TRACE
+      hibernate:
+        transaction: DEBUG
+        SQL: DEBUG
+        type:
+          descriptor:
+            sql:
+              BasicBinder: TRACE
+        orm:
+          jdbc:
+            bind: TRACE

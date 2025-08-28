@@ -1,10 +1,9 @@
 package yurykorzun.art.universe.music.quiz.repository;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import yurykorzun.art.universe.music.quiz.common.archetypes.JpaOnlyTest;
 import yurykorzun.art.universe.music.quiz.entity.Artist;
 
@@ -20,6 +19,11 @@ class ArtistRepositoryTest extends JpaOnlyTest {
 
     @Autowired
     private EntityManager entityManager;
+
+    @BeforeEach
+    void setUp() {
+        artistRepository.deleteAll();
+    }
 
     @Test
     void save_shouldPersistArtist_whenValidData() {

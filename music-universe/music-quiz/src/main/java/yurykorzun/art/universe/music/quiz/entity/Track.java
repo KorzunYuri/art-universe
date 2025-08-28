@@ -9,10 +9,7 @@ import yurykorzun.art.universe.common.persistence.entity.BaseEntity;
 /**
  * Entity representing a track approved for quiz participation
  */
-@Entity
-@Table(indexes = {
-    @Index(name = "idx_track_master_id", columnList = "master_id")
-})
+@Entity(name = "track")
 @Getter
 @Setter
 public class Track extends BaseEntity {

@@ -10,9 +10,6 @@ import yurykorzun.art.universe.common.persistence.entity.BaseEntity;
  * Entity representing an artist approved for quiz participation
  */
 @Entity(name = "artist")
-@Table(indexes = {
-    @Index(name = "idx_artist_master_id", columnList = "master_id")
-})
 @Getter
 @Setter
 public class Artist extends BaseEntity {

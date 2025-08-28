@@ -14,7 +14,7 @@ public interface TrackRepository extends JpaRepository<Track, Long> {
     
     Optional<Track> findByMasterId(Long masterId);
     
-    @Query("SELECT t FROM Track t WHERE t.masterId IN :masterIds")
+    @Query("SELECT t FROM track t WHERE t.masterId IN :masterIds")
     List<Track> findByMasterIdIn(@Param("masterIds") List<Long> masterIds);
     
     void deleteByMasterId(Long masterId);

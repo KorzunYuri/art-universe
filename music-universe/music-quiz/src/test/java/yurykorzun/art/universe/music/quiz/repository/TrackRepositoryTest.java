@@ -1,6 +1,8 @@
 package yurykorzun.art.universe.music.quiz.repository;
 
 import jakarta.persistence.EntityManager;
+import org.hibernate.exception.ConstraintViolationException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,11 @@ class TrackRepositoryTest extends JpaOnlyTest {
 
     @Autowired
     private EntityManager entityManager;
+
+    @BeforeEach
+    void setUp() {
+        trackRepository.deleteAll();
+    }
 
     @Test
     void save_shouldPersistTrack_whenValidData() {
@@ -48,7 +55,7 @@ class TrackRepositoryTest extends JpaOnlyTest {
         track2.setMasterId(2L); // Same masterId as track1
 
         // when & then
-        assertThrows(Exception.class, () -> {
+        assertThrows(ConstraintViolationException.class, () -> {
             trackRepository.save(track2);
             entityManager.flush(); // Force the constraint violation to be detected
         });

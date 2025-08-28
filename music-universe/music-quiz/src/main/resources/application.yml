@@ -1,15 +1,20 @@
 spring:
   application:
     name: music-universe-quiz-service
+
   datasource:
     driverClassName: org.postgresql.Driver
     url: jdbc:postgresql://${MU_QUIZ_DB_HOST:localhost}:${MU_QUIZ_DB_PORT:5432}/music_universe?currentSchema=mu_quiz
     username: mu_quiz_dm
     password: '${MU_QUIZ_DB_PASSWORD_DM}'
     hikari:
-      pool-name: MuQuizHikariPool
-      maximum-pool-size: 10
+      pool-name: MuQuizMetaHikariPool
+      maximum-pool-size: 4
       minimum-idle: 2
+  liquibase:
+    default-schema: mu_quiz
+    change-log: classpath:db/migration/muquiz/liquibase/db.changelog.xml
+
   jpa:
     database: postgresql
     properties:
@@ -24,11 +29,11 @@ spring:
         order_updates: true
     hibernate:
       ddl-auto: none
-  liquibase:
-    change-log: classpath:db/migration/muquiz/liquibase/db.changelog.xml
+
   docker:
     compose:
       enabled: false
+
 server:
 #  address: 0.0.0.0
   port: ${MU_QUIZ_APP_INTERNAL_PORT:8080}
