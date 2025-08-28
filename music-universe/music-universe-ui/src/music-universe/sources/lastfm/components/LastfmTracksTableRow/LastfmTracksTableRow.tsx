@@ -12,7 +12,12 @@ import {QuizBinding} from "@/music-universe/music-quiz/components";
 // backend services
 import { LastfmConfig } from "@/music-universe/sources/lastfm/config/lastfmconfig.ts";
 // types
-import {ApprovalToggle, EntityBinding, EntityTagPanel} from "@/music-universe/sources/lastfm/components";
+import {
+    ApprovalToggle,
+    EntityBinding,
+    EntityTagPanel, LastfmArtistFilterButton,
+    LastfmArtistLink
+} from "@/music-universe/sources/lastfm/components";
 import type {DataSource} from "@/music-universe/sources/shared/types/data-sources.ts";
 import type {MasterEntityType} from "@/music-universe/shared/types/entities.ts";
 // styles
@@ -20,14 +25,15 @@ import styles from "@/music-universe/sources/lastfm/components/LastfmArtistsTabl
 import sharedTableStyles from "@/music-universe/shared/styles/EntityTableStyles.module.scss";
 import trackTableStyles from "../LastfmTracksTable/LastfmTracksTable.module.css";
 import artistTableStyles from "@/music-universe/sources/lastfm/components/LastfmArtistsTable/LastfmArtistsTable.module.css";
-import {LastfmArtistLink} from "@/music-universe/sources/lastfm/components/ArtistLink/LastfmArtistLink.tsx";
 
 interface LastfmTrackTableRowProps extends BaseEntityTableRow {
+    onArtistFilter?: (artistId: number, artistName: string) => void;
 }
 
 export const LastfmTracksTableRow = (
     {
-        entityId
+        entityId,
+        onArtistFilter
     }: LastfmTrackTableRowProps) =>
 {
     const dataSource: DataSource = 'lastfm';
@@ -82,7 +88,19 @@ export const LastfmTracksTableRow = (
                  onClick={toggleTagPanel}
             >
                 <div className={`${sharedTableStyles.cell} ${trackTableStyles.artist}`}>
-                    {entity.artist && <LastfmArtistLink artistName={entity.artist.name} />}
+                    {entity.artist && (
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            {onArtistFilter && (
+                                <LastfmArtistFilterButton
+                                    artistId={entity.artist.id}
+                                    artistName={entity.artist.name}
+                                    onFilter={onArtistFilter}
+                                    targetPage="tracks"
+                                />
+                            )}
+                            <LastfmArtistLink artistName={entity.artist.name} />
+                        </div>
+                    )}
                 </div>
 
                 <div className={`${sharedTableStyles.cell} ${trackTableStyles.name}`}>

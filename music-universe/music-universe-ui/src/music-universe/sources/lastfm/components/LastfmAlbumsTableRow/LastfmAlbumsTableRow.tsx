@@ -10,20 +10,22 @@ import {
 // backend services
 import { LastfmConfig } from "@/music-universe/sources/lastfm/config/lastfmconfig.ts";
 // types
-import {ApprovalToggle, EntityBinding} from "@/music-universe/sources/lastfm/components";
+import {ApprovalToggle, EntityBinding, LastfmArtistFilterButton} from "@/music-universe/sources/lastfm/components";
 import type {DataSource} from "@/music-universe/sources/shared/types/data-sources.ts";
 import type {MasterEntityType} from "@/music-universe/shared/types/entities.ts";
 // styles
 import sharedTableStyles from "@/music-universe/shared/styles/EntityTableStyles.module.scss";
 import albumTableStyles from "../LastfmAlbumsTable/LastfmAlbumsTable.module.css";
-import {LastfmArtistLink} from "@/music-universe/sources/lastfm/components/ArtistLink/LastfmArtistLink.tsx";
+import {LastfmArtistLink} from "@/music-universe/sources/lastfm/components/LastfmArtistLink/LastfmArtistLink.tsx";
 
 interface LastfmAlbumTableRowProps extends BaseEntityTableRow {
+    onArtistFilter?: (artistId: number, artistName: string) => void;
 }
 
 export const LastfmAlbumsTableRow = (
     {
-        entityId
+        entityId,
+        onArtistFilter
     }: LastfmAlbumTableRowProps) =>
 {
     const dataSource: DataSource = 'lastfm';
@@ -70,7 +72,19 @@ export const LastfmAlbumsTableRow = (
              className={sharedTableStyles.row}
         >
             <div className={`${sharedTableStyles.cell} ${albumTableStyles.artist}`}>
-                {entity.artist && <LastfmArtistLink artistName={entity.artist.name} />}
+                {entity.artist && (
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        {onArtistFilter && (
+                            <LastfmArtistFilterButton
+                                artistId={entity.artist.id}
+                                artistName={entity.artist.name}
+                                onFilter={onArtistFilter}
+                                targetPage="albums"
+                            />
+                        )}
+                        <LastfmArtistLink artistName={entity.artist.name} />
+                    </div>
+                )}
             </div>
 
             <div className={`${sharedTableStyles.cell} ${albumTableStyles.name}`}>

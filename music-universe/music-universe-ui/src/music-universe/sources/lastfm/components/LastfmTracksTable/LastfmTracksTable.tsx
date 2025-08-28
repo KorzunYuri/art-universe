@@ -2,6 +2,7 @@
 import { useLastfmEntityTable } from "@/music-universe/sources/lastfm/hooks/useLastfmEntityTable";
 import { useApprovalStatusFilter } from "@/music-universe/sources/shared/hooks";
 import { usePlayCountFilter, useListenersCountFilter, useArtistFilter, useTagFilter } from "@/music-universe/sources/lastfm/hooks/useLastfmFilters";
+import { useSearchParams } from "react-router-dom";
 // components
 import { EntityTable, type EntityTableColumn } from "@/music-universe/shared/components/EntityTable/EntityTable";
 import { LastfmTracksTableRow } from "@/music-universe/sources/lastfm/components";
@@ -26,6 +27,10 @@ interface LastfmTracksTableProps {
 }
 
 export const LastfmTracksTable = ({ artistId }: LastfmTracksTableProps) => {
+    const [searchParams] = useSearchParams();
+    const urlArtistId = searchParams.get('artistId') ? parseInt(searchParams.get('artistId')!) : undefined;
+    const effectiveArtistId = artistId || urlArtistId;
+
     const {
         rawEntityIds,
         pagination,
@@ -39,14 +44,26 @@ export const LastfmTracksTable = ({ artistId }: LastfmTracksTableProps) => {
         goToPage,
         updateParams,
         refresh
-    } = useLastfmEntityTable("track", { artistId });
+    } = useLastfmEntityTable("track", { artistId: effectiveArtistId });
 
     // Filter hooks
     const { approvalStatuses, approvalStatusField } = useApprovalStatusFilter();
     const { minPlayCount, minPlayCountField } = usePlayCountFilter();
     const { minListenersCount, minListenersCountField } = useListenersCountFilter();
-    const { artistId: artistIdFilter, artistField } = useArtistFilter();
+    const { artistId: artistIdFilter, artistField, setSelectedArtist } = useArtistFilter();
     const { tagId, tagField } = useTagFilter();
+
+    const handleArtistFilter = (artistId: number, artistName: string) => {
+        setSelectedArtist({ id: artistId, name: artistName });
+        // Trigger search immediately
+        updateParams({
+            approvalStatuses: approvalStatuses.length > 0 ? approvalStatuses : undefined,
+            minPlayCount: minPlayCount || undefined,
+            minListenersCount: minListenersCount || undefined,
+            artistId: artistId,
+            tagId: tagId || undefined
+        });
+    };
 
     const handleSearchSubmit = () => {
         updateParams({
@@ -66,7 +83,7 @@ export const LastfmTracksTable = ({ artistId }: LastfmTracksTableProps) => {
             minPlayCountField,
             minListenersCountField,
             // Only show artist ID filter if not already filtered by prop
-            ...(artistId ? [] : [artistField]),
+            ...(effectiveArtistId ? [] : [artistField]),
             tagField,
             approvalStatusField
         ]
@@ -104,6 +121,7 @@ export const LastfmTracksTable = ({ artistId }: LastfmTracksTableProps) => {
                 <LastfmTracksTableRow
                     key={rawEntityId}
                     entityId={rawEntityId}
+                    onArtistFilter={handleArtistFilter}
                 />
             ))}
         </EntityTable>

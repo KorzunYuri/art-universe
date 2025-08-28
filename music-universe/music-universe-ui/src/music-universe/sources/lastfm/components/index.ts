@@ -1,5 +1,6 @@
 export * from "./ApprovalToggle"
-export * from "./ArtistLink"
+export * from "./LastfmArtistFilterButton"
+export * from "./LastfmArtistLink"
 export * from "./EntityBinding"
 export * from "./EntityTagItem"
 export * from "./EntityTagPanel"
