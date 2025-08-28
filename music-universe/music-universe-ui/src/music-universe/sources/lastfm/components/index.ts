@@ -1,4 +1,5 @@
 export * from "./ApprovalToggle"
+export * from "./ArtistLink"
 export * from "./EntityBinding"
 export * from "./EntityTagItem"
 export * from "./EntityTagPanel"

@@ -16,6 +16,7 @@ import type {MasterEntityType} from "@/music-universe/shared/types/entities.ts";
 // styles
 import sharedTableStyles from "@/music-universe/shared/styles/EntityTableStyles.module.scss";
 import albumTableStyles from "../LastfmAlbumsTable/LastfmAlbumsTable.module.css";
+import {LastfmArtistLink} from "@/music-universe/sources/lastfm/components/ArtistLink/LastfmArtistLink.tsx";
 
 interface LastfmAlbumTableRowProps extends BaseEntityTableRow {
 }
@@ -69,7 +70,7 @@ export const LastfmAlbumsTableRow = (
              className={sharedTableStyles.row}
         >
             <div className={`${sharedTableStyles.cell} ${albumTableStyles.artist}`}>
-                {entity.artist && <ReadonlyAttr value={entity.artist.name}/>}
+                {entity.artist && <LastfmArtistLink artistName={entity.artist.name} />}
             </div>
 
             <div className={`${sharedTableStyles.cell} ${albumTableStyles.name}`}>

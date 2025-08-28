@@ -20,6 +20,7 @@ import styles from "@/music-universe/sources/lastfm/components/LastfmArtistsTabl
 import sharedTableStyles from "@/music-universe/shared/styles/EntityTableStyles.module.scss";
 import trackTableStyles from "../LastfmTracksTable/LastfmTracksTable.module.css";
 import artistTableStyles from "@/music-universe/sources/lastfm/components/LastfmArtistsTable/LastfmArtistsTable.module.css";
+import {LastfmArtistLink} from "@/music-universe/sources/lastfm/components/ArtistLink/LastfmArtistLink.tsx";
 
 interface LastfmTrackTableRowProps extends BaseEntityTableRow {
 }
@@ -81,7 +82,7 @@ export const LastfmTracksTableRow = (
                  onClick={toggleTagPanel}
             >
                 <div className={`${sharedTableStyles.cell} ${trackTableStyles.artist}`}>
-                    {entity.artist && <ReadonlyAttr value={entity.artist.name}/>}
+                    {entity.artist && <LastfmArtistLink artistName={entity.artist.name} />}
                 </div>
 
                 <div className={`${sharedTableStyles.cell} ${trackTableStyles.name}`}>

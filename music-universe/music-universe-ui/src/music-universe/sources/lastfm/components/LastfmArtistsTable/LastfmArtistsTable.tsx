@@ -2,6 +2,7 @@
 import { useLastfmEntityTable } from "@/music-universe/sources/lastfm/hooks/useLastfmEntityTable";
 import { useApprovalStatusFilter } from "@/music-universe/sources/shared/hooks";
 import { usePlayCountFilter, useListenersCountFilter, useTagFilter } from "@/music-universe/sources/lastfm/hooks/useLastfmFilters";
+import { useSearchParams } from "react-router-dom";
 // components
 import { EntityTable, type EntityTableColumn } from "@/music-universe/shared/components/EntityTable/EntityTable";
 import { LastfmArtistsTableRow } from "@/music-universe/sources/lastfm/components";
@@ -21,6 +22,9 @@ const columns: EntityTableColumn[] = [
 ];
 
 export const LastfmArtistsTable = () => {
+    const [searchParams] = useSearchParams();
+    const initialSearch = searchParams.get('search') || '';
+    
     const {
         rawEntityIds,
         pagination,
@@ -34,7 +38,7 @@ export const LastfmArtistsTable = () => {
         goToPage,
         updateParams,
         refresh
-    } = useLastfmEntityTable("artist");
+    } = useLastfmEntityTable("artist", { search: initialSearch });
 
     // Filter hooks
     const { approvalStatuses, approvalStatusField } = useApprovalStatusFilter();
