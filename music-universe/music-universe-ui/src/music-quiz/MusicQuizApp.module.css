@@ -1,0 +1,107 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.table th, .table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.table th {
+  background-color: #f2f2f2;
+}
+
+.table tbody tr:hover {
+  background-color: #f5f5f5;
+  cursor: pointer;
+}
+
+.table tbody tr.selected {
+  background-color: #e3f2fd;
+}
+
+.table tbody tr.approved {
+  background-color: #d4edda;
+  font-weight: bold;
+}
+
+.table tbody tr.approved:hover {
+  background-color: #c3e6cb;
+}
+
+.generationSettings {
+  background: #f9f9f9;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.generationSettings div {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.generationSettings input {
+  padding: 5px;
+  width: 80px;
+}
+
+.generationTracks {
+  margin-top: 20px;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.generationTracks .header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.button {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.button:hover {
+  background-color: #0056b3;
+}
+
+.approveButton {
+  padding: 4px 8px;
+  font-size: 12px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.approveButton:hover {
+  background-color: #218838;
+}
+
+.title {
+  color: #333;
+}
+
+.approvedTitle {
+  color: #28a745;
+}
