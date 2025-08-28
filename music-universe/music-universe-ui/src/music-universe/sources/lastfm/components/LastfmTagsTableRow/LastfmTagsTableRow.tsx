@@ -1,5 +1,7 @@
 // hooks
-import { useState, memo } from "react";
+import { memo } from "react";
+import { useLastfmEntity } from "@/music-universe/sources/lastfm/hooks/useLastfmEntity.tsx";
+import { useLastfmEntityApproval } from "@/music-universe/sources/lastfm/hooks/useLastfmEntityApproval.ts";
 // components
 import {
     ExternalLink,
@@ -10,11 +12,6 @@ import {ApprovalToggle, EntityBinding} from "@/music-universe/sources/lastfm/com
 // types
 import type { DataSource } from "@/music-universe/sources/shared/types/data-sources.ts";
 import type { MasterEntityType } from "@/music-universe/shared/types/entities.ts";
-// services
-import { useLastfmEntity } from "@/music-universe/sources/lastfm/hooks/useLastfmEntity";
-import { updateRawEntityApprovalStatus } from "@/music-universe/sources/shared/api/approval";
-// constants
-import { ApprovalStatus, type ApprovalStatusType } from "@/music-universe/sources/lastfm/constants/approvalStatus";
 // styles
 import sharedTableStyles from "@/music-universe/shared/styles/EntityTableStyles.module.scss";
 import tagTableStyles from "../LastfmTagsTable/LastfmTagsTable.module.css";
@@ -31,8 +28,6 @@ export const LastfmTagsTableRow = memo((
     const dataSource: DataSource = 'lastfm';
     const entityType: MasterEntityType = 'category';
 
-    const [isApproving, setIsApproving] = useState(false);
-
     const {
         entity,
         updateEntity,
@@ -41,6 +36,12 @@ export const LastfmTagsTableRow = memo((
         isError,
         error
     } = useLastfmEntity(entityType, entityId);
+
+    const {
+        isApproving,
+        setApprovalStatus,
+        ensureIsValidForBinding
+    } = useLastfmEntityApproval(entity, dataSource, updateEntity);
 
     // If entity is loading, show loading state
     if (isLoading) {
@@ -61,32 +62,6 @@ export const LastfmTagsTableRow = memo((
                 </div>
             </div>
         )
-    }
-
-    const ensureIsValidForBinding = async (hasMasterExisted: boolean) => {
-        if (!entity) return false;
-        if (entity.approvalStatus === ApprovalStatus.APPROVED) return true;
-        if (entity.approvalStatus === ApprovalStatus.PENDING) {
-            setApprovalStatus(ApprovalStatus.APPROVED);
-            return true;
-        }
-        // TODO show warning in popup instead of logging
-        console.log(`Entity has invalid status for binding: ${entity.approvalStatus}`);
-        return false;
-    }
-
-    const setApprovalStatus = (newStatus: ApprovalStatusType) => {
-        console.log(`new status ${newStatus} for entity ${entity?.id}`)
-        if (!entity) return;
-        setIsApproving(true);
-        updateRawEntityApprovalStatus(dataSource, entity.getEntityType(), entity.id, newStatus)
-            .then(() => {
-                entity.setApprovalStatus(newStatus);
-                updateEntity(entity);
-            })
-            .finally(() => {
-                setIsApproving(false);
-            });
     }
 
     return (

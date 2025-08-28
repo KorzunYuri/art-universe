@@ -1,5 +1,5 @@
 // hooks
-import {useState, memo, useCallback} from "react";
+import {useState, memo} from "react";
 // components
 import {
     ExternalLink,
@@ -11,11 +11,10 @@ import {ApprovalToggle, EntityBinding, EntityTagPanel} from "@/music-universe/so
 // types
 import type { DataSource } from "@/music-universe/sources/shared/types/data-sources.ts";
 import type { MasterEntityType } from "@/music-universe/shared/types/entities.ts";
-import { ApprovalStatus, type ApprovalStatusType } from "@/music-universe/sources/lastfm/constants/approvalStatus.ts";
 // services
 import { LastfmConfig } from "@/music-universe/sources/lastfm/config/lastfmconfig.ts";
 import { useLastfmEntity } from "@/music-universe/sources/lastfm/hooks/useLastfmEntity";
-import { updateRawEntityApprovalStatus } from "@/music-universe/sources/shared/api/approval";
+import { useLastfmEntityApproval } from "@/music-universe/sources/lastfm/hooks/useLastfmEntityApproval.ts";
 // styles
 import sharedTableStyles from "@/music-universe/shared/styles/EntityTableStyles.module.scss";
 import artistTableStyles from "../LastfmArtistsTable/LastfmArtistsTable.module.css";
@@ -34,7 +33,6 @@ export const LastfmArtistsTableRow = memo((
     const dataSource: DataSource = 'lastfm';
     const entityType: MasterEntityType = 'artist';
 
-    const [isApproving, setIsApproving] = useState(false);
     const [isTagPanelOpen, setIsTagPanelOpen] = useState(false);
 
     const {
@@ -46,31 +44,11 @@ export const LastfmArtistsTableRow = memo((
         error
     } = useLastfmEntity(entityType, entityId);
 
-    const setApprovalStatus = useCallback((newStatus: ApprovalStatusType) => {
-        console.log(`new status ${newStatus} for entity ${entity?.id}`)
-        if (!entity) return;
-        setIsApproving(true);
-        updateRawEntityApprovalStatus(dataSource, entity.getEntityType(), entity.id, newStatus)
-            .then(() => {
-                entity.setApprovalStatus(newStatus);
-                updateEntity(entity);
-            })
-            .finally(() => {
-                setIsApproving(false);
-            });
-    }, [entity, updateEntity]);
-
-    const ensureIsValidForBinding = useCallback(async (hasMasterExisted: boolean) => {
-        if (!entity) return false;
-        if (entity.approvalStatus === ApprovalStatus.APPROVED) return true;
-        if (entity.approvalStatus === ApprovalStatus.PENDING) {
-            setApprovalStatus(ApprovalStatus.APPROVED);
-            return true;
-        }
-        // TODO show warning in popup instead of logging
-        console.log(`Entity has invalid status for binding: ${entity.approvalStatus}`);
-        return false;
-    }, [entity, setApprovalStatus]);
+    const {
+        isApproving,
+        setApprovalStatus,
+        ensureIsValidForBinding
+    } = useLastfmEntityApproval(entity, dataSource, updateEntity);
 
     // If entity is loading, show loading state
     if (isLoading) {
