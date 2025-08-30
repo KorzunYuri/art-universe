@@ -1,9 +1,12 @@
+import React from 'react';
+
 interface ArtistLinkProps {
     artistName: string;
 }
 
 export const LastfmArtistLink = ({ artistName }: ArtistLinkProps) => {
-    const handleClick = () => {
+    const handleClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
         const url = `/lastfm/artists?search=${encodeURIComponent(artistName)}`;
         window.open(url, '_blank');
     };

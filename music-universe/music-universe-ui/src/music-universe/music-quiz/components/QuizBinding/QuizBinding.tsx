@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useQuizBinding, quizBindingKeys } from '@/music-universe/music-quiz/hooks/useQuizBinding';
 import {
@@ -43,7 +43,8 @@ export const QuizBinding = ({
     // If no master entity, component is disabled
     const isDisabled = disabled || isLoading || isProcessing || !masterId;
 
-    const handleToggle = async () => {
+    const handleToggle = async (e: React.MouseEvent) => {
+        e.stopPropagation();
         if (isDisabled) return;
 
         setIsProcessing(true);

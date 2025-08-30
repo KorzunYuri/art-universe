@@ -13,6 +13,7 @@ export function ExternalLink({ href, label, className = '' }: Props) {
             href={href}
             target="_blank"
             rel="noreferrer"
+            onClick={(e) => e.stopPropagation()}
         >
             {label}
         </a>

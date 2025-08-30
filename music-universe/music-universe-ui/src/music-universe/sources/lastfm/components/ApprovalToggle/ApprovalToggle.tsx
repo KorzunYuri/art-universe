@@ -1,3 +1,4 @@
+import React from 'react';
 import styles from './ApprovalToggle.module.scss'
 import { ApprovalStatus, type ApprovalStatusType } from '@/music-universe/sources/lastfm/constants/approvalStatus.ts'
 
@@ -21,7 +22,8 @@ const options: {
 
 export function ApprovalToggle({ status, onChange, className = '', disabled = false }: Props) {
 
-    const handleClick = (value: ApprovalStatusType, buttonDisabled?: boolean) => {
+    const handleClick = (e: React.MouseEvent, value: ApprovalStatusType, buttonDisabled?: boolean) => {
+        e.stopPropagation();
         if (buttonDisabled || disabled) return
         if (value === status) {
             onChange(ApprovalStatus.PENDING)
@@ -42,7 +44,7 @@ export function ApprovalToggle({ status, onChange, className = '', disabled = fa
                         status === value ? styles.active : ''
                     }`}
                     disabled={alwaysDisabled || disabled}
-                    onClick={() => handleClick(value, alwaysDisabled)}
+                    onClick={(e) => handleClick(e, value, alwaysDisabled)}
                 >
                     {label}
                 </button>

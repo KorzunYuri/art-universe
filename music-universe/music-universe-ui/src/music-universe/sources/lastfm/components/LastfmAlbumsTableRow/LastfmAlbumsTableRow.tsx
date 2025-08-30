@@ -97,8 +97,7 @@ export const LastfmAlbumsTableRow = (
                     label="MusicBrainz"/>}
             </div>
 
-            <div className={`${sharedTableStyles.cell} ${albumTableStyles.status}`}
-                 onClick={(e) => e.stopPropagation()}>
+            <div className={`${sharedTableStyles.cell} ${albumTableStyles.status}`}>
                 <ApprovalToggle
                     status={entity.approvalStatus}
                     onChange={setApprovalStatus}
@@ -106,8 +105,7 @@ export const LastfmAlbumsTableRow = (
                 />
             </div>
 
-            <div className={`${sharedTableStyles.cell}  ${albumTableStyles.masterBinding}`}
-                 onClick={(e) => e.stopPropagation()}>
+            <div className={`${sharedTableStyles.cell}  ${albumTableStyles.masterBinding}`}>
                 <EntityBinding
                     dataSource={dataSource}
                     entityType={entityType}

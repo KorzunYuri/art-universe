@@ -92,8 +92,7 @@ export const LastfmArtistsTableRow = memo((
                         label="MusicBrainz"/>}
                 </div>
 
-                <div className={`${sharedTableStyles.cell}  ${artistTableStyles.status}`}
-                     onClick={(e) => e.stopPropagation()}>
+                <div className={`${sharedTableStyles.cell}  ${artistTableStyles.status}`}>
                     <ApprovalToggle
                         status={entity.approvalStatus}
                         onChange={setApprovalStatus}
@@ -101,8 +100,7 @@ export const LastfmArtistsTableRow = memo((
                     />
                 </div>
 
-                <div className={`${sharedTableStyles.cell}  ${artistTableStyles.masterBinding}`}
-                     onClick={(e) => e.stopPropagation()}>
+                <div className={`${sharedTableStyles.cell}  ${artistTableStyles.masterBinding}`}>
                     <EntityBinding
                         dataSource={dataSource}
                         entityType={entityType}
@@ -113,8 +111,7 @@ export const LastfmArtistsTableRow = memo((
                     />
                 </div>
 
-                <div className={`${sharedTableStyles.cell}  ${artistTableStyles.quizBinding}`}
-                     onClick={(e) => e.stopPropagation()}>
+                <div className={`${sharedTableStyles.cell}  ${artistTableStyles.quizBinding}`}>
                     <QuizBinding
                         entityType="artist"
                         masterId={entity.getMasterEntity()?.id ?? null}

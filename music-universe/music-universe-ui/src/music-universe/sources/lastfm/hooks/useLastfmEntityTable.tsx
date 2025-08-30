@@ -18,6 +18,22 @@ import type {Page} from "@/music-universe/shared/types/page.ts";
 import type {LastfmSupportedEntityTypeMap} from "@/music-universe/sources/lastfm/types/lastfm-entity.ts";
 
 /**
+ * Get default sort for entity type
+ */
+function getDefaultSort(entityType: LastfmSupportedEntityType): string {
+    switch (entityType) {
+        case 'artist':
+        case 'track':
+        case 'album':
+            return 'listenersCount,desc';
+        case 'category':
+            return 'usageUsersCount,desc';
+        default:
+            return 'name,asc';
+    }
+}
+
+/**
  * Result of loading a page with all related data
  */
 interface PageLoadResult<T extends LastfmSupportedEntityType> {
@@ -34,7 +50,7 @@ export function useLastfmEntityTable<T extends LastfmSupportedEntityType>(
         page: 0,
         size: 20,
         search: '',
-        sort: 'name,asc',
+        sort: getDefaultSort(entityType),
         ...initialParams,
     });
 
@@ -216,7 +232,7 @@ export function useLastfmEntityTable<T extends LastfmSupportedEntityType>(
             hasPrevPage: params.page > 0,
         },
         search: params.search || '',
-        sort: params.sort || 'name,asc',
+        sort: params.sort || getDefaultSort(entityType),
         isLoading: rawEntitiesPageQuery.isLoading,
         setSearch,
         setSort,

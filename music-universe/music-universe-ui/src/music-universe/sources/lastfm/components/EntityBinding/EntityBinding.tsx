@@ -136,7 +136,8 @@ export const EntityBinding = <T extends LastfmSupportedEntityType>(
     const bindingState = getBindingState();
 
     // Handle binding operations
-    const handleBind = async () => {
+    const handleBind = async (e: React.MouseEvent) => {
+        e.stopPropagation();
         if (!inputValue || !entity) return;
 
         setIsBinding(true);
@@ -183,7 +184,8 @@ export const EntityBinding = <T extends LastfmSupportedEntityType>(
     }
 
     // Handle unbind operation
-    const handleUnbind = async () => {
+    const handleUnbind = async (e: React.MouseEvent) => {
+        e.stopPropagation();
         if (!entity) return;
 
         setIsUnbinding(true);

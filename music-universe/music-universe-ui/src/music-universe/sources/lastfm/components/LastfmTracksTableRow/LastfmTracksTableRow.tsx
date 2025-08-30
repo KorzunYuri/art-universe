@@ -113,8 +113,7 @@ export const LastfmTracksTableRow = (
                         label="MusicBrainz"/>}
                 </div>
 
-                <div className={`${sharedTableStyles.cell} ${trackTableStyles.status}`}
-                     onClick={(e) => e.stopPropagation()}>
+                <div className={`${sharedTableStyles.cell} ${trackTableStyles.status}`}>
                     <ApprovalToggle
                         status={entity.approvalStatus}
                         onChange={setApprovalStatus}
@@ -122,8 +121,7 @@ export const LastfmTracksTableRow = (
                     />
                 </div>
 
-                <div className={`${sharedTableStyles.cell}  ${trackTableStyles.masterBinding}`}
-                     onClick={(e) => e.stopPropagation()}>
+                <div className={`${sharedTableStyles.cell}  ${trackTableStyles.masterBinding}`}>
                     <EntityBinding
                         dataSource={dataSource}
                         entityType={entityType}
@@ -134,8 +132,7 @@ export const LastfmTracksTableRow = (
                     />
                 </div>
 
-                <div className={`${sharedTableStyles.cell}  ${artistTableStyles.quizBinding}`}
-                     onClick={(e) => e.stopPropagation()}>
+                <div className={`${sharedTableStyles.cell}  ${artistTableStyles.quizBinding}`}>
                     <QuizBinding
                         entityType="track"
                         masterId={entity.getMasterEntity()?.id ?? null}

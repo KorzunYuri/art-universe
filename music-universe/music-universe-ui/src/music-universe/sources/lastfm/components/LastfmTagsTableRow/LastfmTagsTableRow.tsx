@@ -76,8 +76,7 @@ export const LastfmTagsTableRow = memo((
                 )}
             </div>
 
-            <div className={`${sharedTableStyles.cell} ${tagTableStyles.status}`}
-                 onClick={(e) => e.stopPropagation()}>
+            <div className={`${sharedTableStyles.cell} ${tagTableStyles.status}`}>
                 <ApprovalToggle
                     status={entity.approvalStatus}
                     onChange={setApprovalStatus}
@@ -85,8 +84,7 @@ export const LastfmTagsTableRow = memo((
                 />
             </div>
 
-            <div className={`${sharedTableStyles.cell} ${tagTableStyles.masterBinding}`}
-                 onClick={(e) => e.stopPropagation()}>
+            <div className={`${sharedTableStyles.cell} ${tagTableStyles.masterBinding}`}>
                 <EntityBinding
                     dataSource={dataSource}
                     entityType={entityType}
