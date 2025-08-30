@@ -24,8 +24,6 @@ public interface LastfmArtistRepository extends JpaRepository<LastfmArtist, Long
 
     List<LastfmArtist> findAllByNameIn(Collection<String> strings);
 
-    List<LastfmArtist> findAllByUrlIn(List<String> urls);
-
     /**
      * Returns artists that need artist.getInfo processing.
      * Prioritizes approved artists first, then by popularity, then by creation date (older first).
@@ -97,6 +95,48 @@ public interface LastfmArtistRepository extends JpaRepository<LastfmArtist, Long
         Pageable pageable);
 
     @Query(value = """
+    SELECT  a
+    FROM    artist a
+    JOIN    artist_tag at ON a.id = at.artist.id
+    WHERE   1=1
+        AND ((LOWER(a.name)  LIKE LOWER(CONCAT('%', :search, '%'))) OR :search  IS NULL)
+        AND (:minPlayCount          IS NULL     OR a.playCount >= :minPlayCount)
+        AND (:minListenersCount     IS NULL     OR a.listenersCount >= :minListenersCount)
+        AND at.tag.id = :tagId
+    ORDER BY (at.usageCount / 10) DESC,
+             COALESCE(a.listenersCount, 0) DESC,
+             a.name ASC
+    """)
+    Page<LastfmArtist> findArtistsByTagWithoutApprovalStatus(
+            @Nullable @Param("search")              String search,
+            @Nullable @Param("minPlayCount")        Long minPlayCount,
+            @Nullable @Param("minListenersCount")   Long minListenersCount,
+            @Param("tagId")                         Long tagId,
+            Pageable pageable);
+
+    @Query(value = """
+    SELECT  a
+    FROM    artist a
+    JOIN    artist_tag at ON a.id = at.artist.id
+    WHERE   1=1
+        AND ((LOWER(a.name)  LIKE LOWER(CONCAT('%', :search, '%'))) OR :search  IS NULL)
+        AND (:minPlayCount          IS NULL     OR a.playCount >= :minPlayCount)
+        AND (:minListenersCount     IS NULL     OR a.listenersCount >= :minListenersCount)
+        AND a.approvalStatus IN (:approvalStatuses)
+        AND at.tag.id = :tagId
+    ORDER BY (at.usageCount / 10) DESC,
+             COALESCE(a.listenersCount, 0) DESC,
+             a.name ASC
+    """)
+    Page<LastfmArtist> findArtistsByTagWithApprovalStatus(
+            @Nullable @Param("search")              String search,
+            @Nullable @Param("minPlayCount")        Long minPlayCount,
+            @Nullable @Param("minListenersCount")   Long minListenersCount,
+            @Param("approvalStatuses")              List<ApprovalStatus> approvalStatuses,
+            @Param("tagId")                         Long tagId,
+            Pageable pageable);
+
+    @Query(value = """
         SELECT  a
         FROM    artist a
         WHERE   1=1
@@ -129,19 +169,25 @@ public interface LastfmArtistRepository extends JpaRepository<LastfmArtist, Long
      * </ul>
      */
     default Page<LastfmArtist> findArtists(
-        String search,
-        Long minPlayCount,
-        Long minListenersCount,
-        List<ApprovalStatus> approvalStatuses,
-        Long tagId,
-        Pageable pageable
+            String search,
+            Long minPlayCount,
+            Long minListenersCount,
+            List<ApprovalStatus> approvalStatuses,
+            Long tagId,
+            Pageable pageable
     ) {
-        if (approvalStatuses == null || approvalStatuses.isEmpty()) {
-            return findArtistsWithoutApprovalStatus(search, minPlayCount, minListenersCount, tagId, pageable);
+        if (tagId != null) {
+            if (approvalStatuses == null || approvalStatuses.isEmpty()) {
+                return findArtistsByTagWithoutApprovalStatus(search, minPlayCount, minListenersCount, tagId, pageable);
+            } else {
+                return findArtistsByTagWithApprovalStatus(search, minPlayCount, minListenersCount, approvalStatuses, tagId, pageable);
+            }
         } else {
-            return findArtistsWithApprovalStatus(search, minPlayCount, minListenersCount, approvalStatuses, tagId, pageable);
+            if (approvalStatuses == null || approvalStatuses.isEmpty()) {
+                return findArtistsWithoutApprovalStatus(search, minPlayCount, minListenersCount, tagId, pageable);
+            } else {
+                return findArtistsWithApprovalStatus(search, minPlayCount, minListenersCount, approvalStatuses, tagId, pageable);
+            }
         }
     }
-
-    Function<List<String>, List<? extends BaseLastfmEntity>> findAllByUrlIn(Collection<String> urls, Sort sort, Limit limit);
 }
