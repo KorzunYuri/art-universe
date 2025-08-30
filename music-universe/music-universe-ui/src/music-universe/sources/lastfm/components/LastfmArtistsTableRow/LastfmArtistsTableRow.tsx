@@ -7,7 +7,7 @@ import {
     type BaseEntityTableRow
 } from "@/music-universe/shared/components";
 import {QuizBinding} from "@/music-universe/music-quiz/components";
-import {ApprovalToggle, EntityBinding, EntityTagPanel} from "@/music-universe/sources/lastfm/components";
+import {ApprovalToggle, EntityBinding, EntityTagPanel, LastfmArtistFilterButton} from "@/music-universe/sources/lastfm/components";
 // types
 import type { DataSource } from "@/music-universe/sources/shared/types/data-sources.ts";
 import type { MasterEntityType } from "@/music-universe/shared/types/entities.ts";
@@ -83,7 +83,14 @@ export const LastfmArtistsTableRow = memo((
                 onClick={toggleTagPanel}
             >
                 <div className={`${sharedTableStyles.cell}  ${artistTableStyles.name}`}>
-                    {entity.url && <ExternalLink href={entity.url} label={entity.name}/>}
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <LastfmArtistFilterButton
+                            artistId={entity.id}
+                            artistName={entity.name}
+                            targetPage="tracks"
+                        />
+                        {entity.url && <ExternalLink href={entity.url} label={entity.name}/>}
+                    </div>
                 </div>
 
                 <div className={`${sharedTableStyles.cell}  ${artistTableStyles.mbid}`}>

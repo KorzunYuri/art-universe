@@ -1,7 +1,9 @@
+import { useNavigate } from 'react-router-dom';
+
 interface LastfmArtistFilterButtonProps {
     artistId: number;
     artistName: string;
-    onFilter: (artistId: number, artistName: string) => void;
+    onFilter?: (artistId: number, artistName: string) => void;
     targetPage?: 'tracks' | 'albums';
 }
 
@@ -11,6 +13,8 @@ export const LastfmArtistFilterButton = ({
     onFilter, 
     targetPage = 'tracks' 
 }: LastfmArtistFilterButtonProps) => {
+    const navigate = useNavigate();
+    
     const handleClick = (e: React.MouseEvent) => {
         e.stopPropagation();
         
@@ -18,9 +22,12 @@ export const LastfmArtistFilterButton = ({
             // Open target page for this artist in new window
             const url = `/lastfm/${targetPage}?artistId=${artistId}`;
             window.open(url, '_blank');
-        } else {
-            // Apply filter in current table
+        } else if (onFilter) {
+            // Apply filter in current table if onFilter is provided
             onFilter(artistId, artistName);
+        } else {
+            // Navigate to target page for this artist in current window
+            navigate(`/lastfm/${targetPage}?artistId=${artistId}`);
         }
     };
 
