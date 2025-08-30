@@ -54,11 +54,17 @@ public class GenerationServiceImpl implements GenerationService {
             // Read results and save to GenerationTrack
             @SuppressWarnings("unchecked")
             List<Object[]> results = entityManager.createNativeQuery("""
-                SELECT vt.id as track_id, vt.primary_artist_id, vt.name as track_name, va.name as artist_name 
-                FROM %s rt 
-                JOIN mu_view.v_track vt ON rt.track_id = vt.id 
-                JOIN mu_view.v_artist va ON rt.primary_artist_id = va.id 
-                ORDER BY rt.track_id
+                    SELECT
+                        vt.id as track_id,
+                        vt.primary_artist_id,
+                        vt.name as track_name,
+                        va.name as artist_name
+                    FROM %s rt
+                    JOIN mu_view.v_track vt
+                        ON rt.track_id = vt.id
+                    JOIN mu_view.v_artist va
+                        ON rt.primary_artist_id = va.id
+                    ORDER BY RANDOM()
                 """.formatted(resultTableName))
                 .getResultList();
             

@@ -41,6 +41,12 @@
                  endDelimiter="$$"/>
     </changeSet>
 
+    <changeSet id="0004-0041-final-selection-fix-randomization" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0004-pipeline/0004-0200-p_quiz_gen_tracks_step_final_selection_fix_randomization.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
     <changeSet id="0004-0050-main-pipeline-procedure" author="amazon-q">
         <sqlFile path="db/migration/muquiz/liquibase/changesets/0004-pipeline/0004-0050-p_quiz_gen_tracks_pipeline.sql"
                  splitStatements="false"
