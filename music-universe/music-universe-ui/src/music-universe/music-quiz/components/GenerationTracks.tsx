@@ -1,4 +1,4 @@
-import { useGenerationTracks } from '../hooks/useQuizData';
+import { useGenerationTracks } from '../hooks/useQuizData.ts';
 import type {GenerationDto} from '../types';
 import styles from '../MusicQuizApp.module.css';
 

@@ -2,7 +2,7 @@ import { useRoutes } from 'react-router-dom'
 import { NavigationCard } from './shared/components'
 import LastfmApp from './sources/lastfm/LastfmApp'
 import MusicDataApp from './music-data/MusicDataApp'
-import MusicQuizApp from '../music-quiz/MusicQuizApp'
+import MusicQuizApp from './music-quiz/MusicQuizApp.tsx'
 
 export default function MusicUniverseApp() {
     const routes = [

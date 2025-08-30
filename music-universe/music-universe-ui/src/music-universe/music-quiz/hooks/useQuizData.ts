@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { musicQuizApi } from '../api/musicQuizApi';
-import { quizKeys } from '../utils/query-keys';
+import { musicQuizApi } from '../api/musicQuizApi.ts';
+import { quizKeys } from '@/music-universe/music-quiz/utils/query-keys.ts';
 
 export const useGames = (page = 0, size = 20) => {
   return useQuery({

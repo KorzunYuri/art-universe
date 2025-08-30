@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useGames, useCreateGame } from '../hooks/useQuizData';
+import { useGames, useCreateGame } from '../hooks/useQuizData.ts';
 import styles from '../MusicQuizApp.module.css';
 
 export const Games = () => {

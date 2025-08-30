@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useGame, useGenerateTracks, useApproveGeneration } from '../hooks/useQuizData';
+import { useGame, useGenerateTracks, useApproveGeneration } from '../hooks/useQuizData.ts';
 import type {GenerationDto} from '../types';
-import { GenerationTracks } from './GenerationTracks';
+import { GenerationTracks } from './GenerationTracks.tsx';
 import styles from '../MusicQuizApp.module.css';
 
 export const GameDetails = () => {
