@@ -81,7 +81,7 @@ lastfm:
     album:
       playCount: 10000
     track:
-      playCount: 10000
+      playCount: 1000
     tag:
       usageCount: 1000
   client:
