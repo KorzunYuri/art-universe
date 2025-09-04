@@ -14,6 +14,9 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.controller.Last
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.dto.ArtistSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.dto.LastfmArtistResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.dto.ArtistSearchRequestDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtistSearchRequest;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.LastfmArtistSearchRequestService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.lookup.LastfmArtistLookupService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.dto.ApprovalStatusRequestDto;
@@ -36,6 +39,9 @@ class LastfmArtistControllerTest {
 
     @Mock
     private LastfmArtistLookupService artistLookupService;
+
+    @Mock
+    private LastfmArtistSearchRequestService artistSearchRequestService;
 
     @InjectMocks
     private LastfmArtistController controller;
@@ -237,5 +243,28 @@ class LastfmArtistControllerTest {
         // then
         assertNotNull(result);
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void createSearchRequest_shouldReturnSavedRequest_whenValidRequest() {
+        // given
+        ArtistSearchRequestDto requestDto = new ArtistSearchRequestDto("Radiohead");
+        LastfmArtistSearchRequest savedRequest = LastfmArtistSearchRequest.builder()
+                .id(1L)
+                .searchString("Radiohead")
+                .processed(false)
+                .build();
+
+        when(artistSearchRequestService.saveRequest("Radiohead"))
+                .thenReturn(savedRequest);
+
+        // when
+        LastfmArtistSearchRequest result = controller.createSearchRequest(requestDto);
+
+        // then
+        assertNotNull(result);
+        assertEquals(savedRequest, result);
+        assertEquals("Radiohead", result.getSearchString());
+        assertFalse(result.isProcessed());
     }
 }

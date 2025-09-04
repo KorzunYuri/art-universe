@@ -22,6 +22,15 @@ public class LastfmArtistSearchRequestServiceImpl implements LastfmArtistSearchR
     }
 
     @Override
+    public LastfmArtistSearchRequest saveRequest(String searchString) {
+        LastfmArtistSearchRequest request = LastfmArtistSearchRequest.builder()
+            .searchString(searchString)
+            .processed(false)
+            .build();
+        return searchRequestRepository.save(request);
+    }
+
+    @Override
     public List<LastfmArtistSearchRequest> saveRequests(List<LastfmArtistSearchRequest> searchRequests) {
         return searchRequestRepository.saveAll(searchRequests);
     }

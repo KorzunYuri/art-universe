@@ -7,6 +7,8 @@ import java.util.List;
 public interface LastfmArtistSearchRequestService {
 
     List<LastfmArtistSearchRequest> findUnprocessed(int batchLimit);
+    
+    LastfmArtistSearchRequest saveRequest(String searchString);
 
     List<LastfmArtistSearchRequest> saveRequests(List<LastfmArtistSearchRequest> searchRequests);
 }

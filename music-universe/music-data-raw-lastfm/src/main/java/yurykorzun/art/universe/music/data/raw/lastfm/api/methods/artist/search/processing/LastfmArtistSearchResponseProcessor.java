@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallType;
+import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.LastfmApiConstants;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
@@ -85,6 +86,15 @@ public class LastfmArtistSearchResponseProcessor extends LastfmApiResponseProces
 
         log.info("Saved {} found artists", result.actualEntities().size());
         log.info("Saved {} found artists' attributes", result.savedAttributeValues().size());
+
+        // set statuses of pending artists to pre-approved
+        List<LastfmArtist> artistsToPreApprove = result.actualEntities().stream()
+                .filter(a -> a.getApprovalStatus() == ApprovalStatus.PENDING)
+                .toList();
+        if (!artistsToPreApprove.isEmpty()) {
+            artistsToPreApprove.forEach(a -> a.setApprovalStatus(ApprovalStatus.PRE_APPROVED));
+            artistService.saveAll(artistsToPreApprove);
+        }
     }
 
     private List<ArtistSearchArtistDto> filterArtistsForSaving(List<ArtistSearchArtistDto> artistDtos, String searchString) {

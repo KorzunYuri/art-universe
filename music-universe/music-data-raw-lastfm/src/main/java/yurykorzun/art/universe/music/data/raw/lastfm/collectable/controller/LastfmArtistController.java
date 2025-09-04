@@ -1,14 +1,19 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.dto.ArtistSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.dto.LastfmArtistResponseDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.dto.ArtistSearchRequestDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtistSearchRequest;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.LastfmArtistSearchRequestService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.lookup.LastfmArtistLookupService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.dto.ApprovalStatusRequestDto;
@@ -22,10 +27,12 @@ public class LastfmArtistController {
 
     private final LastfmArtistService artistService;
     private final LastfmArtistLookupService artistLookupService;
+    private final LastfmArtistSearchRequestService artistSearchRequestService;
 
-    public LastfmArtistController(LastfmArtistService artistService, LastfmArtistLookupService artistLookupService) {
+    public LastfmArtistController(LastfmArtistService artistService, LastfmArtistLookupService artistLookupService, LastfmArtistSearchRequestService artistSearchRequestService) {
         this.artistService = artistService;
         this.artistLookupService = artistLookupService;
+        this.artistSearchRequestService = artistSearchRequestService;
     }
 
     @GetMapping(
@@ -57,6 +64,12 @@ public class LastfmArtistController {
         @RequestBody ApprovalStatusRequestDto request
     ) {
         return artistService.updateApprovalStatus(id, request.approvalStatus());
+    }
+
+    @PostMapping("/search")
+    @ResponseStatus(HttpStatus.CREATED)
+    public LastfmArtistSearchRequest createSearchRequest(@Valid @RequestBody ArtistSearchRequestDto request) {
+        return artistSearchRequestService.saveRequest(request.searchString());
     }
 
     @GetMapping("/lookup")

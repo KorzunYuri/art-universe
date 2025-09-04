@@ -10,6 +10,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmAp
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.utils.TimeUtil;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtistSearchRequest;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.LastfmArtistSearchRequestService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.attribute.LastfmDataSnapshot;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.LastfmDataSnapshotService;
@@ -67,6 +68,7 @@ public class LastfmArtistSearchApiCallGenerator extends LastfmApiCallGenerator {
             .map(req -> LastfmApiCallCreateRequest.builder()
                     .type(getApiCallType())
                     .dataSnapshotId(dataSnapshot.getId())
+                    .entityType(LastfmEntityType.ARTIST)
                     .params(Map.of(LastfmApiConstants.PARAM_NAME_ARTIST, req.getSearchString()))
                     .dueDttm(getDueDttm())
                 .build())
