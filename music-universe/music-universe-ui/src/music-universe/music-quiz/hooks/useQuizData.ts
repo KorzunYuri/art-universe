@@ -52,11 +52,26 @@ export const useApproveGeneration = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ gameId, generationId }: { gameId: number; generationId: number }) =>
-      musicQuizApi.approveGeneration(gameId, generationId),
-    onSuccess: (_, { gameId }) => {
-      queryClient.invalidateQueries({ queryKey: quizKeys.game(gameId) });
+    mutationFn: ({ generationId }: { generationId: number }) =>
+      musicQuizApi.approveGeneration(generationId),
+    onSuccess: (_, { generationId }) => {
+      // Find the game that contains this generation and invalidate it
       queryClient.invalidateQueries({ queryKey: quizKeys.games() });
+      queryClient.invalidateQueries({ queryKey: quizKeys.all });
+    },
+  });
+};
+
+export const useDisapproveGeneration = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ generationId }: { generationId: number }) =>
+      musicQuizApi.disapproveGeneration(generationId),
+    onSuccess: (_, { generationId }) => {
+      // Find the game that contains this generation and invalidate it
+      queryClient.invalidateQueries({ queryKey: quizKeys.games() });
+      queryClient.invalidateQueries({ queryKey: quizKeys.all });
     },
   });
 };

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useGame, useGenerateTracks, useApproveGeneration } from '../hooks/useQuizData.ts';
+import { useGame, useGenerateTracks, useApproveGeneration, useDisapproveGeneration } from '../hooks/useQuizData.ts';
 import type {GenerationDto} from '../types';
 import { GenerationTracks } from './GenerationTracks.tsx';
 import styles from '../MusicQuizApp.module.css';
@@ -13,51 +13,58 @@ export const GameDetails = () => {
   const { data: game, isLoading } = useGame(Number(gameId));
   const generateTracksMutation = useGenerateTracks();
   const approveGenerationMutation = useApproveGeneration();
+  const disapproveGenerationMutation = useDisapproveGeneration();
 
   const handleGenerateTracks = () => {
-    if (!gameId || game?.generationId) return;
+    if (!gameId) return;
     generateTracksMutation.mutate({ gameId: Number(gameId), targetCount });
   };
 
   const handleApproveGeneration = (generationId: number) => {
-    if (!gameId) return;
-    approveGenerationMutation.mutate({ gameId: Number(gameId), generationId });
+    approveGenerationMutation.mutate({ generationId });
+  };
+
+  const handleDisapproveGeneration = (generationId: number) => {
+    disapproveGenerationMutation.mutate({ generationId });
   };
 
   if (isLoading) return <div>Loading...</div>;
   if (!game) return <div>Game not found</div>;
 
-  const isApproved = !!game.generationId;
+  const approvedGenerations = game.generations.filter(g => g.approved);
 
   return (
     <div>
-      <h1 className={isApproved ? styles.approvedTitle : styles.title}>
-        Game {game.id} {isApproved && '(Approved)'}
+      <h1 className={styles.title}>
+        Game {game.id}
+        {approvedGenerations.length > 0 && (
+          <span className={styles.approvedBadge}>
+            ({approvedGenerations.length} approved)
+          </span>
+        )}
       </h1>
       
-      {!isApproved && (
-        <div className={styles.generationSettings}>
-          <h2>Generate New Tracks</h2>
-          <div>
-            <label>
-              Target Count:
-              <input 
-                type="number" 
-                value={targetCount} 
-                onChange={(e) => setTargetCount(Number(e.target.value))}
-                min="1"
-              />
-            </label>
-            <button 
-              className={styles.button}
-              onClick={handleGenerateTracks}
-              disabled={generateTracksMutation.isPending}
-            >
-              {generateTracksMutation.isPending ? 'Generating...' : 'Generate'}
-            </button>
-          </div>
+      <div className={styles.generationSettings}>
+        <h2>Generate New Tracks</h2>
+        <div>
+          <label>
+            Target Count:
+            <input 
+              type="number" 
+              value={targetCount} 
+              onChange={(e) => setTargetCount(Number(e.target.value))}
+              min="1"
+            />
+          </label>
+          <button 
+            className={styles.button}
+            onClick={handleGenerateTracks}
+            disabled={generateTracksMutation.isPending}
+          >
+            {generateTracksMutation.isPending ? 'Generating...' : 'Generate'}
+          </button>
         </div>
-      )}
+      </div>
 
       <div className="generations">
         <h2>Generations</h2>
@@ -67,8 +74,9 @@ export const GameDetails = () => {
               <th>ID</th>
               <th>Target Count</th>
               <th>Status</th>
+              <th>Approved</th>
               <th>Created At</th>
-              {!isApproved && <th>Actions</th>}
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -77,16 +85,25 @@ export const GameDetails = () => {
                 key={generation.id} 
                 onClick={() => setSelectedGeneration(generation)}
                 className={`
-                  ${selectedGeneration?.id === generation.id ? 'selected' : ''}
-                  ${generation.id === game.generationId ? 'approved' : ''}
+                  ${selectedGeneration?.id === generation.id ? styles.selected : ''}
+                  ${generation.approved ? styles.approved : ''}
                 `}
               >
                 <td>{generation.id}</td>
                 <td>{generation.targetCount}</td>
                 <td>{generation.status}</td>
+                <td>{generation.approved ? 'Yes' : 'No'}</td>
                 <td>{new Date(generation.createdAt).toLocaleString()}</td>
-                {!isApproved && (
-                  <td onClick={(e) => e.stopPropagation()}>
+                <td onClick={(e) => e.stopPropagation()}>
+                  {generation.approved ? (
+                    <button 
+                      className={styles.unapproveButton}
+                      onClick={() => handleDisapproveGeneration(generation.id)}
+                      disabled={disapproveGenerationMutation.isPending}
+                    >
+                      {disapproveGenerationMutation.isPending ? 'Disapproving...' : 'Disapprove'}
+                    </button>
+                  ) : (
                     <button 
                       className={styles.approveButton}
                       onClick={() => handleApproveGeneration(generation.id)}
@@ -94,8 +111,8 @@ export const GameDetails = () => {
                     >
                       {approveGenerationMutation.isPending ? 'Approving...' : 'Approve'}
                     </button>
-                  </td>
-                )}
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>

@@ -21,61 +21,29 @@
   background-color: #f2f2f2;
 }
 
-.table tbody tr:hover {
+.table tr:hover {
   background-color: #f5f5f5;
   cursor: pointer;
 }
 
-.table tbody tr.selected {
-  background-color: #e3f2fd;
+.selected {
+  background-color: #e3f2fd !important;
 }
 
-.table tbody tr.approved {
-  background-color: #d4edda;
-  font-weight: bold;
+.approved {
+  background-color: #d4edda !important;
+  border-color: #c3e6cb !important;
 }
 
-.table tbody tr.approved:hover {
-  background-color: #c3e6cb;
-}
-
-.generationSettings {
-  background: #f9f9f9;
-  padding: 15px;
-  border-radius: 5px;
-  margin-bottom: 20px;
-}
-
-.generationSettings div {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.generationSettings input {
-  padding: 5px;
-  width: 80px;
-}
-
-.generationTracks {
-  margin-top: 20px;
-  padding: 15px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-}
-
-.generationTracks .header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
+.approved:hover {
+  background-color: #c3e6cb !important;
 }
 
 .button {
-  padding: 8px 16px;
   background-color: #007bff;
   color: white;
   border: none;
+  padding: 8px 16px;
   border-radius: 4px;
   cursor: pointer;
 }
@@ -84,24 +52,73 @@
   background-color: #0056b3;
 }
 
+.button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
 .approveButton {
-  padding: 4px 8px;
-  font-size: 12px;
   background-color: #28a745;
   color: white;
   border: none;
+  padding: 4px 8px;
   border-radius: 4px;
   cursor: pointer;
+  font-size: 12px;
 }
 
 .approveButton:hover {
   background-color: #218838;
 }
 
+.approveButton:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.unapproveButton {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.unapproveButton:hover {
+  background-color: #c82333;
+}
+
+.unapproveButton:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
 .title {
   color: #333;
 }
 
-.approvedTitle {
+.approvedBadge {
   color: #28a745;
+  font-weight: normal;
+  font-size: 0.9em;
+}
+
+.generationSettings {
+  margin-bottom: 30px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.generationTracks {
+  margin-top: 30px;
+}
+
+.generationTracks .header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
 }

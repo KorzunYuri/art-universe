@@ -26,7 +26,6 @@ export const Games = () => {
         <thead>
           <tr>
             <th>ID</th>
-            <th>Generation ID</th>
             <th>Created At</th>
           </tr>
         </thead>
@@ -34,7 +33,6 @@ export const Games = () => {
           {games?.content.map((game) => (
             <tr key={game.id} onClick={() => navigate(`/music-quiz/games/${game.id}`)}>
               <td>{game.id}</td>
-              <td>{game.generationId || 'None'}</td>
               <td>{new Date(game.createdAt).toLocaleString()}</td>
             </tr>
           ))}

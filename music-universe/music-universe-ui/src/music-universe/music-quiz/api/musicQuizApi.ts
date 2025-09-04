@@ -41,8 +41,13 @@ export const musicQuizApi = {
     return response.data;
   },
 
-  approveGeneration: async (gameId: number, generationId: number): Promise<GameDto> => {
-    const response = await api.patch(`/games/${gameId}/approve/${generationId}`);
+  approveGeneration: async (generationId: number): Promise<GenerationDto> => {
+    const response = await api.patch(`/generations/${generationId}/approve`);
+    return response.data;
+  },
+
+  disapproveGeneration: async (generationId: number): Promise<GenerationDto> => {
+    const response = await api.patch(`/generations/${generationId}/disapprove`);
     return response.data;
   },
 };

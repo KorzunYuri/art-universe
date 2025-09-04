@@ -1,12 +1,10 @@
 export interface GameDto {
   id: number;
-  generationId: number;
   createdAt: string;
 }
 
 export interface GameWithGenerationsDto {
   id: number;
-  generationId: number;
   createdAt: string;
   generations: GenerationDto[];
 }
@@ -16,6 +14,7 @@ export interface GenerationDto {
   gameId: number;
   targetCount: number;
   status: string;
+  approved: boolean;
   resultTableName: string;
   createdAt: string;
 }
