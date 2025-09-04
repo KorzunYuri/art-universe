@@ -75,3 +75,15 @@ export const useDisapproveGeneration = () => {
     },
   });
 };
+
+export const useDeleteGenerationTrack = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ generationId, trackId }: { generationId: number; trackId: number }) =>
+      musicQuizApi.deleteGenerationTrack(generationId, trackId),
+    onSuccess: (_, { generationId }) => {
+      queryClient.invalidateQueries({ queryKey: quizKeys.generationTracks(generationId) });
+    },
+  });
+};

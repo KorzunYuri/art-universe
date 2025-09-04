@@ -50,4 +50,8 @@ export const musicQuizApi = {
     const response = await api.patch(`/generations/${generationId}/disapprove`);
     return response.data;
   },
+
+  deleteGenerationTrack: async (generationId: number, trackId: number): Promise<void> => {
+    await api.delete(`/generations/${generationId}/tracks/${trackId}`);
+  },
 };

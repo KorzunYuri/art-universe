@@ -1,4 +1,4 @@
-import { useGenerationTracks } from '../hooks/useQuizData.ts';
+import { useGenerationTracks, useDeleteGenerationTrack } from '../hooks/useQuizData.ts';
 import type {GenerationDto} from '../types';
 import styles from '../MusicQuizApp.module.css';
 
@@ -8,6 +8,11 @@ interface Props {
 
 export const GenerationTracks = ({ generation }: Props) => {
   const { data: tracks, isLoading } = useGenerationTracks(generation.id);
+  const deleteTrackMutation = useDeleteGenerationTrack();
+
+  const handleDeleteTrack = (trackId: number) => {
+    deleteTrackMutation.mutate({ generationId: generation.id, trackId });
+  };
 
   const copyToClipboard = () => {
     if (!tracks) return;
@@ -35,6 +40,7 @@ export const GenerationTracks = ({ generation }: Props) => {
             <th>Order</th>
             <th>Artist</th>
             <th>Track</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -45,6 +51,16 @@ export const GenerationTracks = ({ generation }: Props) => {
                 <td>{track.orderIndex}</td>
                 <td>{track.artistName}</td>
                 <td>{track.trackName}</td>
+                <td>
+                  <button
+                    className={styles.deleteButton}
+                    onClick={() => handleDeleteTrack(track.trackId)}
+                    disabled={deleteTrackMutation.isPending}
+                    title="Delete track"
+                  >
+                    ✕
+                  </button>
+                </td>
               </tr>
             ))}
         </tbody>
