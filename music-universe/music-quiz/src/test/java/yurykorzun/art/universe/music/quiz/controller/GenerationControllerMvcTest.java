@@ -114,4 +114,18 @@ class GenerationControllerMvcTest extends BaseMvcTest {
 
         verify(generationService).getGenerationTracks(generationId);
     }
+
+    @Test
+    void DELETE_generationTracks_shouldRemoveTrack_whenSuccessful() throws Exception {
+        // given
+        Long generationId = 1L;
+        Long trackId = 100L;
+
+        // when & then
+        mockMvc.perform(delete("/api/v1/generations/{generationId}/tracks/{trackId}", generationId, trackId)
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        verify(generationService).removeTrackFromGeneration(generationId, trackId);
+    }
 }

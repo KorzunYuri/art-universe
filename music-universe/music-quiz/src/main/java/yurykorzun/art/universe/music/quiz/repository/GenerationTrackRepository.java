@@ -10,4 +10,5 @@ import java.util.List;
 public interface GenerationTrackRepository extends JpaRepository<GenerationTrack, Long> {
     
     List<GenerationTrack> findByGenerationIdOrderByOrderIndex(Long generationId);
+    void deleteByGenerationIdAndTrackId(Long generationId, Long trackId);
 }

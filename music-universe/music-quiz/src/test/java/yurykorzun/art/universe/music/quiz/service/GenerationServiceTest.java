@@ -9,6 +9,7 @@ import yurykorzun.art.universe.music.quiz.dto.GenerationDto;
 import yurykorzun.art.universe.music.quiz.entity.Generation;
 import yurykorzun.art.universe.music.quiz.entity.GenerationStatus;
 import yurykorzun.art.universe.music.quiz.repository.GenerationRepository;
+import yurykorzun.art.universe.music.quiz.repository.GenerationTrackRepository;
 import yurykorzun.art.universe.music.quiz.service.impl.GenerationServiceImpl;
 
 import java.util.Optional;
@@ -22,6 +23,9 @@ class GenerationServiceTest {
 
     @Mock
     private GenerationRepository generationRepository;
+
+    @Mock
+    private GenerationTrackRepository generationTrackRepository;
 
     @InjectMocks
     private GenerationServiceImpl generationService;
@@ -103,5 +107,40 @@ class GenerationServiceTest {
         assertEquals("Generation not found: 999", exception.getMessage());
         verify(generationRepository).findById(generationId);
         verify(generationRepository, never()).save(any());
+    }
+
+    @Test
+    void removeTrackFromGeneration_shouldRemoveTrack_whenGenerationExists() {
+        // given
+        Long generationId = 1L;
+        Long trackId = 100L;
+        
+        when(generationRepository.existsById(generationId)).thenReturn(true);
+
+        // when
+        generationService.removeTrackFromGeneration(generationId, trackId);
+
+        // then
+        verify(generationRepository).existsById(generationId);
+        verify(generationTrackRepository).deleteByGenerationIdAndTrackId(generationId, trackId);
+    }
+
+    @Test
+    void removeTrackFromGeneration_shouldThrowException_whenGenerationNotFound() {
+        // given
+        Long generationId = 999L;
+        Long trackId = 100L;
+        
+        when(generationRepository.existsById(generationId)).thenReturn(false);
+
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> generationService.removeTrackFromGeneration(generationId, trackId)
+        );
+        
+        assertEquals("Generation not found: 999", exception.getMessage());
+        verify(generationRepository).existsById(generationId);
+        verify(generationTrackRepository, never()).deleteByGenerationIdAndTrackId(any(), any());
     }
 }

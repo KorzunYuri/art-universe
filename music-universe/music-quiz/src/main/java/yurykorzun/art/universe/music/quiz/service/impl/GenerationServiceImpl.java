@@ -168,4 +168,20 @@ public class GenerationServiceImpl implements GenerationService {
         log.debug("Disapproved generation {}", generationId);
         return mapToDto(savedGeneration);
     }
+
+    @Override
+    @Transactional
+    public void removeTrackFromGeneration(Long generationId, Long trackId) {
+        log.debug("Removing track {} from generation {}", trackId, generationId);
+        
+        // Проверяем что генерация существует
+        if (!generationRepository.existsById(generationId)) {
+            throw new IllegalArgumentException("Generation not found: " + generationId);
+        }
+        
+        // Удаляем трек из генерации
+        generationTrackRepository.deleteByGenerationIdAndTrackId(generationId, trackId);
+        
+        log.debug("Removed track {} from generation {}", trackId, generationId);
+    }
 }

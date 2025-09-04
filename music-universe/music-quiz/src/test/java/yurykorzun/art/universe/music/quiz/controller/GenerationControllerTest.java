@@ -72,4 +72,17 @@ class GenerationControllerTest {
         assertFalse(result.getApproved());
         verify(generationService).disapproveGeneration(generationId);
     }
+
+    @Test
+    void removeTrackFromGeneration_shouldCallService_whenSuccessful() {
+        // given
+        Long generationId = 1L;
+        Long trackId = 100L;
+
+        // when
+        generationController.removeTrackFromGeneration(generationId, trackId);
+
+        // then
+        verify(generationService).removeTrackFromGeneration(generationId, trackId);
+    }
 }

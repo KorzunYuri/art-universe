@@ -47,4 +47,10 @@ public class GenerationController {
         log.info("Disapproving generation {}", generationId);
         return generationService.disapproveGeneration(generationId);
     }
+
+    @DeleteMapping("/generations/{generationId}/tracks/{trackId}")
+    public void removeTrackFromGeneration(@PathVariable Long generationId, @PathVariable Long trackId) {
+        log.info("Removing track {} from generation {}", trackId, generationId);
+        generationService.removeTrackFromGeneration(generationId, trackId);
+    }
 }

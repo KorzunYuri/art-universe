@@ -16,4 +16,6 @@ public interface GenerationService {
     GenerationDto approveGeneration(Long generationId);
     
     GenerationDto disapproveGeneration(Long generationId);
+
+    void removeTrackFromGeneration(Long generationId, Long trackId);
 }
