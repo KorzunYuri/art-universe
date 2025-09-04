@@ -39,9 +39,7 @@ class GameServiceTest {
     @Test
     void createGame_shouldReturnGameDto_whenSuccessful() {
         // given
-        Game savedGame = Game.builder()
-            .generationId(null)
-            .build();
+        Game savedGame = Game.builder().build();
         // Use reflection to set id and timestamps
         try {
             var idField = Game.class.getDeclaredField("id");
@@ -63,73 +61,8 @@ class GameServiceTest {
         // then
         assertNotNull(result);
         assertEquals(1L, result.getId());
-        assertNull(result.getGenerationId());
         assertNotNull(result.getCreatedAt());
         verify(gameRepository).save(any(Game.class));
-    }
-
-    @Test
-    void approveGeneration_shouldReturnUpdatedGameDto_whenGameExists() {
-        // given
-        Long gameId = 1L;
-        Long generationId = 100L;
-        
-        Game existingGame = Game.builder()
-            .generationId(null)
-            .build();
-        
-        Game updatedGame = Game.builder()
-            .generationId(generationId)
-            .build();
-        
-        // Use reflection to set ids and timestamps
-        try {
-            var idField = Game.class.getDeclaredField("id");
-            idField.setAccessible(true);
-            idField.set(existingGame, gameId);
-            idField.set(updatedGame, gameId);
-            
-            var createdAtField = Game.class.getSuperclass().getDeclaredField("createdAt");
-            createdAtField.setAccessible(true);
-            Instant now = Instant.now();
-            createdAtField.set(existingGame, now);
-            createdAtField.set(updatedGame, now);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        when(gameRepository.findById(gameId)).thenReturn(Optional.of(existingGame));
-        when(gameRepository.save(existingGame)).thenReturn(updatedGame);
-
-        // when
-        GameDto result = gameService.approveGeneration(gameId, generationId);
-
-        // then
-        assertNotNull(result);
-        assertEquals(gameId, result.getId());
-        assertEquals(generationId, result.getGenerationId());
-        verify(gameRepository).findById(gameId);
-        verify(gameRepository).save(existingGame);
-        assertEquals(generationId, existingGame.getGenerationId());
-    }
-
-    @Test
-    void approveGeneration_shouldThrowException_whenGameNotFound() {
-        // given
-        Long gameId = 999L;
-        Long generationId = 100L;
-
-        when(gameRepository.findById(gameId)).thenReturn(Optional.empty());
-
-        // when & then
-        IllegalArgumentException exception = assertThrows(
-            IllegalArgumentException.class,
-            () -> gameService.approveGeneration(gameId, generationId)
-        );
-        
-        assertEquals("Game not found: 999", exception.getMessage());
-        verify(gameRepository).findById(gameId);
-        verify(gameRepository, never()).save(any());
     }
 
     @Test
@@ -137,8 +70,8 @@ class GameServiceTest {
         // given
         Pageable pageable = PageRequest.of(0, 10);
         
-        Game game1 = Game.builder().generationId(100L).build();
-        Game game2 = Game.builder().generationId(null).build();
+        Game game1 = Game.builder().build();
+        Game game2 = Game.builder().build();
         
         // Use reflection to set ids and timestamps
         try {
@@ -169,12 +102,10 @@ class GameServiceTest {
         
         GameDto dto1 = result.getContent().get(0);
         assertEquals(1L, dto1.getId());
-        assertEquals(100L, dto1.getGenerationId());
         assertNotNull(dto1.getCreatedAt());
         
         GameDto dto2 = result.getContent().get(1);
         assertEquals(2L, dto2.getId());
-        assertNull(dto2.getGenerationId());
         assertNotNull(dto2.getCreatedAt());
         
         verify(gameRepository).findAll(pageable);
@@ -185,9 +116,7 @@ class GameServiceTest {
         // given
         Long gameId = 1L;
         
-        Game existingGame = Game.builder()
-            .generationId(100L)
-            .build();
+        Game existingGame = Game.builder().build();
         
         // Use reflection to set id and timestamps
         try {
@@ -216,7 +145,6 @@ class GameServiceTest {
         // then
         assertNotNull(result);
         assertEquals(gameId, result.getId());
-        assertEquals(100L, result.getGenerationId());
         assertNotNull(result.getCreatedAt());
         assertEquals(2, result.getGenerations().size());
         verify(gameRepository).findById(gameId);

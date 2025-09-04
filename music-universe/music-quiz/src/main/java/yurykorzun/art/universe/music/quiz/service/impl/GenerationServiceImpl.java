@@ -133,8 +133,39 @@ public class GenerationServiceImpl implements GenerationService {
             .gameId(generation.getGameId())
             .targetCount(generation.getTargetCount())
             .status(generation.getStatus())
+            .approved(generation.getApproved())
             .resultTableName(generation.getResultTableName())
             .createdAt(generation.getCreatedAt())
             .build();
+    }
+
+    @Override
+    @Transactional
+    public GenerationDto approveGeneration(Long generationId) {
+        log.debug("Approving generation {}", generationId);
+
+        Generation generation = generationRepository.findById(generationId)
+                .orElseThrow(() -> new IllegalArgumentException("Generation not found: " + generationId));
+
+        generation.setApproved(true);
+        Generation savedGeneration = generationRepository.save(generation);
+
+        log.debug("Approved generation {}", generationId);
+        return mapToDto(savedGeneration);
+    }
+
+    @Override
+    @Transactional
+    public GenerationDto disapproveGeneration(Long generationId) {
+        log.debug("Disapproving generation {}", generationId);
+
+        Generation generation = generationRepository.findById(generationId)
+                .orElseThrow(() -> new IllegalArgumentException("Generation not found: " + generationId));
+
+        generation.setApproved(false);
+        Generation savedGeneration = generationRepository.save(generation);
+
+        log.debug("Disapproved generation {}", generationId);
+        return mapToDto(savedGeneration);
     }
 }

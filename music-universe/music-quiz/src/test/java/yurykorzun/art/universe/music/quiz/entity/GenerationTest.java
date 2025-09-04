@@ -13,6 +13,7 @@ class GenerationTest {
             .gameId(1L)
             .targetCount(20)
             .status(GenerationStatus.PENDING)
+            .approved(true)
             .resultTableName("gen_tracks_0001_final")
             .build();
 
@@ -21,13 +22,14 @@ class GenerationTest {
         assertEquals(1L, generation.getGameId());
         assertEquals(20, generation.getTargetCount());
         assertEquals(GenerationStatus.PENDING, generation.getStatus());
+        assertTrue(generation.getApproved());
         assertEquals("gen_tracks_0001_final", generation.getResultTableName());
         assertNotNull(generation.getCreatedAt());
         assertNotNull(generation.getUpdatedAt());
     }
 
     @Test
-    void builder_shouldCreateGenerationWithNullResultTableName() {
+    void builder_shouldCreateGenerationWithDefaultApproved() {
         // when
         Generation generation = Generation.builder()
             .gameId(1L)
@@ -40,6 +42,7 @@ class GenerationTest {
         assertEquals(1L, generation.getGameId());
         assertEquals(15, generation.getTargetCount());
         assertEquals(GenerationStatus.FAILED, generation.getStatus());
+        assertFalse(generation.getApproved());
         assertNull(generation.getResultTableName());
     }
 }

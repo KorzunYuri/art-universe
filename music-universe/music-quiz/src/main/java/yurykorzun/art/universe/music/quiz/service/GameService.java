@@ -9,8 +9,6 @@ public interface GameService {
     
     GameDto createGame();
     
-    GameDto approveGeneration(Long gameId, Long generationId);
-    
     Page<GameDto> getAllGames(Pageable pageable);
     
     GameWithGenerationsDto getGameWithGenerations(Long gameId);

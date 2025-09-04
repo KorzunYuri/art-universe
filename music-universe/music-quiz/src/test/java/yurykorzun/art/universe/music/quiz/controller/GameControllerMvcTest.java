@@ -40,7 +40,6 @@ class GameControllerMvcTest extends BaseMvcTest {
         // given
         GameDto expectedDto = GameDto.builder()
             .id(1L)
-            .generationId(null)
             .createdAt(Instant.now())
             .build();
 
@@ -58,35 +57,11 @@ class GameControllerMvcTest extends BaseMvcTest {
     }
 
     @Test
-    void PATCH_gamesApprove_shouldReturnUpdatedGameDto_whenSuccessful() throws Exception {
-        // given
-        Long gameId = 1L;
-        Long generationId = 100L;
-        GameDto expectedDto = GameDto.builder()
-            .id(gameId)
-            .generationId(generationId)
-            .createdAt(Instant.now())
-            .build();
-
-        when(gameService.approveGeneration(gameId, generationId)).thenReturn(expectedDto);
-
-        String expectedJson = objectMapper.writeValueAsString(expectedDto);
-
-        // when & then
-        mockMvc.perform(patch("/api/v1/games/{gameId}/approve/{generationId}", gameId, generationId)
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(content().json(expectedJson));
-
-        verify(gameService).approveGeneration(gameId, generationId);
-    }
-
-    @Test
     void GET_games_shouldReturnPageOfGameDto_whenSuccessful() throws Exception {
         // given
         List<GameDto> games = List.of(
-            GameDto.builder().id(1L).generationId(100L).createdAt(Instant.now()).build(),
-            GameDto.builder().id(2L).generationId(null).createdAt(Instant.now()).build()
+            GameDto.builder().id(1L).createdAt(Instant.now()).build(),
+            GameDto.builder().id(2L).createdAt(Instant.now()).build()
         );
         Page<GameDto> expectedPage = new PageImpl<>(games, PageRequest.of(0, 20), 2);
 
@@ -104,30 +79,11 @@ class GameControllerMvcTest extends BaseMvcTest {
     }
 
     @Test
-    void PATCH_gamesApprove_shouldReturnInternalServerError_whenServiceThrowsException() throws Exception {
-        // given
-        Long gameId = 1L;
-        Long generationId = 100L;
-
-        when(gameService.approveGeneration(gameId, generationId))
-            .thenThrow(new RuntimeException("Test error"));
-
-        // when & then
-        mockMvc.perform(patch("/api/v1/games/{gameId}/approve/{generationId}", gameId, generationId)
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isInternalServerError())
-            .andExpect(jsonPath("$.message").value("An unexpected error occurred. Details can be found in server logs."));
-
-        verify(gameService).approveGeneration(gameId, generationId);
-    }
-
-    @Test
     void GET_gameWithGenerations_shouldReturnGameWithGenerationsDto_whenSuccessful() throws Exception {
         // given
         Long gameId = 1L;
         GameWithGenerationsDto expectedDto = GameWithGenerationsDto.builder()
             .id(gameId)
-            .generationId(100L)
             .createdAt(Instant.now())
             .generations(List.of(
                 GenerationDto.builder().id(1L).gameId(gameId).targetCount(20).build()

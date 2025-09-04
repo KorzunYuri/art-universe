@@ -13,6 +13,7 @@ public class GenerationDto {
     private Long gameId;
     private Integer targetCount;
     private GenerationStatus status;
+    private Boolean approved;
     private String resultTableName;
     private Instant createdAt;
 }

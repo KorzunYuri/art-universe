@@ -23,12 +23,6 @@ public class GameController {
         return gameService.createGame();
     }
 
-    @PatchMapping("/{gameId}/approve/{generationId}")
-    public GameDto approveGeneration(@PathVariable Long gameId, @PathVariable Long generationId) {
-        log.info("Approving generation {} for game {}", generationId, gameId);
-        return gameService.approveGeneration(gameId, generationId);
-    }
-
     @GetMapping
     public Page<GameDto> getAllGames(Pageable pageable) {
         log.debug("Getting all games with pageable: {}", pageable);

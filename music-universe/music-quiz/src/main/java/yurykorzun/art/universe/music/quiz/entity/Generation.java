@@ -1,10 +1,7 @@
 package yurykorzun.art.universe.music.quiz.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import yurykorzun.art.universe.common.persistence.entity.BaseEntity;
 
@@ -39,4 +36,8 @@ public class Generation extends BaseEntity {
 
     @Column(name = "result_table_name", length = 100)
     private String resultTableName;
+
+    @Builder.Default
+    @Column(name = "approved", nullable = false)
+    private Boolean approved = false;
 }

@@ -34,7 +34,6 @@ class GameControllerTest {
         // given
         GameDto expectedDto = GameDto.builder()
             .id(1L)
-            .generationId(null)
             .createdAt(Instant.now())
             .build();
 
@@ -50,34 +49,12 @@ class GameControllerTest {
     }
 
     @Test
-    void approveGeneration_shouldReturnUpdatedGameDto_whenSuccessful() {
-        // given
-        Long gameId = 1L;
-        Long generationId = 100L;
-        GameDto expectedDto = GameDto.builder()
-            .id(gameId)
-            .generationId(generationId)
-            .createdAt(Instant.now())
-            .build();
-
-        when(gameService.approveGeneration(gameId, generationId)).thenReturn(expectedDto);
-
-        // when
-        GameDto result = gameController.approveGeneration(gameId, generationId);
-
-        // then
-        assertNotNull(result);
-        assertEquals(expectedDto, result);
-        verify(gameService).approveGeneration(gameId, generationId);
-    }
-
-    @Test
     void getAllGames_shouldReturnPageOfGameDto_whenSuccessful() {
         // given
         Pageable pageable = PageRequest.of(0, 10);
         List<GameDto> games = List.of(
-            GameDto.builder().id(1L).generationId(100L).createdAt(Instant.now()).build(),
-            GameDto.builder().id(2L).generationId(null).createdAt(Instant.now()).build()
+            GameDto.builder().id(1L).createdAt(Instant.now()).build(),
+            GameDto.builder().id(2L).createdAt(Instant.now()).build()
         );
         Page<GameDto> expectedPage = new PageImpl<>(games, pageable, 2);
 
@@ -98,7 +75,6 @@ class GameControllerTest {
         Long gameId = 1L;
         GameWithGenerationsDto expectedDto = GameWithGenerationsDto.builder()
             .id(gameId)
-            .generationId(100L)
             .createdAt(Instant.now())
             .generations(List.of(
                 GenerationDto.builder().id(1L).gameId(gameId).targetCount(20).build()

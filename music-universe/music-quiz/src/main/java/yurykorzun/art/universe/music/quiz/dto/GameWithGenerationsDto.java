@@ -10,7 +10,6 @@ import java.util.List;
 @Builder
 public class GameWithGenerationsDto {
     private Long id;
-    private Long generationId;
     private Instant createdAt;
     private List<GenerationDto> generations;
 }

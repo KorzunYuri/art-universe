@@ -35,4 +35,16 @@ public class GenerationController {
         log.debug("Getting tracks for generation {}", generationId);
         return generationService.getGenerationTracks(generationId);
     }
+
+    @PatchMapping("/generations/{generationId}/approve")
+    public GenerationDto approveGeneration(@PathVariable Long generationId) {
+        log.info("Approving generation {}", generationId);
+        return generationService.approveGeneration(generationId);
+    }
+
+    @PatchMapping("/generations/{generationId}/disapprove")
+    public GenerationDto disapproveGeneration(@PathVariable Long generationId) {
+        log.info("Disapproving generation {}", generationId);
+        return generationService.disapproveGeneration(generationId);
+    }
 }

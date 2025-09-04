@@ -12,4 +12,8 @@ public interface GenerationService {
     List<GenerationDto> getGenerations(Long gameId);
     
     List<GenerationTrackDto> getGenerationTracks(Long generationId);
+
+    GenerationDto approveGeneration(Long generationId);
+    
+    GenerationDto disapproveGeneration(Long generationId);
 }

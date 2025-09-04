@@ -26,7 +26,4 @@ public class Game extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "game_seq_gen")
     @Setter(value = AccessLevel.NONE)
     private Long id;
-
-    @Column(name = "generation_id")
-    private Long generationId;
 }

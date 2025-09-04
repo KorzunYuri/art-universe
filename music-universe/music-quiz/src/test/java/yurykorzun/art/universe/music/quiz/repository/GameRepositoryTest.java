@@ -27,9 +27,7 @@ class GameRepositoryTest extends JpaOnlyTest {
     @Test
     void save_shouldPersistGame_whenValidData() {
         // given
-        Game game = Game.builder()
-            .generationId(123L)
-            .build();
+        Game game = Game.builder().build();
 
         // when
         Game savedGame = gameRepository.save(game);
@@ -37,7 +35,6 @@ class GameRepositoryTest extends JpaOnlyTest {
 
         // then
         assertNotNull(savedGame.getId());
-        assertEquals(123L, savedGame.getGenerationId());
         assertNotNull(savedGame.getCreatedAt());
     }
 

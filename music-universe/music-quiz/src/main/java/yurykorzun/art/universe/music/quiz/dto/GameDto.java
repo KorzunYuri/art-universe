@@ -9,6 +9,5 @@ import java.time.Instant;
 @Builder
 public class GameDto {
     private Long id;
-    private Long generationId;
     private Instant createdAt;
 }

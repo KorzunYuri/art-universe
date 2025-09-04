@@ -33,27 +33,6 @@ public class GameServiceImpl implements GameService {
         
         return GameDto.builder()
             .id(savedGame.getId())
-            .generationId(savedGame.getGenerationId())
-            .createdAt(savedGame.getCreatedAt())
-            .build();
-    }
-
-    @Override
-    @Transactional
-    public GameDto approveGeneration(Long gameId, Long generationId) {
-        log.debug("Approving generation {} for game {}", generationId, gameId);
-        
-        Game game = gameRepository.findById(gameId)
-            .orElseThrow(() -> new IllegalArgumentException("Game not found: " + gameId));
-        
-        game.setGenerationId(generationId);
-        Game savedGame = gameRepository.save(game);
-        
-        log.debug("Approved generation {} for game {}", generationId, gameId);
-        
-        return GameDto.builder()
-            .id(savedGame.getId())
-            .generationId(savedGame.getGenerationId())
             .createdAt(savedGame.getCreatedAt())
             .build();
     }
@@ -66,7 +45,6 @@ public class GameServiceImpl implements GameService {
         return gameRepository.findAll(pageable)
             .map(game -> GameDto.builder()
                 .id(game.getId())
-                .generationId(game.getGenerationId())
                 .createdAt(game.getCreatedAt())
                 .build());
     }
@@ -81,7 +59,6 @@ public class GameServiceImpl implements GameService {
         
         return GameWithGenerationsDto.builder()
             .id(game.getId())
-            .generationId(game.getGenerationId())
             .createdAt(game.getCreatedAt())
             .generations(generationService.getGenerations(gameId))
             .build();
