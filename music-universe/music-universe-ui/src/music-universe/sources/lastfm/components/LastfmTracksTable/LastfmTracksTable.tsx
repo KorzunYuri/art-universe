@@ -70,7 +70,7 @@ export const LastfmTracksTable = ({ artistId }: LastfmTracksTableProps) => {
             approvalStatuses: approvalStatuses.length > 0 ? approvalStatuses : undefined,
             minPlayCount: minPlayCount || undefined,
             minListenersCount: minListenersCount || undefined,
-            artistId: artistIdFilter || undefined,
+            artistId: artistIdFilter || effectiveArtistId || undefined, // Preserve URL artistId
             tagId: tagId || undefined
         });
     };

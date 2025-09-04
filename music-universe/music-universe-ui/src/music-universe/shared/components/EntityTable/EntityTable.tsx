@@ -1,4 +1,4 @@
-import {type ReactNode, useState } from 'react';
+import {type ReactNode, useState, useEffect, useRef } from 'react';
 import { Pagination } from '../Pagination';
 import { AdditionalSearchFields } from './AdditionalSearchFields';
 import type { AdditionalSearchConfig } from './types';
@@ -78,8 +78,32 @@ export const EntityTable = ({
         additionalSearch?.defaultCollapsed === false
     );
 
+    const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    // Debounced search effect
+    useEffect(() => {
+        if (debounceTimeoutRef.current) {
+            clearTimeout(debounceTimeoutRef.current);
+        }
+
+        if (search.trim()) {
+            debounceTimeoutRef.current = setTimeout(() => {
+                onSearchSubmit();
+            }, 500);
+        }
+
+        return () => {
+            if (debounceTimeoutRef.current) {
+                clearTimeout(debounceTimeoutRef.current);
+            }
+        };
+    }, [search]); // Remove onSearchSubmit dependency to avoid pagination conflicts
+
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
+            if (debounceTimeoutRef.current) {
+                clearTimeout(debounceTimeoutRef.current);
+            }
             onSearchSubmit();
         }
     };
