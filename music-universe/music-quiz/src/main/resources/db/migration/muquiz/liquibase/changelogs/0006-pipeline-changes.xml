@@ -17,4 +17,10 @@
                  endDelimiter="$$"/>
     </changeSet>
 
+    <changeSet id="0006-0030-ensure-chance-column-procedure" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0006-pipeline-changes/0006-0030-p_ensure_chance_column.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
 </databaseChangeLog>
