@@ -11,4 +11,5 @@
     <include file="db/migration/muquiz/liquibase/changelogs/0003-game-tables.xml"/>
     <include file="db/migration/muquiz/liquibase/changelogs/0004-pipeline-procedures.xml"/>
     <include file="db/migration/muquiz/liquibase/changelogs/0005-generation-approval.xml"/>
+    <include file="db/migration/muquiz/liquibase/changelogs/0006-artist-recency.xml"/>
 </databaseChangeLog>

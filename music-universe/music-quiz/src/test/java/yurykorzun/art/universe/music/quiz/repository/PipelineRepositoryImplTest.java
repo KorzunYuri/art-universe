@@ -110,6 +110,23 @@ class PipelineRepositoryImplTest extends JpaOnlyTest {
     }
 
     @Test
+    void artistRecencyPenalty_shouldApplyArtistPenalty() {
+        // given - create input table
+        String inputTable = pipelineRepository.approvedFilter("mu_view", "v_track", 1L, 1L, 1);
+
+        // when
+        String resultTable = pipelineRepository.artistRecencyPenalty(
+                "mu_quiz_stg", inputTable.substring(inputTable.lastIndexOf('.') + 1), 1L, 1L, 2);
+
+        // then
+        assertNotNull(resultTable);
+        Long count = (Long) entityManager.createNativeQuery(
+                        "SELECT COUNT(*) FROM " + resultTable + " WHERE chance > 0")
+                .getSingleResult();
+        assertTrue(count > 0);
+    }
+
+    @Test
     void artistDiversity_shouldWorkWithoutChanceColumn() {
         // given - create input table without chance column
         String inputTable = pipelineRepository.approvedFilter("mu_view", "v_track", 1L, 1L, 1);

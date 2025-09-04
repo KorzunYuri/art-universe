@@ -8,6 +8,8 @@ public interface PipelineRepository {
     
     String recencyPenalty(String inputSchema, String inputTable, Long gameId, Long generationId, Integer stepId);
     
+    String artistRecencyPenalty(String inputSchema, String inputTable, Long gameId, Long generationId, Integer stepId);
+    
     String whitelistFilter(String inputSchema, String inputTable, Long gameId, Long generationId, Integer stepId, String whitelistSchema, String whitelistTable);
     
     String artistDiversity(String inputSchema, String inputTable, Long gameId, Long generationId, Integer stepId);

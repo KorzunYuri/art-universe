@@ -50,6 +50,18 @@ public class PipelineRepositoryImpl implements PipelineRepository {
     }
 
     @Override
+    public String artistRecencyPenalty(String inputSchema, String inputTable, Long gameId, Long generationId, Integer stepId) {
+        return (String) entityManager.createNativeQuery(
+            "SELECT p_quiz_gen_tracks_step_artist_recency_penalty(:inputSchema, :inputTable, :gameId, :generationId, :stepId)")
+            .setParameter("inputSchema", inputSchema)
+            .setParameter("inputTable", inputTable)
+            .setParameter("gameId", gameId)
+            .setParameter("generationId", generationId)
+            .setParameter("stepId", stepId)
+            .getSingleResult();
+    }
+
+    @Override
     public String whitelistFilter(String inputSchema, String inputTable, Long gameId, Long generationId, Integer stepId, String whitelistSchema, String whitelistTable) {
         return (String) entityManager.createNativeQuery(
             "SELECT p_quiz_gen_tracks_step_categories_whitelist_filter(:inputSchema, :inputTable, :gameId, :generationId, :stepId, :whitelistSchema, :whitelistTable)")
