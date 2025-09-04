@@ -49,6 +49,7 @@ export interface EntityTableProps {
     
     // Actions
     onRefresh: () => void;
+    extraActions?: ReactNode;
     
     // Styling
     className?: string;
@@ -71,6 +72,7 @@ export const EntityTable = ({
     onGoToPage,
     isLoading,
     onRefresh,
+    extraActions,
     className = ''
 }: EntityTableProps) => {
     
@@ -150,6 +152,8 @@ export const EntityTable = ({
                             {showAdditionalFields ? 'Hide Filters' : 'Show Filters'}
                         </button>
                     )}
+
+                    {extraActions}
                 </div>
 
                 {/* Additional search fields */}

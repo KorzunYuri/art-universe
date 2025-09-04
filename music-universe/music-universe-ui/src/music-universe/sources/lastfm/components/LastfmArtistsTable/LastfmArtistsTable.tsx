@@ -3,13 +3,19 @@ import { useLastfmEntityTable } from "@/music-universe/sources/lastfm/hooks/useL
 import { useApprovalStatusFilter } from "@/music-universe/sources/shared/hooks";
 import { usePlayCountFilter, useListenersCountFilter, useTagFilter } from "@/music-universe/sources/lastfm/hooks/useLastfmFilters";
 import { useSearchParams } from "react-router-dom";
+import { useState } from "react";
 // components
 import { EntityTable, type EntityTableColumn } from "@/music-universe/shared/components/EntityTable/EntityTable";
 import { LastfmArtistsTableRow } from "@/music-universe/sources/lastfm/components";
+// api
+import { searchArtist } from "@/music-universe/sources/lastfm/api/lastfm-artists";
+// hooks
+import { useNotifications } from "@/music-universe/shared/hooks/useNotifications";
 // types
 import type { AdditionalSearchConfig } from "@/music-universe/shared/components/EntityTable/types";
 // styles
 import artistStyles from "./LastfmArtistsTable.module.css";
+import entityTableStyles from "@/music-universe/shared/components/EntityTable/EntityTable.module.scss";
 
 const columns: EntityTableColumn[] = [
     { key: 'name', label: 'Artist name', sortable: true, className: artistStyles.name },
@@ -24,6 +30,8 @@ const columns: EntityTableColumn[] = [
 export const LastfmArtistsTable = () => {
     const [searchParams] = useSearchParams();
     const initialSearch = searchParams.get('search') || '';
+    const [isSearching, setIsSearching] = useState(false);
+    const { showNotification } = useNotifications();
     
     const {
         rawEntityIds,
@@ -54,6 +62,22 @@ export const LastfmArtistsTable = () => {
             minListenersCount: minListenersCount || undefined,
             tagId: tagId || undefined,
         });
+    };
+
+    const handleForcedSearch = async () => {
+        if (!search.trim()) return;
+        
+        setIsSearching(true);
+        try {
+            await searchArtist(search);
+            showNotification('success', `Forced search requested for: ${search}`);
+            refresh();
+        } catch (error) {
+            console.error('Failed to trigger forced search:', error);
+            showNotification('error', 'Failed to trigger forced search');
+        } finally {
+            setIsSearching(false);
+        }
     };
 
     const additionalSearchConfig: AdditionalSearchConfig = {
@@ -103,6 +127,15 @@ export const LastfmArtistsTable = () => {
             
             // Actions
             onRefresh={refresh}
+            extraActions={
+                <button
+                    onClick={handleForcedSearch}
+                    disabled={!search.trim() || isSearching || isLoading}
+                    className={`${entityTableStyles.actionButton} ${artistStyles.searchButton}`}
+                >
+                    {isSearching ? 'Searching...' : 'Force Search'}
+                </button>
+            }
         >
             {/* Table rows */}
             {rawEntityIds?.map(rawEntityId => (
