@@ -81,8 +81,7 @@ export const LastfmAlbumsTable = ({ artistId }: LastfmAlbumsTableProps) => {
         fields: [
             minPlayCountField,
             minListenersCountField,
-            // Only show artist ID filter if not already filtered by prop
-            ...(effectiveArtistId ? [] : [artistField]),
+            artistField,
             tagField,
             approvalStatusField
         ]
