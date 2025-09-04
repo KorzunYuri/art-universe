@@ -23,4 +23,34 @@
                  endDelimiter="$$"/>
     </changeSet>
 
+    <changeSet id="0006-0040-recency-penalty-v2" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0006-pipeline-changes/0006-0040-p_quiz_gen_tracks_step_recency_penalty_v2.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
+    <changeSet id="0006-0050-artist-recency-penalty-v2" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0006-pipeline-changes/0006-0050-p_quiz_gen_tracks_step_artist_recency_penalty_v2.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
+    <changeSet id="0006-0060-whitelist-filter-v2" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0006-pipeline-changes/0006-0060-p_quiz_gen_tracks_step_categories_whitelist_filter_v2.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
+    <changeSet id="0006-0070-artist-diversity-v2" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0006-pipeline-changes/0006-0070-p_quiz_gen_tracks_step_artist_diversity_v2.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
+    <changeSet id="0006-0080-blacklist-filter-v2" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0006-pipeline-changes/0006-0080-p_quiz_gen_tracks_step_categories_blacklist_filter_v2.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
 </databaseChangeLog>
