@@ -21,7 +21,7 @@ import static org.mockito.Mockito.*;
 class DbMaintenanceServiceTest {
 
     @Mock
-    private DbMaintenanceCoordinator dbMaintenanceCoordinator;
+    private TaskCoordinator taskCoordinator;
 
     @Mock
     private JdbcTemplate jdbcTemplate;
@@ -33,7 +33,7 @@ class DbMaintenanceServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new DbMaintenanceService(dbMaintenanceCoordinator, jdbcTemplate, musicDataIntegrationService);
+        service = new DbMaintenanceService(taskCoordinator, jdbcTemplate, musicDataIntegrationService);
         
         // Set thresholds via reflection or create a test constructor
         // For now, we'll test the unbind logic directly
@@ -68,7 +68,7 @@ class DbMaintenanceServiceTest {
         // For now, we'll test the public method that would call this logic
         // Let's create a test method in the service for testing
         TestableDbMaintenanceService testableService = new TestableDbMaintenanceService(
-            dbMaintenanceCoordinator, jdbcTemplate, musicDataIntegrationService);
+                taskCoordinator, jdbcTemplate, musicDataIntegrationService);
         
         testableService.testUnbindDeletedEntitiesFromCleanupRun(cleanupRunId);
 
@@ -105,7 +105,7 @@ class DbMaintenanceServiceTest {
 
         // When: Call unbind logic
         TestableDbMaintenanceService testableService = new TestableDbMaintenanceService(
-            dbMaintenanceCoordinator, jdbcTemplate, musicDataIntegrationService);
+                taskCoordinator, jdbcTemplate, musicDataIntegrationService);
         
         testableService.testUnbindDeletedEntitiesFromCleanupRun(cleanupRunId);
 
@@ -120,7 +120,7 @@ class DbMaintenanceServiceTest {
 
         // When: Call unbind logic
         TestableDbMaintenanceService testableService = new TestableDbMaintenanceService(
-            dbMaintenanceCoordinator, jdbcTemplate, musicDataIntegrationService);
+                taskCoordinator, jdbcTemplate, musicDataIntegrationService);
         
         testableService.testUnbindDeletedEntitiesFromCleanupRun(cleanupRunId);
 
@@ -133,10 +133,10 @@ class DbMaintenanceServiceTest {
     private static class TestableDbMaintenanceService extends DbMaintenanceService {
         
         public TestableDbMaintenanceService(
-                DbMaintenanceCoordinator dbMaintenanceCoordinator,
+                TaskCoordinator taskCoordinator,
                 JdbcTemplate jdbc,
                 MusicDataIntegrationService musicDataIntegrationService) {
-            super(dbMaintenanceCoordinator, jdbc, musicDataIntegrationService);
+            super(taskCoordinator, jdbc, musicDataIntegrationService);
         }
 
         public void testUnbindDeletedEntitiesFromCleanupRun(Long cleanupRunId) {

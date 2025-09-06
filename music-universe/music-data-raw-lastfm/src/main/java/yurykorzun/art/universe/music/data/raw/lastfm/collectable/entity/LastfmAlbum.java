@@ -10,6 +10,7 @@ import org.antlr.v4.runtime.misc.NotNull;
 import yurykorzun.art.universe.common.persistence.converter.GzipBase64StringConverter;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.BaseLastfmEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 
 import java.time.LocalDateTime;
 
@@ -24,7 +25,7 @@ public class LastfmAlbum extends BaseLastfmEntity {
     @SequenceGenerator(
         name = "album_seq_gen",
         sequenceName = "album_seq",
-        allocationSize = 50
+        allocationSize = LastfmConstants.HIBERNATE_BATCH_SIZE
     )
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "album_seq_gen")
     @Setter(value = AccessLevel.NONE)

@@ -22,7 +22,7 @@ public class LastfmArtistSearchRequest extends BaseEntity {
     @SequenceGenerator(
         name = "artist_search_seq_gen",
         sequenceName = "artist_search_seq",
-        allocationSize = 50
+        allocationSize = LastfmConstants.HIBERNATE_BATCH_SIZE
     )
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "artist_search_seq_gen")
     @Setter(value = AccessLevel.NONE)

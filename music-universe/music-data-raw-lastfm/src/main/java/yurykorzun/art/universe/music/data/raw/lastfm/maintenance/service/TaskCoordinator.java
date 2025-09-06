@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -16,41 +15,49 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @Component
 @Slf4j
-public class DbMaintenanceCoordinator {
+public class TaskCoordinator {
     
     private enum Status { NORMAL, REQUESTED, RUNNING }
 
     private final AtomicInteger runningTasks = new AtomicInteger(0);
+    private final Set<String> runningTaskNames = new HashSet<>();
     private final DbTaskQueue maintenanceQueue = new DbTaskQueue();
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final ExecutorService taskExecutor;
     private Status status = Status.NORMAL;
-    private Set<String> runningTaskNames = new HashSet<>();
 
-    public void executeIfAllowed(Runnable task) {
-        executeUniqueIfAllowed(task, UUID.randomUUID().toString());
+    public TaskCoordinator(ExecutorService taskExecutor) {
+        this.taskExecutor = taskExecutor;
     }
 
-    public void executeUniqueIfAllowed(Runnable task, String taskKey) {
+    public void executeIfAllowed(Runnable task, String taskKey) {
         if (status != Status.NORMAL) {
-            log.warn("Maintenance in progress/requested — skipping task");
+            log.debug("Maintenance in progress/requested — skipping task");
             return;
         }
 
-        if (runningTaskNames.contains(taskKey)) {
-            log.warn("Task {} is already running", taskKey);
-            return;
-        }
-
-        runningTaskNames.add(taskKey);
-        runningTasks.incrementAndGet();
-        try {
-            task.run();
-        } finally {
-            runningTaskNames.remove(taskKey);
-            if (runningTasks.decrementAndGet() == 0) {
-                triggerMaintenanceIfNeeded();
+        synchronized (runningTaskNames) {
+            if (runningTaskNames.contains(taskKey)) {
+                log.debug("Task {} is already running", taskKey);
+                return;
             }
+            runningTaskNames.add(taskKey);
         }
+
+        runningTasks.incrementAndGet();
+        
+        taskExecutor.submit(() -> {
+            try {
+                task.run();
+            } finally {
+                synchronized (runningTaskNames) {
+                    runningTaskNames.remove(taskKey);
+                }
+                if (runningTasks.decrementAndGet() == 0) {
+                    triggerMaintenanceIfNeeded();
+                }
+            }
+        });
     }
 
     public void requestMaintenance(Runnable maintenanceTask) throws IllegalStateException {
@@ -92,5 +99,6 @@ public class DbMaintenanceCoordinator {
     @PreDestroy
     public void shutdown() {
         executor.shutdownNow();
+        taskExecutor.shutdownNow();
     }
 }

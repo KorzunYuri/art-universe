@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiResponseService;
+import yurykorzun.art.universe.music.data.raw.lastfm.maintenance.service.TaskCoordinator;
 
 import java.util.concurrent.TimeUnit;
 
@@ -11,20 +12,25 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class LastfmApiResponseProcessingScheduler {
 
+    public static final String TASK_NAME_API_RESPONSES_PROCESSING = "api-responses-processing";
     private final LastfmApiResponseService apiResponseService;
+    private final TaskCoordinator coordinator;
 
-    public LastfmApiResponseProcessingScheduler(LastfmApiResponseService apiResponseService) {
+    public LastfmApiResponseProcessingScheduler(LastfmApiResponseService apiResponseService, TaskCoordinator coordinator) {
         this.apiResponseService = apiResponseService;
+        this.coordinator = coordinator;
     }
 
     @Scheduled(
         fixedDelayString = "${scheduling.lastfm.api.responses.parse.fixedDelaySecs}",
-        timeUnit = TimeUnit.SECONDS,
-        scheduler = "dataCollectionScheduler")
+        timeUnit = TimeUnit.SECONDS
+    )
     public void triggerResponsesProcessing() {
-        log.info("start API responses processing");
-        apiResponseService.processResponses();
-        log.info("finished API responses processing");
+        coordinator.executeIfAllowed(() -> {
+            log.info("start API responses processing");
+            apiResponseService.processResponses();
+            log.info("finished API responses processing");
+        }, TASK_NAME_API_RESPONSES_PROCESSING);
     }
 
 }

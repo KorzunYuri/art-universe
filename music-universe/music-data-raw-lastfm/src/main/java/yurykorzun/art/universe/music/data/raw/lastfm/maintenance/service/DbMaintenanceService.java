@@ -15,7 +15,7 @@ import java.util.Map;
 @Slf4j
 public class DbMaintenanceService {
 
-    private final DbMaintenanceCoordinator dbMaintenanceCoordinator;
+    private final TaskCoordinator dbMaintenanceCoordinator;
     private final JdbcTemplate jdbc;
     private final MusicDataIntegrationService musicDataIntegrationService;
 
@@ -29,15 +29,15 @@ public class DbMaintenanceService {
     private int tagThreshold;
 
     public DbMaintenanceService(
-            DbMaintenanceCoordinator dbMaintenanceCoordinator, 
+            TaskCoordinator taskCoordinator,
             JdbcTemplate jdbc,
             MusicDataIntegrationService musicDataIntegrationService) {
-        this.dbMaintenanceCoordinator = dbMaintenanceCoordinator;
+        this.dbMaintenanceCoordinator = taskCoordinator;
         this.jdbc = jdbc;
         this.musicDataIntegrationService = musicDataIntegrationService;
     }
 
-    @Scheduled(cron = "${scheduling.lastfm.tasks.maintenance.cron}", scheduler = "maintenanceScheduler")
+    @Scheduled(cron = "${scheduling.lastfm.tasks.maintenance.cron}")
     public boolean enqueueMaintenance() {
         log.info("requesting maintenance");
         try {

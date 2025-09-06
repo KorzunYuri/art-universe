@@ -20,7 +20,7 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         show-sql: false
         jdbc:
-          batch_size: 10
+          batch_size: 50
         order_inserts: true
         order_updates: true
     hibernate:
@@ -55,17 +55,13 @@ scheduling:
         generate:
           fixedDelaySecs: 60
         fetch:
-          fixedDelaySecs: 5
+          fixedDelaySecs: 1
       responses:
         parse:
-          fixedDelaySecs: 5
+          fixedDelaySecs: 1
     tasks:
-      poolSize: 3
       maintenance:
         cron: "0 0 8 * * *"
-      tag:
-        topTags:
-          cron: "0 0 21 * * *"
 
 music-data-master:
   base-url: ${MU_DATA_APP_HOST:localhost}:${MU_DATA_APP_PORT:8080}

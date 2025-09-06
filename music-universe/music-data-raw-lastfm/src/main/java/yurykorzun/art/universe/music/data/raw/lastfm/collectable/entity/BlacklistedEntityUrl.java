@@ -20,7 +20,7 @@ public class BlacklistedEntityUrl extends BaseEntity {
     @SequenceGenerator(
             name = "blacklist_entity_url_seq_gen",
             sequenceName = "blacklist_entity_url_seq",
-            allocationSize = 50
+            allocationSize = LastfmConstants.HIBERNATE_BATCH_SIZE
     )
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "blacklist_entity_url_seq_gen")
     @Setter(value = AccessLevel.NONE)

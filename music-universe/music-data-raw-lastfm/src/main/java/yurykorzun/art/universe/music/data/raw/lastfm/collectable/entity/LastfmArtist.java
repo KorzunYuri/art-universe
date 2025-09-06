@@ -18,7 +18,7 @@ public class LastfmArtist extends BaseLastfmEntity {
     @SequenceGenerator(
             name = "artist_seq_gen",
             sequenceName = "artist_seq",
-            allocationSize = 50
+            allocationSize = LastfmConstants.HIBERNATE_BATCH_SIZE
     )
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "artist_seq_gen")
     @Setter(value = AccessLevel.NONE)

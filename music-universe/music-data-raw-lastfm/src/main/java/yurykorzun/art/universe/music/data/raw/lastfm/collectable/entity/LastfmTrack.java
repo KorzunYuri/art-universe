@@ -19,7 +19,7 @@ public class LastfmTrack extends BaseLastfmEntity implements ArtistScoped {
     @SequenceGenerator(
         name = "track_seq_gen",
         sequenceName = "track_seq",
-        allocationSize = 50
+        allocationSize = LastfmConstants.HIBERNATE_BATCH_SIZE
     )
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "track_seq_gen")
     @Setter(value = AccessLevel.NONE)
