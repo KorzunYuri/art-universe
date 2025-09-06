@@ -142,7 +142,6 @@ export const EntityBinding = <T extends LastfmSupportedEntityType>(
 
         setIsBinding(true);
         try {
-            // Execute pre-bind action
             const wasCreationRequest = !selectedEntity;
             const canProceed = await onBeforeBind(wasCreationRequest);
 
@@ -152,30 +151,27 @@ export const EntityBinding = <T extends LastfmSupportedEntityType>(
 
             let result: BoundEntityInfo<T> | null = null;
 
-            // If an entity was selected from autocomplete, bind to existing
             if (selectedEntity) {
                 // @ts-expect-error TS2345: Argument of type A | B is not assignable to type A & B
                 result = await bindRawEntityToExistingMaster(selectedEntity.id, entity);
-            }
-            // Otherwise, create new entity and bind
-            else {
+            } else {
                 // @ts-expect-error TS2345: Argument of type A | B is not assignable to type A & B
                 result = await bindRawEntityToNewMaster<T>(inputValue, entity);
             }
-
-            // Call onAfterBind to update parent components
-            onAfterBind(wasCreationRequest);
 
             // Update local state
             setInputValue(result?.masterEntity.name || '');
             setSelectedEntity(null);
 
-            // If this was a create operation, refresh lookup to get the new entity
+            // Update lookup cache first if this was a create operation
             if (wasCreationRequest) {
                 console.log(`🔄 EntityBinding: Refreshing lookup after create`);
-                // TODO move to onAfterBind on parent side?
                 await queryClient.invalidateQueries({ queryKey: entityLookupKeys.type('master', entityType) });
             }
+
+            // Full entity reload at the end
+            onAfterBind(wasCreationRequest);
+            
         } catch (error) {
             console.error("Failed to bind entity:", error);
         } finally {

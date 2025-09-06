@@ -46,6 +46,7 @@ export function useLastfmEntityTable<T extends LastfmSupportedEntityType>(
     initialParams: Partial<LastfmPageSearchParamsMap[T]> = {}
 ) {
     const queryClient = useQueryClient();
+    const [localSearch, setLocalSearch] = useState(initialParams.search || '');
     const [params, setParams] = useState<LastfmPageSearchParamsMap[T]>({
         page: 0,
         size: 20,
@@ -164,14 +165,17 @@ export function useLastfmEntityTable<T extends LastfmSupportedEntityType>(
         }
     }, [rawEntitiesPageQuery.isSuccess, rawEntitiesPageQuery.isFetching, prefetchNextPage]);
 
-    const setSearch = (search: string) => setParams(
-        prev => (
-            {
-                ...prev,
-                search,
-                page: 0
-            }
-        ));
+    const setSearch = (search: string) => {
+        setLocalSearch(search);
+    };
+
+    const handleSearchSubmit = () => {
+        setParams(prev => ({
+            ...prev,
+            search: localSearch,
+            page: 0
+        }));
+    };
 
     const setSort = (sort: string) => setParams(
         prev => (
@@ -231,7 +235,7 @@ export function useLastfmEntityTable<T extends LastfmSupportedEntityType>(
             hasNextPage: rawEntitiesPageQuery.data ? params.page < rawEntitiesPageQuery.data.page.totalPages - 1 : false,
             hasPrevPage: params.page > 0,
         },
-        search: params.search || '',
+        search: localSearch,
         sort: params.sort || getDefaultSort(entityType),
         isLoading: rawEntitiesPageQuery.isLoading,
         setSearch,
@@ -239,6 +243,7 @@ export function useLastfmEntityTable<T extends LastfmSupportedEntityType>(
         nextPage,
         prevPage,
         goToPage,
+        handleSearchSubmit,
         updateParams,
         refresh,
     };

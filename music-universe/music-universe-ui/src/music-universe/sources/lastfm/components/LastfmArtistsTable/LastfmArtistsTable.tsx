@@ -44,6 +44,7 @@ export const LastfmArtistsTable = () => {
         nextPage,
         prevPage,
         goToPage,
+        handleSearchSubmit: submitSearch,
         updateParams,
         refresh
     } = useLastfmEntityTable("artist", { search: initialSearch });
@@ -56,6 +57,7 @@ export const LastfmArtistsTable = () => {
 
     // Handle search submit with additional parameters
     const handleSearchSubmit = () => {
+        submitSearch();
         updateParams({
             approvalStatuses: approvalStatuses.length > 0 ? approvalStatuses : undefined,
             minPlayCount: minPlayCount || undefined,

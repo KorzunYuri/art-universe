@@ -34,14 +34,14 @@ export const useLastfmEntityApproval = <M extends MasterEntityType, T extends La
         if (    entity.approvalStatus === ApprovalStatus.PENDING
             ||  entity.approvalStatus === ApprovalStatus.AUTOAPPROVED
         ) {
-            setApprovalStatus(ApprovalStatus.APPROVED);
+            // Only send API request, don't update entity here - full reload will happen later
+            await updateRawEntityApprovalStatus(dataSource, entity.getEntityType(), entity.id, ApprovalStatus.APPROVED);
             return true;
         }
-        // TODO show warning in popup instead of logging
 
         showNotification('error', `Entity has invalid status for binding: ${entity.approvalStatus}`);
         return false;
-    }, [entity, setApprovalStatus]);
+    }, [entity, dataSource, showNotification]);
 
     return {
         isApproving,
