@@ -17,6 +17,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.EntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.mapping.attributes.EntityAttributeHandlerFactory;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.utils.dedup.ArtistDeduplicationUtils;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.attribute.LastfmAttribute;
@@ -98,12 +99,15 @@ public class LastfmArtistSearchResponseProcessor extends LastfmApiResponseProces
     }
 
     private List<ArtistSearchArtistDto> filterArtistsForSaving(List<ArtistSearchArtistDto> artistDtos, String searchString) {
-        List<ArtistSearchArtistDto> list = new ArrayList<>();
+        List<ArtistSearchArtistDto> result = new ArrayList<>();
         for (ArtistSearchArtistDto dto : artistDtos) {
             if (StringUtils.getSimilarity(dto.getName(), searchString) > artistSimilarityThreshold) {
-                list.add(dto);
+                result.add(dto);
             }
         }
-        return list;
+
+        result = ArtistDeduplicationUtils.deduplicateArtistDtos(result);
+
+        return result;
     }
 }
