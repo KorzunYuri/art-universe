@@ -35,7 +35,8 @@ export const LastfmTagsTable = ({ initialSearch = '' }: LastfmTagsTableProps) =>
         prevPage,
         goToPage,
         updateParams,
-        refresh
+        refresh,
+        handleSearchSubmit: submitSearch
     } = useLastfmEntityTable("category", { search: initialSearch });
 
     // Filter hooks
@@ -44,6 +45,7 @@ export const LastfmTagsTable = ({ initialSearch = '' }: LastfmTagsTableProps) =>
     const { minUsageUsersCount, minUsageUsersCountField } = useUsageUsersCountFilter();
 
     const handleSearchSubmit = () => {
+        submitSearch();
         updateParams({
             approvalStatuses: approvalStatuses.length > 0 ? approvalStatuses : undefined,
             minUsageCount: minUsageCount || undefined,

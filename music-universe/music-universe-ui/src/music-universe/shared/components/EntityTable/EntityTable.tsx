@@ -1,4 +1,4 @@
-import {type ReactNode, useState, useEffect, useRef } from 'react';
+import {type ReactNode, useState, useEffect, useRef, useCallback } from 'react';
 import { Pagination } from '../Pagination';
 import { AdditionalSearchFields } from './AdditionalSearchFields';
 import type { AdditionalSearchConfig } from './types';
@@ -82,6 +82,9 @@ export const EntityTable = ({
 
     const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+    // Stable reference to onSearchSubmit to avoid useEffect dependency issues
+    const stableOnSearchSubmit = useCallback(onSearchSubmit, [onSearchSubmit]);
+
     // Debounced search effect
     useEffect(() => {
         if (debounceTimeoutRef.current) {
@@ -90,7 +93,7 @@ export const EntityTable = ({
 
         if (search.trim()) {
             debounceTimeoutRef.current = setTimeout(() => {
-                onSearchSubmit();
+                stableOnSearchSubmit();
             }, 500);
         }
 
@@ -99,14 +102,14 @@ export const EntityTable = ({
                 clearTimeout(debounceTimeoutRef.current);
             }
         };
-    }, [search]); // Remove onSearchSubmit dependency to avoid pagination conflicts
+    }, [search, stableOnSearchSubmit]);
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
             if (debounceTimeoutRef.current) {
                 clearTimeout(debounceTimeoutRef.current);
             }
-            onSearchSubmit();
+            stableOnSearchSubmit();
         }
     };
 
@@ -128,7 +131,7 @@ export const EntityTable = ({
                         className={commonStyles.muInput}
                     />
                     <button
-                        onClick={onSearchSubmit}
+                        onClick={stableOnSearchSubmit}
                         className={styles.searchButton}
                         disabled={isLoading}
                     >

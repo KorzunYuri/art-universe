@@ -42,7 +42,8 @@ export const LastfmAlbumsTable = ({ artistId }: LastfmAlbumsTableProps) => {
         prevPage,
         goToPage,
         updateParams,
-        refresh
+        refresh,
+        handleSearchSubmit: submitSearch
     } = useLastfmEntityTable("album", { artistId: effectiveArtistId });
 
     // Filter hooks
@@ -65,6 +66,7 @@ export const LastfmAlbumsTable = ({ artistId }: LastfmAlbumsTableProps) => {
     };
 
     const handleSearchSubmit = () => {
+        submitSearch();
         updateParams({
             approvalStatuses: approvalStatuses.length > 0 ? approvalStatuses : undefined,
             minPlayCount: minPlayCount || undefined,
