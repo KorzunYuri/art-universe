@@ -88,7 +88,7 @@ public class LastfmAlbumServiceImpl implements LastfmAlbumService {
             if (albumDto.getArtistName() != null) {
                 List<LastfmAlbum> albums = albumRepository.findByNameAndArtistName(albumDto.getName(), albumDto.getArtistName());
                 if (albums.size() == 1) {
-                    result.put(albumDto, albums.get(0));
+                    result.put(albumDto, albums.getFirst());
                 } else if (albums.size() > 1) {
                     throw new IllegalStateException(String.format("Multiple albums found for album %s - %s with url %s and mbid %s",
                         albumDto.getArtistName(), albumDto.getName(), albumDto.getUrl(), albumDto.getMbid()));
@@ -103,8 +103,8 @@ public class LastfmAlbumServiceImpl implements LastfmAlbumService {
         // Step 2: Batch search by URLs for remaining DTOs
         if (!unmatchedDtos.isEmpty()) {
             List<String> urls = unmatchedDtos.stream()
-                .filter(dto -> dto.getUrl() != null)
                 .map(AlbumDto::getUrl)
+                .filter(Objects::nonNull)
                 .distinct()
                 .collect(Collectors.toList());
                 
@@ -127,36 +127,6 @@ public class LastfmAlbumServiceImpl implements LastfmAlbumService {
                         if (album != null) {
                             result.put(dto, album);
                             iterator.remove();
-                        }
-                    }
-                }
-            }
-        }
-        
-        // Step 3: Batch search by MBIDs for remaining DTOs
-        if (!unmatchedDtos.isEmpty()) {
-            List<String> mbids = unmatchedDtos.stream()
-                .filter(dto -> dto.getMbid() != null && !dto.getMbid().isEmpty())
-                .map(AlbumDto::getMbid)
-                .distinct()
-                .collect(Collectors.toList());
-                
-            if (!mbids.isEmpty()) {
-                Map<String, LastfmAlbum> albumsByMbid = albumRepository.findAllByMbidIn(mbids).stream()
-                    .collect(Collectors.toMap(
-                        LastfmAlbum::getMbid,
-                        album -> album,
-                        (existing, replacement) -> {
-                            throw new IllegalStateException("Multiple albums found for MBID: " + existing.getMbid());
-                        }
-                    ));
-                
-                // Match DTOs with found albums by MBID
-                for (AlbumDto dto : unmatchedDtos) {
-                    if (dto.getMbid() != null && !dto.getMbid().isEmpty()) {
-                        LastfmAlbum album = albumsByMbid.get(dto.getMbid());
-                        if (album != null) {
-                            result.put(dto, album);
                         }
                     }
                 }

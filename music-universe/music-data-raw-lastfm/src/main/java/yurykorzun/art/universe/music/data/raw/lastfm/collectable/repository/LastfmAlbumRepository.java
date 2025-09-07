@@ -16,22 +16,21 @@ import java.util.List;
 @Repository
 public interface LastfmAlbumRepository extends JpaRepository<LastfmAlbum, Long> {
 
+    /**
+     * Find album by exact artist name and album name. Is used for deduplication purposes.
+     */
     @Query("""
         SELECT al
         FROM
             album al
         JOIN
             al.artist ar
-        WHERE   lower(al.name) = lower(:albumName)
-            AND lower(ar.name) = lower(:artistName)
+        WHERE   al.name = :albumName
+            AND ar.name = :artistName
     """)
     List<LastfmAlbum> findByNameAndArtistName(@Param("albumName") String albumName, @Param("artistName") String artistName);
 
     List<LastfmAlbum> findAllByUrlIn(List<String> urls);
-
-    List<LastfmAlbum> findAllByUrl(String url);
-
-    List<LastfmAlbum> findAllByMbid(String mbid);
 
     List<LastfmAlbum> findAllByMbidIn(List<String> mbids);
 

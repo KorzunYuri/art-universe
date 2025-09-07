@@ -98,7 +98,7 @@ public class LastfmTrackServiceImpl implements LastfmTrackService {
             if (trackDto.getArtistName() != null) {
                 List<LastfmTrack> tracks = trackRepository.findByNameAndArtistName(trackDto.getName(), trackDto.getArtistName());
                 if (tracks.size() == 1) {
-                    result.put(trackDto, tracks.get(0));
+                    result.put(trackDto, tracks.getFirst());
                     continue;
                 } else if (tracks.size() > 1) {
                     throw new IllegalStateException(String.format("Multiple tracks found for track %s - %s with url %s and mbid %s",
@@ -136,36 +136,6 @@ public class LastfmTrackServiceImpl implements LastfmTrackService {
                         if (track != null) {
                             result.put(dto, track);
                             iterator.remove();
-                        }
-                    }
-                }
-            }
-        }
-        
-        // Step 3: Batch search by MBIDs for remaining DTOs
-        if (!unmatchedDtos.isEmpty()) {
-            List<String> mbids = unmatchedDtos.stream()
-                .filter(dto -> dto.getMbid() != null && !dto.getMbid().isEmpty())
-                .map(TrackDto::getMbid)
-                .distinct()
-                .collect(Collectors.toList());
-                
-            if (!mbids.isEmpty()) {
-                Map<String, LastfmTrack> tracksByMbid = trackRepository.findAllByMbidIn(mbids).stream()
-                    .collect(Collectors.toMap(
-                        LastfmTrack::getMbid,
-                        track -> track,
-                        (existing, replacement) -> {
-                            throw new IllegalStateException("Multiple tracks found for MBID: " + existing.getMbid());
-                        }
-                    ));
-                
-                // Match DTOs with found tracks by MBID
-                for (TrackDto dto : unmatchedDtos) {
-                    if (dto.getMbid() != null && !dto.getMbid().isEmpty()) {
-                        LastfmTrack track = tracksByMbid.get(dto.getMbid());
-                        if (track != null) {
-                            result.put(dto, track);
                         }
                     }
                 }
