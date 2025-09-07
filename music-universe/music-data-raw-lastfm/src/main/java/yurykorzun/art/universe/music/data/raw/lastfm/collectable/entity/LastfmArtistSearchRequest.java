@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import yurykorzun.art.universe.common.persistence.entity.BaseEntity;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 
 /**
  * Represents a single request for searching a specific string with artist.search API method.

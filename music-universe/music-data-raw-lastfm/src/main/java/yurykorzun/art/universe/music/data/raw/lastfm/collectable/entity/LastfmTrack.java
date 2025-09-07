@@ -6,6 +6,7 @@ import lombok.experimental.SuperBuilder;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.ArtistScoped;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.BaseLastfmEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 
 import java.util.Objects;
 

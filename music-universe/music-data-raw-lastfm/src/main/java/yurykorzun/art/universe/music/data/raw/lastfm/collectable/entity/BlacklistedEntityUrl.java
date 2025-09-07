@@ -9,6 +9,7 @@ import lombok.experimental.SuperBuilder;
 import yurykorzun.art.universe.common.persistence.entity.BaseEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityTypeConverter;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 
 @Entity(name = "blacklist_entity_url")
 @SuperBuilder
