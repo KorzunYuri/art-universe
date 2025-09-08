@@ -18,7 +18,7 @@ public class Artist extends BaseEntity {
     @SequenceGenerator(
         name = "artist_seq_gen",
         sequenceName = "artist_seq",
-        allocationSize = 50
+        allocationSize = 1
     )
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "artist_seq_gen")
     @Setter(value = AccessLevel.NONE)

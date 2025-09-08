@@ -18,7 +18,7 @@ public class Generation extends BaseEntity {
     @SequenceGenerator(
         name = "generation_seq_gen",
         sequenceName = "generation_seq",
-        allocationSize = 50
+        allocationSize = 1
     )
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "generation_seq_gen")
     @Setter(value = AccessLevel.NONE)

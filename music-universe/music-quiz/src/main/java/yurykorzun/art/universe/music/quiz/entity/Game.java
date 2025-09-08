@@ -21,7 +21,7 @@ public class Game extends BaseEntity {
     @SequenceGenerator(
         name = "game_seq_gen",
         sequenceName = "game_seq",
-        allocationSize = 50
+        allocationSize = 1
     )
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "game_seq_gen")
     @Setter(value = AccessLevel.NONE)
