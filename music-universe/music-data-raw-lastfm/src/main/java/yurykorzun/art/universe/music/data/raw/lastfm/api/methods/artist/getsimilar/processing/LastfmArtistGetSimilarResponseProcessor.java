@@ -100,7 +100,7 @@ public class LastfmArtistGetSimilarResponseProcessor extends LastfmApiResponsePr
     ) {
         List<ArtistGetSimilarArtistDto> dtos = filterDtosForSaving(dtoRoot, sourceArtist);
 
-        LastfmApiDtoProcessingResult<LastfmArtist, ArtistGetSimilarArtistDto> result = dtoProcessingService.process(
+        var result = dtoProcessingService.process(
             sourceApiCall,
             dtos,
             artistFactory,
@@ -108,7 +108,7 @@ public class LastfmArtistGetSimilarResponseProcessor extends LastfmApiResponsePr
             artistService
         );
         log.info("Saved {} similar artists", result.actualEntities().size());
-        log.info("Saved {} similar artists' attributes", result.savedAttributeValues().size());
+        log.info("Saved {} similar artists' attributes", result.savedAttributeRecordsCount());
 
         return result;
     }

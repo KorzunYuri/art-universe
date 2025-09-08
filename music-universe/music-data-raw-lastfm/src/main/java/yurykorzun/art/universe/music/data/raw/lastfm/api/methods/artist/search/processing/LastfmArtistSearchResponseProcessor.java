@@ -77,7 +77,7 @@ public class LastfmArtistSearchResponseProcessor extends LastfmApiResponseProces
         String searchString = sourceApiCall.getParams().get(LastfmApiConstants.PARAM_NAME_ARTIST);
         List<ArtistSearchArtistDto> dtos = filterArtistsForSaving(dtoRoot.getRootObject().getMatches().getArtists(), searchString);
 
-        LastfmApiDtoProcessingResult<LastfmArtist, ArtistSearchArtistDto> result = dtoProcessingService.process(
+        var result = dtoProcessingService.process(
             sourceApiCall,
             dtos,
             artistFactory,
@@ -86,7 +86,7 @@ public class LastfmArtistSearchResponseProcessor extends LastfmApiResponseProces
         );
 
         log.info("Saved {} found artists", result.actualEntities().size());
-        log.info("Saved {} found artists' attributes", result.savedAttributeValues().size());
+        log.info("Saved {} found artists' attributes", result.savedAttributeRecordsCount());
 
         // set statuses of pending artists to pre-approved
         List<LastfmArtist> artistsToPreApprove = result.actualEntities().stream()

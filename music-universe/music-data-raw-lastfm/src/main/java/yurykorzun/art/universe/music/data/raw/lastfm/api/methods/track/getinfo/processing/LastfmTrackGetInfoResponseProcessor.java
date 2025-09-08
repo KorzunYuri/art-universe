@@ -187,8 +187,8 @@ public class LastfmTrackGetInfoResponseProcessor extends LastfmApiResponseProces
             log.info("Artist {} was blacklisted, skipping processing", artistDto.getName());
             return LastfmApiDtoProcessingResult.empty(sourceApiCall);
         }
-        
-        LastfmApiDtoProcessingResult<LastfmArtist, TrackGetInfoArtistDto> result = dtoProcessingService.process(
+
+        var result = dtoProcessingService.process(
             sourceApiCall,
             qualityArtistDtos,
             artistFactory,
@@ -206,8 +206,8 @@ public class LastfmTrackGetInfoResponseProcessor extends LastfmApiResponseProces
         TrackGetInfoTrackDto trackDto = dtoRoot.getTrack();
 
         EntityFactory<LastfmTrack, TrackGetInfoTrackDto> trackFactoryWithArtist = new LastfmTrackGetInfoTrackFactory(artist);
-        
-        LastfmApiDtoProcessingResult<LastfmTrack, TrackGetInfoTrackDto> result = dtoProcessingService.process(
+
+        var result = dtoProcessingService.process(
             sourceApiCall,
             List.of(trackDto),
             trackFactoryWithArtist,
@@ -235,8 +235,8 @@ public class LastfmTrackGetInfoResponseProcessor extends LastfmApiResponseProces
             log.info("Album {} was blacklisted, skipping processing", albumDto.getName());
             return LastfmApiDtoProcessingResult.empty(sourceApiCall);
         }
-        
-        LastfmApiDtoProcessingResult<LastfmAlbum, TrackGetInfoAlbumDto> result = dtoProcessingService.process(
+
+        var result = dtoProcessingService.process(
             sourceApiCall,
             qualityAlbumDtos,
             albumFactory,
@@ -264,8 +264,8 @@ public class LastfmTrackGetInfoResponseProcessor extends LastfmApiResponseProces
             log.info("Filtered out {} blacklisted tags from track's top tags", 
                 tagDtos.size() - qualityTagDtos.size());
         }
-        
-        LastfmApiDtoProcessingResult<LastfmTag, TrackGetInfoTagDto> result = dtoProcessingService.process(
+
+        var result = dtoProcessingService.process(
             sourceApiCall,
             qualityTagDtos,
             tagFactory,

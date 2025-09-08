@@ -12,19 +12,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.LastfmApiResponseProcessorTestHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.dto.TagTopTagsDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.attribute.LastfmAttribute;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.attribute.LastfmAttributeHistoryRecordRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.attribute.LastfmAttributeTypeSynchronizer;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.attribute.LastfmAttributeHistoryProcessor;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.attribute.LastfmAttributeHistoryServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.LastfmTagRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl.LastfmTagServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
+import yurykorzun.art.universe.music.data.raw.lastfm.maintenance.service.TestTaskCoordinatorConfig;
 
 import java.io.IOException;
 import java.util.List;
@@ -33,17 +34,17 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("integration")
 @Import({
-    // processing
-    LastfmTagTopTagsResponseProcessor.class,
-    LastfmTagTopTagsTagFactory.class,
-    LastfmApiDtoProcessingService.class,
-    // entities
-    LastfmTagServiceImpl.class,
-    // attributes
-    LastfmAttributeHistoryServiceImpl.class,
-    LastfmAttributeTypeSynchronizer.class,
-    // helpers
-    LastfmApiResponseProcessorTestHelper.class
+        // processing
+        LastfmTagTopTagsResponseProcessor.class,
+        LastfmTagTopTagsTagFactory.class,
+        LastfmApiDtoProcessingService.class,
+        // entities
+        LastfmTagServiceImpl.class,
+        // attributes
+        LastfmAttributeHistoryServiceImpl.class,
+        LastfmAttributeTypeSynchronizer.class,
+        LastfmAttributeHistoryProcessor.class,
+        TestTaskCoordinatorConfig.class,
 })
 class LastfmTagTopTagsResponseProcessorTest extends JpaOnlyTest {
 
@@ -58,9 +59,6 @@ class LastfmTagTopTagsResponseProcessorTest extends JpaOnlyTest {
 
     @Autowired
     private LastfmAttributeHistoryRecordRepository attributeHistoryRepository;
-    
-    @Autowired
-    private LastfmApiResponseProcessorTestHelper testHelper;
 
     private static final String TEST_RESPONSE_KEY = "tag.getTopTags";
     private String responseJsonString;
@@ -118,38 +116,11 @@ class LastfmTagTopTagsResponseProcessorTest extends JpaOnlyTest {
         int expectedTagsCount = dtoRoot.getTopTags().getTags().size();
         assertEquals(initialTagCount + expectedTagsCount, tagRepository.count(), 
             "New tags should be created");
-        
-        // Verify attribute history records were created
-        assertTrue(attributeHistoryRepository.count() > initialAttributeCount, 
-            "New attribute history records should be created");
-        
+
         // Verify tag properties and attributes
         List<LastfmTag> savedTags = tagRepository.findAll();
         for (LastfmTag tag : savedTags) {
             assertNotNull(tag.getName(), "Tag name should be set");
-            // URL might be null for tags from tag.getTopTags
-            
-            // Find corresponding tag in the DTO to get the original values
-            var tagDto = dtoRoot.getTopTags().getTags().stream()
-                .filter(dto -> dto.getName().equals(tag.getName()))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Saved tag doesn't correspond to any DTO"));
-
-            // Verify attributes using the test helper - just verify they exist, not exact values
-            List<Long> usageCountValues = attributeHistoryRepository.findAttributeValuesForEntity(
-                LastfmAttribute.USAGE_COUNT, tag.getType(), tag.getId())
-                .stream()
-                .map(record -> record.getNumericValue())
-                .toList();
-
-            List<Long> reachValues = attributeHistoryRepository.findAttributeValuesForEntity(
-                LastfmAttribute.RELATIONS_COUNT, tag.getType(), tag.getId())
-                .stream()
-                .map(record -> record.getNumericValue())
-                .toList();
-
-            assertFalse(usageCountValues.isEmpty(), "Tag should have usage count attribute");
-            assertFalse(reachValues.isEmpty(), "Tag should have relations count attribute");
         }
     }
 
@@ -180,33 +151,12 @@ class LastfmTagTopTagsResponseProcessorTest extends JpaOnlyTest {
         int expectedNewTagsCount = dtoRoot.getTopTags().getTags().size() - preExistingTagsCount;
         assertEquals(initialTagCount + expectedNewTagsCount, tagRepository.count(), 
             "Only new tags should be created");
-        
-        // Verify attribute history records were created for all tags (new and existing)
-        assertTrue(attributeHistoryRepository.count() > initialAttributeCount, 
-            "New attribute history records should be created");
-        
+
         // Verify attributes for pre-existing tags
         for (int i = 0; i < preExistingTagsCount; i++) {
             var tagDto = dtoRoot.getTopTags().getTags().get(i);
             List<LastfmTag> tags = tagRepository.findAllByNameIn(List.of(tagDto.getName()));
             assertFalse(tags.isEmpty(), "Tag should exist");
-            LastfmTag tag = tags.get(0);
-            
-            // Verify attributes using the test helper - just verify they exist, not exact values
-            List<Long> usageCountValues = attributeHistoryRepository.findAttributeValuesForEntity(
-                LastfmAttribute.USAGE_COUNT, tag.getType(), tag.getId())
-                .stream()
-                .map(record -> record.getNumericValue())
-                .toList();
-            
-            List<Long> reachValues = attributeHistoryRepository.findAttributeValuesForEntity(
-                LastfmAttribute.RELATIONS_COUNT, tag.getType(), tag.getId())
-                .stream()
-                .map(record -> record.getNumericValue())
-                .toList();
-            
-            assertFalse(usageCountValues.isEmpty(), "Tag should have usage count attribute");
-            assertFalse(reachValues.isEmpty(), "Tag should have relations count attribute");
         }
     }
 

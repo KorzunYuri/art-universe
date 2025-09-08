@@ -75,7 +75,7 @@ public class LastfmTagTopTagsResponseProcessor extends LastfmApiResponseProcesso
             dtos.get(i).setRank(pageInfo.getOffset() + i + 1);
         }
 
-        LastfmApiDtoProcessingResult<LastfmTag, TagTopTagsTagDto> result = dtoProcessingService.process(
+        var result = dtoProcessingService.process(
             sourceApiCall,
             dtos,
             tagFactory,
@@ -83,7 +83,7 @@ public class LastfmTagTopTagsResponseProcessor extends LastfmApiResponseProcesso
             tagService
         );
         log.info("saved {} top tags", result.actualEntities().size());
-        log.info("saved {} top tags' attributes", result.savedAttributeValues().size());
+        log.info("saved {} top tags' attributes", result.savedAttributeRecordsCount());
     }
 
 }

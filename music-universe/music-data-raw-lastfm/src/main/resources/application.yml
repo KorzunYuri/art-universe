@@ -62,6 +62,8 @@ scheduling:
     tasks:
       maintenance:
         cron: "0 0 8 * * *"
+      attribute-history:
+        fixedDelaySecs: 60
 
 music-data-master:
   base-url: ${MU_DATA_APP_HOST:localhost}:${MU_DATA_APP_PORT:8080}

@@ -22,15 +22,6 @@ public interface LastfmAttributeHistoryService {
      * </ol>
      * </p>
      * @param values candidates for new <i>current</i> values
-     * @return list of records that <b><u>actually became a <i>current</i> value</u></b>
      */
-    List<LastfmAttributeHistoryRecord> upsertCandidateValues(List<LastfmAttributeHistoryRecord> values);
-
-    /**
-     * <p>Update attribute value. Watch upsertCandidateValues javadoc for rules.</p>
-     * @param candidate candidate for new <i>current</i> value
-     * @return updated entity, if it became current value, null otherwise
-     */
-    @Nullable
-    LastfmAttributeHistoryRecord upsertCandidateValue(LastfmAttributeHistoryRecord candidate);
+    void upsertCandidateValues(List<LastfmAttributeHistoryRecord> values);
 }

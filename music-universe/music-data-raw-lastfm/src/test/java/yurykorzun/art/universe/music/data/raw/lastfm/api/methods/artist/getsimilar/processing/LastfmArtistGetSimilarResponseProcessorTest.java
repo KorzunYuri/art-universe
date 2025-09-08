@@ -16,11 +16,11 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.config.LastfmThresholdC
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getsimilar.dto.ArtistGetSimilarDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.service.DtoQualityService;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.LastfmApiResponseProcessorTestHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.LastfmArtistRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.attribute.LastfmAttributeHistoryProcessor;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl.LastfmArtistServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.attribute.LastfmAttribute;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.attribute.LastfmAttributeHistoryRecordRepository;
@@ -33,6 +33,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.rela
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.relationship.impl.LastfmArtistsRelationServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
+import yurykorzun.art.universe.music.data.raw.lastfm.maintenance.service.TestTaskCoordinatorConfig;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -43,23 +44,23 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("integration")
 @Import({
-    // processing
-    LastfmArtistGetSimilarResponseProcessor.class,
-    LastfmArtistGetSimilarArtistFactory.class,
-    LastfmApiDtoProcessingService.class,
-    // quality control
-    BlacklistedEntityUrlService.class,
-    DtoQualityService.class,
-    LastfmThresholdConfig.class,
-    // entities
-    LastfmArtistServiceImpl.class,
-    // attributes
-    LastfmAttributeHistoryServiceImpl.class,
-    LastfmAttributeTypeSynchronizer.class,
-    // relations
-    LastfmArtistsRelationServiceImpl.class,
-    // helpers
-    LastfmApiResponseProcessorTestHelper.class
+        // processing
+        LastfmArtistGetSimilarResponseProcessor.class,
+        LastfmArtistGetSimilarArtistFactory.class,
+        LastfmApiDtoProcessingService.class,
+        // quality control
+        BlacklistedEntityUrlService.class,
+        DtoQualityService.class,
+        LastfmThresholdConfig.class,
+        // entities
+        LastfmArtistServiceImpl.class,
+        // attributes
+        LastfmAttributeHistoryServiceImpl.class,
+        LastfmAttributeTypeSynchronizer.class,
+        LastfmAttributeHistoryProcessor.class,
+        TestTaskCoordinatorConfig.class,
+        // relations
+        LastfmArtistsRelationServiceImpl.class,
 })
 class LastfmArtistGetSimilarResponseProcessorTest extends JpaOnlyTest {
 
@@ -80,9 +81,6 @@ class LastfmArtistGetSimilarResponseProcessorTest extends JpaOnlyTest {
 
     @Autowired
     private BlacklistedEntityUrlService blacklistService;
-
-    @Autowired
-    private LastfmApiResponseProcessorTestHelper testHelper;
 
     private static final String TEST_RESPONSE_KEY = "artist.getSimilar";
     private String responseJsonString;
@@ -136,8 +134,6 @@ class LastfmArtistGetSimilarResponseProcessorTest extends JpaOnlyTest {
 
         // Record initial state
         long initialArtistCount = artistRepository.count();
-        long initialAttributeCount = attributeHistoryRepository.count();
-        long initialRelationCount = artistsRelationRepository.count();
 
         // when
         processor.processResponse(apiResponse);
@@ -147,17 +143,6 @@ class LastfmArtistGetSimilarResponseProcessorTest extends JpaOnlyTest {
         int expectedNewArtistsCount = dtoRoot.getRootObject().getArtists().size();
         assertEquals(initialArtistCount + expectedNewArtistsCount, artistRepository.count(),
             "New artists should be created");
-
-        // Calculate expected attribute counts
-        // Each similar artist has 0 attributes for attribute_history (previously URL, MBID)
-        int expectedNonScopedAttributeCount = expectedNewArtistsCount * 0;
-        // Each relation has 1 scoped attribute (MATCH_COEFF)
-        int expectedScopedAttributeCount = expectedNewArtistsCount;
-        int expectedTotalAttributeCount = expectedNonScopedAttributeCount + expectedScopedAttributeCount;
-
-        // Verify attribute history records were created
-        assertEquals(initialAttributeCount + expectedTotalAttributeCount, attributeHistoryRepository.count(),
-            "Expected number of attribute history records should be created");
 
         // Verify artist-artist relations were created
         List<LastfmArtistsRelation> relations = artistsRelationRepository.findByTargetArtistId(sourceArtist.getId());
@@ -171,25 +156,6 @@ class LastfmArtistGetSimilarResponseProcessorTest extends JpaOnlyTest {
             assertEquals(sourceArtist.getId(), relation.getTargetArtist().getId(),
                 "Target artist should be the source artist");
             assertNotNull(relation.getMatchScore(), "Match score should be set");
-
-            // Find corresponding artist in the DTO to get the original match coefficient
-            var similarArtistDto = dtoRoot.getRootObject().getArtists().stream()
-                .filter(dto -> dto.getName().equals(relation.getSourceArtist().getName()))
-                .findFirst()
-                .orElseThrow();
-
-            // Calculate expected match coefficient value exactly as in the processor
-            int expectedMatchCoeff = BigDecimal.valueOf(similarArtistDto.getMatchCoeff())
-                .multiply(new BigDecimal(100))
-                .intValue();
-
-            // Verify match score attribute history record exists using the scoped attribute method
-            testHelper.verifyIntAttributeWithScope(
-                relation.getTargetArtist(),                // entity (target artist)
-                relation.getSourceArtist(),  // scope entity (similar artist)
-                LastfmAttribute.MATCH_COEFF,
-                expectedMatchCoeff
-            );
         }
 
         // Verify specific attributes for similar artists
@@ -504,7 +470,6 @@ class LastfmArtistGetSimilarResponseProcessorTest extends JpaOnlyTest {
         // Verify only source artist exists (no new similar artists created)
         assertEquals(1, artistRepository.count(), "Only source artist should exist");
         assertEquals(0, artistsRelationRepository.count(), "No artist-artist relationships should be created");
-        assertEquals(0, attributeHistoryRepository.count(), "No attribute history records should be created");
     }
 
     @Test
@@ -532,6 +497,5 @@ class LastfmArtistGetSimilarResponseProcessorTest extends JpaOnlyTest {
 
         // Verify relationships were created
         assertTrue(artistsRelationRepository.count() > 0, "Artist-artist relationships should be created");
-        assertTrue(attributeHistoryRepository.count() > 0, "Attribute history records should be created");
     }
 }

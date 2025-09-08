@@ -107,7 +107,7 @@ public class LastfmArtistTopTagsResponseProcessor extends LastfmApiResponseProce
         tagDtos = filterDtosForSaving(tagDtos);
 
         // update entities from dtos
-        LastfmApiDtoProcessingResult<LastfmTag, ArtistTopTagsTagDto> result = dtoProcessingService.process(
+        var result = dtoProcessingService.process(
             sourceApiCall,
             tagDtos,
             tagEntityFactory,
@@ -115,7 +115,7 @@ public class LastfmArtistTopTagsResponseProcessor extends LastfmApiResponseProce
             tagService
         );
         log.info("saved {} artist's tags", result.actualEntities().size());
-        log.info("saved {} artist's tags' attributes", result.savedAttributeValues().size());
+        log.info("saved {} artist's tags' attributes", result.savedAttributeRecordsCount());
 
         return result;
     }

@@ -131,7 +131,7 @@ public class LastfmArtistTopTracksResponseProcessor extends LastfmApiResponsePro
         }
 
         // Process and save artists
-        LastfmApiDtoProcessingResult<LastfmArtist, ArtistTopTracksTrackArtistDto> result = dtoProcessingService.process(
+        var result = dtoProcessingService.process(
             sourceApiCall,
             qualityArtistDtos,
             artistFactory,
@@ -139,7 +139,7 @@ public class LastfmArtistTopTracksResponseProcessor extends LastfmApiResponsePro
             artistService
         );
         log.info("saved {} track artists", result.actualEntities().size());
-        log.info("saved {} track artists' attributes", result.savedAttributeValues().size());
+        log.info("saved {} track artists' attributes", result.savedAttributeRecordsCount());
 
         return result;
     }
@@ -168,7 +168,7 @@ public class LastfmArtistTopTracksResponseProcessor extends LastfmApiResponsePro
         LastfmArtistTopTracksTrackFactory trackFactory = new LastfmArtistTopTracksTrackFactory(artistMappingResult);
 
         // Process DTOs and save tracks
-        LastfmApiDtoProcessingResult<LastfmTrack, ArtistTopTracksTrackDto> result = dtoProcessingService.process(
+        var result = dtoProcessingService.process(
             sourceApiCall,
             qualityTrackDtos,
             trackFactory,
@@ -176,7 +176,7 @@ public class LastfmArtistTopTracksResponseProcessor extends LastfmApiResponsePro
             trackService
         );
         log.info("saved {} tracks", result.actualEntities().size());
-        log.info("saved {} tracks' attributes", result.savedAttributeValues().size());
+        log.info("saved {} tracks' attributes", result.savedAttributeRecordsCount());
 
         return result;
     }

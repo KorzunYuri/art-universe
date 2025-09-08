@@ -13,7 +13,6 @@ import org.springframework.context.annotation.Import;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.LastfmApiResponseProcessorTestHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.config.LastfmThresholdConfig;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.service.DtoQualityService;
@@ -22,6 +21,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientRe
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.LastfmArtistRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.attribute.LastfmAttributeHistoryProcessor;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl.LastfmArtistServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.attribute.LastfmAttributeHistoryRecordRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.attribute.LastfmAttributeTypeSynchronizer;
@@ -38,6 +38,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.Last
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl.LastfmTrackServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
+import yurykorzun.art.universe.music.data.raw.lastfm.maintenance.service.TestTaskCoordinatorConfig;
 
 import java.io.IOException;
 import java.util.List;
@@ -46,25 +47,25 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("integration")
 @Import({
-    // processing
-    LastfmTagTopTracksResponseProcessor.class,
-    LastfmTagTopTracksArtistFactory.class,
-    LastfmApiDtoProcessingService.class,
-    // quality control
-    BlacklistedEntityUrlService.class,
-    DtoQualityService.class,
-    LastfmThresholdConfig.class,
-    // entities
-    LastfmArtistServiceImpl.class,
-    LastfmTrackServiceImpl.class,
-    LastfmTagServiceImpl.class,
-    // attributes
-    LastfmAttributeHistoryServiceImpl.class,
-    LastfmAttributeTypeSynchronizer.class,
-    // relations
-    LastfmArtistTrackServiceImpl.class,
-    // helpers
-    LastfmApiResponseProcessorTestHelper.class
+        // processing
+        LastfmTagTopTracksResponseProcessor.class,
+        LastfmTagTopTracksArtistFactory.class,
+        LastfmApiDtoProcessingService.class,
+        // quality control
+        BlacklistedEntityUrlService.class,
+        DtoQualityService.class,
+        LastfmThresholdConfig.class,
+        // entities
+        LastfmArtistServiceImpl.class,
+        LastfmTrackServiceImpl.class,
+        LastfmTagServiceImpl.class,
+        // attributes
+        LastfmAttributeHistoryServiceImpl.class,
+        LastfmAttributeTypeSynchronizer.class,
+        LastfmAttributeHistoryProcessor.class,
+        TestTaskCoordinatorConfig.class,
+        // relations
+        LastfmArtistTrackServiceImpl.class,
 })
 class LastfmTagTopTracksResponseProcessorTest extends JpaOnlyTest {
     
@@ -92,9 +93,6 @@ class LastfmTagTopTracksResponseProcessorTest extends JpaOnlyTest {
     @Autowired
     private BlacklistedEntityUrlService blacklistService;
     
-    @Autowired
-    private LastfmApiResponseProcessorTestHelper testHelper;
-
     private static final String TEST_RESPONSE_KEY = "tag.getTopTracks";
     private String responseJsonString;
     private TagTopTracksDtoRoot dtoRoot;
@@ -518,7 +516,6 @@ class LastfmTagTopTracksResponseProcessorTest extends JpaOnlyTest {
         assertEquals(0, artistRepository.count(), "No artists should be created");
         assertEquals(0, trackRepository.count(), "No tracks should be created");
         assertEquals(0, artistTrackRepository.count(), "No artist-track relationships should be created");
-        assertEquals(0, attributeHistoryRepository.count(), "No attribute history records should be created");
     }
 
     @Test

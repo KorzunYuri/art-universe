@@ -17,4 +17,15 @@
         <sqlFile path="../changesets/0033-attribute-history-cleanup/0033-0030-attribute-history-cleanup-duration.sql"
                  relativeToChangelogFile="true"/>
     </changeSet>
+
+    <changeSet id="0033-attribute-history-cleanup-booleans-leftovers" author="yurykorzun">
+        <comment>Remove records that referred to boolean values from attribute_history</comment>
+
+        <sqlFile path="../changesets/0033-attribute-history-cleanup/0033-0040-attribute-history-cleanup-streamable.sql"
+                 relativeToChangelogFile="true"/>
+
+        <sqlFile path="../changesets/0033-attribute-history-cleanup/0033-0050-attribute-history-cleanup-on-tour.sql"
+                 relativeToChangelogFile="true"/>
+    </changeSet>
+
 </databaseChangeLog>

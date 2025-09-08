@@ -76,11 +76,11 @@ public class LastfmApiDtoProcessingService {
             .collect(Collectors.toList());
 
         // Create and save attribute history records
-        List<LastfmAttributeHistoryRecord> attrRecords = processAttributeRecords(
+        int attrRecordsCount = processAttributeRecords(
             mappings, attrHandlers, sourceApiCall
         );
 
-        return new LastfmApiDtoProcessingResult<>(actualEntities, attrRecords, mappings);
+        return new LastfmApiDtoProcessingResult<>(actualEntities, attrRecordsCount, mappings);
     }
 
     /**
@@ -194,7 +194,7 @@ public class LastfmApiDtoProcessingService {
     /**
      * Creates and saves attribute history records
      */
-    private <E extends BaseLastfmEntity, D extends EntityDto<E>> List<LastfmAttributeHistoryRecord> processAttributeRecords(
+    private <E extends BaseLastfmEntity, D extends EntityDto<E>> int processAttributeRecords(
         EntityMappingResult<E, D> mappings,
         List<EntityAttributeHandler<E, ?, D>> attrHandlers,
         LastfmApiCall sourceApiCall
@@ -202,6 +202,7 @@ public class LastfmApiDtoProcessingService {
         List<LastfmAttributeHistoryRecord> attrRecords = AttributeHistoryBuilder.buildAttributeHistoryRecords(
             mappings, attrHandlers, sourceApiCall
         );
-        return attributeHistoryService.upsertCandidateValues(attrRecords);
+        attributeHistoryService.upsertCandidateValues(attrRecords);
+        return attrRecords.size();
     }
 }

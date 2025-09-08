@@ -103,7 +103,7 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
                 allArtistDtos.size() - qualityArtistDtos.size());
         }
 
-        LastfmApiDtoProcessingResult<LastfmArtist, TagTopArtistsArtistDto> result = dtoProcessingService.process(
+        var result = dtoProcessingService.process(
             sourceApiCall,
             qualityArtistDtos,
             artistFactory,
@@ -111,7 +111,7 @@ public class LastfmTagTopArtistsResponseProcessor extends LastfmApiResponseProce
             artistService
         );
         log.info("saved {} tag's artists", result.actualEntities().size());
-        log.info("saved {} tag's artists' attributes", result.savedAttributeValues().size());
+        log.info("saved {} tag's artists' attributes", result.savedAttributeRecordsCount());
 
         return result;
     }

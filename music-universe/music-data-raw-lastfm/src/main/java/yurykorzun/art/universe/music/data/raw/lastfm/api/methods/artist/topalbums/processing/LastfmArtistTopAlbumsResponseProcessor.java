@@ -222,7 +222,7 @@ public class LastfmArtistTopAlbumsResponseProcessor extends LastfmApiResponsePro
         EntityFactory<LastfmArtist, ArtistDto> artistFactory = new LastfmArtistEntityFactory<>();
         
         // Process artists
-        LastfmApiDtoProcessingResult<LastfmArtist, ArtistDto> result = dtoProcessingService.process(
+        var result = dtoProcessingService.process(
             sourceApiCall,
             dedupedArtists,
             artistFactory,
@@ -256,7 +256,7 @@ public class LastfmArtistTopAlbumsResponseProcessor extends LastfmApiResponsePro
             new LastfmArtistTopAlbumsAlbumFactory(artistsByName);
         
         // Process albums
-        LastfmApiDtoProcessingResult<LastfmAlbum, ArtistTopAlbumsAlbumDto> result = dtoProcessingService.process(
+        var result = dtoProcessingService.process(
             sourceApiCall,
             albumDtos,
             albumFactory,

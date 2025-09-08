@@ -254,7 +254,7 @@ public class LastfmAlbumGetInfoResponseProcessor extends LastfmApiResponseProces
     ) {
         // Process album - we're updating an existing album
         List<AlbumGetInfoAlbumDto> albumDtos = List.of(albumDto);
-        LastfmApiDtoProcessingResult<LastfmAlbum, AlbumGetInfoAlbumDto> result = dtoProcessingService.process(
+        var result = dtoProcessingService.process(
             sourceApiCall,
             albumDtos,
             albumFactory,
@@ -294,7 +294,7 @@ public class LastfmAlbumGetInfoResponseProcessor extends LastfmApiResponseProces
             new LastfmAlbumGetInfoTrackFactory(artistsByName);
 
         // Process tracks
-        LastfmApiDtoProcessingResult<LastfmTrack, AlbumGetInfoTrackDto> result = dtoProcessingService.process(
+        var result = dtoProcessingService.process(
             sourceApiCall,
             qualityTracks,
             trackFactory,
@@ -379,7 +379,7 @@ public class LastfmAlbumGetInfoResponseProcessor extends LastfmApiResponseProces
         }
 
         // Process tags
-        LastfmApiDtoProcessingResult<LastfmTag, AlbumGetInfoTagDto> result = dtoProcessingService.process(
+        var result = dtoProcessingService.process(
             sourceApiCall,
             tagDtos,
             tagFactory,

@@ -157,7 +157,7 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
 
         ArtistGetInfoArtistDto dto = dtoRoot.getArtist();
 
-        LastfmApiDtoProcessingResult<LastfmArtist, ArtistGetInfoArtistDto> result = dtoProcessingService.process(
+        var result = dtoProcessingService.process(
             sourceApiCall,
             List.of(dto),
             artistFactory,
@@ -165,7 +165,7 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
             artistService
         );
         log.info("saved artist {}", dto.getName());
-        log.info("saved {} artists' attributes", result.savedAttributeValues().size());
+        log.info("saved {} artists' attributes", result.savedAttributeRecordsCount());
 
         if (result.actualEntities().size() != 1) {
             throw new IllegalArgumentException(String.format("Expected 1 artists to be saved, got %s", result.actualEntities().size()));
@@ -197,7 +197,7 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
                 artistDtos.size() - qualitySimilarArtistDtos.size(), sourceArtist.getName());
         }
 
-        LastfmApiDtoProcessingResult<LastfmArtist, ArtistGetInfoSimilarArtistDto> result = dtoProcessingService.process(
+        var result = dtoProcessingService.process(
             sourceApiCall,
             qualitySimilarArtistDtos,
             similarArtistFactory,
@@ -205,7 +205,7 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
             artistService
         );
         log.info("saved {} artist's similar artists", result.actualEntities().size());
-        log.info("saved {} artist's similar artists' attributes", result.savedAttributeValues().size());
+        log.info("saved {} artist's similar artists' attributes", result.savedAttributeRecordsCount());
 
         return result;
     }
@@ -230,7 +230,7 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
             log.info("Filtered out {} low-quality tags", dtos.size() - qualityTagDtos.size());
         }
 
-        LastfmApiDtoProcessingResult<LastfmTag, ArtistGetInfoArtistTagDto> result = dtoProcessingService.process(
+        var result = dtoProcessingService.process(
             sourceApiCall,
             qualityTagDtos,
             tagFactory,
@@ -238,7 +238,7 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
             tagService
         );
         log.info("saved {} tags", result.actualEntities().size());
-        log.info("saved {} tags' attributes", result.savedAttributeValues().size());
+        log.info("saved {} tags' attributes", result.savedAttributeRecordsCount());
 
         return result;
     }

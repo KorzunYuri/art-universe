@@ -14,12 +14,12 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.config.LastfmThresholdConfig;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptags.dto.ArtistTopTagsDtoRoot;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.LastfmApiResponseProcessorTestHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.service.DtoQualityService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.LastfmArtistRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.attribute.LastfmAttributeHistoryProcessor;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl.LastfmArtistServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.attribute.LastfmAttributeHistoryRecordRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.attribute.LastfmAttributeTypeSynchronizer;
@@ -34,6 +34,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.Last
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl.LastfmTagServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
+import yurykorzun.art.universe.music.data.raw.lastfm.maintenance.service.TestTaskCoordinatorConfig;
 
 import java.io.IOException;
 import java.util.List;
@@ -42,24 +43,24 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("integration")
 @Import({
-    // processing
-    LastfmArtistTopTagsResponseProcessor.class,
-    LastfmArtistTopTagsTagFactory.class,
-    LastfmApiDtoProcessingService.class,
-    // quality control
-    BlacklistedEntityUrlService.class,
-    DtoQualityService.class,
-    LastfmThresholdConfig.class,
-    // entities
-    LastfmTagServiceImpl.class,
-    LastfmArtistServiceImpl.class,
-    // attributes
-    LastfmAttributeHistoryServiceImpl.class,
-    LastfmAttributeTypeSynchronizer.class,
-    // relations
-    LastfmArtistTagServiceImpl.class,
-    // helpers
-    LastfmApiResponseProcessorTestHelper.class
+        // processing
+        LastfmArtistTopTagsResponseProcessor.class,
+        LastfmArtistTopTagsTagFactory.class,
+        LastfmApiDtoProcessingService.class,
+        // quality control
+        BlacklistedEntityUrlService.class,
+        DtoQualityService.class,
+        LastfmThresholdConfig.class,
+        // entities
+        LastfmTagServiceImpl.class,
+        LastfmArtistServiceImpl.class,
+        // attributes
+        LastfmAttributeHistoryServiceImpl.class,
+        LastfmAttributeTypeSynchronizer.class,
+        LastfmAttributeHistoryProcessor.class,
+        TestTaskCoordinatorConfig.class,
+        // relations
+        LastfmArtistTagServiceImpl.class,
 })
 class LastfmArtistTopTagsResponseProcessorTest extends JpaOnlyTest {
 
@@ -83,9 +84,6 @@ class LastfmArtistTopTagsResponseProcessorTest extends JpaOnlyTest {
 
     @Autowired
     private LastfmArtistTagRepository artistTagRepository;
-
-    @Autowired
-    private LastfmApiResponseProcessorTestHelper testHelper;
 
     private static final String TEST_RESPONSE_KEY = "artist.getTopTags";
     private String responseJsonString;
@@ -153,10 +151,6 @@ class LastfmArtistTopTagsResponseProcessorTest extends JpaOnlyTest {
         int expectedTagsCount = dtoRoot.getTopTagsObject().getTags().size();
         assertEquals(initialTagCount + expectedTagsCount, tagRepository.count(),
             "New tags should be created");
-
-        // Verify attribute history records were created
-        assertTrue(attributeHistoryRepository.count() > initialAttributeCount,
-            "New attribute history records should be created");
 
         // Verify artist-tag relations were created
         assertEquals(initialArtistTagCount + expectedTagsCount, artistTagRepository.count(),
@@ -384,7 +378,6 @@ class LastfmArtistTopTagsResponseProcessorTest extends JpaOnlyTest {
 
         // Verify relationships were created
         assertTrue(artistTagRepository.count() > 0, "Artist-tag relationships should be created");
-        assertTrue(attributeHistoryRepository.count() > 0, "Attribute history records should be created");
     }
 
     @Test
@@ -428,7 +421,6 @@ class LastfmArtistTopTagsResponseProcessorTest extends JpaOnlyTest {
         assertEquals(1, artistRepository.count(), "Only source artist should exist");
         assertEquals(0, finalTagCount, "No tags should be created");
         assertEquals(0, finalArtistTagCount, "No artist-tag relationships should be created");
-        assertEquals(0, finalAttributeCount, "No attribute history records should be created");
     }
 
     @Test
@@ -449,6 +441,5 @@ class LastfmArtistTopTagsResponseProcessorTest extends JpaOnlyTest {
         // Verify tags were created (those above threshold)
         assertTrue(tagRepository.count() > initialTagCount, "Tags should be created");
         assertTrue(artistTagRepository.count() > 0, "Artist-tag relationships should be created");
-        assertTrue(attributeHistoryRepository.count() > 0, "Attribute history records should be created");
     }
 }
