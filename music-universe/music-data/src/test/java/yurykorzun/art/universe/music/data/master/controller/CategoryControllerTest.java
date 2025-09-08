@@ -12,6 +12,9 @@ import org.springframework.data.domain.Pageable;
 import yurykorzun.art.universe.music.data.master.dto.CategoryHierarchyProjection;
 import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategorySaveRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.CategoryDagDTO;
+import yurykorzun.art.universe.music.data.master.dto.CategoryDagNodeDTO;
+import yurykorzun.art.universe.music.data.master.dto.CategoryDagEdgeDTO;
 import yurykorzun.art.universe.common.dto.lookup.BaseBatchLookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
@@ -493,5 +496,55 @@ class CategoryControllerTest {
         return searchTerms.stream()
             .map(term -> LookupRequestDTO.builder().search(term).build())
             .collect(Collectors.toList());
+    }
+    
+    @Test
+    void getCategoryDag_shouldReturnCategoryDagDTO() {
+        // Given
+        CategoryDagNodeDTO node1 = CategoryDagNodeDTO.builder()
+            .id(1L)
+            .name("Rock")
+            .isRoot(true)
+            .build();
+        CategoryDagNodeDTO node2 = CategoryDagNodeDTO.builder()
+            .id(2L)
+            .name("Alternative Rock")
+            .isRoot(false)
+            .build();
+        
+        CategoryDagEdgeDTO edge = CategoryDagEdgeDTO.builder()
+            .source(1L)
+            .target(2L)
+            .build();
+        
+        CategoryDagDTO expectedDag = CategoryDagDTO.builder()
+            .nodes(List.of(node1, node2))
+            .edges(List.of(edge))
+            .build();
+        
+        when(categoryService.getCategoryDag()).thenReturn(expectedDag);
+
+        // When
+        CategoryDagDTO result = categoryController.getCategoryDag();
+
+        // Then
+        assertEquals(expectedDag, result);
+        verify(categoryService).getCategoryDag();
+    }
+
+    @Test
+    void getCategoryDag_whenExceptionThrown_shouldPassThroughException() {
+        // Given
+        RuntimeException expectedException = new RuntimeException("Test error");
+        
+        when(categoryService.getCategoryDag()).thenThrow(expectedException);
+
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+            categoryController.getCategoryDag()
+        );
+        
+        assertSame(expectedException, exception);
+        verify(categoryService).getCategoryDag();
     }
 }

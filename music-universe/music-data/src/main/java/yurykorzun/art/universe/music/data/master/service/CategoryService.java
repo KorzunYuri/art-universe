@@ -8,6 +8,7 @@ import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategoryHierarchyProjection;
 import yurykorzun.art.universe.music.data.master.dto.CategorySaveRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.CategoryDagDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
@@ -109,5 +110,12 @@ public interface CategoryService {
      * @return true if the unbinding was successful, false otherwise
      */
     boolean unbindCategory(DataSource dataSource, Long externalId);
+
+    /**
+     * Get complete category DAG for UI visualization
+     * 
+     * @return Category DAG with nodes and edges
+     */
+    CategoryDagDTO getCategoryDag();
 
 }

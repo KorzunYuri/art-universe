@@ -9,6 +9,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import yurykorzun.art.universe.music.data.master.dto.CategorySaveRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.CategoryDagDTO;
+import yurykorzun.art.universe.music.data.master.dto.CategoryDagNodeDTO;
+import yurykorzun.art.universe.music.data.master.dto.CategoryDagEdgeDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
@@ -414,6 +417,87 @@ class CategoryServiceTest {
         // Verify no repository calls were made
         verify(categoryRepository, never()).save(any());
         verify(dimensionRepository, never()).findById(any());
+    }
+
+    @Test
+    void getCategoryDag_shouldReturnCategoryDagWithNodesAndEdges() {
+        // Given
+        Category rootCategory = Category.builder()
+            .id(1L)
+            .name("Rock")
+            .parentId(null)
+            .build();
+        
+        Category childCategory = Category.builder()
+            .id(2L)
+            .name("Alternative Rock")
+            .parentId(1L)
+            .build();
+        
+        List<Category> categories = List.of(rootCategory, childCategory);
+        
+        when(categoryRepository.findAll()).thenReturn(categories);
+
+        // When
+        CategoryDagDTO result = categoryService.getCategoryDag();
+
+        // Then
+        assertEquals(2, result.getNodes().size());
+        assertEquals(1, result.getEdges().size());
+        
+        // Verify root node
+        CategoryDagNodeDTO rootNode = result.getNodes().stream()
+            .filter(node -> node.getId().equals(1L))
+            .findFirst()
+            .orElseThrow();
+        assertEquals("Rock", rootNode.getName());
+        assertTrue(rootNode.isRoot());
+        
+        // Verify child node
+        CategoryDagNodeDTO childNode = result.getNodes().stream()
+            .filter(node -> node.getId().equals(2L))
+            .findFirst()
+            .orElseThrow();
+        assertEquals("Alternative Rock", childNode.getName());
+        assertFalse(childNode.isRoot());
+        
+        // Verify edge
+        CategoryDagEdgeDTO edge = result.getEdges().get(0);
+        assertEquals(1L, edge.getSource());
+        assertEquals(2L, edge.getTarget());
+        
+        verify(categoryRepository).findAll();
+    }
+
+    @Test
+    void getCategoryDag_withOnlyRootCategories_shouldReturnNodesWithoutEdges() {
+        // Given
+        Category category1 = Category.builder()
+            .id(1L)
+            .name("Rock")
+            .parentId(null)
+            .build();
+        
+        Category category2 = Category.builder()
+            .id(2L)
+            .name("Jazz")
+            .parentId(null)
+            .build();
+        
+        List<Category> categories = List.of(category1, category2);
+        
+        when(categoryRepository.findAll()).thenReturn(categories);
+
+        // When
+        CategoryDagDTO result = categoryService.getCategoryDag();
+
+        // Then
+        assertEquals(2, result.getNodes().size());
+        assertEquals(0, result.getEdges().size());
+        
+        result.getNodes().forEach(node -> assertTrue(node.isRoot()));
+        
+        verify(categoryRepository).findAll();
     }
     
 

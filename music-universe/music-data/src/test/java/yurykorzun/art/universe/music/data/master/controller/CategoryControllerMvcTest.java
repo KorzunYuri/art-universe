@@ -11,6 +11,9 @@ import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
+import yurykorzun.art.universe.music.data.master.dto.CategoryDagDTO;
+import yurykorzun.art.universe.music.data.master.dto.CategoryDagNodeDTO;
+import yurykorzun.art.universe.music.data.master.dto.CategoryDagEdgeDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.service.BindingService;
 import yurykorzun.art.universe.music.data.master.service.CategoryService;
@@ -205,6 +208,54 @@ class CategoryControllerMvcTest {
         // When & Then
         mockMvc.perform(get("/api/v1/categories/lookup")
                 .param("search", searchQuery))
+            .andExpect(status().isInternalServerError());
+    }
+    
+    @Test
+    void whenGetCategoryDag_shouldReturnCategoryDag() throws Exception {
+        // Given
+        CategoryDagNodeDTO node1 = CategoryDagNodeDTO.builder()
+            .id(1L)
+            .name("Rock")
+            .isRoot(true)
+            .build();
+        CategoryDagNodeDTO node2 = CategoryDagNodeDTO.builder()
+            .id(2L)
+            .name("Alternative Rock")
+            .isRoot(false)
+            .build();
+        
+        CategoryDagEdgeDTO edge = CategoryDagEdgeDTO.builder()
+            .source(1L)
+            .target(2L)
+            .build();
+        
+        CategoryDagDTO expectedDag = CategoryDagDTO.builder()
+            .nodes(List.of(node1, node2))
+            .edges(List.of(edge))
+            .build();
+        
+        String expectedJson = objectMapper.writeValueAsString(expectedDag);
+        
+        when(categoryService.getCategoryDag()).thenReturn(expectedDag);
+        
+        // When & Then
+        mockMvc.perform(get("/api/v1/categories/dag"))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(content().json(expectedJson));
+    }
+    
+    @Test
+    void whenGetCategoryDag_withError_shouldReturnFailureResponse() throws Exception {
+        // Given
+        String errorMessage = "DAG error occurred";
+        
+        when(categoryService.getCategoryDag())
+            .thenThrow(new RuntimeException(errorMessage));
+        
+        // When & Then
+        mockMvc.perform(get("/api/v1/categories/dag"))
             .andExpect(status().isInternalServerError());
     }
 }

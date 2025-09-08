@@ -11,6 +11,9 @@ import yurykorzun.art.universe.common.dto.lookup.BaseBatchLookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategorySaveRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.CategoryDagDTO;
+import yurykorzun.art.universe.music.data.master.dto.CategoryDagNodeDTO;
+import yurykorzun.art.universe.music.data.master.dto.CategoryDagEdgeDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
@@ -216,5 +219,32 @@ public class CategoryServiceImpl implements CategoryService {
         }
         
         return false;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CategoryDagDTO getCategoryDag() {
+        List<Category> allCategories = categoryRepository.findAll();
+        
+        List<CategoryDagNodeDTO> nodes = allCategories.stream()
+            .map(category -> CategoryDagNodeDTO.builder()
+                .id(category.getId())
+                .name(category.getName())
+                .isRoot(category.getParentId() == null)
+                .build())
+            .toList();
+        
+        List<CategoryDagEdgeDTO> edges = allCategories.stream()
+            .filter(category -> category.getParentId() != null)
+            .map(category -> CategoryDagEdgeDTO.builder()
+                .source(category.getParentId())
+                .target(category.getId())
+                .build())
+            .toList();
+        
+        return CategoryDagDTO.builder()
+            .nodes(nodes)
+            .edges(edges)
+            .build();
     }
 }

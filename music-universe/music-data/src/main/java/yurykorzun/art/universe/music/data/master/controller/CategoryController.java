@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.music.data.master.dto.CategoryHierarchyProjection;
 import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategorySaveRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.CategoryDagDTO;
 import yurykorzun.art.universe.common.dto.lookup.BaseBatchLookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
@@ -125,5 +126,10 @@ public class CategoryController {
         @Valid @RequestBody BatchUnbindRequestDTO request
     ) {
         return bindingService.batchUnbind(MasterEntityType.CATEGORY, dataSource, request);
+    }
+
+    @GetMapping("/dag")
+    public CategoryDagDTO getCategoryDag() {
+        return categoryService.getCategoryDag();
     }
 }
