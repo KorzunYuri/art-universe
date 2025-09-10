@@ -66,3 +66,32 @@ export async function deleteCategory(categoryId: number): Promise<boolean> {
     
     return response.data;
 }
+
+export interface CategoryDagNodeDto {
+    id: number;
+    name: string;
+    isRoot: boolean;
+}
+
+export interface CategoryDagEdgeDto {
+    source: number;
+    target: number;
+}
+
+export interface CategoryDagDto {
+    nodes: CategoryDagNodeDto[];
+    edges: CategoryDagEdgeDto[];
+}
+
+/**
+ * Fetches category DAG data
+ * 
+ * @returns Category DAG with nodes and edges
+ */
+export async function fetchCategoryDag(): Promise<CategoryDagDto> {
+    const response = await axios.get<CategoryDagDto>(
+        `${MusicDataConfig.baseApiUrl}/categories/dag`
+    );
+    
+    return response.data;
+}
