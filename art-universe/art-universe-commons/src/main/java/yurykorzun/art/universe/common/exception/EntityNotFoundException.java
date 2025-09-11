@@ -1,9 +1,9 @@
 package yurykorzun.art.universe.common.exception;
 
 /**
- * A wrapper around jakarta {@link jakarta.persistence.EntityNotFoundException} with a convenient constructor.
+ * A custom alternative to {@link jakarta.persistence.EntityNotFoundException} with a convenient constructor.
  */
-public class EntityNotFoundException extends jakarta.persistence.EntityNotFoundException {
+public class EntityNotFoundException extends ExposedException {
 
     public EntityNotFoundException(String message) {
         super(message);

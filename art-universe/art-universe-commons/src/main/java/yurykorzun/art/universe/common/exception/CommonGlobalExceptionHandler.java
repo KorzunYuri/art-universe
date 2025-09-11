@@ -39,24 +39,6 @@ public class CommonGlobalExceptionHandler {
                 HttpStatus.INTERNAL_SERVER_ERROR
         );
     }
-
-    @ExceptionHandler(DataUpdateException.class)
-    public ResponseEntity<ErrorResponse> handleDataUpdate(DataUpdateException ex) {
-        log.error("Data update error: {}", ex.getMessage());
-        return new ResponseEntity<>(
-                new ErrorResponse(ex.getMessage()),
-                HttpStatus.INTERNAL_SERVER_ERROR
-        );
-    }
-
-    @ExceptionHandler(ValidationException.class)
-    public ResponseEntity<ErrorResponse> handleValidation(ValidationException ex) {
-        log.error("Validation error: {}", ex.getMessage());
-        return new ResponseEntity<>(
-                new ErrorResponse(ex.getMessage()),
-                HttpStatus.BAD_REQUEST
-        );
-    }
     
     // === Spring Framework Exceptions ===
     
@@ -203,7 +185,19 @@ public class CommonGlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST
         );
     }
-    
+
+    /**
+     * Handler for exceptions that are safe to expose to the client.
+     */
+    @ExceptionHandler(ExposedException.class)
+    public ResponseEntity<ErrorResponse> handleExposed(ExposedException ex) {
+        log.error("Exposed exception", ex);
+        return new ResponseEntity<>(
+                new ErrorResponse(ex.getMessage()),
+                HttpStatus.INTERNAL_SERVER_ERROR
+        );
+    }
+
     /**
      * Handle all other exceptions
      * This is the fallback handler for any unhandled exceptions
