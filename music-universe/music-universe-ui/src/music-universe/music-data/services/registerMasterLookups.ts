@@ -15,8 +15,8 @@ import type { MasterEntityType } from "@/music-universe/shared/types/entities";
 export function registerMasterLookups() {
     console.log('🔧 Registering master entity lookups...');
 
-    // Register basic entity lookups (artist, category, dimension)
-    const registerBasicLookup = (entityType: Extract<MasterEntityType, 'artist' | 'category' | 'dimension'>) => {
+    // Register basic entity lookups (artist, category)
+    const registerBasicLookup = (entityType: Extract<MasterEntityType, 'artist' | 'category'>) => {
         LookupRegistry.register('master', entityType, {
             transformParams: (params: BasicMasterEntityLookupParams): BasicMasterLookupRequest => ({
                 search: params.search,
@@ -63,7 +63,6 @@ export function registerMasterLookups() {
     // Register all basic lookups
     registerBasicLookup('artist');
     registerBasicLookup('category');
-    registerBasicLookup('dimension');
 
     // Register all artist-related lookups
     registerArtistRelatedLookup('album');

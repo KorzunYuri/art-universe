@@ -37,7 +37,6 @@ export type MasterLookupParamsMap = {
     album: MasterArtistRelatedLookupParams;
     track: MasterArtistRelatedLookupParams;
     category: BasicMasterEntityLookupParams;
-    dimension: BasicMasterEntityLookupParams;
 };
 
 /**
@@ -48,5 +47,4 @@ export type MasterLookupRequestMap = {
     album: MasterArtistRelatedLookupRequest;
     track: MasterArtistRelatedLookupRequest;
     category: BasicMasterLookupRequest;
-    dimension: BasicMasterLookupRequest;
 };

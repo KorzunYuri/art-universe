@@ -1,1 +1,0 @@
-export { DimensionsTable } from './DimensionsTable';

@@ -9,7 +9,6 @@ import {
     type Artist, ArtistImpl,
     type Track, TrackImpl,
     type Category, CategoryImpl,
-    type Dimension, DimensionImpl,
     type RawEntity,
     type ArtistRelatedRawEntity, type MasterEntityMap
 } from "@/music-universe/shared/types/entities.ts";
@@ -53,7 +52,6 @@ type EntityBindingResponseMap = {
     album:      ArtistRelatedBoundEntityResponse;
     track:      ArtistRelatedBoundEntityResponse;
     category:   BoundEntityResponse;
-    dimension:  BoundEntityResponse;
 }
 
 export type EntityCreateAndBindRequestMap = {
@@ -61,7 +59,6 @@ export type EntityCreateAndBindRequestMap = {
     album:      ArtistRelatedEntityCreateAndBindRequest;
     track:      ArtistRelatedEntityCreateAndBindRequest;
     category:   EntityCreateAndBindRequest;
-    dimension:  EntityCreateAndBindRequest;
 }
 
 export type EntityBindToExistingRequestMap = {
@@ -69,7 +66,6 @@ export type EntityBindToExistingRequestMap = {
     album:      ArtistRelatedEntityBindToExistingRequest;
     track:      ArtistRelatedEntityBindToExistingRequest;
     category:   EntityBindToExistingRequest;
-    dimension:  EntityBindToExistingRequest;
 }
 
 function createArtistFromBindingResponse(res: BoundEntityResponse): Artist {
@@ -84,9 +80,6 @@ function createTrackFromBindingResponse(res: ArtistRelatedBoundEntityResponse): 
 function createCategoryFromBindingResponse(res: BoundEntityResponse): Category {
     return new CategoryImpl(res.masterId, res.masterName);
 }
-function createDimensionFromBindingResponse(res: BoundEntityResponse): Dimension {
-    return new DimensionImpl(res.masterId, res.masterName);
-}
 
 const bindingResponseMappers: {
     [K in MasterEntityType]: (dto: EntityBindingResponseMap[K]) => MasterEntityMap[K];
@@ -95,7 +88,6 @@ const bindingResponseMappers: {
     album:      createAlbumFromBindingResponse,
     track:      createTrackFromBindingResponse,
     category:   createCategoryFromBindingResponse,
-    dimension:  createDimensionFromBindingResponse,
 };
 
 

@@ -1,6 +1,6 @@
 import type {DataSource} from "@/music-universe/sources/shared/types/data-sources.ts";
 
-export type MasterEntityType = "artist" | "album" | "track" | "category" | "dimension";
+export type MasterEntityType = "artist" | "album" | "track" | "category";
 
 export interface BaseEntity {
     id: number;
@@ -81,12 +81,7 @@ export interface Track extends MasterEntity<"track"> {
 export interface Category extends MasterEntity<"category"> {
     parentId?: number | null;
     parentName?: string | null;
-    dimensionId?: number | null;
-    dimensionName?: string | null;
-    effectiveDimensionId?: number | null;
-    effectiveDimensionName?: string | null;
 }
-export interface Dimension extends MasterEntity<"dimension"> {}
 
 /** ------------------ Master Entity Implementations ------------------ **/
 
@@ -121,23 +116,13 @@ export class CategoryImpl extends BaseMasterEntity<"category"> implements Catego
         id: number,
         name: string,
         public parentId?: number | null,
-        public parentName?: string | null,
-        public dimensionId?: number | null,
-        public dimensionName?: string | null,
-        public effectiveDimensionId?: number | null,
-        public effectiveDimensionName?: string | null
+        public parentName?: string | null
     ) {
         super(id, name);
     }
 
     getEntityType(): "category" {
         return "category";
-    }
-}
-
-export class DimensionImpl extends BaseMasterEntity<"dimension"> implements Dimension {
-    getEntityType(): "dimension" {
-        return "dimension";
     }
 }
 
@@ -148,5 +133,4 @@ export type MasterEntityMap = {
     album:      Album;
     track:      Track;
     category:   Category;
-    dimension:  Dimension;
 };

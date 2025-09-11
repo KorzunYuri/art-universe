@@ -31,5 +31,4 @@ export type LookupRequestMap = {
     album: MasterArtistRelatedLookupRequest;
     track: MasterArtistRelatedLookupRequest;
     category: BasicMasterLookupRequest;
-    dimension: BasicMasterLookupRequest;
 };

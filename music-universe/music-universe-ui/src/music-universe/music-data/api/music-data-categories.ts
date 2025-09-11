@@ -7,10 +7,6 @@ import type {BaseMasterEntityDto} from "@/music-universe/music-data/api/music-da
 export interface CategoryDto extends BaseMasterEntityDto{
     parentId: number | null;
     parentName: string | null;
-    dimensionId: number | null;
-    dimensionName: string | null;
-    effectiveDimensionId: number | null;
-    effectiveDimensionName: string | null;
 }
 
 export interface CategoryPageSearchParams extends BasePageSearchParams {}
@@ -18,7 +14,6 @@ export interface CategoryPageSearchParams extends BasePageSearchParams {}
 export interface CategorySaveRequest {
     id?: number;
     name: string;
-    dimensionId?: number | null;
     parentId?: number | null;
 }
 
@@ -30,11 +25,7 @@ export function createCategoryFromDto(dto: CategoryDto): Category {
         dto.id,
         dto.name,
         dto.parentId,
-        dto.parentName,
-        dto.dimensionId,
-        dto.dimensionName,
-        dto.effectiveDimensionId,
-        dto.effectiveDimensionName
+        dto.parentName
     );
 }
 

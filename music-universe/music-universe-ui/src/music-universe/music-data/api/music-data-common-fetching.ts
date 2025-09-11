@@ -11,15 +11,13 @@ import type {ArtistPageSearchParams} from "@/music-universe/music-data/api/music
 import type {AlbumPageSearchParams} from "@/music-universe/music-data/api/music-data-albums.ts";
 import type {TrackPageSearchParams} from "@/music-universe/music-data/api/music-data-tracks.ts";
 import type {CategoryPageSearchParams} from "@/music-universe/music-data/api/music-data-categories.ts";
-import type {DimensionPageSearchParams} from "@/music-universe/music-data/api/music-data-dimensions.ts";
 
 
 export type MasterEntityPageSearchParamsMap = {
     artist:     ArtistPageSearchParams,
     album:      AlbumPageSearchParams,
     track:      TrackPageSearchParams,
-    category:   CategoryPageSearchParams,
-    dimension:  DimensionPageSearchParams
+    category:   CategoryPageSearchParams
 }
 
 export async function fetchMasterEntities<T extends MasterEntityType>(

@@ -4,8 +4,7 @@ import {useState} from "react";
 import {
     EditableText,
     EntityLookup,
-    StaticAutocompleteInput,
-    ReadonlyAttr, type BaseEntityTableRow
+    type BaseEntityTableRow
 } from "@/music-universe/shared/components";
 // types
 import type { CategorySaveRequest } from "@/music-universe/music-data/api/music-data-categories";
@@ -19,7 +18,6 @@ import {useMasterEntity} from "@/music-universe/music-data/hooks/useMasterEntity
 import sharedTableStyles from "@/music-universe/shared/styles/EntityTableStyles.module.scss";
 import artistTableStyles
     from "@/music-universe/sources/lastfm/components/LastfmArtistsTable/LastfmArtistsTable.module.css";
-import {useMasterEntitiesLookup} from "@/music-universe/music-data/hooks/useMasterEntitiesLookup.ts";
 import { LookupContextFactory } from "@/music-universe/shared/types/lookup-context";
 
 interface CategoriesTableRowProps extends BaseEntityTableRow {
@@ -39,17 +37,9 @@ export const CategoriesTableRow = (
         error
     } = useMasterEntity(entityType, entityId);
 
-    const {
-        currentOptions: dimensions,
-        isLoading: isLoadingDimensions
-    } = useMasterEntitiesLookup(
-        'dimension', { search: '', context: LookupContextFactory.basic() }, true);
-
     const [editedName, setEditedName] = useState(entity?.name || '');
     const [editedParentName, setEditedParentName] = useState(entity?.parentName || '');
-    const [editedDimensionName, setEditedDimensionName] = useState(entity?.dimensionName || '');
     const [selectedParent, setSelectedParent] = useState<LookupEntity | null>(null);
-    const [selectedDimension, setSelectedDimension] = useState<LookupEntity | null>(null);
     const [isDirty, setIsDirty] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
@@ -74,11 +64,10 @@ export const CategoriesTableRow = (
         )
     }
 
-    const checkDirty = (name: string, parentName: string, dimensionName: string) => {
+    const checkDirty = (name: string, parentName: string) => {
         const isNameDirty = name !== entity.name;
         const isParentDirty = parentName !== (entity.parentName || '');
-        const isDimensionDirty = dimensionName !== (entity.dimensionName || '');
-        const newIsDirty = isNameDirty || isParentDirty || isDimensionDirty;
+        const newIsDirty = isNameDirty || isParentDirty;
 
         setIsDirty(newIsDirty);
     };
@@ -91,8 +80,7 @@ export const CategoriesTableRow = (
             const saveRequest: CategorySaveRequest = {
                 id: entity.id,
                 name: editedName.trim(),
-                parentId: selectedParent?.id || (editedParentName && editedParentName !== (entity.parentName || '') ? null : entity.parentId),
-                dimensionId: selectedDimension?.id || (editedDimensionName && editedDimensionName !== (entity.dimensionName || '') ? null : entity.dimensionId)
+                parentId: selectedParent?.id || (editedParentName && editedParentName !== (entity.parentName || '') ? null : entity.parentId)
             };
 
             const savedCategory = await saveCategory(saveRequest);
@@ -105,18 +93,14 @@ export const CategoriesTableRow = (
                 // Reset to original values on failure
                 setEditedName(entity.name);
                 setEditedParentName(entity.parentName || '');
-                setEditedDimensionName(entity.dimensionName || '');
                 setSelectedParent(null);
-                setSelectedDimension(null);
             }
         } catch (error) {
             console.error('❌ Error saving category:', error);
             // Reset to original values on error
             setEditedName(entity.name);
             setEditedParentName(entity.parentName || '');
-            setEditedDimensionName(entity.dimensionName || '');
             setSelectedParent(null);
-            setSelectedDimension(null);
         } finally {
             setIsSaving(false);
         }
@@ -124,7 +108,7 @@ export const CategoriesTableRow = (
 
     const handleNameChange = (newName: string) => {
         setEditedName(newName);
-        checkDirty(newName, editedParentName, editedDimensionName);
+        checkDirty(newName, editedParentName);
     };
 
     const handleParentChange = (newParentName: string) => {
@@ -133,39 +117,18 @@ export const CategoriesTableRow = (
         if (selectedParent && newParentName !== selectedParent.name) {
             setSelectedParent(null);
         }
-        checkDirty(editedName, newParentName, editedDimensionName);
+        checkDirty(editedName, newParentName);
     };
 
     const handleParentSelect = (parent: LookupEntity | null) => {
         if (parent) {
             setSelectedParent(parent);
             setEditedParentName(parent.name);
-            checkDirty(editedName, parent.name, editedDimensionName);
+            checkDirty(editedName, parent.name);
         } else {
             setSelectedParent(null);
             setEditedParentName('');
-            checkDirty(editedName, '', editedDimensionName);
-        }
-    };
-
-    const handleDimensionChange = (newDimensionName: string) => {
-        setEditedDimensionName(newDimensionName);
-        // Clear selected dimension when user types manually
-        if (selectedDimension && newDimensionName !== selectedDimension.name) {
-            setSelectedDimension(null);
-        }
-        checkDirty(editedName, editedParentName, newDimensionName);
-    };
-
-    const handleDimensionSelect = (dimension: LookupEntity | null) => {
-        if (dimension) {
-            setSelectedDimension(dimension);
-            setEditedDimensionName(dimension.name);
-            checkDirty(editedName, editedParentName, dimension.name);
-        } else {
-            setSelectedDimension(null);
-            setEditedDimensionName('');
-            checkDirty(editedName, editedParentName, '');
+            checkDirty(editedName, '');
         }
     };
 
@@ -192,22 +155,6 @@ export const CategoriesTableRow = (
                     placeholder="Parent category"
                     disabled={isSaving}
                 />
-            </div>
-
-            <div className={`${sharedTableStyles.cell} ${styles.dimension}`}>
-                <StaticAutocompleteInput
-                    searchString={editedDimensionName}
-                    onChange={handleDimensionChange}
-                    onSelect={handleDimensionSelect}
-                    options={dimensions}
-                    selectedEntity={selectedDimension}
-                    placeholder="Dimension"
-                    disabled={isSaving || isLoadingDimensions}
-                />
-            </div>
-
-            <div className={`${sharedTableStyles.cell} ${styles.effectiveDimension}`}>
-                <ReadonlyAttr value={entity.effectiveDimensionName || '-'}/>
             </div>
 
             <div className={`${sharedTableStyles.cell} ${styles.actions}`}>

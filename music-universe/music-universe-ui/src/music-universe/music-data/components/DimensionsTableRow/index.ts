@@ -1,1 +1,0 @@
-export { DimensionsTableRow } from './DimensionsTableRow';

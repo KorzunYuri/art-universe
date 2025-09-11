@@ -8,16 +8,6 @@
     text-align: left;
 }
 
-.dimension {
-    flex: 2;
-    text-align: left;
-}
-
-.effectiveDimension {
-    flex: 2;
-    text-align: left;
-}
-
 .actions {
     flex: 0 0 100px;
     text-align: center;
