@@ -6,11 +6,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import yurykorzun.art.universe.music.data.master.dto.CategoryHierarchyProjection;
+import yurykorzun.art.universe.music.data.master.dto.CategoryDto;
+import yurykorzun.art.universe.music.data.master.dto.CategoryWithParentsDto;
 import yurykorzun.art.universe.common.dto.lookup.BaseBatchLookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategorySaveRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.CategorySaveWithParentsRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategoryDagDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategoryDagNodeDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategoryDagEdgeDTO;
@@ -20,11 +22,12 @@ import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjecti
 import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.entity.Category;
 import yurykorzun.art.universe.music.data.master.entity.CategoryBinding;
+import yurykorzun.art.universe.music.data.master.entity.CategoryCategory;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.repository.CategoryRepository;
 import yurykorzun.art.universe.music.data.master.repository.CategoryBindingRepository;
-import yurykorzun.art.universe.music.data.master.repository.DimensionRepository;
+import yurykorzun.art.universe.music.data.master.repository.CategoryCategoryRepository;
 import yurykorzun.art.universe.music.data.master.service.lookup.MasterEntityLookupService;
 
 import java.util.List;
@@ -35,30 +38,65 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
     private final CategoryBindingRepository categoryBindingRepository;
-    private final DimensionRepository dimensionRepository;
+    private final CategoryCategoryRepository categoryCategoryRepository;
     private final MasterEntityLookupService lookupService;
 
     public CategoryServiceImpl(
         CategoryRepository categoryRepository,
         CategoryBindingRepository categoryBindingRepository,
-        DimensionRepository dimensionRepository,
+        CategoryCategoryRepository categoryCategoryRepository,
         EntityManager entityManager
     ) {
         this.categoryRepository = categoryRepository;
         this.categoryBindingRepository = categoryBindingRepository;
-        this.dimensionRepository = dimensionRepository;
+        this.categoryCategoryRepository = categoryCategoryRepository;
         this.lookupService = new MasterEntityLookupService(entityManager, MasterEntityType.CATEGORY);
     }
 
     @Override
-    public Page<CategoryHierarchyProjection> findCategories(String search, Pageable pageable) {
-        return categoryRepository.findCategories(search, pageable);
+    public Page<CategoryDto> findCategories(String search, Pageable pageable) {
+        return categoryRepository.findCategories(search, pageable)
+            .map(this::mapToDto);
+    }
+
+    private CategoryDto mapToDto(Category category) {
+        return CategoryDto.builder()
+            .id(category.getId())
+            .name(category.getName())
+            .build();
     }
 
     @Override
-    public CategoryHierarchyProjection getCategory(Long id) {
-        return categoryRepository.findByIdWithHierarchy(id)
+    public List<CategoryWithParentsDto> findCategoriesWithParents(String search) {
+        List<Category> categories = categoryRepository.findCategoriesWithParentsEntities(search);
+        return categories.stream()
+            .map(this::mapToCategoryWithParents)
+            .toList();
+    }
+
+    private CategoryWithParentsDto mapToCategoryWithParents(Category category) {
+        List<CategoryDto> parents = List.of();
+        if (category.getParentRelations() != null) {
+            parents = category.getParentRelations().stream()
+                .map(relation -> CategoryDto.builder()
+                    .id(relation.getSourceCategory().getId())
+                    .name(relation.getSourceCategory().getName())
+                    .build())
+                .toList();
+        }
+        
+        return CategoryWithParentsDto.builder()
+            .id(category.getId())
+            .name(category.getName())
+            .parents(parents)
+            .build();
+    }
+
+    @Override
+    public CategoryDto getCategory(Long id) {
+        Category category = categoryRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("Category not found with id " + id));
+        return mapToDto(category);
     }
 
     @Override
@@ -74,24 +112,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
-    public CategoryHierarchyProjection saveCategory(CategorySaveRequestDTO request) {
-        // Validate that category cannot be parent of itself
-        if (request.getId() != null && request.getParentId() != null && request.getId().equals(request.getParentId())) {
-            throw new IllegalArgumentException("Category cannot be parent of itself");
-        }
-        
-        // Validate dimension if provided
-        if (request.getDimensionId() != null) {
-            dimensionRepository.findById(request.getDimensionId())
-                .orElseThrow(() -> new EntityNotFoundException("Dimension not found with id: " + request.getDimensionId()));
-        }
-        
-        // Validate parent if provided
-        if (request.getParentId() != null) {
-            categoryRepository.findById(request.getParentId())
-                .orElseThrow(() -> new EntityNotFoundException("Parent category not found with id: " + request.getParentId()));
-        }
-        
+    public CategoryDto saveCategory(CategorySaveRequestDTO request) {
         Category category;
         if (request.getId() != null) {
             // Update existing category
@@ -99,28 +120,83 @@ public class CategoryServiceImpl implements CategoryService {
                 .orElseThrow(() -> new EntityNotFoundException("Category not found with id: " + request.getId()));
             
             category.setName(request.getName());
-            category.setDimensionId(request.getDimensionId());
-            category.setParentId(request.getParentId());
         } else {
             // Create new category
             category = Category.builder()
                 .name(request.getName())
-                .dimensionId(request.getDimensionId())
-                .parentId(request.getParentId())
+                .build();
+        }
+        
+        Category savedCategory = categoryRepository.save(category);
+        return mapToDto(savedCategory);
+    }
+
+    @Override
+    @Transactional
+    public CategoryWithParentsDto saveCategoryWithParents(CategorySaveWithParentsRequestDTO request) {
+        Category category;
+        if (request.getId() != null) {
+            // Update existing category
+            category = categoryRepository.findById(request.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Category not found with id: " + request.getId()));
+            
+            category.setName(request.getName());
+        } else {
+            // Create new category
+            category = Category.builder()
+                .name(request.getName())
                 .build();
         }
         
         Category savedCategory = categoryRepository.save(category);
         
-        // Return the saved category with hierarchy information
-        return categoryRepository.findByIdWithHierarchy(savedCategory.getId())
+        // Update parent relationships
+        if (request.getId() != null) {
+            // Remove existing parent relationships
+            categoryCategoryRepository.deleteAll(categoryCategoryRepository.findByTargetCategoryId(savedCategory.getId()));
+        }
+        
+        // Add new parent relationships
+        if (request.getParents() != null) {
+            for (Long parentId : request.getParents()) {
+                if (parentId != null) {
+                    CategoryCategory relation = CategoryCategory.builder()
+                        .sourceCategoryId(parentId)
+                        .targetCategoryId(savedCategory.getId())
+                        .build();
+                    categoryCategoryRepository.save(relation);
+                }
+            }
+        }
+        
+        // Return the saved category with parent information
+        Category categoryWithParents = categoryRepository.findById(savedCategory.getId())
             .orElseThrow(() -> new EntityNotFoundException("Category not found after save"));
+        
+        return mapToCategoryWithParents(categoryWithParents);
     }
 
     @Override
     @Transactional
     public boolean deleteCategory(Long id) {
         if (categoryRepository.existsById(id)) {
+            // Find all parents and children
+            List<Long> parents = categoryCategoryRepository.findParentIds(id);
+            List<Long> children = categoryCategoryRepository.findChildIds(id);
+            
+            // Connect each child to each parent (smart cascade deletion)
+            for (Long childId : children) {
+                for (Long parentId : parents) {
+                    if (!categoryCategoryRepository.existsBySourceCategoryIdAndTargetCategoryId(parentId, childId)) {
+                        CategoryCategory relation = CategoryCategory.builder()
+                            .sourceCategoryId(parentId)
+                            .targetCategoryId(childId)
+                            .build();
+                        categoryCategoryRepository.save(relation);
+                    }
+                }
+            }
+            
             categoryRepository.deleteById(id);
             return true;
         }
@@ -225,20 +301,24 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional(readOnly = true)
     public CategoryDagDTO getCategoryDag() {
         List<Category> allCategories = categoryRepository.findAll();
+        List<CategoryCategory> allRelations = categoryCategoryRepository.findAll();
         
         List<CategoryDagNodeDTO> nodes = allCategories.stream()
-            .map(category -> CategoryDagNodeDTO.builder()
-                .id(category.getId())
-                .name(category.getName())
-                .isRoot(category.getParentId() == null)
-                .build())
+            .map(category -> {
+                boolean isRoot = allRelations.stream()
+                    .noneMatch(rel -> rel.getTargetCategoryId().equals(category.getId()));
+                return CategoryDagNodeDTO.builder()
+                    .id(category.getId())
+                    .name(category.getName())
+                    .isRoot(isRoot)
+                    .build();
+            })
             .toList();
         
-        List<CategoryDagEdgeDTO> edges = allCategories.stream()
-            .filter(category -> category.getParentId() != null)
-            .map(category -> CategoryDagEdgeDTO.builder()
-                .source(category.getParentId())
-                .target(category.getId())
+        List<CategoryDagEdgeDTO> edges = allRelations.stream()
+            .map(relation -> CategoryDagEdgeDTO.builder()
+                .source(relation.getSourceCategoryId())
+                .target(relation.getTargetCategoryId())
                 .build())
             .toList();
         

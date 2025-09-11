@@ -9,19 +9,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import yurykorzun.art.universe.music.data.master.dto.CategoryHierarchyProjection;
+import yurykorzun.art.universe.music.data.master.dto.*;
 import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategorySaveRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryDagDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryDagNodeDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryDagEdgeDTO;
 import yurykorzun.art.universe.common.dto.lookup.BaseBatchLookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.TestCategoryHierarchyProjectionImpl;
 import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.common.exception.EntityNotFoundException;
@@ -55,18 +50,22 @@ class CategoryControllerTest {
         String search = "genre";
         Pageable pageable = PageRequest.of(0, 10);
         
-        CategoryHierarchyProjection category1 = new TestCategoryHierarchyProjectionImpl(
-            1L, "Genre", 1L, 1L, null, 1, "Dimension 1", "Dimension 1", null);
-        CategoryHierarchyProjection category2 = new TestCategoryHierarchyProjectionImpl(
-            2L, "Subgenre", 1L, 1L, 1L, 2, "Dimension 1", "Dimension 1", "Genre");
+        CategoryDto category1 = CategoryDto.builder()
+            .id(1L)
+            .name("Genre")
+            .build();
+        CategoryDto category2 = CategoryDto.builder()
+            .id(2L)
+            .name("Subgenre")
+            .build();
         
-        List<CategoryHierarchyProjection> categories = Arrays.asList(category1, category2);
-        Page<CategoryHierarchyProjection> expectedPage = new PageImpl<>(categories, pageable, categories.size());
+        List<CategoryDto> categories = Arrays.asList(category1, category2);
+        Page<CategoryDto> expectedPage = new PageImpl<>(categories, pageable, categories.size());
         
         when(categoryService.findCategories(search, pageable)).thenReturn(expectedPage);
 
         // When
-        Page<CategoryHierarchyProjection> result = categoryController.findCategories(search, pageable);
+        Page<CategoryDto> result = categoryController.findCategories(search, pageable);
 
         // Then
         assertEquals(expectedPage, result);
@@ -146,20 +145,21 @@ class CategoryControllerTest {
     }
 
     @Test
-    void saveCategory_shouldReturnCategoryHierarchyProjection() {
+    void saveCategory_shouldReturnCategoryDto() {
         // Given
         CategorySaveRequestDTO request = CategorySaveRequestDTO.builder()
             .name("Genre")
-            .dimensionId(1L)
             .build();
         
-        CategoryHierarchyProjection savedCategory = new TestCategoryHierarchyProjectionImpl(
-            1L, "Genre", 1L, 1L, null, 1, "Dimension 1", "Dimension 1", null);
+        CategoryDto savedCategory = CategoryDto.builder()
+            .id(1L)
+            .name("Genre")
+            .build();
         
         when(categoryService.saveCategory(request)).thenReturn(savedCategory);
 
         // When
-        CategoryHierarchyProjection result = categoryController.saveCategory(request);
+        CategoryDto result = categoryController.saveCategory(request);
 
         // Then
         assertEquals(savedCategory, result);
@@ -171,7 +171,6 @@ class CategoryControllerTest {
         // Given
         CategorySaveRequestDTO request = CategorySaveRequestDTO.builder()
             .name("Genre")
-            .dimensionId(1L)
             .build();
         RuntimeException expectedException = new RuntimeException("Test error");
         
@@ -187,24 +186,75 @@ class CategoryControllerTest {
     }
 
     @Test
-    void saveCategory_whenSelfParentValidationFails_shouldPassThroughException() {
+    void findCategoriesWithParents_shouldReturnListOfCategoriesWithParents() {
         // Given
-        CategorySaveRequestDTO request = CategorySaveRequestDTO.builder()
-            .id(1L)
-            .name("Test Category")
-            .parentId(1L) // Same as ID - self-parent
-            .build();
-        IllegalArgumentException expectedException = new IllegalArgumentException("Category cannot be parent of itself");
+        String search = "rock";
+        CategoryDto parent1 = CategoryDto.builder().id(1L).name("Music").build();
+        CategoryDto parent2 = CategoryDto.builder().id(2L).name("Genre").build();
         
-        when(categoryService.saveCategory(request)).thenThrow(expectedException);
+        CategoryWithParentsDto category = CategoryWithParentsDto.builder()
+            .id(3L)
+            .name("Rock")
+            .parents(Arrays.asList(parent1, parent2))
+            .build();
+        
+        List<CategoryWithParentsDto> expectedCategories = Arrays.asList(category);
+        
+        when(categoryService.findCategoriesWithParents(search)).thenReturn(expectedCategories);
+
+        // When
+        List<CategoryWithParentsDto> result = categoryController.findCategoriesWithParents(search);
+
+        // Then
+        assertEquals(expectedCategories, result);
+        verify(categoryService).findCategoriesWithParents(search);
+    }
+
+    @Test
+    void saveCategoryWithParents_shouldReturnCategoryWithParentsDto() {
+        // Given
+        CategorySaveWithParentsRequestDTO request = CategorySaveWithParentsRequestDTO.builder()
+            .name("Rock")
+            .parents(Arrays.asList(1L, 2L))
+            .build();
+        
+        CategoryDto parent1 = CategoryDto.builder().id(1L).name("Music").build();
+        CategoryDto parent2 = CategoryDto.builder().id(2L).name("Genre").build();
+        
+        CategoryWithParentsDto savedCategory = CategoryWithParentsDto.builder()
+            .id(3L)
+            .name("Rock")
+            .parents(Arrays.asList(parent1, parent2))
+            .build();
+        
+        when(categoryService.saveCategoryWithParents(request)).thenReturn(savedCategory);
+
+        // When
+        CategoryWithParentsDto result = categoryController.saveCategoryWithParents(request);
+
+        // Then
+        assertEquals(savedCategory, result);
+        verify(categoryService).saveCategoryWithParents(request);
+    }
+
+    @Test
+    void saveCategoryWithParents_whenExceptionThrown_shouldPassThroughException() {
+        // Given
+        CategorySaveWithParentsRequestDTO request = CategorySaveWithParentsRequestDTO.builder()
+            .name("Rock")
+            .parents(Arrays.asList(1L, 2L))
+            .build();
+        RuntimeException expectedException = new RuntimeException("Test error");
+        
+        when(categoryService.saveCategoryWithParents(request)).thenThrow(expectedException);
 
         // When & Then
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> 
-            categoryController.saveCategory(request)
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+            categoryController.saveCategoryWithParents(request)
         );
         
         assertSame(expectedException, exception);
-        verify(categoryService).saveCategory(request);
+        verify(categoryService).saveCategoryWithParents(request);
     }
 
     @Test

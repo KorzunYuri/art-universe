@@ -9,20 +9,25 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import yurykorzun.art.universe.music.data.master.dto.CategorySaveRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.CategorySaveWithParentsRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategoryDagDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategoryDagNodeDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategoryDagEdgeDTO;
+import yurykorzun.art.universe.music.data.master.dto.CategoryDto;
+import yurykorzun.art.universe.music.data.master.dto.CategoryWithParentsDto;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.master.entity.Category;
 import yurykorzun.art.universe.music.data.master.entity.CategoryBinding;
+import yurykorzun.art.universe.music.data.master.entity.CategoryCategory;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.repository.CategoryRepository;
 import yurykorzun.art.universe.music.data.master.repository.CategoryBindingRepository;
-import yurykorzun.art.universe.music.data.master.repository.DimensionRepository;
+import yurykorzun.art.universe.music.data.master.repository.CategoryCategoryRepository;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,7 +45,7 @@ class CategoryServiceTest {
     private CategoryBindingRepository categoryBindingRepository;
 
     @Mock
-    private DimensionRepository dimensionRepository;
+    private CategoryCategoryRepository categoryCategoryRepository;
     
     @Mock
     private EntityManager entityManager;
@@ -399,24 +404,30 @@ class CategoryServiceTest {
 
 
     @Test
-    void saveCategory_whenCategoryIsParentOfItself_shouldThrowException() {
+    void saveCategoryWithParents_shouldCreateCategoryAndRelations() {
         // Given
-        Long categoryId = 1L;
-        CategorySaveRequestDTO request = CategorySaveRequestDTO.builder()
-            .id(categoryId)
-            .name("Test Category")
-            .parentId(categoryId) // Same as ID - self-parent
+        CategorySaveWithParentsRequestDTO request = CategorySaveWithParentsRequestDTO.builder()
+            .name("Rock")
+            .parents(Arrays.asList(1L, 2L))
             .build();
-
-        // When & Then
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> 
-            categoryService.saveCategory(request));
         
-        assertEquals("Category cannot be parent of itself", exception.getMessage());
+        Category savedCategory = Category.builder()
+            .id(3L)
+            .name("Rock")
+            .build();
         
-        // Verify no repository calls were made
-        verify(categoryRepository, never()).save(any());
-        verify(dimensionRepository, never()).findById(any());
+        when(categoryRepository.save(any(Category.class))).thenReturn(savedCategory);
+        when(categoryRepository.findById(3L)).thenReturn(Optional.of(savedCategory));
+        
+        // When
+        CategoryWithParentsDto result = categoryService.saveCategoryWithParents(request);
+        
+        // Then
+        assertEquals(3L, result.getId());
+        assertEquals("Rock", result.getName());
+        
+        verify(categoryRepository).save(any(Category.class));
+        verify(categoryCategoryRepository, times(2)).save(any(CategoryCategory.class));
     }
 
     @Test
@@ -425,18 +436,23 @@ class CategoryServiceTest {
         Category rootCategory = Category.builder()
             .id(1L)
             .name("Rock")
-            .parentId(null)
             .build();
         
         Category childCategory = Category.builder()
             .id(2L)
             .name("Alternative Rock")
-            .parentId(1L)
+            .build();
+        
+        CategoryCategory relation = CategoryCategory.builder()
+            .sourceCategoryId(1L)
+            .targetCategoryId(2L)
             .build();
         
         List<Category> categories = List.of(rootCategory, childCategory);
+        List<CategoryCategory> relations = List.of(relation);
         
         when(categoryRepository.findAll()).thenReturn(categories);
+        when(categoryCategoryRepository.findAll()).thenReturn(relations);
 
         // When
         CategoryDagDTO result = categoryService.getCategoryDag();
@@ -467,6 +483,7 @@ class CategoryServiceTest {
         assertEquals(2L, edge.getTarget());
         
         verify(categoryRepository).findAll();
+        verify(categoryCategoryRepository).findAll();
     }
 
     @Test
@@ -475,18 +492,18 @@ class CategoryServiceTest {
         Category category1 = Category.builder()
             .id(1L)
             .name("Rock")
-            .parentId(null)
             .build();
         
         Category category2 = Category.builder()
             .id(2L)
             .name("Jazz")
-            .parentId(null)
             .build();
         
         List<Category> categories = List.of(category1, category2);
+        List<CategoryCategory> emptyRelations = List.of();
         
         when(categoryRepository.findAll()).thenReturn(categories);
+        when(categoryCategoryRepository.findAll()).thenReturn(emptyRelations);
 
         // When
         CategoryDagDTO result = categoryService.getCategoryDag();
@@ -498,6 +515,7 @@ class CategoryServiceTest {
         result.getNodes().forEach(node -> assertTrue(node.isRoot()));
         
         verify(categoryRepository).findAll();
+        verify(categoryCategoryRepository).findAll();
     }
     
 

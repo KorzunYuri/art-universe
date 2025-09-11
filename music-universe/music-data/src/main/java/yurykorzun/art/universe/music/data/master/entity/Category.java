@@ -5,6 +5,8 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import yurykorzun.art.universe.common.persistence.entity.BaseEntity;
 
+import java.util.List;
+
 @Entity(name = "category")
 @SuperBuilder
 @NoArgsConstructor
@@ -26,17 +28,9 @@ public class Category extends BaseEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "dimension_id")
-    private Long dimensionId;
+    @OneToMany(mappedBy = "sourceCategory", fetch = FetchType.LAZY)
+    private List<CategoryCategory> childRelations;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "dimension_id", insertable = false, updatable = false)
-    private Dimension dimension;
-
-    @Column(name = "parent_id")
-    private Long parentId;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_id", insertable = false, updatable = false)
-    private Category parent;
+    @OneToMany(mappedBy = "targetCategory", fetch = FetchType.LAZY)
+    private List<CategoryCategory> parentRelations;
 }

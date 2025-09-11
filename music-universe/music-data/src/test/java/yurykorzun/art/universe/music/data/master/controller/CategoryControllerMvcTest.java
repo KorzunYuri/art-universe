@@ -11,6 +11,8 @@ import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
+import yurykorzun.art.universe.music.data.master.dto.CategoryDto;
+import yurykorzun.art.universe.music.data.master.dto.CategoryWithParentsDto;
 import yurykorzun.art.universe.music.data.master.dto.CategoryDagDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategoryDagNodeDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategoryDagEdgeDTO;
@@ -256,6 +258,63 @@ class CategoryControllerMvcTest {
         
         // When & Then
         mockMvc.perform(get("/api/v1/categories/dag"))
+            .andExpect(status().isInternalServerError());
+    }
+    
+    @Test
+    void whenFindCategoriesWithParents_shouldReturnCategoriesWithParents() throws Exception {
+        // Given
+        String searchQuery = "rock";
+        CategoryDto parent1 = CategoryDto.builder().id(1L).name("Music").build();
+        CategoryDto parent2 = CategoryDto.builder().id(2L).name("Genre").build();
+        
+        CategoryWithParentsDto category = CategoryWithParentsDto.builder()
+            .id(3L)
+            .name("Rock")
+            .parents(Arrays.asList(parent1, parent2))
+            .build();
+        
+        List<CategoryWithParentsDto> expectedCategories = Arrays.asList(category);
+        String expectedJson = objectMapper.writeValueAsString(expectedCategories);
+        
+        when(categoryService.findCategoriesWithParents(searchQuery)).thenReturn(expectedCategories);
+        
+        // When & Then
+        mockMvc.perform(get("/api/v1/categories/with-parents")
+                .param("query", searchQuery))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(content().json(expectedJson));
+    }
+
+    @Test
+    void whenFindCategoriesWithParents_withNoResults_shouldReturnEmptyList() throws Exception {
+        // Given
+        String searchQuery = "nonexistent";
+        List<CategoryWithParentsDto> emptyList = Collections.emptyList();
+        String expectedJson = objectMapper.writeValueAsString(emptyList);
+        
+        when(categoryService.findCategoriesWithParents(searchQuery)).thenReturn(emptyList);
+        
+        // When & Then
+        mockMvc.perform(get("/api/v1/categories/with-parents")
+                .param("query", searchQuery))
+            .andExpect(status().isOk())
+            .andExpect(content().json(expectedJson));
+    }
+
+    @Test
+    void whenFindCategoriesWithParents_withError_shouldReturnFailureResponse() throws Exception {
+        // Given
+        String searchQuery = "rock";
+        String errorMessage = "Search error occurred";
+        
+        when(categoryService.findCategoriesWithParents(searchQuery))
+            .thenThrow(new RuntimeException(errorMessage));
+        
+        // When & Then
+        mockMvc.perform(get("/api/v1/categories/with-parents")
+                .param("query", searchQuery))
             .andExpect(status().isInternalServerError());
     }
 }

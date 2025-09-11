@@ -6,8 +6,10 @@ import yurykorzun.art.universe.common.dto.lookup.BaseBatchLookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryHierarchyProjection;
+import yurykorzun.art.universe.music.data.master.dto.CategoryDto;
+import yurykorzun.art.universe.music.data.master.dto.CategoryWithParentsDto;
 import yurykorzun.art.universe.music.data.master.dto.CategorySaveRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.CategorySaveWithParentsRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategoryDagDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
@@ -25,12 +27,20 @@ public interface CategoryService {
      * @param pageable Pagination and sorting parameters
      * @return Page of categories with hierarchy information
      */
-    Page<CategoryHierarchyProjection> findCategories(String search, Pageable pageable);
+    Page<CategoryDto> findCategories(String search, Pageable pageable);
+
+    /**
+     * Find categories with their parent information
+     * 
+     * @param search Optional search term (case insensitive, partial match)
+     * @return List of categories with parent information
+     */
+    List<CategoryWithParentsDto> findCategoriesWithParents(String search);
 
     /**
      * Returns a single category with a provided id
      */
-    CategoryHierarchyProjection getCategory(Long id);
+    CategoryDto getCategory(Long id);
 
     /**
      * Lookup categories by name for dropdown lists
@@ -54,7 +64,15 @@ public interface CategoryService {
      * @param request The category save request DTO
      * @return The saved category with hierarchy information
      */
-    CategoryHierarchyProjection saveCategory(CategorySaveRequestDTO request);
+    CategoryDto saveCategory(CategorySaveRequestDTO request);
+    
+    /**
+     * Save a category with parent relationships (create new or update existing)
+     * 
+     * @param request The category save request DTO with parent information
+     * @return The saved category with parent information
+     */
+    CategoryWithParentsDto saveCategoryWithParents(CategorySaveWithParentsRequestDTO request);
     
     /**
      * Delete a category by ID

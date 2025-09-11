@@ -6,17 +6,18 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Request to save category field values. Category relations are managed separately.
- */
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CategorySaveRequestDTO {
+public class CategorySaveWithParentsRequestDTO {
     
     private Long id;
     
     @NotBlank(message = "Category name is required")
     private String name;
+    
+    private List<Long> parents;
 }

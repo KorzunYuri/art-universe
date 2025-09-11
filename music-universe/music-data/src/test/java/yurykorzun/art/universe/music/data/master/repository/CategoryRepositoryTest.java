@@ -10,9 +10,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import yurykorzun.art.universe.music.data.master.common.archetypes.JpaOnlyTest;
-import yurykorzun.art.universe.music.data.master.dto.CategoryHierarchyProjection;
 import yurykorzun.art.universe.music.data.master.entity.Category;
-import yurykorzun.art.universe.music.data.master.entity.Dimension;
+import yurykorzun.art.universe.music.data.master.entity.CategoryCategory;
 
 import java.util.List;
 import java.util.Map;
@@ -28,74 +27,75 @@ class CategoryRepositoryTest extends JpaOnlyTest {
     private CategoryRepository categoryRepository;
 
     @Autowired
-    private DimensionRepository dimensionRepository;
+    private CategoryCategoryRepository categoryCategoryRepository;
 
     @Autowired
     private TestEntityManager em;
 
-    private Dimension dimension1;
-    private Dimension dimension2;
-    private Category categoryA;
-    private Category categoryAA;
-    private Category categoryAAA;
-    private Category categoryAAAA;
-    private Category categoryB;
+    private Category categoryMusic;
+    private Category categoryGenre;
+    private Category categoryRock;
+    private Category categoryAlternative;
+    private Category categoryJazz;
 
     @BeforeEach
     void setUp() {
-        // Create dimensions
-        dimension1 = Dimension.builder().name("Genre").build();
-        dimension2 = Dimension.builder().name("Mood").build();
-        dimensionRepository.save(dimension1);
-        dimensionRepository.save(dimension2);
+        // Create simple category hierarchy: Music -> Genre -> Rock -> Alternative
+        //                                          -> Jazz
+        categoryMusic = Category.builder().name("Music").build();
+        categoryRepository.save(categoryMusic);
         em.flush();
 
-        // Create category hierarchy
-        // A (Genre) -> AA (null) -> AAA (Mood) -> AAAA (null)
-        // B (Genre)
-        categoryA = Category.builder()
-            .name("Rock")
-            .dimensionId(dimension1.getId())
-            .build();
-        categoryRepository.save(categoryA);
+        categoryGenre = Category.builder().name("Genre").build();
+        categoryRepository.save(categoryGenre);
         em.flush();
 
-        categoryAA = Category.builder()
-            .name("Alternative Rock")
-            .parentId(categoryA.getId())
-            // No dimension set, should inherit from parent
-            .build();
-        categoryRepository.save(categoryAA);
+        categoryRock = Category.builder().name("Rock").build();
+        categoryRepository.save(categoryRock);
         em.flush();
 
-        categoryAAA = Category.builder()
-            .name("Melancholic Alternative")
-            .parentId(categoryAA.getId())
-            .dimensionId(dimension2.getId())
-            .build();
-        categoryRepository.save(categoryAAA);
+        categoryAlternative = Category.builder().name("Alternative").build();
+        categoryRepository.save(categoryAlternative);
         em.flush();
 
-        categoryAAAA = Category.builder()
-            .name("Sad Alternative")
-            .parentId(categoryAAA.getId())
-            // No dimension set, should inherit from parent
-            .build();
-        categoryRepository.save(categoryAAAA);
+        categoryJazz = Category.builder().name("Jazz").build();
+        categoryRepository.save(categoryJazz);
         em.flush();
 
-        categoryB = Category.builder()
-            .name("Jazz")
-            .dimensionId(dimension1.getId())
+        // Create relationships: Music -> Genre -> Rock -> Alternative
+        //                              -> Jazz
+        CategoryCategory musicToGenre = CategoryCategory.builder()
+            .sourceCategoryId(categoryMusic.getId())
+            .targetCategoryId(categoryGenre.getId())
             .build();
-        categoryRepository.save(categoryB);
+        categoryCategoryRepository.save(musicToGenre);
+
+        CategoryCategory genreToRock = CategoryCategory.builder()
+            .sourceCategoryId(categoryGenre.getId())
+            .targetCategoryId(categoryRock.getId())
+            .build();
+        categoryCategoryRepository.save(genreToRock);
+
+        CategoryCategory rockToAlternative = CategoryCategory.builder()
+            .sourceCategoryId(categoryRock.getId())
+            .targetCategoryId(categoryAlternative.getId())
+            .build();
+        categoryCategoryRepository.save(rockToAlternative);
+
+        CategoryCategory genreToJazz = CategoryCategory.builder()
+            .sourceCategoryId(categoryGenre.getId())
+            .targetCategoryId(categoryJazz.getId())
+            .build();
+        categoryCategoryRepository.save(genreToJazz);
+
         em.flush();
+        em.clear(); // Clear persistence context to force reload from database
     }
 
     @Test
-    void searchCategories_withNoFind_shouldReturnAllCategories() {
+    void findCategories_withNoSearch_shouldReturnAllCategories() {
         // When
-        Page<CategoryHierarchyProjection> result = categoryRepository.findCategories(null, PageRequest.of(0, 10));
+        Page<Category> result = categoryRepository.findCategories(null, PageRequest.of(0, 10));
 
         // Then
         assertThat(result.getContent()).hasSize(5);
@@ -103,9 +103,9 @@ class CategoryRepositoryTest extends JpaOnlyTest {
     }
 
     @Test
-    void searchCategories_withEmptyFind_shouldReturnAllCategories() {
+    void findCategories_withEmptySearch_shouldReturnAllCategories() {
         // When
-        Page<CategoryHierarchyProjection> result = categoryRepository.findCategories("", PageRequest.of(0, 10));
+        Page<Category> result = categoryRepository.findCategories("", PageRequest.of(0, 10));
 
         // Then
         assertThat(result.getContent()).hasSize(5);
@@ -115,60 +115,18 @@ class CategoryRepositoryTest extends JpaOnlyTest {
     @Test
     void findCategories_byName_shouldReturnMatchingCategories() {
         // When
-        Page<CategoryHierarchyProjection> result = categoryRepository.findCategories("rock", PageRequest.of(0, 10));
+        Page<Category> result = categoryRepository.findCategories("rock", PageRequest.of(0, 10));
 
-        // Then - should find "Rock", "Alternative Rock", and "Melancholic Alternative" (child of Alternative Rock)
-        assertThat(result.getContent()).hasSize(3);
-        List<String> names = result.getContent().stream()
-            .map(CategoryHierarchyProjection::getName)
-            .collect(Collectors.toList());
-        assertThat(names).containsExactlyInAnyOrder("Rock", "Alternative Rock", "Melancholic Alternative");
-    }
-
-    @Test
-    void findCategories_byParentName_shouldReturnMatchingCategories() {
-        // When - search for categories that have "Rock" as parent
-        Page<CategoryHierarchyProjection> result = categoryRepository.findCategories("rock", PageRequest.of(0, 10));
-
-        // Then - should find "Rock" itself, "Alternative Rock" (child of Rock), and "Melancholic Alternative" (child of Alternative Rock)
-        assertThat(result.getContent()).hasSize(3);
-        List<String> names = result.getContent().stream()
-            .map(CategoryHierarchyProjection::getName)
-            .collect(Collectors.toList());
-        assertThat(names).containsExactlyInAnyOrder("Rock", "Alternative Rock", "Melancholic Alternative");
-    }
-
-    @Test
-    void findCategories_byDimensionName_shouldReturnMatchingCategories() {
-        // When
-        Page<CategoryHierarchyProjection> result = categoryRepository.findCategories("genre", PageRequest.of(0, 10));
-
-        // Then - should find categories with Genre dimension (direct) and effective dimension (inherited)
-        assertThat(result.getContent()).hasSize(3);
-        List<String> names = result.getContent().stream()
-            .map(CategoryHierarchyProjection::getName)
-            .collect(Collectors.toList());
-        assertThat(names).containsExactlyInAnyOrder("Rock", "Jazz", "Alternative Rock");
-    }
-
-    @Test
-    void findCategories_byEffectiveDimensionName_shouldReturnMatchingCategories() {
-        // When
-        Page<CategoryHierarchyProjection> result = categoryRepository.findCategories("mood", PageRequest.of(0, 10));
-
-        // Then - should find categories with Mood as effective dimension
-        assertThat(result.getContent()).hasSize(2);
-        List<String> names = result.getContent().stream()
-            .map(CategoryHierarchyProjection::getName)
-            .collect(Collectors.toList());
-        assertThat(names).containsExactlyInAnyOrder("Melancholic Alternative", "Sad Alternative");
+        // Then
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent().getFirst().getName()).isEqualTo("Rock");
     }
 
     @Test
     void findCategories_withPagination_shouldReturnCorrectPage() {
         // When
-        Page<CategoryHierarchyProjection> firstPage = categoryRepository.findCategories(null, PageRequest.of(0, 2));
-        Page<CategoryHierarchyProjection> secondPage = categoryRepository.findCategories(null, PageRequest.of(1, 2));
+        Page<Category> firstPage = categoryRepository.findCategories(null, PageRequest.of(0, 2));
+        Page<Category> secondPage = categoryRepository.findCategories(null, PageRequest.of(1, 2));
 
         // Then
         assertThat(firstPage.getContent()).hasSize(2);
@@ -182,143 +140,47 @@ class CategoryRepositoryTest extends JpaOnlyTest {
     void findCategories_sortedByName_shouldReturnSortedResults() {
         // When
         Pageable pageable = PageRequest.of(0, 10, Sort.by("name").ascending());
-        Page<CategoryHierarchyProjection> result = categoryRepository.findCategories(null, pageable);
+        Page<Category> result = categoryRepository.findCategories(null, pageable);
 
         // Then
         List<String> names = result.getContent().stream()
-            .map(CategoryHierarchyProjection::getName)
+            .map(Category::getName)
             .collect(Collectors.toList());
         
         assertThat(names).containsExactly(
-            "Alternative Rock", "Jazz", "Melancholic Alternative", "Rock", "Sad Alternative"
+            "Alternative", "Genre", "Jazz", "Music", "Rock"
         );
     }
 
     @Test
-    void findCategories_sortedByNameDescending_shouldReturnSortedResults() {
+    void findCategoriesWithParentsEntities_shouldReturnCategoriesWithParentRelations() {
         // When
-        Pageable pageable = PageRequest.of(0, 10, Sort.by("name").descending());
-        Page<CategoryHierarchyProjection> result = categoryRepository.findCategories(null, pageable);
+        List<Category> result = categoryRepository.findCategoriesWithParentsEntities("rock");
 
         // Then
-        List<String> names = result.getContent().stream()
-            .map(CategoryHierarchyProjection::getName)
-            .collect(Collectors.toList());
+        assertThat(result).hasSize(1);
+        Category rock = result.getFirst();
+        assertThat(rock.getName()).isEqualTo("Rock");
         
-        assertThat(names).containsExactly(
-            "Sad Alternative", "Rock", "Melancholic Alternative", "Jazz", "Alternative Rock"
-        );
+        // Check parent relations are loaded
+        assertThat(rock.getParentRelations()).hasSize(1);
+        assertThat(rock.getParentRelations().getFirst().getSourceCategory().getName()).isEqualTo("Genre");
     }
 
     @Test
-    void findCategories_sortedByDimensionName_shouldReturnSortedResults() {
+    void findCategoriesWithParentsEntities_withNoSearch_shouldReturnAllCategories() {
         // When
-        Pageable pageable = PageRequest.of(0, 10, Sort.by("dimensionName").ascending().and(Sort.by("name").ascending()));
-        Page<CategoryHierarchyProjection> result = categoryRepository.findCategories(null, pageable);
+        List<Category> result = categoryRepository.findCategoriesWithParentsEntities(null);
 
         // Then
-        List<CategoryHierarchyProjection> content = result.getContent();
+        assertThat(result).hasSize(5);
         
-        // Categories should be sorted by dimensionName (null values first in PostgreSQL), then by name
-        // Expected order: Genre (Jazz, Rock), Mood (Melancholic Alternative), null (Alternative Rock, Sad Alternative)
-        assertThat(content.get(0).getDimensionName()).isEqualTo("Genre"); // Jazz
-        assertThat(content.get(0).getName()).isEqualTo("Jazz");
-        assertThat(content.get(1).getDimensionName()).isEqualTo("Genre"); // Rock
-        assertThat(content.get(1).getName()).isEqualTo("Rock");
-        assertThat(content.get(2).getDimensionName()).isEqualTo("Mood"); // Melancholic Alternative
-        assertThat(content.get(2).getName()).isEqualTo("Melancholic Alternative");
-        assertThat(content.get(3).getDimensionName()).isNull(); // Alternative Rock
-        assertThat(content.get(3).getName()).isEqualTo("Alternative Rock");
-        assertThat(content.get(4).getDimensionName()).isNull(); // Sad Alternative
-        assertThat(content.get(4).getName()).isEqualTo("Sad Alternative");
-    }
-
-    @Test
-    void findCategories_sortedByEffectiveDimensionName_shouldReturnSortedResults() {
-        // When
-        Pageable pageable = PageRequest.of(0, 10, Sort.by("effectiveDimensionName").ascending().and(Sort.by("name").ascending()));
-        Page<CategoryHierarchyProjection> result = categoryRepository.findCategories(null, pageable);
-
-        // Then
-        List<CategoryHierarchyProjection> content = result.getContent();
-        
-        // All should have effective dimension names (Genre or Mood)
-        assertThat(content.get(0).getEffectiveDimensionName()).isEqualTo("Genre"); // Alternative Rock
-        assertThat(content.get(1).getEffectiveDimensionName()).isEqualTo("Genre"); // Jazz
-        assertThat(content.get(2).getEffectiveDimensionName()).isEqualTo("Genre"); // Rock
-        assertThat(content.get(3).getEffectiveDimensionName()).isEqualTo("Mood"); // Melancholic Alternative
-        assertThat(content.get(4).getEffectiveDimensionName()).isEqualTo("Mood"); // Sad Alternative
-    }
-
-    @Test
-    void findCategories_shouldReturnCorrectHierarchyInformation() {
-        // When
-        Page<CategoryHierarchyProjection> result = categoryRepository.findCategories(null, PageRequest.of(0, 10));
-
-        // Then
-        Map<String, CategoryHierarchyProjection> categoryMap = result.getContent().stream()
-            .collect(Collectors.toMap(CategoryHierarchyProjection::getName, Function.identity()));
-
-        // Check Rock
-        CategoryHierarchyProjection rock = categoryMap.get("Rock");
-        assertThat(rock.getDimensionId()).isEqualTo(dimension1.getId());
-        assertThat(rock.getEffectiveDimensionId()).isEqualTo(dimension1.getId());
-        assertThat(rock.getParentId()).isNull();
-        assertThat(rock.getHierarchyLevel()).isEqualTo(1);
-        assertThat(rock.getDimensionName()).isEqualTo("Genre");
-        assertThat(rock.getEffectiveDimensionName()).isEqualTo("Genre");
-
-        // Check Alternative Rock
-        CategoryHierarchyProjection altRock = categoryMap.get("Alternative Rock");
-        assertThat(altRock.getDimensionId()).isNull();
-        assertThat(altRock.getEffectiveDimensionId()).isEqualTo(dimension1.getId()); // Inherited from Rock
-        assertThat(altRock.getParentId()).isEqualTo(categoryA.getId());
-        assertThat(altRock.getHierarchyLevel()).isEqualTo(2);
-        assertThat(altRock.getDimensionName()).isNull(); // No direct dimension
-        assertThat(altRock.getEffectiveDimensionName()).isEqualTo("Genre"); // Inherited
-
-        // Check Melancholic Alternative
-        CategoryHierarchyProjection melancholic = categoryMap.get("Melancholic Alternative");
-        assertThat(melancholic.getDimensionId()).isEqualTo(dimension2.getId());
-        assertThat(melancholic.getEffectiveDimensionId()).isEqualTo(dimension2.getId());
-        assertThat(melancholic.getParentId()).isEqualTo(categoryAA.getId());
-        assertThat(melancholic.getHierarchyLevel()).isEqualTo(3);
-        assertThat(melancholic.getDimensionName()).isEqualTo("Mood");
-        assertThat(melancholic.getEffectiveDimensionName()).isEqualTo("Mood");
-
-        // Check Sad Alternative
-        CategoryHierarchyProjection sad = categoryMap.get("Sad Alternative");
-        assertThat(sad.getDimensionId()).isNull();
-        assertThat(sad.getEffectiveDimensionId()).isEqualTo(dimension2.getId()); // Inherited from Melancholic Alternative
-        assertThat(sad.getParentId()).isEqualTo(categoryAAA.getId());
-        assertThat(sad.getHierarchyLevel()).isEqualTo(4);
-        assertThat(sad.getDimensionName()).isNull(); // No direct dimension
-        assertThat(sad.getEffectiveDimensionName()).isEqualTo("Mood"); // Inherited
-    }
-
-    @Test
-    void findByIdWithHierarchy_shouldReturnCategoryWithHierarchyInfo() {
-        // When
-        var result = categoryRepository.findByIdWithHierarchy(categoryAA.getId());
-
-        // Then
-        assertThat(result).isPresent();
-        CategoryHierarchyProjection altRock = result.get();
-        assertThat(altRock.getName()).isEqualTo("Alternative Rock");
-        assertThat(altRock.getDimensionId()).isNull();
-        assertThat(altRock.getEffectiveDimensionId()).isEqualTo(dimension1.getId());
-        assertThat(altRock.getParentId()).isEqualTo(categoryA.getId());
-        assertThat(altRock.getHierarchyLevel()).isEqualTo(2);
-        assertThat(altRock.getDimensionName()).isNull();
-        assertThat(altRock.getEffectiveDimensionName()).isEqualTo("Genre");
-    }
-
-    @Test
-    void findByIdWithHierarchy_whenNotFound_shouldReturnEmpty() {
-        // When
-        var result = categoryRepository.findByIdWithHierarchy(999L);
-
-        // Then
-        assertThat(result).isEmpty();
+        // Check that categories with parents have relations loaded
+        Category alternative = result.stream()
+            .filter(c -> c.getName().equals("Alternative"))
+            .findFirst()
+            .orElseThrow();
+        assertThat(alternative.getParentRelations()).hasSize(1);
+        assertThat(alternative.getParentRelations().getFirst().getSourceCategory().getName()).isEqualTo("Rock");
     }
 }

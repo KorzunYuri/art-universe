@@ -17,5 +17,6 @@
     <include file="changelogs/0011-category-hierarchy-view.xml" relativeToChangelogFile="true"/>
     <include file="changelogs/0012-cascade-delete-constraints.xml" relativeToChangelogFile="true"/>
     <include file="changelogs/0013-readonly-schema.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0014-category-migration.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

@@ -4,12 +4,14 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
-import yurykorzun.art.universe.music.data.master.dto.CategoryHierarchyProjection;
+import yurykorzun.art.universe.music.data.master.dto.CategoryDto;
 import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategorySaveRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.CategorySaveWithParentsRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategoryDagDTO;
 import yurykorzun.art.universe.common.dto.lookup.BaseBatchLookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.music.data.master.dto.CategoryWithParentsDto;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
@@ -37,15 +39,22 @@ public class CategoryController {
     }
 
     @GetMapping
-    public Page<CategoryHierarchyProjection> findCategories(
+    public Page<CategoryDto> findCategories(
         @RequestParam(required = false) String query,
         Pageable pageable
     ) {
         return categoryService.findCategories(query, pageable);
     }
 
+    @GetMapping("/with-parents")
+    public List<CategoryWithParentsDto> findCategoriesWithParents(
+        @RequestParam(required = false) String query
+    ) {
+        return categoryService.findCategoriesWithParents(query);
+    }
+
     @GetMapping("/{id}")
-    public CategoryHierarchyProjection getCategory(
+    public CategoryDto getCategory(
         @PathVariable Long id
     ) {
         return categoryService.getCategory(id);
@@ -71,10 +80,17 @@ public class CategoryController {
     }
 
     @PostMapping
-    public CategoryHierarchyProjection saveCategory(
+    public CategoryDto saveCategory(
         @Valid @RequestBody CategorySaveRequestDTO request
     ) {
         return categoryService.saveCategory(request);
+    }
+
+    @PostMapping("/with-parents")
+    public CategoryWithParentsDto saveCategoryWithParents(
+        @Valid @RequestBody CategorySaveWithParentsRequestDTO request
+    ) {
+        return categoryService.saveCategoryWithParents(request);
     }
 
     @DeleteMapping("/{id}")
