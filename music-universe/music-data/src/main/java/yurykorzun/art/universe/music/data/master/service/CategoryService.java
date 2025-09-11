@@ -6,11 +6,7 @@ import yurykorzun.art.universe.common.dto.lookup.BaseBatchLookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryDto;
-import yurykorzun.art.universe.music.data.master.dto.CategoryWithParentsDto;
-import yurykorzun.art.universe.music.data.master.dto.CategorySaveRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategorySaveWithParentsRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryDagDTO;
+import yurykorzun.art.universe.music.data.master.dto.*;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
@@ -135,5 +131,23 @@ public interface CategoryService {
      * @return Category DAG with nodes and edges
      */
     CategoryDagDTO getCategoryDag();
+
+    /**
+     * Create a relation between two categories
+     * 
+     * @param relation The relation DTO with source and target category IDs
+     * @throws DiamondRelationException if the relation would create a diamond
+     * @throws CycleRelationException if the relation would create a cycle
+     * @throws DataUpdateException if the relation already exists
+     */
+    void createCategoryRelation(CategoryRelationDTO relation);
+
+    /**
+     * Delete a relation between two categories
+     * 
+     * @param relation The relation DTO with source and target category IDs
+     * @throws EntityNotFoundException if the relation does not exist
+     */
+    void deleteCategoryRelation(CategoryRelationDTO relation);
 
 }

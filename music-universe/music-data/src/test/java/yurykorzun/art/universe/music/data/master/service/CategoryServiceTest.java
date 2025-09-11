@@ -6,11 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import yurykorzun.art.universe.music.data.master.dto.CategorySaveWithParentsRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryDagDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryDagNodeDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryDagEdgeDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryWithParentsDto;
+import yurykorzun.art.universe.music.data.master.dto.*;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
@@ -24,6 +20,7 @@ import yurykorzun.art.universe.music.data.master.repository.CategoryBindingRepos
 import yurykorzun.art.universe.music.data.master.repository.CategoryCategoryRepository;
 import yurykorzun.art.universe.music.data.master.exception.DiamondRelationException;
 import yurykorzun.art.universe.music.data.master.exception.CycleRelationException;
+import yurykorzun.art.universe.common.exception.DataUpdateException;
 
 import java.util.Arrays;
 import java.util.List;
@@ -606,6 +603,128 @@ class CategoryServiceTest {
             categoryService.deleteCategory(2L));
         
         assertTrue(exception.getMessage().contains("would create a cycle"));
+    }
+
+    @Test
+    void createCategoryRelation_shouldCreateRelation() {
+        // Given
+        CategoryRelationDTO relation = CategoryRelationDTO.builder()
+            .sourceId(1L)
+            .targetId(2L)
+            .build();
+        
+        when(categoryCategoryRepository.existsBySourceCategoryIdAndTargetCategoryId(1L, 2L))
+            .thenReturn(false);
+        when(categoryCategoryRepository.findChildIds(2L)).thenReturn(List.of());
+        when(categoryCategoryRepository.findChildIds(1L)).thenReturn(List.of());
+        
+        // When
+        categoryService.createCategoryRelation(relation);
+        
+        // Then
+        verify(categoryCategoryRepository).save(any(CategoryCategory.class));
+    }
+    
+    @Test
+    void createCategoryRelation_whenRelationExists_shouldThrowException() {
+        // Given
+        CategoryRelationDTO relation = CategoryRelationDTO.builder()
+            .sourceId(1L)
+            .targetId(2L)
+            .build();
+        
+        when(categoryCategoryRepository.existsBySourceCategoryIdAndTargetCategoryId(1L, 2L))
+            .thenReturn(true);
+        
+        // When & Then
+        DataUpdateException exception = assertThrows(DataUpdateException.class, () ->
+            categoryService.createCategoryRelation(relation));
+        
+        assertTrue(exception.getMessage().contains("Relation already exists"));
+        verify(categoryCategoryRepository, never()).save(any());
+    }
+    
+    @Test
+    void createCategoryRelation_whenWouldCreateCycle_shouldThrowException() {
+        // Given
+        CategoryRelationDTO relation = CategoryRelationDTO.builder()
+            .sourceId(1L)
+            .targetId(2L)
+            .build();
+        
+        when(categoryCategoryRepository.existsBySourceCategoryIdAndTargetCategoryId(1L, 2L))
+            .thenReturn(false);
+        when(categoryCategoryRepository.findChildIds(2L)).thenReturn(List.of(1L)); // B -> A path
+        
+        // When & Then
+        CycleRelationException exception = assertThrows(CycleRelationException.class, () ->
+            categoryService.createCategoryRelation(relation));
+        
+        assertTrue(exception.getMessage().contains("would create a cycle"));
+        verify(categoryCategoryRepository, never()).save(any());
+    }
+    
+    @Test
+    void createCategoryRelation_whenWouldCreateDiamond_shouldThrowException() {
+        // Given
+        CategoryRelationDTO relation = CategoryRelationDTO.builder()
+            .sourceId(1L)
+            .targetId(3L)
+            .build();
+        
+        when(categoryCategoryRepository.existsBySourceCategoryIdAndTargetCategoryId(1L, 3L))
+            .thenReturn(false);
+        when(categoryCategoryRepository.findChildIds(3L)).thenReturn(List.of());
+        when(categoryCategoryRepository.findChildIds(1L)).thenReturn(List.of(2L)); // A -> B
+        when(categoryCategoryRepository.findChildIds(2L)).thenReturn(List.of(3L)); // B -> C
+        
+        // When & Then
+        DiamondRelationException exception = assertThrows(DiamondRelationException.class, () ->
+            categoryService.createCategoryRelation(relation));
+        
+        assertTrue(exception.getMessage().contains("would create a diamond"));
+        verify(categoryCategoryRepository, never()).save(any());
+    }
+    
+    @Test
+    void deleteCategoryRelation_shouldDeleteRelation() {
+        // Given
+        CategoryRelationDTO relation = CategoryRelationDTO.builder()
+            .sourceId(1L)
+            .targetId(2L)
+            .build();
+        
+        CategoryCategory existingRelation = CategoryCategory.builder()
+            .id(1L)
+            .sourceCategoryId(1L)
+            .targetCategoryId(2L)
+            .build();
+        
+        when(categoryCategoryRepository.findAll()).thenReturn(List.of(existingRelation));
+        
+        // When
+        categoryService.deleteCategoryRelation(relation);
+        
+        // Then
+        verify(categoryCategoryRepository).delete(existingRelation);
+    }
+    
+    @Test
+    void deleteCategoryRelation_whenRelationNotFound_shouldThrowException() {
+        // Given
+        CategoryRelationDTO relation = CategoryRelationDTO.builder()
+            .sourceId(1L)
+            .targetId(2L)
+            .build();
+        
+        when(categoryCategoryRepository.findAll()).thenReturn(List.of());
+        
+        // When & Then
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () ->
+            categoryService.deleteCategoryRelation(relation));
+        
+        assertTrue(exception.getMessage().contains("Relation not found"));
+        verify(categoryCategoryRepository, never()).delete(any());
     }
 
 }

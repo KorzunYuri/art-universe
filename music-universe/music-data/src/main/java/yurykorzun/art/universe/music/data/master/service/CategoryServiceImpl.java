@@ -16,6 +16,7 @@ import yurykorzun.art.universe.music.data.master.dto.CategorySaveWithParentsRequ
 import yurykorzun.art.universe.music.data.master.dto.CategoryDagDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategoryDagNodeDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategoryDagEdgeDTO;
+import yurykorzun.art.universe.music.data.master.dto.CategoryRelationDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
@@ -31,6 +32,7 @@ import yurykorzun.art.universe.music.data.master.repository.CategoryCategoryRepo
 import yurykorzun.art.universe.music.data.master.service.lookup.MasterEntityLookupService;
 import yurykorzun.art.universe.music.data.master.exception.DiamondRelationException;
 import yurykorzun.art.universe.music.data.master.exception.CycleRelationException;
+import yurykorzun.art.universe.common.exception.DataUpdateException;
 
 import java.util.List;
 import java.util.Optional;
@@ -358,6 +360,56 @@ public class CategoryServiceImpl implements CategoryService {
             .nodes(nodes)
             .edges(edges)
             .build();
+    }
+
+    @Override
+    @Transactional
+    public void createCategoryRelation(CategoryRelationDTO relation) {
+        // Check if relation already exists
+        if (categoryCategoryRepository.existsBySourceCategoryIdAndTargetCategoryId(
+                relation.getSourceId(), relation.getTargetId())) {
+            throw new DataUpdateException("Relation already exists between categories " + 
+                relation.getSourceId() + " and " + relation.getTargetId());
+        }
+        
+        // Check for cycle
+        if (wouldCreateCycle(relation.getSourceId(), relation.getTargetId())) {
+            throw new CycleRelationException(
+                String.format("Creating relation from category %d to %d would create a cycle", 
+                    relation.getSourceId(), relation.getTargetId()));
+        }
+        
+        // Check for diamond
+        if (wouldCreateDiamond(relation.getSourceId(), relation.getTargetId())) {
+            throw new DiamondRelationException(
+                String.format("Creating relation from category %d to %d would create a diamond", 
+                    relation.getSourceId(), relation.getTargetId()));
+        }
+        
+        // Create relation
+        CategoryCategory categoryRelation = CategoryCategory.builder()
+            .sourceCategoryId(relation.getSourceId())
+            .targetCategoryId(relation.getTargetId())
+            .build();
+        categoryCategoryRepository.save(categoryRelation);
+    }
+
+    @Override
+    @Transactional
+    public void deleteCategoryRelation(CategoryRelationDTO relation) {
+        // Find existing relation
+        List<CategoryCategory> relations = categoryCategoryRepository.findAll().stream()
+            .filter(r -> r.getSourceCategoryId().equals(relation.getSourceId()) && 
+                        r.getTargetCategoryId().equals(relation.getTargetId()))
+            .toList();
+        
+        if (relations.isEmpty()) {
+            throw new EntityNotFoundException("Relation not found between categories " + 
+                relation.getSourceId() + " and " + relation.getTargetId());
+        }
+        
+        // Delete relation
+        categoryCategoryRepository.delete(relations.get(0));
     }
 
     /**

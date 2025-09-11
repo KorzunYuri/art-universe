@@ -16,6 +16,7 @@ import yurykorzun.art.universe.music.data.master.dto.CategoryWithParentsDto;
 import yurykorzun.art.universe.music.data.master.dto.CategoryDagDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategoryDagNodeDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategoryDagEdgeDTO;
+import yurykorzun.art.universe.music.data.master.dto.CategoryRelationDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.service.BindingService;
 import yurykorzun.art.universe.music.data.master.service.CategoryService;
@@ -27,7 +28,10 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -315,6 +319,84 @@ class CategoryControllerMvcTest {
         // When & Then
         mockMvc.perform(get("/api/v1/categories/with-parents")
                 .param("query", searchQuery))
+            .andExpect(status().isInternalServerError());
+    }
+    
+    @Test
+    void whenCreateCategoryRelation_shouldReturnOk() throws Exception {
+        // Given
+        CategoryRelationDTO relation = CategoryRelationDTO.builder()
+            .sourceId(1L)
+            .targetId(2L)
+            .build();
+        
+        String requestJson = objectMapper.writeValueAsString(relation);
+        
+        // When & Then
+        mockMvc.perform(post("/api/v1/categories/relations")
+                .contentType("application/json")
+                .content(requestJson))
+            .andDo(print())
+            .andExpect(status().isOk());
+    }
+    
+    @Test
+    void whenCreateCategoryRelation_withError_shouldReturnFailureResponse() throws Exception {
+        // Given
+        CategoryRelationDTO relation = CategoryRelationDTO.builder()
+            .sourceId(1L)
+            .targetId(2L)
+            .build();
+        
+        String requestJson = objectMapper.writeValueAsString(relation);
+        String errorMessage = "Relation error occurred";
+        
+        doThrow(new RuntimeException(errorMessage))
+            .when(categoryService).createCategoryRelation(any(CategoryRelationDTO.class));
+        
+        // When & Then
+        mockMvc.perform(post("/api/v1/categories/relations")
+                .contentType("application/json")
+                .content(requestJson))
+            .andExpect(status().isInternalServerError());
+    }
+    
+    @Test
+    void whenDeleteCategoryRelation_shouldReturnOk() throws Exception {
+        // Given
+        CategoryRelationDTO relation = CategoryRelationDTO.builder()
+            .sourceId(1L)
+            .targetId(2L)
+            .build();
+        
+        String requestJson = objectMapper.writeValueAsString(relation);
+        
+        // When & Then
+        mockMvc.perform(delete("/api/v1/categories/relations")
+                .contentType("application/json")
+                .content(requestJson))
+            .andDo(print())
+            .andExpect(status().isOk());
+    }
+    
+    @Test
+    void whenDeleteCategoryRelation_withError_shouldReturnFailureResponse() throws Exception {
+        // Given
+        CategoryRelationDTO relation = CategoryRelationDTO.builder()
+            .sourceId(1L)
+            .targetId(2L)
+            .build();
+        
+        String requestJson = objectMapper.writeValueAsString(relation);
+        String errorMessage = "Delete error occurred";
+        
+        doThrow(new RuntimeException(errorMessage))
+            .when(categoryService).deleteCategoryRelation(any(CategoryRelationDTO.class));
+        
+        // When & Then
+        mockMvc.perform(delete("/api/v1/categories/relations")
+                .contentType("application/json")
+                .content(requestJson))
             .andExpect(status().isInternalServerError());
     }
 }

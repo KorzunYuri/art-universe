@@ -9,6 +9,7 @@ import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategorySaveRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategorySaveWithParentsRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategoryDagDTO;
+import yurykorzun.art.universe.music.data.master.dto.CategoryRelationDTO;
 import yurykorzun.art.universe.common.dto.lookup.BaseBatchLookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategoryWithParentsDto;
@@ -147,5 +148,15 @@ public class CategoryController {
     @GetMapping("/dag")
     public CategoryDagDTO getCategoryDag() {
         return categoryService.getCategoryDag();
+    }
+
+    @PostMapping("/relations")
+    public void createCategoryRelation(@Valid @RequestBody CategoryRelationDTO relation) {
+        categoryService.createCategoryRelation(relation);
+    }
+
+    @DeleteMapping("/relations")
+    public void deleteCategoryRelation(@Valid @RequestBody CategoryRelationDTO relation) {
+        categoryService.deleteCategoryRelation(relation);
     }
 }

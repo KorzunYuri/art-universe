@@ -20,6 +20,7 @@ import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.common.exception.EntityNotFoundException;
+import yurykorzun.art.universe.common.exception.DataUpdateException;
 import yurykorzun.art.universe.music.data.master.service.BindingService;
 import yurykorzun.art.universe.music.data.master.service.CategoryService;
 
@@ -596,5 +597,75 @@ class CategoryControllerTest {
         
         assertSame(expectedException, exception);
         verify(categoryService).getCategoryDag();
+    }
+    
+    @Test
+    void createCategoryRelation_shouldCallService() {
+        // Given
+        CategoryRelationDTO relation = CategoryRelationDTO.builder()
+            .sourceId(1L)
+            .targetId(2L)
+            .build();
+        
+        // When
+        categoryController.createCategoryRelation(relation);
+        
+        // Then
+        verify(categoryService).createCategoryRelation(relation);
+    }
+    
+    @Test
+    void createCategoryRelation_whenExceptionThrown_shouldPassThroughException() {
+        // Given
+        CategoryRelationDTO relation = CategoryRelationDTO.builder()
+            .sourceId(1L)
+            .targetId(2L)
+            .build();
+        DataUpdateException expectedException = new DataUpdateException("Test error");
+        
+        doThrow(expectedException).when(categoryService).createCategoryRelation(relation);
+        
+        // When & Then
+        DataUpdateException exception = assertThrows(DataUpdateException.class, () -> 
+            categoryController.createCategoryRelation(relation)
+        );
+        
+        assertSame(expectedException, exception);
+        verify(categoryService).createCategoryRelation(relation);
+    }
+    
+    @Test
+    void deleteCategoryRelation_shouldCallService() {
+        // Given
+        CategoryRelationDTO relation = CategoryRelationDTO.builder()
+            .sourceId(1L)
+            .targetId(2L)
+            .build();
+        
+        // When
+        categoryController.deleteCategoryRelation(relation);
+        
+        // Then
+        verify(categoryService).deleteCategoryRelation(relation);
+    }
+    
+    @Test
+    void deleteCategoryRelation_whenExceptionThrown_shouldPassThroughException() {
+        // Given
+        CategoryRelationDTO relation = CategoryRelationDTO.builder()
+            .sourceId(1L)
+            .targetId(2L)
+            .build();
+        EntityNotFoundException expectedException = new EntityNotFoundException("Test error");
+        
+        doThrow(expectedException).when(categoryService).deleteCategoryRelation(relation);
+        
+        // When & Then
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () ->
+            categoryController.deleteCategoryRelation(relation)
+        );
+        
+        assertSame(expectedException, exception);
+        verify(categoryService).deleteCategoryRelation(relation);
     }
 }
