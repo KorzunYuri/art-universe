@@ -19,7 +19,7 @@ import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjecti
 import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.common.exception.EntityNotFoundException;
+import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.common.exception.DataUpdateException;
 import yurykorzun.art.universe.music.data.master.service.BindingService;
 import yurykorzun.art.universe.music.data.master.service.CategoryService;
@@ -281,7 +281,7 @@ class CategoryControllerTest {
         when(categoryService.deleteCategory(id)).thenReturn(false);
 
         // When & Then
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () ->
+        CustomEntityNotFoundException exception = assertThrows(CustomEntityNotFoundException.class, () ->
             categoryController.deleteCategory(id)
         );
         
@@ -656,12 +656,12 @@ class CategoryControllerTest {
             .sourceId(1L)
             .targetId(2L)
             .build();
-        EntityNotFoundException expectedException = new EntityNotFoundException("Test error");
+        CustomEntityNotFoundException expectedException = new CustomEntityNotFoundException("Test error");
         
         doThrow(expectedException).when(categoryService).deleteCategoryRelation(relation);
         
         // When & Then
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () ->
+        CustomEntityNotFoundException exception = assertThrows(CustomEntityNotFoundException.class, () ->
             categoryController.deleteCategoryRelation(relation)
         );
         

@@ -10,7 +10,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiResponseStatus;
-import yurykorzun.art.universe.common.exception.EntityNotFoundException;
+import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiResponseCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
@@ -117,7 +117,7 @@ class LastfmApiResponseServiceImplTest {
         when(apiResponseRepository.findById(id)).thenReturn(Optional.empty());
 
         // when
-        assertThrows(EntityNotFoundException.class, () -> apiResponseService.getApiResponseById(id));
+        assertThrows(CustomEntityNotFoundException.class, () -> apiResponseService.getApiResponseById(id));
     }
 
     @Test
@@ -143,7 +143,7 @@ class LastfmApiResponseServiceImplTest {
         when(apiResponseRepository.findById(id)).thenReturn(Optional.empty());
 
         // when
-        assertThrows(EntityNotFoundException.class, () -> apiResponseService.getApiResponseBody(id));
+        assertThrows(CustomEntityNotFoundException.class, () -> apiResponseService.getApiResponseBody(id));
     }
 
 }

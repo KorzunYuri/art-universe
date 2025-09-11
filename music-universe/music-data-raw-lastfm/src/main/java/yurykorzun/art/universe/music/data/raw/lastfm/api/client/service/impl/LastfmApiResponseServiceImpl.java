@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiResponseStatus;
-import yurykorzun.art.universe.common.exception.EntityNotFoundException;
+import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiResponseCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
@@ -18,7 +18,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmAp
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiResponseProcessor;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiResponseProcessorsRegistry;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 
@@ -117,7 +116,7 @@ public class LastfmApiResponseServiceImpl implements LastfmApiResponseService {
     public LastfmApiResponseDto getApiResponseById(long id) {
         return repository.findById(id)
             .map(LastfmApiResponseDto::from)
-            .orElseThrow(() -> new EntityNotFoundException("response", id));
+            .orElseThrow(() -> new CustomEntityNotFoundException("response", id));
     }
 
     @Override
@@ -125,7 +124,7 @@ public class LastfmApiResponseServiceImpl implements LastfmApiResponseService {
         return repository.findById(id)
             .map(LastfmApiResponse::getResponseBody)
             .map(this::responseBodyToJson)
-            .orElseThrow(() -> new EntityNotFoundException("response", id));
+            .orElseThrow(() -> new CustomEntityNotFoundException("response", id));
     }
 
     private JsonNode responseBodyToJson(String responseBody) {

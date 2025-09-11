@@ -11,7 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallStatus;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiResponseStatus;
 import yurykorzun.art.universe.common.exception.DataFetchException;
-import yurykorzun.art.universe.common.exception.EntityNotFoundException;
+import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.common.exception.ErrorResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
@@ -97,7 +97,7 @@ class LastfmApiResponseControllerMvcTest extends BaseMvcTest {
     void GET_apiResponse_shouldReturnNotFound_whenResponseDoesNotExist() throws Exception {
         // Given
         Long responseId = 999L;
-        EntityNotFoundException expectedException = new EntityNotFoundException("response", responseId);
+        CustomEntityNotFoundException expectedException = new CustomEntityNotFoundException("response", responseId);
         
         when(apiResponseService.getApiResponseById(eq(responseId)))
             .thenThrow(expectedException);

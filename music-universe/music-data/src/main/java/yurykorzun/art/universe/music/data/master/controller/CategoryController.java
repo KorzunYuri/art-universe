@@ -21,7 +21,7 @@ import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindResponse
 import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
-import yurykorzun.art.universe.common.exception.EntityNotFoundException;
+import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.service.CategoryService;
 import yurykorzun.art.universe.music.data.master.service.BindingService;
 
@@ -98,7 +98,7 @@ public class CategoryController {
     public boolean deleteCategory(@PathVariable Long id) {
         boolean deleted = categoryService.deleteCategory(id);
         if (!deleted) {
-            throw new EntityNotFoundException("Category", id);
+            throw new CustomEntityNotFoundException("Category", id);
         }
         return true;
     }

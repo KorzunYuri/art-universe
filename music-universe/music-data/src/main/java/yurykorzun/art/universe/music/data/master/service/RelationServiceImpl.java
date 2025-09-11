@@ -11,7 +11,7 @@ import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingSta
 import yurykorzun.art.universe.music.data.master.dto.relation.TargetEntityBindingDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
-import yurykorzun.art.universe.common.exception.EntityNotFoundException;
+import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.relation.RelationBindingEntity;
 import yurykorzun.art.universe.music.data.master.relation.RelationEntity;
 import yurykorzun.art.universe.music.data.master.relation.RelationRegistry;
@@ -54,12 +54,12 @@ public class RelationServiceImpl implements RelationService {
         Long targetInternalId = findInternalEntityId(dataSource, targetEntityType, targetExternalEntityId);
         
         if (sourceInternalId == null) {
-            throw new EntityNotFoundException(
+            throw new CustomEntityNotFoundException(
                 String.format("Source external %s with id %d is not bound", sourceEntityType.getName(), sourceExternalEntityId));
         }
         
         if (targetInternalId == null) {
-            throw new EntityNotFoundException(
+            throw new CustomEntityNotFoundException(
                 String.format("Target external %s with id %d ", targetEntityType.getName(), targetExternalEntityId));
         }
         
@@ -763,7 +763,7 @@ public class RelationServiceImpl implements RelationService {
      * 
      * @param entityType Entity type
      * @param entityId Entity ID
-     * @throws EntityNotFoundException if entity does not exist
+     * @throws CustomEntityNotFoundException if entity does not exist
      */
     private void validateEntityExists(MasterEntityType entityType, Long entityId) {
         try {
@@ -780,9 +780,9 @@ public class RelationServiceImpl implements RelationService {
                 .getSingleResult();
             
             if (count.intValue() == 0) {
-                throw new EntityNotFoundException(entityType.getName(), entityId);
+                throw new CustomEntityNotFoundException(entityType.getName(), entityId);
             }
-        } catch (EntityNotFoundException e) {
+        } catch (CustomEntityNotFoundException e) {
             throw e;
         } catch (Exception e) {
             throw new RuntimeException(

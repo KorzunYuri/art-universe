@@ -117,8 +117,8 @@ public class CommonGlobalExceptionHandler {
     /**
      * Handle custom entity not found exceptions
      */
-    @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleCustomEntityNotFound(EntityNotFoundException ex) {
+    @ExceptionHandler(CustomEntityNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleCustomEntityNotFound(CustomEntityNotFoundException ex) {
         log.error("Entity not found: {}", ex.getMessage());
         return new ResponseEntity<>(
                 new ErrorResponse(ex.getMessage()),

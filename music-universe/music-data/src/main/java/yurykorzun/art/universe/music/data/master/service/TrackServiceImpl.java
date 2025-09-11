@@ -15,7 +15,7 @@ import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.entity.Track;
 import yurykorzun.art.universe.music.data.master.entity.TrackBinding;
-import yurykorzun.art.universe.common.exception.EntityNotFoundException;
+import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.repository.TrackBindingRepository;
 import yurykorzun.art.universe.music.data.master.repository.TrackRepository;
 import yurykorzun.art.universe.music.data.master.service.lookup.ArtistRelatedLookupService;
@@ -71,7 +71,7 @@ public class TrackServiceImpl implements TrackService {
         
         // 2. Validate that the track exists
         Track track = trackRepository.findById(request.getMasterId())
-            .orElseThrow(() -> new EntityNotFoundException("Track", request.getMasterId()));
+            .orElseThrow(() -> new CustomEntityNotFoundException("Track", request.getMasterId()));
         
         // 3. Create or update track binding
         Optional<TrackBinding> existingBinding = bindingsRepository.findByDataSourceAndExternalId(dataSource, externalId);
@@ -183,7 +183,7 @@ public class TrackServiceImpl implements TrackService {
         return bindingsRepository.findBoundTracksForDataSource(dataSource, List.of(externalId))
             .stream()
             .findFirst()
-            .orElseThrow(() -> new EntityNotFoundException("Track binding not found after creation"));
+            .orElseThrow(() -> new CustomEntityNotFoundException("Track binding not found after creation"));
     }
     
     @Override

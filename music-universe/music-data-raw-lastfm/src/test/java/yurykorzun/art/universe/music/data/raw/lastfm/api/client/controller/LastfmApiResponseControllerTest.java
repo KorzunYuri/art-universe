@@ -10,7 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallStatus;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiResponseStatus;
-import yurykorzun.art.universe.common.exception.EntityNotFoundException;
+import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiResponseService;
@@ -98,13 +98,13 @@ class LastfmApiResponseControllerTest {
     void getApiResponse_shouldThrowCustomEntityNotFoundException_whenResponseNotFound() {
         // Given
         Long responseId = 999L;
-        EntityNotFoundException expectedException = new EntityNotFoundException("response", responseId);
+        CustomEntityNotFoundException expectedException = new CustomEntityNotFoundException("response", responseId);
         
         when(apiResponseService.getApiResponseById(eq(responseId)))
             .thenThrow(expectedException);
 
         // When & Then
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
+        CustomEntityNotFoundException exception = assertThrows(CustomEntityNotFoundException.class, () -> {
             controller.getApiResponse(responseId);
         });
         
