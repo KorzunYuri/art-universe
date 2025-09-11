@@ -29,9 +29,13 @@ import yurykorzun.art.universe.music.data.master.repository.CategoryRepository;
 import yurykorzun.art.universe.music.data.master.repository.CategoryBindingRepository;
 import yurykorzun.art.universe.music.data.master.repository.CategoryCategoryRepository;
 import yurykorzun.art.universe.music.data.master.service.lookup.MasterEntityLookupService;
+import yurykorzun.art.universe.music.data.master.exception.DiamondRelationException;
+import yurykorzun.art.universe.music.data.master.exception.CycleRelationException;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.HashSet;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
@@ -160,6 +164,20 @@ public class CategoryServiceImpl implements CategoryService {
         if (request.getParents() != null) {
             for (Long parentId : request.getParents()) {
                 if (parentId != null) {
+                    // Check for cycle before creating relation
+                    if (wouldCreateCycle(parentId, savedCategory.getId())) {
+                        throw new CycleRelationException(
+                            String.format("Creating relation from category %d to %d would create a cycle", 
+                                parentId, savedCategory.getId()));
+                    }
+                    
+                    // Check for diamond before creating relation
+                    if (wouldCreateDiamond(parentId, savedCategory.getId())) {
+                        throw new DiamondRelationException(
+                            String.format("Creating relation from category %d to %d would create a diamond", 
+                                parentId, savedCategory.getId()));
+                    }
+                    
                     CategoryCategory relation = CategoryCategory.builder()
                         .sourceCategoryId(parentId)
                         .targetCategoryId(savedCategory.getId())
@@ -188,6 +206,20 @@ public class CategoryServiceImpl implements CategoryService {
             for (Long childId : children) {
                 for (Long parentId : parents) {
                     if (!categoryCategoryRepository.existsBySourceCategoryIdAndTargetCategoryId(parentId, childId)) {
+                        // Check for cycle before creating relation
+                        if (wouldCreateCycle(parentId, childId)) {
+                            throw new CycleRelationException(
+                                String.format("Deleting category %d would create a cycle from %d to %d", 
+                                    id, parentId, childId));
+                        }
+                        
+                        // Check for diamond before creating relation
+                        if (wouldCreateDiamond(parentId, childId)) {
+                            throw new DiamondRelationException(
+                                String.format("Deleting category %d would create a diamond relation from %d to %d", 
+                                    id, parentId, childId));
+                        }
+                        
                         CategoryCategory relation = CategoryCategory.builder()
                             .sourceCategoryId(parentId)
                             .targetCategoryId(childId)
@@ -326,5 +358,53 @@ public class CategoryServiceImpl implements CategoryService {
             .nodes(nodes)
             .edges(edges)
             .build();
+    }
+
+    /**
+     * Check if creating a relation from parentId to childId would create a cycle
+     */
+    private boolean wouldCreateCycle(Long parentId, Long childId) {
+        // If there's a path from child to parent, adding parent->child creates cycle
+        return hasPath(childId, parentId);
+    }
+
+    /**
+     * Check if creating a relation from parentId to childId would create a diamond
+     */
+    private boolean wouldCreateDiamond(Long parentId, Long childId) {
+        // If there's already a path from parent to child, adding direct relation creates diamond
+        return hasPath(parentId, childId);
+    }
+
+    /**
+     * Check if there's a path from source to target through existing relations
+     */
+    private boolean hasPath(Long sourceId, Long targetId) {
+        if (sourceId.equals(targetId)) {
+            return true;
+        }
+        
+        Set<Long> visited = new HashSet<>();
+        return hasPathRecursive(sourceId, targetId, visited);
+    }
+
+    /**
+     * Recursive path finding with cycle detection
+     */
+    private boolean hasPathRecursive(Long currentId, Long targetId, Set<Long> visited) {
+        if (visited.contains(currentId)) {
+            return false; // Cycle detected, stop
+        }
+        
+        visited.add(currentId);
+        
+        List<Long> children = categoryCategoryRepository.findChildIds(currentId);
+        for (Long childId : children) {
+            if (childId.equals(targetId) || hasPathRecursive(childId, targetId, visited)) {
+                return true;
+            }
+        }
+        
+        return false;
     }
 }

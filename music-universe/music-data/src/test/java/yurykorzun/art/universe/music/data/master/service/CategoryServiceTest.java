@@ -1,19 +1,15 @@
 package yurykorzun.art.universe.music.data.master.service;
 
-import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.persistence.Query;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import yurykorzun.art.universe.music.data.master.dto.CategorySaveRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategorySaveWithParentsRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategoryDagDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategoryDagNodeDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategoryDagEdgeDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryDto;
 import yurykorzun.art.universe.music.data.master.dto.CategoryWithParentsDto;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
@@ -26,6 +22,8 @@ import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.repository.CategoryRepository;
 import yurykorzun.art.universe.music.data.master.repository.CategoryBindingRepository;
 import yurykorzun.art.universe.music.data.master.repository.CategoryCategoryRepository;
+import yurykorzun.art.universe.music.data.master.exception.DiamondRelationException;
+import yurykorzun.art.universe.music.data.master.exception.CycleRelationException;
 
 import java.util.Arrays;
 import java.util.List;
@@ -46,12 +44,6 @@ class CategoryServiceTest {
 
     @Mock
     private CategoryCategoryRepository categoryCategoryRepository;
-    
-    @Mock
-    private EntityManager entityManager;
-    
-    @Mock
-    private Query query;
 
     @InjectMocks
     private CategoryServiceImpl categoryService;
@@ -518,5 +510,102 @@ class CategoryServiceTest {
         verify(categoryCategoryRepository).findAll();
     }
     
+    @Test
+    void saveCategoryWithParents_whenWouldCreateDiamond_shouldThrowException() {
+        // Given: A -> B -> C hierarchy exists
+        Category categoryC = Category.builder().id(3L).name("C").build();
+        
+        when(categoryRepository.findById(3L)).thenReturn(Optional.of(categoryC));
+        when(categoryRepository.save(any(Category.class))).thenReturn(categoryC);
+
+        // Mock existing relations: A -> B -> C
+        when(categoryCategoryRepository.findChildIds(1L)).thenReturn(List.of(2L));
+        when(categoryCategoryRepository.findChildIds(2L)).thenReturn(List.of(3L));
+        when(categoryCategoryRepository.findChildIds(3L)).thenReturn(List.of()); // Add missing mock
+        
+        CategorySaveWithParentsRequestDTO request = CategorySaveWithParentsRequestDTO.builder()
+            .id(3L) // Update existing category
+            .name("C")
+            .parents(List.of(1L)) // Try to create A -> C (diamond: A -> B -> C and A -> C)
+            .build();
+        
+        // When & Then
+        DiamondRelationException exception = assertThrows(DiamondRelationException.class, () ->
+            categoryService.saveCategoryWithParents(request));
+        
+        assertTrue(exception.getMessage().contains("would create a diamond"));
+    }
+    
+    @Test
+    void saveCategoryWithParents_whenWouldCreateCycle_shouldThrowException() {
+        // Given: A -> B hierarchy exists
+        Category categoryA = Category.builder().id(1L).name("A").build();
+        
+        when(categoryRepository.findById(1L)).thenReturn(Optional.of(categoryA));
+        when(categoryRepository.save(any(Category.class))).thenReturn(categoryA);
+        
+        // Mock existing relations: B -> A (so A -> B would create cycle)
+        when(categoryCategoryRepository.findChildIds(1L)).thenReturn(List.of(2L)); // A -> B path
+        
+        CategorySaveWithParentsRequestDTO request = CategorySaveWithParentsRequestDTO.builder()
+            .id(1L) // Update existing category A
+            .name("A")
+            .parents(List.of(2L)) // Try to create B -> A (cycle: A -> B -> A)
+            .build();
+        
+        // When & Then
+        CycleRelationException exception = assertThrows(CycleRelationException.class, () ->
+            categoryService.saveCategoryWithParents(request));
+        
+        assertTrue(exception.getMessage().contains("would create a cycle"));
+    }
+    
+    @Test
+    void deleteCategory_whenWouldCreateDiamond_shouldThrowException() {
+        // Given: A -> B -> C and A -> D -> C (diamond through B)
+        when(categoryRepository.existsById(2L)).thenReturn(true);
+        
+        // B has parents: A and children: C
+        when(categoryCategoryRepository.findParentIds(2L)).thenReturn(List.of(1L));
+        when(categoryCategoryRepository.findChildIds(2L)).thenReturn(List.of(3L));
+        
+        // Mock that A -> C doesn't exist yet
+        when(categoryCategoryRepository.existsBySourceCategoryIdAndTargetCategoryId(1L, 3L))
+            .thenReturn(false);
+        
+        // Mock that path A -> C already exists through D
+        when(categoryCategoryRepository.findChildIds(1L)).thenReturn(List.of(4L)); // A -> D
+        when(categoryCategoryRepository.findChildIds(4L)).thenReturn(List.of(3L)); // D -> C
+        when(categoryCategoryRepository.findChildIds(3L)).thenReturn(List.of()); // Add missing mock
+        
+        // When & Then
+        DiamondRelationException exception = assertThrows(DiamondRelationException.class, () ->
+            categoryService.deleteCategory(2L));
+        
+        assertTrue(exception.getMessage().contains("would create a diamond"));
+    }
+    
+    @Test
+    void deleteCategory_whenWouldCreateCycle_shouldThrowException() {
+        // Given: A -> B -> C -> A cycle would be created by deleting B
+        when(categoryRepository.existsById(2L)).thenReturn(true);
+        
+        // B has parent A and child C
+        when(categoryCategoryRepository.findParentIds(2L)).thenReturn(List.of(1L));
+        when(categoryCategoryRepository.findChildIds(2L)).thenReturn(List.of(3L));
+        
+        // Mock that A -> C doesn't exist yet
+        when(categoryCategoryRepository.existsBySourceCategoryIdAndTargetCategoryId(1L, 3L))
+            .thenReturn(false);
+        
+        // Mock that path C -> A exists (would create cycle A -> C -> A)
+        when(categoryCategoryRepository.findChildIds(3L)).thenReturn(List.of(1L)); // C -> A
+        
+        // When & Then
+        CycleRelationException exception = assertThrows(CycleRelationException.class, () ->
+            categoryService.deleteCategory(2L));
+        
+        assertTrue(exception.getMessage().contains("would create a cycle"));
+    }
 
 }
