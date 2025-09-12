@@ -7,6 +7,7 @@ export * from './ReadonlyAttr'
 export * from './StaticAutocompleteInput'
 export * from './EntityTable'
 export * from './Pagination'
+export * from './ConfirmDialog'
 
 // Export table row types for type safety
 export type { BaseEntityTableRow } from '../types/table-row'

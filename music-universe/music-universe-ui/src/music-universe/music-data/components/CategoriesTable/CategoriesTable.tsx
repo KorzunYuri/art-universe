@@ -1,8 +1,12 @@
 // hooks
+import { useState } from 'react';
 import { useMasterEntityTable } from "@/music-universe/music-data/hooks/useMasterEntityTable";
+import { useNotifications } from '@/music-universe/shared/hooks';
 // components
 import { EntityTable, type EntityTableColumn } from "@/music-universe/shared/components/EntityTable/EntityTable";
 import { CategoriesTableRow } from "@/music-universe/music-data/components/CategoriesTableRow";
+// api
+import { createCategory } from '@/music-universe/music-data/api/music-data-categories';
 // styles
 import styles from './CategoriesTable.module.css';
 
@@ -14,6 +18,10 @@ const columns: EntityTableColumn[] = [
 ];
 
 export const CategoriesTable = () => {
+    const { showNotification } = useNotifications();
+    const [newCategoryName, setNewCategoryName] = useState('');
+    const [isCreating, setIsCreating] = useState(false);
+    
     const {
         entityIds,
         pagination,
@@ -28,8 +36,46 @@ export const CategoriesTable = () => {
         refresh
     } = useMasterEntityTable("category");
 
+    const handleCreateCategory = async () => {
+        if (!newCategoryName.trim() || isCreating) return;
+
+        setIsCreating(true);
+        try {
+            const created = await createCategory({ name: newCategoryName.trim() });
+            if (created) {
+                console.log('✅ Category created successfully:', created.id);
+                setNewCategoryName('');
+                refresh();
+            }
+        } catch (error: any) {
+            console.error('❌ Error creating category:', error);
+            showNotification('error', error?.response?.data?.message || error?.message || 'Failed to create category');
+        } finally {
+            setIsCreating(false);
+        }
+    };
+
     return (
-        <EntityTable
+        <div>
+            <div className={styles.createSection}>
+                <input
+                    type="text"
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    placeholder="New category name"
+                    disabled={isCreating}
+                    onKeyDown={(e) => e.key === 'Enter' && handleCreateCategory()}
+                />
+                <button
+                    onClick={handleCreateCategory}
+                    disabled={!newCategoryName.trim() || isCreating}
+                    className={styles.createButton}
+                >
+                    {isCreating ? '...' : 'Create'}
+                </button>
+            </div>
+            
+            <EntityTable
             search={search}
             onSearchChange={setSearch}
             onSearchSubmit={refresh}
@@ -58,8 +104,10 @@ export const CategoriesTable = () => {
                 <CategoriesTableRow
                     key={entityId}
                     entityId={entityId}
+                    onDeleted={refresh}
                 />
             ))}
         </EntityTable>
+        </div>
     );
 };

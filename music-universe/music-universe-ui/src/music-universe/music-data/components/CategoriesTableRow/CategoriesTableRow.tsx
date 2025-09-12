@@ -2,13 +2,13 @@
 import { useState, useEffect } from "react";
 import { useNotifications } from "@/music-universe/shared/hooks";
 // components
-import { EditableText, type BaseEntityTableRow } from "@/music-universe/shared/components";
+import { EditableText, ConfirmDialog, type BaseEntityTableRow } from "@/music-universe/shared/components";
 import { CategoryParentPanel } from "../CategoryParentPanel";
 import { CategoryParentAdder } from "../CategoryParentAdder";
 // types
 import type { CategorySaveRequest } from "@/music-universe/music-data/api/music-data-categories";
 // api
-import { saveCategory } from "@/music-universe/music-data/api/music-data-categories";
+import { saveCategory, deleteCategory } from "@/music-universe/music-data/api/music-data-categories";
 // hooks
 import { useCategoryWithParents } from "@/music-universe/music-data/hooks/useCategoryWithParents";
 // styles
@@ -17,9 +17,10 @@ import tableStyles from "../CategoriesTable/CategoriesTable.module.css";
 import sharedTableStyles from "@/music-universe/shared/styles/EntityTableStyles.module.scss";
 
 interface CategoriesTableRowProps extends BaseEntityTableRow {
+    onDeleted?: () => void;
 }
 
-export const CategoriesTableRow = ({ entityId }: CategoriesTableRowProps) => {
+export const CategoriesTableRow = ({ entityId, onDeleted }: CategoriesTableRowProps) => {
     const { showNotification } = useNotifications();
     const {
         category,
@@ -32,6 +33,8 @@ export const CategoriesTableRow = ({ entityId }: CategoriesTableRowProps) => {
     const [editedName, setEditedName] = useState('');
     const [isDirty, setIsDirty] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     // Update edited name when category loads
     useEffect(() => {
@@ -100,6 +103,27 @@ export const CategoriesTableRow = ({ entityId }: CategoriesTableRowProps) => {
         invalidateCategory();
     };
 
+    const handleDelete = async () => {
+        if (!category || isDeleting) return;
+
+        setIsDeleting(true);
+        try {
+            const deleted = await deleteCategory(category.id);
+            if (deleted) {
+                console.log('✅ Category deleted successfully:', category.id);
+                onDeleted?.();
+            } else {
+                console.error('❌ Failed to delete category');
+            }
+        } catch (error: any) {
+            console.error('❌ Error deleting category:', error);
+            showNotification('error', error?.response?.data?.message || error?.message || 'Failed to delete category');
+        } finally {
+            setIsDeleting(false);
+            setShowDeleteConfirm(false);
+        }
+    };
+
     return (
         <div className={sharedTableStyles.row}>
             <div className={`${sharedTableStyles.cell} ${tableStyles.name}`}>
@@ -137,7 +161,22 @@ export const CategoriesTableRow = ({ entityId }: CategoriesTableRowProps) => {
                 >
                     {isSaving ? "..." : "Save"}
                 </button>
+                <button
+                    onClick={() => setShowDeleteConfirm(true)}
+                    disabled={isDeleting}
+                    className={styles.deleteButton}
+                >
+                    {isDeleting ? "..." : "Delete"}
+                </button>
             </div>
+
+            <ConfirmDialog
+                isOpen={showDeleteConfirm}
+                header="Delete Category"
+                message={`Are you sure you want to delete category "${category.name}"?`}
+                onConfirm={handleDelete}
+                onCancel={() => setShowDeleteConfirm(false)}
+            />
         </div>
     );
 };

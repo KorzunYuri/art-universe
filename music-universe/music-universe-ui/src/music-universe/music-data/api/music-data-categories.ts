@@ -19,6 +19,10 @@ export interface CategorySaveRequest {
     name: string;
 }
 
+export interface CategoryCreateRequest {
+    name: string;
+}
+
 export interface CategorySaveWithParentsRequest {
     id?: number;
     name: string;
@@ -48,6 +52,21 @@ export function createCategoryFromWithParentsDto(dto: CategoryWithParentsDto): C
         dto.id,
         dto.name
     );
+}
+
+/**
+ * Creates a new category
+ * 
+ * @param category Category data to create
+ * @returns The created category if successful, null otherwise
+ */
+export async function createCategory(category: CategoryCreateRequest): Promise<Category | null> {
+    const response = await axios.post<CategoryDto>(
+        `${MusicDataConfig.baseApiUrl}/categories`,
+        category
+    );
+    
+    return createCategoryFromDto(response.data);
 }
 
 /**
