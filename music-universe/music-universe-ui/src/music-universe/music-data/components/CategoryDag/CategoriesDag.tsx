@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { type Node, type Edge, ReactFlowProvider, useReactFlow } from '@xyflow/react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchCategoryDag, saveCategory } from '@/music-universe/music-data/api/music-data-categories';
+import { fetchCategoryDag, createCategoryRelation, deleteCategoryRelation } from '@/music-universe/music-data/api/music-data-categories';
 import { CategoryDagInteractive } from './CategoryDagInteractive';
 import { treeLayout, radialLayout, radialWithCollisionDetectionLayout, type LayoutEngine } from './layouts';
 
@@ -41,35 +41,28 @@ function CategoriesDagFlow() {
     })) || [];
 
     const handleEdgeCreate = useCallback(async (sourceId: string, targetId: string) => {
-        const sourceIdNum = parseInt(sourceId);
-        const targetIdNum = parseInt(targetId);
-        const targetNode = nodes.find(n => n.id === targetId);
-
         try {
-            await saveCategory({
-                id: targetIdNum,
-                name: targetNode?.data.name || '',
-                parentId: sourceIdNum,
+            await createCategoryRelation({
+                sourceId: parseInt(sourceId),
+                targetId: parseInt(targetId)
             });
         } catch (error) {
             console.error('Failed to create category relation:', error);
         }
-    }, [nodes]);
+    }, []);
 
     const handleEdgeDelete = useCallback(async (edgeId: string) => {
-        const [, targetId] = edgeId.split('-').map(Number);
-        const targetNode = nodes.find(n => n.id === targetId.toString());
+        const [sourceId, targetId] = edgeId.split('-').map(Number);
 
         try {
-            await saveCategory({
-                id: targetId,
-                name: targetNode?.data.name || '',
-                parentId: null,
+            await deleteCategoryRelation({
+                sourceId,
+                targetId
             });
         } catch (error) {
             console.error('Failed to remove category relation:', error);
         }
-    }, [nodes]);
+    }, []);
 
     const handleLayoutChange = useCallback(() => {
         setTimeout(() => fitView(), 150);

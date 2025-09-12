@@ -8,7 +8,8 @@ import styles from './CategoriesTable.module.css';
 
 const columns: EntityTableColumn[] = [
     { key: 'name', label: 'Name', sortable: true, className: styles.name },
-    { key: 'parent', label: 'Parent', className: styles.parent },
+    { key: 'parents', label: 'Parents', className: styles.parents },
+    { key: 'addParent', label: 'Add Parent', className: styles.addParent },
     { key: 'actions', label: 'Actions', className: styles.actions },
 ];
 

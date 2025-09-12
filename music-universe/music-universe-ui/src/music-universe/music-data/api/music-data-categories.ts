@@ -4,9 +4,12 @@ import type {BasePageSearchParams} from '@/music-universe/shared/types/page';
 import {type Category, CategoryImpl} from '@/music-universe/shared/types/entities.ts';
 import type {BaseMasterEntityDto} from "@/music-universe/music-data/api/music-data-commons.ts";
 
-export interface CategoryDto extends BaseMasterEntityDto{
-    parentId: number | null;
-    parentName: string | null;
+export interface CategoryDto extends BaseMasterEntityDto {}
+
+export interface CategoryWithParentsDto {
+    id: number;
+    name: string;
+    parents: CategoryDto[];
 }
 
 export interface CategoryPageSearchParams extends BasePageSearchParams {}
@@ -14,18 +17,36 @@ export interface CategoryPageSearchParams extends BasePageSearchParams {}
 export interface CategorySaveRequest {
     id?: number;
     name: string;
-    parentId?: number | null;
+}
+
+export interface CategorySaveWithParentsRequest {
+    id?: number;
+    name: string;
+    parents?: number[];
+}
+
+export interface CategoryRelation {
+    sourceId: number;
+    targetId: number;
 }
 
 /**
- * Creates Category from DTO
+ * Creates Category from DTO (legacy support)
  */
 export function createCategoryFromDto(dto: CategoryDto): Category {
     return new CategoryImpl(
         dto.id,
-        dto.name,
-        dto.parentId,
-        dto.parentName
+        dto.name
+    );
+}
+
+/**
+ * Creates Category from CategoryWithParentsDto
+ */
+export function createCategoryFromWithParentsDto(dto: CategoryWithParentsDto): Category {
+    return new CategoryImpl(
+        dto.id,
+        dto.name
     );
 }
 
@@ -42,6 +63,74 @@ export async function saveCategory(category: CategorySaveRequest): Promise<Categ
     );
     
     return createCategoryFromDto(response.data);
+}
+
+/**
+ * Saves a category with parents
+ * 
+ * @param category Category data with parents to save
+ * @returns The saved category with parents if successful, null otherwise
+ */
+export async function saveCategoryWithParents(category: CategorySaveWithParentsRequest): Promise<CategoryWithParentsDto | null> {
+    const response = await axios.post<CategoryWithParentsDto>(
+        `${MusicDataConfig.baseApiUrl}/categories/with-parents`,
+        category
+    );
+    
+    return response.data;
+}
+
+/**
+ * Fetches a single category with parents by ID
+ * 
+ * @param categoryId The category ID to fetch
+ * @returns The category with its parents if successful, null otherwise
+ */
+export async function fetchCategoryWithParents(categoryId: number): Promise<CategoryWithParentsDto | null> {
+    const response = await axios.get<CategoryWithParentsDto>(
+        `${MusicDataConfig.baseApiUrl}/categories/${categoryId}/with-parents`
+    );
+    
+    return response.data;
+}
+
+/**
+ * Fetches categories with parents
+ * 
+ * @param query Optional search query
+ * @returns List of categories with their parents
+ */
+export async function fetchCategoriesWithParents(query?: string): Promise<CategoryWithParentsDto[]> {
+    const response = await axios.get<CategoryWithParentsDto[]>(
+        `${MusicDataConfig.baseApiUrl}/categories/with-parents`,
+        { params: query ? { query } : {} }
+    );
+    
+    return response.data;
+}
+
+/**
+ * Creates a category relation
+ * 
+ * @param relation Relation to create
+ */
+export async function createCategoryRelation(relation: CategoryRelation): Promise<void> {
+    await axios.post(
+        `${MusicDataConfig.baseApiUrl}/categories/relations`,
+        relation
+    );
+}
+
+/**
+ * Deletes a category relation
+ * 
+ * @param relation Relation to delete
+ */
+export async function deleteCategoryRelation(relation: CategoryRelation): Promise<void> {
+    await axios.delete(
+        `${MusicDataConfig.baseApiUrl}/categories/relations`,
+        { data: relation }
+    );
 }
 
 /**
