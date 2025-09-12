@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNotifications } from '@/music-universe/shared/hooks';
 import { CategoryParentItem } from '../CategoryParentItem/CategoryParentItem';
 import { deleteCategoryRelation } from '@/music-universe/music-data/api/music-data-categories';
 import type { CategoryDto } from '@/music-universe/music-data/api/music-data-categories';
@@ -15,6 +16,7 @@ export const CategoryParentPanel = ({
     parents,
     onParentRemoved
 }: CategoryParentPanelProps) => {
+    const { showNotification } = useNotifications();
     const [processingParents, setProcessingParents] = useState<Set<number>>(new Set());
 
     const handleRemoveParent = async (parentId: number) => {
@@ -28,8 +30,9 @@ export const CategoryParentPanel = ({
             
             console.log(`✅ Successfully removed parent ${parentId} from category ${categoryId}`);
             onParentRemoved?.();
-        } catch (error) {
+        } catch (error: any) {
             console.error(`❌ Error removing parent ${parentId}:`, error);
+            showNotification('error', error?.response?.data?.message || error?.message || 'Failed to remove parent');
         } finally {
             setProcessingParents(prev => {
                 const newSet = new Set(prev);

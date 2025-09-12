@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNotifications } from '@/music-universe/shared/hooks';
 import { EntityLookup } from '@/music-universe/shared/components';
 import { createCategoryRelation } from '@/music-universe/music-data/api/music-data-categories';
 import type { LookupEntity } from '@/music-universe/shared/types/lookup';
@@ -22,6 +23,7 @@ export const CategoryParentAdder = ({
     buttonLabel,
     onParentAdded
 }: CategoryParentAdderProps) => {
+    const { showNotification } = useNotifications();
     const [searchString, setSearchString] = useState('');
     const [selectedEntity, setSelectedEntity] = useState<LookupEntity | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -55,8 +57,9 @@ export const CategoryParentAdder = ({
             setSelectedEntity(null);
             
             onParentAdded?.();
-        } catch (error) {
+        } catch (error: any) {
             console.error(`❌ Error adding parent ${selectedEntity.id}:`, error);
+            showNotification('error', error?.response?.data?.message || error?.message || 'Failed to add parent');
         } finally {
             setIsProcessing(false);
         }

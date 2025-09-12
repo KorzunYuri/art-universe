@@ -1,5 +1,6 @@
 // hooks
 import { useState, useEffect } from "react";
+import { useNotifications } from "@/music-universe/shared/hooks";
 // components
 import { EditableText, type BaseEntityTableRow } from "@/music-universe/shared/components";
 import { CategoryParentPanel } from "../CategoryParentPanel";
@@ -18,6 +19,7 @@ interface CategoriesTableRowProps extends BaseEntityTableRow {
 }
 
 export const CategoriesTableRow = ({ entityId }: CategoriesTableRowProps) => {
+    const { showNotification } = useNotifications();
     const {
         category,
         invalidateCategory,
@@ -83,8 +85,9 @@ export const CategoriesTableRow = ({ entityId }: CategoriesTableRowProps) => {
                 setEditedName(category.name);
                 setIsDirty(false);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('❌ Error saving category:', error);
+            showNotification('error', error?.response?.data?.message || error?.message || 'Failed to save category');
             setEditedName(category.name);
             setIsDirty(false);
         } finally {
