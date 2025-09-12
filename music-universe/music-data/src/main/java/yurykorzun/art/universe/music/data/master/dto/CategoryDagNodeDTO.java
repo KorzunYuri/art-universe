@@ -9,4 +9,7 @@ public class CategoryDagNodeDTO {
     Long id;
     String name;
     boolean isRoot;
+    int childrenCount;
+    int artistsCount;
+    int tracksCount;
 }

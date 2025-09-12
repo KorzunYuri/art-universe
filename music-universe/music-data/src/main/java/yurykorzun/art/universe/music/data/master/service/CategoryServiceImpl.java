@@ -35,9 +35,11 @@ import yurykorzun.art.universe.music.data.master.exception.CycleRelationExceptio
 import yurykorzun.art.universe.common.exception.DataUpdateException;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.stream.Collectors;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
@@ -344,14 +346,28 @@ public class CategoryServiceImpl implements CategoryService {
         List<Category> allCategories = categoryRepository.findAll();
         List<CategoryCategory> allRelations = categoryCategoryRepository.findAll();
 
+        // Build maps for efficient lookups
+        Set<Long> childCategoryIds = allRelations.stream()
+                .map(CategoryCategory::getTargetCategoryId)
+                .collect(Collectors.toSet());
+        
+        Map<Long, Long> childrenCountMap = allRelations.stream()
+                .collect(Collectors.groupingBy(
+                    CategoryCategory::getSourceCategoryId,
+                    Collectors.counting()
+                ));
+
         List<CategoryDagNodeDTO> nodes = allCategories.stream()
                 .map(category -> {
-                    boolean isRoot = allRelations.stream()
-                            .noneMatch(rel -> rel.getTargetCategoryId().equals(category.getId()));
+                    boolean isRoot = !childCategoryIds.contains(category.getId());
+                    int childrenCount = childrenCountMap.getOrDefault(category.getId(), 0L).intValue();
                     return CategoryDagNodeDTO.builder()
                             .id(category.getId())
                             .name(category.getName())
                             .isRoot(isRoot)
+                            .childrenCount(childrenCount)
+                            .artistsCount(0)
+                            .tracksCount(0)
                             .build();
                 })
                 .toList();

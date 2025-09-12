@@ -457,6 +457,9 @@ class CategoryServiceTest {
             .orElseThrow();
         assertEquals("Rock", rootNode.getName());
         assertTrue(rootNode.isRoot());
+        assertEquals(1, rootNode.getChildrenCount());
+        assertEquals(0, rootNode.getArtistsCount());
+        assertEquals(0, rootNode.getTracksCount());
         
         // Verify child node
         CategoryDagNodeDTO childNode = result.getNodes().stream()
@@ -465,6 +468,9 @@ class CategoryServiceTest {
             .orElseThrow();
         assertEquals("Alternative Rock", childNode.getName());
         assertFalse(childNode.isRoot());
+        assertEquals(0, childNode.getChildrenCount());
+        assertEquals(0, childNode.getArtistsCount());
+        assertEquals(0, childNode.getTracksCount());
         
         // Verify edge
         CategoryDagEdgeDTO edge = result.getEdges().get(0);
@@ -501,7 +507,12 @@ class CategoryServiceTest {
         assertEquals(2, result.getNodes().size());
         assertEquals(0, result.getEdges().size());
         
-        result.getNodes().forEach(node -> assertTrue(node.isRoot()));
+        result.getNodes().forEach(node -> {
+            assertTrue(node.isRoot());
+            assertEquals(0, node.getChildrenCount());
+            assertEquals(0, node.getArtistsCount());
+            assertEquals(0, node.getTracksCount());
+        });
         
         verify(categoryRepository).findAll();
         verify(categoryCategoryRepository).findAll();
