@@ -106,6 +106,13 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    public CategoryWithParentsDto getCategoryWithParents(Long id) {
+        Category category = categoryRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Category not found with id " + id));
+        return mapToCategoryWithParents(category);
+    }
+
+    @Override
     public List<LookupResultDTO> lookupCategories(LookupRequestDTO request) {
         return lookupService.lookup(request);
     }

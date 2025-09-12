@@ -61,6 +61,13 @@ public class CategoryController {
         return categoryService.getCategory(id);
     }
 
+    @GetMapping("/{id}/with-parents")
+    public CategoryWithParentsDto getCategoryWithParents(
+            @PathVariable Long id
+    ) {
+        return categoryService.getCategoryWithParents(id);
+    }
+
     @GetMapping("/lookup")
     public List<LookupResultDTO> lookupCategories(
         @RequestParam String search,

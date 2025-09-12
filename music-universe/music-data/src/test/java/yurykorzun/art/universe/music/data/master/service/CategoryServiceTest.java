@@ -727,4 +727,39 @@ class CategoryServiceTest {
         verify(categoryCategoryRepository, never()).delete(any());
     }
 
+
+    @Test
+    void getCategoryWithParents_shouldReturnCategoryWithParents() {
+        // Given
+        Long id = 1L;
+        Category category = Category.builder()
+                .id(id)
+                .name("Rock")
+                .build();
+
+        when(categoryRepository.findById(id)).thenReturn(Optional.of(category));
+
+        // When
+        CategoryWithParentsDto result = categoryService.getCategoryWithParents(id);
+
+        // Then
+        assertEquals(id, result.getId());
+        assertEquals("Rock", result.getName());
+        verify(categoryRepository).findById(id);
+    }
+
+    @Test
+    void getCategoryWithParents_whenNotFound_shouldThrowException() {
+        // Given
+        Long id = 1L;
+
+        when(categoryRepository.findById(id)).thenReturn(Optional.empty());
+
+        // When & Then
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () ->
+                categoryService.getCategoryWithParents(id));
+
+        assertEquals("Category not found with id " + id, exception.getMessage());
+        verify(categoryRepository).findById(id);
+    }
 }

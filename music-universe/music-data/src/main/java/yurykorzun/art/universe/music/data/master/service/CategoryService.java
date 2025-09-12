@@ -39,6 +39,11 @@ public interface CategoryService {
     CategoryDto getCategory(Long id);
 
     /**
+     * Returns a single category with parent information by id
+     */
+    CategoryWithParentsDto getCategoryWithParents(Long id);
+
+    /**
      * Lookup categories by name for dropdown lists
      * 
      * @param request The lookup request containing search term and optional limit

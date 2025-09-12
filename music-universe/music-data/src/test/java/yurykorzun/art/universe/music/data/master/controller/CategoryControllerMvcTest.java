@@ -399,4 +399,42 @@ class CategoryControllerMvcTest {
                 .content(requestJson))
             .andExpect(status().isInternalServerError());
     }
+
+    @Test
+    void whenGetCategoryWithParents_shouldReturnCategoryWithParents() throws Exception {
+        // Given
+        Long id = 1L;
+        CategoryDto parent1 = CategoryDto.builder().id(2L).name("Music").build();
+        CategoryDto parent2 = CategoryDto.builder().id(3L).name("Genre").build();
+        
+        CategoryWithParentsDto expectedCategory = CategoryWithParentsDto.builder()
+            .id(id)
+            .name("Rock")
+            .parents(Arrays.asList(parent1, parent2))
+            .build();
+        
+        String expectedJson = objectMapper.writeValueAsString(expectedCategory);
+        
+        when(categoryService.getCategoryWithParents(id)).thenReturn(expectedCategory);
+        
+        // When & Then
+        mockMvc.perform(get("/api/v1/categories/{id}/with-parents", id))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(content().json(expectedJson));
+    }
+
+    @Test
+    void whenGetCategoryWithParents_withError_shouldReturnFailureResponse() throws Exception {
+        // Given
+        Long id = 1L;
+        String errorMessage = "Category not found";
+        
+        when(categoryService.getCategoryWithParents(id))
+            .thenThrow(new RuntimeException(errorMessage));
+        
+        // When & Then
+        mockMvc.perform(get("/api/v1/categories/{id}/with-parents", id))
+            .andExpect(status().isInternalServerError());
+    }
 }

@@ -668,4 +668,44 @@ class CategoryControllerTest {
         assertSame(expectedException, exception);
         verify(categoryService).deleteCategoryRelation(relation);
     }
+
+    @Test
+    void getCategoryWithParents_shouldReturnCategoryWithParents() {
+        // Given
+        Long id = 1L;
+        CategoryDto parent1 = CategoryDto.builder().id(2L).name("Music").build();
+        CategoryDto parent2 = CategoryDto.builder().id(3L).name("Genre").build();
+
+        CategoryWithParentsDto expectedCategory = CategoryWithParentsDto.builder()
+                .id(id)
+                .name("Rock")
+                .parents(Arrays.asList(parent1, parent2))
+                .build();
+
+        when(categoryService.getCategoryWithParents(id)).thenReturn(expectedCategory);
+
+        // When
+        CategoryWithParentsDto result = categoryController.getCategoryWithParents(id);
+
+        // Then
+        assertEquals(expectedCategory, result);
+        verify(categoryService).getCategoryWithParents(id);
+    }
+
+    @Test
+    void getCategoryWithParents_whenExceptionThrown_shouldPassThroughException() {
+        // Given
+        Long id = 1L;
+        RuntimeException expectedException = new RuntimeException("Test error");
+
+        when(categoryService.getCategoryWithParents(id)).thenThrow(expectedException);
+
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                categoryController.getCategoryWithParents(id)
+        );
+
+        assertSame(expectedException, exception);
+        verify(categoryService).getCategoryWithParents(id);
+    }
 }
