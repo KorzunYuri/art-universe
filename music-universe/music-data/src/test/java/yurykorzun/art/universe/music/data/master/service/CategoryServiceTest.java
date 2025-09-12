@@ -687,6 +687,61 @@ class CategoryServiceTest {
     }
     
     @Test
+    void createCategoryRelation_whenWouldCreateDiamondThroughCommonDescendant_shouldThrowException() {
+        // Given: A->B->D->E and A->C->M->E (two paths from A to E)
+        // When trying to create B->C, it would create diamond through common descendant E
+        CategoryRelationDTO relation = CategoryRelationDTO.builder()
+            .sourceId(2L) // B
+            .targetId(3L) // C
+            .build();
+        
+        when(categoryCategoryRepository.existsBySourceCategoryIdAndTargetCategoryId(2L, 3L)).thenReturn(false);
+        
+        // Mock path checking: no direct path from B to C
+        when(categoryCategoryRepository.findChildIds(2L)).thenReturn(List.of(4L)); // B->D
+        when(categoryCategoryRepository.findChildIds(4L)).thenReturn(List.of(5L)); // D->E
+        when(categoryCategoryRepository.findChildIds(5L)).thenReturn(List.of()); // E has no children
+        when(categoryCategoryRepository.findChildIds(3L)).thenReturn(List.of(6L)); // C->M
+        when(categoryCategoryRepository.findChildIds(6L)).thenReturn(List.of(5L)); // M->E
+        
+        // When & Then
+        DiamondRelationException exception = assertThrows(DiamondRelationException.class, () ->
+            categoryService.createCategoryRelation(relation));
+        
+        assertTrue(exception.getMessage().contains("would create a diamond"));
+        verify(categoryCategoryRepository, never()).save(any());
+    }
+
+    @Test
+    void createCategoryRelation_whenWouldCreateDiamondThroughCommonAncestor_shouldThrowException() {
+        // Given: A->B and A->C->D (common ancestor A)
+        // When trying to create B->D, it would create diamond through common ancestor A
+        CategoryRelationDTO relation = CategoryRelationDTO.builder()
+            .sourceId(2L) // B
+            .targetId(4L) // D
+            .build();
+        
+        when(categoryCategoryRepository.existsBySourceCategoryIdAndTargetCategoryId(2L, 4L)).thenReturn(false);
+        
+        // Mock path checking: no direct path from B to D
+        when(categoryCategoryRepository.findChildIds(2L)).thenReturn(List.of()); // B has no children
+        when(categoryCategoryRepository.findChildIds(4L)).thenReturn(List.of()); // D has no children
+        
+        // Mock ancestor checking: B and C both have A as ancestor
+        when(categoryCategoryRepository.findParentIds(2L)).thenReturn(List.of(1L)); // B->A
+        when(categoryCategoryRepository.findParentIds(3L)).thenReturn(List.of(1L)); // C->A
+        when(categoryCategoryRepository.findParentIds(4L)).thenReturn(List.of(3L)); // D->C
+        when(categoryCategoryRepository.findParentIds(1L)).thenReturn(List.of()); // A has no parents
+        
+        // When & Then
+        DiamondRelationException exception = assertThrows(DiamondRelationException.class, () ->
+            categoryService.createCategoryRelation(relation));
+        
+        assertTrue(exception.getMessage().contains("would create a diamond"));
+        verify(categoryCategoryRepository, never()).save(any());
+    }
+
+    @Test
     void deleteCategoryRelation_shouldDeleteRelation() {
         // Given
         CategoryRelationDTO relation = CategoryRelationDTO.builder()
