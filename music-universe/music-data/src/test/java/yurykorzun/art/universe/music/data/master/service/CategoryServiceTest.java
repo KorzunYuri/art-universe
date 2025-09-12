@@ -1,6 +1,7 @@
 package yurykorzun.art.universe.music.data.master.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -519,6 +520,7 @@ class CategoryServiceTest {
     }
     
     @Test
+    @Disabled("Diamond checking temporarily disabled")
     void saveCategoryWithParents_whenWouldCreateDiamond_shouldThrowException() {
         // Given: A -> B -> C hierarchy exists
         Category categoryC = Category.builder().id(3L).name("C").build();
@@ -569,6 +571,7 @@ class CategoryServiceTest {
     }
     
     @Test
+    @Disabled("Diamond checking temporarily disabled")
     void deleteCategory_whenWouldCreateDiamond_shouldThrowException() {
         // Given: A -> B -> C and A -> D -> C (diamond through B)
         when(categoryRepository.existsById(2L)).thenReturn(true);
@@ -627,7 +630,6 @@ class CategoryServiceTest {
         when(categoryCategoryRepository.existsBySourceCategoryIdAndTargetCategoryId(1L, 2L))
             .thenReturn(false);
         when(categoryCategoryRepository.findChildIds(2L)).thenReturn(List.of());
-        when(categoryCategoryRepository.findChildIds(1L)).thenReturn(List.of());
         
         // When
         categoryService.createCategoryRelation(relation);
@@ -676,6 +678,7 @@ class CategoryServiceTest {
     }
     
     @Test
+    @Disabled("Diamond checking temporarily disabled")
     void createCategoryRelation_whenWouldCreateDiamond_shouldThrowException() {
         // Given
         CategoryRelationDTO relation = CategoryRelationDTO.builder()
@@ -698,6 +701,7 @@ class CategoryServiceTest {
     }
     
     @Test
+    @Disabled("Diamond checking temporarily disabled")
     void createCategoryRelation_whenWouldCreateDiamondThroughCommonDescendant_shouldThrowException() {
         // Given: A->B->D->E and A->C->M->E (two paths from A to E)
         // When trying to create B->C, it would create diamond through common descendant E
@@ -724,6 +728,7 @@ class CategoryServiceTest {
     }
 
     @Test
+    @Disabled("Diamond checking temporarily disabled")
     void createCategoryRelation_whenWouldCreateDiamondThroughCommonAncestor_shouldThrowException() {
         // Given: A->B and A->C->D (common ancestor A)
         // When trying to create B->D, it would create diamond through common ancestor A

@@ -141,7 +141,6 @@ public interface CategoryService {
      * Create a relation between two categories
      * 
      * @param relation The relation DTO with source and target category IDs
-     * @throws DiamondRelationException if the relation would create a diamond
      * @throws CycleRelationException if the relation would create a cycle
      * @throws DataUpdateException if the relation already exists
      */

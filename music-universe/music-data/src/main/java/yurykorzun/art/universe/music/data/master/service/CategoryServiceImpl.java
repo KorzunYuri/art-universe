@@ -182,12 +182,12 @@ public class CategoryServiceImpl implements CategoryService {
                                         parentId, savedCategory.getId()));
                     }
 
-                    // Check for diamond before creating relation
-                    if (wouldCreateDiamond(parentId, savedCategory.getId())) {
-                        throw new DiamondRelationException(
-                                String.format("Creating relation from category %d to %d would create a diamond",
-                                        parentId, savedCategory.getId()));
-                    }
+//                    // Check for diamond before creating relation
+//                    if (wouldCreateDiamond(parentId, savedCategory.getId())) {
+//                        throw new DiamondRelationException(
+//                                String.format("Creating relation from category %d to %d would create a diamond",
+//                                        parentId, savedCategory.getId()));
+//                    }
 
                     CategoryCategory relation = CategoryCategory.builder()
                             .sourceCategoryId(parentId)
@@ -224,12 +224,12 @@ public class CategoryServiceImpl implements CategoryService {
                                             id, parentId, childId));
                         }
 
-                        // Check for diamond before creating relation
-                        if (wouldCreateDiamond(parentId, childId)) {
-                            throw new DiamondRelationException(
-                                    String.format("Deleting category %d would create a diamond relation from %d to %d",
-                                            id, parentId, childId));
-                        }
+//                        // Check for diamond before creating relation
+//                        if (wouldCreateDiamond(parentId, childId)) {
+//                            throw new DiamondRelationException(
+//                                    String.format("Deleting category %d would create a diamond relation from %d to %d",
+//                                            id, parentId, childId));
+//                        }
 
                         CategoryCategory relation = CategoryCategory.builder()
                                 .sourceCategoryId(parentId)
@@ -402,12 +402,12 @@ public class CategoryServiceImpl implements CategoryService {
                             relation.getSourceId(), relation.getTargetId()));
         }
 
-        // Check for diamond
-        if (wouldCreateDiamond(relation.getSourceId(), relation.getTargetId())) {
-            throw new DiamondRelationException(
-                    String.format("Creating relation from category %d to %d would create a diamond",
-                            relation.getSourceId(), relation.getTargetId()));
-        }
+//        // Check for diamond
+//        if (wouldCreateDiamond(relation.getSourceId(), relation.getTargetId())) {
+//            throw new DiamondRelationException(
+//                    String.format("Creating relation from category %d to %d would create a diamond",
+//                            relation.getSourceId(), relation.getTargetId()));
+//        }
 
         // Create relation
         CategoryCategory categoryRelation = CategoryCategory.builder()
@@ -443,13 +443,13 @@ public class CategoryServiceImpl implements CategoryService {
         return hasPath(childId, parentId);
     }
 
-    /**
-     * Check if creating a relation from parentId to childId would create a diamond
-     */
-    private boolean wouldCreateDiamond(Long parentId, Long childId) {
-        // If there's already a path from parent to child, adding direct relation creates diamond
-        return hasPath(parentId, childId) || hasCommonDescendants(parentId, childId) || hasCommonAncestors(parentId, childId);
-    }
+//    /**
+//     * Check if creating a relation from parentId to childId would create a diamond
+//     */
+//    private boolean wouldCreateDiamond(Long parentId, Long childId) {
+//        // If there's already a path from parent to child, adding direct relation creates diamond
+//        return hasPath(parentId, childId) || hasCommonDescendants(parentId, childId) || hasCommonAncestors(parentId, childId);
+//    }
 
     /**
      * Check if there's a path from source to target through existing relations
