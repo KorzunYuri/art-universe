@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { type Node, type Edge, ReactFlowProvider, useReactFlow } from '@xyflow/react';
 import { useQuery } from '@tanstack/react-query';
+import { useNotifications } from '@/music-universe/shared/hooks';
 import { fetchCategoryDag, createCategoryRelation, deleteCategoryRelation } from '@/music-universe/music-data/api/music-data-categories';
 import { CategoryDagInteractive } from './CategoryDagInteractive';
 import { treeLayout, radialLayout, radialWithCollisionDetectionLayout, type LayoutEngine } from './layouts';
@@ -16,8 +17,9 @@ type CategoryNode = Node<CategoryNodeData>;
 function CategoriesDagFlow() {
     const [layoutEngine, setLayoutEngine] = useState<LayoutEngine>(radialWithCollisionDetectionLayout);
     const { fitView } = useReactFlow();
-    
-    const { data: dagData, isLoading } = useQuery({
+    const { showNotification } = useNotifications();
+
+    const { data: dagData, isLoading, refetch } = useQuery({
         queryKey: ['categoryDag'],
         queryFn: fetchCategoryDag,
     });
@@ -46,10 +48,15 @@ function CategoriesDagFlow() {
                 sourceId: parseInt(sourceId),
                 targetId: parseInt(targetId)
             });
-        } catch (error) {
+            
+            // Refresh data only after successful creation
+            await refetch();
+            console.log(`✅ Successfully created relation: ${sourceId} -> ${targetId}`);
+        } catch (error: any) {
             console.error('Failed to create category relation:', error);
+            showNotification('error', error?.response?.data?.message || error?.message || 'Failed to create relation');
         }
-    }, []);
+    }, [refetch, showNotification]);
 
     const handleEdgeDelete = useCallback(async (edgeId: string) => {
         const [sourceId, targetId] = edgeId.split('-').map(Number);
@@ -59,10 +66,15 @@ function CategoriesDagFlow() {
                 sourceId,
                 targetId
             });
-        } catch (error) {
+            
+            // Refresh data only after successful deletion
+            await refetch();
+            console.log(`✅ Successfully deleted relation: ${sourceId} -> ${targetId}`);
+        } catch (error: any) {
             console.error('Failed to remove category relation:', error);
+            showNotification('error', error?.response?.data?.message || error?.message || 'Failed to remove relation');
         }
-    }, []);
+    }, [refetch, showNotification]);
 
     const handleLayoutChange = useCallback(() => {
         setTimeout(() => fitView(), 150);
@@ -100,6 +112,7 @@ function CategoriesDagFlow() {
                 onEdgeCreate={handleEdgeCreate}
                 onEdgeDelete={handleEdgeDelete}
                 onLayoutChange={handleLayoutChange}
+                autoArrange={true}
             />
         </div>
     );

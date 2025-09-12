@@ -52,12 +52,34 @@ export function CategoryDagInteractive({
     const [edges, setEdges] = useState<Edge[]>(initialEdges);
     const [selectedEdge, setSelectedEdge] = useState<string | null>(null);
     const [selectedNode, setSelectedNode] = useState<string | null>(null);
+    const [userPositions, setUserPositions] = useState<Map<string, { x: number, y: number }>>(new Map());
 
     // Update internal state when props change
     useEffect(() => {
-        if (initialNodes.length > 0 && autoArrange) {
-            const { nodes: layoutedNodes } = layoutEngine.layout(initialNodes, initialEdges);
-            setNodes(layoutedNodes);
+        if (initialNodes.length > 0) {
+            if (autoArrange && userPositions.size === 0) {
+                // Only auto-arrange if no user positions exist
+                const { nodes: layoutedNodes } = layoutEngine.layout(initialNodes, initialEdges);
+                setNodes(layoutedNodes);
+            } else {
+                // Save current positions of all nodes before updating
+                setNodes(currentNodes => {
+                    const currentPositions = new Map(userPositions);
+                    currentNodes.forEach(node => {
+                        if (!currentPositions.has(node.id)) {
+                            currentPositions.set(node.id, node.position);
+                        }
+                    });
+                    
+                    // Preserve positions when updating nodes
+                    const updatedNodes = initialNodes.map(node => {
+                        const savedPos = currentPositions.get(node.id);
+                        return savedPos ? { ...node, position: savedPos } : node;
+                    });
+                    
+                    return updatedNodes;
+                });
+            }
         } else {
             setNodes(initialNodes);
         }
@@ -71,11 +93,12 @@ export function CategoryDagInteractive({
         setNodes((nds) => {
             const updatedNodes = applyNodeChanges(changes, nds) as CategoryNode[];
             
-            // Auto-arrange after node removal if autoArrange is true
-            if (autoArrange && changes.some(change => change.type === 'remove')) {
-                const { nodes: layoutedNodes } = layoutEngine.layout(updatedNodes, edges);
-                return layoutedNodes;
-            }
+            // Save user positions when nodes are moved
+            changes.forEach(change => {
+                if (change.type === 'position' && change.position) {
+                    setUserPositions(prev => new Map(prev).set(change.id, change.position!));
+                }
+            });
             
             return updatedNodes;
         });
@@ -87,7 +110,7 @@ export function CategoryDagInteractive({
             const newSelectedNodeId = selectedNode ? selectedNode.id : null;
             setSelectedNode(newSelectedNodeId);
         }
-    }, [autoArrange, edges, layoutEngine]);
+    }, []);
 
     const handleEdgesChange = useCallback((changes: EdgeChange[]) => {
         setEdges((eds) => applyEdgeChanges(changes, eds));
@@ -118,16 +141,7 @@ export function CategoryDagInteractive({
     const handleConnect = useCallback((params: Connection) => {
         if (!allowEdgeCreation || readonly || !params.source || !params.target) return;
         
-        // Add edge to local state immediately
-        const newEdge: Edge = {
-            id: `${params.source}-${params.target}`,
-            source: params.source,
-            target: params.target,
-            type: 'straight',
-        };
-        
-        setEdges((eds) => [...eds, newEdge]);
-        
+        // Don't add edge to local state - wait for server response
         if (onEdgeCreate) {
             onEdgeCreate(params.source, params.target);
         }
