@@ -113,7 +113,9 @@ export function CategoryDagInteractive({
     }, []);
 
     const handleEdgesChange = useCallback((changes: EdgeChange[]) => {
-        setEdges((eds) => applyEdgeChanges(changes, eds));
+        // Filter out remove changes - we handle deletion only via keyboard
+        const filteredChanges = changes.filter(change => change.type !== 'remove');
+        setEdges((eds) => applyEdgeChanges(filteredChanges, eds));
         
         // Clear selection if edge is removed
         changes.forEach((change) => {
