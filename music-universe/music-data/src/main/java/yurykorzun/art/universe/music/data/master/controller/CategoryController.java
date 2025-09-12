@@ -41,17 +41,17 @@ public class CategoryController {
 
     @GetMapping
     public Page<CategoryDto> findCategories(
-        @RequestParam(required = false) String query,
+        @RequestParam(required = false) String search,
         Pageable pageable
     ) {
-        return categoryService.findCategories(query, pageable);
+        return categoryService.findCategories(search, pageable);
     }
 
     @GetMapping("/with-parents")
     public List<CategoryWithParentsDto> findCategoriesWithParents(
-        @RequestParam(required = false) String query
+        @RequestParam(required = false) String search
     ) {
-        return categoryService.findCategoriesWithParents(query);
+        return categoryService.findCategoriesWithParents(search);
     }
 
     @GetMapping("/{id}")

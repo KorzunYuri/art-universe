@@ -285,7 +285,7 @@ class CategoryControllerMvcTest {
         
         // When & Then
         mockMvc.perform(get("/api/v1/categories/with-parents")
-                .param("query", searchQuery))
+                .param("search", searchQuery))
             .andDo(print())
             .andExpect(status().isOk())
             .andExpect(content().json(expectedJson));
@@ -302,7 +302,7 @@ class CategoryControllerMvcTest {
         
         // When & Then
         mockMvc.perform(get("/api/v1/categories/with-parents")
-                .param("query", searchQuery))
+                .param("search", searchQuery))
             .andExpect(status().isOk())
             .andExpect(content().json(expectedJson));
     }
@@ -318,7 +318,7 @@ class CategoryControllerMvcTest {
         
         // When & Then
         mockMvc.perform(get("/api/v1/categories/with-parents")
-                .param("query", searchQuery))
+                .param("search", searchQuery))
             .andExpect(status().isInternalServerError());
     }
     
