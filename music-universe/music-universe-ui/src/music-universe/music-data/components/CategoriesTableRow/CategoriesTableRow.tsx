@@ -13,6 +13,7 @@ import { saveCategory } from "@/music-universe/music-data/api/music-data-categor
 import { useCategoryWithParents } from "@/music-universe/music-data/hooks/useCategoryWithParents";
 // styles
 import styles from "./CategoriesTableRow.module.css";
+import tableStyles from "../CategoriesTable/CategoriesTable.module.css";
 import sharedTableStyles from "@/music-universe/shared/styles/EntityTableStyles.module.scss";
 
 interface CategoriesTableRowProps extends BaseEntityTableRow {
@@ -43,7 +44,7 @@ export const CategoriesTableRow = ({ entityId }: CategoriesTableRowProps) => {
     if (isLoadingCategory) {
         return (
             <div className={sharedTableStyles.row}>
-                <div className={`${sharedTableStyles.cell} ${styles.name}`}>
+                <div className={`${sharedTableStyles.cell} ${tableStyles.name}`}>
                     Loading...
                 </div>
             </div>
@@ -53,7 +54,7 @@ export const CategoriesTableRow = ({ entityId }: CategoriesTableRowProps) => {
     if (!category) {
         return (
             <div className={sharedTableStyles.row}>
-                <div className={`${sharedTableStyles.cell} ${styles.name}`}>
+                <div className={`${sharedTableStyles.cell} ${tableStyles.name}`}>
                     {isError && error ? error.message : 'No category found'}
                 </div>
             </div>
@@ -101,7 +102,7 @@ export const CategoriesTableRow = ({ entityId }: CategoriesTableRowProps) => {
 
     return (
         <div className={sharedTableStyles.row}>
-            <div className={`${sharedTableStyles.cell} ${styles.name}`}>
+            <div className={`${sharedTableStyles.cell} ${tableStyles.name}`}>
                 <EditableText
                     value={editedName}
                     onChange={handleNameChange}
@@ -110,7 +111,7 @@ export const CategoriesTableRow = ({ entityId }: CategoriesTableRowProps) => {
                 />
             </div>
 
-            <div className={`${sharedTableStyles.cell} ${styles.parents}`}>
+            <div className={`${sharedTableStyles.cell} ${tableStyles.parents}`}>
                 <CategoryParentPanel
                     categoryId={category.id}
                     parents={category.parents}
@@ -118,7 +119,7 @@ export const CategoriesTableRow = ({ entityId }: CategoriesTableRowProps) => {
                 />
             </div>
 
-            <div className={`${sharedTableStyles.cell} ${styles.addParent}`}>
+            <div className={`${sharedTableStyles.cell} ${tableStyles.addParent}`}>
                 <CategoryParentAdder
                     categoryId={category.id}
                     dataSource="master"
@@ -128,7 +129,7 @@ export const CategoriesTableRow = ({ entityId }: CategoriesTableRowProps) => {
                 />
             </div>
 
-            <div className={`${sharedTableStyles.cell} ${styles.actions}`}>
+            <div className={`${sharedTableStyles.cell} ${tableStyles.actions}`}>
                 <button
                     onClick={handleSave}
                     disabled={!isDirty || isSaving || !editedName.trim()}

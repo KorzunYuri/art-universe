@@ -57,22 +57,26 @@
 
 /* Column styles */
 .name {
-    flex: 0 0 30%;
+    flex: 0 0 15%;
     text-align: left;
+    display: block;
 }
 
 .parents {
     flex: 1;
     text-align: left;
     min-width: 200px;
+    display: block;
 }
 
 .addParent {
-    flex: 0 0 250px;
+    flex: 0 0 20%;
     text-align: left;
+    display: block;
 }
 
 .actions {
-    flex: 0 0 100px;
+    flex: 0 0 auto;
     text-align: center;
+    display: block;
 }
