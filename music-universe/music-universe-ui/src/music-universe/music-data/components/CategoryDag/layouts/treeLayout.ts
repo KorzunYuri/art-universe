@@ -7,7 +7,11 @@ export const treeLayout: LayoutEngine = {
     layout: (nodes: CategoryNode[], edges: Edge[]): LayoutResult => {
         const dagreGraph = new dagre.graphlib.Graph();
         dagreGraph.setDefaultEdgeLabel(() => ({}));
-        dagreGraph.setGraph({ rankdir: 'TB' });
+        dagreGraph.setGraph({ 
+            rankdir: 'TB',
+            ranksep: 120,  // Increased vertical spacing between ranks
+            nodesep: 50    // Horizontal spacing between nodes
+        });
 
         nodes.forEach((node) => {
             dagreGraph.setNode(node.id, { width: 150, height: 50 });

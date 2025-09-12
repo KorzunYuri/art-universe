@@ -151,6 +151,9 @@ export interface CategoryDagNodeDto {
     id: number;
     name: string;
     isRoot: boolean;
+    childrenCount: number;
+    artistsCount: number;
+    tracksCount: number;
 }
 
 export interface CategoryDagEdgeDto {

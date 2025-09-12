@@ -1,12 +1,7 @@
 import { useCallback } from 'react';
 import { type Node, type Edge, ReactFlowProvider } from '@xyflow/react';
 import { CategoryDagInteractive } from './CategoryDagInteractive';
-
-interface CategoryNodeData extends Record<string, unknown> {
-    id: number;
-    name: string;
-    isRoot: boolean;
-}
+import type { CategoryNodeData } from './layouts/types';
 
 type CategoryNode = Node<CategoryNodeData>;
 

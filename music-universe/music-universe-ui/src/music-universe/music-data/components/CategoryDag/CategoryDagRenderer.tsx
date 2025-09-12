@@ -8,24 +8,48 @@ import {
     type OnEdgesChange,
     Background,
     Handle,
-    Position,
+    Position, MiniMap,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import styles from './CategoryDag.module.css';
-import { type CategoryNode } from './layouts';
-
-interface CategoryNodeData extends Record<string, unknown> {
-    id: number;
-    name: string;
-    isRoot: boolean;
-}
+import { type CategoryNode, type CategoryNodeData } from './layouts';
 
 const CategoryNodeComponent = ({ data }: { data: CategoryNodeData }) => {
+    const getRankStyle = (rank: number = 1) => {
+        const baseSize = 12;
+        const sizeMultiplier = 1 + (rank - 1) * 0.3; // 1.0 to 2.2
+        const opacity = 0.5 + (rank - 1) * 0.15; // 0.4 to 1.0
+        
+        return {
+            containerStyle: {
+                fontWeight: rank >= 4 ? 'bold' : 'normal',
+                backgroundColor: `rgba(0, 200, 125, ${opacity})`,
+                minWidth: `${80 + (rank - 1) * 20}px`,
+                minHeight: `${40 + (rank - 1) * 10}px`,
+                borderWidth: `${Math.max(1, rank)}px`,
+            },
+            nameStyle: {
+                fontSize: `${baseSize * sizeMultiplier}px`,
+            },
+            valueStyle: {
+                fontSize: `${baseSize * sizeMultiplier * 0.75}px`,
+            }
+        };
+    };
+
+    const { containerStyle, nameStyle, valueStyle } = getRankStyle(data.rank);
+
     return (
-        <div className={`${styles.dagNode} ${data.isRoot ? styles.rootNode : ''}`}>
-            <div className={styles.categoryName}>{data.name}</div>
-            <Handle type="target" position={Position.Top} />
-            <Handle type="source" position={Position.Bottom} />
+        <div 
+            className={`${styles.dagNode} ${data.isRoot ? styles.rootNode : ''}`}
+            style={containerStyle}
+        >
+            <div className={styles.categoryName} style={nameStyle}>{data.name}</div>
+            {data.value !== undefined && (
+                <div className={styles.categoryValue} style={valueStyle}>({data.value})</div>
+            )}
+            <Handle type="target" position={Position.Top} className={styles.inputHandle} />
+            <Handle type="source" position={Position.Bottom} className={styles.outputHandle} />
         </div>
     );
 };
@@ -100,9 +124,11 @@ export function CategoryDagRenderer({
                 nodesDraggable={!readonly}
                 nodesConnectable={!readonly}
                 elementsSelectable={!readonly}
+                connectionRadius={20}
                 fitView
                 attributionPosition="bottom-left"
             >
+                <MiniMap />
                 <Background />
             </ReactFlow>
         </div>

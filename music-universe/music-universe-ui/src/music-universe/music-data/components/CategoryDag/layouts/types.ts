@@ -4,6 +4,11 @@ export interface CategoryNodeData extends Record<string, unknown> {
     id: number;
     name: string;
     isRoot: boolean;
+    childrenCount: number;
+    artistsCount: number;
+    tracksCount: number;
+    rank?: number;
+    value?: number;
 }
 
 export type CategoryNode = Node<CategoryNodeData>;
