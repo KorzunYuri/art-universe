@@ -2,9 +2,8 @@
 FROM gradle:8-jdk21 as build
 WORKDIR /app
 
-# Copy Gradle wrapper and build files
-COPY gradle/ gradle/
-COPY gradlew gradlew.bat build.gradle settings.gradle ./
+# Copy build files
+COPY build.gradle settings.gradle ./
 
 # Copy commons module
 COPY art-universe/art-universe-commons/build.gradle art-universe/art-universe-commons/
@@ -18,7 +17,7 @@ COPY music-universe/music-data/build.gradle music-universe/music-data/
 COPY music-universe/music-data/src/ music-universe/music-data/src/
 
 # Build the application and extract layers
-RUN ./gradlew :music-universe:music-data:bootJar :music-universe:music-data:extractLayers --no-daemon
+RUN gradle :music-universe:music-data:bootJar :music-universe:music-data:extractLayers --no-daemon
 
 # Runtime stage
 FROM eclipse-temurin:21-jre
