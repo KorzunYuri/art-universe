@@ -17,6 +17,7 @@ import yurykorzun.art.universe.music.data.master.dto.CategoryDagDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategoryDagNodeDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategoryDagEdgeDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategoryRelationDTO;
+import yurykorzun.art.universe.music.data.master.dto.CategoryCountsProjection;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
@@ -39,6 +40,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -345,29 +347,27 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryDagDTO getCategoryDag() {
         List<Category> allCategories = categoryRepository.findAll();
         List<CategoryCategory> allRelations = categoryCategoryRepository.findAll();
+        List<CategoryCountsProjection> categoryCounts = categoryRepository.findCategoriesWithCounts();
 
         // Build maps for efficient lookups
         Set<Long> childCategoryIds = allRelations.stream()
                 .map(CategoryCategory::getTargetCategoryId)
                 .collect(Collectors.toSet());
         
-        Map<Long, Long> childrenCountMap = allRelations.stream()
-                .collect(Collectors.groupingBy(
-                    CategoryCategory::getSourceCategoryId,
-                    Collectors.counting()
-                ));
+        Map<Long, CategoryCountsProjection> countsMap = categoryCounts.stream()
+                .collect(Collectors.toMap(CategoryCountsProjection::getId, Function.identity()));
 
         List<CategoryDagNodeDTO> nodes = allCategories.stream()
                 .map(category -> {
                     boolean isRoot = !childCategoryIds.contains(category.getId());
-                    int childrenCount = childrenCountMap.getOrDefault(category.getId(), 0L).intValue();
+                    CategoryCountsProjection counts = countsMap.get(category.getId());
                     return CategoryDagNodeDTO.builder()
                             .id(category.getId())
                             .name(category.getName())
                             .isRoot(isRoot)
-                            .childrenCount(childrenCount)
-                            .artistsCount(0)
-                            .tracksCount(0)
+                            .childrenCount(counts != null ? counts.getChildrenCount() : 0)
+                            .artistsCount(counts != null ? counts.getArtistsCount() : 0)
+                            .tracksCount(counts != null ? counts.getTracksCount() : 0)
                             .build();
                 })
                 .toList();
