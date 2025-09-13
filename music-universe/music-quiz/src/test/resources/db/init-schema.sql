@@ -62,9 +62,11 @@ CREATE TABLE IF NOT EXISTS mu_view.v_artist_category (
     category_id BIGINT
 );
 
-CREATE TABLE IF NOT EXISTS mu_view.v_category_hierarchy (
+CREATE TABLE IF NOT EXISTS mu_view.v_category_children (
     id BIGINT,
-    parent_id BIGINT
+    name VARCHAR(500),
+    child_id BIGINT,
+    child_name VARCHAR(500)
 );
 
 -- =============================================================================
