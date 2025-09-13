@@ -1,4 +1,11 @@
 export { treeLayout } from './treeLayout.ts';
 export { radialLayout } from './radialLayout';
 export { radialWithCollisionDetectionLayout } from './radialWithCollisionDetectionLayout.ts';
+export { smartRadialLayout } from './smartRadialLayout.ts';
+export { hierarchicalLayout } from './hierarchicalLayout.ts';
+export { hybridLayout } from './hybridLayout.ts';
+export { clusterLayout } from './clusterLayout.ts';
+export { recursiveLayout } from './recursiveLayout.ts';
+export { radialRecursiveLayout } from './radialRecursiveLayout.ts';
+export { stylePriorityLayout } from './stylePriorityLayout.ts';
 export type { LayoutEngine, CategoryNode, LayoutResult, CategoryNodeData } from './types';

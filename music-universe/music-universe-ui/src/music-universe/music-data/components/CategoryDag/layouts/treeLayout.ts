@@ -9,7 +9,7 @@ export const treeLayout: LayoutEngine = {
         dagreGraph.setDefaultEdgeLabel(() => ({}));
         dagreGraph.setGraph({ 
             rankdir: 'TB',
-            ranksep: 120,  // Increased vertical spacing between ranks
+            ranksep: 200,  // Increased vertical spacing between ranks for 5 levels
             nodesep: 50    // Horizontal spacing between nodes
         });
 

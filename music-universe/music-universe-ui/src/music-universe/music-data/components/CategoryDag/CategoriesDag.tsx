@@ -4,11 +4,23 @@ import { useQuery } from '@tanstack/react-query';
 import { useNotifications } from '@/music-universe/shared/hooks';
 import { fetchCategoryDag, createCategoryRelation, deleteCategoryRelation } from '@/music-universe/music-data/api/music-data-categories';
 import { CategoryDagInteractive } from './CategoryDagInteractive';
-import { treeLayout, radialLayout, radialWithCollisionDetectionLayout, type LayoutEngine, type CategoryNode } from './layouts';
+import { treeLayout, radialWithCollisionDetectionLayout, smartRadialLayout, hierarchicalLayout, hybridLayout, clusterLayout, recursiveLayout, radialRecursiveLayout, stylePriorityLayout, type LayoutEngine, type CategoryNode } from './layouts';
+
+const layoutOptions = [
+    { layout: smartRadialLayout, label: 'Smart' },
+    { layout: hybridLayout, label: 'Hybrid' },
+    { layout: hierarchicalLayout, label: 'Hierarchical' },
+    { layout: radialWithCollisionDetectionLayout, label: 'Radial+' },
+    { layout: treeLayout, label: 'Tree' },
+    { layout: clusterLayout, label: 'Cluster' },
+    { layout: recursiveLayout, label: 'Recursive' },
+    { layout: radialRecursiveLayout, label: 'Radial Rec' },
+    { layout: stylePriorityLayout, label: 'Style Priority' },
+];
 import { rankCategories, type MetricType } from './utils/categoryRanking';
 
 function CategoriesDagFlow() {
-    const [layoutEngine, setLayoutEngine] = useState<LayoutEngine>(radialWithCollisionDetectionLayout);
+    const [layoutEngine, setLayoutEngine] = useState<LayoutEngine>(hybridLayout);
     const [selectedMetric, setSelectedMetric] = useState<MetricType>('childrenCount');
     const { fitView } = useReactFlow();
     const { showNotification } = useNotifications();
@@ -98,27 +110,16 @@ function CategoriesDagFlow() {
             <div style={{ marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                     <strong>Layout:</strong>
-                    <button 
-                        onClick={() => setLayoutEngine(radialWithCollisionDetectionLayout)}
-                        disabled={layoutEngine === radialWithCollisionDetectionLayout}
-                        style={{ marginLeft: '5px' }}
-                    >
-                        Radial+
-                    </button>
-                    <button 
-                        onClick={() => setLayoutEngine(radialLayout)}
-                        disabled={layoutEngine === radialLayout}
-                        style={{ marginLeft: '5px' }}
-                    >
-                        Radial
-                    </button>
-                    <button 
-                        onClick={() => setLayoutEngine(treeLayout)}
-                        disabled={layoutEngine === treeLayout}
-                        style={{ marginLeft: '5px' }}
-                    >
-                        Tree
-                    </button>
+                    {layoutOptions.map(({ layout, label }) => (
+                        <button 
+                            key={label}
+                            onClick={() => setLayoutEngine(layout)}
+                            disabled={layoutEngine === layout}
+                            style={{ marginLeft: '5px' }}
+                        >
+                            {label}
+                        </button>
+                    ))}
                 </div>
                 
                 <div>
