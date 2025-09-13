@@ -5,17 +5,21 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.music.quiz.dto.GenerationDto;
+import yurykorzun.art.universe.music.quiz.dto.GenerationStep;
 import yurykorzun.art.universe.music.quiz.dto.GenerationTrackDto;
 import yurykorzun.art.universe.music.quiz.entity.Generation;
 import yurykorzun.art.universe.music.quiz.entity.GenerationStatus;
+import yurykorzun.art.universe.music.quiz.entity.GenerationStepType;
 import yurykorzun.art.universe.music.quiz.entity.GenerationTrack;
 import yurykorzun.art.universe.music.quiz.repository.GenerationRepository;
 import yurykorzun.art.universe.music.quiz.repository.GenerationTrackRepository;
-import yurykorzun.art.universe.music.quiz.repository.PipelineRepository;
 import yurykorzun.art.universe.music.quiz.service.GenerationService;
+import yurykorzun.art.universe.music.quiz.service.step.GenerationStepProcessor;
+import yurykorzun.art.universe.music.quiz.service.step.GenerationStepProcessorRegistry;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -28,7 +32,6 @@ public class GenerationServiceImpl implements GenerationService {
 
     private final GenerationRepository generationRepository;
     private final GenerationTrackRepository generationTrackRepository;
-    private final PipelineRepository pipelineRepository;
     
     @PersistenceContext
     private EntityManager entityManager;
@@ -36,7 +39,13 @@ public class GenerationServiceImpl implements GenerationService {
     @Override
     @Transactional
     public GenerationDto generateTracks(Long gameId, Integer targetCount) {
-        log.debug("Generating {} tracks for game {}", targetCount, gameId);
+        return generateTracks(gameId, targetCount, null);
+    }
+
+    @Override
+    @Transactional
+    public GenerationDto generateTracks(Long gameId, Integer targetCount, List<GenerationStep> steps) {
+        log.debug("Generating {} tracks for game {} with {} UI steps", targetCount, gameId, steps != null ? steps.size() : 0);
         
         // Create generation record
         Generation generation = Generation.builder()
@@ -48,8 +57,11 @@ public class GenerationServiceImpl implements GenerationService {
         Generation savedGeneration = generationRepository.save(generation);
         
         try {
-            // Call pipeline procedure
-            String resultTableName = pipelineRepository.runPipeline(gameId, savedGeneration.getId(), targetCount);
+            // Build complete step chain
+            List<GenerationStep> allSteps = buildStepChain(steps, targetCount);
+            
+            // Execute step chain
+            String resultTableName = executeStepChain(allSteps, gameId, savedGeneration.getId());
             
             // Read results and save to GenerationTrack
             @SuppressWarnings("unchecked")
@@ -98,6 +110,52 @@ public class GenerationServiceImpl implements GenerationService {
         }
         
         return mapToDto(savedGeneration);
+    }
+
+    private List<GenerationStep> buildStepChain(List<GenerationStep> uiSteps, Integer targetCount) {
+        List<GenerationStep> allSteps = new ArrayList<>();
+        
+        // Fixed steps at the beginning
+        allSteps.add(createStep(GenerationStepType.APPROVED_FILTER));
+        allSteps.add(createStep(GenerationStepType.TRACK_RECENCY_PENALTY));
+        allSteps.add(createStep(GenerationStepType.ARTIST_RECENCY_PENALTY));
+        allSteps.add(createStep(GenerationStepType.ARTIST_DIVERSITY));
+        
+        // UI steps in the middle
+        if (uiSteps != null) {
+            allSteps.addAll(uiSteps);
+        }
+        
+        // Final selection at the end
+        allSteps.add(createFinalSelectionStep(targetCount));
+        
+        return allSteps;
+    }
+    
+    private GenerationStep createStep(GenerationStepType type) {
+        GenerationStep step = new GenerationStep();
+        step.setType(type);
+        return step;
+    }
+    
+    private GenerationStep createFinalSelectionStep(Integer targetCount) {
+        GenerationStep step = new GenerationStep();
+        step.setType(GenerationStepType.FINAL_SELECTION);
+        step.setParams(Map.of("targetCount", targetCount));
+        return step;
+    }
+    
+    private String executeStepChain(List<GenerationStep> steps, Long gameId, Long generationId) {
+        String currentTable = "mu_view.v_track";
+        
+        for (int i = 0; i < steps.size(); i++) {
+            GenerationStep step = steps.get(i);
+            GenerationStepProcessor processor = GenerationStepProcessorRegistry.get(step.getType());
+            
+            currentTable = processor.process(currentTable, gameId, generationId, i + 1, step);
+        }
+        
+        return currentTable;
     }
 
     @Override

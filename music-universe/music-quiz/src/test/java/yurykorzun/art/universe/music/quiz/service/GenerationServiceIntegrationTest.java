@@ -16,13 +16,15 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import yurykorzun.art.universe.music.quiz.repository.impl.PipelineRepositoryImpl;
 import yurykorzun.art.universe.music.quiz.service.impl.GenerationServiceImpl;
+import yurykorzun.art.universe.music.quiz.config.StepProcessorConfig;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("integration")
 @Import({
         GenerationServiceImpl.class,
-        PipelineRepositoryImpl.class
+        PipelineRepositoryImpl.class,
+        StepProcessorConfig.class
 })
 class GenerationServiceIntegrationTest extends JpaOnlyTest {
 

@@ -53,4 +53,22 @@
                  endDelimiter="$$"/>
     </changeSet>
 
+    <changeSet id="0006-0090-whitelist-filter-max-weight" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0006-pipeline-changes/0006-0090-p_quiz_gen_tracks_step_categories_whitelist_filter_max_weight.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
+    <changeSet id="0006-0100-whitelist-filter-v3" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0006-pipeline-changes/0006-0100-p_quiz_gen_tracks_step_categories_whitelist_filter_v3.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
+    <changeSet id="0006-0110-blacklist-filter-v3" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0006-pipeline-changes/0006-0110-p_quiz_gen_tracks_step_categories_blacklist_filter_v3.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
 </databaseChangeLog>
