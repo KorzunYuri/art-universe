@@ -441,8 +441,14 @@ class CategoryServiceTest {
         List<Category> categories = List.of(rootCategory, childCategory);
         List<CategoryCategory> relations = List.of(relation);
         
+        List<CategoryCountsProjection> counts = List.of(
+            new TestCategoryCountsProjectionImpl(1L, "Rock", 1, 0, 0),
+            new TestCategoryCountsProjectionImpl(2L, "Alternative Rock", 0, 0, 0)
+        );
+        
         when(categoryRepository.findAll()).thenReturn(categories);
         when(categoryCategoryRepository.findAll()).thenReturn(relations);
+        when(categoryRepository.findCategoriesWithCounts()).thenReturn(counts);
 
         // When
         CategoryDagDTO result = categoryService.getCategoryDag();
@@ -474,7 +480,7 @@ class CategoryServiceTest {
         assertEquals(0, childNode.getTracksCount());
         
         // Verify edge
-        CategoryDagEdgeDTO edge = result.getEdges().get(0);
+        CategoryDagEdgeDTO edge = result.getEdges().getFirst();
         assertEquals(1L, edge.getSource());
         assertEquals(2L, edge.getTarget());
         
@@ -500,6 +506,7 @@ class CategoryServiceTest {
         
         when(categoryRepository.findAll()).thenReturn(categories);
         when(categoryCategoryRepository.findAll()).thenReturn(emptyRelations);
+        when(categoryRepository.findCategoriesWithCounts()).thenReturn(List.of());
 
         // When
         CategoryDagDTO result = categoryService.getCategoryDag();
