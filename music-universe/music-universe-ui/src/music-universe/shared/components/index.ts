@@ -8,6 +8,7 @@ export * from './StaticAutocompleteInput'
 export * from './EntityTable'
 export * from './Pagination'
 export * from './ConfirmDialog'
+export * from './EntityPicker'
 
 // Export table row types for type safety
 export type { BaseEntityTableRow } from '../types/table-row'

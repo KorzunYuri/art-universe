@@ -2,13 +2,18 @@ import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useGame, useGenerateTracks, useApproveGeneration, useDisapproveGeneration } from '../hooks/useQuizData.ts';
 import type {GenerationDto} from '../types';
+import type { GenerationStepUI, StepType } from '../types/generation-steps';
 import { GenerationTracks } from './GenerationTracks.tsx';
+import { WhitelistStepBuilder } from './WhitelistStepBuilder/WhitelistStepBuilder';
+import { GenerationStepsList } from './GenerationStepsList/GenerationStepsList';
 import styles from '../MusicQuizApp.module.css';
 
 export const GameDetails = () => {
   const { gameId } = useParams<{ gameId: string }>();
   const [selectedGeneration, setSelectedGeneration] = useState<GenerationDto | null>(null);
   const [targetCount, setTargetCount] = useState(10);
+  const [generationSteps, setGenerationSteps] = useState<GenerationStepUI[]>([]);
+  const [activeStepBuilder, setActiveStepBuilder] = useState<StepType | null>(null);
 
   const { data: game, isLoading } = useGame(Number(gameId));
   const generateTracksMutation = useGenerateTracks();
@@ -17,7 +22,40 @@ export const GameDetails = () => {
 
   const handleGenerateTracks = () => {
     if (!gameId) return;
-    generateTracksMutation.mutate({ gameId: Number(gameId), targetCount });
+    
+    // Convert UI steps to backend format
+    const steps = generationSteps.map(step => ({
+      type: step.type,
+      params: {
+        categories: step.categories.map(cat => ({
+          id: cat.id,
+          weight: cat.weight
+        }))
+      }
+    }));
+
+    generateTracksMutation.mutate({ 
+      gameId: Number(gameId), 
+      targetCount,
+      steps 
+    });
+  };
+
+  const handleStepCreated = (step: GenerationStepUI) => {
+    setGenerationSteps(prev => [...prev, step]);
+    setActiveStepBuilder(null);
+  };
+
+  const handleStepRemove = (stepId: string) => {
+    setGenerationSteps(prev => prev.filter(step => step.id !== stepId));
+  };
+
+  const handleAddStep = (stepType: StepType) => {
+    setActiveStepBuilder(stepType);
+  };
+
+  const handleCancelStepBuilder = () => {
+    setActiveStepBuilder(null);
   };
 
   const handleApproveGeneration = (generationId: number) => {
@@ -46,7 +84,8 @@ export const GameDetails = () => {
       
       <div className={styles.generationSettings}>
         <h2>Generate New Tracks</h2>
-        <div>
+        
+        <div className={styles.basicSettings}>
           <label>
             Target Count:
             <input 
@@ -56,6 +95,34 @@ export const GameDetails = () => {
               min="1"
             />
           </label>
+        </div>
+
+        <div className={styles.stepsBuilder}>
+          {!activeStepBuilder && (
+            <div className={styles.addStepSection}>
+              <button 
+                className={styles.button}
+                onClick={() => handleAddStep('WHITELIST_FILTER')}
+              >
+                Add Whitelist Step
+              </button>
+            </div>
+          )}
+
+          {activeStepBuilder === 'WHITELIST_FILTER' && (
+            <WhitelistStepBuilder
+              onStepCreated={handleStepCreated}
+              onCancel={handleCancelStepBuilder}
+            />
+          )}
+
+          <GenerationStepsList
+            steps={generationSteps}
+            onStepRemove={handleStepRemove}
+          />
+        </div>
+
+        <div className={styles.generateSection}>
           <button 
             className={styles.button}
             onClick={handleGenerateTracks}

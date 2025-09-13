@@ -26,8 +26,11 @@ export const musicQuizApi = {
     return response.data;
   },
 
-  generateTracks: async (gameId: number, targetCount: number): Promise<GenerationDto> => {
-    const response = await api.post(`/games/${gameId}/generations`, { targetCount });
+  generateTracks: async (gameId: number, targetCount: number, steps?: any[]): Promise<GenerationDto> => {
+    const response = await api.post(`/games/${gameId}/generations`, { 
+      targetCount,
+      steps: steps || []
+    });
     return response.data;
   },
 
