@@ -45,6 +45,14 @@ public interface ArtistService {
     ArtistDto getArtist(Long id);
 
     /**
+     * Get a single artist with categories by ID
+     * 
+     * @param id The artist ID
+     * @return The artist with categories
+     */
+    ArtistWithCategoriesDto getArtistWithCategories(Long id);
+
+    /**
      * Save an artist (create new or update existing)
      * 
      * @param request The artist save request DTO

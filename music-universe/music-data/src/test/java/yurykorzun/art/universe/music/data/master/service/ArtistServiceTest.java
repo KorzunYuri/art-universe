@@ -508,6 +508,39 @@ class ArtistServiceTest {
     }
 
     @Test
+    void getArtistWithCategories_shouldReturnArtistWithCategories() {
+        // Given
+        Long id = 1L;
+        Artist artist = Artist.builder().id(id).name("Test Artist").build();
+        
+        when(artistRepository.findById(id)).thenReturn(Optional.of(artist));
+
+        // When
+        ArtistWithCategoriesDto result = artistService.getArtistWithCategories(id);
+
+        // Then
+        assertEquals(id, result.getId());
+        assertEquals("Test Artist", result.getName());
+        assertNotNull(result.getCategories());
+        verify(artistRepository).findById(id);
+    }
+
+    @Test
+    void getArtistWithCategories_whenNotFound_shouldThrowException() {
+        // Given
+        Long id = 1L;
+        
+        when(artistRepository.findById(id)).thenReturn(Optional.empty());
+
+        // When & Then
+        CustomEntityNotFoundException exception = assertThrows(CustomEntityNotFoundException.class, () ->
+            artistService.getArtistWithCategories(id));
+        
+        assertEquals("Artist not found with id: " + id, exception.getMessage());
+        verify(artistRepository).findById(id);
+    }
+
+    @Test
     void saveArtist_shouldCreateNewArtist() {
         // Given
         ArtistSaveRequestDTO request = ArtistSaveRequestDTO.builder()

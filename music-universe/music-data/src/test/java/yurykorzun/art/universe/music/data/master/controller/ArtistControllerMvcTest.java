@@ -444,4 +444,39 @@ class ArtistControllerMvcTest {
                 .param("search", searchQuery))
             .andExpect(status().isInternalServerError());
     }
+    
+    @Test
+    void whenGetArtistWithCategories_shouldReturnArtistWithCategories() throws Exception {
+        // Given
+        Long id = 1L;
+        ArtistWithCategoriesDto artist = ArtistWithCategoriesDto.builder()
+            .id(id)
+            .name("Test Artist")
+            .categories(List.of())
+            .build();
+        
+        String expectedJson = objectMapper.writeValueAsString(artist);
+        
+        when(artistService.getArtistWithCategories(id)).thenReturn(artist);
+        
+        // When & Then
+        mockMvc.perform(get("/api/v1/artists/{id}/with-categories", id))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(content().json(expectedJson));
+    }
+    
+    @Test
+    void whenGetArtistWithCategories_withError_shouldReturnFailureResponse() throws Exception {
+        // Given
+        Long id = 1L;
+        String errorMessage = "Artist not found";
+        
+        when(artistService.getArtistWithCategories(id))
+            .thenThrow(new RuntimeException(errorMessage));
+        
+        // When & Then
+        mockMvc.perform(get("/api/v1/artists/{id}/with-categories", id))
+            .andExpect(status().isInternalServerError());
+    }
 }

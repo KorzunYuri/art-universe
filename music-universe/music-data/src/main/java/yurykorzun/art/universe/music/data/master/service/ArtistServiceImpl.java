@@ -65,6 +65,13 @@ public class ArtistServiceImpl implements ArtistService {
     }
 
     @Override
+    public ArtistWithCategoriesDto getArtistWithCategories(Long id) {
+        Artist artist = artistRepository.findById(id)
+                .orElseThrow(() -> new CustomEntityNotFoundException("Artist", id));
+        return mapToArtistWithCategories(artist);
+    }
+
+    @Override
     @Transactional
     public ArtistDto saveArtist(ArtistSaveRequestDTO request) {
         Artist artist;

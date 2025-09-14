@@ -346,6 +346,43 @@ class ArtistControllerTest {
     }
 
     @Test
+    void getArtistWithCategories_shouldReturnArtistWithCategories() {
+        // Given
+        Long id = 1L;
+        ArtistWithCategoriesDto artist = ArtistWithCategoriesDto.builder()
+            .id(id)
+            .name("Test Artist")
+            .categories(List.of())
+            .build();
+        
+        when(artistService.getArtistWithCategories(id)).thenReturn(artist);
+
+        // When
+        ArtistWithCategoriesDto result = artistController.getArtistWithCategories(id);
+
+        // Then
+        assertEquals(artist, result);
+        verify(artistService).getArtistWithCategories(id);
+    }
+
+    @Test
+    void getArtistWithCategories_whenExceptionThrown_shouldPassThroughException() {
+        // Given
+        Long id = 1L;
+        RuntimeException expectedException = new RuntimeException("Test error");
+        
+        when(artistService.getArtistWithCategories(id)).thenThrow(expectedException);
+
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+            artistController.getArtistWithCategories(id)
+        );
+        
+        assertSame(expectedException, exception);
+        verify(artistService).getArtistWithCategories(id);
+    }
+
+    @Test
     void saveArtist_shouldReturnArtistDto() {
         // Given
         ArtistSaveRequestDTO request = ArtistSaveRequestDTO.builder()

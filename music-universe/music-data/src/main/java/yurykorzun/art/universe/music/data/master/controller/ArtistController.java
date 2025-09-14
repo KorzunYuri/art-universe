@@ -59,6 +59,13 @@ public class ArtistController {
         return artistService.getArtist(id);
     }
 
+    @GetMapping("/{id}/with-categories")
+    public ArtistWithCategoriesDto getArtistWithCategories(
+        @PathVariable Long id
+    ) {
+        return artistService.getArtistWithCategories(id);
+    }
+
     @PostMapping
     public ArtistDto saveArtist(
         @Valid @RequestBody ArtistSaveRequestDTO request
