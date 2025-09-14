@@ -33,6 +33,22 @@ public interface ArtistRepository extends JpaRepository<Artist, Long> {
         ORDER BY a.name ASC
     """)
     Page<Artist> findArtists(@Param("search") String search, Pageable pageable);
+
+    /**
+     * Find artists with their categories
+     * 
+     * @param search Optional search term (case insensitive, partial match)
+     * @param pageable Pagination and sorting parameters
+     * @return Page of artists with categories loaded
+     */
+    @Query(value = """
+        SELECT DISTINCT a FROM artist a
+        LEFT JOIN FETCH a.categoryRelations ac
+        LEFT JOIN FETCH ac.category
+        WHERE (:search IS NULL OR :search = '' OR LOWER(a.name) LIKE LOWER(CONCAT('%', :search, '%')))
+        ORDER BY a.name
+        """)
+    Page<Artist> findArtistsWithCategories(@Param("search") String search, Pageable pageable);
     
     /**
      * Find artists by name containing the search term (case insensitive)

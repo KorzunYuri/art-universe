@@ -11,6 +11,8 @@ import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.ArtistDto;
 import yurykorzun.art.universe.music.data.master.dto.ArtistSaveRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.ArtistWithCategoriesDto;
+import yurykorzun.art.universe.music.data.master.dto.CategoryDto;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
@@ -47,6 +49,12 @@ public class ArtistServiceImpl implements ArtistService {
     public Page<ArtistDto> findArtists(String search, Pageable pageable) {
         return artistRepository.findArtists(search, pageable)
                 .map(this::mapToDto);
+    }
+
+    @Override
+    public Page<ArtistWithCategoriesDto> findArtistsWithCategories(String search, Pageable pageable) {
+        return artistRepository.findArtistsWithCategories(search, pageable)
+                .map(this::mapToArtistWithCategories);
     }
 
     @Override
@@ -90,6 +98,24 @@ public class ArtistServiceImpl implements ArtistService {
         return ArtistDto.builder()
                 .id(artist.getId())
                 .name(artist.getName())
+                .build();
+    }
+
+    private ArtistWithCategoriesDto mapToArtistWithCategories(Artist artist) {
+        List<CategoryDto> categories = List.of();
+        if (artist.getCategoryRelations() != null) {
+            categories = artist.getCategoryRelations().stream()
+                    .map(relation -> CategoryDto.builder()
+                            .id(relation.getCategory().getId())
+                            .name(relation.getCategory().getName())
+                            .build())
+                    .toList();
+        }
+
+        return ArtistWithCategoriesDto.builder()
+                .id(artist.getId())
+                .name(artist.getName())
+                .categories(categories)
                 .build();
     }
 

@@ -15,6 +15,7 @@ import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.ArtistDto;
 import yurykorzun.art.universe.music.data.master.dto.ArtistSaveRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.ArtistWithCategoriesDto;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
@@ -382,6 +383,65 @@ class ArtistControllerMvcTest {
         
         // When & Then
         mockMvc.perform(get("/api/v1/artists/{id}", id))
+            .andExpect(status().isInternalServerError());
+    }
+    
+    @Test
+    void whenFindArtistsWithCategories_shouldReturnPageOfArtistsWithCategories() throws Exception {
+        // Given
+        String searchQuery = "radio";
+        ArtistWithCategoriesDto artist = ArtistWithCategoriesDto.builder()
+            .id(1L)
+            .name("Radiohead")
+            .categories(List.of())
+            .build();
+        List<ArtistWithCategoriesDto> artists = List.of(artist);
+        Page<ArtistWithCategoriesDto> expectedPage = new PageImpl<>(artists, PageRequest.of(0, 20), artists.size());
+        
+        String expectedJson = objectMapper.writeValueAsString(expectedPage);
+        
+        when(artistService.findArtistsWithCategories(eq(searchQuery), any(Pageable.class))).thenReturn(expectedPage);
+        
+        // When & Then
+        mockMvc.perform(get("/api/v1/artists/with-categories")
+                .param("search", searchQuery))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(content().json(expectedJson));
+    }
+    
+    @Test
+    void whenFindArtistsWithCategories_withNoSearch_shouldReturnAllArtists() throws Exception {
+        // Given
+        ArtistWithCategoriesDto artist = ArtistWithCategoriesDto.builder()
+            .id(1L)
+            .name("Test Artist")
+            .categories(List.of())
+            .build();
+        Page<ArtistWithCategoriesDto> expectedPage = new PageImpl<>(List.of(artist), PageRequest.of(0, 20), 1);
+        
+        String expectedJson = objectMapper.writeValueAsString(expectedPage);
+        
+        when(artistService.findArtistsWithCategories(eq(null), any(Pageable.class))).thenReturn(expectedPage);
+        
+        // When & Then
+        mockMvc.perform(get("/api/v1/artists/with-categories"))
+            .andExpect(status().isOk())
+            .andExpect(content().json(expectedJson));
+    }
+    
+    @Test
+    void whenFindArtistsWithCategories_withError_shouldReturnFailureResponse() throws Exception {
+        // Given
+        String searchQuery = "radio";
+        String errorMessage = "Search error occurred";
+        
+        when(artistService.findArtistsWithCategories(eq(searchQuery), any(Pageable.class)))
+            .thenThrow(new RuntimeException(errorMessage));
+        
+        // When & Then
+        mockMvc.perform(get("/api/v1/artists/with-categories")
+                .param("search", searchQuery))
             .andExpect(status().isInternalServerError());
     }
 }

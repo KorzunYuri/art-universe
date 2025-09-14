@@ -13,6 +13,7 @@ import yurykorzun.art.universe.common.dto.lookup.BaseBatchLookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.music.data.master.dto.ArtistDto;
 import yurykorzun.art.universe.music.data.master.dto.ArtistSaveRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.ArtistWithCategoriesDto;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
@@ -278,6 +279,70 @@ class ArtistControllerTest {
         
         assertSame(expectedException, exception);
         verify(artistService).getArtist(id);
+    }
+
+    @Test
+    void findArtistsWithCategories_shouldReturnPageOfArtistsWithCategories() {
+        // Given
+        String search = "radio";
+        Pageable pageable = PageRequest.of(0, 10);
+        
+        ArtistWithCategoriesDto artist = ArtistWithCategoriesDto.builder()
+            .id(1L)
+            .name("Radiohead")
+            .categories(List.of())
+            .build();
+        List<ArtistWithCategoriesDto> artists = List.of(artist);
+        Page<ArtistWithCategoriesDto> expectedPage = new PageImpl<>(artists, pageable, artists.size());
+        
+        when(artistService.findArtistsWithCategories(search, pageable)).thenReturn(expectedPage);
+
+        // When
+        Page<ArtistWithCategoriesDto> result = artistController.findArtistsWithCategories(search, pageable);
+
+        // Then
+        assertEquals(expectedPage, result);
+        verify(artistService).findArtistsWithCategories(search, pageable);
+    }
+
+    @Test
+    void findArtistsWithCategories_withNullSearch_shouldReturnAllArtists() {
+        // Given
+        Pageable pageable = PageRequest.of(0, 10);
+        
+        ArtistWithCategoriesDto artist = ArtistWithCategoriesDto.builder()
+            .id(1L)
+            .name("Test Artist")
+            .categories(List.of())
+            .build();
+        Page<ArtistWithCategoriesDto> expectedPage = new PageImpl<>(List.of(artist), pageable, 1);
+        
+        when(artistService.findArtistsWithCategories(null, pageable)).thenReturn(expectedPage);
+
+        // When
+        Page<ArtistWithCategoriesDto> result = artistController.findArtistsWithCategories(null, pageable);
+
+        // Then
+        assertEquals(expectedPage, result);
+        verify(artistService).findArtistsWithCategories(null, pageable);
+    }
+
+    @Test
+    void findArtistsWithCategories_whenExceptionThrown_shouldPassThroughException() {
+        // Given
+        String search = "radio";
+        Pageable pageable = PageRequest.of(0, 10);
+        RuntimeException expectedException = new RuntimeException("Test error");
+        
+        when(artistService.findArtistsWithCategories(search, pageable)).thenThrow(expectedException);
+
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+            artistController.findArtistsWithCategories(search, pageable)
+        );
+        
+        assertSame(expectedException, exception);
+        verify(artistService).findArtistsWithCategories(search, pageable);
     }
 
     @Test

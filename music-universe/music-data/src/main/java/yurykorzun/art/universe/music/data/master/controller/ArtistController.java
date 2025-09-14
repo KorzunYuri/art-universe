@@ -8,6 +8,7 @@ import yurykorzun.art.universe.common.dto.lookup.BaseBatchLookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.music.data.master.dto.ArtistDto;
 import yurykorzun.art.universe.music.data.master.dto.ArtistSaveRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.ArtistWithCategoriesDto;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
@@ -41,6 +42,14 @@ public class ArtistController {
         Pageable pageable
     ) {
         return artistService.findArtists(search, pageable);
+    }
+
+    @GetMapping("/with-categories")
+    public Page<ArtistWithCategoriesDto> findArtistsWithCategories(
+        @RequestParam(required = false) String search,
+        Pageable pageable
+    ) {
+        return artistService.findArtistsWithCategories(search, pageable);
     }
 
     @GetMapping("/{id}")

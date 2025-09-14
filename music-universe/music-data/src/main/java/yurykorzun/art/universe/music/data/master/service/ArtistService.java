@@ -8,6 +8,7 @@ import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.ArtistDto;
 import yurykorzun.art.universe.music.data.master.dto.ArtistSaveRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.ArtistWithCategoriesDto;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
@@ -25,6 +26,15 @@ public interface ArtistService {
      * @return Page of artists
      */
     Page<ArtistDto> findArtists(String search, Pageable pageable);
+
+    /**
+     * Search artists with categories and pagination
+     * 
+     * @param search Optional search term (case insensitive, partial match)
+     * @param pageable Pagination and sorting parameters
+     * @return Page of artists with categories
+     */
+    Page<ArtistWithCategoriesDto> findArtistsWithCategories(String search, Pageable pageable);
 
     /**
      * Get a single artist by ID

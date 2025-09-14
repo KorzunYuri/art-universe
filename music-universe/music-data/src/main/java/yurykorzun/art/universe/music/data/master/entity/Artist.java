@@ -5,6 +5,8 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import yurykorzun.art.universe.common.persistence.entity.BaseEntity;
 
+import java.util.List;
+
 @Entity(name = "artist")
 @SuperBuilder
 @NoArgsConstructor
@@ -25,5 +27,8 @@ public class Artist extends BaseEntity {
     @NonNull
     @Column(name = "name")
     private String name;
+
+    @OneToMany(mappedBy = "artist", fetch = FetchType.LAZY)
+    private List<ArtistCategory> categoryRelations;
 
 }

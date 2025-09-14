@@ -13,6 +13,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import yurykorzun.art.universe.music.data.master.dto.ArtistDto;
 import yurykorzun.art.universe.music.data.master.dto.ArtistSaveRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.ArtistWithCategoriesDto;
+import yurykorzun.art.universe.music.data.master.dto.CategoryDto;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
@@ -429,6 +431,48 @@ class ArtistServiceTest {
         assertEquals(1, result.getContent().size());
         assertEquals("Test Artist", result.getContent().get(0).getName());
         verify(artistRepository).findArtists(null, pageable);
+    }
+
+    @Test
+    void findArtistsWithCategories_shouldReturnPageOfArtistsWithCategories() {
+        // Given
+        String search = "radio";
+        Pageable pageable = PageRequest.of(0, 10);
+        
+        Artist artist = Artist.builder().id(1L).name("Radiohead").build();
+        List<Artist> artists = List.of(artist);
+        Page<Artist> artistPage = new PageImpl<>(artists, pageable, artists.size());
+        
+        when(artistRepository.findArtistsWithCategories(search, pageable)).thenReturn(artistPage);
+
+        // When
+        Page<ArtistWithCategoriesDto> result = artistService.findArtistsWithCategories(search, pageable);
+
+        // Then
+        assertEquals(1, result.getContent().size());
+        assertEquals("Radiohead", result.getContent().get(0).getName());
+        assertNotNull(result.getContent().get(0).getCategories());
+        verify(artistRepository).findArtistsWithCategories(search, pageable);
+    }
+
+    @Test
+    void findArtistsWithCategories_withNullSearch_shouldReturnAllArtists() {
+        // Given
+        Pageable pageable = PageRequest.of(0, 10);
+        
+        Artist artist = Artist.builder().id(1L).name("Test Artist").build();
+        Page<Artist> artistPage = new PageImpl<>(List.of(artist), pageable, 1);
+        
+        when(artistRepository.findArtistsWithCategories(null, pageable)).thenReturn(artistPage);
+
+        // When
+        Page<ArtistWithCategoriesDto> result = artistService.findArtistsWithCategories(null, pageable);
+
+        // Then
+        assertEquals(1, result.getContent().size());
+        assertEquals("Test Artist", result.getContent().get(0).getName());
+        assertNotNull(result.getContent().get(0).getCategories());
+        verify(artistRepository).findArtistsWithCategories(null, pageable);
     }
 
     @Test
