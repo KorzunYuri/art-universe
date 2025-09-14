@@ -20,6 +20,7 @@ import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.service.ArtistService;
 import yurykorzun.art.universe.music.data.master.service.BindingService;
 
@@ -285,6 +286,54 @@ class ArtistControllerTest {
         
         assertSame(expectedException, exception);
         verify(artistService).saveArtist(request);
+    }
+
+    @Test
+    void deleteArtist_whenFound_shouldReturnTrue() {
+        // Given
+        Long id = 1L;
+        
+        when(artistService.deleteArtist(id)).thenReturn(true);
+
+        // When
+        boolean result = artistController.deleteArtist(id);
+
+        // Then
+        assertTrue(result);
+        verify(artistService).deleteArtist(id);
+    }
+
+    @Test
+    void deleteArtist_whenNotFound_shouldThrowEntityNotFoundException() {
+        // Given
+        Long id = 1L;
+        
+        when(artistService.deleteArtist(id)).thenReturn(false);
+
+        // When & Then
+        CustomEntityNotFoundException exception = assertThrows(CustomEntityNotFoundException.class, () ->
+            artistController.deleteArtist(id)
+        );
+        
+        assertEquals("Artist not found with id: " + id, exception.getMessage());
+        verify(artistService).deleteArtist(id);
+    }
+
+    @Test
+    void deleteArtist_whenExceptionThrown_shouldPassThroughException() {
+        // Given
+        Long id = 1L;
+        RuntimeException expectedException = new RuntimeException("Test error");
+        
+        when(artistService.deleteArtist(id)).thenThrow(expectedException);
+
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+            artistController.deleteArtist(id)
+        );
+        
+        assertSame(expectedException, exception);
+        verify(artistService).deleteArtist(id);
     }
     
     @Test

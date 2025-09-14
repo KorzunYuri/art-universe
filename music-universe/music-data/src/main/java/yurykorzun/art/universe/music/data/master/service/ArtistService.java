@@ -34,6 +34,14 @@ public interface ArtistService {
      */
     ArtistDto saveArtist(ArtistSaveRequestDTO request);
 
+    /**
+     * Delete an artist by ID
+     * 
+     * @param id The artist ID to delete
+     * @return true if deleted, false if not found
+     */
+    boolean deleteArtist(Long id);
+
     List<BoundEntityProjection> findBoundArtists(DataSource dataSource, List<Long> externalIds);
     
     /**

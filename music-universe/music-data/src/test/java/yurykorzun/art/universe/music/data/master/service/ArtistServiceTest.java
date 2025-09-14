@@ -505,4 +505,36 @@ class ArtistServiceTest {
         verify(artistRepository).findById(artistId);
         verify(artistRepository, never()).save(any());
     }
+
+    @Test
+    void deleteArtist_whenFound_shouldReturnTrue() {
+        // Given
+        Long id = 1L;
+        
+        when(artistRepository.existsById(id)).thenReturn(true);
+
+        // When
+        boolean result = artistService.deleteArtist(id);
+
+        // Then
+        assertTrue(result);
+        verify(artistRepository).existsById(id);
+        verify(artistRepository).deleteById(id);
+    }
+
+    @Test
+    void deleteArtist_whenNotFound_shouldReturnFalse() {
+        // Given
+        Long id = 1L;
+        
+        when(artistRepository.existsById(id)).thenReturn(false);
+
+        // When
+        boolean result = artistService.deleteArtist(id);
+
+        // Then
+        assertFalse(result);
+        verify(artistRepository).existsById(id);
+        verify(artistRepository, never()).deleteById(any());
+    }
 }

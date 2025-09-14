@@ -17,6 +17,7 @@ import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindRequestD
 import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindResponseDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
+import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.service.ArtistService;
 import yurykorzun.art.universe.music.data.master.service.BindingService;
 
@@ -47,6 +48,15 @@ public class ArtistController {
         @Valid @RequestBody ArtistSaveRequestDTO request
     ) {
         return artistService.saveArtist(request);
+    }
+
+    @DeleteMapping("/{id}")
+    public boolean deleteArtist(@PathVariable Long id) {
+        boolean deleted = artistService.deleteArtist(id);
+        if (!deleted) {
+            throw new CustomEntityNotFoundException("Artist", id);
+        }
+        return true;
     }
 
     @GetMapping("/bound/{dataSource}")

@@ -69,6 +69,16 @@ public class ArtistServiceImpl implements ArtistService {
         return mapToDto(savedArtist);
     }
 
+    @Override
+    @Transactional
+    public boolean deleteArtist(Long id) {
+        if (artistRepository.existsById(id)) {
+            artistRepository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
+
     private ArtistDto mapToDto(Artist artist) {
         return ArtistDto.builder()
                 .id(artist.getId())

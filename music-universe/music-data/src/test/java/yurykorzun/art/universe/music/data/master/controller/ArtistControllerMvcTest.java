@@ -30,6 +30,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -310,6 +311,46 @@ class ArtistControllerMvcTest {
         mockMvc.perform(post("/api/v1/artists")
                 .contentType("application/json")
                 .content(requestJson))
+            .andExpect(status().isInternalServerError());
+    }
+    
+    @Test
+    void whenDeleteArtist_shouldReturnTrue() throws Exception {
+        // Given
+        Long id = 1L;
+        
+        when(artistService.deleteArtist(id)).thenReturn(true);
+        
+        // When & Then
+        mockMvc.perform(delete("/api/v1/artists/{id}", id))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(content().string("true"));
+    }
+    
+    @Test
+    void whenDeleteArtist_notFound_shouldReturnNotFound() throws Exception {
+        // Given
+        Long id = 1L;
+        
+        when(artistService.deleteArtist(id)).thenReturn(false);
+        
+        // When & Then
+        mockMvc.perform(delete("/api/v1/artists/{id}", id))
+            .andExpect(status().isNotFound());
+    }
+    
+    @Test
+    void whenDeleteArtist_withError_shouldReturnFailureResponse() throws Exception {
+        // Given
+        Long id = 1L;
+        String errorMessage = "Delete error occurred";
+        
+        when(artistService.deleteArtist(id))
+            .thenThrow(new RuntimeException(errorMessage));
+        
+        // When & Then
+        mockMvc.perform(delete("/api/v1/artists/{id}", id))
             .andExpect(status().isInternalServerError());
     }
 }
