@@ -243,4 +243,84 @@ class ArtistRepositoryTest extends JpaOnlyTest {
         assertThat(secondPage.getTotalElements()).isEqualTo(5);
         assertThat(firstPage.getTotalPages()).isEqualTo(3);
     }
+
+    @Test
+    void findArtistsWithCategories_shouldReturnPageOfArtistsWithCategories() {
+        // Given
+        String search = "radio";
+        
+        Artist artist1 = Artist.builder().name("Radiohead").build();
+        Artist artist2 = Artist.builder().name("Radio Moscow").build();
+        Artist artist3 = Artist.builder().name("Coldplay").build();
+        
+        em.persist(artist1);
+        em.persist(artist2);
+        em.persist(artist3);
+        em.flush();
+        
+        // When
+        Page<Artist> result = artistRepository.findArtistsWithCategories(search, PageRequest.of(0, 10));
+        
+        // Then
+        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.getContent()).extracting(Artist::getName)
+            .containsExactlyInAnyOrder("Radiohead", "Radio Moscow");
+    }
+
+    @Test
+    void findArtistsWithCategories_withNullSearch_shouldReturnAllArtists() {
+        // Given
+        Artist artist1 = Artist.builder().name("Radiohead").build();
+        Artist artist2 = Artist.builder().name("Coldplay").build();
+        
+        em.persist(artist1);
+        em.persist(artist2);
+        em.flush();
+        
+        // When
+        Page<Artist> result = artistRepository.findArtistsWithCategories(null, PageRequest.of(0, 10));
+        
+        // Then
+        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.getTotalElements()).isEqualTo(2);
+    }
+
+    @Test
+    void findArtistsWithCategories_withEmptySearch_shouldReturnAllArtists() {
+        // Given
+        Artist artist1 = Artist.builder().name("Radiohead").build();
+        Artist artist2 = Artist.builder().name("Coldplay").build();
+        
+        em.persist(artist1);
+        em.persist(artist2);
+        em.flush();
+        
+        // When
+        Page<Artist> result = artistRepository.findArtistsWithCategories("", PageRequest.of(0, 10));
+        
+        // Then
+        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.getTotalElements()).isEqualTo(2);
+    }
+
+    @Test
+    void findArtistsWithCategories_withPagination_shouldReturnCorrectPage() {
+        // Given
+        for (int i = 1; i <= 5; i++) {
+            Artist artist = Artist.builder().name("Artist " + i).build();
+            em.persist(artist);
+        }
+        em.flush();
+        
+        // When
+        Page<Artist> firstPage = artistRepository.findArtistsWithCategories(null, PageRequest.of(0, 2));
+        Page<Artist> secondPage = artistRepository.findArtistsWithCategories(null, PageRequest.of(1, 2));
+        
+        // Then
+        assertThat(firstPage.getContent()).hasSize(2);
+        assertThat(secondPage.getContent()).hasSize(2);
+        assertThat(firstPage.getTotalElements()).isEqualTo(5);
+        assertThat(secondPage.getTotalElements()).isEqualTo(5);
+        assertThat(firstPage.getTotalPages()).isEqualTo(3);
+    }
 }
