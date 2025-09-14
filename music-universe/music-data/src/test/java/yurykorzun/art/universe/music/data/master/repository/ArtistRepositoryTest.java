@@ -4,6 +4,9 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import yurykorzun.art.universe.music.data.master.common.archetypes.JpaOnlyTest;
 import yurykorzun.art.universe.music.data.master.entity.Artist;
 
@@ -161,5 +164,83 @@ class ArtistRepositoryTest extends JpaOnlyTest {
         assertThat(result.get(0).getName()).isEqualTo("Band A");
         assertThat(result.get(1).getName()).isEqualTo("Band B");
         assertThat(result.get(2).getName()).isEqualTo("Band C");
+    }
+    
+    @Test
+    void findArtists_withNoSearch_shouldReturnAllArtists() {
+        // Given
+        Artist artist1 = Artist.builder().name("Radiohead").build();
+        Artist artist2 = Artist.builder().name("Coldplay").build();
+        
+        em.persist(artist1);
+        em.persist(artist2);
+        em.flush();
+        
+        // When
+        Page<Artist> result = artistRepository.findArtists(null, PageRequest.of(0, 10));
+        
+        // Then
+        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.getTotalElements()).isEqualTo(2);
+    }
+    
+    @Test
+    void findArtists_withEmptySearch_shouldReturnAllArtists() {
+        // Given
+        Artist artist1 = Artist.builder().name("Radiohead").build();
+        Artist artist2 = Artist.builder().name("Coldplay").build();
+        
+        em.persist(artist1);
+        em.persist(artist2);
+        em.flush();
+        
+        // When
+        Page<Artist> result = artistRepository.findArtists("", PageRequest.of(0, 10));
+        
+        // Then
+        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.getTotalElements()).isEqualTo(2);
+    }
+    
+    @Test
+    void findArtists_byName_shouldReturnMatchingArtists() {
+        // Given
+        Artist artist1 = Artist.builder().name("Radiohead").build();
+        Artist artist2 = Artist.builder().name("Radio Moscow").build();
+        Artist artist3 = Artist.builder().name("Coldplay").build();
+        
+        em.persist(artist1);
+        em.persist(artist2);
+        em.persist(artist3);
+        em.flush();
+        
+        // When
+        Page<Artist> result = artistRepository.findArtists("radio", PageRequest.of(0, 10));
+        
+        // Then
+        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.getContent()).extracting(Artist::getName)
+            .containsExactlyInAnyOrder("Radiohead", "Radio Moscow");
+    }
+    
+    @Test
+    void findArtists_withPagination_shouldReturnCorrectPage() {
+        // Given
+        for (int i = 1; i <= 5; i++) {
+            Artist artist = Artist.builder().name("Artist " + i).build();
+            em.persist(artist);
+        }
+        em.flush();
+        
+        // When
+        Page<Artist> firstPage = artistRepository.findArtists(null, PageRequest.of(0, 2));
+        Page<Artist> secondPage = artistRepository.findArtists(null, PageRequest.of(1, 2));
+        
+        // Then
+        assertThat(firstPage.getContent()).hasSize(2);
+        assertThat(secondPage.getContent()).hasSize(2);
+        assertThat(firstPage.getTotalElements()).isEqualTo(5);
+        assertThat(secondPage.getTotalElements()).isEqualTo(5);
+        assertThat(firstPage.getTotalPages()).isEqualTo(3);
     }
 }

@@ -1,5 +1,7 @@
 package yurykorzun.art.universe.music.data.master.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,6 +15,24 @@ import java.util.Optional;
 public interface ArtistRepository extends JpaRepository<Artist, Long> {
 
     Optional<Artist> findByName(String name);
+    
+    /**
+     * Search artists with pagination
+     * 
+     * @param search Optional search term (case insensitive, partial match)
+     * @param pageable Pagination and sorting parameters
+     * @return Page of artists
+     */
+    @Query("""
+        SELECT a
+        FROM artist a
+        WHERE (:search IS NULL
+            OR :search = ''
+            OR LOWER(a.name) LIKE LOWER(CONCAT('%', :search, '%'))
+        )
+        ORDER BY a.name ASC
+    """)
+    Page<Artist> findArtists(@Param("search") String search, Pageable pageable);
     
     /**
      * Find artists by name containing the search term (case insensitive)

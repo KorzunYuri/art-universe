@@ -1,4 +1,4 @@
-package yurykorzun.art.universe.common.dto.lookup;
+package yurykorzun.art.universe.music.data.master.dto;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -10,8 +10,5 @@ import yurykorzun.art.universe.common.dto.BaseEntityDto;
 @SuperBuilder
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class LookupResultDTO extends BaseEntityDto {
-    public LookupResultDTO(Long id, String name) {
-        super(id, name);
-    }
+public class ArtistDto extends BaseEntityDto {
 }

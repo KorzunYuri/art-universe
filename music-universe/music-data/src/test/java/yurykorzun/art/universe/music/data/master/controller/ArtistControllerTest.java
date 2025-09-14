@@ -5,8 +5,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import yurykorzun.art.universe.common.dto.lookup.BaseBatchLookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.music.data.master.dto.ArtistDto;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
@@ -181,6 +186,63 @@ class ArtistControllerTest {
         
         assertSame(expectedException, exception);
         verify(artistService).bindToExisting(dataSource, externalId, request);
+    }
+    
+    @Test
+    void findArtists_shouldReturnPageOfArtists() {
+        // Given
+        String search = "radio";
+        Pageable pageable = PageRequest.of(0, 10);
+        
+        ArtistDto artist1 = ArtistDto.builder().id(1L).name("Radiohead").build();
+        ArtistDto artist2 = ArtistDto.builder().id(2L).name("Radio Moscow").build();
+        List<ArtistDto> artists = List.of(artist1, artist2);
+        Page<ArtistDto> expectedPage = new PageImpl<>(artists, pageable, artists.size());
+        
+        when(artistService.findArtists(search, pageable)).thenReturn(expectedPage);
+
+        // When
+        Page<ArtistDto> result = artistController.findArtists(search, pageable);
+
+        // Then
+        assertEquals(expectedPage, result);
+        verify(artistService).findArtists(search, pageable);
+    }
+
+    @Test
+    void findArtists_withNullSearch_shouldReturnAllArtists() {
+        // Given
+        Pageable pageable = PageRequest.of(0, 10);
+        
+        ArtistDto artist = ArtistDto.builder().id(1L).name("Test Artist").build();
+        Page<ArtistDto> expectedPage = new PageImpl<>(List.of(artist), pageable, 1);
+        
+        when(artistService.findArtists(null, pageable)).thenReturn(expectedPage);
+
+        // When
+        Page<ArtistDto> result = artistController.findArtists(null, pageable);
+
+        // Then
+        assertEquals(expectedPage, result);
+        verify(artistService).findArtists(null, pageable);
+    }
+
+    @Test
+    void findArtists_whenExceptionThrown_shouldPassThroughException() {
+        // Given
+        String search = "radio";
+        Pageable pageable = PageRequest.of(0, 10);
+        RuntimeException expectedException = new RuntimeException("Test error");
+        
+        when(artistService.findArtists(search, pageable)).thenThrow(expectedException);
+
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+            artistController.findArtists(search, pageable)
+        );
+        
+        assertSame(expectedException, exception);
+        verify(artistService).findArtists(search, pageable);
     }
     
     @Test

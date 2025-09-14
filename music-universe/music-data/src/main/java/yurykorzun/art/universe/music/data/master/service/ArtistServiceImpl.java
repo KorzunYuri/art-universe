@@ -1,12 +1,15 @@
 package yurykorzun.art.universe.music.data.master.service;
 
 import jakarta.persistence.EntityManager;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.common.dto.lookup.BaseBatchLookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
+import yurykorzun.art.universe.music.data.master.dto.ArtistDto;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
@@ -37,6 +40,19 @@ public class ArtistServiceImpl implements ArtistService {
         this.artistRepository = artistRepository;
         this.bindingsRepository = bindingsRepository;
         this.lookupService = new MasterEntityLookupService(entityManager, MasterEntityType.ARTIST);
+    }
+
+    @Override
+    public Page<ArtistDto> findArtists(String search, Pageable pageable) {
+        return artistRepository.findArtists(search, pageable)
+                .map(this::mapToDto);
+    }
+
+    private ArtistDto mapToDto(Artist artist) {
+        return ArtistDto.builder()
+                .id(artist.getId())
+                .name(artist.getName())
+                .build();
     }
 
     @Override

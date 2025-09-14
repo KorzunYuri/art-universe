@@ -5,10 +5,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
+import yurykorzun.art.universe.music.data.master.dto.ArtistDto;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
@@ -204,6 +209,58 @@ class ArtistControllerMvcTest {
         
         // When & Then
         mockMvc.perform(get("/api/v1/artists/lookup")
+                .param("search", searchQuery))
+            .andExpect(status().isInternalServerError());
+    }
+    
+    @Test
+    void whenFindArtists_shouldReturnPageOfArtists() throws Exception {
+        // Given
+        String searchQuery = "radio";
+        ArtistDto artist1 = ArtistDto.builder().id(1L).name("Radiohead").build();
+        ArtistDto artist2 = ArtistDto.builder().id(2L).name("Radio Moscow").build();
+        List<ArtistDto> artists = List.of(artist1, artist2);
+        Page<ArtistDto> expectedPage = new PageImpl<>(artists, PageRequest.of(0, 20), artists.size());
+        
+        String expectedJson = objectMapper.writeValueAsString(expectedPage);
+        
+        when(artistService.findArtists(eq(searchQuery), any(Pageable.class))).thenReturn(expectedPage);
+        
+        // When & Then
+        mockMvc.perform(get("/api/v1/artists")
+                .param("search", searchQuery))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(content().json(expectedJson));
+    }
+    
+    @Test
+    void whenFindArtists_withNoSearch_shouldReturnAllArtists() throws Exception {
+        // Given
+        ArtistDto artist = ArtistDto.builder().id(1L).name("Test Artist").build();
+        Page<ArtistDto> expectedPage = new PageImpl<>(List.of(artist), PageRequest.of(0, 20), 1);
+        
+        String expectedJson = objectMapper.writeValueAsString(expectedPage);
+        
+        when(artistService.findArtists(eq(null), any(Pageable.class))).thenReturn(expectedPage);
+        
+        // When & Then
+        mockMvc.perform(get("/api/v1/artists"))
+            .andExpect(status().isOk())
+            .andExpect(content().json(expectedJson));
+    }
+    
+    @Test
+    void whenFindArtists_withError_shouldReturnFailureResponse() throws Exception {
+        // Given
+        String searchQuery = "radio";
+        String errorMessage = "Search error occurred";
+        
+        when(artistService.findArtists(eq(searchQuery), any(Pageable.class)))
+            .thenThrow(new RuntimeException(errorMessage));
+        
+        // When & Then
+        mockMvc.perform(get("/api/v1/artists")
                 .param("search", searchQuery))
             .andExpect(status().isInternalServerError());
     }

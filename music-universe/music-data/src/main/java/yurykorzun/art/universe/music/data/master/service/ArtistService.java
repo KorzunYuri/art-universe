@@ -1,9 +1,12 @@
 package yurykorzun.art.universe.music.data.master.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import yurykorzun.art.universe.common.dto.lookup.BaseBatchLookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
+import yurykorzun.art.universe.music.data.master.dto.ArtistDto;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
@@ -12,6 +15,15 @@ import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import java.util.List;
 
 public interface ArtistService {
+
+    /**
+     * Search artists with pagination
+     * 
+     * @param search Optional search term (case insensitive, partial match)
+     * @param pageable Pagination and sorting parameters
+     * @return Page of artists
+     */
+    Page<ArtistDto> findArtists(String search, Pageable pageable);
 
     List<BoundEntityProjection> findBoundArtists(DataSource dataSource, List<Long> externalIds);
     

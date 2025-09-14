@@ -1,9 +1,12 @@
 package yurykorzun.art.universe.music.data.master.controller;
 
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.common.dto.lookup.BaseBatchLookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.music.data.master.dto.ArtistDto;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
@@ -28,6 +31,14 @@ public class ArtistController {
     public ArtistController(ArtistService artistService, BindingService bindingService) {
         this.artistService = artistService;
         this.bindingService = bindingService;
+    }
+
+    @GetMapping
+    public Page<ArtistDto> findArtists(
+        @RequestParam(required = false) String search,
+        Pageable pageable
+    ) {
+        return artistService.findArtists(search, pageable);
     }
 
     @GetMapping("/bound/{dataSource}")
