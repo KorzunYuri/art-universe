@@ -622,4 +622,66 @@ class ArtistControllerTest {
             .map(term -> LookupRequestDTO.builder().search(term).build())
             .collect(Collectors.toList());
     }
+    
+    @Test
+    void bindToCategory_shouldCallService() {
+        // Given
+        Long artistId = 1L;
+        Long categoryId = 2L;
+        
+        // When
+        artistController.bindToCategory(artistId, categoryId);
+        
+        // Then
+        verify(artistService).bindToCategory(artistId, categoryId);
+    }
+    
+    @Test
+    void bindToCategory_whenExceptionThrown_shouldPassThroughException() {
+        // Given
+        Long artistId = 1L;
+        Long categoryId = 2L;
+        RuntimeException expectedException = new RuntimeException("Test error");
+        
+        doThrow(expectedException).when(artistService).bindToCategory(artistId, categoryId);
+        
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+            artistController.bindToCategory(artistId, categoryId)
+        );
+        
+        assertSame(expectedException, exception);
+        verify(artistService).bindToCategory(artistId, categoryId);
+    }
+    
+    @Test
+    void unbindFromCategory_shouldCallService() {
+        // Given
+        Long artistId = 1L;
+        Long categoryId = 2L;
+        
+        // When
+        artistController.unbindFromCategory(artistId, categoryId);
+        
+        // Then
+        verify(artistService).unbindFromCategory(artistId, categoryId);
+    }
+    
+    @Test
+    void unbindFromCategory_whenExceptionThrown_shouldPassThroughException() {
+        // Given
+        Long artistId = 1L;
+        Long categoryId = 2L;
+        RuntimeException expectedException = new RuntimeException("Test error");
+        
+        doThrow(expectedException).when(artistService).unbindFromCategory(artistId, categoryId);
+        
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+            artistController.unbindFromCategory(artistId, categoryId)
+        );
+        
+        assertSame(expectedException, exception);
+        verify(artistService).unbindFromCategory(artistId, categoryId);
+    }
 }

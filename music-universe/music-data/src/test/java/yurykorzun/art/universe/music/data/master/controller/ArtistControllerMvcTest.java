@@ -29,6 +29,8 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -477,6 +479,64 @@ class ArtistControllerMvcTest {
         
         // When & Then
         mockMvc.perform(get("/api/v1/artists/{id}/with-categories", id))
+            .andExpect(status().isInternalServerError());
+    }
+    
+    @Test
+    void whenBindToCategory_shouldReturnOk() throws Exception {
+        // Given
+        Long artistId = 1L;
+        Long categoryId = 2L;
+        
+        // When & Then
+        mockMvc.perform(post("/api/v1/artists/{artistId}/categories/{categoryId}", artistId, categoryId))
+            .andDo(print())
+            .andExpect(status().isOk());
+        
+        verify(artistService).bindToCategory(artistId, categoryId);
+    }
+    
+    @Test
+    void whenBindToCategory_withError_shouldReturnFailureResponse() throws Exception {
+        // Given
+        Long artistId = 1L;
+        Long categoryId = 2L;
+        String errorMessage = "Bind error occurred";
+        
+        doThrow(new RuntimeException(errorMessage))
+            .when(artistService).bindToCategory(artistId, categoryId);
+        
+        // When & Then
+        mockMvc.perform(post("/api/v1/artists/{artistId}/categories/{categoryId}", artistId, categoryId))
+            .andExpect(status().isInternalServerError());
+    }
+    
+    @Test
+    void whenUnbindFromCategory_shouldReturnOk() throws Exception {
+        // Given
+        Long artistId = 1L;
+        Long categoryId = 2L;
+        
+        // When & Then
+        mockMvc.perform(delete("/api/v1/artists/{artistId}/categories/{categoryId}", artistId, categoryId))
+            .andDo(print())
+            .andExpect(status().isOk());
+        
+        verify(artistService).unbindFromCategory(artistId, categoryId);
+    }
+    
+    @Test
+    void whenUnbindFromCategory_withError_shouldReturnFailureResponse() throws Exception {
+        // Given
+        Long artistId = 1L;
+        Long categoryId = 2L;
+        String errorMessage = "Unbind error occurred";
+        
+        doThrow(new RuntimeException(errorMessage))
+            .when(artistService).unbindFromCategory(artistId, categoryId);
+        
+        // When & Then
+        mockMvc.perform(delete("/api/v1/artists/{artistId}/categories/{categoryId}", artistId, categoryId))
             .andExpect(status().isInternalServerError());
     }
 }

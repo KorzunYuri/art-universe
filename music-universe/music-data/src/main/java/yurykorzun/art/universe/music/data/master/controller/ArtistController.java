@@ -142,4 +142,20 @@ public class ArtistController {
     ) {
         return bindingService.batchUnbind(MasterEntityType.ARTIST, dataSource, request);
     }
+
+    @PostMapping("/{artistId}/categories/{categoryId}")
+    public void bindToCategory(
+        @PathVariable Long artistId,
+        @PathVariable Long categoryId
+    ) {
+        artistService.bindToCategory(artistId, categoryId);
+    }
+
+    @DeleteMapping("/{artistId}/categories/{categoryId}")
+    public void unbindFromCategory(
+        @PathVariable Long artistId,
+        @PathVariable Long categoryId
+    ) {
+        artistService.unbindFromCategory(artistId, categoryId);
+    }
 }

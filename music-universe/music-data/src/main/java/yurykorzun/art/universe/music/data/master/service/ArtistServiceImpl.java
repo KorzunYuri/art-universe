@@ -18,11 +18,14 @@ import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBind
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.entity.Artist;
 import yurykorzun.art.universe.music.data.master.entity.ArtistBinding;
+import yurykorzun.art.universe.music.data.master.entity.ArtistCategory;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.repository.ArtistBindingRepository;
+import yurykorzun.art.universe.music.data.master.repository.ArtistCategoryRepository;
 import yurykorzun.art.universe.music.data.master.repository.ArtistRepository;
+import yurykorzun.art.universe.music.data.master.repository.CategoryRepository;
 import yurykorzun.art.universe.music.data.master.service.lookup.MasterEntityLookupService;
 
 import java.util.List;
@@ -33,15 +36,21 @@ public class ArtistServiceImpl implements ArtistService {
 
     private final ArtistRepository artistRepository;
     private final ArtistBindingRepository bindingsRepository;
+    private final ArtistCategoryRepository artistCategoryRepository;
+    private final CategoryRepository categoryRepository;
     private final MasterEntityLookupService lookupService;
 
     public ArtistServiceImpl(
         ArtistRepository artistRepository,
         ArtistBindingRepository bindingsRepository,
+        ArtistCategoryRepository artistCategoryRepository,
+        CategoryRepository categoryRepository,
         EntityManager entityManager
     ) {
         this.artistRepository = artistRepository;
         this.bindingsRepository = bindingsRepository;
+        this.artistCategoryRepository = artistCategoryRepository;
+        this.categoryRepository = categoryRepository;
         this.lookupService = new MasterEntityLookupService(entityManager, MasterEntityType.ARTIST);
     }
 
@@ -227,5 +236,51 @@ public class ArtistServiceImpl implements ArtistService {
     @Transactional(readOnly = true)
     public BatchLookupResponseDTO batchLookupArtists(BaseBatchLookupRequestDTO request) {
         return lookupService.batchLookup(request);
+    }
+
+    @Override
+    @Transactional
+    public void bindToCategory(Long artistId, Long categoryId) {
+        // Validate artist exists
+        if (!artistRepository.existsById(artistId)) {
+            throw new CustomEntityNotFoundException("Artist", artistId);
+        }
+        
+        // Validate category exists
+        if (!categoryRepository.existsById(categoryId)) {
+            throw new CustomEntityNotFoundException("Category", categoryId);
+        }
+        
+        // Check if relation already exists
+        if (artistCategoryRepository.existsByArtistIdAndCategoryId(artistId, categoryId)) {
+            throw new IllegalArgumentException("Relation between artist " + artistId + " and category " + categoryId + " already exists");
+        }
+        
+        // Create relation
+        ArtistCategory relation = ArtistCategory.builder()
+            .artistId(artistId)
+            .categoryId(categoryId)
+            .build();
+        artistCategoryRepository.save(relation);
+    }
+
+    @Override
+    @Transactional
+    public void unbindFromCategory(Long artistId, Long categoryId) {
+        // Validate artist exists
+        if (!artistRepository.existsById(artistId)) {
+            throw new CustomEntityNotFoundException("Artist", artistId);
+        }
+        
+        // Validate category exists
+        if (!categoryRepository.existsById(categoryId)) {
+            throw new CustomEntityNotFoundException("Category", categoryId);
+        }
+        
+        // Find and delete relation
+        ArtistCategory relation = artistCategoryRepository.findByArtistIdAndCategoryId(artistId, categoryId)
+            .orElseThrow(() -> new CustomEntityNotFoundException("Relation between artist " + artistId + " and category " + categoryId + " not found"));
+        
+        artistCategoryRepository.delete(relation);
     }
 }

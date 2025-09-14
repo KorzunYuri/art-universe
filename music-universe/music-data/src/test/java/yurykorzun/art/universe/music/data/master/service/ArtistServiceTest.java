@@ -14,17 +14,19 @@ import org.springframework.data.domain.Pageable;
 import yurykorzun.art.universe.music.data.master.dto.ArtistDto;
 import yurykorzun.art.universe.music.data.master.dto.ArtistSaveRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.ArtistWithCategoriesDto;
-import yurykorzun.art.universe.music.data.master.dto.CategoryDto;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.master.entity.Artist;
 import yurykorzun.art.universe.music.data.master.entity.ArtistBinding;
+import yurykorzun.art.universe.music.data.master.entity.ArtistCategory;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.repository.ArtistBindingRepository;
+import yurykorzun.art.universe.music.data.master.repository.ArtistCategoryRepository;
 import yurykorzun.art.universe.music.data.master.repository.ArtistRepository;
+import yurykorzun.art.universe.music.data.master.repository.CategoryRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -47,6 +49,12 @@ class ArtistServiceTest {
     
     @Mock
     private Query query;
+
+    @Mock
+    private ArtistCategoryRepository artistCategoryRepository;
+
+    @Mock
+    private CategoryRepository categoryRepository;
 
     @InjectMocks
     private ArtistServiceImpl artistService;
@@ -645,5 +653,161 @@ class ArtistServiceTest {
         assertFalse(result);
         verify(artistRepository).existsById(id);
         verify(artistRepository, never()).deleteById(any());
+    }
+
+    @Test
+    void bindToCategory_shouldCreateRelation() {
+        // Given
+        Long artistId = 1L;
+        Long categoryId = 2L;
+        
+        when(artistRepository.existsById(artistId)).thenReturn(true);
+        when(categoryRepository.existsById(categoryId)).thenReturn(true);
+        when(artistCategoryRepository.existsByArtistIdAndCategoryId(artistId, categoryId)).thenReturn(false);
+        
+        // When
+        artistService.bindToCategory(artistId, categoryId);
+        
+        // Then
+        verify(artistRepository).existsById(artistId);
+        verify(categoryRepository).existsById(categoryId);
+        verify(artistCategoryRepository).existsByArtistIdAndCategoryId(artistId, categoryId);
+        verify(artistCategoryRepository).save(any(ArtistCategory.class));
+    }
+
+    @Test
+    void bindToCategory_whenArtistNotFound_shouldThrowException() {
+        // Given
+        Long artistId = 1L;
+        Long categoryId = 2L;
+        
+        when(artistRepository.existsById(artistId)).thenReturn(false);
+        
+        // When & Then
+        CustomEntityNotFoundException exception = assertThrows(CustomEntityNotFoundException.class, () ->
+            artistService.bindToCategory(artistId, categoryId));
+        
+        assertEquals("Artist not found with id: " + artistId, exception.getMessage());
+        verify(artistRepository).existsById(artistId);
+        verify(categoryRepository, never()).existsById(any());
+        verify(artistCategoryRepository, never()).save(any());
+    }
+
+    @Test
+    void bindToCategory_whenCategoryNotFound_shouldThrowException() {
+        // Given
+        Long artistId = 1L;
+        Long categoryId = 2L;
+        
+        when(artistRepository.existsById(artistId)).thenReturn(true);
+        when(categoryRepository.existsById(categoryId)).thenReturn(false);
+        
+        // When & Then
+        CustomEntityNotFoundException exception = assertThrows(CustomEntityNotFoundException.class, () ->
+            artistService.bindToCategory(artistId, categoryId));
+        
+        assertEquals("Category not found with id: " + categoryId, exception.getMessage());
+        verify(artistRepository).existsById(artistId);
+        verify(categoryRepository).existsById(categoryId);
+        verify(artistCategoryRepository, never()).save(any());
+    }
+
+    @Test
+    void bindToCategory_whenRelationExists_shouldThrowException() {
+        // Given
+        Long artistId = 1L;
+        Long categoryId = 2L;
+        
+        when(artistRepository.existsById(artistId)).thenReturn(true);
+        when(categoryRepository.existsById(categoryId)).thenReturn(true);
+        when(artistCategoryRepository.existsByArtistIdAndCategoryId(artistId, categoryId)).thenReturn(true);
+        
+        // When & Then
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+            artistService.bindToCategory(artistId, categoryId));
+        
+        assertEquals("Relation between artist " + artistId + " and category " + categoryId + " already exists", exception.getMessage());
+        verify(artistCategoryRepository, never()).save(any());
+    }
+
+    @Test
+    void unbindFromCategory_shouldDeleteRelation() {
+        // Given
+        Long artistId = 1L;
+        Long categoryId = 2L;
+        ArtistCategory relation = ArtistCategory.builder()
+            .artistId(artistId)
+            .categoryId(categoryId)
+            .build();
+        
+        when(artistRepository.existsById(artistId)).thenReturn(true);
+        when(categoryRepository.existsById(categoryId)).thenReturn(true);
+        when(artistCategoryRepository.findByArtistIdAndCategoryId(artistId, categoryId))
+            .thenReturn(Optional.of(relation));
+        
+        // When
+        artistService.unbindFromCategory(artistId, categoryId);
+        
+        // Then
+        verify(artistRepository).existsById(artistId);
+        verify(categoryRepository).existsById(categoryId);
+        verify(artistCategoryRepository).findByArtistIdAndCategoryId(artistId, categoryId);
+        verify(artistCategoryRepository).delete(relation);
+    }
+
+    @Test
+    void unbindFromCategory_whenArtistNotFound_shouldThrowException() {
+        // Given
+        Long artistId = 1L;
+        Long categoryId = 2L;
+        
+        when(artistRepository.existsById(artistId)).thenReturn(false);
+        
+        // When & Then
+        CustomEntityNotFoundException exception = assertThrows(CustomEntityNotFoundException.class, () ->
+            artistService.unbindFromCategory(artistId, categoryId));
+        
+        assertEquals("Artist not found with id: " + artistId, exception.getMessage());
+        verify(artistRepository).existsById(artistId);
+        verify(categoryRepository, never()).existsById(any());
+        verify(artistCategoryRepository, never()).delete(any());
+    }
+
+    @Test
+    void unbindFromCategory_whenCategoryNotFound_shouldThrowException() {
+        // Given
+        Long artistId = 1L;
+        Long categoryId = 2L;
+        
+        when(artistRepository.existsById(artistId)).thenReturn(true);
+        when(categoryRepository.existsById(categoryId)).thenReturn(false);
+        
+        // When & Then
+        CustomEntityNotFoundException exception = assertThrows(CustomEntityNotFoundException.class, () ->
+            artistService.unbindFromCategory(artistId, categoryId));
+        
+        assertEquals("Category not found with id: " + categoryId, exception.getMessage());
+        verify(artistRepository).existsById(artistId);
+        verify(categoryRepository).existsById(categoryId);
+        verify(artistCategoryRepository, never()).delete(any());
+    }
+
+    @Test
+    void unbindFromCategory_whenRelationNotFound_shouldThrowException() {
+        // Given
+        Long artistId = 1L;
+        Long categoryId = 2L;
+        
+        when(artistRepository.existsById(artistId)).thenReturn(true);
+        when(categoryRepository.existsById(categoryId)).thenReturn(true);
+        when(artistCategoryRepository.findByArtistIdAndCategoryId(artistId, categoryId))
+            .thenReturn(Optional.empty());
+        
+        // When & Then
+        CustomEntityNotFoundException exception = assertThrows(CustomEntityNotFoundException.class, () ->
+            artistService.unbindFromCategory(artistId, categoryId));
+        
+        assertEquals("Relation between artist " + artistId + " and category " + categoryId + " not found", exception.getMessage());
+        verify(artistCategoryRepository, never()).delete(any());
     }
 }

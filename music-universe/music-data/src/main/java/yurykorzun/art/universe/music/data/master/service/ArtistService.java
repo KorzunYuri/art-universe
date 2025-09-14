@@ -124,4 +124,23 @@ public interface ArtistService {
      * @return A map of search terms to lists of matching artists
      */
     BatchLookupResponseDTO batchLookupArtists(BaseBatchLookupRequestDTO request);
+
+    /**
+     * Bind an artist to a category
+     * 
+     * @param artistId The artist ID
+     * @param categoryId The category ID
+     * @throws CustomEntityNotFoundException if artist or category not found
+     * @throws IllegalArgumentException if relation already exists
+     */
+    void bindToCategory(Long artistId, Long categoryId);
+
+    /**
+     * Unbind an artist from a category
+     * 
+     * @param artistId The artist ID
+     * @param categoryId The category ID
+     * @throws CustomEntityNotFoundException if artist, category or relation not found
+     */
+    void unbindFromCategory(Long artistId, Long categoryId);
 }
