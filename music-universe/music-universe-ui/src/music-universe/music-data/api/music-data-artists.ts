@@ -3,8 +3,15 @@ import { MusicDataConfig } from '../config/musicdataconfig';
 import { ArtistImpl } from "@/music-universe/shared/types/entities.ts";
 import type { BaseMasterEntityDto } from "@/music-universe/music-data/api/music-data-commons.ts";
 import type { BasePageSearchParams } from "@/music-universe/shared/types/page.ts";
+import type { CategoryDto } from "./music-data-categories.ts";
 
 export interface ArtistDto extends BaseMasterEntityDto {}
+
+export interface ArtistWithCategoriesDto {
+    id: number;
+    name: string;
+    categories: CategoryDto[];
+}
 
 export interface ArtistPageSearchParams extends BasePageSearchParams {}
 
@@ -25,10 +32,18 @@ export function createArtistFromDto(dto: ArtistDto) {
 }
 
 /**
+ * Fetches a single artist with categories by ID
+ */
+export async function fetchArtistWithCategories(artistId: number): Promise<ArtistWithCategoriesDto | null> {
+    const response = await axios.get<ArtistWithCategoriesDto>(
+        `${MusicDataConfig.baseApiUrl}/artists/${artistId}/with-categories`
+    );
+    
+    return response.data;
+}
+
+/**
  * Creates a new artist
- * 
- * @param artist Artist data to create
- * @returns The created artist if successful, null otherwise
  */
 export async function createArtist(artist: ArtistCreateRequest) {
     const response = await axios.post<ArtistDto>(
@@ -40,10 +55,7 @@ export async function createArtist(artist: ArtistCreateRequest) {
 }
 
 /**
- * Saves an artist (create or update)
- * 
- * @param artist Artist data to save
- * @returns The saved artist if successful, null otherwise
+ * Saves an existing artist
  */
 export async function saveArtist(artist: ArtistSaveRequest) {
     const response = await axios.post<ArtistDto>(
@@ -56,9 +68,6 @@ export async function saveArtist(artist: ArtistSaveRequest) {
 
 /**
  * Deletes an artist
- * 
- * @param artistId The artist ID to delete
- * @returns True if successful, false otherwise
  */
 export async function deleteArtist(artistId: number): Promise<boolean> {
     const response = await axios.delete<boolean>(
@@ -66,4 +75,22 @@ export async function deleteArtist(artistId: number): Promise<boolean> {
     );
     
     return response.data;
+}
+
+/**
+ * Binds artist to category
+ */
+export async function bindArtistToCategory(artistId: number, categoryId: number): Promise<void> {
+    await axios.post(
+        `${MusicDataConfig.baseApiUrl}/artists/${artistId}/categories/${categoryId}`
+    );
+}
+
+/**
+ * Unbinds artist from category
+ */
+export async function unbindArtistFromCategory(artistId: number, categoryId: number): Promise<void> {
+    await axios.delete(
+        `${MusicDataConfig.baseApiUrl}/artists/${artistId}/categories/${categoryId}`
+    );
 }

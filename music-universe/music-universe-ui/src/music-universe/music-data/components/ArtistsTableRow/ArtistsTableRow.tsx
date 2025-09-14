@@ -3,8 +3,8 @@ import { useNotifications } from "@/music-universe/shared/hooks";
 import { EditableText, ConfirmDialog, type BaseEntityTableRow } from "@/music-universe/shared/components";
 import { MasterEntityPanel } from "../MasterEntityPanel";
 import { MasterEntityPicker } from "../MasterEntityPicker";
-import { useMasterEntity } from "@/music-universe/music-data/hooks/useMasterEntity";
-import { saveArtist, deleteArtist, type ArtistSaveRequest } from "@/music-universe/music-data/api/music-data-artists";
+import { useArtistWithCategories } from "@/music-universe/music-data/hooks/useArtistWithCategories";
+import { saveArtist, deleteArtist, bindArtistToCategory, unbindArtistFromCategory, type ArtistSaveRequest } from "@/music-universe/music-data/api/music-data-artists";
 import styles from "./ArtistsTableRow.module.css";
 import tableStyles from "../ArtistsTable/ArtistsTable.module.css";
 import sharedTableStyles from "@/music-universe/shared/styles/EntityTableStyles.module.scss";
@@ -16,19 +16,19 @@ interface ArtistsTableRowProps extends BaseEntityTableRow {
 export const ArtistsTableRow = ({ entityId, onDeleted }: ArtistsTableRowProps) => {
     const { showNotification } = useNotifications();
     const {
-        entity: artist,
-        invalidateEntity,
+        artist,
+        invalidateArtist,
         isLoading: isLoadingArtist,
         isError,
         error
-    } = useMasterEntity('artist', entityId);
+    } = useArtistWithCategories(entityId);
 
     const [editedName, setEditedName] = useState('');
     const [isDirty, setIsDirty] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    const [processingCategories] = useState<Set<number>>(new Set());
+    const [processingCategories, setProcessingCategories] = useState<Set<number>>(new Set());
 
     useEffect(() => {
         if (artist) {
@@ -75,7 +75,7 @@ export const ArtistsTableRow = ({ entityId, onDeleted }: ArtistsTableRowProps) =
             if (savedArtist) {
                 console.log('✅ Artist saved successfully:', savedArtist.id);
                 setIsDirty(false);
-                invalidateEntity();
+                invalidateArtist();
             } else {
                 console.error('❌ Failed to save artist');
                 setEditedName(artist.name);
@@ -91,14 +91,34 @@ export const ArtistsTableRow = ({ entityId, onDeleted }: ArtistsTableRowProps) =
         }
     };
 
-    const handleCategoryRemoved = (categoryId: number) => {
-        console.log(`Category ${categoryId} removed from artist ${artist.id}`);
-        // TODO: Implement when backend endpoint is ready
+    const handleCategoryRemoved = async (categoryId: number) => {
+        setProcessingCategories(prev => new Set(prev).add(categoryId));
+        
+        try {
+            await unbindArtistFromCategory(artist.id, categoryId);
+            console.log(`✅ Successfully removed category ${categoryId} from artist ${artist.id}`);
+            invalidateArtist();
+        } catch (error: any) {
+            console.error(`❌ Error removing category ${categoryId}:`, error);
+            showNotification('error', error?.response?.data?.message || error?.message || 'Failed to remove category');
+        } finally {
+            setProcessingCategories(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(categoryId);
+                return newSet;
+            });
+        }
     };
 
-    const handleCategoryAdded = () => {
-        console.log(`Category added to artist ${artist.id}`);
-        // TODO: Implement when backend endpoint is ready
+    const handleCategoryAdded = async (entity: any) => {
+        try {
+            await bindArtistToCategory(artist.id, entity.id);
+            console.log(`✅ Successfully added category ${entity.id} to artist ${artist.id}`);
+            invalidateArtist();
+        } catch (error: any) {
+            console.error(`❌ Error adding category ${entity.id}:`, error);
+            showNotification('error', error?.response?.data?.message || error?.message || 'Failed to add category');
+        }
     };
 
     const handleDelete = async () => {
@@ -135,7 +155,7 @@ export const ArtistsTableRow = ({ entityId, onDeleted }: ArtistsTableRowProps) =
 
             <div className={`${sharedTableStyles.cell} ${tableStyles.categories}`}>
                 <MasterEntityPanel
-                    entities={[]} // TODO: Load from backend when endpoint is ready
+                    entities={artist.categories}
                     onEntityRemoved={handleCategoryRemoved}
                     processingEntities={processingCategories}
                     emptyMessage="No categories"
