@@ -1,25 +1,21 @@
-// hooks
 import { useState } from 'react';
 import { useMasterEntityTable } from "@/music-universe/music-data/hooks/useMasterEntityTable";
 import { useNotifications } from '@/music-universe/shared/hooks';
-// components
 import { EntityTable, type EntityTableColumn } from "@/music-universe/shared/components/EntityTable/EntityTable";
-import { CategoriesTableRow } from "@/music-universe/music-data/components/CategoriesTableRow";
-// api
-import { createCategory } from '@/music-universe/music-data/api/music-data-categories';
-// styles
-import styles from './CategoriesTable.module.css';
+import { ArtistsTableRow } from "@/music-universe/music-data/components/ArtistsTableRow";
+import { createArtist } from '@/music-universe/music-data/api/music-data-artists';
+import styles from './ArtistsTable.module.css';
 
 const columns: EntityTableColumn[] = [
     { key: 'name', label: 'Name', sortable: true, className: styles.name },
-    { key: 'parents', label: 'Parents', className: styles.parents },
-    { key: 'addParent', label: 'Add Parent', className: styles.addParent },
+    { key: 'categories', label: 'Categories', className: styles.categories },
+    { key: 'addCategory', label: 'Add Category', className: styles.addCategory },
     { key: 'actions', label: 'Actions', className: styles.actions },
 ];
 
-export const CategoriesTable = () => {
+export const ArtistsTable = () => {
     const { showNotification } = useNotifications();
-    const [newCategoryName, setNewCategoryName] = useState('');
+    const [newArtistName, setNewArtistName] = useState('');
     const [isCreating, setIsCreating] = useState(false);
     
     const {
@@ -34,22 +30,22 @@ export const CategoriesTable = () => {
         prevPage,
         goToPage,
         refresh
-    } = useMasterEntityTable("category");
+    } = useMasterEntityTable("artist");
 
-    const handleCreateCategory = async () => {
-        if (!newCategoryName.trim() || isCreating) return;
+    const handleCreateArtist = async () => {
+        if (!newArtistName.trim() || isCreating) return;
 
         setIsCreating(true);
         try {
-            const created = await createCategory({ name: newCategoryName.trim() });
+            const created = await createArtist({ name: newArtistName.trim() });
             if (created) {
-                console.log('✅ Category created successfully:', created.id);
-                setNewCategoryName('');
+                console.log('✅ Artist created successfully:', created.id);
+                setNewArtistName('');
                 refresh();
             }
         } catch (error: any) {
-            console.error('❌ Error creating category:', error);
-            showNotification('error', error?.response?.data?.message || error?.message || 'Failed to create category');
+            console.error('❌ Error creating artist:', error);
+            showNotification('error', error?.response?.data?.message || error?.message || 'Failed to create artist');
         } finally {
             setIsCreating(false);
         }
@@ -60,15 +56,15 @@ export const CategoriesTable = () => {
             <div className={styles.createSection}>
                 <input
                     type="text"
-                    value={newCategoryName}
-                    onChange={(e) => setNewCategoryName(e.target.value)}
-                    placeholder="New category name"
+                    value={newArtistName}
+                    onChange={(e) => setNewArtistName(e.target.value)}
+                    placeholder="New artist name"
                     disabled={isCreating}
-                    onKeyDown={(e) => e.key === 'Enter' && handleCreateCategory()}
+                    onKeyDown={(e) => e.key === 'Enter' && handleCreateArtist()}
                 />
                 <button
-                    onClick={handleCreateCategory}
-                    disabled={!newCategoryName.trim() || isCreating}
+                    onClick={handleCreateArtist}
+                    disabled={!newArtistName.trim() || isCreating}
                     className={styles.createButton}
                 >
                     {isCreating ? '...' : 'Create'}
@@ -79,14 +75,14 @@ export const CategoriesTable = () => {
                 search={search}
                 onSearchChange={setSearch}
                 onSearchSubmit={refresh}
-                searchPlaceholder="Search category name..."
-
+                searchPlaceholder="Search artist name..."
+                
                 columns={columns}
-                emptyMessage="No categories found"
-
+                emptyMessage="No artists found"
+                
                 sort={sort}
                 onSortChange={setSort}
-
+                
                 pagination={{
                     page: pagination.page,
                     totalPages: pagination.totalPages,
@@ -96,18 +92,18 @@ export const CategoriesTable = () => {
                 onNextPage={nextPage}
                 onPrevPage={prevPage}
                 onGoToPage={goToPage}
-
+                
                 isLoading={isLoading}
                 onRefresh={refresh}
             >
-            {entityIds?.map(entityId => (
-                <CategoriesTableRow
-                    key={entityId}
-                    entityId={entityId}
-                    onDeleted={refresh}
-                />
-            ))}
-        </EntityTable>
+                {entityIds?.map(entityId => (
+                    <ArtistsTableRow
+                        key={entityId}
+                        entityId={entityId}
+                        onDeleted={refresh}
+                    />
+                ))}
+            </EntityTable>
         </div>
     );
 };

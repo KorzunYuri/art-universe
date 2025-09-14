@@ -1,18 +1,20 @@
-import styles from './CategoryParentItem.module.scss';
+import styles from './MasterEntityPanelItem.module.scss';
 
-export interface CategoryParentItemProps {
+export interface MasterEntityPanelItemProps {
     id: number;
     name: string;
-    onRemove?: (parentId: number) => void;
+    onRemove?: (id: number) => void;
     isProcessing?: boolean;
+    removeTitle?: string;
 }
 
-export const CategoryParentItem = ({
+export const MasterEntityPanelItem = ({
     id,
     name,
     onRemove,
-    isProcessing = false
-}: CategoryParentItemProps) => {
+    isProcessing = false,
+    removeTitle = "Remove"
+}: MasterEntityPanelItemProps) => {
     const displayName = name.length > 20 ? `${name.substring(0, 20)}...` : name;
 
     const handleRemove = () => {
@@ -22,8 +24,8 @@ export const CategoryParentItem = ({
     };
 
     return (
-        <div className={`${styles.parentItem} ${isProcessing ? styles.processing : ''}`}>
-            <span className={styles.parentName} title={name}>
+        <div className={`${styles.panelItem} ${isProcessing ? styles.processing : ''}`}>
+            <span className={styles.itemName} title={name}>
                 {displayName}
             </span>
             {onRemove && (
@@ -31,7 +33,7 @@ export const CategoryParentItem = ({
                     className={styles.removeButton}
                     onClick={handleRemove}
                     disabled={isProcessing}
-                    title="Remove parent"
+                    title={removeTitle}
                 >
                     ×
                 </button>

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState, useCallback, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { masterEntitiesKeys } from "@/music-universe/shared/utils/query-keys.ts";
 import type { MasterEntityType } from "@/music-universe/shared/types/entities.ts";
 import type { MasterEntityPageSearchParamsMap } from "@/music-universe/music-data/api/music-data-common-fetching.ts";
@@ -16,58 +16,51 @@ export function useMasterEntityTable<T extends MasterEntityType>(
     entityType: T,
     initialParams: Partial<MasterEntityPageSearchParamsMap[T]> = {}
 ) {
-    const queryClient = useQueryClient();
+
+    // Memoize initial params to prevent recreation
+    const memoizedInitialParams = useMemo(() => initialParams, [JSON.stringify(initialParams)]);
     
     // State for table data and UI
-    const [params, setParams] = useState<MasterEntityPageSearchParamsMap[T]>({
+    const [params, setParams] = useState<MasterEntityPageSearchParamsMap[T]>(() => ({
         page: 0,
         size: 20,
         search: '',
         sort: 'name,asc',
-        ...initialParams,
-    });
+        ...memoizedInitialParams,
+    }));
     
     // Query key for this entity list
-    const masterEntitiesQueryKey = masterEntitiesKeys.list(entityType, params);
+    const masterEntitiesQueryKey = useMemo(() => {
+        console.log(`🔑 Creating query key for ${entityType}:`, params);
+        return masterEntitiesKeys.list(entityType, params);
+    }, [entityType, params]);
 
     const masterEntitiesPageQuery = useQuery({
         queryKey: masterEntitiesQueryKey,
         queryFn: async () => {
-            console.log(`🔄 Loading ${entityType} master entities with params:`, params);
-
-            // Fetch master entities
-            const entitiesPage = await fetchMasterEntities(entityType, params);
-
-            // Cache individual entities for detail views
-            entitiesPage.content.forEach(entity => {
-                queryClient.setQueryData(
-                    masterEntitiesKeys.detail(entityType, entity.id),
-                    entity
-                );
-            });
-
-            return entitiesPage;
+            console.log(`🔄 Fetching ${entityType} entities with params:`, params);
+            return await fetchMasterEntities(entityType, params);
         }
     });
 
-    const setSearch = (search: string) => setParams(
+    const setSearch = useCallback((search: string) => setParams(
         prev => (
             {
                 ...prev,
                 search,
                 page: 0
             }
-        ));
+        )), []);
 
-    const setSort = (sort: string) => setParams(
+    const setSort = useCallback((sort: string) => setParams(
         prev => (
             {
                 ...prev,
                 sort
             }
-        ));
+        )), []);
 
-    const nextPage = () => {
+    const nextPage = useCallback(() => {
         if (masterEntitiesPageQuery.data && params.page < masterEntitiesPageQuery.data.totalPages - 1) {
             setParams(
                 prev => (
@@ -77,8 +70,9 @@ export function useMasterEntityTable<T extends MasterEntityType>(
                     }
                 ));
         }
-    };
-    const prevPage = () => {
+    }, [masterEntitiesPageQuery.data?.totalPages, params.page]);
+    
+    const prevPage = useCallback(() => {
         if (params.page > 0) {
             setParams(
                 prev => (
@@ -88,27 +82,39 @@ export function useMasterEntityTable<T extends MasterEntityType>(
                     }
                 ));
         }
-    };
+    }, [params.page]);
 
-    const goToPage = (page: number) => {
+    const goToPage = useCallback((page: number) => {
         if (page >= 0 && masterEntitiesPageQuery.data && page < masterEntitiesPageQuery.data.totalPages) {
             setParams(prev => ({ ...prev, page }));
         }
-    };
+    }, [masterEntitiesPageQuery.data?.totalPages]);
 
-    const refresh = () => {
+    const refresh = useCallback(() => {
         masterEntitiesPageQuery.refetch();
-    };
+    }, [masterEntitiesPageQuery.refetch]);
+
+    const entityIds = useMemo(() => 
+        masterEntitiesPageQuery.data?.content.map(e => e.id), 
+        [masterEntitiesPageQuery.data?.content]
+    );
+
+    const entities = useMemo(() => 
+        masterEntitiesPageQuery.data?.content, 
+        [masterEntitiesPageQuery.data?.content]
+    );
+
+    const pagination = useMemo(() => ({
+        page: params.page,
+        totalPages: masterEntitiesPageQuery.data?.totalPages || 0,
+        hasNextPage: masterEntitiesPageQuery.data ? params.page < masterEntitiesPageQuery.data.totalPages - 1 : false,
+        hasPrevPage: params.page > 0,
+    }), [params.page, masterEntitiesPageQuery.data?.totalPages]);
 
     return {
-        entityIds: masterEntitiesPageQuery.data?.content.map(e => e.id),
-        entities: masterEntitiesPageQuery.data?.content,
-        pagination: {
-            page: params.page,
-            totalPages: masterEntitiesPageQuery.data?.totalPages || 0,
-            hasNextPage: masterEntitiesPageQuery.data ? params.page < masterEntitiesPageQuery.data.totalPages - 1 : false,
-            hasPrevPage: params.page > 0,
-        },
+        entityIds,
+        entities,
+        pagination,
         search: params.search || '',
         sort: params.sort || 'name,asc',
         isLoading: masterEntitiesPageQuery.isLoading,

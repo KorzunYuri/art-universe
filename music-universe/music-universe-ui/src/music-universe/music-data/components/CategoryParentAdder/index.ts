@@ -1,1 +1,0 @@
-export { CategoryParentAdder } from './CategoryParentAdder';

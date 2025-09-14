@@ -3,12 +3,12 @@ import { useState, useEffect } from "react";
 import { useNotifications } from "@/music-universe/shared/hooks";
 // components
 import { EditableText, ConfirmDialog, type BaseEntityTableRow } from "@/music-universe/shared/components";
-import { CategoryParentPanel } from "../CategoryParentPanel";
-import { CategoryParentAdder } from "../CategoryParentAdder";
+import { MasterEntityPanel } from "../MasterEntityPanel";
+import { MasterEntityPicker } from "../MasterEntityPicker";
 // types
 import type { CategorySaveRequest } from "@/music-universe/music-data/api/music-data-categories";
 // api
-import { saveCategory, deleteCategory } from "@/music-universe/music-data/api/music-data-categories";
+import { saveCategory, deleteCategory, deleteCategoryRelation, createCategoryRelation } from "@/music-universe/music-data/api/music-data-categories";
 // hooks
 import { useCategoryWithParents } from "@/music-universe/music-data/hooks/useCategoryWithParents";
 // styles
@@ -35,6 +35,7 @@ export const CategoriesTableRow = ({ entityId, onDeleted }: CategoriesTableRowPr
     const [isSaving, setIsSaving] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [processingParents, setProcessingParents] = useState<Set<number>>(new Set());
 
     // Update edited name when category loads
     useEffect(() => {
@@ -99,8 +100,42 @@ export const CategoriesTableRow = ({ entityId, onDeleted }: CategoriesTableRowPr
         }
     };
 
-    const handleParentChange = () => {
-        invalidateCategory();
+    const handleParentRemoved = async (parentId: number) => {
+        setProcessingParents(prev => new Set(prev).add(parentId));
+        
+        try {
+            await deleteCategoryRelation({
+                sourceId: parentId,
+                targetId: category.id
+            });
+            
+            console.log(`✅ Successfully removed parent ${parentId} from category ${category.id}`);
+            invalidateCategory();
+        } catch (error: any) {
+            console.error(`❌ Error removing parent ${parentId}:`, error);
+            showNotification('error', error?.response?.data?.message || error?.message || 'Failed to remove parent');
+        } finally {
+            setProcessingParents(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(parentId);
+                return newSet;
+            });
+        }
+    };
+
+    const handleParentAdded = async (entity: any) => {
+        try {
+            await createCategoryRelation({
+                sourceId: entity.id,
+                targetId: category.id
+            });
+            
+            console.log(`✅ Successfully added parent ${entity.id} to category ${category.id}`);
+            invalidateCategory();
+        } catch (error: any) {
+            console.error(`❌ Error adding parent ${entity.id}:`, error);
+            showNotification('error', error?.response?.data?.message || error?.message || 'Failed to add parent');
+        }
     };
 
     const handleDelete = async () => {
@@ -136,20 +171,20 @@ export const CategoriesTableRow = ({ entityId, onDeleted }: CategoriesTableRowPr
             </div>
 
             <div className={`${sharedTableStyles.cell} ${tableStyles.parents}`}>
-                <CategoryParentPanel
-                    categoryId={category.id}
-                    parents={category.parents}
-                    onParentRemoved={handleParentChange}
+                <MasterEntityPanel
+                    entities={category.parents}
+                    onEntityRemoved={handleParentRemoved}
+                    processingEntities={processingParents}
+                    emptyMessage="No parents"
+                    removeTitle="Remove parent"
                 />
             </div>
 
             <div className={`${sharedTableStyles.cell} ${tableStyles.addParent}`}>
-                <CategoryParentAdder
-                    categoryId={category.id}
-                    dataSource="master"
+                <MasterEntityPicker
                     entityType="category"
                     buttonLabel="Add Parent"
-                    onParentAdded={handleParentChange}
+                    onEntitySelected={handleParentAdded}
                 />
             </div>
 

@@ -1,4 +1,4 @@
-.parentItem {
+.panelItem {
   display: inline-flex;
   align-items: center;
   padding: 4px 8px;
@@ -15,7 +15,7 @@
   }
 }
 
-.parentName {
+.itemName {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

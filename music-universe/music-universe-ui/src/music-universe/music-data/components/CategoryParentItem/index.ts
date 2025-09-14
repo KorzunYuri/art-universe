@@ -1,1 +1,0 @@
-export { CategoryParentItem } from './CategoryParentItem';

@@ -1,5 +1,6 @@
 import { useRoutes } from 'react-router-dom'
 import { Categories } from './pages/Categories'
+import { Artists } from './pages/Artists'
 import { MusicDataHome } from './pages/MusicDataHome'
 import { QueryProvider } from "@/music-universe/shared/providers/QueryProvider.tsx";
 import { registerMasterLookups } from "./services/registerMasterLookups";
@@ -13,6 +14,7 @@ export default function MusicDataApp() {
     const routes = [
         { path: '/',            element: <MusicDataHome /> },
         { path: 'categories',   element: <Categories /> },
+        { path: 'artists',      element: <Artists /> },
     ]
 
     return (
