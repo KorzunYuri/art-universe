@@ -190,6 +190,7 @@ class CategoryControllerTest {
     void findCategoriesWithParents_shouldReturnListOfCategoriesWithParents() {
         // Given
         String search = "rock";
+        Pageable pageable = PageRequest.of(0, 10);
         CategoryDto parent1 = CategoryDto.builder().id(1L).name("Music").build();
         CategoryDto parent2 = CategoryDto.builder().id(2L).name("Genre").build();
         
@@ -199,16 +200,17 @@ class CategoryControllerTest {
             .parents(Arrays.asList(parent1, parent2))
             .build();
         
-        List<CategoryWithParentsDto> expectedCategories = Arrays.asList(category);
+        List<CategoryWithParentsDto> categories = Arrays.asList(category);
+        Page<CategoryWithParentsDto> expectedPage = new PageImpl<>(categories, pageable, categories.size());
         
-        when(categoryService.findCategoriesWithParents(search)).thenReturn(expectedCategories);
+        when(categoryService.findCategoriesWithParents(search, pageable)).thenReturn(expectedPage);
 
         // When
-        List<CategoryWithParentsDto> result = categoryController.findCategoriesWithParents(search);
+        Page<CategoryWithParentsDto> result = categoryController.findCategoriesWithParents(search, pageable);
 
         // Then
-        assertEquals(expectedCategories, result);
-        verify(categoryService).findCategoriesWithParents(search);
+        assertEquals(expectedPage, result);
+        verify(categoryService).findCategoriesWithParents(search, pageable);
     }
 
     @Test

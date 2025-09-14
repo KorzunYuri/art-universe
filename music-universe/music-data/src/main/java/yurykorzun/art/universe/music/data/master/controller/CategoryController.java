@@ -48,10 +48,11 @@ public class CategoryController {
     }
 
     @GetMapping("/with-parents")
-    public List<CategoryWithParentsDto> findCategoriesWithParents(
-        @RequestParam(required = false) String search
+    public Page<CategoryWithParentsDto> findCategoriesWithParents(
+        @RequestParam(required = false) String search,
+        Pageable pageable
     ) {
-        return categoryService.findCategoriesWithParents(search);
+        return categoryService.findCategoriesWithParents(search, pageable);
     }
 
     @GetMapping("/{id}")

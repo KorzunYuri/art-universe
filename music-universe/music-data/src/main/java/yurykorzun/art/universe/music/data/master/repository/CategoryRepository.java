@@ -37,16 +37,31 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
      * Find categories with their parent information
      * 
      * @param search Optional search term (case insensitive, partial match)
-     * @return List of categories with parent information
+     * @param pageable Pagination and sorting parameters
+     * @return Page of categories with parent information
      */
-    @Query(value = """
-        SELECT c FROM category c
+    @Query("""
+        SELECT c 
+        FROM category c
+        WHERE (
+                :search IS NULL OR :search = '' 
+            OR  LOWER(c.name) LIKE LOWER(CONCAT('%', :search, '%'))
+        )
+        """)
+    Page<Category> findCategoriesWithParentsEntities(@Param("search") String search, Pageable pageable);
+
+    /**
+     * Find categories by IDs with their parent relations loaded
+     */
+    @Query("""
+        SELECT DISTINCT c
+        FROM category c
         LEFT JOIN FETCH c.parentRelations pr
         LEFT JOIN FETCH pr.sourceCategory
-        WHERE (:search IS NULL OR :search = '' OR LOWER(c.name) LIKE LOWER(CONCAT('%', :search, '%')))
+        WHERE c.id IN :ids
         ORDER BY c.name
         """)
-    List<Category> findCategoriesWithParentsEntities(@Param("search") String search);
+    List<Category> findCategoriesWithParentsByIds(@Param("ids") List<Long> ids);
 
     /**
      * Find all categories with hierarchy counts (children, artists, tracks)

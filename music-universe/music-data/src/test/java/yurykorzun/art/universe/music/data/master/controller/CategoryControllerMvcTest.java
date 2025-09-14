@@ -5,6 +5,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
@@ -278,10 +282,11 @@ class CategoryControllerMvcTest {
             .parents(Arrays.asList(parent1, parent2))
             .build();
         
-        List<CategoryWithParentsDto> expectedCategories = Arrays.asList(category);
-        String expectedJson = objectMapper.writeValueAsString(expectedCategories);
+        List<CategoryWithParentsDto> categories = Arrays.asList(category);
+        Page<CategoryWithParentsDto> expectedPage = new PageImpl<>(categories, PageRequest.of(0, 20), categories.size());
+        String expectedJson = objectMapper.writeValueAsString(expectedPage);
         
-        when(categoryService.findCategoriesWithParents(searchQuery)).thenReturn(expectedCategories);
+        when(categoryService.findCategoriesWithParents(eq(searchQuery), any(Pageable.class))).thenReturn(expectedPage);
         
         // When & Then
         mockMvc.perform(get("/api/v1/categories/with-parents")
@@ -296,9 +301,10 @@ class CategoryControllerMvcTest {
         // Given
         String searchQuery = "nonexistent";
         List<CategoryWithParentsDto> emptyList = Collections.emptyList();
-        String expectedJson = objectMapper.writeValueAsString(emptyList);
+        Page<CategoryWithParentsDto> emptyPage = new PageImpl<>(emptyList, PageRequest.of(0, 20), 0);
+        String expectedJson = objectMapper.writeValueAsString(emptyPage);
         
-        when(categoryService.findCategoriesWithParents(searchQuery)).thenReturn(emptyList);
+        when(categoryService.findCategoriesWithParents(eq(searchQuery), any(Pageable.class))).thenReturn(emptyPage);
         
         // When & Then
         mockMvc.perform(get("/api/v1/categories/with-parents")
@@ -313,7 +319,7 @@ class CategoryControllerMvcTest {
         String searchQuery = "rock";
         String errorMessage = "Search error occurred";
         
-        when(categoryService.findCategoriesWithParents(searchQuery))
+        when(categoryService.findCategoriesWithParents(eq(searchQuery), any(Pageable.class)))
             .thenThrow(new RuntimeException(errorMessage));
         
         // When & Then

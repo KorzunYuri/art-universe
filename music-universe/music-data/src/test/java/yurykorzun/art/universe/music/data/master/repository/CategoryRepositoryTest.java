@@ -155,11 +155,11 @@ class CategoryRepositoryTest extends JpaOnlyTest {
     @Test
     void findCategoriesWithParentsEntities_shouldReturnCategoriesWithParentRelations() {
         // When
-        List<Category> result = categoryRepository.findCategoriesWithParentsEntities("rock");
+        Page<Category> result = categoryRepository.findCategoriesWithParentsEntities("rock", PageRequest.of(0, 10));
 
         // Then
-        assertThat(result).hasSize(1);
-        Category rock = result.getFirst();
+        assertThat(result.getContent()).hasSize(1);
+        Category rock = result.getContent().getFirst();
         assertThat(rock.getName()).isEqualTo("Rock");
         
         // Check parent relations are loaded
@@ -170,13 +170,13 @@ class CategoryRepositoryTest extends JpaOnlyTest {
     @Test
     void findCategoriesWithParentsEntities_withNoSearch_shouldReturnAllCategories() {
         // When
-        List<Category> result = categoryRepository.findCategoriesWithParentsEntities(null);
+        Page<Category> result = categoryRepository.findCategoriesWithParentsEntities(null, PageRequest.of(0, 10));
 
         // Then
-        assertThat(result).hasSize(5);
+        assertThat(result.getContent()).hasSize(5);
         
         // Check that categories with parents have relations loaded
-        Category alternative = result.stream()
+        Category alternative = result.getContent().stream()
             .filter(c -> c.getName().equals("Alternative"))
             .findFirst()
             .orElseThrow();

@@ -3,6 +3,7 @@ package yurykorzun.art.universe.music.data.master.service;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -77,11 +78,30 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public List<CategoryWithParentsDto> findCategoriesWithParents(String search) {
-        List<Category> categories = categoryRepository.findCategoriesWithParentsEntities(search);
-        return categories.stream()
-                .map(this::mapToCategoryWithParents)
+    public Page<CategoryWithParentsDto> findCategoriesWithParents(String search, Pageable pageable) {
+        // First, get paginated category IDs
+        Page<Category> categoryPage = categoryRepository.findCategoriesWithParentsEntities(search, pageable);
+        
+        if (categoryPage.isEmpty()) {
+            return categoryPage.map(this::mapToCategoryWithParents);
+        }
+        
+        // Then, load categories with parent relations
+        List<Long> categoryIds = categoryPage.getContent().stream()
+                .map(Category::getId)
                 .toList();
+        
+        List<Category> categoriesWithParents = categoryRepository.findCategoriesWithParentsByIds(categoryIds);
+        
+        // Map to DTOs maintaining the original order
+        Map<Long, Category> categoryMap = categoriesWithParents.stream()
+                .collect(Collectors.toMap(Category::getId, Function.identity()));
+        
+        List<CategoryWithParentsDto> dtos = categoryPage.getContent().stream()
+                .map(c -> mapToCategoryWithParents(categoryMap.getOrDefault(c.getId(), c)))
+                .toList();
+        
+        return new PageImpl<>(dtos, pageable, categoryPage.getTotalElements());
     }
 
     private CategoryWithParentsDto mapToCategoryWithParents(Category category) {

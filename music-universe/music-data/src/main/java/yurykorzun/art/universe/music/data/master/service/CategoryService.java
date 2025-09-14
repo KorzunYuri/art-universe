@@ -29,9 +29,10 @@ public interface CategoryService {
      * Find categories with their parent information
      * 
      * @param search Optional search term (case insensitive, partial match)
-     * @return List of categories with parent information
+     * @param pageable Pagination and sorting parameters
+     * @return Page of categories with parent information
      */
-    List<CategoryWithParentsDto> findCategoriesWithParents(String search);
+    Page<CategoryWithParentsDto> findCategoriesWithParents(String search, Pageable pageable);
 
     /**
      * Returns a single category with a provided id
