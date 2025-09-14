@@ -27,6 +27,14 @@ public interface ArtistService {
     Page<ArtistDto> findArtists(String search, Pageable pageable);
 
     /**
+     * Get a single artist by ID
+     * 
+     * @param id The artist ID
+     * @return The artist
+     */
+    ArtistDto getArtist(Long id);
+
+    /**
      * Save an artist (create new or update existing)
      * 
      * @param request The artist save request DTO

@@ -43,6 +43,13 @@ public class ArtistController {
         return artistService.findArtists(search, pageable);
     }
 
+    @GetMapping("/{id}")
+    public ArtistDto getArtist(
+        @PathVariable Long id
+    ) {
+        return artistService.getArtist(id);
+    }
+
     @PostMapping
     public ArtistDto saveArtist(
         @Valid @RequestBody ArtistSaveRequestDTO request

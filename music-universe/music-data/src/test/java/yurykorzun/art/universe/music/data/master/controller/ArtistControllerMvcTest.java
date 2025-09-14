@@ -353,4 +353,35 @@ class ArtistControllerMvcTest {
         mockMvc.perform(delete("/api/v1/artists/{id}", id))
             .andExpect(status().isInternalServerError());
     }
+    
+    @Test
+    void whenGetArtist_shouldReturnArtist() throws Exception {
+        // Given
+        Long id = 1L;
+        ArtistDto artist = ArtistDto.builder().id(id).name("Test Artist").build();
+        
+        String expectedJson = objectMapper.writeValueAsString(artist);
+        
+        when(artistService.getArtist(id)).thenReturn(artist);
+        
+        // When & Then
+        mockMvc.perform(get("/api/v1/artists/{id}", id))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(content().json(expectedJson));
+    }
+    
+    @Test
+    void whenGetArtist_withError_shouldReturnFailureResponse() throws Exception {
+        // Given
+        Long id = 1L;
+        String errorMessage = "Artist not found";
+        
+        when(artistService.getArtist(id))
+            .thenThrow(new RuntimeException(errorMessage));
+        
+        // When & Then
+        mockMvc.perform(get("/api/v1/artists/{id}", id))
+            .andExpect(status().isInternalServerError());
+    }
 }
