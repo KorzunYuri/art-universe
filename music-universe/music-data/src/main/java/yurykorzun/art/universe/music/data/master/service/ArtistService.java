@@ -7,6 +7,7 @@ import yurykorzun.art.universe.common.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.ArtistDto;
+import yurykorzun.art.universe.music.data.master.dto.ArtistSaveRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
@@ -24,6 +25,14 @@ public interface ArtistService {
      * @return Page of artists
      */
     Page<ArtistDto> findArtists(String search, Pageable pageable);
+
+    /**
+     * Save an artist (create new or update existing)
+     * 
+     * @param request The artist save request DTO
+     * @return The saved artist
+     */
+    ArtistDto saveArtist(ArtistSaveRequestDTO request);
 
     List<BoundEntityProjection> findBoundArtists(DataSource dataSource, List<Long> externalIds);
     

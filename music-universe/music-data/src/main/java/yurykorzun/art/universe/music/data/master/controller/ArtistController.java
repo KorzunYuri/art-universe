@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.common.dto.lookup.BaseBatchLookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.music.data.master.dto.ArtistDto;
+import yurykorzun.art.universe.music.data.master.dto.ArtistSaveRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
@@ -39,6 +40,13 @@ public class ArtistController {
         Pageable pageable
     ) {
         return artistService.findArtists(search, pageable);
+    }
+
+    @PostMapping
+    public ArtistDto saveArtist(
+        @Valid @RequestBody ArtistSaveRequestDTO request
+    ) {
+        return artistService.saveArtist(request);
     }
 
     @GetMapping("/bound/{dataSource}")

@@ -14,6 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.ArtistDto;
+import yurykorzun.art.universe.music.data.master.dto.ArtistSaveRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
@@ -28,6 +29,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -262,6 +264,52 @@ class ArtistControllerMvcTest {
         // When & Then
         mockMvc.perform(get("/api/v1/artists")
                 .param("search", searchQuery))
+            .andExpect(status().isInternalServerError());
+    }
+    
+    @Test
+    void whenSaveArtist_shouldReturnSavedArtist() throws Exception {
+        // Given
+        ArtistSaveRequestDTO request = ArtistSaveRequestDTO.builder()
+            .name("New Artist")
+            .build();
+        
+        ArtistDto savedArtist = ArtistDto.builder()
+            .id(1L)
+            .name("New Artist")
+            .build();
+        
+        String requestJson = objectMapper.writeValueAsString(request);
+        String expectedJson = objectMapper.writeValueAsString(savedArtist);
+        
+        when(artistService.saveArtist(any(ArtistSaveRequestDTO.class))).thenReturn(savedArtist);
+        
+        // When & Then
+        mockMvc.perform(post("/api/v1/artists")
+                .contentType("application/json")
+                .content(requestJson))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(content().json(expectedJson));
+    }
+    
+    @Test
+    void whenSaveArtist_withError_shouldReturnFailureResponse() throws Exception {
+        // Given
+        ArtistSaveRequestDTO request = ArtistSaveRequestDTO.builder()
+            .name("New Artist")
+            .build();
+        
+        String requestJson = objectMapper.writeValueAsString(request);
+        String errorMessage = "Save error occurred";
+        
+        when(artistService.saveArtist(any(ArtistSaveRequestDTO.class)))
+            .thenThrow(new RuntimeException(errorMessage));
+        
+        // When & Then
+        mockMvc.perform(post("/api/v1/artists")
+                .contentType("application/json")
+                .content(requestJson))
             .andExpect(status().isInternalServerError());
     }
 }

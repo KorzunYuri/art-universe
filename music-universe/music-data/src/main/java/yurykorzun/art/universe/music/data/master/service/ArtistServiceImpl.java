@@ -10,6 +10,7 @@ import yurykorzun.art.universe.common.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.ArtistDto;
+import yurykorzun.art.universe.music.data.master.dto.ArtistSaveRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
@@ -46,6 +47,26 @@ public class ArtistServiceImpl implements ArtistService {
     public Page<ArtistDto> findArtists(String search, Pageable pageable) {
         return artistRepository.findArtists(search, pageable)
                 .map(this::mapToDto);
+    }
+
+    @Override
+    @Transactional
+    public ArtistDto saveArtist(ArtistSaveRequestDTO request) {
+        Artist artist;
+        if (request.getId() != null) {
+            // Update existing artist
+            artist = artistRepository.findById(request.getId())
+                    .orElseThrow(() -> new CustomEntityNotFoundException("Artist", request.getId()));
+            artist.setName(request.getName());
+        } else {
+            // Create new artist
+            artist = Artist.builder()
+                    .name(request.getName())
+                    .build();
+        }
+
+        Artist savedArtist = artistRepository.save(artist);
+        return mapToDto(savedArtist);
     }
 
     private ArtistDto mapToDto(Artist artist) {
@@ -133,7 +154,7 @@ public class ArtistServiceImpl implements ArtistService {
         
         // Return the binding information
         return bindingsRepository.findBoundArtistForDataSource(dataSource, externalId);
-    }    
+    }
     @Override
     @Transactional
     public boolean unbindArtist(DataSource dataSource, Long externalId) {

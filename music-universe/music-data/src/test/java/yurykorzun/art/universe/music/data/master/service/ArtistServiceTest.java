@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import yurykorzun.art.universe.music.data.master.dto.ArtistDto;
+import yurykorzun.art.universe.music.data.master.dto.ArtistSaveRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
@@ -428,5 +429,80 @@ class ArtistServiceTest {
         assertEquals(1, result.getContent().size());
         assertEquals("Test Artist", result.getContent().get(0).getName());
         verify(artistRepository).findArtists(null, pageable);
+    }
+
+    @Test
+    void saveArtist_shouldCreateNewArtist() {
+        // Given
+        ArtistSaveRequestDTO request = ArtistSaveRequestDTO.builder()
+            .name("New Artist")
+            .build();
+        
+        Artist savedArtist = Artist.builder()
+            .id(1L)
+            .name("New Artist")
+            .build();
+        
+        when(artistRepository.save(any(Artist.class))).thenReturn(savedArtist);
+
+        // When
+        ArtistDto result = artistService.saveArtist(request);
+
+        // Then
+        assertEquals(1L, result.getId());
+        assertEquals("New Artist", result.getName());
+        verify(artistRepository).save(any(Artist.class));
+    }
+
+    @Test
+    void saveArtist_shouldUpdateExistingArtist() {
+        // Given
+        Long artistId = 1L;
+        ArtistSaveRequestDTO request = ArtistSaveRequestDTO.builder()
+            .id(artistId)
+            .name("Updated Artist")
+            .build();
+        
+        Artist existingArtist = Artist.builder()
+            .id(artistId)
+            .name("Original Artist")
+            .build();
+        
+        Artist savedArtist = Artist.builder()
+            .id(artistId)
+            .name("Updated Artist")
+            .build();
+        
+        when(artistRepository.findById(artistId)).thenReturn(Optional.of(existingArtist));
+        when(artistRepository.save(existingArtist)).thenReturn(savedArtist);
+
+        // When
+        ArtistDto result = artistService.saveArtist(request);
+
+        // Then
+        assertEquals(artistId, result.getId());
+        assertEquals("Updated Artist", result.getName());
+        verify(artistRepository).findById(artistId);
+        verify(artistRepository).save(existingArtist);
+    }
+
+    @Test
+    void saveArtist_whenArtistNotFound_shouldThrowException() {
+        // Given
+        Long artistId = 1L;
+        ArtistSaveRequestDTO request = ArtistSaveRequestDTO.builder()
+            .id(artistId)
+            .name("Updated Artist")
+            .build();
+        
+        when(artistRepository.findById(artistId)).thenReturn(Optional.empty());
+
+        // When & Then
+        CustomEntityNotFoundException exception = assertThrows(CustomEntityNotFoundException.class, () ->
+            artistService.saveArtist(request));
+        
+        assertEquals("Artist not found with id: " + artistId, exception.getMessage());
+        verify(artistRepository).findById(artistId);
+        verify(artistRepository, never()).save(any());
     }
 }

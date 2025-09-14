@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import yurykorzun.art.universe.common.dto.lookup.BaseBatchLookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.music.data.master.dto.ArtistDto;
+import yurykorzun.art.universe.music.data.master.dto.ArtistSaveRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
@@ -243,6 +244,47 @@ class ArtistControllerTest {
         
         assertSame(expectedException, exception);
         verify(artistService).findArtists(search, pageable);
+    }
+
+    @Test
+    void saveArtist_shouldReturnArtistDto() {
+        // Given
+        ArtistSaveRequestDTO request = ArtistSaveRequestDTO.builder()
+            .name("New Artist")
+            .build();
+        
+        ArtistDto savedArtist = ArtistDto.builder()
+            .id(1L)
+            .name("New Artist")
+            .build();
+        
+        when(artistService.saveArtist(request)).thenReturn(savedArtist);
+
+        // When
+        ArtistDto result = artistController.saveArtist(request);
+
+        // Then
+        assertEquals(savedArtist, result);
+        verify(artistService).saveArtist(request);
+    }
+
+    @Test
+    void saveArtist_whenExceptionThrown_shouldPassThroughException() {
+        // Given
+        ArtistSaveRequestDTO request = ArtistSaveRequestDTO.builder()
+            .name("New Artist")
+            .build();
+        RuntimeException expectedException = new RuntimeException("Test error");
+        
+        when(artistService.saveArtist(request)).thenThrow(expectedException);
+
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+            artistController.saveArtist(request)
+        );
+        
+        assertSame(expectedException, exception);
+        verify(artistService).saveArtist(request);
     }
     
     @Test
