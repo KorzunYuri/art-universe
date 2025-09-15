@@ -31,6 +31,12 @@ export function createArtistFromDto(dto: ArtistDto) {
     );
 }
 
+export function createArtistWithCategoriesFromDto(dto: ArtistWithCategoriesDto) {
+    const artist = new ArtistImpl(dto.id, dto.name);
+    artist.categories = dto.categories;
+    return artist;
+}
+
 /**
  * Fetches a single artist with categories by ID
  */

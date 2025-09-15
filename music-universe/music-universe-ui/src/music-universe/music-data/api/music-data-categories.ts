@@ -48,10 +48,9 @@ export function createCategoryFromDto(dto: CategoryDto): Category {
  * Creates Category from CategoryWithParentsDto
  */
 export function createCategoryFromWithParentsDto(dto: CategoryWithParentsDto): Category {
-    return new CategoryImpl(
-        dto.id,
-        dto.name
-    );
+    const category = new CategoryImpl(dto.id, dto.name);
+    category.parents = dto.parents;
+    return category;
 }
 
 /**

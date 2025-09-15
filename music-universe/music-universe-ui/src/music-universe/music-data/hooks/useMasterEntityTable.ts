@@ -1,9 +1,9 @@
-import { useState, useCallback, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useCallback, useMemo, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { masterEntitiesKeys } from "@/music-universe/shared/utils/query-keys.ts";
 import type { MasterEntityType } from "@/music-universe/shared/types/entities.ts";
 import type { MasterEntityPageSearchParamsMap } from "@/music-universe/music-data/api/music-data-common-fetching.ts";
-import { fetchMasterEntities } from "@/music-universe/music-data/api/music-data-common-fetching.ts";
+import { fetchMasterEntitiesWithRelations } from "@/music-universe/music-data/api/music-data-common-fetching.ts";
 
 /**
  * Hook for managing master entity tables
@@ -16,6 +16,7 @@ export function useMasterEntityTable<T extends MasterEntityType>(
     entityType: T,
     initialParams: Partial<MasterEntityPageSearchParamsMap[T]> = {}
 ) {
+    const queryClient = useQueryClient();
 
     // Memoize initial params to prevent recreation
     const memoizedInitialParams = useMemo(() => initialParams, [JSON.stringify(initialParams)]);
@@ -28,20 +29,77 @@ export function useMasterEntityTable<T extends MasterEntityType>(
         sort: 'name,asc',
         ...memoizedInitialParams,
     }));
+
+    /**
+     * Loads a page of entities with all related data and caches individual entities
+     */
+    const loadPageWithRelatedData = useCallback(async (
+        pageParams: MasterEntityPageSearchParamsMap[T]
+    ) => {
+        console.log(`Loading ${entityType} page ${pageParams.page} with related data`);
+        
+        const entitiesPage = await fetchMasterEntitiesWithRelations(entityType, pageParams);
+        
+        // Cache individual entities with relations
+        entitiesPage.content.forEach((entity) => {
+            queryClient.setQueryData(
+                masterEntitiesKeys.withRelationsDetail(entityType, entity.id), 
+                entity
+            );
+        });
+        
+        return entitiesPage;
+    }, [entityType, queryClient]);
     
-    // Query key for this entity list
+    // Query key for this entity list with relations
     const masterEntitiesQueryKey = useMemo(() => {
-        console.log(`🔑 Creating query key for ${entityType}:`, params);
-        return masterEntitiesKeys.list(entityType, params);
+        console.log(`🔑 Creating query key for ${entityType} with relations:`, params);
+        return masterEntitiesKeys.withRelations(entityType, params);
     }, [entityType, params]);
 
     const masterEntitiesPageQuery = useQuery({
         queryKey: masterEntitiesQueryKey,
-        queryFn: async () => {
-            console.log(`🔄 Fetching ${entityType} entities with params:`, params);
-            return await fetchMasterEntities(entityType, params);
-        }
+        queryFn: () => loadPageWithRelatedData(params)
     });
+
+    /**
+     * Prefetches next page in background if not on last page
+     */
+    const prefetchNextPage = useCallback(async () => {
+        if (masterEntitiesPageQuery.data && params.page < masterEntitiesPageQuery.data.totalPages - 1) {
+            const nextPageParams = { ...params, page: params.page + 1 };
+            const nextPageQueryKey = masterEntitiesKeys.withRelations(entityType, nextPageParams);
+            
+            // Only prefetch if not already cached
+            const existingData = queryClient.getQueryData(nextPageQueryKey);
+            if (!existingData) {
+                console.log(`🔄 Prefetching next page: ${params.page + 1}`);
+                try {
+                    const nextPageData = await loadPageWithRelatedData(nextPageParams);
+                    queryClient.setQueryData(nextPageQueryKey, nextPageData);
+                    
+                    // Cache individual entities from prefetched page
+                    nextPageData.content.forEach((entity) => {
+                        queryClient.setQueryData(
+                            masterEntitiesKeys.withRelationsDetail(entityType, entity.id), 
+                            entity
+                        );
+                    });
+                } catch (error) {
+                    console.log(`Failed to prefetch next page: ${error}`);
+                }
+            }
+        }
+    }, [masterEntitiesPageQuery.data, params, entityType, queryClient, loadPageWithRelatedData]);
+
+    // Trigger prefetch when current page data is loaded and query is not fetching
+    useEffect(() => {
+        if (masterEntitiesPageQuery.isSuccess && !masterEntitiesPageQuery.isFetching) {
+            // Use setTimeout to avoid blocking the main thread
+            const timeoutId = setTimeout(prefetchNextPage, 100);
+            return () => clearTimeout(timeoutId);
+        }
+    }, [masterEntitiesPageQuery.isSuccess, masterEntitiesPageQuery.isFetching, prefetchNextPage]);
 
     const setSearch = useCallback((search: string) => setParams(
         prev => (

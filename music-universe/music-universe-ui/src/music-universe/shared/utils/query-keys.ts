@@ -27,6 +27,10 @@ export const masterEntitiesKeys = {
     [...masterEntitiesKeys.type(entityType), params] as const,
   detail: (entityType: MasterEntityType, id: number) =>
     [...masterEntitiesKeys.type(entityType), 'detail', id] as const,
+  withRelations: (entityType: MasterEntityType, params?: Record<string, any>) =>
+    [...masterEntitiesKeys.type(entityType), 'with-relations', params] as const,
+  withRelationsDetail: (entityType: MasterEntityType, id: number) =>
+    [...masterEntitiesKeys.type(entityType), 'with-relations', 'detail', id] as const,
 };
 
 /**

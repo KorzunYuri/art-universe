@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchCategoryWithParents } from "@/music-universe/music-data/api/music-data-categories";
+import { masterEntitiesKeys } from "@/music-universe/shared/utils/query-keys";
 
 /**
  * Hook for fetching and managing category with parents
@@ -9,7 +10,7 @@ import { fetchCategoryWithParents } from "@/music-universe/music-data/api/music-
  */
 export function useCategoryWithParents(categoryId: number) {
     const queryClient = useQueryClient();
-    const queryKey = ['categoryWithParents', categoryId];
+    const queryKey = masterEntitiesKeys.withRelationsDetail('category', categoryId);
 
     /**
      * Invalidates the category in the query cache, forcing a refetch

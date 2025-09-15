@@ -53,7 +53,9 @@ export abstract class BaseRawEntity<T extends MasterEntityType>
     abstract getEntityType(): T;
 }
 /** ------------------ Master Entity Interfaces ------------------ **/
-export interface Artist extends MasterEntity<"artist"> {}
+export interface Artist extends MasterEntity<"artist"> {
+    categories?: Array<{ id: number; name: string }>;
+}
 export interface Album extends MasterEntity<"album"> {
     primaryArtistId: number;
 }
@@ -61,11 +63,12 @@ export interface Track extends MasterEntity<"track"> {
     primaryArtistId: number;
 }
 export interface Category extends MasterEntity<"category"> {
-    parentId?: number | null;
-    parentName?: string | null;
+    parents?: Array<{ id: number; name: string }>;
 }
 /** ------------------ Master Entity Implementations ------------------ **/
 export class ArtistImpl extends BaseMasterEntity<"artist"> implements Artist {
+    categories?: Array<{ id: number; name: string }>;
+    
     getEntityType(): "artist" {
         return "artist";
     }
@@ -89,6 +92,8 @@ export class TrackImpl extends BaseMasterEntity<"track"> implements Track {
     }
 }
 export class CategoryImpl extends BaseMasterEntity<"category"> implements Category {
+    parents?: Array<{ id: number; name: string }>;
+    
     constructor(
         id: number,
         name: string
