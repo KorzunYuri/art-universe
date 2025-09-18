@@ -3,10 +3,10 @@ import { useParams } from 'react-router-dom';
 import { useGame, useGenerateTracks, useApproveGeneration, useDisapproveGeneration } from '../../hooks/useQuizData.ts';
 import type {GenerationDto} from '../../types';
 import type { GenerationStepUI, StepType } from '../../types/generation-steps';
-import { isFinalStep } from '../../types/generation-steps';
+import { StepRegistry } from '../../types/step-registry';
 import { GenerationTracks } from '../GenerationTracks.tsx';
 import { GenerationsList } from '../GenerationsList/GenerationsList.tsx';
-import { StepBuilder } from '../StepBuilder/StepBuilder';
+import '../steps'; // Import to register steps
 import React from 'react';
 import styles from './GameDetails.module.scss';
 import commonStyles from '../../MusicQuizApp.module.scss';
@@ -22,8 +22,12 @@ export const GameDetails = () => {
   const approveGenerationMutation = useApproveGeneration();
   const disapproveGenerationMutation = useDisapproveGeneration();
 
-  const hasFinalStep = generationSteps.some(step => isFinalStep(step.type));
+  const hasFinalStep = generationSteps.some(step => {
+    const stepDef = StepRegistry.get(step.type);
+    return stepDef?.isFinal;
+  });
   const canAddSteps = !hasFinalStep;
+  const availableSteps = StepRegistry.getAvailableSteps(generationSteps);
 
   const handleGenerateTracks = () => {
     if (!gameId) return;
@@ -57,19 +61,10 @@ export const GameDetails = () => {
   };
 
   const handleAddStep = () => {
-    const newStep: GenerationStepUI = {
-      id: `${selectedStepType.toLowerCase()}-${Date.now()}`,
-      type: selectedStepType,
-      ...(selectedStepType === 'BLACKLIST_FILTER' 
-        ? { categoryIds: [] }
-        : { categories: [] }
-      ),
-      ...(selectedStepType === 'FINAL_SELECTION' || selectedStepType === 'FINAL_CATEGORIES_BALANCER' 
-        ? { targetCount: 10 } 
-        : {}
-      )
-    };
+    const stepDef = StepRegistry.get(selectedStepType);
+    if (!stepDef) return;
     
+    const newStep = stepDef.createDefault();
     setGenerationSteps(prev => [...prev, newStep]);
   };
 
@@ -102,20 +97,25 @@ export const GameDetails = () => {
 
         <div className={styles.stepsBuilder}>
           <div className={styles.stepsGrid}>
-            {generationSteps.map((step, index) => (
-              <React.Fragment key={step.id}>
-                <StepBuilder
-                  stepType={step.type}
-                  existingStep={step}
-                  onStepUpdate={(updatedStep) => handleStepUpdate(step.id, updatedStep)}
-                  onStepRemove={() => handleStepRemove(step.id)}
-                  isInline={true}
-                />
-                {index < generationSteps.length - 1 && (
-                  <div className={styles.pipelineArrow}>→</div>
-                )}
-              </React.Fragment>
-            ))}
+            {generationSteps.map((step, index) => {
+              const stepDef = StepRegistry.get(step.type);
+              if (!stepDef) return null;
+              
+              const StepComponent = stepDef.component;
+              
+              return (
+                <React.Fragment key={step.id}>
+                  <StepComponent
+                    step={step}
+                    onUpdate={(updatedStep) => handleStepUpdate(step.id, updatedStep)}
+                    onRemove={() => handleStepRemove(step.id)}
+                  />
+                  {index < generationSteps.length - 1 && (
+                    <div className={styles.pipelineArrow}>→</div>
+                  )}
+                </React.Fragment>
+              );
+            })}
           </div>
         </div>
 
@@ -126,10 +126,11 @@ export const GameDetails = () => {
                 value={selectedStepType} 
                 onChange={(e) => setSelectedStepType(e.target.value as StepType)}
               >
-                <option value="WHITELIST_FILTER">Whitelist Filter</option>
-                <option value="BLACKLIST_FILTER">Blacklist Filter</option>
-                <option value="FINAL_SELECTION">Final Selection</option>
-                <option value="FINAL_CATEGORIES_BALANCER">Final Categories Balancer</option>
+                {availableSteps.map(stepDef => (
+                  <option key={stepDef.type} value={stepDef.type}>
+                    {stepDef.label}
+                  </option>
+                ))}
               </select>
               <button 
                 className={commonStyles.button}
