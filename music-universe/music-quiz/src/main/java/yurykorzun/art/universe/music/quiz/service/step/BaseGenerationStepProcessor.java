@@ -1,9 +1,9 @@
 package yurykorzun.art.universe.music.quiz.service.step;
 
-import yurykorzun.art.universe.music.quiz.dto.GenerationStep;
+import yurykorzun.art.universe.music.quiz.entity.GenerationStep;
 import yurykorzun.art.universe.music.quiz.entity.GenerationStepType;
 
-public abstract class BaseGenerationStepProcessor implements GenerationStepProcessor {
+public abstract class BaseGenerationStepProcessor<T extends GenerationStep> implements GenerationStepProcessor<T> {
     
     private final GenerationStepType stepType;
     
@@ -18,23 +18,20 @@ public abstract class BaseGenerationStepProcessor implements GenerationStepProce
     }
     
     @Override
-    public void validate(GenerationStep step) {
-        if (!stepType.equals(step.getType())) {
-            throw new IllegalArgumentException(
-                String.format("Step type %s doesn't match processor type %s", step.getType(), stepType));
+    public String process(String inputTable, Long gameId, Long generationId, Integer stepOrder, T step) {
+        validateInputTable(inputTable);
+        return processStep(inputTable, gameId, generationId, stepOrder, step);
+    }
+    
+    private void validateInputTable(String inputTable) {
+        if (inputTable == null || inputTable.trim().isEmpty()) {
+            throw new IllegalArgumentException("Input table cannot be null or empty");
         }
-        validateParams(step);
+        String[] parts = inputTable.split("\\.");
+        if (parts.length != 2) {
+            throw new IllegalArgumentException("Input table must be in format 'schema.table'");
+        }
     }
     
-    protected void validateParams(GenerationStep step) {
-        // Default implementation - no validation required
-    }
-    
-    @Override
-    public String process(String inputTable, Long gameId, Long generationId, Integer stepId, GenerationStep step) {
-        validate(step);
-        return processStep(inputTable, gameId, generationId, stepId, step);
-    }
-    
-    protected abstract String processStep(String inputTable, Long gameId, Long generationId, Integer stepId, GenerationStep step);
+    protected abstract String processStep(String inputTable, Long gameId, Long generationId, Integer stepOrder, T step);
 }

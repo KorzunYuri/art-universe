@@ -213,16 +213,39 @@ class PipelineRepositoryImplTest extends JpaOnlyTest {
     }
 
     @Test
-    void runPipeline_shouldExecuteFullPipeline() {
+    void finalCategoriesBalancer_shouldApplyStrictQuotas() {
+        // given - create input table with chance column
+        String inputTable = "mu_quiz_stg.test_input_for_quotas";
+        entityManager.createNativeQuery("DROP TABLE IF EXISTS " + inputTable).executeUpdate();
+        entityManager.createNativeQuery(
+            "CREATE TABLE " + inputTable + " AS " +
+            "SELECT id as track_id, primary_artist_id, 1.0 as chance FROM mu_view.v_track").executeUpdate();
+
+        // Create quota configuration table with weights
+        String quotaTable = "mu_quiz_stg.test_quota_config";
+        entityManager.createNativeQuery("DROP TABLE IF EXISTS " + quotaTable).executeUpdate();
+        entityManager.createNativeQuery(
+            "CREATE TABLE " + quotaTable + " (category_id BIGINT, weight DECIMAL)").executeUpdate();
+        entityManager.createNativeQuery("INSERT INTO " + quotaTable + " VALUES (999, 0.5)").executeUpdate();
+
         // when
-        String resultTable = pipelineRepository.runPipeline(1L, 1L, 2);
+        String resultTable = pipelineRepository.finalCategoriesBalancer(
+            "mu_quiz_stg", "test_input_for_quotas", 1L, 1L, 6, "mu_quiz_stg", "test_quota_config", 20);
 
         // then
         assertNotNull(resultTable);
         Long count = (Long) entityManager.createNativeQuery(
             "SELECT COUNT(*) FROM " + resultTable)
             .getSingleResult();
-        assertTrue(count > 0);
-        assertTrue(count <= 2);
+        assertEquals(0L, count); // No tracks should remain since no artists have category 999
+    }
+
+    @Test
+    void getTablenamePrefix_shouldReturnCorrectFormat() {
+        // when
+        String prefix = pipelineRepository.getTablenamePrefix(1L, 23L, 5);
+
+        // then
+        assertEquals("gen_tracks_0001_0023_05", prefix);
     }
 }

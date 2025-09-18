@@ -38,8 +38,7 @@ class GenerationControllerMvcTest extends BaseMvcTest {
         // given
         Long gameId = 1L;
         CreateGenerationRequest request = new CreateGenerationRequest();
-        request.setTargetCount(20);
-        request.setSteps(null); // explicitly set steps to null
+        request.setSteps(List.of()); // Will be validated by service
         
         GenerationDto expectedDto = GenerationDto.builder()
             .id(1L)
@@ -49,7 +48,7 @@ class GenerationControllerMvcTest extends BaseMvcTest {
             .createdAt(Instant.now())
             .build();
 
-        when(generationService.generateTracks(gameId, 20, null)).thenReturn(expectedDto);
+        when(generationService.generateTracks(gameId, List.of())).thenReturn(expectedDto);
 
         String expectedJson = objectMapper.writeValueAsString(expectedDto);
 
@@ -60,7 +59,7 @@ class GenerationControllerMvcTest extends BaseMvcTest {
             .andExpect(status().isOk())
             .andExpect(content().json(expectedJson));
 
-        verify(generationService).generateTracks(gameId, 20, null);
+        verify(generationService).generateTracks(gameId, List.of());
     }
 
     @Test

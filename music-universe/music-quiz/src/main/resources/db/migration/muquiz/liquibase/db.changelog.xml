@@ -12,4 +12,5 @@
     <include file="db/migration/muquiz/liquibase/changelogs/0004-pipeline-procedures.xml"/>
     <include file="db/migration/muquiz/liquibase/changelogs/0005-generation-approval.xml"/>
     <include file="/db/migration/muquiz/liquibase/changelogs/0006-pipeline-changes.xml"/>
+    <include file="db/migration/muquiz/liquibase/changelogs/0007-pipeline-changes.xml"/>
 </databaseChangeLog>

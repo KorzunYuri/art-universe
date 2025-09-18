@@ -5,8 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import yurykorzun.art.universe.music.quiz.dto.GenerationStep;
-import yurykorzun.art.universe.music.quiz.entity.GenerationStepType;
+import yurykorzun.art.universe.music.quiz.entity.step.ArtistDiversityStep;
 import yurykorzun.art.universe.music.quiz.repository.PipelineRepository;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -24,8 +23,7 @@ class ArtistDiversityProcessorTest {
     @Test
     void process_shouldCallRepositoryWithCorrectParams() {
         // given
-        GenerationStep step = new GenerationStep();
-        step.setType(GenerationStepType.ARTIST_DIVERSITY);
+        ArtistDiversityStep step = new ArtistDiversityStep();
 
         when(pipelineRepository.artistDiversity(anyString(), anyString(), anyLong(), anyLong(), anyInt()))
             .thenReturn("result_table");
@@ -36,5 +34,48 @@ class ArtistDiversityProcessorTest {
         // then
         assertEquals("result_table", result);
         verify(pipelineRepository).artistDiversity("schema", "table", 1L, 2L, 3);
+    }
+
+    @Test
+    void process_shouldThrowException_whenInputTableInvalid() {
+        // given
+        ArtistDiversityStep step = new ArtistDiversityStep();
+
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> processor.process("invalid_table", 1L, 2L, 3, step)
+        );
+        
+        assertEquals("Input table must be in format 'schema.table'", exception.getMessage());
+        verifyNoInteractions(pipelineRepository);
+    }
+
+    @Test
+    void process_shouldPropagateException_whenRepositoryThrows() {
+        // given
+        ArtistDiversityStep step = new ArtistDiversityStep();
+        RuntimeException repositoryException = new RuntimeException("Repository error");
+
+        when(pipelineRepository.artistDiversity(anyString(), anyString(), anyLong(), anyLong(), anyInt()))
+            .thenThrow(repositoryException);
+
+        // when & then
+        RuntimeException exception = assertThrows(
+            RuntimeException.class,
+            () -> processor.process("schema.table", 1L, 2L, 3, step)
+        );
+        
+        assertEquals("Repository error", exception.getMessage());
+        assertSame(repositoryException, exception);
+    }
+
+    @Test
+    void step_shouldNotBeFinal() {
+        // given
+        ArtistDiversityStep step = new ArtistDiversityStep();
+
+        // when & then
+        assertFalse(step.isFinal());
     }
 }

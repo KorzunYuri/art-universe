@@ -15,7 +15,8 @@ public enum GenerationStepType implements Coded {
     TRACK_RECENCY_PENALTY(4),
     ARTIST_RECENCY_PENALTY(5),
     ARTIST_DIVERSITY(6),
-    FINAL_SELECTION(7);
+    FINAL_SELECTION(7),
+    FINAL_CATEGORIES_BALANCER(8);
 
     private final Integer code;
 

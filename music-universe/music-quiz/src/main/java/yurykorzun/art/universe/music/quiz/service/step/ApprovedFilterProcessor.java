@@ -1,12 +1,12 @@
 package yurykorzun.art.universe.music.quiz.service.step;
 
 import org.springframework.stereotype.Component;
-import yurykorzun.art.universe.music.quiz.dto.GenerationStep;
 import yurykorzun.art.universe.music.quiz.entity.GenerationStepType;
+import yurykorzun.art.universe.music.quiz.entity.step.ApprovedFilterStep;
 import yurykorzun.art.universe.music.quiz.repository.PipelineRepository;
 
 @Component
-public class ApprovedFilterProcessor extends BaseGenerationStepProcessor {
+public class ApprovedFilterProcessor extends BaseGenerationStepProcessor<ApprovedFilterStep> {
     
     private final PipelineRepository pipelineRepository;
     
@@ -16,8 +16,8 @@ public class ApprovedFilterProcessor extends BaseGenerationStepProcessor {
     }
     
     @Override
-    protected String processStep(String inputTable, Long gameId, Long generationId, Integer stepId, GenerationStep step) {
+    protected String processStep(String inputTable, Long gameId, Long generationId, Integer stepOrder, ApprovedFilterStep step) {
         String[] parts = inputTable.split("\\.");
-        return pipelineRepository.approvedFilter(parts[0], parts[1], gameId, generationId, stepId);
+        return pipelineRepository.approvedFilter(parts[0], parts[1], gameId, generationId, stepOrder);
     }
 }

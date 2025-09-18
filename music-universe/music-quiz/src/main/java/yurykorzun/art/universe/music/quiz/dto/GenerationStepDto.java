@@ -6,7 +6,7 @@ import yurykorzun.art.universe.music.quiz.entity.GenerationStepType;
 import java.util.Map;
 
 @Data
-public class GenerationStep {
+public class GenerationStepDto {
     private GenerationStepType type;
     private Map<String, Object> params;
 }

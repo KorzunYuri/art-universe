@@ -5,11 +5,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import yurykorzun.art.universe.music.quiz.dto.GenerationStep;
-import yurykorzun.art.universe.music.quiz.entity.GenerationStepType;
+import yurykorzun.art.universe.music.quiz.entity.step.FinalSelectionStep;
 import yurykorzun.art.universe.music.quiz.repository.PipelineRepository;
-
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -24,52 +21,9 @@ class FinalSelectionProcessorTest {
     private FinalSelectionProcessor processor;
 
     @Test
-    void validate_shouldPass_whenValidParams() {
-        // given
-        GenerationStep step = new GenerationStep();
-        step.setType(GenerationStepType.FINAL_SELECTION);
-        step.setParams(Map.of("targetCount", 20));
-
-        // when & then
-        assertDoesNotThrow(() -> processor.validate(step));
-    }
-
-    @Test
-    void validate_shouldThrow_whenMissingTargetCount() {
-        // given
-        GenerationStep step = new GenerationStep();
-        step.setType(GenerationStepType.FINAL_SELECTION);
-        step.setParams(Map.of());
-
-        // when & then
-        IllegalArgumentException exception = assertThrows(
-            IllegalArgumentException.class,
-            () -> processor.validate(step)
-        );
-        assertEquals("Final selection step requires 'targetCount' parameter", exception.getMessage());
-    }
-
-    @Test
-    void validate_shouldThrow_whenTargetCountNotNumber() {
-        // given
-        GenerationStep step = new GenerationStep();
-        step.setType(GenerationStepType.FINAL_SELECTION);
-        step.setParams(Map.of("targetCount", "not_a_number"));
-
-        // when & then
-        IllegalArgumentException exception = assertThrows(
-            IllegalArgumentException.class,
-            () -> processor.validate(step)
-        );
-        assertEquals("Parameter 'targetCount' must be a number", exception.getMessage());
-    }
-
-    @Test
     void process_shouldCallRepositoryWithCorrectParams() {
         // given
-        GenerationStep step = new GenerationStep();
-        step.setType(GenerationStepType.FINAL_SELECTION);
-        step.setParams(Map.of("targetCount", 25));
+        FinalSelectionStep step = new FinalSelectionStep(25);
 
         when(pipelineRepository.finalSelection(anyString(), anyString(), anyLong(), anyLong(), anyInt(), anyInt()))
             .thenReturn("result_table");
@@ -80,5 +34,57 @@ class FinalSelectionProcessorTest {
         // then
         assertEquals("result_table", result);
         verify(pipelineRepository).finalSelection("schema", "table", 1L, 2L, 3, 25);
+    }
+
+    @Test
+    void process_shouldThrowException_whenInputTableInvalid() {
+        // given
+        FinalSelectionStep step = new FinalSelectionStep(20);
+
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> processor.process("invalid_table", 1L, 2L, 3, step)
+        );
+        
+        assertEquals("Input table must be in format 'schema.table'", exception.getMessage());
+        verifyNoInteractions(pipelineRepository);
+    }
+
+    @Test
+    void process_shouldPropagateException_whenRepositoryThrows() {
+        // given
+        FinalSelectionStep step = new FinalSelectionStep(15);
+        RuntimeException repositoryException = new RuntimeException("Repository error");
+
+        when(pipelineRepository.finalSelection(anyString(), anyString(), anyLong(), anyLong(), anyInt(), anyInt()))
+            .thenThrow(repositoryException);
+
+        // when & then
+        RuntimeException exception = assertThrows(
+            RuntimeException.class,
+            () -> processor.process("schema.table", 1L, 2L, 3, step)
+        );
+        
+        assertEquals("Repository error", exception.getMessage());
+        assertSame(repositoryException, exception);
+    }
+
+    @Test
+    void step_shouldBeFinal() {
+        // given
+        FinalSelectionStep step = new FinalSelectionStep(20);
+
+        // when & then
+        assertTrue(step.isFinal());
+    }
+
+    @Test
+    void step_shouldReturnTargetCount() {
+        // given
+        FinalSelectionStep step = new FinalSelectionStep(25);
+
+        // when & then
+        assertEquals(25, step.getTargetCount());
     }
 }

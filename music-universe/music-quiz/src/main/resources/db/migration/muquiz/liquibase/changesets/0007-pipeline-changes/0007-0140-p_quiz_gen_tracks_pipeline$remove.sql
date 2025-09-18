@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS p_quiz_gen_tracks_pipeline;
