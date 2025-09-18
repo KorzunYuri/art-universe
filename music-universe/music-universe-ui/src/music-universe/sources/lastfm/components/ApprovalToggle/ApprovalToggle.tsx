@@ -12,10 +12,11 @@ interface Props {
 const options: {
     label: string
     value: ApprovalStatusType
-    color: 'yes' | 'no' | 'auto'
+    color: 'yes' | 'no' | 'auto' | 'skip'
     alwaysDisabled?: boolean
 }[] = [
     { label: 'yes',  value: ApprovalStatus.APPROVED,        color: 'yes' },
+    { label: 'skip', value: ApprovalStatus.IGNORED,         color: 'skip' },
     { label: 'no',   value: ApprovalStatus.DECLINED,        color: 'no' },
     { label: 'auto', value: ApprovalStatus.AUTOAPPROVED,    color: 'auto', alwaysDisabled: true },
 ]

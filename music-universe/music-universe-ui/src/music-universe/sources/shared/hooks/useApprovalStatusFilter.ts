@@ -14,7 +14,8 @@ export function useApprovalStatusFilter() {
         { value: 1, label: 'Pending' },
         { value: 2, label: 'Approved' },
         { value: 3, label: 'Declined' },
-        { value: 4, label: 'Auto-approved' }
+        { value: 4, label: 'Auto-approved' },
+        { value: 5, label: 'Ignored' }
     ];
     
     const approvalStatusField = createNumberMultiSelectField(
