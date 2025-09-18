@@ -180,9 +180,10 @@ public abstract class EntityScopedApiCallGenerator<SE extends BaseLastfmEntity> 
      */
     protected final int getApprovalStatusPriority(ApprovalStatus status) {
         return switch (status) {
-            case APPROVED -> 3;
-            case PRE_APPROVED -> 2;
-            case PENDING -> 1;
+            case APPROVED -> 4;
+            case PRE_APPROVED -> 3;
+            case PENDING -> 2;
+            case IGNORED -> 1;
             case DECLINED -> 0;
         };
     }

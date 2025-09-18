@@ -31,8 +31,6 @@ public interface LastfmTrackRepository extends JpaRepository<LastfmTrack, Long> 
 
     List<LastfmTrack> findAllByUrlIn(List<String> urls);
 
-    List<LastfmTrack> findAllByMbidIn(List<String> mbids);
-
     @Query(value = """
         SELECT  t
         FROM    track t
@@ -118,10 +116,11 @@ public interface LastfmTrackRepository extends JpaRepository<LastfmTrack, Long> 
             ) AS artist_track_rank
         FROM
             track t
-        LEFT JOIN
+        JOIN
             artist a ON t.artist_id = a.id
-        WHERE
-            NOT EXISTS (
+        WHERE   1=1
+            AND a.approval_status in (2, 4) -- approved, pre-approved
+            AND NOT EXISTS (
                 SELECT 1
                 FROM api_call ac
                 WHERE ac.type           = 10    -- track.getInfo
@@ -148,7 +147,9 @@ public interface LastfmTrackRepository extends JpaRepository<LastfmTrack, Long> 
                 ELSE 1 END,
         CASE WHEN rt.artist_approval_status = 2 -- APPROVED
                 THEN 0
-                ELSE 1 END,
+             WHEN rt.artist_approval_status = 4 -- PRE-APPROVED
+                THEN 1
+                ELSE 2 END,
         COALESCE(rt.artist_listeners_count, -1) DESC,
         rt.id
     LIMIT :limit

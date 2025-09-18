@@ -68,6 +68,7 @@ public class LastfmApiCallEntityServiceImpl implements LastfmApiCallEntityServic
             CriteriaBuilder.In<Integer> entityApprovalStatusIn = cb.in(entityApprovalStatus);
             entityApprovalStatusIn
                 .value(ApprovalStatus.APPROVED.getCode())
+                .value(ApprovalStatus.PRE_APPROVED.getCode())
                 .value(ApprovalStatus.PENDING.getCode());
             entityApprovalFilter = entityApprovalStatusIn;
         }

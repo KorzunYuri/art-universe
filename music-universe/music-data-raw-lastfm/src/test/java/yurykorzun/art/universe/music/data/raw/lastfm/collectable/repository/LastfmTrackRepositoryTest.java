@@ -38,7 +38,7 @@ class LastfmTrackRepositoryTest extends JpaOnlyTest {
 
     @BeforeEach
     void setUp() {
-        artist = consistencyHelper.createAndSaveArtist();
+        artist = consistencyHelper.createAndSaveArtist(builder -> builder.approvalStatus(ApprovalStatus.APPROVED));
         
         // Create test tracks with different values for sorting tests
         LastfmApiCall apiCall = consistencyHelper.createAndSaveApiCall();
@@ -238,7 +238,7 @@ class LastfmTrackRepositoryTest extends JpaOnlyTest {
     @Test
     void findTracksForGetInfo_shouldExcludeBlacklistedTracks() {
         // Create an artist
-        LastfmArtist artist = consistencyHelper.createAndSaveArtist(builder -> 
+        LastfmArtist artist = consistencyHelper.createAndSaveArtist(builder ->
             builder.name("Test Artist")
                    .listenersCount(5000)
                    .approvalStatus(ApprovalStatus.APPROVED));
