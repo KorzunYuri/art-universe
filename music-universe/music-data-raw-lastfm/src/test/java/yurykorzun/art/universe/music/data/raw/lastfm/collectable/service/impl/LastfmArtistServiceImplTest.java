@@ -3,9 +3,11 @@ package yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -16,8 +18,9 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApi
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.dto.ArtistSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.dto.LastfmArtistResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.event.EntityStatusChangedEvent;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.LastfmArtistRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl.LastfmArtistServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
 
 import java.util.*;
@@ -32,6 +35,9 @@ class LastfmArtistServiceImplTest {
     
     @Mock
     private LastfmArtistRepository artistRepository;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private LastfmArtistServiceImpl artistService;
@@ -268,5 +274,55 @@ class LastfmArtistServiceImplTest {
 
     private static List<ApprovalStatus> getApprovalStatusesFromCodes(Collection<Integer> codes) {
         return CodedRegistry.getByCodes(codes, ApprovalStatus.class);
+    }
+
+    @Test
+    void updateApprovalStatus_shouldPublishEvent() {
+        // Given
+        Long artistId = 1L;
+        LastfmArtist artist = LastfmArtist.builder()
+                .name("Test Artist")
+                .approvalStatus(ApprovalStatus.PENDING)
+                .apiCall(EntityCreationHelper.createApiCall())
+                .build();
+
+        when(artistRepository.findById(artistId)).thenReturn(Optional.of(artist));
+        when(artistRepository.save(any(LastfmArtist.class))).thenReturn(artist);
+
+        // When
+        artistService.updateApprovalStatus(artistId, ApprovalStatus.DECLINED.getCode());
+
+        // Then
+        ArgumentCaptor<EntityStatusChangedEvent> eventCaptor = ArgumentCaptor.forClass(EntityStatusChangedEvent.class);
+        verify(eventPublisher).publishEvent(eventCaptor.capture());
+
+        EntityStatusChangedEvent publishedEvent = eventCaptor.getValue();
+        assertEquals(LastfmEntityType.ARTIST, publishedEvent.entityType());
+        assertEquals(artistId, publishedEvent.entityId());
+        assertEquals(ApprovalStatus.DECLINED, publishedEvent.newStatus());
+    }
+
+    @Test
+    void updateApprovalStatus_shouldPublishEventForAnyStatus() {
+        // Given
+        Long artistId = 1L;
+        LastfmArtist artist = LastfmArtist.builder()
+                .name("Test Artist")
+                .approvalStatus(ApprovalStatus.PENDING)
+                .apiCall(EntityCreationHelper.createApiCall())
+                .build();
+
+        when(artistRepository.findById(artistId)).thenReturn(Optional.of(artist));
+        when(artistRepository.save(any(LastfmArtist.class))).thenReturn(artist);
+
+        // When
+        artistService.updateApprovalStatus(artistId, ApprovalStatus.APPROVED.getCode());
+
+        // Then
+        ArgumentCaptor<EntityStatusChangedEvent> eventCaptor = ArgumentCaptor.forClass(EntityStatusChangedEvent.class);
+        verify(eventPublisher).publishEvent(eventCaptor.capture());
+
+        EntityStatusChangedEvent publishedEvent = eventCaptor.getValue();
+        assertEquals(ApprovalStatus.APPROVED, publishedEvent.newStatus());
     }
 }

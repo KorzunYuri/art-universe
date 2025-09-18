@@ -3,9 +3,11 @@ package yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -15,9 +17,10 @@ import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.dto.AlbumSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.dto.LastfmAlbumResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmAlbum;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.event.EntityStatusChangedEvent;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.LastfmAlbumRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl.LastfmAlbumServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
 
 import java.util.*;
@@ -32,6 +35,9 @@ class LastfmAlbumServiceImplTest {
     
     @Mock
     private LastfmAlbumRepository albumRepository;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private LastfmAlbumServiceImpl albumService;
@@ -286,5 +292,56 @@ class LastfmAlbumServiceImplTest {
         // then
         verify(albumRepository, times(1)).findAlbumsForGetInfo();
         assertEquals(expectedAlbums, result, "Should return albums from repository");
+    }
+    @Test
+    void updateApprovalStatus_shouldPublishEvent() {
+        // Given
+        Long albumId = 1L;
+        LastfmAlbum album = LastfmAlbum.builder()
+                .name("Test Album")
+                .url("http://test.com")
+                .approvalStatus(ApprovalStatus.PENDING)
+                .apiCall(EntityCreationHelper.createApiCall())
+                .build();
+
+        when(albumRepository.findById(albumId)).thenReturn(Optional.of(album));
+        when(albumRepository.save(any(LastfmAlbum.class))).thenReturn(album);
+
+        // When
+        albumService.updateApprovalStatus(albumId, ApprovalStatus.IGNORED.getCode());
+
+        // Then
+        ArgumentCaptor<EntityStatusChangedEvent> eventCaptor = ArgumentCaptor.forClass(EntityStatusChangedEvent.class);
+        verify(eventPublisher).publishEvent(eventCaptor.capture());
+
+        EntityStatusChangedEvent publishedEvent = eventCaptor.getValue();
+        assertEquals(LastfmEntityType.ALBUM, publishedEvent.entityType());
+        assertEquals(albumId, publishedEvent.entityId());
+        assertEquals(ApprovalStatus.IGNORED, publishedEvent.newStatus());
+    }
+
+    @Test
+    void updateApprovalStatus_shouldPublishEventForAnyStatus() {
+        // Given
+        Long albumId = 1L;
+        LastfmAlbum album = LastfmAlbum.builder()
+                .name("Test Album")
+                .url("http://test.com")
+                .apiCall(EntityCreationHelper.createApiCall())
+                .approvalStatus(ApprovalStatus.PENDING)
+                .build();
+
+        when(albumRepository.findById(albumId)).thenReturn(Optional.of(album));
+        when(albumRepository.save(any(LastfmAlbum.class))).thenReturn(album);
+
+        // When
+        albumService.updateApprovalStatus(albumId, ApprovalStatus.APPROVED.getCode());
+
+        // Then
+        ArgumentCaptor<EntityStatusChangedEvent> eventCaptor = ArgumentCaptor.forClass(EntityStatusChangedEvent.class);
+        verify(eventPublisher).publishEvent(eventCaptor.capture());
+
+        EntityStatusChangedEvent publishedEvent = eventCaptor.getValue();
+        assertEquals(ApprovalStatus.APPROVED, publishedEvent.newStatus());
     }
 }

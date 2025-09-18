@@ -1,6 +1,7 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl;
 
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -11,6 +12,8 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.Enti
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.dto.AlbumSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.dto.LastfmAlbumResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmAlbum;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.event.EntityStatusChangedEvent;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.LastfmAlbumRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.LastfmAlbumService;
 
@@ -21,9 +24,11 @@ import java.util.stream.Collectors;
 public class LastfmAlbumServiceImpl implements LastfmAlbumService {
 
     private final LastfmAlbumRepository albumRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public LastfmAlbumServiceImpl(LastfmAlbumRepository albumRepository) {
+    public LastfmAlbumServiceImpl(LastfmAlbumRepository albumRepository, ApplicationEventPublisher eventPublisher) {
         this.albumRepository = albumRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -67,6 +72,9 @@ public class LastfmAlbumServiceImpl implements LastfmAlbumService {
         
         album.updateApprovalStatus(approvalStatus);
         LastfmAlbum updated = albumRepository.save(album);
+        
+        eventPublisher.publishEvent(new EntityStatusChangedEvent(LastfmEntityType.ALBUM, id, approvalStatus));
+        
         return LastfmAlbumResponseDto.from(updated);
     }
 

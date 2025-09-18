@@ -8,6 +8,11 @@ spring:
   docker:
     compose:
       enabled: false
+  task:
+    execution:
+      pool:
+        core-size: 0
+        max-size: 1
 
 lastfm:
   apikey: DUMMY_API_KEY

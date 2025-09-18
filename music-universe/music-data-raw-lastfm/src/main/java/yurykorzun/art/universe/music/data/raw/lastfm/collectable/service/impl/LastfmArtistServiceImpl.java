@@ -1,6 +1,7 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl;
 
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -10,6 +11,8 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.Enti
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.dto.ArtistSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.dto.LastfmArtistResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.event.EntityStatusChangedEvent;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.LastfmArtistRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.LastfmArtistService;
 
@@ -22,9 +25,11 @@ import java.util.Optional;
 public class LastfmArtistServiceImpl implements LastfmArtistService {
 
     private final LastfmArtistRepository artistRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public LastfmArtistServiceImpl(LastfmArtistRepository artistRepository) {
+    public LastfmArtistServiceImpl(LastfmArtistRepository artistRepository, ApplicationEventPublisher eventPublisher) {
         this.artistRepository = artistRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -104,6 +109,9 @@ public class LastfmArtistServiceImpl implements LastfmArtistService {
 
         artist.updateApprovalStatus(approvalStatus);
         LastfmArtist updated = artistRepository.save(artist);
+        
+        eventPublisher.publishEvent(new EntityStatusChangedEvent(LastfmEntityType.ARTIST, id, approvalStatus));
+        
         return LastfmArtistResponseDto.from(updated);
     }
 

@@ -4,6 +4,7 @@ import jakarta.annotation.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -166,4 +167,14 @@ public interface LastfmAlbumRepository extends JpaRepository<LastfmAlbum, Long> 
     default List<LastfmAlbum> findAlbumsForGetInfo() {
         return findAlbumsForGetInfo(LastfmConstants.HIBERNATE_BATCH_SIZE);
     }
+
+    @Modifying
+    @Query("""
+        UPDATE album a
+        SET a.approvalStatus = :status,
+            a.updatedAt = CURRENT_TIMESTAMP
+        WHERE a.artist.id = :artistId
+            AND a.approvalStatus = yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus.PENDING
+    """)
+    int updateAlbumStatusByArtistId(@Param("artistId") Long artistId, @Param("status") ApprovalStatus status);
 }
