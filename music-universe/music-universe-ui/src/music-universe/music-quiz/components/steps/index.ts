@@ -12,7 +12,8 @@ StepRegistry.register({
   createDefault: () => ({
     id: `blacklist-filter-${Date.now()}`,
     type: 'BLACKLIST_FILTER',
-    categoryIds: []
+    categoryIds: [],
+    blacklistCategories: []
   }),
   component: BlacklistFilterStep
 });

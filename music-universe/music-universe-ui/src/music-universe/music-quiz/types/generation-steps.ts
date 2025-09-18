@@ -9,6 +9,7 @@ export interface GenerationStepUI {
     type: StepType;
     categories?: CategoryWeight[];
     categoryIds?: number[];
+    blacklistCategories?: Array<{ id: number; name: string }>;
     targetCount?: number;
 }
 

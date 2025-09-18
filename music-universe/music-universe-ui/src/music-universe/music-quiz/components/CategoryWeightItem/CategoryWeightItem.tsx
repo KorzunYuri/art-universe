@@ -1,5 +1,6 @@
 import type { CategoryWeight } from '../../types/generation-steps';
 import styles from './CategoryWeightItem.module.scss';
+import stepStyles from '../StepBuilder/StepBuilder.module.scss';
 
 interface CategoryWeightItemProps {
     category: CategoryWeight;
@@ -16,7 +17,7 @@ export const CategoryWeightItem = ({ category, onWeightChange, onRemove, readonl
 
     return (
         <div className={styles.item}>
-            <span className={styles.name}>{category.name}</span>
+            <span className={stepStyles.categoryName}>{category.name}</span>
             <input
                 type="range"
                 min="0"
