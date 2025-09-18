@@ -4,7 +4,7 @@ spring:
 
   datasource:
     driverClassName: org.postgresql.Driver
-    url: jdbc:postgresql://${MU_QUIZ_DB_HOST:localhost}:${MU_QUIZ_DB_PORT:5432}/music_universe?currentSchema=mu_quiz
+    url: jdbc:postgresql://${MU_DATA_DB_HOST:localhost}:${MU_DATA_DB_PORT:5432}/music_universe?currentSchema=mu_quiz
     username: mu_quiz_dm
     password: '${MU_QUIZ_DB_PASSWORD_DM}'
     hikari:
