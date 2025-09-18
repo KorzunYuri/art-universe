@@ -1,6 +1,7 @@
 import { useGenerationTracks, useDeleteGenerationTrack } from '../hooks/useQuizData.ts';
 import type {GenerationDto} from '../types';
-import styles from '../MusicQuizApp.module.css';
+import styles from './GameTable/GameTable.module.scss';
+import commonStyles from '../MusicQuizApp.module.scss';
 
 interface Props {
   generation: GenerationDto;
@@ -28,13 +29,13 @@ export const GenerationTracks = ({ generation }: Props) => {
   if (!tracks) return <div>No tracks found</div>;
 
   return (
-    <div className={styles.generationTracks}>
+    <div className={styles.gameTable}>
       <div className={styles.header}>
         <h3>Generation {generation.id} Tracks (Target: {generation.targetCount})</h3>
-        <button className={styles.button} onClick={copyToClipboard}>Copy to Clipboard</button>
+        <button className={commonStyles.button} onClick={copyToClipboard}>Copy to Clipboard</button>
       </div>
       
-      <table className={styles.table}>
+      <table className={commonStyles.table}>
         <thead>
           <tr>
             <th>Order</th>
@@ -53,7 +54,7 @@ export const GenerationTracks = ({ generation }: Props) => {
                 <td>{track.trackName}</td>
                 <td>
                   <button
-                    className={styles.deleteButton}
+                    className={commonStyles.deleteButton}
                     onClick={() => handleDeleteTrack(track.trackId)}
                     disabled={deleteTrackMutation.isPending}
                     title="Delete track"

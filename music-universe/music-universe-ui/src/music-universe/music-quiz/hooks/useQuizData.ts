@@ -40,8 +40,8 @@ export const useGenerateTracks = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ gameId, targetCount, steps }: { gameId: number; targetCount: number; steps?: any[] }) =>
-      musicQuizApi.generateTracks(gameId, targetCount, steps),
+    mutationFn: ({ gameId, steps }: { gameId: number; steps?: any[] }) =>
+      musicQuizApi.generateTracks(gameId, steps),
     onSuccess: (_, { gameId }) => {
       queryClient.invalidateQueries({ queryKey: quizKeys.game(gameId) });
     },

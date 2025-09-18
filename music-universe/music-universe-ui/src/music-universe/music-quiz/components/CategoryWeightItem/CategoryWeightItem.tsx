@@ -5,9 +5,10 @@ interface CategoryWeightItemProps {
     category: CategoryWeight;
     onWeightChange: (id: number, weight: number) => void;
     onRemove: (id: number) => void;
+    readonly?: boolean;
 }
 
-export const CategoryWeightItem = ({ category, onWeightChange, onRemove }: CategoryWeightItemProps) => {
+export const CategoryWeightItem = ({ category, onWeightChange, onRemove, readonly = false }: CategoryWeightItemProps) => {
     const handleWeightChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const weight = parseFloat(e.target.value);
         onWeightChange(category.id, weight);
@@ -24,15 +25,18 @@ export const CategoryWeightItem = ({ category, onWeightChange, onRemove }: Categ
                 value={category.weight}
                 onChange={handleWeightChange}
                 className={styles.slider}
+                disabled={readonly}
             />
             <span className={styles.weight}>{category.weight.toFixed(1)}</span>
-            <button
-                className={styles.removeButton}
-                onClick={() => onRemove(category.id)}
-                title="Remove category"
-            >
-                ×
-            </button>
+            {!readonly && (
+                <button
+                    className={styles.removeButton}
+                    onClick={() => onRemove(category.id)}
+                    title="Remove category"
+                >
+                    ×
+                </button>
+            )}
         </div>
     );
 };

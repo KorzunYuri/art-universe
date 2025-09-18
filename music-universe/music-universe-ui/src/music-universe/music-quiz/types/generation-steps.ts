@@ -6,8 +6,17 @@ export interface CategoryWeight {
 
 export interface GenerationStepUI {
     id: string; // temporary UI ID
-    type: 'WHITELIST_FILTER';
-    categories: CategoryWeight[];
+    type: StepType;
+    categories?: CategoryWeight[];
+    categoryIds?: number[];
+    targetCount?: number;
 }
 
-export type StepType = 'WHITELIST_FILTER';
+export type StepType = 'BLACKLIST_FILTER' | 'WHITELIST_FILTER' | 'FINAL_SELECTION' | 'FINAL_CATEGORIES_BALANCER';
+
+export type IntermediateStepType = 'BLACKLIST_FILTER' | 'WHITELIST_FILTER';
+export type FinalStepType = 'FINAL_SELECTION' | 'FINAL_CATEGORIES_BALANCER';
+
+export const isFinalStep = (stepType: StepType): stepType is FinalStepType => {
+    return stepType === 'FINAL_SELECTION' || stepType === 'FINAL_CATEGORIES_BALANCER';
+};
