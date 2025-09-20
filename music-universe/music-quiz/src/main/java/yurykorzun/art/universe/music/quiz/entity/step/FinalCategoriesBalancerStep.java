@@ -13,11 +13,13 @@ import java.util.List;
 public class FinalCategoriesBalancerStep extends FinalGenerationStep {
     private final Integer targetCount;
     private final List<CategoryWeight> categories;
+    private final Double defaultQuota;
     
-    public FinalCategoriesBalancerStep(Integer targetCount, List<CategoryWeight> categories) {
+    public FinalCategoriesBalancerStep(Integer targetCount, List<CategoryWeight> categories, Double defaultQuota) {
         super(GenerationStepType.FINAL_CATEGORIES_BALANCER);
         this.targetCount = targetCount;
         this.categories = categories;
+        this.defaultQuota = defaultQuota;
     }
     
     public record CategoryWeight(Long id, Double weight) {}

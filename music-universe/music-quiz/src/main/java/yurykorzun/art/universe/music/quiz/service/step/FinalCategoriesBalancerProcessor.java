@@ -25,7 +25,7 @@ public class FinalCategoriesBalancerProcessor extends BaseGenerationStepProcesso
         
         String[] parts = inputTable.split("\\.");
         return pipelineRepository.finalCategoriesBalancer(parts[0], parts[1], gameId, generationId, stepOrder,
-            "mu_quiz_stg", "game_config_quota_" + gameId, step.getTargetCount());
+            "mu_quiz_stg", "game_config_quota_" + gameId, step.getTargetCount(), step.getDefaultQuota());
     }
     
     private void createQuotaTable(Long gameId, java.util.List<FinalCategoriesBalancerStep.CategoryWeight> categories) {

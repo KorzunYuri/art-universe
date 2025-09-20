@@ -16,7 +16,7 @@ public interface PipelineRepository {
     
     String finalSelection(String inputSchema, String inputTable, Long gameId, Long generationId, Integer stepOrder, Integer targetCount);
     
-    String finalCategoriesBalancer(String inputSchema, String inputTable, Long gameId, Long generationId, Integer stepOrder, String quotaSchema, String quotaTable, Integer targetCount);
+    String finalCategoriesBalancer(String inputSchema, String inputTable, Long gameId, Long generationId, Integer stepOrder, String quotaSchema, String quotaTable, Integer targetCount, Double defaultQuota);
 
     String getTablenamePrefix(Long gameId, Long generationId, Integer stepOrder);
 }

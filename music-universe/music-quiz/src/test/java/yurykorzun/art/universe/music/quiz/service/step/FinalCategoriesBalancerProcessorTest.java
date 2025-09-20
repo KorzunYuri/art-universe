@@ -37,12 +37,12 @@ class FinalCategoriesBalancerProcessorTest {
         FinalCategoriesBalancerStep step = new FinalCategoriesBalancerStep(20, List.of(
             new FinalCategoriesBalancerStep.CategoryWeight(1L, 0.6),
             new FinalCategoriesBalancerStep.CategoryWeight(2L, 0.4)
-        ));
+        ), 0.25);
 
         when(entityManager.createNativeQuery(anyString())).thenReturn(query);
         when(query.setParameter(anyInt(), any())).thenReturn(query);
         when(query.executeUpdate()).thenReturn(1);
-        when(pipelineRepository.finalCategoriesBalancer(anyString(), anyString(), anyLong(), anyLong(), anyInt(), anyString(), anyString(), anyInt()))
+        when(pipelineRepository.finalCategoriesBalancer(anyString(), anyString(), anyLong(), anyLong(), anyInt(), anyString(), anyString(), anyInt(), anyDouble()))
             .thenReturn("result_table");
 
         // when
@@ -50,7 +50,7 @@ class FinalCategoriesBalancerProcessorTest {
 
         // then
         assertEquals("result_table", result);
-        verify(pipelineRepository).finalCategoriesBalancer("schema", "table", 1L, 2L, 3, "mu_quiz_stg", "game_config_quota_1", 20);
+        verify(pipelineRepository).finalCategoriesBalancer("schema", "table", 1L, 2L, 3, "mu_quiz_stg", "game_config_quota_1", 20, 0.25);
         verify(entityManager, times(4)).createNativeQuery(anyString());
         verify(query, times(4)).setParameter(anyInt(), any());
         verify(query, times(4)).executeUpdate();
@@ -61,7 +61,7 @@ class FinalCategoriesBalancerProcessorTest {
         // given
         FinalCategoriesBalancerStep step = new FinalCategoriesBalancerStep(15, List.of(
             new FinalCategoriesBalancerStep.CategoryWeight(1L, 0.5)
-        ));
+        ), 0.15);
 
         // when & then
         IllegalArgumentException exception = assertThrows(
@@ -78,13 +78,13 @@ class FinalCategoriesBalancerProcessorTest {
         // given
         FinalCategoriesBalancerStep step = new FinalCategoriesBalancerStep(10, List.of(
             new FinalCategoriesBalancerStep.CategoryWeight(1L, 1.0)
-        ));
+        ), 0.1);
         RuntimeException repositoryException = new RuntimeException("Repository error");
 
         when(entityManager.createNativeQuery(anyString())).thenReturn(query);
         when(query.setParameter(anyInt(), any())).thenReturn(query);
         when(query.executeUpdate()).thenReturn(1);
-        when(pipelineRepository.finalCategoriesBalancer(anyString(), anyString(), anyLong(), anyLong(), anyInt(), anyString(), anyString(), anyInt()))
+        when(pipelineRepository.finalCategoriesBalancer(anyString(), anyString(), anyLong(), anyLong(), anyInt(), anyString(), anyString(), anyInt(), anyDouble()))
             .thenThrow(repositoryException);
 
         // when & then
@@ -100,7 +100,7 @@ class FinalCategoriesBalancerProcessorTest {
     @Test
     void step_shouldBeFinal() {
         // given
-        FinalCategoriesBalancerStep step = new FinalCategoriesBalancerStep(20, List.of());
+        FinalCategoriesBalancerStep step = new FinalCategoriesBalancerStep(20, List.of(), 0.0);
 
         // when & then
         assertTrue(step.isFinal());
@@ -109,7 +109,7 @@ class FinalCategoriesBalancerProcessorTest {
     @Test
     void step_shouldReturnTargetCount() {
         // given
-        FinalCategoriesBalancerStep step = new FinalCategoriesBalancerStep(30, List.of());
+        FinalCategoriesBalancerStep step = new FinalCategoriesBalancerStep(30, List.of(), 0.5);
 
         // when & then
         assertEquals(30, step.getTargetCount());

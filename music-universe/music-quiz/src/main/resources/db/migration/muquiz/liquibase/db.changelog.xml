@@ -14,4 +14,5 @@
     <include file="/db/migration/muquiz/liquibase/changelogs/0006-pipeline-changes.xml"/>
     <include file="db/migration/muquiz/liquibase/changelogs/0007-pipeline-changes.xml"/>
     <include file="db/migration/muquiz/liquibase/changelogs/0008-model-changes.xml"/>
+    <include file="db/migration/muquiz/liquibase/changelogs/0009-pipeline-changes.xml"/>
 </databaseChangeLog>

@@ -101,9 +101,9 @@ public class PipelineRepositoryImpl implements PipelineRepository {
     }
 
     @Override
-    public String finalCategoriesBalancer(String inputSchema, String inputTable, Long gameId, Long generationId, Integer stepOrder, String quotaSchema, String quotaTable, Integer targetCount) {
+    public String finalCategoriesBalancer(String inputSchema, String inputTable, Long gameId, Long generationId, Integer stepOrder, String quotaSchema, String quotaTable, Integer targetCount, Double defaultQuota) {
         return (String) entityManager.createNativeQuery(
-            "SELECT p_quiz_gen_tracks_step_final_categories_balancer(:inputSchema, :inputTable, :gameId, :generationId, :stepOrder, :quotaSchema, :quotaTable, :targetCount)")
+            "SELECT p_quiz_gen_tracks_step_final_categories_balancer(:inputSchema, :inputTable, :gameId, :generationId, :stepOrder, :quotaSchema, :quotaTable, :targetCount, :defaultQuota)")
             .setParameter("inputSchema", inputSchema)
             .setParameter("inputTable", inputTable)
             .setParameter("gameId", gameId)
@@ -112,6 +112,7 @@ public class PipelineRepositoryImpl implements PipelineRepository {
             .setParameter("quotaSchema", quotaSchema)
             .setParameter("quotaTable", quotaTable)
             .setParameter("targetCount", targetCount)
+            .setParameter("defaultQuota", defaultQuota)
             .getSingleResult();
     }
 

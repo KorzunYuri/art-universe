@@ -56,7 +56,14 @@ public class GenerationStepMapper {
         if (dto.getParams() == null || !dto.getParams().containsKey("targetCount")) {
             throw new IllegalArgumentException("Final step must contain 'targetCount' parameter");
         }
+
         Integer targetCount = (Integer) dto.getParams().get("targetCount");
+        Number defaultQuotaNum = ((Number) dto.getParams().get("defaultQuota"));
+        if (defaultQuotaNum == null) {
+            throw new IllegalArgumentException("Final categories balancer step requires 'defaultQuota' parameter");
+        }
+        Double defaultQuota = defaultQuotaNum.doubleValue();
+
         List<Map<String, Object>> categoriesData = (List<Map<String, Object>>) dto.getParams().get("categories");
         if (categoriesData == null) {
             throw new IllegalArgumentException("Final categories balancer step requires 'categories' parameter");
@@ -67,6 +74,7 @@ public class GenerationStepMapper {
                 ((Number) data.get("weight")).doubleValue()
             ))
             .toList();
-        return new FinalCategoriesBalancerStep(targetCount, categories);
+
+        return new FinalCategoriesBalancerStep(targetCount, categories, defaultQuota);
     }
 }

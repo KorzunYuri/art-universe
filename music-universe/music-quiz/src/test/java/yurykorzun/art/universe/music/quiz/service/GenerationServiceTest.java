@@ -59,7 +59,7 @@ class GenerationServiceTest {
         
         GenerationStepDto finalStep2 = new GenerationStepDto();
         finalStep2.setType(GenerationStepType.FINAL_CATEGORIES_BALANCER);
-        finalStep2.setParams(Map.of("targetCount", 20, "categories", List.of()));
+        finalStep2.setParams(Map.of("targetCount", 20,  "defaultQuota", 0.0, "categories", List.of()));
         
         List<GenerationStepDto> steps = List.of(finalStep1, finalStep2);
 

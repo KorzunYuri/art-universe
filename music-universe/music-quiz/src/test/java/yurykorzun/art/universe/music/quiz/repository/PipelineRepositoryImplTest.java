@@ -230,7 +230,7 @@ class PipelineRepositoryImplTest extends JpaOnlyTest {
 
         // when
         String resultTable = pipelineRepository.finalCategoriesBalancer(
-            "mu_quiz_stg", "test_input_for_quotas", 1L, 1L, 6, "mu_quiz_stg", "test_quota_config", 20);
+            "mu_quiz_stg", "test_input_for_quotas", 1L, 1L, 6, "mu_quiz_stg", "test_quota_config", 20, 0.0);
 
         // then
         assertNotNull(resultTable);
