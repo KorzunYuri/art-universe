@@ -10,6 +10,7 @@ export interface GenerationStepUI {
     categories?: CategoryWeight[];
     categoryIds?: number[];
     blacklistCategories?: Array<{ id: number; name: string }>;
+    defaultQuota?: number;
     targetCount?: number;
 }
 

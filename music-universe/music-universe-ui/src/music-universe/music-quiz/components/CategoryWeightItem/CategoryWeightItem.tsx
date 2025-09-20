@@ -22,13 +22,13 @@ export const CategoryWeightItem = ({ category, onWeightChange, onRemove, readonl
                 type="range"
                 min="0"
                 max="1"
-                step="0.1"
+                step="0.01"
                 value={category.weight}
                 onChange={handleWeightChange}
                 className={styles.slider}
                 disabled={readonly}
             />
-            <span className={styles.weight}>{category.weight.toFixed(1)}</span>
+            <span className={styles.weight}>{category.weight.toFixed(2)}</span>
             {!readonly && (
                 <button
                     className={styles.removeButton}

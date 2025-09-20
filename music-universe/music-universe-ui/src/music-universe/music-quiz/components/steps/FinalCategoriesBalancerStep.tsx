@@ -35,6 +35,13 @@ export const FinalCategoriesBalancerStep = ({ step, onUpdate, onRemove, readonly
     });
   };
 
+  const handleDefaultQuotaChange = (defaultQuota: number) => {
+    onUpdate({
+      ...step,
+      defaultQuota
+    });
+  };
+
   const handleTargetCountChange = (targetCount: number) => {
     onUpdate({
       ...step,
@@ -62,19 +69,6 @@ export const FinalCategoriesBalancerStep = ({ step, onUpdate, onRemove, readonly
           </div>
         )}
 
-        <div className={styles.targetCountSection}>
-          <label>
-            Target Count:
-            <input 
-              type="number" 
-              value={step.targetCount || 10} 
-              onChange={(e) => handleTargetCountChange(Number(e.target.value))}
-              min="1"
-              disabled={readonly}
-            />
-          </label>
-        </div>
-
         {step.categories && step.categories.length > 0 && (
           <div className={styles.categoriesList}>
             {step.categories.map(category => (
@@ -88,6 +82,35 @@ export const FinalCategoriesBalancerStep = ({ step, onUpdate, onRemove, readonly
             ))}
           </div>
         )}
+
+        <div className={styles.targetCountSection}>
+          <label>
+            Default Quota:
+            <input 
+              type="range"
+              min="0"
+              max="0.9"
+              step="0.01"
+              value={step.defaultQuota || 0.5} 
+              onChange={(e) => handleDefaultQuotaChange(Number(e.target.value))}
+              disabled={readonly}
+            />
+            <span>{(step.defaultQuota || 0.5).toFixed(2)}</span>
+          </label>
+        </div>
+
+        <div className={styles.targetCountSection}>
+          <label>
+            Target Count:
+            <input 
+              type="number" 
+              value={step.targetCount || 10} 
+              onChange={(e) => handleTargetCountChange(Number(e.target.value))}
+              min="1"
+              disabled={readonly}
+            />
+          </label>
+        </div>
       </div>
     </div>
   );

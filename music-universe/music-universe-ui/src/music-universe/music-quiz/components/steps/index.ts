@@ -50,6 +50,7 @@ StepRegistry.register({
     id: `final-categories-balancer-${Date.now()}`,
     type: 'FINAL_CATEGORIES_BALANCER',
     categories: [],
+    defaultQuota: 0.5,
     targetCount: 10
   }),
   component: FinalCategoriesBalancerStep

@@ -41,6 +41,7 @@ export const GameDetails = () => {
         : step.type === 'FINAL_CATEGORIES_BALANCER'
         ? { 
             categories: step.categories?.map(cat => ({ id: cat.id, weight: cat.weight })),
+            defaultQuota: step.defaultQuota,
             targetCount: step.targetCount 
           }
         : { categories: step.categories?.map(cat => ({ id: cat.id, weight: cat.weight })) }
