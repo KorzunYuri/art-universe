@@ -81,6 +81,7 @@ export const EntityTable = ({
     );
 
     const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const lastSearchRef = useRef<string>('');
 
     // Stable reference to onSearchSubmit to avoid useEffect dependency issues
     const stableOnSearchSubmit = useCallback(onSearchSubmit, [onSearchSubmit]);
@@ -91,8 +92,10 @@ export const EntityTable = ({
             clearTimeout(debounceTimeoutRef.current);
         }
 
-        if (search.trim()) {
+        // Only trigger search if the search string actually changed
+        if (search.trim() && search !== lastSearchRef.current) {
             debounceTimeoutRef.current = setTimeout(() => {
+                lastSearchRef.current = search;
                 stableOnSearchSubmit();
             }, 500);
         }
