@@ -230,7 +230,7 @@ class ArtistControllerMvcTest {
         
         String expectedJson = objectMapper.writeValueAsString(expectedPage);
         
-        when(artistService.findArtists(eq(searchQuery), any(Pageable.class))).thenReturn(expectedPage);
+        when(artistService.findArtists(eq(searchQuery), eq(null), any(Pageable.class))).thenReturn(expectedPage);
         
         // When & Then
         mockMvc.perform(get("/api/v1/artists")
@@ -248,7 +248,7 @@ class ArtistControllerMvcTest {
         
         String expectedJson = objectMapper.writeValueAsString(expectedPage);
         
-        when(artistService.findArtists(eq(null), any(Pageable.class))).thenReturn(expectedPage);
+        when(artistService.findArtists(eq(null), eq(null), any(Pageable.class))).thenReturn(expectedPage);
         
         // When & Then
         mockMvc.perform(get("/api/v1/artists"))
@@ -262,7 +262,7 @@ class ArtistControllerMvcTest {
         String searchQuery = "radio";
         String errorMessage = "Search error occurred";
         
-        when(artistService.findArtists(eq(searchQuery), any(Pageable.class)))
+        when(artistService.findArtists(eq(searchQuery), eq(null), any(Pageable.class)))
             .thenThrow(new RuntimeException(errorMessage));
         
         // When & Then
@@ -402,7 +402,7 @@ class ArtistControllerMvcTest {
         
         String expectedJson = objectMapper.writeValueAsString(expectedPage);
         
-        when(artistService.findArtistsWithCategories(eq(searchQuery), any(Pageable.class))).thenReturn(expectedPage);
+        when(artistService.findArtistsWithCategories(eq(searchQuery), eq(null), any(Pageable.class))).thenReturn(expectedPage);
         
         // When & Then
         mockMvc.perform(get("/api/v1/artists/with-categories")
@@ -424,7 +424,7 @@ class ArtistControllerMvcTest {
         
         String expectedJson = objectMapper.writeValueAsString(expectedPage);
         
-        when(artistService.findArtistsWithCategories(eq(null), any(Pageable.class))).thenReturn(expectedPage);
+        when(artistService.findArtistsWithCategories(eq(null), eq(null), any(Pageable.class))).thenReturn(expectedPage);
         
         // When & Then
         mockMvc.perform(get("/api/v1/artists/with-categories"))
@@ -438,7 +438,7 @@ class ArtistControllerMvcTest {
         String searchQuery = "radio";
         String errorMessage = "Search error occurred";
         
-        when(artistService.findArtistsWithCategories(eq(searchQuery), any(Pageable.class)))
+        when(artistService.findArtistsWithCategories(eq(searchQuery), eq(null), any(Pageable.class)))
             .thenThrow(new RuntimeException(errorMessage));
         
         // When & Then

@@ -55,14 +55,19 @@ public class ArtistServiceImpl implements ArtistService {
     }
 
     @Override
-    public Page<ArtistDto> findArtists(String search, Pageable pageable) {
-        return artistRepository.findArtists(search, pageable)
-                .map(this::mapToDto);
+    public Page<ArtistDto> findArtists(String search, Long categoryId, Pageable pageable) {
+        if (categoryId == null) {
+            return artistRepository.findArtists(search, pageable)
+                    .map(this::mapToDto);
+        } else {
+            return artistRepository.findArtists(search, categoryId, pageable)
+                    .map(this::mapToDto);
+        }
     }
 
     @Override
-    public Page<ArtistWithCategoriesDto> findArtistsWithCategories(String search, Pageable pageable) {
-        return artistRepository.findArtistsWithCategories(search, pageable)
+    public Page<ArtistWithCategoriesDto> findArtistsWithCategories(String search, Long categoryId, Pageable pageable) {
+        return artistRepository.findArtistsWithCategories(search, categoryId, pageable)
                 .map(this::mapToArtistWithCategories);
     }
 

@@ -403,6 +403,7 @@ class ArtistServiceTest {
     void findArtists_shouldReturnPageOfArtists() {
         // Given
         String search = "radio";
+        Long categoryId = 1L;
         Pageable pageable = PageRequest.of(0, 10);
         
         Artist artist1 = Artist.builder().id(1L).name("Radiohead").build();
@@ -410,16 +411,16 @@ class ArtistServiceTest {
         List<Artist> artists = List.of(artist1, artist2);
         Page<Artist> artistPage = new PageImpl<>(artists, pageable, artists.size());
         
-        when(artistRepository.findArtists(search, pageable)).thenReturn(artistPage);
+        when(artistRepository.findArtists(search, categoryId, pageable)).thenReturn(artistPage);
 
         // When
-        Page<ArtistDto> result = artistService.findArtists(search, pageable);
+        Page<ArtistDto> result = artistService.findArtists(search, categoryId, pageable);
 
         // Then
         assertEquals(2, result.getContent().size());
         assertEquals("Radiohead", result.getContent().get(0).getName());
         assertEquals("Radio Moscow", result.getContent().get(1).getName());
-        verify(artistRepository).findArtists(search, pageable);
+        verify(artistRepository).findArtists(search, categoryId, pageable);
     }
 
     @Test
@@ -433,12 +434,51 @@ class ArtistServiceTest {
         when(artistRepository.findArtists(null, pageable)).thenReturn(artistPage);
 
         // When
-        Page<ArtistDto> result = artistService.findArtists(null, pageable);
+        Page<ArtistDto> result = artistService.findArtists(null, null, pageable);
 
         // Then
         assertEquals(1, result.getContent().size());
         assertEquals("Test Artist", result.getContent().get(0).getName());
         verify(artistRepository).findArtists(null, pageable);
+    }
+
+    @Test
+    void findArtists_withCategoryId_shouldCallRepositoryMethodWithCategoryId() {
+        // Given
+        String search = "radio";
+        Long categoryId = 1L;
+        Pageable pageable = PageRequest.of(0, 10);
+        
+        Artist artist = Artist.builder().id(1L).name("Radiohead").build();
+        Page<Artist> artistPage = new PageImpl<>(List.of(artist), pageable, 1);
+        
+        when(artistRepository.findArtists(search, categoryId, pageable)).thenReturn(artistPage);
+
+        // When
+        artistService.findArtists(search, categoryId, pageable);
+
+        // Then
+        verify(artistRepository).findArtists(search, categoryId, pageable);
+        verify(artistRepository, never()).findArtists(search, pageable);
+    }
+
+    @Test
+    void findArtists_withoutCategoryId_shouldCallRepositoryMethodWithoutCategoryId() {
+        // Given
+        String search = "radio";
+        Pageable pageable = PageRequest.of(0, 10);
+        
+        Artist artist = Artist.builder().id(1L).name("Radiohead").build();
+        Page<Artist> artistPage = new PageImpl<>(List.of(artist), pageable, 1);
+        
+        when(artistRepository.findArtists(search, pageable)).thenReturn(artistPage);
+
+        // When
+        artistService.findArtists(search, null, pageable);
+
+        // Then
+        verify(artistRepository).findArtists(search, pageable);
+        verify(artistRepository, never()).findArtists(search, (Long) null, pageable);
     }
 
     @Test
@@ -451,16 +491,16 @@ class ArtistServiceTest {
         List<Artist> artists = List.of(artist);
         Page<Artist> artistPage = new PageImpl<>(artists, pageable, artists.size());
         
-        when(artistRepository.findArtistsWithCategories(search, pageable)).thenReturn(artistPage);
+        when(artistRepository.findArtistsWithCategories(search, null, pageable)).thenReturn(artistPage);
 
         // When
-        Page<ArtistWithCategoriesDto> result = artistService.findArtistsWithCategories(search, pageable);
+        Page<ArtistWithCategoriesDto> result = artistService.findArtistsWithCategories(search, null, pageable);
 
         // Then
         assertEquals(1, result.getContent().size());
         assertEquals("Radiohead", result.getContent().get(0).getName());
         assertNotNull(result.getContent().get(0).getCategories());
-        verify(artistRepository).findArtistsWithCategories(search, pageable);
+        verify(artistRepository).findArtistsWithCategories(search, null, pageable);
     }
 
     @Test
@@ -471,16 +511,16 @@ class ArtistServiceTest {
         Artist artist = Artist.builder().id(1L).name("Test Artist").build();
         Page<Artist> artistPage = new PageImpl<>(List.of(artist), pageable, 1);
         
-        when(artistRepository.findArtistsWithCategories(null, pageable)).thenReturn(artistPage);
+        when(artistRepository.findArtistsWithCategories(null, null, pageable)).thenReturn(artistPage);
 
         // When
-        Page<ArtistWithCategoriesDto> result = artistService.findArtistsWithCategories(null, pageable);
+        Page<ArtistWithCategoriesDto> result = artistService.findArtistsWithCategories(null, null, pageable);
 
         // Then
         assertEquals(1, result.getContent().size());
         assertEquals("Test Artist", result.getContent().get(0).getName());
         assertNotNull(result.getContent().get(0).getCategories());
-        verify(artistRepository).findArtistsWithCategories(null, pageable);
+        verify(artistRepository).findArtistsWithCategories(null, null, pageable);
     }
 
     @Test

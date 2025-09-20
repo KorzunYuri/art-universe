@@ -245,6 +245,24 @@ class ArtistRepositoryTest extends JpaOnlyTest {
     }
 
     @Test
+    void findArtists_withCategoryFilter_shouldReturnFilteredArtists() {
+        // Given
+        Artist artist1 = Artist.builder().name("Radiohead").build();
+        Artist artist2 = Artist.builder().name("Coldplay").build();
+        
+        em.persist(artist1);
+        em.persist(artist2);
+        em.flush();
+        
+        // When
+        Page<Artist> result = artistRepository.findArtists(null, 1L, PageRequest.of(0, 10));
+        
+        // Then
+        assertThat(result.getContent()).hasSize(0); // No artists linked to category 1L
+        assertThat(result.getTotalElements()).isEqualTo(0);
+    }
+
+    @Test
     void findArtistsWithCategories_shouldReturnPageOfArtistsWithCategories() {
         // Given
         String search = "radio";
@@ -259,7 +277,7 @@ class ArtistRepositoryTest extends JpaOnlyTest {
         em.flush();
         
         // When
-        Page<Artist> result = artistRepository.findArtistsWithCategories(search, PageRequest.of(0, 10));
+        Page<Artist> result = artistRepository.findArtistsWithCategories(search, null, PageRequest.of(0, 10));
         
         // Then
         assertThat(result.getContent()).hasSize(2);
@@ -278,7 +296,7 @@ class ArtistRepositoryTest extends JpaOnlyTest {
         em.flush();
         
         // When
-        Page<Artist> result = artistRepository.findArtistsWithCategories(null, PageRequest.of(0, 10));
+        Page<Artist> result = artistRepository.findArtistsWithCategories(null, null, PageRequest.of(0, 10));
         
         // Then
         assertThat(result.getContent()).hasSize(2);
@@ -296,7 +314,7 @@ class ArtistRepositoryTest extends JpaOnlyTest {
         em.flush();
         
         // When
-        Page<Artist> result = artistRepository.findArtistsWithCategories("", PageRequest.of(0, 10));
+        Page<Artist> result = artistRepository.findArtistsWithCategories("", null, PageRequest.of(0, 10));
         
         // Then
         assertThat(result.getContent()).hasSize(2);
@@ -313,8 +331,8 @@ class ArtistRepositoryTest extends JpaOnlyTest {
         em.flush();
         
         // When
-        Page<Artist> firstPage = artistRepository.findArtistsWithCategories(null, PageRequest.of(0, 2));
-        Page<Artist> secondPage = artistRepository.findArtistsWithCategories(null, PageRequest.of(1, 2));
+        Page<Artist> firstPage = artistRepository.findArtistsWithCategories(null, null, PageRequest.of(0, 2));
+        Page<Artist> secondPage = artistRepository.findArtistsWithCategories(null, null, PageRequest.of(1, 2));
         
         // Then
         assertThat(firstPage.getContent()).hasSize(2);

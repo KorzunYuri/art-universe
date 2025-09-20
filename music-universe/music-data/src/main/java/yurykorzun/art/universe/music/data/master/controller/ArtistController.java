@@ -39,17 +39,19 @@ public class ArtistController {
     @GetMapping
     public Page<ArtistDto> findArtists(
         @RequestParam(required = false) String search,
+        @RequestParam(required = false) Long categoryId,
         Pageable pageable
     ) {
-        return artistService.findArtists(search, pageable);
+        return artistService.findArtists(search, categoryId, pageable);
     }
 
     @GetMapping("/with-categories")
     public Page<ArtistWithCategoriesDto> findArtistsWithCategories(
         @RequestParam(required = false) String search,
+        @RequestParam(required = false) Long categoryId,
         Pageable pageable
     ) {
-        return artistService.findArtistsWithCategories(search, pageable);
+        return artistService.findArtistsWithCategories(search, categoryId, pageable);
     }
 
     @GetMapping("/{id}")

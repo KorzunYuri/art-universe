@@ -35,9 +35,31 @@ public interface ArtistRepository extends JpaRepository<Artist, Long> {
     Page<Artist> findArtists(@Param("search") String search, Pageable pageable);
 
     /**
+     * Search artists with pagination and optional category filter
+     * 
+     * @param search Optional search term (case insensitive, partial match)
+     * @param categoryId Optional category ID to filter by
+     * @param pageable Pagination and sorting parameters
+     * @return Page of artists
+     */
+    @Query("""
+        SELECT DISTINCT a
+        FROM artist a
+        LEFT JOIN a.categoryRelations ac
+        WHERE (:search IS NULL
+            OR :search = ''
+            OR LOWER(a.name) LIKE LOWER(CONCAT('%', :search, '%'))
+        )
+        AND (:categoryId IS NULL OR ac.categoryId = :categoryId)
+        ORDER BY a.name ASC
+    """)
+    Page<Artist> findArtists(@Param("search") String search, @Param("categoryId") Long categoryId, Pageable pageable);
+
+    /**
      * Find artists with their categories
      * 
      * @param search Optional search term (case insensitive, partial match)
+     * @param categoryId Optional category ID to filter by
      * @param pageable Pagination and sorting parameters
      * @return Page of artists with categories loaded
      */
@@ -46,9 +68,13 @@ public interface ArtistRepository extends JpaRepository<Artist, Long> {
         LEFT JOIN FETCH a.categoryRelations ac
         LEFT JOIN FETCH ac.category
         WHERE (:search IS NULL OR :search = '' OR LOWER(a.name) LIKE LOWER(CONCAT('%', :search, '%')))
+        AND (:categoryId IS NULL OR EXISTS (
+            SELECT 1 FROM artist_category ac2 
+            WHERE ac2.artistId = a.id AND ac2.categoryId = :categoryId
+        ))
         ORDER BY a.name
         """)
-    Page<Artist> findArtistsWithCategories(@Param("search") String search, Pageable pageable);
+    Page<Artist> findArtistsWithCategories(@Param("search") String search, @Param("categoryId") Long categoryId, Pageable pageable);
     
     /**
      * Find artists by name containing the search term (case insensitive)

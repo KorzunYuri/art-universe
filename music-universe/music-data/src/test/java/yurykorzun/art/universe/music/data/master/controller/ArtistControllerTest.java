@@ -195,6 +195,7 @@ class ArtistControllerTest {
     void findArtists_shouldReturnPageOfArtists() {
         // Given
         String search = "radio";
+        Long categoryId = 1L;
         Pageable pageable = PageRequest.of(0, 10);
         
         ArtistDto artist1 = ArtistDto.builder().id(1L).name("Radiohead").build();
@@ -202,14 +203,14 @@ class ArtistControllerTest {
         List<ArtistDto> artists = List.of(artist1, artist2);
         Page<ArtistDto> expectedPage = new PageImpl<>(artists, pageable, artists.size());
         
-        when(artistService.findArtists(search, pageable)).thenReturn(expectedPage);
+        when(artistService.findArtists(search, categoryId, pageable)).thenReturn(expectedPage);
 
         // When
-        Page<ArtistDto> result = artistController.findArtists(search, pageable);
+        Page<ArtistDto> result = artistController.findArtists(search, categoryId, pageable);
 
         // Then
         assertEquals(expectedPage, result);
-        verify(artistService).findArtists(search, pageable);
+        verify(artistService).findArtists(search, categoryId, pageable);
     }
 
     @Test
@@ -220,14 +221,14 @@ class ArtistControllerTest {
         ArtistDto artist = ArtistDto.builder().id(1L).name("Test Artist").build();
         Page<ArtistDto> expectedPage = new PageImpl<>(List.of(artist), pageable, 1);
         
-        when(artistService.findArtists(null, pageable)).thenReturn(expectedPage);
+        when(artistService.findArtists(null, null, pageable)).thenReturn(expectedPage);
 
         // When
-        Page<ArtistDto> result = artistController.findArtists(null, pageable);
+        Page<ArtistDto> result = artistController.findArtists(null, null, pageable);
 
         // Then
         assertEquals(expectedPage, result);
-        verify(artistService).findArtists(null, pageable);
+        verify(artistService).findArtists(null, null, pageable);
     }
 
     @Test
@@ -237,15 +238,15 @@ class ArtistControllerTest {
         Pageable pageable = PageRequest.of(0, 10);
         RuntimeException expectedException = new RuntimeException("Test error");
         
-        when(artistService.findArtists(search, pageable)).thenThrow(expectedException);
+        when(artistService.findArtists(search, null, pageable)).thenThrow(expectedException);
 
         // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class, () -> 
-            artistController.findArtists(search, pageable)
+            artistController.findArtists(search, null, pageable)
         );
         
         assertSame(expectedException, exception);
-        verify(artistService).findArtists(search, pageable);
+        verify(artistService).findArtists(search, null, pageable);
     }
 
     @Test
@@ -295,14 +296,14 @@ class ArtistControllerTest {
         List<ArtistWithCategoriesDto> artists = List.of(artist);
         Page<ArtistWithCategoriesDto> expectedPage = new PageImpl<>(artists, pageable, artists.size());
         
-        when(artistService.findArtistsWithCategories(search, pageable)).thenReturn(expectedPage);
+        when(artistService.findArtistsWithCategories(search, null, pageable)).thenReturn(expectedPage);
 
         // When
-        Page<ArtistWithCategoriesDto> result = artistController.findArtistsWithCategories(search, pageable);
+        Page<ArtistWithCategoriesDto> result = artistController.findArtistsWithCategories(search, null, pageable);
 
         // Then
         assertEquals(expectedPage, result);
-        verify(artistService).findArtistsWithCategories(search, pageable);
+        verify(artistService).findArtistsWithCategories(search, null, pageable);
     }
 
     @Test
@@ -317,14 +318,14 @@ class ArtistControllerTest {
             .build();
         Page<ArtistWithCategoriesDto> expectedPage = new PageImpl<>(List.of(artist), pageable, 1);
         
-        when(artistService.findArtistsWithCategories(null, pageable)).thenReturn(expectedPage);
+        when(artistService.findArtistsWithCategories(null, null, pageable)).thenReturn(expectedPage);
 
         // When
-        Page<ArtistWithCategoriesDto> result = artistController.findArtistsWithCategories(null, pageable);
+        Page<ArtistWithCategoriesDto> result = artistController.findArtistsWithCategories(null, null, pageable);
 
         // Then
         assertEquals(expectedPage, result);
-        verify(artistService).findArtistsWithCategories(null, pageable);
+        verify(artistService).findArtistsWithCategories(null, null, pageable);
     }
 
     @Test
@@ -334,15 +335,15 @@ class ArtistControllerTest {
         Pageable pageable = PageRequest.of(0, 10);
         RuntimeException expectedException = new RuntimeException("Test error");
         
-        when(artistService.findArtistsWithCategories(search, pageable)).thenThrow(expectedException);
+        when(artistService.findArtistsWithCategories(search, null, pageable)).thenThrow(expectedException);
 
         // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class, () -> 
-            artistController.findArtistsWithCategories(search, pageable)
+            artistController.findArtistsWithCategories(search, null, pageable)
         );
         
         assertSame(expectedException, exception);
-        verify(artistService).findArtistsWithCategories(search, pageable);
+        verify(artistService).findArtistsWithCategories(search, null, pageable);
     }
 
     @Test

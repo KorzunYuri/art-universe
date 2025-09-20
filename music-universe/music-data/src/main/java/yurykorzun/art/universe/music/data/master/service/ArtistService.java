@@ -22,19 +22,21 @@ public interface ArtistService {
      * Search artists with pagination
      * 
      * @param search Optional search term (case insensitive, partial match)
+     * @param categoryId Optional category ID to filter by
      * @param pageable Pagination and sorting parameters
      * @return Page of artists
      */
-    Page<ArtistDto> findArtists(String search, Pageable pageable);
+    Page<ArtistDto> findArtists(String search, Long categoryId, Pageable pageable);
 
     /**
      * Search artists with categories and pagination
      * 
      * @param search Optional search term (case insensitive, partial match)
+     * @param categoryId Optional category ID to filter by
      * @param pageable Pagination and sorting parameters
      * @return Page of artists with categories
      */
-    Page<ArtistWithCategoriesDto> findArtistsWithCategories(String search, Pageable pageable);
+    Page<ArtistWithCategoriesDto> findArtistsWithCategories(String search, Long categoryId, Pageable pageable);
 
     /**
      * Get a single artist by ID
