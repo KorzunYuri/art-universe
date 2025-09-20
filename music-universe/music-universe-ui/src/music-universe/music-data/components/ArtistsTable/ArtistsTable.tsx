@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useMasterEntityTable } from "@/music-universe/music-data/hooks/useMasterEntityTable";
 import { useNotifications } from '@/music-universe/shared/hooks';
+import { useCategoryFilter } from "@/music-universe/music-data/hooks/useMasterEntityFilters";
 import { EntityTable, type EntityTableColumn } from "@/music-universe/shared/components/EntityTable/EntityTable";
 import { ArtistsTableRow } from "@/music-universe/music-data/components/ArtistsTableRow";
 import { createArtist } from '@/music-universe/music-data/api/music-data-artists';
+import type { AdditionalSearchConfig } from "@/music-universe/shared/components/EntityTable/types";
 import styles from './ArtistsTable.module.css';
 
 const columns: EntityTableColumn[] = [
@@ -29,8 +31,20 @@ export const ArtistsTable = () => {
         nextPage,
         prevPage,
         goToPage,
+        handleSearchSubmit: submitSearch,
+        updateParams,
         refresh
     } = useMasterEntityTable("artist");
+
+    // Filter hooks
+    const { categoryId, categoryField } = useCategoryFilter();
+
+    const handleSearchSubmit = () => {
+        submitSearch();
+        updateParams({
+            categoryId: categoryId || undefined
+        });
+    };
 
     const handleCreateArtist = async () => {
         if (!newArtistName.trim() || isCreating) return;
@@ -49,6 +63,15 @@ export const ArtistsTable = () => {
         } finally {
             setIsCreating(false);
         }
+    };
+
+    const additionalSearchConfig: AdditionalSearchConfig = {
+        title: "Advanced Filters",
+        collapsible: true,
+        defaultCollapsed: true,
+        fields: [
+            categoryField
+        ]
     };
 
     return (
@@ -74,8 +97,10 @@ export const ArtistsTable = () => {
             <EntityTable
                 search={search}
                 onSearchChange={setSearch}
-                onSearchSubmit={refresh}
+                onSearchSubmit={handleSearchSubmit}
                 searchPlaceholder="Search artist name..."
+                
+                additionalSearch={additionalSearchConfig}
                 
                 columns={columns}
                 emptyMessage="No artists found"

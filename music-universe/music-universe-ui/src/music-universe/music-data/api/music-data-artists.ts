@@ -13,7 +13,9 @@ export interface ArtistWithCategoriesDto {
     categories: CategoryDto[];
 }
 
-export interface ArtistPageSearchParams extends BasePageSearchParams {}
+export interface ArtistPageSearchParams extends BasePageSearchParams {
+    categoryId?: number;
+}
 
 export interface ArtistSaveRequest {
     id?: number;

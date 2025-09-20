@@ -101,14 +101,21 @@ export function useMasterEntityTable<T extends MasterEntityType>(
         }
     }, [masterEntitiesPageQuery.isSuccess, masterEntitiesPageQuery.isFetching, prefetchNextPage]);
 
-    const setSearch = useCallback((search: string) => setParams(
-        prev => (
-            {
-                ...prev,
-                search,
-                page: 0
-            }
-        )), []);
+    const handleSearchSubmit = useCallback(() => {
+        setParams(prev => ({
+            ...prev,
+            search: params.search || '',
+            page: 0
+        }));
+    }, [params.search]);
+
+    const updateParams = useCallback((updates: Partial<MasterEntityPageSearchParamsMap[T]>) => {
+        setParams(prev => ({
+            ...prev,
+            ...updates,
+            page: 0 // Reset to first page when filters change
+        }));
+    }, []);
 
     const setSort = useCallback((sort: string) => setParams(
         prev => (
@@ -176,11 +183,13 @@ export function useMasterEntityTable<T extends MasterEntityType>(
         search: params.search || '',
         sort: params.sort || 'name,asc',
         isLoading: masterEntitiesPageQuery.isLoading,
-        setSearch,
+        setSearch: useCallback((search: string) => setParams(prev => ({ ...prev, search, page: 0 })), []),
         setSort,
         nextPage,
         prevPage,
         goToPage,
+        handleSearchSubmit,
+        updateParams,
         refresh,
     };
 }
