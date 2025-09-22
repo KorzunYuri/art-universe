@@ -9,8 +9,8 @@ spring:
     password: '${MU_QUIZ_DB_PASSWORD_DM}'
     hikari:
       pool-name: MuQuizMetaHikariPool
-      maximum-pool-size: 4
-      minimum-idle: 2
+      maximum-pool-size: 2
+      minimum-idle: 1
   liquibase:
     default-schema: mu_quiz
     change-log: classpath:db/migration/muquiz/liquibase/db.changelog.xml

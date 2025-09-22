@@ -9,7 +9,7 @@ spring:
     password: '${MURAW_LASTFM_DB_PASSWORD}'
     hikari:
       pool-name: MuRawLastFmHikariPool
-      maximum-pool-size: 10
+      maximum-pool-size: 4
       minimum-idle: 2
   jpa:
     database: postgresql

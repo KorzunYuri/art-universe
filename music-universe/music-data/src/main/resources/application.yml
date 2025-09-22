@@ -8,8 +8,8 @@ spring:
     password: '${MU_DATA_DB_PASSWORD_DM}'
     hikari:
       pool-name: MuFmHikariPool
-      maximum-pool-size: 10
-      minimum-idle: 2
+      maximum-pool-size: 2
+      minimum-idle: 1
   jpa:
     database: postgresql
     properties:
