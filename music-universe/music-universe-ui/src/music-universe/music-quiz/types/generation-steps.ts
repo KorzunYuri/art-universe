@@ -14,7 +14,7 @@ export interface GenerationStepUI {
     targetCount?: number;
 }
 
-export type StepType = 'BLACKLIST_FILTER' | 'WHITELIST_FILTER' | 'FINAL_SELECTION' | 'FINAL_CATEGORIES_BALANCER';
+export type StepType = 'BLACKLIST_FILTER' | 'WHITELIST_FILTER' | 'ARTIST_RECENCY_PENALTY' | 'ARTIST_DIVERSITY' | 'FINAL_SELECTION' | 'FINAL_CATEGORIES_BALANCER';
 
 export type IntermediateStepType = 'BLACKLIST_FILTER' | 'WHITELIST_FILTER';
 export type FinalStepType = 'FINAL_SELECTION' | 'FINAL_CATEGORIES_BALANCER';

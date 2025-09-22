@@ -44,7 +44,9 @@ export const GameDetails = () => {
             defaultQuota: step.defaultQuota,
             targetCount: step.targetCount 
           }
-        : { categories: step.categories?.map(cat => ({ id: cat.id, weight: cat.weight })) }
+        : step.type === 'WHITELIST_FILTER'
+        ? { categories: step.categories?.map(cat => ({ id: cat.id, weight: cat.weight })) }
+        : {} // For ARTIST_RECENCY_PENALTY and ARTIST_DIVERSITY - no params
     }));
 
     generateTracksMutation.mutate({ 
