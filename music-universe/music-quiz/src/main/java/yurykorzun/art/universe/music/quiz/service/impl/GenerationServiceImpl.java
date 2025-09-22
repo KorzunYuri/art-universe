@@ -158,8 +158,6 @@ public class GenerationServiceImpl implements GenerationService {
         // Fixed steps at the beginning
         allSteps.add(new ApprovedFilterStep());
         allSteps.add(new TrackRecencyPenaltyStep());
-        allSteps.add(new ArtistRecencyPenaltyStep());
-        allSteps.add(new ArtistDiversityStep());
         
         // UI steps (including final step)
         if (uiSteps != null) {
