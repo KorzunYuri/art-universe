@@ -141,11 +141,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 32M
+          memory: 128M
           cpus: '0.1'
         reservations:
-          memory: 8M
-          cpus: '0.01'
+          memory: 64M
+          cpus: '0.05'
     networks:
       - mu__network
 
