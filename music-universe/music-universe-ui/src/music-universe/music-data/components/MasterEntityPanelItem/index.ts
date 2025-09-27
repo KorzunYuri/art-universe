@@ -1,1 +1,0 @@
-export { MasterEntityPanelItem } from './MasterEntityPanelItem';

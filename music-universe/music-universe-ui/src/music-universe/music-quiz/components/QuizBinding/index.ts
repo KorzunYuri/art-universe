@@ -1,1 +1,0 @@
-export { QuizBinding } from './QuizBinding';

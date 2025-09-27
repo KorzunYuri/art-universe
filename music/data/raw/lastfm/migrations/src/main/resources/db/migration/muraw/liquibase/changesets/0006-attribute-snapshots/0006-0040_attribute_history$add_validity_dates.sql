@@ -1,0 +1,3 @@
+ALTER TABLE attribute_history
+    ADD COLUMN valid_from DATE DEFAULT NOW() NOT NULL,
+    ADD COLUMN valid_till DATE DEFAULT '9999-12-31' NOT NULL;

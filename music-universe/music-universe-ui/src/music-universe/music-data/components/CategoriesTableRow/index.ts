@@ -1,1 +1,0 @@
-export { CategoriesTableRow } from './CategoriesTableRow';

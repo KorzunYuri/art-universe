@@ -1,1 +1,0 @@
-export { LastfmArtists } from './LastfmArtists';

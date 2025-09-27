@@ -1,0 +1,1 @@
+UPDATE track SET duration = NULL where duration = 0;

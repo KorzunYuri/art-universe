@@ -1,0 +1,103 @@
+// hooks
+import { useLastfmEntityTable } from "@/music/data/raw/lastfm/hooks/useLastfmEntityTable.tsx";
+import { useApprovalStatusFilter } from "@/music/data/raw/shared/hooks";
+import { useUsageCountFilter, useUsageUsersCountFilter } from "@/music/data/raw/lastfm/hooks/useLastfmFilters.tsx";
+// components
+import { EntityTable, type EntityTableColumn } from "@/music/shared/components/EntityTable/EntityTable.tsx";
+import { LastfmTagsTableRow } from "@/music/data/raw/lastfm/components";
+// types
+import type { AdditionalSearchConfig } from "@/music/shared/components/EntityTable/types.ts";
+// styles
+import tagStyles from "./LastfmTagsTable.module.css";
+
+const columns: EntityTableColumn[] = [
+    { key: 'name', label: 'Tag Name', sortable: true, className: tagStyles.name },
+    { key: 'status', label: 'Approval', className: tagStyles.status },
+    { key: 'masterBinding', label: 'Master', className: tagStyles.masterBinding },
+    { key: 'usageCount', label: 'Usage', sortable: true, className: tagStyles.count },
+    { key: 'usageUsersCount', label: 'Users', sortable: true, className: tagStyles.count },
+];
+
+interface LastfmTagsTableProps {
+    initialSearch?: string;
+}
+
+export const LastfmTagsTable = ({ initialSearch = '' }: LastfmTagsTableProps) => {
+    const {
+        rawEntityIds,
+        pagination,
+        search,
+        sort,
+        isLoading,
+        setSearch,
+        setSort,
+        nextPage,
+        prevPage,
+        goToPage,
+        updateParams,
+        refresh,
+        handleSearchSubmit: submitSearch
+    } = useLastfmEntityTable("category", { search: initialSearch });
+
+    // Filter hooks
+    const { approvalStatuses, approvalStatusField } = useApprovalStatusFilter();
+    const { minUsageCount, minUsageCountField } = useUsageCountFilter();
+    const { minUsageUsersCount, minUsageUsersCountField } = useUsageUsersCountFilter();
+
+    const handleSearchSubmit = () => {
+        submitSearch();
+        updateParams({
+            approvalStatuses: approvalStatuses.length > 0 ? approvalStatuses : undefined,
+            minUsageCount: minUsageCount || undefined,
+            minUsageUsersCount: minUsageUsersCount || undefined
+        });
+    };
+
+    const additionalSearchConfig: AdditionalSearchConfig = {
+        title: "Advanced Filters",
+        collapsible: true,
+        defaultCollapsed: true,
+        fields: [
+            minUsageCountField,
+            minUsageUsersCountField,
+            approvalStatusField
+        ]
+    };
+
+    return (
+        <EntityTable
+            search={search}
+            onSearchChange={setSearch}
+            onSearchSubmit={handleSearchSubmit}
+            searchPlaceholder="Search tag name..."
+            
+            additionalSearch={additionalSearchConfig}
+            
+            columns={columns}
+            emptyMessage="No tags found"
+            
+            sort={sort}
+            onSortChange={setSort}
+            
+            pagination={{
+                page: pagination.page,
+                totalPages: pagination.totalPages,
+                hasNextPage: pagination.hasNextPage,
+                hasPrevPage: pagination.hasPrevPage,
+            }}
+            onNextPage={nextPage}
+            onPrevPage={prevPage}
+            onGoToPage={goToPage}
+            
+            isLoading={isLoading}
+            onRefresh={refresh}
+        >
+            {rawEntityIds?.map(rawEntityId => (
+                <LastfmTagsTableRow
+                    key={rawEntityId}
+                    entityId={rawEntityId}
+                />
+            ))}
+        </EntityTable>
+    );
+};

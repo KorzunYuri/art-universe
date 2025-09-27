@@ -1,0 +1,25 @@
+plugins {
+    id 'art-universe.spring-boot-web-app'
+    id 'org.liquibase.gradle'
+}
+
+dependencyManagement {
+    dependencies {
+        dependency 'com.google.guava:guava:33.4.0-jre'
+        dependency 'info.debatty:java-string-similarity:2.0.0'
+        dependency 'io.hypersistence:hypersistence-utils-hibernate-63:3.9.3'
+    }
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-docker-compose'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    implementation 'org.springframework.retry:spring-retry'
+    implementation 'org.springframework:spring-aspects'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+    
+    implementation 'com.google.guava:guava'
+    implementation 'info.debatty:java-string-similarity'
+    implementation 'org.liquibase:liquibase-core'
+    implementation 'io.hypersistence:hypersistence-utils-hibernate-63'
+}

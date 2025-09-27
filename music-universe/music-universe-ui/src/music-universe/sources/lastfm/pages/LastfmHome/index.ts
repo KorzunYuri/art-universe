@@ -1,1 +1,0 @@
-export { LastfmHome } from './LastfmHome';

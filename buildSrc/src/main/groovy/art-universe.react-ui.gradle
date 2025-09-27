@@ -1,0 +1,46 @@
+plugins {
+    id 'base'
+}
+
+def npmCommand = System.getProperty('os.name').toLowerCase().contains('windows') ? 'npm.cmd' : 'npm'
+
+if (System.getProperty('os.name').toLowerCase().contains('windows')) {
+    tasks.withType(AbstractCopyTask).configureEach {
+        includeEmptyDirs = false
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
+}
+
+tasks.register('npmInstall', Exec) {
+    description = 'Install npm dependencies'
+    workingDir '.'
+    commandLine npmCommand, 'install', '--legacy-peer-deps'
+    inputs.file 'package.json'
+    inputs.file 'package-lock.json'
+    outputs.upToDateWhen {
+        file('node_modules').exists() && file('package-lock.json').lastModified() <= file('node_modules').lastModified()
+    }
+}
+
+tasks.register('npmBuild', Exec) {
+    description = 'Build React application'
+    dependsOn npmInstall
+    workingDir '.'
+    commandLine npmCommand, 'run', 'build'
+    inputs.dir 'src'
+    inputs.file 'package.json'
+    inputs.file 'vite.config.ts'
+    inputs.file 'tsconfig.json'
+    inputs.file 'tsconfig.app.json'
+    inputs.file 'index.html'
+    outputs.dir 'dist'
+}
+
+tasks.register('npmClean', Delete) {
+    description = 'Clean npm build artifacts'
+    delete 'dist'
+}
+
+clean.dependsOn npmClean
+build.dependsOn npmBuild
+assemble.dependsOn npmBuild

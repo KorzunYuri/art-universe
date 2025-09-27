@@ -1,0 +1,68 @@
+plugins {
+    id 'art-universe.java-base'
+    id 'org.springframework.boot'
+}
+
+dependencyManagement {
+    dependencies {
+        dependency "org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6"
+        dependency "org.liquibase:liquibase-core:4.15.0"
+        dependency "org.testcontainers:testcontainers:1.20.4"
+        dependency "org.testcontainers:junit-jupiter:1.20.4"
+        dependency "org.testcontainers:postgresql:1.19.6"
+    }
+}
+
+dependencies {
+    implementation project(':commons')
+    
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    
+    runtimeOnly 'org.postgresql:postgresql'
+    
+    testImplementation project(':commons')
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.testcontainers:testcontainers'
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:postgresql'
+}
+
+tasks.named('jar') {
+    enabled = false
+}
+
+tasks.named('bootJar') {
+    enabled = true
+    layered {
+        enabled = true
+    }
+}
+
+tasks.register('extractLayers') {
+    group = 'build'
+    description = 'Extract layered bootJar for Docker caching'
+
+    def bootJarTask = tasks.findByName('bootJar')
+    if (bootJarTask != null) {
+        dependsOn bootJarTask
+    }
+
+    doLast {
+        def bootJarTaskInstance = tasks.findByName('bootJar')
+        if (bootJarTaskInstance == null) {
+            println "No bootJar task in project ${project.name}, skipping"
+            return
+        }
+
+        def jarFile = bootJarTaskInstance.archiveFile.get().asFile
+        def outputDir = layout.buildDirectory.dir("docker-layers").get().asFile
+
+        println "Extracting layered JAR for project '${project.name}': $jarFile -> $outputDir"
+        outputDir.mkdirs()
+
+        exec {
+            commandLine 'java', "-Djarmode=tools", '-jar', jarFile, 'extract', '--layers', '--destination', outputDir
+        }
+    }
+}

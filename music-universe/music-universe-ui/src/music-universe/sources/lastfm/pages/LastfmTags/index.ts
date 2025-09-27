@@ -1,1 +1,0 @@
-export { LastfmTags } from './LastfmTags';

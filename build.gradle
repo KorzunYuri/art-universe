@@ -1,27 +1,9 @@
-buildscript {
-    ext {
-        springBootVersion = '3.4.3'
-        openapiVersion = '2.8.6'
-        lombokVersion = '1.18.30'
-        junitBomVersion = '5.10.0'
-        liquibaseVersion = '4.15.0'
-        testContainersVersion = '1.20.4'
-        testContainersPostgreVersion = '1.19.6'
-        jakartaValidationVersion = '3.0.2'
-    }
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-        classpath("io.spring.gradle:dependency-management-plugin:1.0.11.RELEASE")
-    }
-}
-
-plugins {
-    id 'io.spring.dependency-management' version '1.0.11.RELEASE' apply false
-    id 'org.springframework.boot' version '3.4.3' apply false
-    id 'org.liquibase.gradle' version '2.0.4' apply false
+ext {
+    lombokVersion = '1.18.30'
+    liquibaseVersion = '4.15.0'
+    testContainersVersion = '1.20.4'
+    testContainersPostgreVersion = '1.19.6'
+    openapiVersion = '2.8.6'
 }
 
 allprojects {
@@ -29,99 +11,7 @@ allprojects {
     version = '0.0.1-SNAPSHOT'
     repositories {
         mavenCentral()
-        // add Spring repositories for milestones and new versions
         maven { url 'https://repo.spring.io/milestone' }
         maven { url 'https://repo.spring.io/snapshot' }
-    }
-}
-
-subprojects {
-    apply plugin: 'java'
-    apply plugin: 'jacoco'
-
-    java {
-        toolchain {
-            languageVersion = JavaLanguageVersion.of(21)
-        }
-    }
-
-    dependencies {
-        compileOnly "org.projectlombok:lombok:${lombokVersion}"
-        annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
-        
-        // Jakarta Validation
-        implementation "jakarta.validation:jakarta.validation-api:${jakartaValidationVersion}"
-
-        // tests
-        testImplementation platform("org.junit:junit-bom:${junitBomVersion}")
-        testImplementation "org.junit.jupiter:junit-jupiter"
-        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-        testImplementation "org.testcontainers:testcontainers:${testContainersVersion}"
-        testImplementation "org.testcontainers:junit-jupiter:${testContainersVersion}"
-        testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
-        testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
-    }
-
-    tasks.matching { it.name == 'jar' }.configureEach { enabled = false }
-    tasks.matching { it.name == 'bootJar' }.configureEach {
-        enabled = true
-        layered {
-            enabled = true
-        }
-    }
-
-    tasks.register('extractLayers') {
-        group = 'build'
-        description = 'Extract layered bootJar for Docker caching'
-
-        def bootJarTask = tasks.findByName('bootJar')
-        if (bootJarTask != null) {
-            dependsOn bootJarTask
-        }
-
-        doLast {
-            def bootJarTaskInstance = tasks.findByName('bootJar')
-            if (bootJarTaskInstance == null) {
-                println "No bootJar task in project ${project.name}, skipping"
-                return
-            }
-
-            def jarFile = bootJarTaskInstance.archiveFile.get().asFile
-            def outputDir = layout.buildDirectory.dir("docker-layers").get().asFile
-
-            println "Extracting layered JAR for project '${project.name}': $jarFile -> $outputDir"
-            outputDir.mkdirs()
-
-            exec {
-                commandLine 'java', "-Djarmode=tools", '-jar', jarFile, 'extract', '--layers', '--destination', outputDir
-            }
-        }
-    }
-
-    tasks.withType(Test).configureEach {
-        useJUnitPlatform {
-            if (project.hasProperty("excludeIntegrationTests")) {
-                excludeTags 'integration'
-            }
-        }
-    }
-
-    tasks.register('integrationTest', Test) {
-        description = "Runs integration tests"
-        group = "verification"
-
-        useJUnitPlatform {
-            includeTags 'integration'
-        }
-
-        shouldRunAfter test
-    }
-
-    jacocoTestReport {
-        dependsOn test // tests are required to run before generating the jacoco report
-    }
-
-    test {
-        finalizedBy jacocoTestReport  // report is always generated after tests run
     }
 }

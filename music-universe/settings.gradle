@@ -1,4 +1,0 @@
-include 'music-universe:music-data'
-include 'music-universe:music-data-raw-lastfm'
-include 'music-universe:music-quiz'
-include 'music-universe:music-universe-ui'

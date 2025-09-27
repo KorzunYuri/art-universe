@@ -1,0 +1,7 @@
+plugins {
+    id 'art-universe.liquibase-migrations'
+}
+
+dependencies {
+    implementation project(':music:data:raw:lastfm:models')
+}

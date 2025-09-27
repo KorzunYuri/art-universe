@@ -1,1 +1,0 @@
-export { ArtistsTable } from './ArtistsTable';

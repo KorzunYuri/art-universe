@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="0033-attribute-history-cleanup" author="yurykorzun">
+        <comment>Remove constant attributes values history from attribute_history</comment>
+
+        <sqlFile path="../changesets/0033-attribute-history-cleanup/0033-0010-attribute-history-cleanup-url.sql"
+                 relativeToChangelogFile="true"/>
+
+        <sqlFile path="../changesets/0033-attribute-history-cleanup/0033-0020-attribute-history-cleanup-mbid.sql"
+                 relativeToChangelogFile="true"/>
+
+        <sqlFile path="../changesets/0033-attribute-history-cleanup/0033-0030-attribute-history-cleanup-duration.sql"
+                 relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0033-attribute-history-cleanup-booleans-leftovers" author="yurykorzun">
+        <comment>Remove records that referred to boolean values from attribute_history</comment>
+
+        <sqlFile path="../changesets/0033-attribute-history-cleanup/0033-0040-attribute-history-cleanup-streamable.sql"
+                 relativeToChangelogFile="true"/>
+
+        <sqlFile path="../changesets/0033-attribute-history-cleanup/0033-0050-attribute-history-cleanup-on-tour.sql"
+                 relativeToChangelogFile="true"/>
+    </changeSet>
+
+</databaseChangeLog>

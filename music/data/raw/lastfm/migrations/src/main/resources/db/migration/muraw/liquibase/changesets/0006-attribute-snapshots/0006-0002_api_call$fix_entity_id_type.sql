@@ -1,0 +1,3 @@
+ALTER TABLE api_call ALTER COLUMN entity_id DROP DEFAULT;
+ALTER TABLE api_call ALTER COLUMN entity_id TYPE BIGINT;
+DROP SEQUENCE IF EXISTS api_call_entity_id_seq;

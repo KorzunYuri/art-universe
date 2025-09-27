@@ -1,0 +1,1 @@
+CREATE INDEX attribute_history_I_scope_entity ON attribute_history (scope_entity_type, scope_entity_id);

@@ -46,7 +46,7 @@ bin/
 ### project
 **/docker/compose/**/init.sql
 **/docker/compose/**/.env
-**/logs/*.log
+**/logs/
 **/*.env
 !env/docker/local/*.env
 !env/docker/prod/*.env

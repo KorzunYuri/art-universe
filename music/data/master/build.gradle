@@ -1,0 +1,9 @@
+plugins {
+    id 'art-universe.spring-boot-web-app'
+    id 'org.liquibase.gradle'
+}
+
+dependencies {
+    implementation 'org.liquibase:liquibase-core'
+    implementation 'org.springframework.boot:spring-boot-docker-compose'
+}

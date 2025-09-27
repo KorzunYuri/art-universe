@@ -7,7 +7,7 @@ services:
     restart: unless-stopped
     build:
       context: ../../../
-      dockerfile: music-universe/music-data-raw-lastfm/Dockerfile.prod
+      dockerfile: music/data/raw/lastfm-monolith/Dockerfile.prod
     env_file:
       - ./music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.secrets.env
@@ -19,7 +19,7 @@ services:
       - "${MURAW_LASTFM_ACTUATOR_EXTERNAL_PORT}:${MURAW_LASTFM_ACTUATOR_INTERNAL_PORT}"
     volumes:
       - prod__mu-data-raw-lastfm__app-logs:/app/logs
-      - ../../../music-universe/music-data-raw-lastfm/src/main/resources/metrics:/app/src/main/resources/metrics
+      - ../../../music/data/raw/lastfm-monolith/src/main/resources/metrics:/app/src/main/resources/metrics
     extra_hosts:
       - "host.docker.internal:host-gateway"
     healthcheck:
@@ -44,7 +44,7 @@ services:
     restart: unless-stopped
     build:
       context: ../../../
-      dockerfile: music-universe/music-data/Dockerfile.prod
+      dockerfile: music/data/master/Dockerfile.prod
     env_file:
       - ./music-data.env
       - ./music-data.secrets.env
@@ -79,7 +79,7 @@ services:
     restart: unless-stopped
     build:
       context: ../../../
-      dockerfile: music-universe/music-quiz/Dockerfile.prod
+      dockerfile: music/quiz/Dockerfile.prod
     env_file:
       - ./music-quiz.env
       - ./music-quiz.secrets.env
@@ -117,7 +117,7 @@ services:
     container_name: prod__mu-ui__app
     restart: unless-stopped
     build:
-      context: ../../../music-universe/music-universe-ui
+      context: ../../../music/ui
       dockerfile: Dockerfile
       args:
         - VITE_MURAW_LASTFM_APP_HOST=${MURAW_LASTFM_APP_HOST}
@@ -186,13 +186,13 @@ services:
     container_name: prod__mu__grafana
     build:
       dockerfile: grafana.dockerfile
-      context: ../../../music-universe/music-data-raw-lastfm/src/main/resources/docker/compose/common
+      context: ../../../music/data/raw/lastfm-monolith/src/main/resources/docker/compose/common
     restart: unless-stopped
     volumes:
       - prod__mu__grafana-data:/var/lib/grafana
-      - ../../../music-universe/music-data-raw-lastfm/src/main/resources/docker/compose/common/grafana/provisioning/dashboards:/tmp/dashboard-templates
-      - ../../../music-universe/music-data-raw-lastfm/src/main/resources/docker/compose/common/grafana/provisioning/datasources:/tmp/datasource-templates
-      - ../../../music-universe/music-data-raw-lastfm/src/main/resources/docker/compose/common/grafana-provision.sh:/tmp/grafana-provision.sh
+      - ../../../music/data/raw/lastfm-monolith/src/main/resources/docker/compose/common/grafana/provisioning/dashboards:/tmp/dashboard-templates
+      - ../../../music/data/raw/lastfm-monolith/src/main/resources/docker/compose/common/grafana/provisioning/datasources:/tmp/datasource-templates
+      - ../../../music/data/raw/lastfm-monolith/src/main/resources/docker/compose/common/grafana-provision.sh:/tmp/grafana-provision.sh:ro
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
