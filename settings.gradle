@@ -3,14 +3,22 @@ rootProject.name = 'art-universe'
 include 'commons'
 //include 'art-universe:art-universe-messaging-impl-kafka'
 
-include 'music'
 include 'music:data:master'
-include 'music:quiz'
+
+// lastfm monolith (to be decommissioned)
 include 'music:data:raw:lastfm-monolith'
+// lastfm group
+include 'music:data:raw:lastfm:migrations:liquibase-resources'
+include 'music:data:raw:lastfm:migrations:liquibase-service'
+include 'music:data:raw:lastfm:migrations:test-with-database'
 include 'music:data:raw:lastfm:models'
 include 'music:data:raw:lastfm:migrations'
-include 'music:data:raw:lastfm:etl'
-include 'music:data:raw:lastfm:etl-rest-api'
 include 'music:data:raw:lastfm:rest-api'
-include 'music:data:raw:lastfm:test-common'
+include 'music:data:raw:lastfm:etl:calls-generator'
+include 'music:data:raw:lastfm:etl:calls-performer'
+include 'music:data:raw:lastfm:etl:response-parser'
+include 'music:data:raw:lastfm:etl:rest-api'
+
+include 'music:quiz'
+
 include 'music:ui'

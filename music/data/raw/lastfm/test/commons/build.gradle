@@ -1,0 +1,12 @@
+plugins {
+    id 'art-universe.java-library'
+}
+
+dependencies {
+    implementation project(':music:data:raw:lastfm:models')
+
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    implementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation 'org.testcontainers:postgresql'
+}
