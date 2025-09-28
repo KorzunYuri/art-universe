@@ -1,0 +1,13 @@
+plugins {
+    id 'art-universe.java-library'
+}
+
+dependencies {
+    implementation project(':music:data:raw:lastfm:models')
+    implementation project(':music:data:raw:lastfm:migrations:liquibase-resources')
+    
+    implementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.testcontainers:postgresql'
+    implementation 'org.liquibase:liquibase-core'
+}

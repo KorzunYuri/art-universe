@@ -13,6 +13,8 @@ spring:
       pool:
         core-size: 0
         max-size: 1
+  liquibase:
+    change-log: classpath:db/migration/muraw/liquibase/db.changelog.xml
 
 lastfm:
   apikey: DUMMY_API_KEY

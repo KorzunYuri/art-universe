@@ -1,1 +1,0 @@
-ALTER TABLE album ALTER COLUMN play_count TYPE BIGINT;

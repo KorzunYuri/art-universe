@@ -1,1 +1,0 @@
-ALTER TABLE track DROP COLUMN is_streamable;

@@ -1,1 +1,0 @@
-CREATE INDEX entity_relation_I_relation ON entity_relation(scope_entity_type, scope_entity_id, entity_type, entity_id);

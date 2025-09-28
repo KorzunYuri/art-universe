@@ -1,1 +1,0 @@
-ALTER TABLE attribute_history DROP CONSTRAINT IF EXISTS attribute_history$unique_value_valid_from;

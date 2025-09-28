@@ -1,1 +1,0 @@
-CREATE INDEX IF NOT EXISTS tag_I_usage_count ON tag(usage_count);

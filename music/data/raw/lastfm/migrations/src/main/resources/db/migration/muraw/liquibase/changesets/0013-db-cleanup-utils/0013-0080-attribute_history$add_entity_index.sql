@@ -1,1 +1,0 @@
-CREATE INDEX attribute_history_I_entity ON attribute_history (entity_type, entity_id);
