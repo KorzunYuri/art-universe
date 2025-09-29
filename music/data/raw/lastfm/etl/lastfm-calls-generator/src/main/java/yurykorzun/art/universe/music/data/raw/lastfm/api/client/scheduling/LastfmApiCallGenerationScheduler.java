@@ -10,17 +10,17 @@ import java.util.concurrent.TimeUnit;
 
 @Component
 @Slf4j
-public class LastfmApiCallScheduler {
+public class LastfmApiCallGenerationScheduler {
 
     public static final String TASK_NAME_API_CALLS_GENERATION = "api-calls-generation";
     private final TaskCoordinator coordinator;
 
-    public LastfmApiCallScheduler(TaskCoordinator coordinator) {
+    public LastfmApiCallGenerationScheduler(TaskCoordinator coordinator) {
         this.coordinator = coordinator;
     }
 
     @Scheduled(
-        fixedDelayString = "${scheduling.lastfm.api.calls.generate.fixedDelaySecs}",
+        fixedDelayString = "${lastfm.client.calls.generate.fixedDelaySecs}",
         timeUnit = TimeUnit.SECONDS
     )
     public void generateApiCalls() {

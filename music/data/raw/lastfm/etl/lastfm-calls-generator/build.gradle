@@ -8,6 +8,5 @@ dependencies {
     implementation project(':music:data:raw:lastfm:lastfm-repositories')
     implementation project(':music:data:raw:lastfm:etl:lastfm-tasks-coordinator')
 
-    implementation 'org.springframework.retry:spring-retry'
-    implementation 'io.micrometer:micrometer-registry-prometheus'
+    testImplementation project(':music:data:raw:lastfm:test:lastfm-test-database-helper')
 }
