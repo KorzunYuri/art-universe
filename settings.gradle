@@ -17,7 +17,7 @@ include 'music:data:raw:lastfm:etl:lastfm-calls-generator'
 include 'music:data:raw:lastfm:etl:lastfm-calls-performer'
 include 'music:data:raw:lastfm:etl:lastfm-response-parser'
 include 'music:data:raw:lastfm:etl:lastfm-tasks-coordinator'
-include 'music:data:raw:lastfm:etl:lastfm-maintenance-rest-api'
+include 'music:data:raw:lastfm:etl:lastfm-etl-rest-api'
 
 include 'music:quiz'
 include 'music:ui'

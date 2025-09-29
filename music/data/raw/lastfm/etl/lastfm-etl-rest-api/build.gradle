@@ -2,7 +2,7 @@ plugins {
     id 'art-universe.spring-boot-web-app'
 }
 
-archivesBaseName = 'lastfm-etl-maintenance-rest-api'
+archivesBaseName = 'lastfm-etl-rest-api'
 
 dependencies {
     implementation project(':music:data:raw:lastfm:lastfm-models')
