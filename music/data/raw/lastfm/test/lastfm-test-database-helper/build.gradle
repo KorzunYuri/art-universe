@@ -2,7 +2,7 @@ plugins {
     id 'art-universe.java-library'
 }
 
-archivesBaseName = 'lastfm-test-database-consistency-helper'
+archivesBaseName = 'lastfm-test-database-helper'
 
 dependencies {
     api project(':music:data:raw:lastfm:lastfm-repositories')

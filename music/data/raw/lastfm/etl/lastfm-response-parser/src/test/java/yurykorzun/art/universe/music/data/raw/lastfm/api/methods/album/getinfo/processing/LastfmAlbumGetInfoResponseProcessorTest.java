@@ -12,36 +12,30 @@ import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.config.LastfmThresholdConfig;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.album.getinfo.dto.AlbumGetInfoDtoRoot;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.service.DtoQualityService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmAlbum;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.relationship.LastfmAlbumTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.LastfmAlbumRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.attribute.LastfmAttributeTypeSynchronizer;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.LastfmArtistRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.LastfmTagRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.LastfmTrackRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.attribute.TestLastfmAttributeHistoryRecordRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.relationship.TestLastfmAlbumTagRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.relationship.TestLastfmAlbumTrackRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.relationship.TestLastfmArtistTrackRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.attribute.LastfmAttributeHistoryProcessor;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl.LastfmAlbumServiceImpl;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.LastfmArtistRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl.LastfmArtistServiceImpl;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.attribute.LastfmAttributeHistoryServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.BlacklistedEntityUrlService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.relationship.LastfmAlbumTrack;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl.LastfmAlbumServiceImpl;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl.LastfmArtistServiceImpl;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl.LastfmTagServiceImpl;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl.LastfmTrackServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.relationship.impl.LastfmAlbumTagServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.relationship.impl.LastfmAlbumTrackServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.relationship.impl.LastfmArtistTrackServiceImpl;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.LastfmTagRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl.LastfmTagServiceImpl;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.LastfmTrackRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl.LastfmTrackServiceImpl;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
-import yurykorzun.art.universe.music.data.raw.lastfm.maintenance.service.TestTaskCoordinatorConfig;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.BaseLastfmApiResponseProcessorTest;
 
 import java.io.IOException;
 import java.util.List;
@@ -51,32 +45,22 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("integration")
 @Import({
-        // processing
-        LastfmAlbumGetInfoResponseProcessor.class,
-        LastfmAlbumGetInfoAlbumFactory.class,
-        LastfmAlbumGetInfoTrackArtistFactory.class,
-        LastfmAlbumGetInfoTagFactory.class,
-        LastfmApiDtoProcessingService.class,
-        // quality control
-        BlacklistedEntityUrlService.class,
-        DtoQualityService.class,
-        LastfmThresholdConfig.class,
-        // entities
-        LastfmAlbumServiceImpl.class,
-        LastfmArtistServiceImpl.class,
-        LastfmTrackServiceImpl.class,
-        LastfmTagServiceImpl.class,
-        // attributes
-        LastfmAttributeHistoryServiceImpl.class,
-        LastfmAttributeTypeSynchronizer.class,
-        LastfmAttributeHistoryProcessor.class,
-        TestTaskCoordinatorConfig.class,
-        // relations
-        LastfmAlbumTrackServiceImpl.class,
-        LastfmAlbumTagServiceImpl.class,
-        LastfmArtistTrackServiceImpl.class,
+    // processing
+    LastfmAlbumGetInfoResponseProcessor.class,
+    LastfmAlbumGetInfoAlbumFactory.class,
+    LastfmAlbumGetInfoTrackArtistFactory.class,
+    LastfmAlbumGetInfoTagFactory.class,
+    // entities
+    LastfmAlbumServiceImpl.class,
+    LastfmArtistServiceImpl.class,
+    LastfmTrackServiceImpl.class,
+    LastfmTagServiceImpl.class,
+    // relations
+    LastfmAlbumTrackServiceImpl.class,
+    LastfmAlbumTagServiceImpl.class,
+    LastfmArtistTrackServiceImpl.class,
 })
-class LastfmAlbumGetInfoResponseProcessorTest extends JpaOnlyTest {
+class LastfmAlbumGetInfoResponseProcessorTest extends BaseLastfmApiResponseProcessorTest {
 
     @Autowired
     private DbConsistencyHelper consistencyHelper;
@@ -104,13 +88,12 @@ class LastfmAlbumGetInfoResponseProcessorTest extends JpaOnlyTest {
 
     @Autowired
     private TestLastfmAlbumTrackRepository albumTrackRepository;
-    
+
     @Autowired
     private TestLastfmArtistTrackRepository artistTrackRepository;
 
     @Autowired
     private TestLastfmAlbumTagRepository albumTagRepository;
-
     private static final String TEST_RESPONSE_KEY = "album.getInfo";
     private String responseJsonString;
     private AlbumGetInfoDtoRoot dtoRoot;
@@ -118,7 +101,7 @@ class LastfmAlbumGetInfoResponseProcessorTest extends JpaOnlyTest {
     @BeforeEach
     public void setUp() throws IOException {
         consistencyHelper.cleanup();
-        
+
         // Load test data once for all tests
         responseJsonString = LastfmApiClientResourceUtil.getApiClientResponse(TEST_RESPONSE_KEY);
         dtoRoot = parseResponse(responseJsonString);

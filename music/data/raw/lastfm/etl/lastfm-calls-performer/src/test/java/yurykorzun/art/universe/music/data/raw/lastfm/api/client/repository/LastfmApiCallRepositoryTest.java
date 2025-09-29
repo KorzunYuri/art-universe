@@ -63,6 +63,61 @@ class LastfmApiCallRepositoryTest extends JpaOnlyTest {
         assertEquals(ApiCallStatus.EXPIRED, updated.getStatus());
     }
 
+    @Test
+    void findAllUnexpiredByStatus_shouldReturnFilteredCalls_whenValidStatusProvided() {
+        // given
+        LastfmDataSnapshot snapshot = createAndSaveDataSnapshot(DEFAULT_API_CALL_TYPE);
+        
+        LastfmApiCall pendingCall = LastfmApiCall.builder()
+                .dataSnapshotId(snapshot.getId())
+                .type(DEFAULT_API_CALL_TYPE)
+                .params(Map.of("key", "value"))
+                .dueDttm(Instant.now().plusSeconds(3600))
+                .status(ApiCallStatus.PENDING)
+                .build();
+        
+        LastfmApiCall expiredCall = LastfmApiCall.builder()
+                .dataSnapshotId(snapshot.getId())
+                .type(DEFAULT_API_CALL_TYPE)
+                .params(Map.of("key", "value"))
+                .dueDttm(Instant.now().minusSeconds(3600))
+                .status(ApiCallStatus.PENDING)
+                .build();
+
+        repository.save(pendingCall);
+        repository.save(expiredCall);
+
+        // when
+        var result = repository.findAllUnexpiredByStatus(ApiCallStatus.PENDING.getCode(), 10);
+
+        // then
+        assertEquals(1, result.size());
+        assertEquals(pendingCall.getId(), result.get(0).getId());
+    }
+
+    @Test
+    void findAllUnprocessedUnexpired_shouldReturnPendingCalls_whenCalled() {
+        // given
+        LastfmDataSnapshot snapshot = createAndSaveDataSnapshot(DEFAULT_API_CALL_TYPE);
+        
+        LastfmApiCall pendingCall = LastfmApiCall.builder()
+                .dataSnapshotId(snapshot.getId())
+                .type(DEFAULT_API_CALL_TYPE)
+                .params(Map.of("key", "value"))
+                .dueDttm(Instant.now().plusSeconds(3600))
+                .status(ApiCallStatus.PENDING)
+                .build();
+
+        repository.save(pendingCall);
+
+        // when
+        var result = repository.findAllUnprocessedUnexpired(10);
+
+        // then
+        assertEquals(1, result.size());
+        assertEquals(ApiCallStatus.PENDING, result.get(0).getStatus());
+    }
+
     private LastfmDataSnapshot createAndSaveDataSnapshot(LastfmApiCallType apiCallType) {
         return snapshotRepository.save(EntityCreationHelper.createDataSnapshot(apiCallType));
     }

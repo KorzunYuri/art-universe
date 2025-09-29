@@ -5,7 +5,7 @@ plugins {
 archivesBaseName = 'lastfm-rest-api'
 
 dependencies {
-    implementation project(':music:data:raw:lastfm:lastfm-models')
+    implementation project(':music:data:raw:lastfm:lastfm-repositories')
 
-    testImplementation project(':music:data:raw:lastfm:test:lastfm-test-with-database')
+    testImplementation project(':music:data:raw:lastfm:test:lastfm-test-database-helper')
 }

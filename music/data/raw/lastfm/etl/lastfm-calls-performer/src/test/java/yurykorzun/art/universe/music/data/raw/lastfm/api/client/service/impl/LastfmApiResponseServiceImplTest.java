@@ -4,9 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiResponseCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmApiResponseRepository;
@@ -66,6 +64,40 @@ class LastfmApiResponseServiceImplTest {
         // then
         verify(apiResponseRepository).save(any(LastfmApiResponse.class));
         assertEquals(id, returnedId);
+    }
+
+    @Test
+    void createResponse_shouldSetValidationError_whenInvalidJson() {
+        // given
+        LastfmApiResponseCreateRequest request = LastfmApiResponseCreateRequest.builder()
+                .apiCall(EntityCreationHelper.createApiCall())
+                .responseBody("invalid json")
+                .build();
+        LastfmApiResponse created = getMockResponse(request, 1L);
+        when(apiResponseRepository.save(any(LastfmApiResponse.class))).thenReturn(created);
+
+        // when
+        apiResponseService.createResponse(request);
+
+        // then
+        verify(apiResponseRepository).save(any(LastfmApiResponse.class));
+    }
+
+    @Test
+    void createResponse_shouldSetErrorResponse_whenApiReturnsError() {
+        // given
+        LastfmApiResponseCreateRequest request = LastfmApiResponseCreateRequest.builder()
+                .apiCall(EntityCreationHelper.createApiCall())
+                .responseBody("{\"error\":6,\"message\":\"Invalid parameters\"}")
+                .build();
+        LastfmApiResponse created = getMockResponse(request, 1L);
+        when(apiResponseRepository.save(any(LastfmApiResponse.class))).thenReturn(created);
+
+        // when
+        apiResponseService.createResponse(request);
+
+        // then
+        verify(apiResponseRepository).save(any(LastfmApiResponse.class));
     }
 
 }
