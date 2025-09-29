@@ -7,23 +7,23 @@ import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.BaseLastfmApiCallRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.BaseLastfmApiResponseRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.TestLastfmApiCallRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.TestLastfmApiResponseRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmAlbum;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.relationship.*;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.BaseLastfmAlbumRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.BaseLastfmArtistRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.BaseBlacklistedEntityUrlRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.TestLastfmAlbumRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.TestLastfmArtistRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.TestBlacklistedEntityUrlRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.BaseLastfmEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.attribute.LastfmDataSnapshot;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityRelationType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.attribute.BaseLastfmDataSnapshotRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.attribute.TestLastfmDataSnapshotRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTag;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.BaseLastfmTagRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.TestLastfmTagRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTrack;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.BaseLastfmTrackRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.TestLastfmTrackRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.relationship.*;
 
 import java.util.function.Consumer;
@@ -42,42 +42,42 @@ import static yurykorzun.art.universe.music.data.raw.lastfm.common.utils.TestStr
 @Slf4j
 public class DbConsistencyHelper {
 
-    private final BaseLastfmDataSnapshotRepository snapshotRepository;
-    private final BaseLastfmApiCallRepository apiCallRepository;
-    private final BaseLastfmApiResponseRepository apiResponseRepository;
-    private final BaseLastfmTagRepository tagRepository;
-    private final BaseLastfmArtistRepository artistRepository;
-    private final BaseLastfmAlbumRepository albumRepository;
-    private final BaseLastfmTrackRepository trackRepository;
+    private final TestLastfmDataSnapshotRepository snapshotRepository;
+    private final TestLastfmApiCallRepository apiCallRepository;
+    private final TestLastfmApiResponseRepository apiResponseRepository;
+    private final TestLastfmTagRepository tagRepository;
+    private final TestLastfmArtistRepository artistRepository;
+    private final TestLastfmAlbumRepository albumRepository;
+    private final TestLastfmTrackRepository trackRepository;
     
     // Relationship repositories
-    private final BaseLastfmArtistTagRepository artistTagRepository;
-    private final BaseLastfmArtistsRelationRepository artistsRelationRepository;
-    private final BaseLastfmArtistAlbumRepository artistAlbumRepository;
-    private final BaseLastfmArtistTrackRepository artistTrackRepository;
-    private final BaseLastfmAlbumTagRepository albumTagRepository;
-    private final BaseLastfmTrackTagRepository trackTagRepository;
-    private final BaseLastfmAlbumTrackRepository albumTrackRepository;
+    private final TestLastfmArtistTagRepository artistTagRepository;
+    private final TestLastfmArtistsRelationRepository artistsRelationRepository;
+    private final TestLastfmArtistAlbumRepository artistAlbumRepository;
+    private final TestLastfmArtistTrackRepository artistTrackRepository;
+    private final TestLastfmAlbumTagRepository albumTagRepository;
+    private final TestLastfmTrackTagRepository trackTagRepository;
+    private final TestLastfmAlbumTrackRepository albumTrackRepository;
     
     private final EntityManager entityManager;
-    private final BaseBlacklistedEntityUrlRepository blacklistedEntityUrlRepository;
+    private final TestBlacklistedEntityUrlRepository blacklistedEntityUrlRepository;
 
     public DbConsistencyHelper(
-        BaseLastfmDataSnapshotRepository snapshotRepository,
-        BaseLastfmApiCallRepository apiCallRepository,
-        BaseLastfmApiResponseRepository apiResponseRepository,
-        BaseLastfmArtistRepository artistRepository,
-        BaseLastfmAlbumRepository albumRepository,
-        BaseLastfmTrackRepository trackRepository,
-        BaseLastfmTagRepository tagRepository,
-        BaseLastfmArtistsRelationRepository artistsRelationRepository,
-        BaseLastfmArtistAlbumRepository artistAlbumRepository,
-        BaseLastfmArtistTrackRepository artistTrackRepository,
-        BaseLastfmArtistTagRepository artistTagRepository,
-        BaseLastfmAlbumTrackRepository albumTrackRepository,
-        BaseLastfmAlbumTagRepository albumTagRepository,
-        BaseLastfmTrackTagRepository trackTagRepository,
-        BaseBlacklistedEntityUrlRepository blacklistedEntityUrlRepository,
+        TestLastfmDataSnapshotRepository snapshotRepository,
+        TestLastfmApiCallRepository apiCallRepository,
+        TestLastfmApiResponseRepository apiResponseRepository,
+        TestLastfmArtistRepository artistRepository,
+        TestLastfmAlbumRepository albumRepository,
+        TestLastfmTrackRepository trackRepository,
+        TestLastfmTagRepository tagRepository,
+        TestLastfmArtistsRelationRepository artistsRelationRepository,
+        TestLastfmArtistAlbumRepository artistAlbumRepository,
+        TestLastfmArtistTrackRepository artistTrackRepository,
+        TestLastfmArtistTagRepository artistTagRepository,
+        TestLastfmAlbumTrackRepository albumTrackRepository,
+        TestLastfmAlbumTagRepository albumTagRepository,
+        TestLastfmTrackTagRepository trackTagRepository,
+        TestBlacklistedEntityUrlRepository blacklistedEntityUrlRepository,
         EntityManager entityManager
     ) {
         this.snapshotRepository = snapshotRepository;

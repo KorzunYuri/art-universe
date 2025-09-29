@@ -5,7 +5,7 @@ plugins {
 archivesBaseName = 'lastfm-test-commons'
 
 dependencies {
-    implementation project(':commons')
+    api project(':commons')
 
-    implementation 'org.springframework.boot:spring-boot-starter-test'
+    api 'org.springframework.boot:spring-boot-starter-test'
 }

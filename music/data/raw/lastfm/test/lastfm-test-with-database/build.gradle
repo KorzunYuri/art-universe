@@ -9,10 +9,10 @@ dependencies {
     api project(':music:data:raw:lastfm:lastfm-models')
     implementation project(':music:data:raw:lastfm:migrations:lastfm-liquibase-resources')
     
-    implementation 'org.springframework.boot:spring-boot-starter-test'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.testcontainers:testcontainers'
-    implementation 'org.testcontainers:junit-jupiter'
-    implementation 'org.testcontainers:postgresql'
-    implementation 'org.liquibase:liquibase-core'
+    api 'org.springframework.boot:spring-boot-starter-test'
+    api 'org.springframework.boot:spring-boot-starter-data-jpa'
+    api 'org.testcontainers:testcontainers'
+    api 'org.testcontainers:junit-jupiter'
+    api 'org.testcontainers:postgresql'
+    api 'org.liquibase:liquibase-core'
 }

@@ -1,7 +1,12 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository;
 
-import org.springframework.stereotype.Repository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTag;
 
-@Repository
+import java.util.Collection;
+import java.util.List;
+
 public interface LastfmTagRepository extends BaseLastfmTagRepository {
+
+    List<LastfmTag> findAllByNameIn(Collection<String> names);
+
 }

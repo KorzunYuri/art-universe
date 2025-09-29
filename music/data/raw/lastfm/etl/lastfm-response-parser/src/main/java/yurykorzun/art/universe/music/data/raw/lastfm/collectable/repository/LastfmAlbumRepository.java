@@ -2,12 +2,10 @@ package yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository;
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmAlbum;
 
 import java.util.List;
 
-@Repository
 public interface LastfmAlbumRepository extends BaseLastfmAlbumRepository {
 
     /**

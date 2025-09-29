@@ -8,5 +8,5 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.attribut
  * Is used to maintain consistency of {@link LastfmAttribute}
  * values between code and database
  */
-public interface BaseLastfmAttributeEntityRepository extends JpaRepository<LastfmAttributeEntity, Integer> {
+public interface LastfmAttributeEntityRepository extends JpaRepository<LastfmAttributeEntity, Integer> {
 }

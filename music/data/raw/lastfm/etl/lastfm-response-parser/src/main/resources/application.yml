@@ -1,0 +1,51 @@
+spring:
+  application:
+    name: music-universe-raw-data-service
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://${MURAW_LASTFM_DB_HOST:localhost}:${MURAW_LASTFM_DB_PORT:5432}/music_universe?currentSchema=mu_raw_lastfm
+    username: mu_raw_lastfm_dm
+    password: '${MURAW_LASTFM_DB_PASSWORD}'
+    hikari:
+      pool-name: MuRawLastFmHikariPool
+      maximum-pool-size: 4
+      minimum-idle: 2
+  jpa:
+    database: postgresql
+    properties:
+      hibernate:
+        order_by:
+          default_null_ordering: last
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        show-sql: false
+        jdbc:
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
+        javax.persistence.validation.mode: none
+    hibernate:
+      ddl-auto: none
+  main:
+    banner-mode: off
+
+lastfm:
+  threshold:
+    artist:
+      listenersCount: 1000
+    album:
+      playCount: 10000
+    track:
+      playCount: 1000
+    tag:
+      usageCount: 1000
+  client:
+    methods:
+      artist:
+        getSimilar:
+          artistMatchThreshold: 0.2
+        topTags:
+          tagUsageCountThreshold: 10
+        topAlbums:
+          albumPlayCountThreshold: 10000
+        search:
+          artistSimilarityThreshold: 0.5
