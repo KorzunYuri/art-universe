@@ -13,7 +13,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.relation
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.relationship.LastfmArtistTagRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.relationship.impl.LastfmArtistTagServiceImpl;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
 

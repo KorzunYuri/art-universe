@@ -12,7 +12,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.Blac
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTrack;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
 
 import jakarta.persistence.EntityManager;

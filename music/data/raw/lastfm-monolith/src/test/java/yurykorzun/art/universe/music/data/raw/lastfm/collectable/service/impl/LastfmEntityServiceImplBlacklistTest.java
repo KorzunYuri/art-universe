@@ -14,7 +14,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmAp
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallEntityQueryConfig;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.LastfmTrackRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
 
 import java.util.List;

@@ -32,7 +32,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.relatio
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.LastfmTrackRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl.LastfmTrackServiceImpl;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
 import yurykorzun.art.universe.music.data.raw.lastfm.maintenance.service.TestTaskCoordinatorConfig;
 

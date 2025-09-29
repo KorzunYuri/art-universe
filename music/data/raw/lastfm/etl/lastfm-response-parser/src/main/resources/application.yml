@@ -1,6 +1,6 @@
 spring:
   application:
-    name: music-universe-raw-data-service
+    name: lastfm-response-parser
   datasource:
     driverClassName: org.postgresql.Driver
     url: jdbc:postgresql://${MURAW_LASTFM_DB_HOST:localhost}:${MURAW_LASTFM_DB_PORT:5432}/music_universe?currentSchema=mu_raw_lastfm
@@ -27,8 +27,19 @@ spring:
       ddl-auto: none
   main:
     banner-mode: off
+  autoconfigure:
+    exclude: >
+      org.springframework.boot.autoconfigure.admin.SpringApplicationAdminJmxAutoConfiguration,
+      org.springframework.boot.autoconfigure.jmx.JmxAutoConfiguration,
+      org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration,
+      org.springframework.boot.autoconfigure.websocket.servlet.WebSocketServletAutoConfiguration,
+      org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration,
+      org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration
 
 lastfm:
+  scheduling:
+    attribute-history:
+      fixedDelaySecs: 1
   threshold:
     artist:
       listenersCount: 1000

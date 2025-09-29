@@ -5,5 +5,5 @@ import org.springframework.retry.annotation.EnableRetry;
 
 @Configuration
 @EnableRetry
-public class LastfmApiClientRetryConfig {
+public class ApiClientRetryConfig {
 }

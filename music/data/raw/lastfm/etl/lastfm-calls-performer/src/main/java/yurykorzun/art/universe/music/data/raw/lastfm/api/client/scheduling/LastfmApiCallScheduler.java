@@ -22,7 +22,7 @@ public class LastfmApiCallScheduler {
     }
 
     @Scheduled(
-        fixedDelayString  = "${scheduling.lastfm.api.calls.fetch.fixedDelaySecs}",
+        fixedDelayString  = "${lastfm.client.calls.fixedDelaySecs}",
         timeUnit = TimeUnit.SECONDS
     )
     public void triggerApiCalls() {

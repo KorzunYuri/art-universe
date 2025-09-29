@@ -18,10 +18,10 @@ public class LastfmApiClientImpl extends BaseHttpApiClient implements LastfmApiC
 
     private Map<String, String> defaultParamValues;
 
-    @Value("${lastfm.apikey}")
+    @Value("${lastfm.client.apikey}")
     private String apiKey;
 
-    public LastfmApiClientImpl(RestClient.Builder restClientBuilder, @Value("${lastfm.baseUrl}") String baseUrl) {
+    public LastfmApiClientImpl(RestClient.Builder restClientBuilder, @Value("${lastfm.client.baseUrl}") String baseUrl) {
         this.restClient = restClientBuilder
                 .baseUrl(baseUrl)
             .build();

@@ -31,7 +31,7 @@ public class LastfmAttributeHistoryProcessor {
         this.self = self;
     }
 
-    @Scheduled(fixedDelayString = "${scheduling.lastfm.tasks.attribute-history.fixedDelaySecs:30}", timeUnit = java.util.concurrent.TimeUnit.SECONDS)
+    @Scheduled(fixedDelayString = "${lastfm.scheduling.attribute-history.fixedDelaySecs:30}", timeUnit = java.util.concurrent.TimeUnit.SECONDS)
     public void triggerAttributeHistoryProcessing() {
         coordinator.executeIfAllowed(() -> {
             log.info("start attribute history processing");

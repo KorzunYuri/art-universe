@@ -1,18 +1,12 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository;
 
-import jakarta.annotation.Nullable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface LastfmArtistRepository extends BaseLastfmArtistRepository {

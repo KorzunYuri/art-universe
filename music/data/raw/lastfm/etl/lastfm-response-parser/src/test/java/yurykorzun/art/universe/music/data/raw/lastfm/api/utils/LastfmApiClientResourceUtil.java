@@ -39,12 +39,4 @@ public class LastfmApiClientResourceUtil {
         return apiClientResponses.get(key);
     }
 
-    public static Map<String, String> getApiClientResponses() {
-        return Collections.unmodifiableMap(apiClientResponses);
-    }
-
-    public static String getAnyResponse() {
-        return apiClientResponses.entrySet().stream().findFirst().get().getValue();
-    }
-
 }

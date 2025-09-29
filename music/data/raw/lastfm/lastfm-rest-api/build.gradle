@@ -6,8 +6,6 @@ archivesBaseName = 'lastfm-rest-api'
 
 dependencies {
     implementation project(':music:data:raw:lastfm:lastfm-models')
-    
-    implementation 'io.micrometer:micrometer-registry-prometheus'
-    
+
     testImplementation project(':music:data:raw:lastfm:test:lastfm-test-with-database')
 }

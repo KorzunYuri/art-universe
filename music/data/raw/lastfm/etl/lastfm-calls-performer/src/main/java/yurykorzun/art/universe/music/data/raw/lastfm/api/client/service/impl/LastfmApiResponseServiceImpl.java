@@ -8,18 +8,18 @@ import org.springframework.stereotype.Service;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiResponseStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiResponseCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.BaseLastfmApiResponseRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmApiResponseRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiResponseService;
 
 @Slf4j
 @Service
 public class LastfmApiResponseServiceImpl implements LastfmApiResponseService {
 
-    private final BaseLastfmApiResponseRepository repository;
+    private final LastfmApiResponseRepository repository;
     private final ObjectMapper objectMapper;
 
     public LastfmApiResponseServiceImpl(
-        BaseLastfmApiResponseRepository repository,
+        LastfmApiResponseRepository repository,
         ObjectMapper objectMapper
     ) {
         this.repository = repository;

@@ -1,0 +1,50 @@
+# all the default variables are provided for testing purposes (otherwise we would have to set those in application-test.yml)
+spring:
+  application:
+    name: lastfm-calls-performer
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://${MURAW_LASTFM_DB_HOST:localhost}:${MURAW_LASTFM_DB_PORT:5432}/music_universe?currentSchema=mu_raw_lastfm
+    username: mu_raw_lastfm_dm
+    password: '${MURAW_LASTFM_DB_PASSWORD}'
+    hikari:
+      pool-name: MuRawLastFmHikariPool
+      maximum-pool-size: 4
+      minimum-idle: 2
+  jpa:
+    database: postgresql
+    properties:
+      hibernate:
+        order_by:
+          default_null_ordering: last
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        show-sql: false
+        jdbc:
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
+        javax.persistence.validation.mode: none
+    hibernate:
+      ddl-auto: none
+  main:
+    banner-mode: off
+  autoconfigure:
+    exclude: >
+      org.springframework.boot.autoconfigure.admin.SpringApplicationAdminJmxAutoConfiguration,
+      org.springframework.boot.autoconfigure.jmx.JmxAutoConfiguration,
+      org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration,
+      org.springframework.boot.autoconfigure.websocket.servlet.WebSocketServletAutoConfiguration,
+      org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration,
+      org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration
+
+lastfm:
+  client:
+    baseUrl: "http://ws.audioscrobbler.com/2.0/"
+    apikey: ${MURAW_LASTFM_API_KEY}
+    calls:
+      fixedDelaySecs: 1
+      callsPerSec: 1.0
+      retry:
+        max-attempts: 3
+        initial-delay-ms: 500
+        multiplier: 1.5

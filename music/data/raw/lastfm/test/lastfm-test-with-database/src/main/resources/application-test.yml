@@ -6,14 +6,6 @@ spring:
     properties:
       hibernate:
         show-sql: true
-  docker:
-    compose:
-      enabled: false
-  task:
-    execution:
-      pool:
-        core-size: 0
-        max-size: 1
 
 logging:
   level:

@@ -1,0 +1,69 @@
+package yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository;
+
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallStatus;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.attribute.LastfmDataSnapshot;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
+
+import java.time.Instant;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@Tag("integration")
+class LastfmApiCallRepositoryTest extends JpaOnlyTest {
+
+    @Autowired
+    private LastfmApiCallRepository repository;
+
+    @Autowired
+    private TestLastfmDataSnapshotRepository snapshotRepository;
+
+    private static LastfmApiCallType DEFAULT_API_CALL_TYPE = LastfmApiCallType.TAG_TOP_TAGS;
+
+    @Test
+    void save_shouldCreateApiCall_whenValidDataProvided() {
+        LastfmApiCall created = LastfmApiCall.builder()
+                .dataSnapshotId(createAndSaveDataSnapshot(DEFAULT_API_CALL_TYPE).getId())
+                .type(DEFAULT_API_CALL_TYPE)
+                .params(Map.of("key", "value"))
+                .dueDttm(Instant.now())
+            .build();
+
+        LastfmApiCall saved = repository.save(created);
+        assertNotNull(saved);
+
+        LastfmApiCall fetched = repository.getReferenceById(saved.getId());
+        assertNotNull(fetched);
+        assertEquals(created.getType(), fetched.getType());
+        assertEquals(created.getParams(), fetched.getParams());
+    }
+
+    @Test
+    void setStatus_shouldUpdateStatus_whenValidTransitionProvided() {
+        LastfmApiCall created = LastfmApiCall.builder()
+                .dataSnapshotId(createAndSaveDataSnapshot(DEFAULT_API_CALL_TYPE).getId())
+                .type(DEFAULT_API_CALL_TYPE)
+                .params(Map.of("key", "value"))
+                .dueDttm(Instant.now())
+                .status(ApiCallStatus.CREATED)
+            .build();
+
+        LastfmApiCall saved = repository.save(created);
+        saved.setStatus(ApiCallStatus.EXPIRED);
+        repository.save(saved);
+
+        LastfmApiCall updated = repository.getReferenceById(saved.getId());
+        assertNotNull(updated);
+        assertEquals(ApiCallStatus.EXPIRED, updated.getStatus());
+    }
+
+    private LastfmDataSnapshot createAndSaveDataSnapshot(LastfmApiCallType apiCallType) {
+        return snapshotRepository.save(EntityCreationHelper.createDataSnapshot(apiCallType));
+    }
+}

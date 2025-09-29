@@ -6,6 +6,7 @@ archivesBaseName = 'lastfm-test-commons'
 
 dependencies {
     api project(':commons')
+    api project(':music:data:raw:lastfm:lastfm-models')
 
     api 'org.springframework.boot:spring-boot-starter-test'
 }

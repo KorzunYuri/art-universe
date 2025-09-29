@@ -1,4 +1,4 @@
-package yurykorzun.art.universe.music.data.raw.lastfm.etl.calls.performer;
+package yurykorzun.art.universe.music.data.raw.lastfm;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
