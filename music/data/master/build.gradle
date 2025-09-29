@@ -3,6 +3,8 @@ plugins {
     id 'org.liquibase.gradle'
 }
 
+archivesBaseName = 'music-data-master'
+
 dependencies {
     implementation 'org.liquibase:liquibase-core'
     implementation 'org.springframework.boot:spring-boot-docker-compose'

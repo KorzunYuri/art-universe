@@ -1,0 +1,32 @@
+# Common test configuration for database testing
+spring:
+  liquibase:
+    change-log: classpath:db/migration/muraw/liquibase/db.changelog.xml
+  jpa:
+    properties:
+      hibernate:
+        show-sql: true
+  docker:
+    compose:
+      enabled: false
+  task:
+    execution:
+      pool:
+        core-size: 0
+        max-size: 1
+
+logging:
+  level:
+    org:
+      springframework:
+        transaction: TRACE
+      hibernate:
+        transaction: DEBUG
+        SQL: DEBUG
+        type:
+          descriptor:
+            sql:
+              BasicBinder: TRACE
+        orm:
+          jdbc:
+            bind: TRACE

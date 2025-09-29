@@ -1,24 +1,23 @@
 rootProject.name = 'art-universe'
 
 include 'commons'
-//include 'art-universe:art-universe-messaging-impl-kafka'
 
 include 'music:data:master'
-
-// lastfm monolith (to be decommissioned)
 include 'music:data:raw:lastfm-monolith'
-// lastfm group
-include 'music:data:raw:lastfm:migrations:liquibase-resources'
-include 'music:data:raw:lastfm:migrations:liquibase-service'
-include 'music:data:raw:lastfm:migrations:test-with-database'
-include 'music:data:raw:lastfm:models'
-include 'music:data:raw:lastfm:migrations'
-include 'music:data:raw:lastfm:rest-api'
-include 'music:data:raw:lastfm:etl:calls-generator'
-include 'music:data:raw:lastfm:etl:calls-performer'
-include 'music:data:raw:lastfm:etl:response-parser'
-include 'music:data:raw:lastfm:etl:rest-api'
+
+include 'music:data:raw:lastfm:migrations:lastfm-liquibase-resources'
+include 'music:data:raw:lastfm:migrations:lastfm-liquibase-service'
+include 'music:data:raw:lastfm:lastfm-models'
+include 'music:data:raw:lastfm:lastfm-rest-api'
+include 'music:data:raw:lastfm:test:lastfm-test-commons'
+include 'music:data:raw:lastfm:test:lastfm-test-with-database'
+include 'music:data:raw:lastfm:etl:lastfm-calls-generator'
+include 'music:data:raw:lastfm:etl:lastfm-calls-performer'
+include 'music:data:raw:lastfm:etl:lastfm-response-parser'
+include 'music:data:raw:lastfm:etl:lastfm-rest-api'
+include 'music:data:raw:lastfm:etl:lastfm-tasks-coordinator'
+include 'music:data:raw:lastfm:etl:lastfm-maintenance-rest-api'
 
 include 'music:quiz'
-
 include 'music:ui'
+

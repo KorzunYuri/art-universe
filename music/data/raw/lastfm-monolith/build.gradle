@@ -3,6 +3,8 @@ plugins {
     id 'org.liquibase.gradle'
 }
 
+archivesBaseName = 'lastfm-monolith'
+
 dependencyManagement {
     dependencies {
         dependency 'com.google.guava:guava:33.4.0-jre'
@@ -12,6 +14,8 @@ dependencyManagement {
 }
 
 dependencies {
+    implementation project(':music:data:raw:lastfm:lastfm-models')
+
     implementation 'org.springframework.boot:spring-boot-docker-compose'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
     implementation 'org.springframework.retry:spring-retry'
@@ -23,5 +27,5 @@ dependencies {
     implementation 'org.liquibase:liquibase-core'
     implementation 'io.hypersistence:hypersistence-utils-hibernate-63'
     
-    testImplementation project(':music:data:raw:lastfm:migrations:liquibase-resources')
+    testImplementation project(':music:data:raw:lastfm:test:lastfm-test-with-database')
 }

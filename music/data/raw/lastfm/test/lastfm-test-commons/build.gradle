@@ -1,0 +1,11 @@
+plugins {
+    id 'art-universe.java-library'
+}
+
+archivesBaseName = 'lastfm-test-commons'
+
+dependencies {
+    implementation project(':commons')
+
+    implementation 'org.springframework.boot:spring-boot-starter-test'
+}

@@ -72,15 +72,4 @@ public interface BlacklistedEntityUrlRepository extends JpaRepository<Blackliste
     default int insertIgnoreDuplicates(LastfmEntityType entityType, List<String> urls) {
         return insertIgnoreDuplicates(entityType.getCode(), urls.toArray(new String[0]));
     }
-
-    ///**
-    // * Inserts multiple URLs into blacklist, ignoring duplicates
-    // */
-    //default int insertIgnoreDuplicates(LastfmEntityType entityType, List<String> urls) {
-    //    int insertedCount = 0;
-    //    for (String url : urls) {
-    //        insertedCount += insertIgnoreDuplicate(entityType, url);
-    //    }
-    //    return insertedCount;
-    //}
 }

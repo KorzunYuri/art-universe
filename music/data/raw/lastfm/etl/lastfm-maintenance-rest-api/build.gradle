@@ -1,0 +1,12 @@
+plugins {
+    id 'art-universe.spring-boot-web-app'
+}
+
+archivesBaseName = 'lastfm-etl-maintenance-rest-api'
+
+dependencies {
+    implementation project(':music:data:raw:lastfm:lastfm-models')
+    implementation project(':music:data:raw:lastfm:etl:lastfm-tasks-coordinator')
+
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+}

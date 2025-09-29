@@ -1,0 +1,16 @@
+plugins {
+    id 'art-universe.spring-boot-app'
+}
+
+archivesBaseName = 'lastfm-liquibase-service'
+
+dependencies {
+    implementation project(':music:data:raw:lastfm:migrations:lastfm-liquibase-resources')
+    
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.liquibase:liquibase-core'
+    
+    runtimeOnly 'org.postgresql:postgresql'
+    
+    testImplementation project(':music:data:raw:lastfm:test:lastfm-test-with-database')
+}

@@ -1,0 +1,24 @@
+package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.common.dto;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.EntityDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTag;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
+
+import java.beans.Transient;
+
+@Data
+@NoArgsConstructor
+public abstract class TagDto implements EntityDto<LastfmTag> {
+
+    @JsonProperty("name")
+    private String name;
+
+    @Override
+    @Transient
+    public LastfmEntityType getEntityType() {
+        return LastfmEntityType.TAG;
+    }
+}
