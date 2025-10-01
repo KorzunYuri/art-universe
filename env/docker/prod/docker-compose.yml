@@ -9,6 +9,7 @@ services:
       context: ../../../
       dockerfile: music/data/raw/lastfm-monolith/Dockerfile.prod
     env_file:
+      - ../common/music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.secrets.env
     environment:

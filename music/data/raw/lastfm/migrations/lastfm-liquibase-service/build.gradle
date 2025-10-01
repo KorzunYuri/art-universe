@@ -1,16 +1,24 @@
 plugins {
-    id 'art-universe.spring-boot-app'
+    id 'art-universe.java-base'
+    id 'application'
 }
 
 archivesBaseName = 'lastfm-liquibase-service'
 
+application {
+    mainClass = 'yurykorzun.art.universe.music.data.raw.lastfm.migration.liquibase.LiquibaseMigrationRunner'
+}
+
 dependencies {
-    implementation project(':music:data:raw:lastfm:migrations:lastfm-liquibase-resources')
-    
-    implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.liquibase:liquibase-core'
-    
     runtimeOnly 'org.postgresql:postgresql'
-    
-    testImplementation project(':music:data:raw:lastfm:test:lastfm-test-with-database')
+}
+
+tasks.register('copyLiquibaseResources', Copy) {
+    from project(':music:data:raw:lastfm:migrations:lastfm-liquibase-resources').file('src/main/resources')
+    into "$buildDir/resources/main"
+}
+
+processResources {
+    dependsOn copyLiquibaseResources
 }

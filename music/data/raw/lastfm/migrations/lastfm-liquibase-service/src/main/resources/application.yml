@@ -1,5 +1,0 @@
-spring:
-  application:
-    name: lastfm-liquibase-service
-  liquibase:
-    change-log: classpath:db/migration/muraw/liquibase/db.changelog.xml

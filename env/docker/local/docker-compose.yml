@@ -64,6 +64,7 @@ services:
       dockerfile: Dockerfile.local
       context: ../../../music/data/raw/lastfm-monolith
     env_file:
+      - ../common/music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.secrets.env
     environment:
