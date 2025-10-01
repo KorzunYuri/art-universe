@@ -1,6 +1,21 @@
 version: '3.8'
 
 services:
+  # Migrations
+  lastfm-liquibase-service:
+    container_name: prod__mu-data-raw-lastfm__liquibase
+    build:
+      dockerfile: Dockerfile.prod
+      context: ../../../music/data/raw/lastfm/migrations/lastfm-liquibase-service
+    env_file:
+      - ../common/music-data-raw-lastfm.env
+      - ./music-data-raw-lastfm.env
+      - ./music-data-raw-lastfm.secrets.env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - mu__network
+
   # Applications
   music-data-raw-lastfm:
     container_name: prod__mu-data-raw-lastfm__app
@@ -23,6 +38,9 @@ services:
       - ../../../music/data/raw/lastfm-monolith/src/main/resources/metrics:/app/src/main/resources/metrics
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    depends_on:
+      lastfm-liquibase-service:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${MURAW_LASTFM_APP_INTERNAL_PORT}/health"]
       interval: 10s

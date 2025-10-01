@@ -14,6 +14,7 @@ dependencies {
     runtimeOnly 'org.postgresql:postgresql'
 }
 
+// Copy resources to main resources for classpath access (IDE/local run)
 tasks.register('copyLiquibaseResources', Copy) {
     from project(':music:data:raw:lastfm:migrations:lastfm-liquibase-resources').file('src/main/resources')
     into "$buildDir/resources/main"
@@ -22,3 +23,23 @@ tasks.register('copyLiquibaseResources', Copy) {
 processResources {
     dependsOn copyLiquibaseResources
 }
+
+jar {
+    manifest {
+        attributes 'Main-Class': application.mainClass.get()
+        attributes 'Class-Path': configurations.runtimeClasspath.files.collect { "lib/${it.name}" }.join(' ')
+    }
+}
+
+tasks.register('copyDependencies', Copy) {
+    from configurations.runtimeClasspath
+    into "$buildDir/libs/lib"
+}
+
+// Copy resources to separate directory for Docker
+tasks.register('copyLiquibaseResourcesForDocker', Copy) {
+    from project(':music:data:raw:lastfm:migrations:lastfm-liquibase-resources').file('src/main/resources')
+    into "$buildDir/libs/resources"
+}
+
+jar.dependsOn copyDependencies, copyLiquibaseResourcesForDocker
