@@ -1,2 +1,2 @@
-ALTER TABLE artist DROP COLUMN is_streamable;
-ALTER TABLE artist DROP COLUMN is_on_tour;
+ALTER TABLE artist DROP COLUMN IF EXISTS is_streamable;
+ALTER TABLE artist DROP COLUMN IF EXISTS is_on_tour;

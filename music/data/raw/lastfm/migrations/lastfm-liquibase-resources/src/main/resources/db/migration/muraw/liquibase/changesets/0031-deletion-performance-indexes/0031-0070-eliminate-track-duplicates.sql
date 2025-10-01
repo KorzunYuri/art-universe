@@ -173,4 +173,5 @@ BEGIN
     SELECT COUNT(*) INTO duplicate_groups FROM track_duplicates_analysis;
     
     RAISE NOTICE 'Eliminated % duplicate tracks from % groups', tracks_removed, duplicate_groups;
-END $$;
+END;
+$$;

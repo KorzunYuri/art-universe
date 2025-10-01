@@ -185,4 +185,5 @@ BEGIN
     
     RAISE NOTICE 'Eliminated % duplicate albums from % case-insensitive groups', albums_removed, duplicate_groups;
     RAISE NOTICE 'Sample duplicates: %', sample_duplicates;
-END $$;
+END;
+$$;

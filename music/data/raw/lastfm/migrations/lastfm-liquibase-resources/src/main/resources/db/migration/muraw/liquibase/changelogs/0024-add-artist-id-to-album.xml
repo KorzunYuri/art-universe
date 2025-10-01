@@ -6,11 +6,11 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
 
     <changeSet id="0024-0010-add-artist-id-to-album" author="system">
-        <sqlFile path="../changesets/0024-add-artist-id-to-album/0024-0010-add-artist-id-to-album.sql" relativeToChangelogFile="true"/>
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0024-add-artist-id-to-album/0024-0010-add-artist-id-to-album.sql"/>
     </changeSet>
 
     <changeSet id="0024-0020-populate-album-artist-id" author="system">
-        <sqlFile path="../changesets/0024-add-artist-id-to-album/0024-0020-populate-album-artist-id.sql" relativeToChangelogFile="true"/>
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0024-add-artist-id-to-album/0024-0020-populate-album-artist-id.sql"/>
     </changeSet>
 
 </databaseChangeLog>

@@ -1,10 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <databaseChangeLog
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
-        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
-    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
 
-    <includeAll path="../changesets/0004-tag.getTopArtists" relativeToChangelogFile="true"/>
+    <changeSet id="0004_0010_api_call_add_entity_reference" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0004-tag.getTopArtists/0004-0010_api_call$add_entity_reference.sql"/>
+    </changeSet>
+
+    <changeSet id="0004_0011_api_call_indexes_entity" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0004-tag.getTopArtists/0004-0011_api_call$indexes$entity.sql"/>
+    </changeSet>
 
 </databaseChangeLog>

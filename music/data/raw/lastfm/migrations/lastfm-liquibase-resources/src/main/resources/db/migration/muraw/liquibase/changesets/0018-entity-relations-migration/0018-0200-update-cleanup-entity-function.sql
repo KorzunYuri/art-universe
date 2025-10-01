@@ -1,5 +1,3 @@
--- Changeset: 0018-0020-update-cleanup-entity-function
--- Author: yury_korzun
 -- Description: Update cleanup_entity function to handle new relationship tables instead of deprecated entity_relation table
 
 -- Create updated function
@@ -13,7 +11,7 @@ CREATE OR REPLACE FUNCTION cleanup_entity(
     VOLATILE PARALLEL UNSAFE
     ROWS 1000
 
-AS $BODY$
+AS $$
 DECLARE
     v_root_table    TEXT;
     v_threshold_col TEXT;
@@ -508,7 +506,7 @@ BEGIN
         ORDER BY ts;
 
 END;
-$BODY$;
+$$;
 
 -- Add comment to function
 COMMENT ON FUNCTION cleanup_entity(integer, integer, boolean)

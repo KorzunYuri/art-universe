@@ -1,10 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <databaseChangeLog
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
-        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
-    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
 
-    <includeAll path="../changesets/0009-dictionary" relativeToChangelogFile="true"/>
+    <changeSet id="0009_0010_dictionary_initial" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0009-dictionary/0009-0010-dictionary$initial.sql"/>
+    </changeSet>
+
+    <changeSet id="0009_0020_dictionary_add_domain_code_index" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0009-dictionary/0009-0020-dictionary$add_domain_code_index.sql"/>
+    </changeSet>
+
+    <changeSet id="0009_0030_v_entities_initial" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0009-dictionary/0009-0030-v_entities$initial.sql"/>
+    </changeSet>
+
+    <changeSet id="0009_0040_v_attr_value_initial" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0009-dictionary/0009-0040-v_attr_value$initial.sql"/>
+    </changeSet>
+
+    <changeSet id="0009_0050_v_attr_value_actual_initial" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0009-dictionary/0009-0050-v_attr_value_actual$initial.sql"/>
+    </changeSet>
+
+    <changeSet id="0009_0060_v_attr_value_snapshot_initial" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0009-dictionary/0009-0060-v_attr_value_snapshot$initial.sql"/>
+    </changeSet>
 
 </databaseChangeLog>

@@ -1,10 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <databaseChangeLog
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
-        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
-    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
 
-    <includeAll path="../changesets/0010-artist.getInfo" relativeToChangelogFile="true"/>
+    <changeSet id="0010_0010_artist_add_is_streamable" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0010-artist.getInfo/0010-0010-artist$add_is_streamable.sql"/>
+    </changeSet>
+
+    <changeSet id="0010_0020_track_change_is_streamable" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0010-artist.getInfo/0010-0020-track$change_is_streamable.sql"/>
+    </changeSet>
+
+    <changeSet id="0010_0030_artist_add_is_on_tour" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0010-artist.getInfo/0010-0030-artist$add_is_on_tour.sql"/>
+    </changeSet>
+
+    <changeSet id="0010_0040_artist_add_listeners_count" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0010-artist.getInfo/0010-0040-artist$add_listeners_count.sql"/>
+    </changeSet>
+
+    <changeSet id="0010_0050_artist_add_play_count" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0010-artist.getInfo/0010-0050-artist$add_play_count.sql"/>
+    </changeSet>
+
+    <changeSet id="0010_0060_artist_fix_is_on_tour_default_value" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0010-artist.getInfo/0010-0060-artist$fix_is_on_tour_default_value.sql"/>
+    </changeSet>
+
+    <changeSet id="0010_0070_artist_fix_streamable_default_value" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0010-artist.getInfo/0010-0070-artist$fix_streamable_default_value.sql"/>
+    </changeSet>
+
+    <changeSet id="0010_0100_tag_add_url" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0010-artist.getInfo/0010-0100-tag$add_url.sql"/>
+    </changeSet>
+
+    <changeSet id="0010_0200_attribute_history_rename_index_entity_current_value" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0010-artist.getInfo/0010-0200-attribute_history$rename_index_entity_current_value.sql"/>
+    </changeSet>
+
+    <changeSet id="0010_0210_attribute_history_add_index_entity_type" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0010-artist.getInfo/0010-0210-attribute_history$add_index_entity_type.sql"/>
+    </changeSet>
+
+    <changeSet id="0010_0220_attribute_history_add_index_entity_type_value_current" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0010-artist.getInfo/0010-0220-attribute_history$add_index_entity_type_value_current.sql"/>
+    </changeSet>
 
 </databaseChangeLog>

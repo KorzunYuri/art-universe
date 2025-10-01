@@ -6,23 +6,21 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
 
     <changeSet id="0025-0010-rename-cleanup-objects" author="system">
-        <sqlFile path="../changesets/0025-maintenance-improvements/0025-0010-rename-cleanup-objects.sql" relativeToChangelogFile="true"
-                 splitStatements="false"
-                 endDelimiter="$$"/>
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0025-maintenance-improvements/0025-0010-rename-cleanup-objects.sql"
+                 splitStatements="false"/>
     </changeSet>
 
     <changeSet id="0025-0020-create-mtnc-deleted-entities" author="system">
-        <sqlFile path="../changesets/0025-maintenance-improvements/0025-0020-create-mtnc-deleted-entities.sql" relativeToChangelogFile="true"/>
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0025-maintenance-improvements/0025-0020-create-mtnc-deleted-entities.sql"/>
     </changeSet>
 
     <changeSet id="0025-0030-update-fk-constraints-cascade" author="system">
-        <sqlFile path="../changesets/0025-maintenance-improvements/0025-0030-update-fk-constraints-cascade.sql" relativeToChangelogFile="true"/>
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0025-maintenance-improvements/0025-0030-update-fk-constraints-cascade.sql"/>
     </changeSet>
 
     <changeSet id="0025-0040-mtnc-cleanup-entity-rewrite" author="system">
-        <sqlFile path="../changesets/0025-maintenance-improvements/0025-0040-mtnc-cleanup-entity-rewrite.sql" relativeToChangelogFile="true"
-                 splitStatements="false"
-                 endDelimiter="$$"/>
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0025-maintenance-improvements/0025-0040-mtnc-cleanup-entity-rewrite.sql"
+                 splitStatements="false"/>
     </changeSet>
 
 </databaseChangeLog>

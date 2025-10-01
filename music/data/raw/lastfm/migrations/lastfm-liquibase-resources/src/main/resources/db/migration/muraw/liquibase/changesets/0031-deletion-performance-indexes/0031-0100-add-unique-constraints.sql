@@ -74,12 +74,11 @@ ALTER TABLE artist_tag
         UNIQUE (artist_id, tag_id);
 
 -- Log the constraints added
-DO
-$$
-    BEGIN
-        RAISE NOTICE 'Added unique constraints to prevent future duplicates';
-        RAISE NOTICE 'Entity constraints: track_u_name_artist_id, album_u_name_artist_id';
-        RAISE NOTICE 'Relationship constraints: artist_track_u_artist_id_track_id, artist_album_u_artist_id_album_id, album_track_u_album_id_track_id';
-        RAISE NOTICE 'Tag relationship constraints: track_tag_u_track_id_tag_id, album_tag_u_album_id_tag_id, artist_tag_u_artist_id_tag_id';
-    END
+DO $$
+BEGIN
+    RAISE NOTICE 'Added unique constraints to prevent future duplicates';
+    RAISE NOTICE 'Entity constraints: track_u_name_artist_id, album_u_name_artist_id';
+    RAISE NOTICE 'Relationship constraints: artist_track_u_artist_id_track_id, artist_album_u_artist_id_album_id, album_track_u_album_id_track_id';
+    RAISE NOTICE 'Tag relationship constraints: track_tag_u_track_id_tag_id, album_tag_u_album_id_tag_id, artist_tag_u_artist_id_tag_id';
+END;
 $$;

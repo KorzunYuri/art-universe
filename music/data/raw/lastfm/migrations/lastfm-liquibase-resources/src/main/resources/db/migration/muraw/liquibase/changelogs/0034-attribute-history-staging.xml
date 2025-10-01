@@ -8,10 +8,10 @@
     <changeSet id="0034-attribute-history-staging" author="system">
         <comment>Create staging tables for attribute history double buffering</comment>
 
-        <sqlFile path="../changesets/0034-attribute-history-staging/0034-0010-create-staging-tables.sql"
-                 relativeToChangelogFile="true"/>
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0034-attribute-history-staging/0034-0010-create-staging-tables.sql"
+                />
 
-        <sqlFile path="../changesets/0034-attribute-history-staging/0034-0020-create-unique-indexes.sql"
-                 relativeToChangelogFile="true"/>
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0034-attribute-history-staging/0034-0020-create-unique-indexes.sql"
+                />
     </changeSet>
 </databaseChangeLog>

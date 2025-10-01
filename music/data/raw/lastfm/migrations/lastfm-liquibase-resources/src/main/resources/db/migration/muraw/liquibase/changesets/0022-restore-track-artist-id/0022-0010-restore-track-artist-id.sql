@@ -31,4 +31,5 @@ BEGIN
     ELSE
         RAISE NOTICE '  Recovery percentage: N/A (no tracks)';
     END IF;
-END $$;
+END;
+$$;

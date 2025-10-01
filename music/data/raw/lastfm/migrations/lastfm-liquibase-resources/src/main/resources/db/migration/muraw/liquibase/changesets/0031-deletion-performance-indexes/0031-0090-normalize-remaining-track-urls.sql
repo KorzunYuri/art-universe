@@ -22,4 +22,5 @@ DECLARE
 BEGIN
     GET DIAGNOSTICS normalized_count = ROW_COUNT;
     RAISE NOTICE 'Normalized % track URLs', normalized_count;
-END $$;
+END;
+$$;

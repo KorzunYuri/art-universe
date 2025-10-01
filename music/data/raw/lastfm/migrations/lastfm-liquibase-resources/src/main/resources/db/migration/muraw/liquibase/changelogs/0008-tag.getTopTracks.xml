@@ -1,10 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <databaseChangeLog
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
-        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
-    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
 
-    <includeAll path="../changesets/0008-tag.getTopTracks" relativeToChangelogFile="true"/>
+    <changeSet id="0008_0010_track_initial" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0008-tag.getTopTracks/0008-0010-track$initial.sql"/>
+    </changeSet>
+
+    <changeSet id="0008_0020_tag_add_usage_count" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0008-tag.getTopTracks/0008-0020-tag$add_usage_count.sql"/>
+    </changeSet>
+
+    <changeSet id="0008_0030_tag_update_usage_count" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0008-tag.getTopTracks/0008-0030-tag$update_usage_count.sql"/>
+    </changeSet>
+
+    <changeSet id="0008_0040_tag_add_usage_users_count" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0008-tag.getTopTracks/0008-0040-tag$add_usage_users_count.sql"/>
+    </changeSet>
+
+    <changeSet id="0008_0050_tag_update_usage_users_count" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0008-tag.getTopTracks/0008-0050-tag$update_usage_users_count.sql"/>
+    </changeSet>
 
 </databaseChangeLog>

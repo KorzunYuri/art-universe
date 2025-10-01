@@ -11,4 +11,5 @@ BEGIN
         primary_count,
         total_count,
         CASE WHEN total_count = 0 THEN 0.0 ELSE (primary_count::DECIMAL / total_count * 100) END;
-END $$;
+END;
+$$;

@@ -1,10 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <databaseChangeLog
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
-        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
-    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
 
-    <includeAll path="../changesets/0005-attribute-history" relativeToChangelogFile="true"/>
+    <changeSet id="0005_0001_data_snapshot_initial" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0005-attribute-history/0005-0001_data_snapshot$initial.sql"/>
+    </changeSet>
+
+    <changeSet id="0005_0002_data_snapshot_unique_constraint" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0005-attribute-history/0005-0002_data_snapshot$unique_constraint.sql"/>
+    </changeSet>
+
+    <changeSet id="0005_0020_api_call_add_snapshot_reference" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0005-attribute-history/0005-0020_api_call$add_snapshot_reference.sql"/>
+    </changeSet>
+
+    <changeSet id="0005_0030_attribute_history_add_scope_entity_reference" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0005-attribute-history/0005-0030_attribute_history$add_scope_entity_reference.sql"/>
+    </changeSet>
+
+    <changeSet id="0005_0031_attribute_history_rename_entity_type_id" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0005-attribute-history/0005-0031_attribute_history$rename_entity_type_id.sql"/>
+    </changeSet>
+
+    <changeSet id="0005_0050_attribute_history_add_api_call_reference" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0005-attribute-history/0005-0050_attribute_history$add_api_call_reference.sql"/>
+    </changeSet>
+
+    <changeSet id="0005_0061_tag_add_api_call_reference" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0005-attribute-history/0005-0061_tag$add_api_call_reference.sql"/>
+    </changeSet>
+
+    <changeSet id="0005_0071_artist_add_api_call_reference" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0005-attribute-history/0005-0071_artist$add_api_call_reference.sql"/>
+    </changeSet>
 
 </databaseChangeLog>

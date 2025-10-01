@@ -4,8 +4,8 @@ CREATE OR REPLACE FUNCTION  cleanup_entity(
     in_threshold     INTEGER,
     in_dry_run       BOOLEAN
 )
-    RETURNS SETOF cleanup_history
-    LANGUAGE plpgsql
+RETURNS SETOF cleanup_history
+LANGUAGE plpgsql
 AS $$
 DECLARE
     v_root_table    TEXT;

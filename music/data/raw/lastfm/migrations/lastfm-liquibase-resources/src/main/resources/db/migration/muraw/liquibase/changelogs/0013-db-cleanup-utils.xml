@@ -1,10 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <databaseChangeLog
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
-        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
-    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
 
-    <includeAll path="../changesets/0013-db-cleanup-utils" relativeToChangelogFile="true"/>
+    <changeSet id="0013_0010_cleanup_run_initial" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0013-db-cleanup-utils/0013-0010-cleanup_run$initial.sql"/>
+    </changeSet>
+
+    <changeSet id="0013_0020_cleanup_history_initial" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0013-db-cleanup-utils/0013-0020-cleanup_history$initial.sql"/>
+    </changeSet>
+
+    <changeSet id="0013_0030_cleanup_history_add_message_initial" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0013-db-cleanup-utils/0013-0030-cleanup_history_add_message$initial.sql"
+                 splitStatements="false"/>
+    </changeSet>
+
+    <changeSet id="0013_0040_cleanup_entity_initial" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0013-db-cleanup-utils/0013-0040-cleanup_entity$initial.sql"
+                 splitStatements="false"/>
+    </changeSet>
+
+    <changeSet id="0013_0050_attribute_history_i_entity_drop" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0013-db-cleanup-utils/0013-0050-attribute_history_i_entity$drop.sql"/>
+    </changeSet>
+
+    <changeSet id="0013_0060_attribute_history_unique_value_drop" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0013-db-cleanup-utils/0013-0060-attribute_history$unique_value$drop.sql"/>
+    </changeSet>
+
+    <changeSet id="0013_0070_attribute_history_unique_value_valid_from_drop" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0013-db-cleanup-utils/0013-0070-attribute_history$unique_value_valid_from$drop.sql"/>
+    </changeSet>
+
+    <changeSet id="0013_0080_attribute_history_add_entity_index" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0013-db-cleanup-utils/0013-0080-attribute_history$add_entity_index.sql"/>
+    </changeSet>
+
+    <changeSet id="0013_0090_attribute_history_add_scope_entity_index" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0013-db-cleanup-utils/0013-0090-attribute_history$add_scope_entity_index.sql"/>
+    </changeSet>
+
+    <changeSet id="0013_0100_artist_listeners_count_index" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0013-db-cleanup-utils/0013-0100-artist$listeners_count_index.sql"/>
+    </changeSet>
+
+    <changeSet id="0013_0110_tag_usage_count_index" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0013-db-cleanup-utils/0013-0110-tag$usage_count_index.sql"/>
+    </changeSet>
+
+    <changeSet id="0013_0120_track_play_count_index" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0013-db-cleanup-utils/0013-0120-track$play_count_index.sql"/>
+    </changeSet>
+
+    <changeSet id="0013_0130_entity_relation_relation_index" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0013-db-cleanup-utils/0013-0130-entity_relation$relation_index.sql"/>
+    </changeSet>
+
+    <changeSet id="0013_0140_entity_relation_entity_index" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0013-db-cleanup-utils/0013-0140-entity_relation$entity_index.sql"/>
+    </changeSet>
+
+    <changeSet id="0013_0150_entity_relation_reverse_tag_artist_relations" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0013-db-cleanup-utils/0013-0150-entity_relation$reverse_tag_artist_relations.sql"/>
+    </changeSet>
+
+    <changeSet id="0013_0160_cleanup_entity_update" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0013-db-cleanup-utils/0013-0160-cleanup_entity$update.sql"
+                 splitStatements="false"/>
+    </changeSet>
+
+    <changeSet id="0013_0170_api_call_add_entity_index" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0013-db-cleanup-utils/0013-0170-api_call$add_entity_index.sql"/>
+    </changeSet>
+
+    <changeSet id="0013_0180_api_response_add_migration_fields" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0013-db-cleanup-utils/0013-0180-api_response$add_migration_fields.sql"/>
+    </changeSet>
+
+    <changeSet id="0013_0190_api_call_set_error_statuses" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0013-db-cleanup-utils/0013-0190_api_call$set_error_statuses.sql"/>
+    </changeSet>
+
+    <changeSet id="0013_0200_api_response_remove_migration_fields" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0013-db-cleanup-utils/0013-0200_api_response$remove_migration_fields.sql"/>
+    </changeSet>
+
+    <changeSet id="0013_0210_v_mtnc_dead_tup_initial" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0013-db-cleanup-utils/0013-0210-v_mtnc_dead_tup$initial.sql"/>
+    </changeSet>
+
+    <changeSet id="0013_0220_v_mtnc_wasted_initial" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0013-db-cleanup-utils/0013-0220-v_mtnc_wasted$initial.sql"/>
+    </changeSet>
 
 </databaseChangeLog>

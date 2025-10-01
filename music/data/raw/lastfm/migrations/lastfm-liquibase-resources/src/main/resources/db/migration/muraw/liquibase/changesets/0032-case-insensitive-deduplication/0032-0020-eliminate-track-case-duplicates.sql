@@ -204,4 +204,5 @@ BEGIN
     
     RAISE NOTICE 'Eliminated % duplicate tracks from % case-insensitive groups', tracks_removed, duplicate_groups;
     RAISE NOTICE 'Sample duplicates: %', sample_duplicates;
-END $$;
+END;
+$$;

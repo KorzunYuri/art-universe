@@ -1,10 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <databaseChangeLog
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
-        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
-    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
 
-    <includeAll path="../changesets/0002-api-call-tables" relativeToChangelogFile="true"/>
+    <changeSet id="0002_0010_api_call_initial" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0002-api-call-tables/0002_0010_api_call$initial.sql"/>
+    </changeSet>
+
+    <changeSet id="0002_0011_api_call_indexes_type" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0002-api-call-tables/0002_0011_api_call$indexes$type.sql"/>
+    </changeSet>
+
+    <changeSet id="0002_0012_api_call_indexes_status" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0002-api-call-tables/0002_0012_api_call$indexes$status.sql"/>
+    </changeSet>
+
+    <changeSet id="0002_0013_api_call_indexes_due_dttm" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0002-api-call-tables/0002_0013_api_call$indexes$due_dttm.sql"/>
+    </changeSet>
+
+    <changeSet id="0002_0020_api_response_initial" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0002-api-call-tables/0002_0020_api_response$initial.sql"/>
+    </changeSet>
+
+    <changeSet id="0002_0021_api_response_indexes_api_call_type" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0002-api-call-tables/0002_0021_api_response$indexes$api_call_type.sql"/>
+    </changeSet>
+
+    <changeSet id="0002_0022_api_response_indexes_status" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0002-api-call-tables/0002_0022_api_response$indexes$status.sql"/>
+    </changeSet>
 
 </databaseChangeLog>

@@ -154,4 +154,5 @@ BEGIN
     SELECT COUNT(*) INTO duplicate_groups FROM album_duplicates_analysis;
     
     RAISE NOTICE 'Eliminated % duplicate albums from % groups', albums_removed, duplicate_groups;
-END $$;
+END;
+$$;

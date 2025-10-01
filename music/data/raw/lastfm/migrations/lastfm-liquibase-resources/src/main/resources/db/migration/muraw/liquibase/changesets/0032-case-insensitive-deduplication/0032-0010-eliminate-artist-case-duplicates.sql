@@ -294,29 +294,30 @@ DELETE FROM artist WHERE id IN (
 
 -- Log results
 DO $$
-    DECLARE
-        artists_removed INTEGER;
-        duplicate_groups INTEGER;
-        sample_duplicates TEXT;
-    BEGIN
-        SELECT COUNT(*) INTO artists_removed FROM (
-                                                      SELECT UNNEST(delete_artist_ids) FROM artist_case_duplicates_analysis
-                                                  ) a;
+DECLARE
+    artists_removed INTEGER;
+    duplicate_groups INTEGER;
+    sample_duplicates TEXT;
+BEGIN
+    SELECT COUNT(*) INTO artists_removed FROM (
+                                                  SELECT UNNEST(delete_artist_ids) FROM artist_case_duplicates_analysis
+                                              ) a;
 
-        SELECT COUNT(*) INTO duplicate_groups FROM artist_case_duplicates_analysis;
+    SELECT COUNT(*) INTO duplicate_groups FROM artist_case_duplicates_analysis;
 
-        -- Get sample of duplicates for logging
-        SELECT STRING_AGG(
-                       lower_name || ' (' || duplicate_count || ' variants: ' ||
-                       ARRAY_TO_STRING(keep_artist_name || delete_artist_names, ' | ') || ')',
-                       '; '
-               ) INTO sample_duplicates
-        FROM (
-                 SELECT * FROM artist_case_duplicates_analysis
-                 ORDER BY duplicate_count DESC
-                 LIMIT 5
-             ) sample;
+    -- Get sample of duplicates for logging
+    SELECT STRING_AGG(
+                   lower_name || ' (' || duplicate_count || ' variants: ' ||
+                   ARRAY_TO_STRING(keep_artist_name || delete_artist_names, ' | ') || ')',
+                   '; '
+           ) INTO sample_duplicates
+    FROM (
+             SELECT * FROM artist_case_duplicates_analysis
+             ORDER BY duplicate_count DESC
+             LIMIT 5
+         ) sample;
 
-        RAISE NOTICE 'Eliminated % duplicate artists from % case-insensitive groups', artists_removed, duplicate_groups;
-        RAISE NOTICE 'Sample duplicates: %', sample_duplicates;
-    END $$;
+    RAISE NOTICE 'Eliminated % duplicate artists from % case-insensitive groups', artists_removed, duplicate_groups;
+    RAISE NOTICE 'Sample duplicates: %', sample_duplicates;
+END;
+$$;

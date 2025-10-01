@@ -30,4 +30,5 @@ BEGIN
     FOR rec IN SELECT * FROM migration_log LOOP
         RAISE NOTICE 'Migration result: % = %', rec.operation, rec.count;
     END LOOP;
-END $$;
+END;
+$$;

@@ -2,7 +2,7 @@ CREATE OR REPLACE PROCEDURE cleanup_history_add_message(
     IN  in_cleanup_run_id   BIGINT,
     IN  in_message          VARCHAR(1024)
 )
-    LANGUAGE plpgsql
+LANGUAGE plpgsql
 AS $$
 BEGIN
 
@@ -13,4 +13,4 @@ BEGIN
     VALUES  (in_cleanup_run_id, in_message);
 
 END;
-$$
+$$;

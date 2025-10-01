@@ -1,10 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <databaseChangeLog
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
-        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
-    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
 
-    <includeAll path="../changesets/0012-artist.getTopTracks" relativeToChangelogFile="true"/>
+    <changeSet id="0012_0010_track_add_listeners_count" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0012-artist.getTopTracks/0012-0010-track$add_listeners_count.sql"/>
+    </changeSet>
+
+    <changeSet id="0012_0020_track_add_play_count" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0012-artist.getTopTracks/0012-0020-track$add_play_count.sql"/>
+    </changeSet>
+
+    <changeSet id="0012_0030_drop_views" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0012-artist.getTopTracks/0012-0030-drop_views.sql"/>
+    </changeSet>
+
+    <changeSet id="0012_0031_drop_views" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0012-artist.getTopTracks/0012-0031-drop_views.sql"/>
+    </changeSet>
+
+    <changeSet id="0012_0032_drop_views" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0012-artist.getTopTracks/0012-0032-drop_views.sql"/>
+    </changeSet>
+
+    <changeSet id="0012_0033_drop_views" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0012-artist.getTopTracks/0012-0033-drop_views.sql"/>
+    </changeSet>
+
+    <changeSet id="0012_0040_track_widen_name" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0012-artist.getTopTracks/0012-0040-track$widen_name.sql"/>
+    </changeSet>
+
+    <changeSet id="0012_0050_track_widen_url" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0012-artist.getTopTracks/0012-0050-track$widen_url.sql"/>
+    </changeSet>
+
+    <changeSet id="0012_0060_v_entities_initial" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0012-artist.getTopTracks/0012-0060-v_entities$initial.sql"/>
+    </changeSet>
+
+    <changeSet id="0012_0070_v_attr_value_initial" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0012-artist.getTopTracks/0012-0070-v_attr_value$initial.sql"/>
+    </changeSet>
+
+    <changeSet id="0012_0080_v_attr_value_actual_initial" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0012-artist.getTopTracks/0012-0080-v_attr_value_actual$initial.sql"/>
+    </changeSet>
+
+    <changeSet id="0012_0090_v_attr_value_snapshot_initial" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0012-artist.getTopTracks/0012-0090-v_attr_value_snapshot$initial.sql"/>
+    </changeSet>
 
 </databaseChangeLog>

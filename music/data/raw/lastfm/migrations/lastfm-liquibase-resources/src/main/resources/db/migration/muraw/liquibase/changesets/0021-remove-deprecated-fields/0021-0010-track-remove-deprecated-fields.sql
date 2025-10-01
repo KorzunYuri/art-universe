@@ -1,1 +1,1 @@
-ALTER TABLE track DROP COLUMN is_streamable;
+ALTER TABLE track DROP COLUMN IF EXISTS is_streamable;

@@ -7,10 +7,8 @@
 
     <changeSet id="0032-0010-eliminate-artist-case-duplicates" author="amazon-q">
         <comment>Eliminate artist case-insensitive duplicates by merging data and removing duplicates</comment>
-        <sqlFile path="../changesets/0032-case-insensitive-deduplication/0032-0010-eliminate-artist-case-duplicates.sql"
-                 relativeToChangelogFile="true"
-                 splitStatements="false"
-                 endDelimiter="$$"/>
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0032-case-insensitive-deduplication/0032-0010-eliminate-artist-case-duplicates.sql"
+                 splitStatements="false"/>
         <rollback>
             <comment>This migration cannot be automatically rolled back as it involves data merging and deletion</comment>
         </rollback>
@@ -18,10 +16,8 @@
 
     <changeSet id="0032-0020-eliminate-track-case-duplicates" author="amazon-q">
         <comment>Eliminate track case-insensitive duplicates by merging data and removing duplicates</comment>
-        <sqlFile path="../changesets/0032-case-insensitive-deduplication/0032-0020-eliminate-track-case-duplicates.sql"
-                 relativeToChangelogFile="true"
-                 splitStatements="false"
-                 endDelimiter="$$"/>
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0032-case-insensitive-deduplication/0032-0020-eliminate-track-case-duplicates.sql"
+                 splitStatements="false"/>
         <rollback>
             <comment>This migration cannot be automatically rolled back as it involves data merging and deletion</comment>
         </rollback>
@@ -29,10 +25,8 @@
 
     <changeSet id="0032-0030-eliminate-album-case-duplicates" author="amazon-q">
         <comment>Eliminate album case-insensitive duplicates by merging data and removing duplicates</comment>
-        <sqlFile path="../changesets/0032-case-insensitive-deduplication/0032-0030-eliminate-album-case-duplicates.sql"
-                 relativeToChangelogFile="true"
-                 splitStatements="false"
-                 endDelimiter="$$"/>
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0032-case-insensitive-deduplication/0032-0030-eliminate-album-case-duplicates.sql"
+                 splitStatements="false"/>
         <rollback>
             <comment>This migration cannot be automatically rolled back as it involves data merging and deletion</comment>
         </rollback>

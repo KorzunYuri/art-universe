@@ -1,10 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <databaseChangeLog
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
-        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
-    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
 
-    <includeAll path="../changesets/0014-artist.getTopAlbums" relativeToChangelogFile="true"/>
+    <changeSet id="0014_0000_album_initial" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0014-artist.getTopAlbums/0014-0000-album$initial.sql"/>
+    </changeSet>
+
+    <changeSet id="0014_0010_album_increase_name_size" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0014-artist.getTopAlbums/0014-0010-album$increase_name_size.sql"/>
+    </changeSet>
+
+    <changeSet id="0014_0100_cleanup_entity_update" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0014-artist.getTopAlbums/0014-0100-cleanup_entity$update.sql"
+                 splitStatements="false"/>
+    </changeSet>
+
+    <changeSet id="0014_0110_cleanup_entity_keep_approved" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0014-artist.getTopAlbums/0014-0110-cleanup_entity$keep_approved.sql"
+                 splitStatements="false"/>
+    </changeSet>
 
 </databaseChangeLog>

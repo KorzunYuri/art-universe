@@ -1,10 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <databaseChangeLog
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
-        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
-    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
 
-    <includeAll path="../changesets/0001-task-tables" relativeToChangelogFile="true"/>
+    <changeSet id="0001_0010_task_initial" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0001-task-tables/0001_0010_task$initial.sql"/>
+    </changeSet>
+
+    <changeSet id="0001_0020_task_history_initial" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0001-task-tables/0001_0020_task_history$initial.sql"/>
+    </changeSet>
+
+    <changeSet id="0001_0021_task_history_trigger" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0001-task-tables/0001_0021_task_history$trigger.sql"
+                 splitStatements="false"/>
+    </changeSet>
 
 </databaseChangeLog>

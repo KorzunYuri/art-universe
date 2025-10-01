@@ -1,6 +1,8 @@
 -- on insert into task, insert a record into task_history
 CREATE OR REPLACE FUNCTION insert_task_history()
-    RETURNS TRIGGER AS $$
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
 BEGIN
     INSERT INTO task_history (
         task_id, task_type, due_dttm, status, attempt_cnt, created_at, updated_at
@@ -10,7 +12,7 @@ BEGIN
     );
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
 CREATE TRIGGER task_insert_trigger
     AFTER INSERT ON task

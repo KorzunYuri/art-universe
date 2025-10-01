@@ -67,4 +67,5 @@ BEGIN
     SELECT COUNT(*) INTO conflict_count FROM track_url_conflicts;
     SELECT COUNT(*) INTO duplicate_count FROM track_duplicates;
     RAISE NOTICE 'Found % URL conflicts affecting % duplicate tracks', conflict_count, duplicate_count;
-END $$;
+END;
+$$;
