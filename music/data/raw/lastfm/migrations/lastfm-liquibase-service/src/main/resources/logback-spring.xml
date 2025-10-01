@@ -2,7 +2,7 @@
 <configuration>
 
     <property name="LOG_DIR" value="./logs" />
-    <property name="LOG_FILE_BASENAME" value="lastfm-rest-api" />
+    <property name="LOG_FILE_BASENAME" value="lastfm-liquibase-service" />
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_DIR}/${LOG_FILE_BASENAME}.log</file>

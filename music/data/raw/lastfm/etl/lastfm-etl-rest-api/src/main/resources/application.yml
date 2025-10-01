@@ -1,7 +1,7 @@
 # all the default variables are provided for testing purposes (otherwise we would have to set those in application-test.yml)
 spring:
   application:
-    name: music-universe-raw-data-service
+    name: lastfm-etl-rest-api
   datasource:
     driverClassName: org.postgresql.Driver
     url: jdbc:postgresql://${MURAW_LASTFM_DB_HOST:localhost}:${MURAW_LASTFM_DB_PORT:5432}/music_universe?currentSchema=mu_raw_lastfm
