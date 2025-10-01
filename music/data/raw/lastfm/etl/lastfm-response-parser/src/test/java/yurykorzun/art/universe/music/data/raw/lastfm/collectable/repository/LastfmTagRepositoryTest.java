@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaTestWithHelper;
 
 import java.util.List;
 
@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Import({
         DbConsistencyHelper.class,
 })
-class LastfmTagRepositoryTest extends JpaOnlyTest {
+class LastfmTagRepositoryTest extends JpaTestWithHelper {
 
     @Autowired
     private LastfmTagRepository tagRepository;

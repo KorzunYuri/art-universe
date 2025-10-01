@@ -6,7 +6,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.dto.AlbumSearchParams;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.dto.ApprovalStatusRequestDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.dto.LastfmAlbumResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.LastfmAlbumService;
 
@@ -43,14 +42,6 @@ public class LastfmAlbumController {
         produces = MediaType.APPLICATION_JSON_VALUE
     )
     public LastfmAlbumResponseDto getAlbumById(@PathVariable Long id) {
-        return albumService.findDtoById(id);
-    }
-
-    @PatchMapping("/{id}/approval")
-    public LastfmAlbumResponseDto updateApprovalStatus(
-        @PathVariable Long id,
-        @RequestBody ApprovalStatusRequestDto request
-    ) {
-        return albumService.updateApprovalStatus(id, request.approvalStatus());
+        return albumService.findById(id);
     }
 }

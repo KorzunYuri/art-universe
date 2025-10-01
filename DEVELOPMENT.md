@@ -13,6 +13,8 @@
   - normal tests: `method_shouldBehavior_whenCondition()`, camel case
   - MVC tests: `HTTPMETHOD_path_shouldBehaviour_whenCondition()`, camel case
 - **JpaOnlyTest** - test archetype for persistence layer testing with TestContainers
+- **EntityCreationHelper** - creates (without persistence) entities with all required fields
+- **DbConsistencyHelper** - creates and persists entities in test database
 - **@MockitoBean** is used instead of @MockBean for Spring Boot tests
 - **Unit Tests** - Use `@ExtendWith(MockitoExtension.class)` with `@Mock` and `@InjectMocks`
 - **MVC Tests** - Use `@WebMvcTest` with `@MockitoBean` for service dependencies

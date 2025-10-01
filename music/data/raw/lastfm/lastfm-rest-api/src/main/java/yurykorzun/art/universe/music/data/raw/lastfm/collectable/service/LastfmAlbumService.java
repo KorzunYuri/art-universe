@@ -7,10 +7,8 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.dto.LastfmAlbum
 
 public interface LastfmAlbumService {
 
-    LastfmAlbumResponseDto findDtoById(Long id);
+    LastfmAlbumResponseDto findById(Long id);
     
     Page<LastfmAlbumResponseDto> findAll(AlbumSearchParams params, Pageable pageable);
-    
-    LastfmAlbumResponseDto updateApprovalStatus(Long id, Integer approvalStatusCode);
 
 }

@@ -5,7 +5,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.dto.ApprovalStatusRequestDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.dto.LastfmTrackResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.dto.TrackSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.LastfmTrackService;
@@ -51,17 +50,6 @@ public class LastfmTrackController {
         produces = MediaType.APPLICATION_JSON_VALUE
     )
     public LastfmTrackResponseDto getTrackById(@PathVariable Long id) {
-        return trackService.findDtoById(id);
-    }
-
-    @PatchMapping(
-        value = "/{id}/approval",
-        produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    public LastfmTrackResponseDto updateApprovalStatus(
-            @PathVariable Long id,
-            @RequestBody ApprovalStatusRequestDto request
-    ) {
-        return trackService.updateApprovalStatus(id, request.approvalStatus());
+        return trackService.findById(id);
     }
 }

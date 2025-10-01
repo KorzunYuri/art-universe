@@ -27,5 +27,5 @@ dependencies {
     implementation 'org.liquibase:liquibase-core'
     implementation 'io.hypersistence:hypersistence-utils-hibernate-63'
     
-    testImplementation project(':music:data:raw:lastfm:test:lastfm-test-with-database')
+    testImplementation project(':music:data:raw:lastfm:test:lastfm-test-database-helper')
 }

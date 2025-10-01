@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaTestWithHelper;
 
 import java.time.Instant;
 import java.util.Map;
@@ -14,7 +14,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("integration")
-class LastfmApiCallRepositoryTest extends JpaOnlyTest {
+class LastfmApiCallRepositoryTest extends JpaTestWithHelper {
 
     @Autowired
     private LastfmApiCallRepository repository;

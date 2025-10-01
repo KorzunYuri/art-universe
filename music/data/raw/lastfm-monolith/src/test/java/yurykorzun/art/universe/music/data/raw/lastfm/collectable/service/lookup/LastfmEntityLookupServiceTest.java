@@ -10,13 +10,13 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.L
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTag;
 
 import jakarta.persistence.EntityManager;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaTestWithHelper;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class LastfmEntityLookupServiceTest extends JpaOnlyTest {
+class LastfmEntityLookupServiceTest extends JpaTestWithHelper {
 
     @Autowired
     private EntityManager entityManager;

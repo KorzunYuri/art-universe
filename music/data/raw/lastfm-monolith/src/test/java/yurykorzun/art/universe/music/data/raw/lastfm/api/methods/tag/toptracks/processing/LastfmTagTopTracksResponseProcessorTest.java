@@ -36,7 +36,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl.La
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.LastfmTrackRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl.LastfmTrackServiceImpl;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaTestWithHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.maintenance.service.TestTaskCoordinatorConfig;
 
 import java.io.IOException;
@@ -66,7 +66,7 @@ import static org.junit.jupiter.api.Assertions.*;
         // relations
         LastfmArtistTrackServiceImpl.class,
 })
-class LastfmTagTopTracksResponseProcessorTest extends JpaOnlyTest {
+class LastfmTagTopTracksResponseProcessorTest extends JpaTestWithHelper {
     
     @Autowired
     private DbConsistencyHelper consistencyHelper;

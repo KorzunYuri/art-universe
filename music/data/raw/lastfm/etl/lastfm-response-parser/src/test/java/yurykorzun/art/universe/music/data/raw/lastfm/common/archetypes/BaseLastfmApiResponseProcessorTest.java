@@ -8,7 +8,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.attr
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.BlacklistedEntityUrlService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.attribute.LastfmAttributeHistoryProcessor;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.attribute.LastfmAttributeHistoryServiceImpl;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.maintenance.service.TestTaskCoordinatorConfig;
 
 /**
@@ -27,8 +26,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.maintenance.service.TestTas
         LastfmAttributeTypeSynchronizer.class,
         LastfmAttributeHistoryProcessor.class,
         TestTaskCoordinatorConfig.class,
-        // Test helpers
-        DbConsistencyHelper.class,
 })
-public abstract class BaseLastfmApiResponseProcessorTest extends JpaOnlyTest {
+public abstract class BaseLastfmApiResponseProcessorTest extends JpaTestWithHelper {
 }

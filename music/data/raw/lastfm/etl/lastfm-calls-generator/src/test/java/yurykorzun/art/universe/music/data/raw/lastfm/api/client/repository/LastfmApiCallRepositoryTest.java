@@ -8,7 +8,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApi
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.attribute.LastfmDataSnapshot;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.attribute.LastfmDataSnapshotRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaTestWithHelper;
 
 import java.time.Instant;
 import java.util.List;
@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @Tag("integration")
-class LastfmApiCallRepositoryTest extends JpaOnlyTest {
+class LastfmApiCallRepositoryTest extends JpaTestWithHelper {
 
     @Autowired
     private LastfmApiCallRepository repository;

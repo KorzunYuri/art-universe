@@ -27,7 +27,7 @@ public class LastfmTagServiceImpl implements LastfmTagService {
     }
 
     @Override
-    public LastfmTagResponseDto findDtoById(Long id) {
+    public LastfmTagResponseDto findById(Long id) {
         return tagRepository.findById(id)
             .map(LastfmTagResponseDto::from)
             .orElseThrow(() -> new EntityNotFoundException("Tag not found with id: " + id));
@@ -47,19 +47,6 @@ public class LastfmTagServiceImpl implements LastfmTagService {
     
     private static List<ApprovalStatus> getApprovalStatusesFromCodes(TagSearchParams params) {
         return CodedRegistry.getByCodes(params.approvalStatuses(), ApprovalStatus.class);
-    }
-    
-    @Override
-    public LastfmTagResponseDto updateApprovalStatus(Long id, Integer approvalStatusCode) {
-        ApprovalStatus approvalStatus = CodedRegistry.getByCode(approvalStatusCode, ApprovalStatus.class)
-            .orElseThrow(() -> new IllegalArgumentException(String.format("ApprovalStatus with code %s not found", approvalStatusCode)));
-        
-        LastfmTag tag = tagRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Tag not found with id: " + id));
-        
-        tag.updateApprovalStatus(approvalStatus);
-        LastfmTag updated = tagRepository.save(tag);
-        return LastfmTagResponseDto.from(updated);
     }
     
     @Override

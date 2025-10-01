@@ -5,13 +5,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaTestWithHelper;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class LastfmArtistRepositoryMbidDeduplicationTest extends JpaOnlyTest {
+class LastfmArtistRepositoryMbidDeduplicationTest extends JpaTestWithHelper {
 
     @Autowired
     private LastfmArtistRepository artistRepository;

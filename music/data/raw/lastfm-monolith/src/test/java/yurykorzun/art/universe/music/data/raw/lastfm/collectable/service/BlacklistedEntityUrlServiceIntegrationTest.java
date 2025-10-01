@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.BlacklistedEntityUrlRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaTestWithHelper;
 
 import java.util.List;
 
@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @Tag("integration")
 @Import(BlacklistedEntityUrlService.class)
-class BlacklistedEntityUrlServiceIntegrationTest extends JpaOnlyTest {
+class BlacklistedEntityUrlServiceIntegrationTest extends JpaTestWithHelper {
 
     @Autowired
     private BlacklistedEntityUrlRepository blacklistRepository;

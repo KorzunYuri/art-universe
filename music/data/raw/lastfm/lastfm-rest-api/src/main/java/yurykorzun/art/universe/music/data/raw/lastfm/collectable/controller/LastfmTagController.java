@@ -46,15 +46,7 @@ public class LastfmTagController {
         produces = MediaType.APPLICATION_JSON_VALUE
     )
     public LastfmTagResponseDto getTagById(@PathVariable Long id) {
-        return tagService.findDtoById(id);
-    }
-
-    @PatchMapping("/{id}/approval")
-    public LastfmTagResponseDto updateApprovalStatus(
-        @PathVariable Long id,
-        @RequestBody ApprovalStatusRequestDto request
-    ) {
-        return tagService.updateApprovalStatus(id, request.approvalStatus());
+        return tagService.findById(id);
     }
 
     @GetMapping("/entity/{entityType}/{entityId}")

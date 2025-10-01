@@ -9,13 +9,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTag;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaTestWithHelper;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class LastfmTagRepositoryTest extends JpaOnlyTest {
+class LastfmTagRepositoryTest extends JpaTestWithHelper {
 
     @Autowired
     private LastfmTagRepository tagRepository;

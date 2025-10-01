@@ -7,10 +7,8 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.dto.TrackSearch
 
 public interface LastfmTrackService {
 
+    LastfmTrackResponseDto findById(Long id);
+
     Page<LastfmTrackResponseDto> findAll(TrackSearchParams params, Pageable pageable);
     
-    LastfmTrackResponseDto updateApprovalStatus(Long id, Integer approvalStatusCode);
-
-    LastfmTrackResponseDto findDtoById(Long id);
-
 }

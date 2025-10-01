@@ -24,7 +24,7 @@ public class LastfmTrackServiceImpl implements LastfmTrackService {
     }
 
     @Override
-    public LastfmTrackResponseDto findDtoById(Long id) {
+    public LastfmTrackResponseDto findById(Long id) {
         return trackRepository.findById(id)
             .map(LastfmTrackResponseDto::from)
             .orElseThrow(() -> new EntityNotFoundException("Track not found with id: " + id));
@@ -46,18 +46,5 @@ public class LastfmTrackServiceImpl implements LastfmTrackService {
     
     private static List<ApprovalStatus> getApprovalStatusesFromCodes(TrackSearchParams params) {
         return CodedRegistry.getByCodes(params.approvalStatuses(), ApprovalStatus.class);
-    }
-    
-    @Override
-    public LastfmTrackResponseDto updateApprovalStatus(Long id, Integer approvalStatusCode) {
-        ApprovalStatus approvalStatus = CodedRegistry.getByCode(approvalStatusCode, ApprovalStatus.class)
-            .orElseThrow(() -> new IllegalArgumentException(String.format("ApprovalStatus with code %s not found", approvalStatusCode)));
-        
-        LastfmTrack track = trackRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Track not found with id: " + id));
-        
-        track.updateApprovalStatus(approvalStatus);
-        LastfmTrack updated = trackRepository.save(track);
-        return LastfmTrackResponseDto.from(updated);
     }
 }

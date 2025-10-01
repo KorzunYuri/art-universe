@@ -17,8 +17,6 @@ public interface LastfmTagRepository extends BaseLastfmTagRepository, LastfmTagR
 
     List<LastfmTag> findAllByNameIn(Collection<String> names);
 
-    List<LastfmTag> findAllByUrlIn(List<String> strings);
-
     @Query(value = """
         SELECT  t
         FROM    tag t

@@ -12,7 +12,7 @@ import java.util.List;
 
 public interface LastfmTagService {
 
-    LastfmTagResponseDto findDtoById(Long id);
+    LastfmTagResponseDto findById(Long id);
 
     Page<LastfmTagResponseDto> findAll(TagSearchParams params, Pageable pageable);
 
@@ -27,6 +27,14 @@ public interface LastfmTagService {
     List<EntityTagDto> findAllByEntity(LastfmEntityType entityType, Long entityId, 
                                       EntityTagSearchParams searchParams, Pageable pageable);
 
-    LastfmTagResponseDto updateApprovalStatus(Long id, Integer approvalStatusCode);
+    /**
+     * Find tags associated with a specific entity.
+     * @param entityType Type of entity (ARTIST, ALBUM, TRACK)
+     * @param entityId ID of the entity
+     * @return List of tags associated with the entity
+     */
+    default List<EntityTagDto> findAllByEntity(LastfmEntityType entityType, Long entityId) {
+        return findAllByEntity(entityType, entityId, new EntityTagSearchParams(null, null), null);
+    }
 
 }

@@ -6,6 +6,4 @@ archivesBaseName = 'lastfm-etl-tasks-coordinator'
 
 dependencies {
     implementation project(':music:data:raw:lastfm:lastfm-models')
-
-    implementation 'io.micrometer:micrometer-registry-prometheus'
 }

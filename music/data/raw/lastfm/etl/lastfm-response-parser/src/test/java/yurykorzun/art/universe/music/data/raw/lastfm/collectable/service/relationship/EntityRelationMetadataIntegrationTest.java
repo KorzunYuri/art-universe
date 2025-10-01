@@ -1,0 +1,178 @@
+package yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.relationship;
+
+import jakarta.persistence.EntityManager;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.relationship.LastfmArtistAlbum;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.relationship.LastfmArtistTag;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.relationship.LastfmArtistsRelation;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.relationship.TestLastfmArtistTagRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.relationship.impl.LastfmArtistAlbumServiceImpl;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.relationship.impl.LastfmArtistTagServiceImpl;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.relationship.impl.LastfmArtistsRelationServiceImpl;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaTestWithHelper;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * Integration tests for entity relations metadata processing
+ */
+@Import({
+    LastfmArtistTagServiceImpl.class,
+    LastfmArtistsRelationServiceImpl.class,
+    LastfmArtistAlbumServiceImpl.class,
+})
+@Tag("integration")
+class EntityRelationMetadataIntegrationTest extends JpaTestWithHelper {
+
+    @Autowired
+    private LastfmArtistTagService artistTagService;
+    
+    @Autowired
+    private LastfmArtistsRelationService artistsRelationService;
+    
+    @Autowired
+    private LastfmArtistAlbumService artistAlbumService;
+
+    @Autowired
+    private TestLastfmArtistTagRepository artistTagRepository;
+
+    @Autowired
+    private EntityManager entityManager;
+
+    @Autowired
+    private DbConsistencyHelper dbHelper;
+
+    @BeforeEach
+    void setUp() {
+        dbHelper.cleanup();
+    }
+
+    @Test
+    void initializeMetadata_shouldWorkForAllServiceTypes() {
+        // Given & When - services should initialize without errors
+        assertDoesNotThrow(() -> {
+            LastfmArtistTagServiceImpl artistTagService = new LastfmArtistTagServiceImpl(null, null);
+            artistTagService.initializeMetadata();
+        }, "ArtistTag service metadata initialization should not throw");
+
+        assertDoesNotThrow(() -> {
+            LastfmArtistsRelationServiceImpl artistsRelationService = new LastfmArtistsRelationServiceImpl(null, null);
+            artistsRelationService.initializeMetadata();
+        }, "ArtistsRelation service metadata initialization should not throw");
+
+        assertDoesNotThrow(() -> {
+            LastfmArtistAlbumServiceImpl artistAlbumService = new LastfmArtistAlbumServiceImpl(null, null);
+            artistAlbumService.initializeMetadata();
+        }, "ArtistAlbum service metadata initialization should not throw");
+    }
+
+    @Test
+    void initializeMetadata_shouldHandleInheritance_correctly() {
+        // Given - services with inherited fields
+        LastfmArtistTagServiceImpl service = new LastfmArtistTagServiceImpl(null, null);
+        
+        // When
+        assertDoesNotThrow(() -> service.initializeMetadata());
+        
+        // Then - should be able to generate SQL with inherited fields
+        LastfmArtistTag sampleEntity = dbHelper.createArtistTagForPersistence();
+        
+        assertDoesNotThrow(() -> {
+            String sql = service.buildUpsertSql(sampleEntity);
+            
+            // Should include inherited fields from BaseLastfmEntityRelation
+            assertTrue(sql.contains("approval_status"), "Should include inherited approval_status field");
+            assertTrue(sql.contains("api_call_id"), "Should include inherited api_call_id field");
+            assertTrue(sql.contains("created_at"), "Should include inherited created_at field");
+            assertTrue(sql.contains("updated_at"), "Should include inherited updated_at field");
+        });
+    }
+
+    @Test
+    void metadataExtraction_shouldHandleDifferentEntityPatterns() {
+        // Test different entity relationship patterns
+        
+        // 1. Different entity types (Artist-Tag)
+        LastfmArtistTag artistTag = dbHelper.createArtistTagForPersistence();
+        String artistTagSql = ((LastfmArtistTagServiceImpl) artistTagService).buildUpsertSql(artistTag);
+        assertTrue(artistTagSql.contains("ON CONFLICT (artist_id, tag_id)"), 
+            "Different entity types should use simple conflict columns");
+
+        // 2. Same entity types (Artist-Artist)
+        LastfmArtistsRelation artistsRelation = dbHelper.createArtistsRelationForPersistence();
+        String artistsRelationSql = ((LastfmArtistsRelationServiceImpl) artistsRelationService).buildUpsertSql(artistsRelation);
+        assertTrue(artistsRelationSql.contains("ON CONFLICT (source_artist_id, target_artist_id, relation_type)"), 
+            "Same entity types should use source/target prefixes and include relation_type");
+
+        // 3. No updatable fields (Artist-Album)
+        LastfmArtistAlbum artistAlbum = dbHelper.createArtistAlbumForPersistence();
+        String artistAlbumSql = ((LastfmArtistAlbumServiceImpl) artistAlbumService).buildUpsertSql(artistAlbum);
+        assertTrue(artistAlbumSql.contains("DO NOTHING"), 
+            "Entities with no updatable fields should use DO NOTHING");
+    }
+
+    @Test
+    void metadataExtraction_shouldValidateAnnotations() {
+        // Given
+        LastfmArtistTagServiceImpl service = new LastfmArtistTagServiceImpl(null, null);
+        service.initializeMetadata();
+        
+        // When
+        LastfmArtistTag sampleEntity = dbHelper.createArtistTagForPersistence();
+        String sql = ((LastfmArtistTagServiceImpl) artistTagService).buildUpsertSql(sampleEntity);
+        
+        // Then - should correctly extract from annotations
+        assertTrue(sql.contains("INSERT INTO artist_tag"), 
+            "Should extract table name from @Entity annotation");
+        assertTrue(sql.contains("artist_id"), 
+            "Should extract column name from @JoinColumn annotation");
+        assertTrue(sql.contains("tag_id"), 
+            "Should extract column name from @JoinColumn annotation");
+        assertTrue(sql.contains("usage_count"), 
+            "Should extract column name from @Column annotation");
+        
+        // Should NOT include @Id field in insert columns
+        assertFalse(sql.matches(".*\\(.*\\bid\\b.*\\).*VALUES.*"), 
+            "Should not include @Id field in insert columns");
+    }
+
+    @Test
+    void metadataExtraction_shouldHandleConverters() {
+        // Given - entity with converter (approval_status uses ApprovalStatusConverter)
+        LastfmArtistTag sampleEntity = dbHelper.createArtistTagForPersistence();
+        
+        // When & Then - should handle converter without errors
+        assertDoesNotThrow(() -> {
+            artistTagService.upsertAll(List.of(sampleEntity));
+            entityManager.flush();
+            assertEquals(1, artistTagRepository.count());
+        }, "Should handle fields with @Convert annotation");
+    }
+
+    @Test
+    void parameterMapper_shouldHandleComplexFields() {
+        // Given
+        LastfmArtistTag entity = dbHelper.createArtistTagForPersistence();
+        
+        // When & Then - should handle JoinColumn fields (extracting IDs from referenced entities)
+        assertDoesNotThrow(() -> {
+            artistTagService.upsertAll(List.of(entity));
+            entityManager.flush();
+            
+            List<LastfmArtistTag> saved = artistTagRepository.findAll();
+            assertEquals(1, saved.size());
+            
+            // Verify that foreign key relationships are properly handled
+            assertNotNull(saved.get(0).getArtist());
+            assertNotNull(saved.get(0).getTag());
+            assertNotNull(saved.get(0).getApiCall());
+        }, "Parameter mapper should handle @JoinColumn fields correctly");
+    }
+}

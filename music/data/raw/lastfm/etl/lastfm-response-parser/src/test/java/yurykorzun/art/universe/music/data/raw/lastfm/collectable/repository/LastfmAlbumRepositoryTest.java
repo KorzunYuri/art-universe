@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Import;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmAlbum;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaTestWithHelper;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Import({
         DbConsistencyHelper.class,
 })
-class LastfmAlbumRepositoryTest extends JpaOnlyTest {
+class LastfmAlbumRepositoryTest extends JpaTestWithHelper {
 
     @Autowired
     private LastfmAlbumRepository albumRepository;
