@@ -3,7 +3,6 @@ rootProject.name = 'art-universe'
 include 'commons'
 
 include 'music:data:master'
-include 'music:data:raw:lastfm-monolith'
 
 include 'music:data:raw:lastfm:migrations:lastfm-liquibase-resources'
 include 'music:data:raw:lastfm:migrations:lastfm-liquibase-service'
