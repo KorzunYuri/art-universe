@@ -17,7 +17,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.dto.LastfmTrack
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.dto.TrackSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.LastfmTrackRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl.LastfmTrackServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
 
 import java.util.*;

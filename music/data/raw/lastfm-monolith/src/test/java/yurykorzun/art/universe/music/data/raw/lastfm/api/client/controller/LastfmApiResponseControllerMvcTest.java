@@ -17,7 +17,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiRes
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiResponseService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.BaseMvcTest;
 
 import java.time.Instant;
 import java.util.Map;
@@ -28,7 +27,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(LastfmApiResponseController.class)
-class LastfmApiResponseControllerMvcTest extends BaseMvcTest {
+class LastfmApiResponseControllerMvcTest {
 
     @Autowired
     private MockMvc mockMvc;

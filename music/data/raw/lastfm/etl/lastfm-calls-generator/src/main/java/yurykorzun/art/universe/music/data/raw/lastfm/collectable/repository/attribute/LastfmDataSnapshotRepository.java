@@ -39,18 +39,6 @@ public interface LastfmDataSnapshotRepository extends BaseLastfmDataSnapshotRepo
         incCreatedCountByNumber(ids, 1);
     }
 
-    @Modifying
-    @Query(value = """
-            UPDATE  data_snapshot
-            SET     completed_cnt = completed_cnt + :count
-            WHERE   id = :id
-        """, nativeQuery = true)
-    void incCompletedCountByNumber(@Param("id") long id, @Param("count") int count);
-
-    default void incCompletedCount(long id) {
-        incCompletedCountByNumber(id, 1);
-    }
-
     LastfmDataSnapshot findByApiCallTypeAndEntityTypeAndEntityIdAndDataDate(
         LastfmApiCallType apiCallType,
         LastfmEntityType entityType,

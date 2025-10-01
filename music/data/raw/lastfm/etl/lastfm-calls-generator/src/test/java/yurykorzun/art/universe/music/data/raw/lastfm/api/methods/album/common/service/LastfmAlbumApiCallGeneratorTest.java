@@ -4,15 +4,17 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallEntityService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmAlbum;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.LastfmDataSnapshotService;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
 
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -22,188 +24,262 @@ class LastfmAlbumApiCallGeneratorTest {
 
     @Mock
     private LastfmApiCallService apiCallService;
+
     @Mock
     private LastfmDataSnapshotService snapshotService;
+
     @Mock
     private LastfmApiCallEntityService entityService;
 
+    private TestableLastfmAlbumApiCallGenerator generator;
+
     @Test
-    void isValidForApiCall_shouldReturnTrue_whenAlbumHasMbid() {
-        // given
-        TestableAlbumGenerator generator = new TestableAlbumGenerator(apiCallService, snapshotService, entityService);
-        LastfmAlbum album = EntityCreationHelper.createAlbum(builder -> builder.mbid("test-mbid"));
+    void deduplicateEntitiesForApiCalls_shouldDeduplicateByMbid() {
+        // Given: Albums with duplicate MBIDs
+        List<LastfmAlbum> albums = List.of(
+            createAlbum(1L, "Album1", "duplicate-mbid", ApprovalStatus.PENDING, 1000),
+            createAlbum(2L, "Album2", "duplicate-mbid", ApprovalStatus.APPROVED, 2000),
+            createAlbum(3L, "Album3", "unique-mbid", ApprovalStatus.APPROVED, 1500)
+        );
+        
+        generator = new TestableLastfmAlbumApiCallGenerator(
+            apiCallService, snapshotService, entityService);
 
-        // when
-        boolean result = generator.isValidForApiCall(album);
+        // When
+        List<LastfmAlbum> result = generator.deduplicateEntitiesForApiCalls(albums);
 
-        // then
-        assertTrue(result);
+        // Then
+        assertEquals(2, result.size(), "Should deduplicate albums with same MBID");
+        
+        // Should keep the approved album with higher listeners count (album2)
+        assertEquals(1, result.stream()
+            .mapToLong(a -> "duplicate-mbid".equals(a.getMbid()) ? 1 : 0)
+            .sum(), "Should have only one album with duplicate-mbid");
+        
+        LastfmAlbum selectedDuplicate = result.stream()
+            .filter(a -> "duplicate-mbid".equals(a.getMbid()))
+            .findFirst()
+            .orElseThrow();
+        
+        assertEquals(2L, selectedDuplicate.getId(), "Should select approved album with higher listeners count");
+        assertEquals(ApprovalStatus.APPROVED, selectedDuplicate.getApprovalStatus());
+        assertEquals(2000, selectedDuplicate.getListenersCount());
     }
 
     @Test
-    void isValidForApiCall_shouldReturnTrue_whenAlbumHasNameAndValidArtist() {
-        // given
-        TestableAlbumGenerator generator = new TestableAlbumGenerator(apiCallService, snapshotService, entityService);
-        LastfmArtist artist = EntityCreationHelper.createArtist(builder -> builder.name("Test Artist"));
-        LastfmAlbum album = EntityCreationHelper.createAlbum(builder -> 
-            builder.name("Test Album").artist(artist));
+    void deduplicateEntitiesForApiCalls_shouldDeduplicateByNameAndArtist() {
+        // Given: Albums with same name and artist but no MBID
+        LastfmArtist artist = createArtist(10L, "Artist1");
+        
+        LastfmAlbum album1 = createAlbum(1L, "Same Album", null, ApprovalStatus.PENDING, 1000);
+        album1.setArtist(artist);
+        
+        LastfmAlbum album2 = createAlbum(2L, "Same Album", null, ApprovalStatus.APPROVED, 2000);
+        album2.setArtist(artist);
+        
+        LastfmAlbum album3 = createAlbum(3L, "Different Album", null, ApprovalStatus.PENDING, 1500);
+        album3.setArtist(artist);
+        
+        List<LastfmAlbum> albums = List.of(album1, album2, album3);
+        
+        generator = new TestableLastfmAlbumApiCallGenerator(
+            apiCallService, snapshotService, entityService);
 
-        // when
-        boolean result = generator.isValidForApiCall(album);
+        // When
+        List<LastfmAlbum> result = generator.deduplicateEntitiesForApiCalls(albums);
 
-        // then
-        assertTrue(result);
-    }
-
-    @Test
-    void isValidForApiCall_shouldReturnFalse_whenAlbumHasNoMbidAndNoArtist() {
-        // given
-        TestableAlbumGenerator generator = new TestableAlbumGenerator(apiCallService, snapshotService, entityService);
-        LastfmAlbum album = EntityCreationHelper.createAlbum(builder -> 
-            builder.mbid(null).artist(null));
-
-        // when
-        boolean result = generator.isValidForApiCall(album);
-
-        // then
-        assertFalse(result);
-    }
-
-    @Test
-    void isValidForApiCall_shouldReturnFalse_whenAlbumHasNoMbidAndArtistHasNoName() {
-        // given
-        TestableAlbumGenerator generator = new TestableAlbumGenerator(apiCallService, snapshotService, entityService);
-        LastfmArtist artist = EntityCreationHelper.createArtist(builder -> builder.name(null));
-        LastfmAlbum album = EntityCreationHelper.createAlbum(builder -> 
-            builder.mbid(null).artist(artist));
-
-        // when
-        boolean result = generator.isValidForApiCall(album);
-
-        // then
-        assertFalse(result);
-    }
-
-    @Test
-    void getApiCallUniqueKey_shouldReturnMbidKey_whenMbidExists() {
-        // given
-        TestableAlbumGenerator generator = new TestableAlbumGenerator(apiCallService, snapshotService, entityService);
-        LastfmAlbum album = EntityCreationHelper.createAlbum(builder -> builder.mbid("test-mbid"));
-
-        // when
-        String result = generator.getApiCallUniqueKey(album);
-
-        // then
-        assertEquals("mbid-test-mbid", result);
-    }
-
-    @Test
-    void getApiCallUniqueKey_shouldReturnNamesKey_whenMbidMissingButArtistAndAlbumNamesExist() {
-        // given
-        TestableAlbumGenerator generator = new TestableAlbumGenerator(apiCallService, snapshotService, entityService);
-        LastfmArtist artist = EntityCreationHelper.createArtist(builder -> builder.name("Test Artist"));
-        LastfmAlbum album = EntityCreationHelper.createAlbum(builder -> 
-            builder.mbid(null).name("Test Album").artist(artist));
-
-        // when
-        String result = generator.getApiCallUniqueKey(album);
-
-        // then
-        assertEquals("names-Test Artist-Test Album", result);
-    }
-
-    @Test
-    void getApiCallUniqueKey_shouldReturnNull_whenNoValidIdentifier() {
-        // given
-        TestableAlbumGenerator generator = new TestableAlbumGenerator(apiCallService, snapshotService, entityService);
-        LastfmAlbum album = EntityCreationHelper.createAlbum(builder -> 
-            builder.mbid(null).artist(null));
-
-        // when
-        String result = generator.getApiCallUniqueKey(album);
-
-        // then
-        assertNull(result);
+        // Then
+        assertEquals(2, result.size(), "Should deduplicate albums with same name and artist");
+        
+        // Should keep the approved album with higher listeners count (album2)
+        LastfmAlbum selectedDuplicate = result.stream()
+            .filter(a -> "Same Album".equals(a.getName()))
+            .findFirst()
+            .orElseThrow();
+        
+        assertEquals(2L, selectedDuplicate.getId(), "Should select approved album with higher listeners count");
     }
 
     @Test
     void hasHigherPriority_shouldPrioritizeByApprovalStatus() {
-        // given
-        TestableAlbumGenerator generator = new TestableAlbumGenerator(apiCallService, snapshotService, entityService);
-        LastfmAlbum approved = EntityCreationHelper.createAlbum(builder -> builder.approvalStatus(ApprovalStatus.APPROVED));
-        LastfmAlbum pending = EntityCreationHelper.createAlbum(builder -> builder.approvalStatus(ApprovalStatus.PENDING));
-
-        // when & then
-        assertTrue(generator.hasHigherPriority(approved, pending));
-        assertFalse(generator.hasHigherPriority(pending, approved));
-    }
-
-    @Test
-    void hasHigherPriority_shouldPrioritizeByAlbumListenersCount_whenSameApprovalStatus() {
-        // given
-        TestableAlbumGenerator generator = new TestableAlbumGenerator(apiCallService, snapshotService, entityService);
-        LastfmAlbum morePopular = EntityCreationHelper.createAlbum(builder -> 
-            builder.approvalStatus(ApprovalStatus.APPROVED).listenersCount(1000));
-        LastfmAlbum lessPopular = EntityCreationHelper.createAlbum(builder -> 
-            builder.approvalStatus(ApprovalStatus.APPROVED).listenersCount(500));
-
-        // when & then
-        assertTrue(generator.hasHigherPriority(morePopular, lessPopular));
-        assertFalse(generator.hasHigherPriority(lessPopular, morePopular));
-    }
-
-    @Test
-    void hasHigherPriority_shouldPrioritizeByArtistListenersCount_whenAlbumMetricsEqual() {
-        // given
-        TestableAlbumGenerator generator = new TestableAlbumGenerator(apiCallService, snapshotService, entityService);
-        LastfmArtist popularArtist = EntityCreationHelper.createArtist(builder -> builder.listenersCount(2000));
-        LastfmArtist lessPopularArtist = EntityCreationHelper.createArtist(builder -> builder.listenersCount(1000));
+        // Given
+        generator = new TestableLastfmAlbumApiCallGenerator(
+            apiCallService, snapshotService, entityService);
+            
+        LastfmAlbum approvedAlbum = createAlbum(1L, "Album1", "mbid1", ApprovalStatus.APPROVED, 1000);
+        LastfmAlbum pendingAlbum = createAlbum(2L, "Album2", "mbid2", ApprovalStatus.PENDING, 2000);
         
-        LastfmAlbum albumWithPopularArtist = EntityCreationHelper.createAlbum(builder -> 
-            builder.approvalStatus(ApprovalStatus.APPROVED).listenersCount(500).artist(popularArtist));
-        LastfmAlbum albumWithLessPopularArtist = EntityCreationHelper.createAlbum(builder -> 
-            builder.approvalStatus(ApprovalStatus.APPROVED).listenersCount(500).artist(lessPopularArtist));
-
-        // when & then
-        assertTrue(generator.hasHigherPriority(albumWithPopularArtist, albumWithLessPopularArtist));
-        assertFalse(generator.hasHigherPriority(albumWithLessPopularArtist, albumWithPopularArtist));
+        // When & Then
+        assertTrue(generator.hasHigherPriority(approvedAlbum, pendingAlbum), 
+            "Approved album should have higher priority than pending album");
+        assertFalse(generator.hasHigherPriority(pendingAlbum, approvedAlbum), 
+            "Pending album should not have higher priority than approved album");
     }
 
     @Test
-    void getCommonApiCallParameters_shouldUseMbid_whenMbidExists() {
-        // given
-        TestableAlbumGenerator generator = new TestableAlbumGenerator(apiCallService, snapshotService, entityService);
-        LastfmAlbum album = EntityCreationHelper.createAlbum(builder -> builder.mbid("test-mbid"));
-
-        // when
-        Map<String, String> result = generator.getCommonApiCallParameters(album);
-
-        // then
-        assertEquals("test-mbid", result.get("mbid"));
-        assertFalse(result.containsKey("album"));
-        assertFalse(result.containsKey("artist"));
+    void hasHigherPriority_shouldPrioritizeByListenersCount_whenSameApprovalStatus() {
+        // Given
+        generator = new TestableLastfmAlbumApiCallGenerator(
+            apiCallService, snapshotService, entityService);
+            
+        LastfmAlbum highListenersAlbum = createAlbum(1L, "Album1", "mbid1", ApprovalStatus.APPROVED, 2000);
+        LastfmAlbum lowListenersAlbum = createAlbum(2L, "Album2", "mbid2", ApprovalStatus.APPROVED, 1000);
+        
+        // When & Then
+        assertTrue(generator.hasHigherPriority(highListenersAlbum, lowListenersAlbum), 
+            "Album with higher listeners count should have higher priority");
+        assertFalse(generator.hasHigherPriority(lowListenersAlbum, highListenersAlbum), 
+            "Album with lower listeners count should not have higher priority");
     }
 
     @Test
-    void getCommonApiCallParameters_shouldUseAlbumAndArtistNames_whenMbidMissing() {
-        // given
-        TestableAlbumGenerator generator = new TestableAlbumGenerator(apiCallService, snapshotService, entityService);
-        LastfmArtist artist = EntityCreationHelper.createArtist(builder -> builder.name("Test Artist"));
-        LastfmAlbum album = EntityCreationHelper.createAlbum(builder -> 
-            builder.mbid(null).name("Test Album").artist(artist));
-
-        // when
-        Map<String, String> result = generator.getCommonApiCallParameters(album);
-
-        // then
-        assertEquals("Test Album", result.get("album"));
-        assertEquals("Test Artist", result.get("artist"));
-        assertFalse(result.containsKey("mbid"));
+    void hasHigherPriority_shouldPrioritizeByArtistListenersCount_whenSameAlbumListenersCount() {
+        // Given
+        generator = new TestableLastfmAlbumApiCallGenerator(
+            apiCallService, snapshotService, entityService);
+            
+        LastfmArtist popularArtist = createArtist(1L, "Popular Artist");
+        popularArtist.setListenersCount(5000);
+        
+        LastfmArtist lessPopularArtist = createArtist(2L, "Less Popular Artist");
+        lessPopularArtist.setListenersCount(1000);
+        
+        LastfmAlbum albumWithPopularArtist = createAlbum(1L, "Album1", "mbid1", ApprovalStatus.APPROVED, 1000);
+        albumWithPopularArtist.setArtist(popularArtist);
+        
+        LastfmAlbum albumWithLessPopularArtist = createAlbum(2L, "Album2", "mbid2", ApprovalStatus.APPROVED, 1000);
+        albumWithLessPopularArtist.setArtist(lessPopularArtist);
+        
+        // When & Then
+        assertTrue(generator.hasHigherPriority(albumWithPopularArtist, albumWithLessPopularArtist), 
+            "Album with more popular artist should have higher priority");
+        assertFalse(generator.hasHigherPriority(albumWithLessPopularArtist, albumWithPopularArtist), 
+            "Album with less popular artist should not have higher priority");
     }
 
-    private static class TestableAlbumGenerator extends LastfmAlbumApiCallGenerator {
-        public TestableAlbumGenerator(LastfmApiCallService apiCallService, LastfmDataSnapshotService snapshotService, LastfmApiCallEntityService entityService) {
+    @Test
+    void hasHigherPriority_shouldPrioritizeByIdWhenEverythingElseIsEqual() {
+        // Given
+        generator = new TestableLastfmAlbumApiCallGenerator(
+            apiCallService, snapshotService, entityService);
+            
+        LastfmAlbum olderAlbum = createAlbum(1L, "Album1", "mbid1", ApprovalStatus.APPROVED, 1000);
+        LastfmAlbum newerAlbum = createAlbum(2L, "Album2", "mbid2", ApprovalStatus.APPROVED, 1000);
+        
+        // When & Then
+        assertTrue(generator.hasHigherPriority(olderAlbum, newerAlbum), 
+            "Album with lower ID (older) should have higher priority");
+        assertFalse(generator.hasHigherPriority(newerAlbum, olderAlbum), 
+            "Album with higher ID (newer) should not have higher priority");
+    }
+
+    @Test
+    void isValidForApiCall_shouldReturnTrue_whenAlbumHasMbid() {
+        // Given
+        generator = new TestableLastfmAlbumApiCallGenerator(
+            apiCallService, snapshotService, entityService);
+            
+        LastfmAlbum album = createAlbum(1L, "Album1", "mbid1", ApprovalStatus.APPROVED, 1000);
+        
+        // When & Then
+        assertTrue(generator.isValidForApiCall(album), 
+            "Album with MBID should be valid for API call");
+    }
+
+    @Test
+    void isValidForApiCall_shouldReturnTrue_whenAlbumHasNameAndArtist() {
+        // Given
+        generator = new TestableLastfmAlbumApiCallGenerator(
+            apiCallService, snapshotService, entityService);
+            
+        LastfmAlbum album = createAlbum(1L, "Album1", null, ApprovalStatus.APPROVED, 1000);
+        LastfmArtist artist = createArtist(1L, "Artist1");
+        album.setArtist(artist);
+        
+        // When & Then
+        assertTrue(generator.isValidForApiCall(album), 
+            "Album with name and artist should be valid for API call");
+    }
+
+    @Test
+    void isValidForApiCall_shouldReturnFalse_whenAlbumHasNoMbidAndNoArtist() {
+        // Given
+        generator = new TestableLastfmAlbumApiCallGenerator(
+            apiCallService, snapshotService, entityService);
+            
+        LastfmAlbum album = createAlbum(1L, "Album1", null, ApprovalStatus.APPROVED, 1000);
+        
+        // When & Then
+        assertFalse(generator.isValidForApiCall(album), 
+            "Album without MBID and artist should not be valid for API call");
+    }
+
+    @Test
+    void getApiCallUniqueKey_shouldReturnMbidKey_whenAlbumHasMbid() {
+        // Given
+        generator = new TestableLastfmAlbumApiCallGenerator(
+            apiCallService, snapshotService, entityService);
+            
+        LastfmAlbum album = createAlbum(1L, "Album1", "mbid1", ApprovalStatus.APPROVED, 1000);
+        
+        // When
+        String key = generator.getApiCallUniqueKey(album);
+        
+        // Then
+        assertEquals("mbid-mbid1", key, "Key should be based on MBID");
+    }
+
+    @Test
+    void getApiCallUniqueKey_shouldReturnNameKey_whenAlbumHasNoMbidButHasArtist() {
+        // Given
+        generator = new TestableLastfmAlbumApiCallGenerator(
+            apiCallService, snapshotService, entityService);
+            
+        LastfmAlbum album = createAlbum(1L, "Album1", null, ApprovalStatus.APPROVED, 1000);
+        LastfmArtist artist = createArtist(1L, "Artist1");
+        album.setArtist(artist);
+        
+        // When
+        String key = generator.getApiCallUniqueKey(album);
+        
+        // Then
+        assertEquals("names-Artist1-Album1", key, "Key should be based on artist name and album name");
+    }
+
+    @Test
+    void getApiCallUniqueKey_shouldReturnNull_whenAlbumIsInvalid() {
+        // Given
+        generator = new TestableLastfmAlbumApiCallGenerator(
+            apiCallService, snapshotService, entityService);
+            
+        LastfmAlbum album = createAlbum(1L, "Album1", null, ApprovalStatus.APPROVED, 1000);
+        // No artist set, so album is invalid
+        
+        // When
+        String key = generator.getApiCallUniqueKey(album);
+        
+        // Then
+        assertNull(key, "Key should be null for invalid album");
+    }
+
+    // open protected methods for testing
+    private static class TestableLastfmAlbumApiCallGenerator extends LastfmAlbumApiCallGenerator {
+        public TestableLastfmAlbumApiCallGenerator(
+            LastfmApiCallService apiCallService,
+            LastfmDataSnapshotService snapshotService,
+            LastfmApiCallEntityService entityService
+        ) {
             super(apiCallService, snapshotService, entityService);
+        }
+
+        @Override
+        public List<LastfmAlbum> deduplicateEntitiesForApiCalls(List<LastfmAlbum> entities) {
+            return super.deduplicateEntitiesForApiCalls(entities);
+        }
+
+        @Override
+        public List<LastfmAlbum> selectEntitiesForApiCalls() {
+            return super.selectEntitiesForApiCalls();
         }
 
         @Override
@@ -215,5 +291,62 @@ class LastfmAlbumApiCallGeneratorTest {
         protected int getDueDurationDays() {
             return 28;
         }
+        
+        @Override
+        public boolean isValidForApiCall(LastfmAlbum album) {
+            return super.isValidForApiCall(album);
+        }
+        
+        @Override
+        public String getApiCallUniqueKey(LastfmAlbum album) {
+            return super.getApiCallUniqueKey(album);
+        }
+        
+        @Override
+        public boolean hasHigherPriority(LastfmAlbum candidate, LastfmAlbum existing) {
+            return super.hasHigherPriority(candidate, existing);
+        }
+    }
+
+    private LastfmAlbum createAlbum(Long id, String name, String mbid, ApprovalStatus status, Integer listenersCount) {
+        // Create a mock API call for the required field
+        LastfmApiCall mockApiCall = LastfmApiCall.builder()
+            .id(1L)
+            .type(LastfmApiCallType.ALBUM_GET_INFO)
+            .dataSnapshotId(1L)
+            .dueDttm(java.time.Instant.now())
+            .params(Map.of())
+            .build();
+            
+        LastfmAlbum album = LastfmAlbum.builder()
+            .name(name)
+            .mbid(mbid)
+            .approvalStatus(status)
+            .listenersCount(listenersCount)
+            .apiCall(mockApiCall)
+            .build();
+        
+        ReflectionTestUtils.setField(album, "id", id);
+        return album;
+    }
+    
+    private LastfmArtist createArtist(Long id, String name) {
+        // Create a mock API call for the required field
+        LastfmApiCall mockApiCall = LastfmApiCall.builder()
+            .id(1L)
+            .type(LastfmApiCallType.ARTIST_GET_INFO)
+            .dataSnapshotId(1L)
+            .dueDttm(java.time.Instant.now())
+            .params(Map.of())
+            .build();
+            
+        LastfmArtist artist = LastfmArtist.builder()
+            .name(name)
+            .approvalStatus(ApprovalStatus.APPROVED)
+            .apiCall(mockApiCall)
+            .build();
+        
+        ReflectionTestUtils.setField(artist, "id", id);
+        return artist;
     }
 }

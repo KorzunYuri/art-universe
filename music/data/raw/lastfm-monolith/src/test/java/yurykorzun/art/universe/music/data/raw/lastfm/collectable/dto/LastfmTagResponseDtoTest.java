@@ -2,7 +2,6 @@ package yurykorzun.art.universe.music.data.raw.lastfm.collectable.dto;
 
 import org.junit.jupiter.api.Test;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.dto.LastfmTagResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
 

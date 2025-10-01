@@ -25,4 +25,9 @@ public interface TestBlacklistedEntityUrlRepository extends BaseBlacklistedEntit
         return  insertIgnoreDuplicate(entityType.getCode(), url);
     }
 
+    /**
+     * Checks if an entity is in the blacklist
+     */
+    boolean existsByEntityTypeAndUrl(LastfmEntityType entityType, String url);
+
 }

@@ -13,6 +13,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper.createAlbum;
 
 @ExtendWith(MockitoExtension.class)
 class LastfmAlbumServiceImplTest {
@@ -27,8 +28,8 @@ class LastfmAlbumServiceImplTest {
     void findAlbumsForGetInfo_shouldReturnRepositoryResult() {
         // given
         List<LastfmAlbum> expectedAlbums = List.of(
-            EntityCreationHelper.createAlbum(),
-            EntityCreationHelper.createAlbum()
+            createAlbum(),
+            createAlbum()
         );
         when(albumRepository.findAlbumsForGetInfo()).thenReturn(expectedAlbums);
 

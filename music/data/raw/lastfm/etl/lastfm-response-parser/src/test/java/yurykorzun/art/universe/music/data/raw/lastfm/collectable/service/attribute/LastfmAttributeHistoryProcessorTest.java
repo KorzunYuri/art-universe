@@ -24,8 +24,6 @@ import static org.junit.jupiter.api.Assertions.*;
     LastfmAttributeHistoryServiceImpl.class,
     LastfmAttributeTypeSynchronizer.class,
     TestTaskCoordinatorConfig.class,
-    // test helpers
-    DbConsistencyHelper.class,
 })
 class LastfmAttributeHistoryProcessorTest extends JpaTestWithHelper {
 

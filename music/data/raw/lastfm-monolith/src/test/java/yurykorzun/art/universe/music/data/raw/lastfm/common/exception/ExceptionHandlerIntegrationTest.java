@@ -7,13 +7,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import yurykorzun.art.universe.common.exception.ErrorResponse;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.BaseMvcTest;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(TestExceptionController.class)
-class ExceptionHandlerIntegrationTest extends BaseMvcTest {
+class ExceptionHandlerIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;

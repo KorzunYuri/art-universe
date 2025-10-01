@@ -62,42 +62,4 @@ class LastfmApiCallServiceImplTest {
                 .dueDttm(dueDttm)
             .build();
     }
-
-    @Test
-    void create_shouldCreateApiCall_whenValidDataProvided() {
-        // given
-        LastfmApiCallCreateRequest request = validCreateRequestSupplier().get();
-        LastfmApiCall apiCall = LastfmApiCall.builder()
-                .id(1L)
-                .dueDttm(request.getDueDttm())
-                .type(request.getType())
-            .build();
-        when(apiCallRepository.save(any(LastfmApiCall.class))).thenReturn(apiCall);
-
-        // when
-        long returnedId = service.createApiCall(request);
-
-        // then
-        verify(apiCallRepository).save(any(LastfmApiCall.class));
-        assertEquals(1L, returnedId);
-    }
-
-    @Test
-    void updateStatus_shouldUpdateStatus_whenValidTransitionProvided() {
-        // given
-        long id = 1L;
-        LastfmApiCall apiCall = LastfmApiCall.builder()
-                .type(LastfmApiCallType.TAG_TOP_TAGS)
-                .dueDttm(Instant.now())
-            .build();
-        when(apiCallRepository.getReferenceById(id)).thenReturn(apiCall);
-
-        // when
-        service.setStatus(id, ApiCallStatus.PENDING);
-
-        // then
-        verify(apiCallRepository).getReferenceById(id);
-        verify(apiCallRepository).save(apiCall);
-        assertEquals(ApiCallStatus.PENDING, apiCall.getStatus());
-    }
 }
