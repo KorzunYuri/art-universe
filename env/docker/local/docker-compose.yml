@@ -151,6 +151,43 @@ services:
     networks:
       - mu__network
 
+  lastfm-etl-rest-api:
+    container_name: local__mu-data-raw-lastfm-etl-rest-api__app
+    restart: unless-stopped
+    build:
+      dockerfile: Dockerfile.local
+      context: ../../../music/data/raw/lastfm/etl/lastfm-etl-rest-api
+    env_file:
+      - ../common/music-data-raw-lastfm.env
+      - ./music-data-raw-lastfm.env
+      - ./music-data-raw-lastfm.secrets.env
+    ports:
+      - "${MURAW_LASTFM_ETL_REST_API_EXTERNAL_PORT}:${MURAW_LASTFM_ETL_REST_API_INTERNAL_PORT}"
+      - "${MURAW_LASTFM_ETL_REST_API_ACTUATOR_EXTERNAL_PORT}:${MURAW_LASTFM_ETL_REST_API_ACTUATOR_INTERNAL_PORT}"
+    volumes:
+      - local__mu-data-raw-lastfm-etl-rest-api__app-logs:/app/logs
+    depends_on:
+      postgres-lastfm:
+        condition: service_healthy
+      lastfm-liquibase-service:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${MURAW_LASTFM_ETL_REST_API_INTERNAL_PORT}/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.3'
+        reservations:
+          memory: 256M
+          cpus: '0.1'
+    networks:
+      - mu__network
+
   music-data:
     container_name: local__mu-data__app
     restart: unless-stopped
@@ -361,6 +398,8 @@ volumes:
     name: local__mu-data-raw-lastfm__app-logs
   local__mu-data-raw-lastfm-rest-api__app-logs:
     name: local__mu-data-raw-lastfm-rest-api__app-logs
+  local__mu-data-raw-lastfm-etl-rest-api__app-logs:
+    name: local__mu-data-raw-lastfm-etl-rest-api__app-logs
   local__mu-data__app-logs:
     name: local__mu-data__app-logs
   local__mu-quiz__app-logs:
