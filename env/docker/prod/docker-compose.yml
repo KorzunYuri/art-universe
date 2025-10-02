@@ -58,6 +58,43 @@ services:
     networks:
       - mu__network
 
+  lastfm-rest-api:
+    container_name: prod__mu-data-raw-lastfm-rest-api__app
+    restart: unless-stopped
+    build:
+      context: ../../../
+      dockerfile: music/data/raw/lastfm/lastfm-rest-api/Dockerfile.prod
+    env_file:
+      - ../common/music-data-raw-lastfm.env
+      - ./music-data-raw-lastfm.env
+      - ./music-data-raw-lastfm.secrets.env
+    ports:
+      - "${MURAW_LASTFM_REST_API_EXTERNAL_PORT}:${MURAW_LASTFM_REST_API_INTERNAL_PORT}"
+      - "${MURAW_LASTFM_REST_API_ACTUATOR_EXTERNAL_PORT}:${MURAW_LASTFM_REST_API_ACTUATOR_INTERNAL_PORT}"
+    volumes:
+      - prod__mu-data-raw-lastfm-rest-api__app-logs:/app/logs
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      lastfm-liquibase-service:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${MURAW_LASTFM_REST_API_INTERNAL_PORT}/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.3'
+        reservations:
+          memory: 256M
+          cpus: '0.1'
+    networks:
+      - mu__network
+
   music-data:
     container_name: prod__mu-data__app
     restart: unless-stopped
@@ -263,6 +300,8 @@ networks:
 volumes:
   prod__mu-data-raw-lastfm__app-logs:
     name: prod__mu-data-raw-lastfm__app-logs
+  prod__mu-data-raw-lastfm-rest-api__app-logs:
+    name: prod__mu-data-raw-lastfm-rest-api__app-logs
   prod__mu-data__app-logs:
     name: prod__mu-data__app-logs
   prod__mu-quiz__app-logs:

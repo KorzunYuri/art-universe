@@ -4,8 +4,8 @@ spring:
     name: lastfm-rest-api
   datasource:
     driverClassName: org.postgresql.Driver
-    url: jdbc:postgresql://${MURAW_LASTFM_DB_HOST:localhost}:${MURAW_LASTFM_DB_PORT:5432}/music_universe?currentSchema=mu_raw_lastfm
-    username: mu_raw_lastfm_dm
+    url: jdbc:postgresql://${MURAW_LASTFM_DB_HOST}:${MURAW_LASTFM_DB_PORT}/${MURAW_LASTFM_DB_NAME}?currentSchema=${MURAW_LASTFM_DB_SCHEMA}
+    username: ${MURAW_LASTFM_DB_USER_NAME}
     password: '${MURAW_LASTFM_DB_PASSWORD}'
     hikari:
       pool-name: MuRawLastFmHikariPool
@@ -19,10 +19,6 @@ spring:
           default_null_ordering: last
         dialect: org.hibernate.dialect.PostgreSQLDialect
         show-sql: false
-        jdbc:
-          batch_size: 50
-        order_inserts: true
-        order_updates: true
     hibernate:
       ddl-auto: none
 
