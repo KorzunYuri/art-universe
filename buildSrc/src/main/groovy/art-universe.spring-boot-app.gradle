@@ -14,14 +14,14 @@ dependencyManagement {
 }
 
 dependencies {
-    implementation project(':commons')
+    implementation project(':common:commons-jpa')
     
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     
     runtimeOnly 'org.postgresql:postgresql'
     
-    testImplementation project(':commons')
+    testImplementation project(':common:commons-jpa')
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.testcontainers:testcontainers'
     testImplementation 'org.testcontainers:junit-jupiter'

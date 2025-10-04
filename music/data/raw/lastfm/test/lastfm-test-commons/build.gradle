@@ -5,8 +5,8 @@ plugins {
 archivesBaseName = 'lastfm-test-commons'
 
 dependencies {
-    api project(':commons')
-    api project(':music:data:raw:lastfm:lastfm-models')
+    api project(':common:commons-test')
 
-    api 'org.springframework.boot:spring-boot-starter-test'
+    api project(':common:commons-jpa')
+    api project(':music:data:raw:lastfm:lastfm-models')
 }

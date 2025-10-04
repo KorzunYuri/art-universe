@@ -3,8 +3,7 @@ plugins {
 }
 
 dependencies {
-    // messaging
-    implementation 'org.springframework.kafka:spring-kafka'
+    api 'org.springframework:spring-context'
     implementation 'com.fasterxml.jackson.core:jackson-databind'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 }

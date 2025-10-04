@@ -1,8 +1,15 @@
 rootProject.name = 'art-universe'
 
-include 'commons'
+include 'common:commons-context'
+include 'common:commons-jpa'
+include 'common:commons-web'
+include 'common:commons-test'
+include 'common:commons-test-web'
 
 include 'music:data:master'
+
+include 'common:data:raw:data-raw-commons-jpa'
+include 'common:data:raw:data-raw-commons-api-client'
 
 include 'music:data:raw:lastfm:migrations:lastfm-liquibase-resources'
 include 'music:data:raw:lastfm:migrations:lastfm-liquibase-service'
@@ -20,4 +27,3 @@ include 'music:data:raw:lastfm:etl:lastfm-etl-rest-api'
 
 include 'music:quiz'
 include 'music:ui'
-
