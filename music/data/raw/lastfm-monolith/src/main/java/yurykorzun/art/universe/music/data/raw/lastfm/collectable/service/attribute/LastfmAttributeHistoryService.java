@@ -2,7 +2,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.attrib
 
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.attribute.LastfmAttributeHistoryRecord;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.util.List;
 
 public interface LastfmAttributeHistoryService {

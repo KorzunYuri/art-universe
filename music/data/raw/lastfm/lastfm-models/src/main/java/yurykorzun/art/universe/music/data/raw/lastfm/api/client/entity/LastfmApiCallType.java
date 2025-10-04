@@ -21,7 +21,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.B
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTrack;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.util.*;
 
 import static yurykorzun.art.universe.music.data.raw.lastfm.api.LastfmApiConstants.*;
