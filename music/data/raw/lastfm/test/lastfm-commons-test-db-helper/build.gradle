@@ -1,0 +1,14 @@
+plugins {
+    id 'art-universe.java-library'
+}
+
+archivesBaseName = 'lastfm-commons-test-db-helper'
+
+dependencies {
+    api project(':music:data:raw:lastfm:lastfm-repositories')
+    api project(':music:data:raw:lastfm:test:lastfm-commons-test-db')
+    api project(':music:data:raw:lastfm:test:lastfm-commons-test-jpa')
+
+    api 'org.springframework.boot:spring-boot-starter-test'
+    api 'org.springframework.boot:spring-boot-starter-data-jpa'
+}

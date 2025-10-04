@@ -3,7 +3,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.album.getinfo.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.album.getinfo.dto.*;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.config.TestBeansConfig;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.config.CommonTestConfig;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class AlbumGetInfoDeserializersTest {
 
-    private final ObjectMapper objectMapper = TestBeansConfig.getObjectMapper();
+    private final ObjectMapper objectMapper = CommonTestConfig.getObjectMapper();
 
     @Test
     void shouldDeserializeAlbumWithEmptyTagsString() throws IOException {

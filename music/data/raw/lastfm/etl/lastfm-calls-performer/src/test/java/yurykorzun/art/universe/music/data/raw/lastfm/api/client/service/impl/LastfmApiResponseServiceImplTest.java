@@ -9,7 +9,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiRes
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmApiResponseRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.config.TestBeansConfig;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.config.CommonTestConfig;
 
 import java.util.function.Supplier;
 
@@ -29,7 +29,7 @@ class LastfmApiResponseServiceImplTest {
     void setUp() {
         apiResponseService = new LastfmApiResponseServiceImpl(
             apiResponseRepository,
-            TestBeansConfig.getObjectMapper()
+            CommonTestConfig.getObjectMapper()
         );
     }
 

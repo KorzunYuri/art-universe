@@ -6,6 +6,10 @@ plugins {
 archivesBaseName = 'music-data-master'
 
 dependencies {
+    implementation project(':common:commons-web')
+
     implementation 'org.liquibase:liquibase-core'
     implementation 'org.springframework.boot:spring-boot-docker-compose'
+
+    testImplementation project(':common:commons-test-web')
 }

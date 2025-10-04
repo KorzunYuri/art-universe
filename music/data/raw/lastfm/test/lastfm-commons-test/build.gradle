@@ -1,0 +1,11 @@
+plugins {
+    id 'art-universe.java-library'
+}
+
+archivesBaseName = 'lastfm-commons-test'
+
+dependencies {
+    api project(':common:commons-test')
+    api project(':common:commons-jpa')
+    api project(':music:data:raw:lastfm:lastfm-models')
+}

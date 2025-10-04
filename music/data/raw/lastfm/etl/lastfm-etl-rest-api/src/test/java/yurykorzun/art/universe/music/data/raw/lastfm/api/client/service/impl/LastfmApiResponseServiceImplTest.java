@@ -6,17 +6,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiResponseCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository.LastfmApiResponseRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.impl.LastfmApiResponseServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.config.TestBeansConfig;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.config.CommonTestConfig;
 
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -36,7 +33,7 @@ class LastfmApiResponseServiceImplTest {
     void setUp() {
         apiResponseService = new LastfmApiResponseServiceImpl(
             apiResponseRepository,
-            TestBeansConfig.getObjectMapper()
+            CommonTestConfig.getObjectMapper()
         );
     }
 
@@ -88,7 +85,7 @@ class LastfmApiResponseServiceImplTest {
         // given
         long id = 1L;
         LastfmApiResponse response = getMockResponse(validCreateResponseRequestSupplier().get(), id);
-        JsonNode expectedJson = TestBeansConfig.getObjectMapper().readTree(response.getResponseBody());
+        JsonNode expectedJson = CommonTestConfig.getObjectMapper().readTree(response.getResponseBody());
         when(apiResponseRepository.findById(id)).thenReturn(Optional.of(response));
 
         // when

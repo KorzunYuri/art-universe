@@ -6,6 +6,9 @@ archivesBaseName = 'lastfm-rest-api'
 
 dependencies {
     implementation project(':music:data:raw:lastfm:lastfm-repositories')
+    implementation project(':common:commons-web')
 
-    testImplementation project(':music:data:raw:lastfm:test:lastfm-test-database-helper')
+    testImplementation project(':music:data:raw:lastfm:test:lastfm-commons-test-db-helper')
+    testImplementation project(':music:data:raw:lastfm:test:lastfm-commons-test-context')
+    testImplementation project(':music:data:raw:lastfm:test:lastfm-commons-test-web')
 }

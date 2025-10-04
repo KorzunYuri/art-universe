@@ -57,7 +57,6 @@ class LastfmAlbumRepositoryTest extends JpaTestWithHelper {
         LastfmAlbum album = LastfmAlbum.builder()
                 .apiCall(apiCall)
                 .name(name)
-                .description(description)
                 .url(url)
                 .mbid(mbid)
                 .playCount(playCount)
@@ -68,7 +67,6 @@ class LastfmAlbumRepositoryTest extends JpaTestWithHelper {
         LastfmAlbum saved = albumRepository.save(album);
 
         assertEquals(name, saved.getName());
-        assertEquals(description, saved.getDescription());
         assertEquals(url, saved.getUrl());
         assertEquals(mbid, saved.getMbid());
         assertEquals(playCount, saved.getPlayCount());

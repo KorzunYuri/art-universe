@@ -14,6 +14,7 @@ dependencyManagement {
 }
 
 dependencies {
+    implementation project(':common:commons-web')
     implementation project(':music:data:raw:lastfm:lastfm-repositories')
 
     implementation 'org.springframework.boot:spring-boot-docker-compose'
@@ -27,5 +28,5 @@ dependencies {
     implementation 'org.liquibase:liquibase-core'
     implementation 'io.hypersistence:hypersistence-utils-hibernate-63'
     
-    testImplementation project(':music:data:raw:lastfm:test:lastfm-test-database-helper')
+    testImplementation project(':music:data:raw:lastfm:test:lastfm-commons-test-db-helper')
 }

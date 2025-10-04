@@ -5,11 +5,15 @@ plugins {
 archivesBaseName = 'lastfm-etl-calls-performer'
 
 dependencies {
+    implementation project(':common:data:raw:data-raw-commons-api-client')
     implementation project(':music:data:raw:lastfm:lastfm-repositories')
     implementation project(':music:data:raw:lastfm:etl:lastfm-tasks-coordinator')
 
     implementation 'org.springframework.retry:spring-retry'
     implementation 'com.google.guava:guava:33.4.0-jre'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
 
-    testImplementation project(':music:data:raw:lastfm:test:lastfm-test-with-database')
+    testImplementation project(':music:data:raw:lastfm:test:lastfm-commons-test-context')
+    testImplementation project(':music:data:raw:lastfm:test:lastfm-commons-test-jpa')
+    testImplementation project(':music:data:raw:lastfm:test:lastfm-commons-test-db')
 }

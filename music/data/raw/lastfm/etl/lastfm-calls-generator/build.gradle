@@ -8,5 +8,8 @@ dependencies {
     implementation project(':music:data:raw:lastfm:lastfm-repositories')
     implementation project(':music:data:raw:lastfm:etl:lastfm-tasks-coordinator')
 
-    testImplementation project(':music:data:raw:lastfm:test:lastfm-test-database-helper')
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+
+    testImplementation project(':music:data:raw:lastfm:test:lastfm-commons-test-context')
+    testImplementation project(':music:data:raw:lastfm:test:lastfm-commons-test-db-helper')
 }

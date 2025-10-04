@@ -11,12 +11,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallStatus;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiResponseStatus;
 import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
-import yurykorzun.art.universe.music.data.raw.lastfm.api.client.controller.LastfmApiResponseController;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiResponseService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.config.TestBeansConfig;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.config.CommonTestConfig;
 
 import java.time.Instant;
 import java.util.Map;
@@ -39,7 +38,7 @@ class LastfmApiResponseControllerTest {
         // Given
         Long responseId = 1L;
         String responseBody = "{\"artist\":{\"name\":\"Test Artist\",\"mbid\":\"test-mbid\"}}";
-        ObjectMapper objectMapper = TestBeansConfig.getObjectMapper();
+        ObjectMapper objectMapper = CommonTestConfig.getObjectMapper();
         JsonNode expectedResponse = objectMapper.readTree(responseBody);
 
         when(apiResponseService.getApiResponseBody(eq(responseId)))

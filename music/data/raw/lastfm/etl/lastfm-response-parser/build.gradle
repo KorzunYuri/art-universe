@@ -11,6 +11,6 @@ dependencies {
     implementation 'io.micrometer:micrometer-registry-prometheus'
     implementation 'info.debatty:java-string-similarity:2.0.0'
 
-    testImplementation project(':music:data:raw:lastfm:test:lastfm-test-database-helper')
-    testImplementation project(':music:data:raw:lastfm:test:lastfm-test-commons')
+    testImplementation project(':music:data:raw:lastfm:test:lastfm-commons-test-context')
+    testImplementation project(':music:data:raw:lastfm:test:lastfm-commons-test-db-helper')
 }
