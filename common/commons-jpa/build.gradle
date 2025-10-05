@@ -3,17 +3,19 @@ plugins {
 }
 
 dependencies {
-    api project(':common:commons-context')
-
-    api 'jakarta.annotation:jakarta.annotation-api'
-    api 'jakarta.persistence:jakarta.persistence-api'
-    api 'jakarta.validation:jakarta.validation-api'
+    api 'org.springframework:spring-context'
     api 'org.springframework:spring-jdbc'
     api 'org.springframework:spring-tx'
-    api 'com.fasterxml.jackson.core:jackson-databind'
-    api 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    api 'jakarta.annotation:jakarta.annotation-api'
+    api 'jakarta.persistence:jakarta.persistence-api'
+    
+    implementation 'jakarta.validation:jakarta.validation-api'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
     implementation 'org.reflections:reflections:0.10.2' // for CodedAutoregistrator
+    
+    runtimeOnly 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 
-    testImplementation 'org.hibernate.validator:hibernate-validator'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api'
     testImplementation 'org.glassfish:jakarta.el:4.0.2'
+    testRuntimeOnly 'org.hibernate.validator:hibernate-validator'
 }

@@ -5,10 +5,13 @@ plugins {
 archivesBaseName = 'lastfm-rest-api'
 
 dependencies {
-    implementation project(':music:data:raw:lastfm:lastfm-repositories')
     implementation project(':common:commons-web')
+    implementation project(':music:data:raw:lastfm:lastfm-repositories')
 
     testImplementation project(':music:data:raw:lastfm:test:lastfm-commons-test-db-helper')
-    testImplementation project(':music:data:raw:lastfm:test:lastfm-commons-test-context')
-    testImplementation project(':music:data:raw:lastfm:test:lastfm-commons-test-web')
+    testImplementation project(':common:commons-test-web')
+    testImplementation project(':music:data:raw:lastfm:test:lastfm-commons-test-jpa')
+    
+    testRuntimeOnly 'org.testcontainers:postgresql'
+    testRuntimeOnly 'org.testcontainers:testcontainers'
 }

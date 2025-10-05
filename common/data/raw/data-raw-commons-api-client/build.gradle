@@ -3,9 +3,6 @@ plugins {
 }
 
 dependencies {
-    api project(':common:commons-jpa')
     api project(':common:data:raw:data-raw-commons-jpa')
-
-    // HTTP client dependencies
-    api 'org.springframework:spring-web'
+    api 'org.springframework:spring-web' // for HTTP client
 }

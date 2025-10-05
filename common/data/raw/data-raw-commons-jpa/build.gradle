@@ -4,4 +4,6 @@ plugins {
 
 dependencies {
     api project(':common:commons-jpa')
+    
+    testImplementation 'org.junit.jupiter:junit-jupiter-api'
 }

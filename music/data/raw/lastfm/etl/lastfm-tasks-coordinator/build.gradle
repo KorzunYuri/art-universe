@@ -5,5 +5,9 @@ plugins {
 archivesBaseName = 'lastfm-etl-tasks-coordinator'
 
 dependencies {
-    implementation project(':music:data:raw:lastfm:lastfm-models')
+    api 'jakarta.annotation:jakarta.annotation-api'
+    api 'org.springframework.boot:spring-boot-autoconfigure'
+    api 'org.springframework:spring-context'
+    
+    implementation 'org.slf4j:slf4j-api'
 }

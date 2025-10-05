@@ -6,13 +6,23 @@ archivesBaseName = 'lastfm-commons-test-db'
 
 dependencies {
     api project(':music:data:raw:lastfm:test:lastfm-commons-test')
-    api project(':music:data:raw:lastfm:lastfm-models')
-    implementation project(':music:data:raw:lastfm:migrations:lastfm-liquibase-resources')
+    api project(':music:data:raw:lastfm:migrations:lastfm-liquibase-resources')
+    api project(':common:commons-test')
     
     api 'org.springframework.boot:spring-boot-starter-test'
     api 'org.springframework.boot:spring-boot-starter-data-jpa'
-    api 'org.testcontainers:testcontainers'
+    api 'org.springframework.boot:spring-boot-test-autoconfigure'
+    api 'org.springframework:spring-context'
+    api 'org.springframework:spring-test'
+    api 'org.springframework:spring-tx'
     api 'org.testcontainers:junit-jupiter'
     api 'org.testcontainers:postgresql'
-    implementation 'org.liquibase:liquibase-core'
+    
+    implementation 'org.slf4j:slf4j-api'
+    implementation 'org.springframework.boot:spring-boot-test'
+    implementation 'org.springframework:spring-core'
+    implementation 'org.testcontainers:testcontainers'
+    implementation 'org.testcontainers:jdbc'
+    
+    runtimeOnly 'org.liquibase:liquibase-core'
 }
