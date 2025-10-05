@@ -45,7 +45,7 @@ art-universe-commons ──┘        │           │
                                 │           │
                                 ▼           ▼
                        ┌─────────────────────────┐
-                       │   music-universe-ui     │
+                       │        music-ui         │
                        │  ┌─────┬─────┬─────┐    │
                        │  │Raw  │Data │Quiz │    │
                        │  │Admin│Mgmt │Cfg  │    │

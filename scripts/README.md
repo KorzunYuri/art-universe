@@ -19,17 +19,9 @@ scripts\run-module-dev.bat <module-path> [additional-gradle-args]
 ### Examples
 
 ```bash
-# Run music-data-raw-lastfm module
-./scripts/run-module-dev.sh music-universe:music-data-raw-lastfm
-
-# Run music-data module
-./scripts/run-module-dev.sh music-universe:music-data
-
-# Run music-quiz module
-./scripts/run-module-dev.sh music-universe:music-quiz
-
-# Run with additional Gradle arguments
-./scripts/run-module-dev.sh music-universe:music-data --debug
+./scripts/run-module-dev.sh music:data:raw:lastfm:lastfm-rest-api
+./scripts/run-module-dev.sh music:data:master
+./scripts/run-module-dev.sh music:quiz --debug
 ```
 
 ### Available Modules
@@ -61,9 +53,9 @@ The script loads environment variables in the following order (later values over
 
 Each module can have a `dev.override.env` file in its directory that overrides Docker configuration for local development:
 
-- `music-universe/music-data-raw-lastfm/dev.override.env`
-- `music-universe/music-data/dev.override.env`
-- `music-universe/music-quiz/dev.override.env`
+- `music/data/raw/lastfm/env/dev.override.env`
+- `music/data/master/dev.override.env`
+- `music/quiz/dev.override.env`
 
 These files typically configure:
 - Database connections to localhost instead of Docker containers

@@ -36,9 +36,9 @@ Use `scripts/run-module-dev.sh/.bat <module-path>` to run individual modules:
 
 ```bash
 # Examples
-./scripts/run-module-dev.sh music-universe:music-data-raw-lastfm
-./scripts/run-module-dev.sh music-universe:music-data
-./scripts/run-module-dev.sh music-universe:music-quiz
+./scripts/run-module-dev.sh music:data:raw:lastfm:lastfm-rest-api
+./scripts/run-module-dev.sh music:data:master
+./scripts/run-module-dev.sh music:quiz
 ```
 
 **Environment Loading Order:**
@@ -111,19 +111,19 @@ Use `scripts/run-module-dev.sh/.bat <module-path>` to run individual modules:
 ./gradlew test -PexcludeIntegrationTests
 
 # Build specific module
-./gradlew :music-universe:music-data:build
+./gradlew :music:data:master:build
 ```
 
 ## Module Structure
 
 ### Backend Modules
-- `art-universe-commons` - Shared utilities and base classes
-- `music-data-raw-lastfm` - LastFM API data collection
-- `music-data` - Curated data management and binding
-- `music-quiz` - Quiz generation from approved data
+- `:common:commons-*` - Shared utilities and base classes
+- `:music:data:raw:lastfm:*` - LastFM API data collection
+- `:music:data:master` - Curated data management and binding
+- `:music:quiz` - Quiz generation from approved data
 
 ### Frontend Module
-- `music-universe-ui` - React application for data management
+- `music:ui` - React application for data management
 
 ## IDE Setup
 

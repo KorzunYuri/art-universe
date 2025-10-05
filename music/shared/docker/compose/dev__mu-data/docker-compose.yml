@@ -15,8 +15,8 @@ services:
       - ${PROJECT_ROOT}/env/docker/local/music-data.secrets.env
       - ${PROJECT_ROOT}/env/docker/local/music-quiz.env
       - ${PROJECT_ROOT}/env/docker/local/music-quiz.secrets.env
-      - ${PROJECT_ROOT}/music-universe/music-data/dev.override.env
-      - ${PROJECT_ROOT}/music-universe/music-quiz/dev.override.env
+      - ${PROJECT_ROOT}/music/data/master/dev.override.env
+      - ${PROJECT_ROOT}/music/quiz/dev.override.env
     volumes:
       - db-postgres-data:/var/lib/postgresql/data
       - ../common/initdb/templates:/docker-entrypoint-initdb.d
