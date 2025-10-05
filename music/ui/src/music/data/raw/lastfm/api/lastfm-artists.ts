@@ -42,7 +42,7 @@ export interface LastfmArtistsPageSearchParams extends BaseLastfmPageSearchParam
  */
 export async function searchArtist(searchString: string): Promise<void> {
     await axios.post(
-        `${LastfmConfig.baseApiUrl}/artists/search`,
+        `${LastfmConfig.writeApiUrl}/artists/search`,
         { searchString }
     );
 }

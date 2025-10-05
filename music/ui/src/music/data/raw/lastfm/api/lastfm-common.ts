@@ -53,7 +53,7 @@ export async function updateApprovalStatus(
     const endpoint = lastfmEntityTypeToEndpoint[entityType];
     try {
         await axios.patch(
-            `${LastfmConfig.baseApiUrl}/${endpoint}/${entityId}/approval`,
+            `${LastfmConfig.writeApiUrl}/${endpoint}/${entityId}/approval`,
             {
                 approvalStatus: newStatus,
             }

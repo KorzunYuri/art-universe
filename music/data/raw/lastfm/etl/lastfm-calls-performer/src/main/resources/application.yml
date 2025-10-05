@@ -1,15 +1,14 @@
-# all the default variables are provided for testing purposes (otherwise we would have to set those in application-test.yml)
 spring:
   application:
     name: lastfm-calls-performer
   datasource:
     driverClassName: org.postgresql.Driver
-    url: jdbc:postgresql://${MURAW_LASTFM_DB_HOST:localhost}:${MURAW_LASTFM_DB_PORT:5432}/music_universe?currentSchema=mu_raw_lastfm
-    username: mu_raw_lastfm_dm
+    url: jdbc:postgresql://${MURAW_LASTFM_DB_HOST:localhost}:${MURAW_LASTFM_DB_PORT:5432}/${MURAW_LASTFM_DB_NAME:music_universe}?currentSchema=${MURAW_LASTFM_DB_SCHEMA:mu_raw_lastfm}
+    username: ${MURAW_LASTFM_DB_USER_NAME}
     password: '${MURAW_LASTFM_DB_PASSWORD}'
     hikari:
-      pool-name: MuRawLastFmHikariPool
-      maximum-pool-size: 5
+      pool-name: LastfmCallsPerformerHikariPool
+      maximum-pool-size: 4
       minimum-idle: 2
   jpa:
     database: postgresql

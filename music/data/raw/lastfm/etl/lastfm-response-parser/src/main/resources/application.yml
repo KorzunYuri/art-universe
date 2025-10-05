@@ -3,13 +3,13 @@ spring:
     name: lastfm-response-parser
   datasource:
     driverClassName: org.postgresql.Driver
-    url: jdbc:postgresql://${MURAW_LASTFM_DB_HOST:localhost}:${MURAW_LASTFM_DB_PORT:5432}/music_universe?currentSchema=mu_raw_lastfm
-    username: mu_raw_lastfm_dm
+    url: jdbc:postgresql://${MURAW_LASTFM_DB_HOST:localhost}:${MURAW_LASTFM_DB_PORT:5432}/${MURAW_LASTFM_DB_NAME:music_universe}?currentSchema=${MURAW_LASTFM_DB_SCHEMA:mu_raw_lastfm}
+    username: ${MURAW_LASTFM_DB_USER_NAME}
     password: '${MURAW_LASTFM_DB_PASSWORD}'
     hikari:
-      pool-name: MuRawLastFmHikariPool
-      maximum-pool-size: 8
-      minimum-idle: 4
+      pool-name: LastfmResponseParserHikariPool
+      maximum-pool-size: 4
+      minimum-idle: 2
   jpa:
     database: postgresql
     properties:
@@ -39,6 +39,8 @@ spring:
 lastfm:
   scheduling:
     attribute-history:
+      fixedDelaySecs: 1
+    parsing:
       fixedDelaySecs: 1
   threshold:
     artist:

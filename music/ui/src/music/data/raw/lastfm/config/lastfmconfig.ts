@@ -1,5 +1,10 @@
 export class LastfmConfig {
-    static readonly baseApiUrl = `http://${import.meta.env.VITE_MURAW_LASTFM_APP_HOST || 'localhost'}:${import.meta.env.VITE_MURAW_LASTFM_APP_EXTERNAL_PORT || '8081'}/api/v1`
+    static readonly readApiUrl = `http://${import.meta.env.VITE_MURAW_LASTFM_READ_API_HOST || 'localhost'}:${import.meta.env.VITE_MURAW_LASTFM_READ_API_EXTERNAL_PORT || '8084'}/api/v1`
+    static readonly writeApiUrl = `http://${import.meta.env.VITE_MURAW_LASTFM_WRITE_API_HOST || 'localhost'}:${import.meta.env.VITE_MURAW_LASTFM_WRITE_API_EXTERNAL_PORT || '8085'}/api/v1`
+    
+    // Backward compatibility
+    static readonly baseApiUrl = LastfmConfig.readApiUrl
+    
     static readonly mbBaseUrls = {
         artist:   'https://musicbrainz.org/artist/',
         album:    'https://musicbrainz.org/release/',
