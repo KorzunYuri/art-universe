@@ -5,19 +5,19 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 
 /**
  * Common web configuration that automatically enables common exception handling
  * and other shared web components when imported by modules.
  */
-@Configuration
+@AutoConfiguration
 public class CommonConfig {
 
     @Bean
-    @Primary
+    @ConditionalOnMissingBean
     public ObjectMapper objectMapper() {
         ObjectMapper mapper = new ObjectMapper();
 

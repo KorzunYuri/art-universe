@@ -24,9 +24,6 @@ public class CodedRegistrySynchronizer {
     @PostConstruct
     @Transactional
     public void syncDictionary() {
-        // clear the tables
-        jdbcTemplate.update("TRUNCATE TABLE dictionary");
-
         // persist each domain
         for (Class<? extends Coded> domainClass : CodedRegistry.getDomains()) {
             String domainName = domainClass.getSimpleName();
@@ -34,8 +31,12 @@ public class CodedRegistrySynchronizer {
             Map<Integer, ? extends Coded> registry = CodedRegistry.getRegistry(domainClass);
             // persist all the Coded instances registered for the domain
             for (Coded coded : registry.values()) {
-                jdbcTemplate.update("INSERT INTO dictionary (code, name, domain) VALUES (?, ?, ?)",
-                    coded.getCode(), coded.getName(), domainName);
+                jdbcTemplate.update("""
+                        INSERT INTO dictionary (domain, code, name)
+                        VALUES (?, ?, ?)
+                        ON CONFLICT (domain, code) DO UPDATE SET name = EXCLUDED.name
+                    """,
+                    domainName, coded.getCode(), coded.getName());
             }
         }
     }

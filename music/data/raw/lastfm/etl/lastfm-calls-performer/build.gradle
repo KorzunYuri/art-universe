@@ -5,6 +5,7 @@ plugins {
 archivesBaseName = 'lastfm-etl-calls-performer'
 
 dependencies {
+    implementation project(':common:commons-context')
     implementation project(':common:data:raw:data-raw-commons-api-client')
     implementation project(':music:data:raw:lastfm:lastfm-repositories')
     implementation project(':music:data:raw:lastfm:etl:lastfm-tasks-coordinator')
