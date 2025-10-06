@@ -5,8 +5,8 @@ services:
   lastfm-liquibase-service:
     container_name: prod__lastfm__liquibase
     build:
-      dockerfile: Dockerfile.prod
-      context: ../../../music/data/raw/lastfm/migrations/lastfm-liquibase-service
+      context: ../../../
+      dockerfile: music/data/raw/lastfm/migrations/lastfm-liquibase-service/Dockerfile.prod
     env_file:
       - ../common/music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.env

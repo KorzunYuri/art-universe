@@ -8,9 +8,8 @@ COPY build.gradle settings.gradle ./
 # Copy buildSrc for custom plugins
 COPY buildSrc/ buildSrc/
 
-# Copy commons module
-COPY commons/build.gradle commons/
-COPY commons/src/ commons/src/
+# Copy common modules
+COPY common/ common/
 
 # Copy liquibase resources module
 COPY music/data/raw/lastfm/migrations/lastfm-liquibase-resources/build.gradle music/data/raw/lastfm/migrations/lastfm-liquibase-resources/
@@ -27,8 +26,10 @@ RUN gradle :music:data:raw:lastfm:migrations:lastfm-liquibase-service:jar --no-d
 FROM eclipse-temurin:21-jre
 WORKDIR /app
 
-# Copy the built JAR
+# Copy the built JAR and dependencies
 COPY --from=build /app/music/data/raw/lastfm/migrations/lastfm-liquibase-service/build/libs/*.jar app.jar
+COPY --from=build /app/music/data/raw/lastfm/migrations/lastfm-liquibase-service/build/libs/lib/ lib/
+COPY --from=build /app/music/data/raw/lastfm/migrations/lastfm-liquibase-service/build/libs/resources/ resources/
 
 # Run Liquibase migration
 ENTRYPOINT ["java", "-jar", "app.jar"]
