@@ -1,5 +1,5 @@
 plugins {
-    id 'art-universe.spring-boot-app-with-metrics'
+    id 'art-universe.spring-boot-app'
 }
 
 archivesBaseName = 'lastfm-etl-calls-performer'
@@ -8,6 +8,11 @@ dependencies {
     implementation project(':common:data:raw:data-raw-commons-api-client')
     implementation project(':music:data:raw:lastfm:lastfm-repositories')
     implementation project(':music:data:raw:lastfm:etl:lastfm-tasks-coordinator')
+
+    // metrics
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
 
     implementation 'org.springframework.retry:spring-retry'
     implementation 'com.google.guava:guava:33.4.0-jre'

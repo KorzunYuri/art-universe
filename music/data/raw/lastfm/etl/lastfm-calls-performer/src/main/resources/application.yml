@@ -27,15 +27,13 @@ spring:
         javax.persistence.validation.mode: none
     hibernate:
       ddl-auto: none
-  main:
-    web-application-type: none
 
 server:
-  port: -1
-
+  # dummy port to not occupy 8080 on dev
+  port: ${MURAW_LASTFM_CALLS_PERFORMER_ACTUATOR_INTERNAL_PORT}
 management:
   server:
-    port: ${MURAW_LASTFM_CALLS_PERFORMER_ACTUATOR_INTERNAL_PORT:8090}
+    port: ${MURAW_LASTFM_CALLS_PERFORMER_ACTUATOR_INTERNAL_PORT}
 
 lastfm:
   client:

@@ -1,5 +1,5 @@
 plugins {
-    id 'art-universe.spring-boot-app-with-metrics'
+    id 'art-universe.spring-boot-app'
 }
 
 archivesBaseName = 'lastfm-etl-response-parser'
@@ -9,6 +9,11 @@ dependencies {
     implementation project(':music:data:raw:lastfm:etl:lastfm-tasks-coordinator')
 
     implementation 'info.debatty:java-string-similarity:2.0.0'
+
+    // metrics
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
 
     testImplementation project(':music:data:raw:lastfm:test:lastfm-commons-test-context')
     testImplementation project(':music:data:raw:lastfm:test:lastfm-commons-test-db-helper')
