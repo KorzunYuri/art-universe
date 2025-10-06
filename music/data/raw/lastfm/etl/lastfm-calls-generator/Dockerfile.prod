@@ -1,0 +1,56 @@
+# Build stage
+FROM gradle:8-jdk21 as build
+WORKDIR /app
+
+# Copy build files
+COPY build.gradle settings.gradle ./
+
+# Copy buildSrc for custom plugins
+COPY buildSrc/ buildSrc/
+
+# Copy commons module
+COPY commons/build.gradle commons/
+COPY commons/src/ commons/src/
+
+# Copy lastfm-models module
+COPY music/data/raw/lastfm/lastfm-models/build.gradle music/data/raw/lastfm/lastfm-models/
+COPY music/data/raw/lastfm/lastfm-models/src/ music/data/raw/lastfm/lastfm-models/src/
+
+# Copy lastfm-repositories module
+COPY music/data/raw/lastfm/lastfm-repositories/build.gradle music/data/raw/lastfm/lastfm-repositories/
+COPY music/data/raw/lastfm/lastfm-repositories/src/ music/data/raw/lastfm/lastfm-repositories/src/
+
+# Copy lastfm-tasks-coordinator module
+COPY music/data/raw/lastfm/etl/lastfm-tasks-coordinator/build.gradle music/data/raw/lastfm/etl/lastfm-tasks-coordinator/
+COPY music/data/raw/lastfm/etl/lastfm-tasks-coordinator/src/ music/data/raw/lastfm/etl/lastfm-tasks-coordinator/src/
+
+# Copy current module
+COPY music/data/raw/lastfm/etl/lastfm-calls-generator/build.gradle music/data/raw/lastfm/etl/lastfm-calls-generator/
+COPY music/data/raw/lastfm/etl/lastfm-calls-generator/src/ music/data/raw/lastfm/etl/lastfm-calls-generator/src/
+
+# Build the application and extract layers
+RUN gradle :music:data:raw:lastfm:etl:lastfm-calls-generator:bootJar :music:data:raw:lastfm:etl:lastfm-calls-generator:extractLayers --no-daemon
+
+# Runtime stage
+FROM eclipse-temurin:21-jre
+WORKDIR /app
+
+# Install curl for healthcheck
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+
+# Copy layers in order of frequency of change (for optimal Docker layer caching)
+COPY --from=build /app/music/data/raw/lastfm/etl/lastfm-calls-generator/build/docker-layers/dependencies/ ./dependencies/
+COPY --from=build /app/music/data/raw/lastfm/etl/lastfm-calls-generator/build/docker-layers/spring-boot-loader/ ./spring-boot-loader/
+COPY --from=build /app/music/data/raw/lastfm/etl/lastfm-calls-generator/build/docker-layers/snapshot-dependencies/ ./snapshot-dependencies/
+COPY --from=build /app/music/data/raw/lastfm/etl/lastfm-calls-generator/build/docker-layers/application/ ./application/
+
+EXPOSE 8090
+
+# Run the application with proper classpath (thin JAR needs dependencies)
+ENTRYPOINT ["java", \
+            "-XX:MaxRAMPercentage=75.0", \
+            "-XX:InitialRAMPercentage=50.0", \
+            "-Djava.security.egd=file:/dev/./urandom", \
+            "-Dspring.output.ansi.enabled=ALWAYS", \
+            "-cp", "application/*:application/lib/*:dependencies/lib/*", \
+            "yurykorzun.art.universe.music.data.raw.lastfm.LastfmApiCallsGeneratorApplication"]
