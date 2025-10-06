@@ -1,6 +1,8 @@
 spring:
   application:
     name: lastfm-response-parser
+  profiles:
+    include: common
   datasource:
     driverClassName: org.postgresql.Driver
     url: jdbc:postgresql://${MURAW_LASTFM_DB_HOST:localhost}:${MURAW_LASTFM_DB_PORT:5432}/${MURAW_LASTFM_DB_NAME:music_universe}?currentSchema=${MURAW_LASTFM_DB_SCHEMA:mu_raw_lastfm}
@@ -26,15 +28,13 @@ spring:
     hibernate:
       ddl-auto: none
   main:
-    banner-mode: off
-  autoconfigure:
-    exclude: >
-      org.springframework.boot.autoconfigure.admin.SpringApplicationAdminJmxAutoConfiguration,
-      org.springframework.boot.autoconfigure.jmx.JmxAutoConfiguration,
-      org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration,
-      org.springframework.boot.autoconfigure.websocket.servlet.WebSocketServletAutoConfiguration,
-      org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration,
-      org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration
+    web-application-type: none
+server:
+  port: -1
+
+management:
+  server:
+    port: ${MURAW_LASTFM_RESPONSE_PARSER_ACTUATOR_INTERNAL_PORT:8090}
 
 lastfm:
   scheduling:
