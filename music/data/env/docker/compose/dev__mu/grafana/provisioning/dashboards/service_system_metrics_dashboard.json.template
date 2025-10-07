@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 4,
+  "id": ${SERVICE_ID},
   "links": [],
   "liveNow": false,
   "panels": [
@@ -32,7 +32,7 @@
       },
       "id": 1,
       "panels": [],
-      "title": "Database Overview",
+      "title": "JVM Memory",
       "type": "row"
     },
     {
@@ -43,7 +43,37 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "thresholds": {
@@ -57,30 +87,56 @@
           },
           "unit": "bytes"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "G1 Eden Space Used",
+                  "G1 Old Gen Used",
+                  "G1 Survivor Space Used",
+                  "G1 Eden Space Max",
+                  "G1 Survivor Space Max"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 8,
-        "w": 20,
+        "w": 8,
         "x": 0,
         "y": 1
       },
       "id": 2,
       "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
         },
-        "textMode": "auto"
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
-      "pluginVersion": "10.0.13",
       "targets": [
         {
           "datasource": {
@@ -88,8 +144,8 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "lastfm_database_category_size_bytes{category=\"core_entities\"}",
-          "legendFormat": "Core Entities",
+          "expr": "jvm_memory_used_bytes{job=\"${SERVICE_JOB}\",area=\"heap\"}",
+          "legendFormat": "{{id}} Used",
           "range": true,
           "refId": "A"
         },
@@ -99,8 +155,108 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "lastfm_database_category_size_bytes{category=\"relationships\"}",
-          "legendFormat": "Relationships",
+          "expr": "jvm_memory_max_bytes{job=\"${SERVICE_JOB}\",area=\"heap\"}",
+          "legendFormat": "{{id}} Max",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "JVM Heap Memory Usage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$PROMETHEUS_DATASOURCE_UID"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 1
+      },
+      "id": 12,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$PROMETHEUS_DATASOURCE_UID"
+          },
+          "editorMode": "code",
+          "expr": "jvm_threads_live_threads{job=\"${SERVICE_JOB}\"}",
+          "legendFormat": "Live Threads",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$PROMETHEUS_DATASOURCE_UID"
+          },
+          "editorMode": "code",
+          "expr": "jvm_threads_daemon_threads{job=\"${SERVICE_JOB}\"}",
+          "legendFormat": "Daemon Threads",
           "range": true,
           "refId": "B"
         },
@@ -110,36 +266,14 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "lastfm_database_category_size_bytes{category=\"attributes\"}",
-          "legendFormat": "Attributes",
+          "expr": "jvm_threads_peak_threads{job=\"${SERVICE_JOB}\"}",
+          "legendFormat": "Peak Threads",
           "range": true,
           "refId": "C"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$PROMETHEUS_DATASOURCE_UID"
-          },
-          "editorMode": "code",
-          "expr": "lastfm_database_category_size_bytes{category=\"api_processing\"}",
-          "legendFormat": "API Processing",
-          "range": true,
-          "refId": "D"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$PROMETHEUS_DATASOURCE_UID"
-          },
-          "editorMode": "code",
-          "expr": "lastfm_database_category_size_bytes{category=\"maintenance\"}",
-          "legendFormat": "Maintenance",
-          "range": true,
-          "refId": "E"
         }
       ],
-      "title": "Current Category Sizes",
-      "type": "stat"
+      "title": "JVM Threads",
+      "type": "timeseries"
     },
     {
       "datasource": {
@@ -152,6 +286,8 @@
             "mode": "thresholds"
           },
           "mappings": [],
+          "max": 100,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -161,25 +297,25 @@
               },
               {
                 "color": "yellow",
-                "value": 1000000000
+                "value": 70
               },
               {
                 "color": "red",
-                "value": 5000000000
+                "value": 85
               }
             ]
           },
-          "unit": "bytes"
+          "unit": "percent"
         },
         "overrides": []
       },
       "gridPos": {
         "h": 8,
         "w": 4,
-        "x": 20,
+        "x": 16,
         "y": 1
       },
-      "id": 15,
+      "id": 11,
       "options": {
         "orientation": "auto",
         "reduceOptions": {
@@ -200,13 +336,83 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "lastfm_database_schema_size_bytes",
-          "legendFormat": "Schema Size",
+          "expr": "((disk_total_bytes{job=\"${SERVICE_JOB}\"} - disk_free_bytes{job=\"${SERVICE_JOB}\"}) / disk_total_bytes{job=\"${SERVICE_JOB}\"}) * 100",
+          "legendFormat": "Disk Usage %",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Total Schema Size",
+      "title": "Disk Usage %",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$PROMETHEUS_DATASOURCE_UID"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 70
+              },
+              {
+                "color": "red",
+                "value": 85
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 4,
+        "x": 20,
+        "y": 1
+      },
+      "id": 3,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "pluginVersion": "10.0.13",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$PROMETHEUS_DATASOURCE_UID"
+          },
+          "editorMode": "code",
+          "expr": "(sum(jvm_memory_used_bytes{job=\"${SERVICE_JOB}\",area=\"heap\"}) / sum(jvm_memory_max_bytes{job=\"${SERVICE_JOB}\",area=\"heap\"})) * 100",
+          "legendFormat": "Heap Usage %",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "JVM Heap Memory Usage %",
       "type": "gauge"
     },
     {
@@ -217,9 +423,9 @@
         "x": 0,
         "y": 9
       },
-      "id": 3,
+      "id": 4,
       "panels": [],
-      "title": "Table Details",
+      "title": "JVM Garbage Collection",
       "type": "row"
     },
     {
@@ -272,7 +478,7 @@
               }
             ]
           },
-          "unit": "bytes"
+          "unit": "s"
         },
         "overrides": []
       },
@@ -282,7 +488,7 @@
         "x": 0,
         "y": 10
       },
-      "id": 4,
+      "id": 5,
       "options": {
         "legend": {
           "calcs": [],
@@ -302,13 +508,13 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "lastfm_database_table_size_bytes{category=\"core_entities\"}",
-          "legendFormat": "{{table}}",
+          "expr": "rate(jvm_gc_pause_seconds_sum{job=\"${SERVICE_JOB}\"}[5m])",
+          "legendFormat": "{{gc}} GC Time",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Core Entities Table Sizes",
+      "title": "JVM GC Time Rate",
       "type": "timeseries"
     },
     {
@@ -361,7 +567,7 @@
               }
             ]
           },
-          "unit": "bytes"
+          "unit": "short"
         },
         "overrides": []
       },
@@ -370,35 +576,48 @@
         "w": 12,
         "x": 12,
         "y": 10
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$PROMETHEUS_DATASOURCE_UID"
+          },
+          "editorMode": "code",
+          "expr": "rate(jvm_gc_pause_seconds_count{job=\"${SERVICE_JOB}\"}[5m])",
+          "legendFormat": "{{gc}} GC Count",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "JVM GC Count Rate",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 18
       },
       "id": 7,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$PROMETHEUS_DATASOURCE_UID"
-          },
-          "editorMode": "code",
-          "expr": "lastfm_database_table_size_bytes{category=\"relationships\"}",
-          "legendFormat": "{{table}}",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Relationship Table Sizes",
-      "type": "timeseries"
+      "panels": [],
+      "title": "CPU & System Load",
+      "type": "row"
     },
     {
       "datasource": {
@@ -441,16 +660,26 @@
             }
           },
           "mappings": [],
+          "max": 1,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
                 "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.7
+              },
+              {
+                "color": "red",
+                "value": 0.9
               }
             ]
           },
-          "unit": "bytes"
+          "unit": "percentunit"
         },
         "overrides": []
       },
@@ -458,9 +687,9 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 18
+        "y": 19
       },
-      "id": 10,
+      "id": 8,
       "options": {
         "legend": {
           "calcs": [],
@@ -480,13 +709,24 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "lastfm_database_table_size_bytes{category=\"attributes\"}",
-          "legendFormat": "{{table}}",
+          "expr": "process_cpu_usage{job=\"${SERVICE_JOB}\"}",
+          "legendFormat": "Process CPU Usage",
           "range": true,
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$PROMETHEUS_DATASOURCE_UID"
+          },
+          "editorMode": "code",
+          "expr": "system_cpu_usage{job=\"${SERVICE_JOB}\"}",
+          "legendFormat": "System CPU Usage",
+          "range": true,
+          "refId": "B"
         }
       ],
-      "title": "Attribute Table Sizes",
+      "title": "CPU Usage",
       "type": "timeseries"
     },
     {
@@ -539,7 +779,7 @@
               }
             ]
           },
-          "unit": "bytes"
+          "unit": "short"
         },
         "overrides": []
       },
@@ -547,9 +787,9 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 18
+        "y": 19
       },
-      "id": 16,
+      "id": 9,
       "options": {
         "legend": {
           "calcs": [],
@@ -569,76 +809,100 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "lastfm_database_table_size_bytes{category=\"api_processing\"}",
-          "legendFormat": "{{table}}",
+          "expr": "system_load_average_1m{job=\"${SERVICE_JOB}\"}",
+          "legendFormat": "Load Average 1m",
           "range": true,
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$PROMETHEUS_DATASOURCE_UID"
+          },
+          "editorMode": "code",
+          "expr": "system_cpu_count{job=\"${SERVICE_JOB}\"}",
+          "legendFormat": "CPU Count",
+          "range": true,
+          "refId": "B"
         }
       ],
-      "title": "API Processing Table Sizes",
+      "title": "System Load Average",
       "type": "timeseries"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "$PROMETHEUS_DATASOURCE_UID"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
-          "unit": "bytes"
-        },
-        "overrides": []
-      },
+      "collapsed": false,
       "gridPos": {
-        "h": 8,
-        "w": 12,
+        "h": 1,
+        "w": 24,
         "x": 0,
-        "y": 26
+        "y": 27
       },
       "id": 13,
+      "panels": [],
+      "title": "Database Connection Pool (HikariCP)",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$PROMETHEUS_DATASOURCE_UID"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 28
+      },
+      "id": 14,
       "options": {
         "legend": {
           "calcs": [],
@@ -658,13 +922,35 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "lastfm_database_table_size_bytes{category=\"maintenance\"}",
-          "legendFormat": "{{table}}",
+          "expr": "hikaricp_connections_active{job=\"${SERVICE_JOB}\"}",
+          "legendFormat": "Active Connections",
           "range": true,
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$PROMETHEUS_DATASOURCE_UID"
+          },
+          "editorMode": "code",
+          "expr": "hikaricp_connections_idle{job=\"${SERVICE_JOB}\"}",
+          "legendFormat": "Idle Connections",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$PROMETHEUS_DATASOURCE_UID"
+          },
+          "editorMode": "code",
+          "expr": "hikaricp_connections_max{job=\"${SERVICE_JOB}\"}",
+          "legendFormat": "Max Connections",
+          "range": true,
+          "refId": "C"
         }
       ],
-      "title": "Maintenance Table Sizes",
+      "title": "HikariCP Connection Pool",
       "type": "timeseries"
     },
     {
@@ -717,7 +1003,7 @@
               }
             ]
           },
-          "unit": "bytes"
+          "unit": "s"
         },
         "overrides": []
       },
@@ -725,9 +1011,9 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 26
+        "y": 28
       },
-      "id": 17,
+      "id": 15,
       "options": {
         "legend": {
           "calcs": [],
@@ -747,13 +1033,24 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "lastfm_database_table_size_bytes{category=\"other\"}",
-          "legendFormat": "{{table}}",
+          "expr": "rate(hikaricp_connections_acquire_seconds_sum{job=\"${SERVICE_JOB}\"}[5m]) / rate(hikaricp_connections_acquire_seconds_count{job=\"${SERVICE_JOB}\"}[5m])",
+          "legendFormat": "Avg Acquire Time",
           "range": true,
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$PROMETHEUS_DATASOURCE_UID"
+          },
+          "editorMode": "code",
+          "expr": "hikaricp_connections_acquire_seconds_max{job=\"${SERVICE_JOB}\"}",
+          "legendFormat": "Max Acquire Time",
+          "range": true,
+          "refId": "B"
         }
       ],
-      "title": "Other Table Sizes",
+      "title": "HikariCP Connection Acquire Time",
       "type": "timeseries"
     }
   ],
@@ -770,8 +1067,8 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "LastFM Database Metrics Dashboard",
-  "uid": "lastfm-database-metrics",
-  "version": 1,
+  "title": "${SERVICE_TITLE}",
+  "uid": "${SERVICE_UID}",
+  "version": 2,
   "weekStart": ""
 }

@@ -11,8 +11,8 @@ services:
     stop_grace_period: 1m
     stop_signal: SIGINT
     build:
-      dockerfile: ../common/postgres.dockerfile
-      context: ../common
+      dockerfile: postgres.dockerfile
+      context: .
     env_file:
       - ${PROJECT_ROOT}/env/docker/common/music-data-raw-lastfm.env
       - ${PROJECT_ROOT}/env/docker/local/music-data-raw-lastfm.env
@@ -20,7 +20,7 @@ services:
       - ${PROJECT_ROOT}/music/data/raw/lastfm/env/dev.overrides.env
     volumes:
       - db-postgres-data:/var/lib/postgresql/data
-      - ../common/initdb/templates:/docker-entrypoint-initdb.d
+      - ./initdb/templates:/docker-entrypoint-initdb.d
     command: bash -c "envsubst < /docker-entrypoint-initdb.d/init.sql.template > /docker-entrypoint-initdb.d/init.sql && exec docker-entrypoint.sh postgres"
     ports:
       - "${MURAW_LASTFM_DB_PORT}:5432"
@@ -37,57 +37,10 @@ services:
     ports:
       - "${DB_ADMINER_PORT}:8080"
 
-  # Monitoring
-#  prometheus:
-#    container_name: dev__mu__prometheus
-#    image: prom/prometheus:latest
-#    restart: unless-stopped
-#    volumes:
-#      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-#      - prometheus-data:/prometheus
-#    command:
-#      - '--config.file=/etc/prometheus/prometheus.yml'
-#      - '--storage.tsdb.path=/prometheus'
-#      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
-#      - '--web.console.templates=/usr/share/prometheus/consoles'
-#    ports:
-#      - "${PROMETHEUS_PORT}:9090"
-#    extra_hosts:
-#      - "host.docker.internal:host-gateway"
-#
-#  grafana:
-#    container_name: dev__mu__grafana
-#    build:
-#      dockerfile: ../common/grafana.dockerfile
-#      context: ../common
-#    restart: unless-stopped
-#    volumes:
-#      - grafana-data:/var/lib/grafana
-#      - ../common/grafana/provisioning/dashboards:/tmp/dashboard-templates
-#      - ../common/grafana/provisioning/datasources:/tmp/datasource-templates
-#      - ../common/grafana-provision.sh:/tmp/grafana-provision.sh
-#    environment:
-#      - GF_SECURITY_ADMIN_USER=admin
-#      - GF_SECURITY_ADMIN_PASSWORD=admin
-#      - GF_USERS_ALLOW_SIGN_UP=false
-#      - GF_AUTH_ANONYMOUS_ENABLED=true
-#      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
-#      - GF_AUTH_DISABLE_LOGIN_FORM=true
-#      - PROMETHEUS_DATASOURCE_UID=prometheus_dev
-#    entrypoint: /tmp/grafana-provision.sh
-#    ports:
-#      - "${GRAFANA_PORT}:3000"
-#    depends_on:
-#      - prometheus
-
 networks:
   default:
-    name: dev__mu-data-raw-lastfm-network
+    name: dev__network
 
 volumes:
   db-postgres-data:
     name: dev__mu-data-raw-lastfm__db-postgres-data
-  prometheus-data:
-    name: dev__mu__prometheus-data
-  grafana-data:
-    name: dev__mu__grafana-data
