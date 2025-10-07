@@ -10,10 +10,8 @@ dependencies {
 
     implementation 'info.debatty:java-string-similarity:2.0.0'
 
-    // metrics
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    // web for actuator endpoints
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'io.micrometer:micrometer-registry-prometheus'
 
     testImplementation project(':music:data:raw:lastfm:test:lastfm-commons-test-context')
     testImplementation project(':music:data:raw:lastfm:test:lastfm-commons-test-db-helper')

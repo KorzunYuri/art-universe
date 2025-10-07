@@ -9,9 +9,9 @@ dependencies {
     implementation project(':music:data:raw:lastfm:lastfm-repositories')
     implementation project(':music:data:raw:lastfm:etl:lastfm-tasks-coordinator')
 
-    // metrics
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    // web and metrics
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'io.micrometer:micrometer-registry-prometheus'
 
     implementation 'org.springframework.retry:spring-retry'
