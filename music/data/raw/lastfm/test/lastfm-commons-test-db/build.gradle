@@ -7,7 +7,7 @@ archivesBaseName = 'lastfm-commons-test-db'
 dependencies {
     api project(':music:data:raw:lastfm:test:lastfm-commons-test')
     api project(':music:data:raw:lastfm:migrations:lastfm-liquibase-resources')
-    api project(':common:commons-test')
+    api project(':common:test:commons-test-db')
     
     api 'org.springframework.boot:spring-boot-starter-test'
     api 'org.springframework.boot:spring-boot-starter-data-jpa'

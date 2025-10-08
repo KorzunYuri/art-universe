@@ -9,7 +9,7 @@ import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.lookup.LastfmArtistLookupService;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaTestWithHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.LastfmJpaTestHelper;
 
 import java.util.List;
 
@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @Import({
     LastfmArtistLookupService.class,
 })
-class LastfmArtistLookupServiceTest extends JpaTestWithHelper {
+class LastfmArtistLookupServiceTest extends LastfmJpaTestHelper {
 
     @Autowired
     private LastfmArtistLookupService lookupService;

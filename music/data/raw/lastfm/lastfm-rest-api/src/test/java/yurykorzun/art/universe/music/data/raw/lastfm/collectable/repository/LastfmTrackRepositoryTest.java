@@ -6,7 +6,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -16,7 +15,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApi
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaTestWithHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.LastfmJpaTestHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 @Tag("integration")
-class LastfmTrackRepositoryTest extends JpaTestWithHelper {
+class LastfmTrackRepositoryTest extends LastfmJpaTestHelper {
 
     @Autowired
     private LastfmTrackRepository trackRepository;

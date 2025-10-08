@@ -3,18 +3,17 @@ package yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Import;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaTestWithHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.LastfmJpaTestHelper;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class LastfmArtistRepositoryMbidDeduplicationTest extends JpaTestWithHelper {
+class LastfmArtistRepositoryMbidDeduplicationTest extends LastfmJpaTestHelper {
 
     @Autowired
     private LastfmArtistRepository artistRepository;

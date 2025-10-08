@@ -4,13 +4,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.BlacklistedEntityUrl;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaTestWithHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.LastfmJpaTestHelper;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class BlacklistedEntityUrlRepositoryTest extends JpaTestWithHelper {
+class BlacklistedEntityUrlRepositoryTest extends LastfmJpaTestHelper {
 
     @Autowired
     private BlacklistedEntityUrlRepository repository;

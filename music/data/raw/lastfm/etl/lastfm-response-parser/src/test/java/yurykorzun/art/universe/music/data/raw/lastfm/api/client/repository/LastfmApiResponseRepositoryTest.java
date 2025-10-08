@@ -7,13 +7,13 @@ import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiResponseStat
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaTestWithHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.LastfmJpaTestHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("integration")
-class LastfmApiResponseRepositoryTest extends JpaTestWithHelper {
+class LastfmApiResponseRepositoryTest extends LastfmJpaTestHelper {
 
     @Autowired
     private LastfmApiResponseRepository apiResponseRepository;

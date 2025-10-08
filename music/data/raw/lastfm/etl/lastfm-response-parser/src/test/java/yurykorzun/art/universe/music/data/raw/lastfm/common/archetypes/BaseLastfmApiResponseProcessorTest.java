@@ -27,5 +27,5 @@ import yurykorzun.art.universe.music.data.raw.lastfm.maintenance.service.TestTas
         LastfmAttributeHistoryProcessor.class,
         TestTaskCoordinatorConfig.class,
 })
-public abstract class BaseLastfmApiResponseProcessorTest extends JpaTestWithHelper {
+public abstract class BaseLastfmApiResponseProcessorTest extends LastfmJpaTestHelper {
 }

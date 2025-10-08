@@ -5,19 +5,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Import;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaTestWithHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.LastfmJpaTestHelper;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("integration")
-class LastfmArtistRepositoryTest extends JpaTestWithHelper {
+class LastfmArtistRepositoryTest extends LastfmJpaTestHelper {
 
     @Autowired
     private LastfmArtistRepository artistRepository;

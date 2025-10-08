@@ -15,7 +15,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.L
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.LastfmArtistRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.LastfmTrackRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaTestWithHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.LastfmJpaTestHelper;
 
 import java.util.List;
 
@@ -26,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
     LastfmApiCallEntityServiceImpl.class,
     DbConsistencyHelper.class
 })
-class LastfmEntityServiceImplBlacklistTest extends JpaTestWithHelper {
+class LastfmEntityServiceImplBlacklistTest extends LastfmJpaTestHelper {
 
     @Autowired
     private LastfmApiCallEntityService entityService;

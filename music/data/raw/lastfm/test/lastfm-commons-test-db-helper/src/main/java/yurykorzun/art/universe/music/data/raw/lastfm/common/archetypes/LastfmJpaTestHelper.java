@@ -6,5 +6,5 @@ import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 @Import({
     DbConsistencyHelper.class,
 })
-public class JpaTestWithHelper extends JpaOnlyTest {
+public class LastfmJpaTestHelper extends LastfmJpaTest {
 }

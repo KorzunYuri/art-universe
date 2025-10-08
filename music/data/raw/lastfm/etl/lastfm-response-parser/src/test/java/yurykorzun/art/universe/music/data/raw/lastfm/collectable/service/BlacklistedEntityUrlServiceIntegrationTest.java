@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Import;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.BlacklistedEntityUrlRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaTestWithHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.LastfmJpaTestHelper;
 
 import java.util.List;
 
@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
     BlacklistedEntityUrlService.class,
     DbConsistencyHelper.class
 })
-class BlacklistedEntityUrlServiceIntegrationTest extends JpaTestWithHelper {
+class BlacklistedEntityUrlServiceIntegrationTest extends LastfmJpaTestHelper {
 
     @Autowired
     private BlacklistedEntityUrlRepository blacklistRepository;

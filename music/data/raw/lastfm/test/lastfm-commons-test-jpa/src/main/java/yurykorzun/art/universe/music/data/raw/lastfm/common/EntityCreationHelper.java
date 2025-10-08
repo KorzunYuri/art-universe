@@ -23,8 +23,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import static yurykorzun.art.universe.music.data.raw.lastfm.common.utils.TestStringUtils.randomString;
-
 public class EntityCreationHelper {
 
     private EntityCreationHelper(){
