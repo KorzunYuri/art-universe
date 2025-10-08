@@ -88,7 +88,7 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "lastfm_database_category_size_bytes{job=\"lastfm-etl-rest-api\",category=\"core_entities\"}",
+          "expr": "lastfm_database_category_size_bytes{category=\"core_entities\"}",
           "legendFormat": "Core Entities",
           "range": true,
           "refId": "A"
@@ -99,7 +99,7 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "lastfm_database_category_size_bytes{job=\"lastfm-etl-rest-api\",category=\"relationships\"}",
+          "expr": "lastfm_database_category_size_bytes{category=\"relationships\"}",
           "legendFormat": "Relationships",
           "range": true,
           "refId": "B"
@@ -110,7 +110,7 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "lastfm_database_category_size_bytes{job=\"lastfm-etl-rest-api\",category=\"attributes\"}",
+          "expr": "lastfm_database_category_size_bytes{category=\"attributes\"}",
           "legendFormat": "Attributes",
           "range": true,
           "refId": "C"
@@ -121,7 +121,7 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "lastfm_database_category_size_bytes{job=\"lastfm-etl-rest-api\",category=\"api_processing\"}",
+          "expr": "lastfm_database_category_size_bytes{category=\"api_processing\"}",
           "legendFormat": "API Processing",
           "range": true,
           "refId": "D"
@@ -132,7 +132,7 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "lastfm_database_category_size_bytes{job=\"lastfm-etl-rest-api\",category=\"maintenance\"}",
+          "expr": "lastfm_database_category_size_bytes{category=\"maintenance\"}",
           "legendFormat": "Maintenance",
           "range": true,
           "refId": "E"
@@ -200,7 +200,7 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "lastfm_database_schema_size_bytes{job=\"lastfm-etl-rest-api\"}",
+          "expr": "lastfm_database_schema_size_bytes",
           "legendFormat": "Schema Size",
           "range": true,
           "refId": "A"
@@ -302,7 +302,7 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "lastfm_database_table_size_bytes{job=\"lastfm-etl-rest-api\",category=\"core_entities\"}",
+          "expr": "lastfm_database_table_size_bytes{category=\"core_entities\"}",
           "legendFormat": "{{table}}",
           "range": true,
           "refId": "A"
@@ -391,7 +391,7 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "lastfm_database_table_size_bytes{job=\"lastfm-etl-rest-api\",category=\"relationships\"}",
+          "expr": "lastfm_database_table_size_bytes{category=\"relationships\"}",
           "legendFormat": "{{table}}",
           "range": true,
           "refId": "A"
@@ -480,7 +480,7 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "lastfm_database_table_size_bytes{job=\"lastfm-etl-rest-api\",category=\"attributes\"}",
+          "expr": "lastfm_database_table_size_bytes{category=\"attributes\"}",
           "legendFormat": "{{table}}",
           "range": true,
           "refId": "A"

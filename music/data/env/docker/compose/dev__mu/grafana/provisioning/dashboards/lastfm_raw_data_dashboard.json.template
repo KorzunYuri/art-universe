@@ -115,7 +115,7 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "avg_over_time(increase(lastfm_entity_count{job="lastfm-etl-rest-api"}[15m])[15m:1m])",
+          "expr": "avg_over_time(increase(lastfm_entity_count[15m])[15m:1m])",
           "legendFormat": "{{entity_type}}",
           "range": true,
           "refId": "A"
@@ -177,7 +177,7 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "lastfm_entity_count{job="lastfm-etl-rest-api"}",
+          "expr": "lastfm_entity_count",
           "legendFormat": "{{entity_type}}",
           "range": true,
           "refId": "A"
@@ -283,7 +283,7 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "avg_over_time(increase(lastfm_api_call_count{job="lastfm-etl-rest-api"}{status=\"SUCCESSFUL\"}[5m])[15m:1m])",
+          "expr": "avg_over_time(increase(lastfm_api_call_count{status=\"SUCCESSFUL\"}[5m])[15m:1m])",
           "legendFormat": "{{api_call_type}}",
           "range": true,
           "refId": "A"
@@ -374,7 +374,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "avg_over_time(delta(lastfm_api_call_count{job="lastfm-etl-rest-api"}{status=\"PENDING\"}[5m])[15m:1m])",
+          "expr": "avg_over_time(delta(lastfm_api_call_count{status=\"PENDING\"}[5m])[15m:1m])",
           "instant": false,
           "legendFormat": "{{api_call_type}}",
           "range": true,
@@ -466,7 +466,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "avg_over_time(increase(lastfm_api_call_count{job="lastfm-etl-rest-api"}{status=\"FAILED\"}[5m])[15m:1m])",
+          "expr": "avg_over_time(increase(lastfm_api_call_count{status=\"FAILED\"}[5m])[15m:1m])",
           "instant": false,
           "legendFormat": "{{api_call_type}}",
           "range": true,
@@ -530,7 +530,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "lastfm_api_call_count{job="lastfm-etl-rest-api"}{status=\"PENDING\"}",
+          "expr": "lastfm_api_call_count{status=\"PENDING\"}",
           "instant": false,
           "legendFormat": "{{api_call_type}}",
           "range": true,
@@ -637,7 +637,7 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "avg_over_time(increase(lastfm_api_response_count{job="lastfm-etl-rest-api"}{status=\"COMPLETED\"}[5m])[15m:1m])",
+          "expr": "avg_over_time(increase(lastfm_api_response_count{status=\"COMPLETED\"}[5m])[15m:1m])",
           "legendFormat": "{{api_call_type}}",
           "range": true,
           "refId": "A"
@@ -728,7 +728,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "avg_over_time(delta(lastfm_api_response_count{job="lastfm-etl-rest-api"}{status=\"PENDING\"}[5m])[15m:1m])",
+          "expr": "avg_over_time(delta(lastfm_api_response_count{status=\"PENDING\"}[5m])[15m:1m])",
           "instant": false,
           "legendFormat": "{{api_call_type}}",
           "range": true,
@@ -820,7 +820,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "avg_over_time(increase(lastfm_api_response_count{job="lastfm-etl-rest-api"}{status=\"PROCESSING_ERROR\"}[5m])[15m:1m])",
+          "expr": "avg_over_time(increase(lastfm_api_response_count{status=\"PROCESSING_ERROR\"}[5m])[15m:1m])",
           "instant": false,
           "legendFormat": "{{api_call_type}}",
           "range": true,
@@ -884,7 +884,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "lastfm_api_response_count{job="lastfm-etl-rest-api"}{status=\"PENDING\"}",
+          "expr": "lastfm_api_response_count{status=\"PENDING\"}",
           "instant": false,
           "legendFormat": "{{api_call_type}}",
           "range": true,
