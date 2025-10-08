@@ -2,7 +2,6 @@ package yurykorzun.art.universe.music.data.raw.lastfm;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
 public class LastfmEtlRestApiApplication {

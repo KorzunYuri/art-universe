@@ -35,6 +35,18 @@ server:
 management:
   server:
     port: ${MURAW_LASTFM_ETL_REST_API_ACTUATOR_INTERNAL_PORT:8090}
+metrics:
+  update:
+    # Low impact queries - simple COUNT queries with existing indexes
+    entity-counts:
+      interval: 15000
+    api-call-counts:
+      interval: 15000
+    api-response-counts:
+      interval: 15000
+    # Medium impact queries
+    table-sizes:
+      interval: 300000
 
 music-data-master:
   base-url: ${MU_DATA_APP_HOST:localhost}:${MU_DATA_APP_PORT:8080}
@@ -42,6 +54,9 @@ music-data-master:
     batch-size: 1000
 
 lastfm:
+  scheduling:
+    maintenance:
+      cron: "0 0 8 * * *"
   threshold:
     artist:
       listenersCount: 1000

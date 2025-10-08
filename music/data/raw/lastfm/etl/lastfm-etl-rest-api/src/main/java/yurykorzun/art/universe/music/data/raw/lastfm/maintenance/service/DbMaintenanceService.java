@@ -37,7 +37,7 @@ public class DbMaintenanceService {
         this.musicDataIntegrationService = musicDataIntegrationService;
     }
 
-    @Scheduled(cron = "${scheduling.lastfm.tasks.maintenance.cron}")
+    @Scheduled(cron = "${lastfm.scheduling.maintenance.cron}")
     public boolean enqueueMaintenance() {
         log.info("requesting maintenance");
         try {
