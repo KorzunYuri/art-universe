@@ -5,6 +5,7 @@ include 'common:commons-jpa'
 include 'common:commons-web'
 include 'common:commons-test'
 include 'common:commons-test-web'
+include 'common:test:commons-test-db'
 
 include 'music:data:master'
 
