@@ -39,4 +39,4 @@ server:
 
 management:
   server:
-    port: ${MU_DATA_ACTUATOR_INTERNAL_PORT:8091}
+    port: ${MU_DATA_ACTUATOR_INTERNAL_PORT:8090}

@@ -40,6 +40,19 @@ if "%ENVIRONMENT%"=="local" (
     set "ENV_NAME=Local"
     REM Source the environment file to get the ports
     for /f "tokens=1,* delims==" %%a in (%PROJECT_ROOT%\env\docker\local\.env) do (
+        if "%%a"=="MURAW_LASTFM_REST_API_EXTERNAL_PORT" set "MURAW_LASTFM_REST_API_EXTERNAL_PORT=%%b"
+        if "%%a"=="MURAW_LASTFM_REST_API_ACTUATOR_EXTERNAL_PORT" set "MURAW_LASTFM_REST_API_ACTUATOR_EXTERNAL_PORT=%%b"
+        if "%%a"=="MURAW_LASTFM_ETL_REST_API_EXTERNAL_PORT" set "MURAW_LASTFM_ETL_REST_API_EXTERNAL_PORT=%%b"
+        if "%%a"=="MURAW_LASTFM_ETL_REST_API_ACTUATOR_EXTERNAL_PORT" set "MURAW_LASTFM_ETL_REST_API_ACTUATOR_EXTERNAL_PORT=%%b"
+        if "%%a"=="MURAW_LASTFM_CALLS_GENERATOR_ACTUATOR_EXTERNAL_PORT" set "MURAW_LASTFM_CALLS_GENERATOR_ACTUATOR_EXTERNAL_PORT=%%b"
+        if "%%a"=="MURAW_LASTFM_CALLS_PERFORMER_ACTUATOR_EXTERNAL_PORT" set "MURAW_LASTFM_CALLS_PERFORMER_ACTUATOR_EXTERNAL_PORT=%%b"
+        if "%%a"=="MURAW_LASTFM_RESPONSE_PARSER_ACTUATOR_EXTERNAL_PORT" set "MURAW_LASTFM_RESPONSE_PARSER_ACTUATOR_EXTERNAL_PORT=%%b"
+        if "%%a"=="MU_DATA_APP_EXTERNAL_PORT" set "MU_DATA_APP_EXTERNAL_PORT=%%b"
+        if "%%a"=="MU_DATA_ACTUATOR_EXTERNAL_PORT" set "MU_DATA_ACTUATOR_EXTERNAL_PORT=%%b"
+        if "%%a"=="MU_QUIZ_APP_EXTERNAL_PORT" set "MU_QUIZ_APP_EXTERNAL_PORT=%%b"
+        if "%%a"=="MU_QUIZ_ACTUATOR_EXTERNAL_PORT" set "MU_QUIZ_ACTUATOR_EXTERNAL_PORT=%%b"
+        if "%%a"=="MU_UI_EXTERNAL_PORT" set "MU_UI_EXTERNAL_PORT=%%b"
+        if "%%a"=="DB_ADMINER_PORT" set "DB_ADMINER_PORT=%%b"
         if "%%a"=="PROMETHEUS_PORT" set "PROMETHEUS_PORT=%%b"
         if "%%a"=="GRAFANA_PORT" set "GRAFANA_PORT=%%b"
     )
@@ -48,6 +61,19 @@ if "%ENVIRONMENT%"=="local" (
     set "ENV_NAME=Production"
     REM Source the environment file to get the ports
     for /f "tokens=1,* delims==" %%a in (%PROJECT_ROOT%\env\docker\prod\.env) do (
+        if "%%a"=="MURAW_LASTFM_REST_API_EXTERNAL_PORT" set "MURAW_LASTFM_REST_API_EXTERNAL_PORT=%%b"
+        if "%%a"=="MURAW_LASTFM_REST_API_ACTUATOR_EXTERNAL_PORT" set "MURAW_LASTFM_REST_API_ACTUATOR_EXTERNAL_PORT=%%b"
+        if "%%a"=="MURAW_LASTFM_ETL_REST_API_EXTERNAL_PORT" set "MURAW_LASTFM_ETL_REST_API_EXTERNAL_PORT=%%b"
+        if "%%a"=="MURAW_LASTFM_ETL_REST_API_ACTUATOR_EXTERNAL_PORT" set "MURAW_LASTFM_ETL_REST_API_ACTUATOR_EXTERNAL_PORT=%%b"
+        if "%%a"=="MURAW_LASTFM_CALLS_GENERATOR_ACTUATOR_EXTERNAL_PORT" set "MURAW_LASTFM_CALLS_GENERATOR_ACTUATOR_EXTERNAL_PORT=%%b"
+        if "%%a"=="MURAW_LASTFM_CALLS_PERFORMER_ACTUATOR_EXTERNAL_PORT" set "MURAW_LASTFM_CALLS_PERFORMER_ACTUATOR_EXTERNAL_PORT=%%b"
+        if "%%a"=="MURAW_LASTFM_RESPONSE_PARSER_ACTUATOR_EXTERNAL_PORT" set "MURAW_LASTFM_RESPONSE_PARSER_ACTUATOR_EXTERNAL_PORT=%%b"
+        if "%%a"=="MU_DATA_APP_EXTERNAL_PORT" set "MU_DATA_APP_EXTERNAL_PORT=%%b"
+        if "%%a"=="MU_DATA_ACTUATOR_EXTERNAL_PORT" set "MU_DATA_ACTUATOR_EXTERNAL_PORT=%%b"
+        if "%%a"=="MU_QUIZ_APP_EXTERNAL_PORT" set "MU_QUIZ_APP_EXTERNAL_PORT=%%b"
+        if "%%a"=="MU_QUIZ_ACTUATOR_EXTERNAL_PORT" set "MU_QUIZ_ACTUATOR_EXTERNAL_PORT=%%b"
+        if "%%a"=="MU_UI_EXTERNAL_PORT" set "MU_UI_EXTERNAL_PORT=%%b"
+        if "%%a"=="DB_ADMINER_PORT" set "DB_ADMINER_PORT=%%b"
         if "%%a"=="PROMETHEUS_PORT" set "PROMETHEUS_PORT=%%b"
         if "%%a"=="GRAFANA_PORT" set "GRAFANA_PORT=%%b"
     )
@@ -95,21 +121,27 @@ if !errorlevel! equ 0 (
     
     REM Output services info line by line to avoid dash interpretation
     if "%ENVIRONMENT%"=="local" (
-        echo   - LastFM Raw Data: http://localhost:9081
-        echo   - Music Data: http://localhost:9082
-        echo   - Music Quiz: http://localhost:9083
-        echo   - UI: http://localhost:4000
-        echo   - Adminer: http://localhost:9980
+        echo   - LastFM REST API: http://localhost:!MURAW_LASTFM_REST_API_EXTERNAL_PORT! (actuator: !MURAW_LASTFM_REST_API_ACTUATOR_EXTERNAL_PORT!)
+        echo   - LastFM ETL REST API: http://localhost:!MURAW_LASTFM_ETL_REST_API_EXTERNAL_PORT! (actuator: !MURAW_LASTFM_ETL_REST_API_ACTUATOR_EXTERNAL_PORT!)
+        echo   - LastFM Calls Generator: actuator http://localhost:!MURAW_LASTFM_CALLS_GENERATOR_ACTUATOR_EXTERNAL_PORT!
+        echo   - LastFM Calls Performer: actuator http://localhost:!MURAW_LASTFM_CALLS_PERFORMER_ACTUATOR_EXTERNAL_PORT!
+        echo   - LastFM Response Parser: actuator http://localhost:!MURAW_LASTFM_RESPONSE_PARSER_ACTUATOR_EXTERNAL_PORT!
+        echo   - Music Data: http://localhost:!MU_DATA_APP_EXTERNAL_PORT! (actuator: !MU_DATA_ACTUATOR_EXTERNAL_PORT!)
+        echo   - Music Quiz: http://localhost:!MU_QUIZ_APP_EXTERNAL_PORT! (actuator: !MU_QUIZ_ACTUATOR_EXTERNAL_PORT!)
+        echo   - UI: http://localhost:!MU_UI_EXTERNAL_PORT!
+        echo   - Adminer: http://localhost:!DB_ADMINER_PORT!
         echo   - Prometheus: http://localhost:!PROMETHEUS_PORT!
         echo   - Grafana: http://localhost:!GRAFANA_PORT!
     ) else (
-        echo   - LastFM Raw Data: http://localhost:8081
-        echo   - Music Data: http://localhost:8082
-        echo   - Music Quiz: http://localhost:8083
-        echo   - UI: http://localhost:3000
-        echo   - Adminer: http://localhost:8880
-        echo   - Prometheus: http://localhost:!PROMETHEUS_PORT!
-        echo   - Grafana: http://localhost:!GRAFANA_PORT!
+        echo   - LastFM REST API: http://localhost:!MURAW_LASTFM_REST_API_EXTERNAL_PORT! (actuator: !MURAW_LASTFM_REST_API_ACTUATOR_EXTERNAL_PORT!)
+        echo   - LastFM ETL REST API: http://localhost:!MURAW_LASTFM_ETL_REST_API_EXTERNAL_PORT! (actuator: !MURAW_LASTFM_ETL_REST_API_ACTUATOR_EXTERNAL_PORT!)
+        echo   - LastFM Calls Generator: actuator http://localhost:!MURAW_LASTFM_CALLS_GENERATOR_ACTUATOR_EXTERNAL_PORT!
+        echo   - LastFM Calls Performer: actuator http://localhost:!MURAW_LASTFM_CALLS_PERFORMER_ACTUATOR_EXTERNAL_PORT!
+        echo   - LastFM Response Parser: actuator http://localhost:!MURAW_LASTFM_RESPONSE_PARSER_ACTUATOR_EXTERNAL_PORT!
+        echo   - Music Data: http://localhost:!MU_DATA_APP_EXTERNAL_PORT! (actuator: !MU_DATA_ACTUATOR_EXTERNAL_PORT!)
+        echo   - Music Quiz: http://localhost:!MU_QUIZ_APP_EXTERNAL_PORT! (actuator: !MU_QUIZ_ACTUATOR_EXTERNAL_PORT!)
+        echo   - UI: http://localhost:!MU_UI_EXTERNAL_PORT!
+        echo   - Adminer: http://localhost:!DB_ADMINER_PORT!
         echo.
         echo Note: Applications connect to external databases on host machine
     )

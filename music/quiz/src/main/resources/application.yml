@@ -40,5 +40,5 @@ server:
 
 management:
   server:
-    port: ${MU_QUIZ_ACTUATOR_INTERNAL_PORT:8092}
+    port: ${MU_QUIZ_ACTUATOR_INTERNAL_PORT:8090}
 

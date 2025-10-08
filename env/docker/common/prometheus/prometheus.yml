@@ -1,0 +1,46 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Core services
+  - job_name: 'music-data'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['music-data:8090']
+
+  - job_name: 'music-quiz'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['music-quiz:8090']
+
+  # LastFM web services
+  - job_name: 'lastfm-rest-api'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['lastfm-rest-api:8090']
+
+  - job_name: 'lastfm-etl-rest-api'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['lastfm-etl-rest-api:8090']
+
+  # LastFM ETL services
+  - job_name: 'lastfm-calls-generator'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['lastfm-calls-generator:8090']
+
+  - job_name: 'lastfm-calls-performer'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['lastfm-calls-performer:8090']
+
+  - job_name: 'lastfm-response-parser'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['lastfm-response-parser:8090']
