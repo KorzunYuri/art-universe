@@ -88,8 +88,9 @@ class LastfmApiCallServiceImplTest {
         service.makeApiCall(apiCall);
 
         // then
-        verify(apiCallRepository, times(2)).save(apiCall);
-        assertEquals(ApiCallStatus.SUCCESSFUL, apiCall.getStatus());
+        verify(service, times(2)).updateApiCallStatus(eq(apiCall), any(ApiCallStatus.class));
+        verify(service).updateApiCallStatus(apiCall, ApiCallStatus.PROCESSING);
+        verify(service).updateApiCallStatus(apiCall, ApiCallStatus.SUCCESSFUL);
     }
 
     @Test

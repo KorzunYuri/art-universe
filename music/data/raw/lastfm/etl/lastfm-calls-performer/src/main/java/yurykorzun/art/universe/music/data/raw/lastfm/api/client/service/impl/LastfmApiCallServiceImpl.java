@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.dto.LastfmApiResponseCreateRequest;
@@ -56,25 +57,32 @@ public class LastfmApiCallServiceImpl implements LastfmApiCallService {
                 apiCall.getEntityId()
             );
             rateLimiter.acquire();
-            self.makeApiCall(apiCall);
-            log.info("API call has been performed");
+            try {
+                self.makeApiCall(apiCall);
+                log.info("API call has been performed");
+            } catch (Exception ex) {
+                log.error("Failed to process API call {}: {}", apiCall.getId(), ex.getMessage(), ex);
+            }
         });
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     protected void makeApiCall(LastfmApiCall call) {
-        call.setStatus(ApiCallStatus.PROCESSING);
-        apiCallRepository.save(call);
+        self.updateApiCallStatus(call, ApiCallStatus.PROCESSING);
 
         try {
             String response = makeApiCallWithRetry(call);
             responseService.createResponse(createApiResponseCreateDto(call, response));
-            call.setStatus(ApiCallStatus.SUCCESSFUL);
+            self.updateApiCallStatus(call, ApiCallStatus.SUCCESSFUL);
         } catch (Exception ex) {
-            call.setStatus(ApiCallStatus.FAILED);
-        } finally {
-            apiCallRepository.save(call);
+            self.updateApiCallStatus(call, ApiCallStatus.FAILED);
         }
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    protected void updateApiCallStatus(LastfmApiCall call, ApiCallStatus status) {
+        call.setStatus(status);
+        apiCallRepository.save(call);
     }
 
     private LastfmApiResponseCreateRequest createApiResponseCreateDto(LastfmApiCall call, String response) {
