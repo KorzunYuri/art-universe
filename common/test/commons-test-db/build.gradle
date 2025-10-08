@@ -1,0 +1,15 @@
+plugins {
+    id 'art-universe.java-library'
+}
+
+dependencies {
+    api project(':common:commons-test')
+
+    api 'org.springframework.boot:spring-boot-test-autoconfigure'
+    api 'org.springframework:spring-tx'
+    api 'org.testcontainers:testcontainers'
+    api 'org.testcontainers:junit-jupiter'
+    api 'org.testcontainers:postgresql'
+    
+    implementation 'org.slf4j:slf4j-api'
+}

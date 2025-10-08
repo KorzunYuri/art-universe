@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
+
+    <changeSet id="0003_0010_tag_initial" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0003-entity-tables/0003_0010_tag$initial.sql"/>
+    </changeSet>
+
+    <changeSet id="0003_0011_tag_name_length_fix" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0003-entity-tables/0003_0011_tag$name_length_fix.sql"/>
+    </changeSet>
+
+    <changeSet id="0003_0012_tag_indexes_name" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0003-entity-tables/0003_0012_tag$indexes$name.sql"/>
+    </changeSet>
+
+    <changeSet id="0003_0020_attribute_initial" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0003-entity-tables/0003_0020_attribute$initial.sql"/>
+    </changeSet>
+
+    <changeSet id="0003_0030_attribute_history_initial" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0003-entity-tables/0003_0030_attribute_history$initial.sql"/>
+    </changeSet>
+
+    <changeSet id="0003_0040_artist_initial" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0003-entity-tables/0003_0040_artist$initial.sql"/>
+    </changeSet>
+
+</databaseChangeLog>

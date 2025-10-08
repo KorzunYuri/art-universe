@@ -4,59 +4,46 @@ Data storage system for art-related information designed to create quizzes. Prim
 
 ## Quick Start
 
-### Build and Deploy
 ```bash
-# Build project (run from project root)
+# Build and deploy local environment
 ./gradlew build -x test
-
-# Deploy local environment (with containerized databases)
 ./env/docker/deploy.sh local
-
-# Deploy production environment (external databases)
-./env/docker/deploy.sh prod
 ```
 
-> **Note**: All Gradle commands must be executed from the project root directory where the Gradle Wrapper (`gradlew`/`gradlew.bat`) is located.
+**Services:** LastFM APIs (:9084/:9085) • Music Data (:9082) • Quiz (:9083) • UI (:4000) • [Full port reference →](DEVELOPMENT.md#service-ports)
 
-### Available Services
+## Development
 
-| Environment | LastFM Raw | Music Data | Music Quiz | UI | Adminer |
-|-------------|------------|------------|------------|----|---------| 
-| **Local**   | :9081      | :9082      | :9083      | :4000 | :9980 |
-| **Production** | :8081   | :8082      | :8083      | :3000 | :8880 |
+- **[Environment Setup →](DEVELOPMENT.md#environment-configuration)** - Local development and Docker deployment
+- **[Module Development →](DEVELOPMENT.md#individual-module-development)** - Running specific modules
+- **[Build & Test →](DEVELOPMENT.md#build-and-testing)** - Gradle commands and testing
+- **[IDE Setup →](DEVELOPMENT.md#ide-setup)** - IntelliJ IDEA and VS Code configuration
 
-### Individual Module Development
-```bash
-# Run specific modules locally
-./scripts/run-module-dev.sh music-universe:music-data-raw-lastfm
-./scripts/run-module-dev.sh music-universe:music-data
-./scripts/run-module-dev.sh music-universe:music-quiz
-```
+## Architecture
 
-## Documentation
+### Module Structure
+- **Common** - Shared utilities, JPA, web components
+- **LastFM Collection** - API data collection with read/write separation and ETL pipeline
+- **Master Data** - Curated data management and binding
+- **Quiz** - Quiz generation from approved data
+- **UI** - React management interface
 
-- **[Development Guide](DEVELOPMENT.md)** - Setup, configuration, and development workflow
-- **[Architecture Overview](ARCHITECTURE.md)** - System design and module relationships
-- **[Docker Scripts](env/docker/README.md)** - Deployment and environment management
-- **[Development Scripts](scripts/README.md)** - Individual module development
+**[Detailed module descriptions →](DEVELOPMENT.md#module-structure)**
 
-## Module Structure
-
-- `art-universe-commons` - Shared utilities and base classes
-- `music-data-raw-lastfm` - LastFM API data collection
-- `music-data` - Curated data management and binding
-- `music-quiz` - Quiz generation from approved data
-- `music-universe-ui` - React management interface
-
-## Technology Stack
-
+### Technology Stack
 - **Backend**: Spring Boot 3.4.3, PostgreSQL, Liquibase
 - **Frontend**: React, TypeScript, Vite
 - **Build**: Gradle multi-project
 - **Deployment**: Docker, Docker Compose
-- **Testing**: JUnit 5, TestContainers, Mockito
 
-## Project Structure
+## Documentation
 
-This is a Gradle multi-project build. The Gradle Wrapper (`gradlew`/`gradlew.bat`) is located only in the project root directory. All Gradle commands must be executed from the project root, not from individual module directories.
+- **[Development Guide](DEVELOPMENT.md)** - Complete development workflow
+- **[Architecture Overview](ARCHITECTURE.md)** - System design and relationships
+- **[Docker Scripts](env/docker/README.md)** - Deployment management
+- **[Development Scripts](scripts/README.md)** - Individual module tools
+
+---
+
+> **Note**: This is a Gradle multi-project build. All commands must be executed from the project root directory.
 

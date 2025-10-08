@@ -1,0 +1,20 @@
+plugins {
+    id 'art-universe.spring-boot-app'
+}
+
+archivesBaseName = 'lastfm-etl-calls-generator'
+
+dependencies {
+    implementation project(':music:data:raw:lastfm:lastfm-repositories')
+    implementation project(':music:data:raw:lastfm:etl:lastfm-tasks-coordinator')
+
+    // web for actuator endpoints
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    testImplementation project(':music:data:raw:lastfm:test:lastfm-commons-test-db-helper')
+    testImplementation project(':music:data:raw:lastfm:test:lastfm-commons-test')
+    testImplementation project(':music:data:raw:lastfm:test:lastfm-commons-test-jpa')
+
+    testRuntimeOnly 'org.testcontainers:postgresql'
+    testRuntimeOnly 'org.testcontainers:testcontainers'
+}

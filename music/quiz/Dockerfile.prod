@@ -8,9 +8,8 @@ COPY build.gradle settings.gradle ./
 # Copy buildSrc for custom plugins
 COPY buildSrc/ buildSrc/
 
-# Copy commons module
-COPY commons/build.gradle commons/
-COPY commons/src/ commons/src/
+# Copy common modules
+COPY common/ common/
 
 # Copy current module
 COPY music/quiz/build.gradle music/quiz/

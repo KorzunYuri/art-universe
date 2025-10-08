@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # Databases
   postgres-lastfm:
-    container_name: local__mu-data-raw-lastfm__db-postgres
+    container_name: local__lastfm__db-postgres
     restart: unless-stopped
     shm_size: 128mb
     stop_grace_period: 1m
@@ -15,7 +15,7 @@ services:
       - ./music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.secrets.env
     volumes:
-      - local__mu-data-raw-lastfm__db-postgres-data:/var/lib/postgresql/data
+      - local__lastfm__db-postgres-data:/var/lib/postgresql/data
       - ../../../music/data/raw/lastfm-monolith/src/main/resources/docker/compose/common/initdb/templates:/docker-entrypoint-initdb.d
     command: bash -c "envsubst < /docker-entrypoint-initdb.d/init.sql.template > /docker-entrypoint-initdb.d/init.sql && exec docker-entrypoint.sh postgres"
     ports:
@@ -27,6 +27,14 @@ services:
       retries: 5
     networks:
       - mu__network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.2'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
 
   postgres-music-data:
     container_name: local__mu-music-data__db-postgres
@@ -55,42 +63,198 @@ services:
       retries: 5
     networks:
       - mu__network
-
-  # Applications
-  music-data-raw-lastfm:
-    container_name: local__mu-data-raw-lastfm__app
-    restart: unless-stopped
-    build:
-      dockerfile: Dockerfile.local
-      context: ../../../music/data/raw/lastfm-monolith
-    env_file:
-      - ./music-data-raw-lastfm.env
-      - ./music-data-raw-lastfm.secrets.env
-    environment:
-      - SPRING_PROFILES_ACTIVE=fast
-      - metrics.update.interval=60000
-    ports:
-      - "${MURAW_LASTFM_APP_EXTERNAL_PORT}:${MURAW_LASTFM_APP_INTERNAL_PORT}"
-      - "${MURAW_LASTFM_ACTUATOR_EXTERNAL_PORT}:${MURAW_LASTFM_ACTUATOR_INTERNAL_PORT}"
-    volumes:
-      - local__mu-data-raw-lastfm__app-logs:/app/logs
-      - ../../../music/data/raw/lastfm-monolith/src/main/resources/metrics:/app/src/main/resources/metrics
-    depends_on:
-      postgres-lastfm:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${MURAW_LASTFM_APP_INTERNAL_PORT}/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 60s
     deploy:
       resources:
         limits:
-          memory: 768M
-          cpus: '0.5'
+          memory: 256M
+          cpus: '0.1'
         reservations:
-          memory: 512M
+          memory: 64M
+          cpus: '0.05'
+
+  # Migrations
+  lastfm-liquibase-service:
+    container_name: local__lastfm__liquibase
+    build:
+      dockerfile: Dockerfile.local
+      context: ../../../music/data/raw/lastfm/migrations/lastfm-liquibase-service
+    env_file:
+      - ../common/music-data-raw-lastfm.env
+      - ./music-data-raw-lastfm.env
+      - ./music-data-raw-lastfm.secrets.env
+    depends_on:
+      postgres-lastfm:
+        condition: service_healthy
+    networks:
+      - mu__network
+
+  # Applications
+  lastfm-rest-api:
+    container_name: local__lastfm-rest-api__app
+    restart: unless-stopped
+    build:
+      dockerfile: Dockerfile.local
+      context: ../../../music/data/raw/lastfm/lastfm-rest-api
+    env_file:
+      - ../common/music-data-raw-lastfm.env
+      - ./music-data-raw-lastfm.env
+      - ./music-data-raw-lastfm.secrets.env
+    ports:
+      - "${MURAW_LASTFM_REST_API_EXTERNAL_PORT}:${MURAW_LASTFM_REST_API_INTERNAL_PORT}"
+      - "${MURAW_LASTFM_REST_API_ACTUATOR_EXTERNAL_PORT}:${MURAW_LASTFM_REST_API_ACTUATOR_INTERNAL_PORT}"
+    volumes:
+      - local__lastfm-rest-api__app-logs:/app/logs
+    depends_on:
+      postgres-lastfm:
+        condition: service_healthy
+      lastfm-liquibase-service:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${MURAW_LASTFM_REST_API_INTERNAL_PORT}/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 300s
+    deploy:
+      resources:
+        limits:
+          memory: 1Gb
+          cpus: '0.3'
+        reservations:
+          memory: 256M
+          cpus: '0.1'
+    networks:
+      - mu__network
+
+  lastfm-etl-rest-api:
+    container_name: local__lastfm-etl-rest-api__app
+    restart: unless-stopped
+    stop_grace_period: 1m
+    build:
+      dockerfile: Dockerfile.local
+      context: ../../../music/data/raw/lastfm/etl/lastfm-etl-rest-api
+    env_file:
+      - ../common/music-data-raw-lastfm.env
+      - ./music-data-raw-lastfm.env
+      - ./music-data-raw-lastfm.secrets.env
+    ports:
+      - "${MURAW_LASTFM_ETL_REST_API_EXTERNAL_PORT}:${MURAW_LASTFM_ETL_REST_API_INTERNAL_PORT}"
+      - "${MURAW_LASTFM_ETL_REST_API_ACTUATOR_EXTERNAL_PORT}:${MURAW_LASTFM_ETL_REST_API_ACTUATOR_INTERNAL_PORT}"
+    volumes:
+      - local__lastfm-etl-rest-api__app-logs:/app/logs
+    depends_on:
+      postgres-lastfm:
+        condition: service_healthy
+      lastfm-liquibase-service:
+        condition: service_completed_successfully
+      music-data:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${MURAW_LASTFM_ETL_REST_API_INTERNAL_PORT}/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 300s
+    deploy:
+      resources:
+        limits:
+          memory: 1Gb
+          cpus: '0.3'
+        reservations:
+          memory: 256M
+          cpus: '0.1'
+    networks:
+      - mu__network
+
+  lastfm-calls-generator:
+    container_name: local__lastfm-calls-generator__app
+    restart: unless-stopped
+    stop_grace_period: 1m
+    build:
+      dockerfile: Dockerfile.local
+      context: ../../../music/data/raw/lastfm/etl/lastfm-calls-generator
+    env_file:
+      - ../common/music-data-raw-lastfm.env
+      - ./music-data-raw-lastfm.env
+      - ./music-data-raw-lastfm.secrets.env
+    ports:
+      - "${MURAW_LASTFM_CALLS_GENERATOR_ACTUATOR_EXTERNAL_PORT}:${MURAW_LASTFM_CALLS_GENERATOR_ACTUATOR_INTERNAL_PORT}"
+    volumes:
+      - local__lastfm-calls-generator__app-logs:/app/logs
+    depends_on:
+      postgres-lastfm:
+        condition: service_healthy
+      lastfm-liquibase-service:
+        condition: service_completed_successfully
+    deploy:
+      resources:
+        limits:
+          memory: 1Gb
+          cpus: '0.2'
+        reservations:
+          memory: 256M
+          cpus: '0.05'
+    networks:
+      - mu__network
+
+  lastfm-calls-performer:
+    container_name: local__lastfm-calls-performer__app
+    restart: unless-stopped
+    stop_grace_period: 1m
+    build:
+      dockerfile: Dockerfile.local
+      context: ../../../music/data/raw/lastfm/etl/lastfm-calls-performer
+    env_file:
+      - ../common/music-data-raw-lastfm.env
+      - ./music-data-raw-lastfm.env
+      - ./music-data-raw-lastfm.secrets.env
+    ports:
+      - "${MURAW_LASTFM_CALLS_PERFORMER_ACTUATOR_EXTERNAL_PORT}:${MURAW_LASTFM_CALLS_PERFORMER_ACTUATOR_INTERNAL_PORT}"
+    volumes:
+      - local__lastfm-calls-performer__app-logs:/app/logs
+    depends_on:
+      postgres-lastfm:
+        condition: service_healthy
+      lastfm-liquibase-service:
+        condition: service_completed_successfully
+    deploy:
+      resources:
+        limits:
+          memory: 1Gb
+          cpus: '0.2'
+        reservations:
+          memory: 256M
+          cpus: '0.05'
+    networks:
+      - mu__network
+
+  lastfm-response-parser:
+    container_name: local__lastfm-response-parser__app
+    restart: unless-stopped
+    stop_grace_period: 1m
+    build:
+      dockerfile: Dockerfile.local
+      context: ../../../music/data/raw/lastfm/etl/lastfm-response-parser
+    env_file:
+      - ../common/music-data-raw-lastfm.env
+      - ./music-data-raw-lastfm.env
+      - ./music-data-raw-lastfm.secrets.env
+    ports:
+      - "${MURAW_LASTFM_RESPONSE_PARSER_ACTUATOR_EXTERNAL_PORT}:${MURAW_LASTFM_RESPONSE_PARSER_ACTUATOR_INTERNAL_PORT}"
+    volumes:
+      - local__lastfm-response-parser__app-logs:/app/logs
+    depends_on:
+      postgres-lastfm:
+        condition: service_healthy
+      lastfm-liquibase-service:
+        condition: service_completed_successfully
+    deploy:
+      resources:
+        limits:
+          memory: 2Gb
+          cpus: '0.3'
+        reservations:
+          memory: 256M
           cpus: '0.1'
     networks:
       - mu__network
@@ -104,8 +268,6 @@ services:
     env_file:
       - ./music-data.env
       - ./music-data.secrets.env
-    environment:
-      - SPRING_PROFILES_ACTIVE=fast
     ports:
       - "${MU_DATA_APP_EXTERNAL_PORT}:${MU_DATA_APP_INTERNAL_PORT}"
       - "${MU_DATA_ACTUATOR_EXTERNAL_PORT}:${MU_DATA_ACTUATOR_INTERNAL_PORT}"
@@ -119,15 +281,15 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 60s
+      start_period: 300s
     deploy:
       resources:
         limits:
-          memory: 640M
-          cpus: '0.5'
+          memory: 512M
+          cpus: '0.2'
         reservations:
-          memory: 384M
-          cpus: '0.1'
+          memory: 256M
+          cpus: '0.05'
     networks:
       - mu__network
 
@@ -140,8 +302,6 @@ services:
     env_file:
       - ./music-quiz.env
       - ./music-quiz.secrets.env
-    environment:
-      - SPRING_PROFILES_ACTIVE=fast
     ports:
       - "${MU_QUIZ_APP_EXTERNAL_PORT}:${MU_QUIZ_APP_INTERNAL_PORT}"
       - "${MU_QUIZ_ACTUATOR_EXTERNAL_PORT}:${MU_QUIZ_ACTUATOR_INTERNAL_PORT}"
@@ -155,7 +315,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 60s
+      start_period: 300s
     deploy:
       resources:
         limits:
@@ -175,8 +335,10 @@ services:
       context: ../../../music/ui
       dockerfile: Dockerfile
       args:
-        - VITE_MURAW_LASTFM_APP_HOST=${MURAW_LASTFM_APP_HOST}
-        - VITE_MURAW_LASTFM_APP_EXTERNAL_PORT=${MURAW_LASTFM_APP_EXTERNAL_PORT}
+        - VITE_MURAW_LASTFM_READ_API_HOST=${MURAW_LASTFM_REST_API_HOST}
+        - VITE_MURAW_LASTFM_READ_API_EXTERNAL_PORT=${MURAW_LASTFM_REST_API_EXTERNAL_PORT}
+        - VITE_MURAW_LASTFM_WRITE_API_HOST=${MURAW_LASTFM_ETL_REST_API_HOST}
+        - VITE_MURAW_LASTFM_WRITE_API_EXTERNAL_PORT=${MURAW_LASTFM_ETL_REST_API_EXTERNAL_PORT}
         - VITE_MU_DATA_APP_HOST=${MU_DATA_APP_HOST}
         - VITE_MU_DATA_APP_EXTERNAL_PORT=${MU_DATA_APP_EXTERNAL_PORT}
         - VITE_MU_QUIZ_APP_HOST=${MU_QUIZ_APP_HOST}
@@ -187,7 +349,7 @@ services:
     ports:
       - "${MU_UI_EXTERNAL_PORT}:80"
     depends_on:
-      music-data-raw-lastfm:
+      lastfm-rest-api:
         condition: service_healthy
       music-data:
         condition: service_healthy
@@ -210,7 +372,7 @@ services:
     image: prom/prometheus:v2.45.6
     restart: unless-stopped
     volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ../common/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - local__mu__prometheus-data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -220,7 +382,7 @@ services:
     ports:
       - "${PROMETHEUS_PORT}:9090"
     depends_on:
-      music-data-raw-lastfm:
+      lastfm-rest-api:
         condition: service_healthy
       music-data:
         condition: service_healthy
@@ -241,13 +403,13 @@ services:
     container_name: local__mu__grafana
     build:
       dockerfile: grafana.dockerfile
-      context: ../../../music/data/raw/lastfm-monolith/src/main/resources/docker/compose/common
+      context: ../../../music/data/env/docker/compose/dev__mu/grafana
     restart: unless-stopped
     volumes:
       - local__mu__grafana-data:/var/lib/grafana
-      - ../../../music/data/raw/lastfm-monolith/src/main/resources/docker/compose/common/grafana/provisioning/dashboards:/tmp/dashboard-templates
-      - ../../../music/data/raw/lastfm-monolith/src/main/resources/docker/compose/common/grafana/provisioning/datasources:/tmp/datasource-templates
-      - ../../../music/data/raw/lastfm-monolith/src/main/resources/docker/compose/common/grafana-provision.sh:/tmp/grafana-provision.sh:ro
+      - ../../../music/data/env/docker/compose/dev__mu/grafana/provisioning/dashboards:/tmp/dashboard-templates
+      - ../../../music/data/env/docker/compose/dev__mu/grafana/provisioning/datasources:/tmp/datasource-templates
+      - ../../../music/data/env/docker/compose/dev__mu/grafana/grafana-provision.sh:/tmp/grafana-provision.sh:ro
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
@@ -297,12 +459,20 @@ networks:
     name: local__mu__network
 
 volumes:
-  local__mu-data-raw-lastfm__db-postgres-data:
-    name: local__mu-data-raw-lastfm__db-postgres-data
+  local__lastfm__db-postgres-data:
+    name: local__lastfm__db-postgres-data
   local__mu-data__db-postgres-data:
     name: local__mu-data__db-postgres-data
-  local__mu-data-raw-lastfm__app-logs:
-    name: local__mu-data-raw-lastfm__app-logs
+  local__lastfm-rest-api__app-logs:
+    name: local__lastfm-rest-api__app-logs
+  local__lastfm-etl-rest-api__app-logs:
+    name: local__lastfm-etl-rest-api__app-logs
+  local__lastfm-calls-generator__app-logs:
+    name: local__lastfm-calls-generator__app-logs
+  local__lastfm-calls-performer__app-logs:
+    name: local__lastfm-calls-performer__app-logs
+  local__lastfm-response-parser__app-logs:
+    name: local__lastfm-response-parser__app-logs
   local__mu-data__app-logs:
     name: local__mu-data__app-logs
   local__mu-quiz__app-logs:

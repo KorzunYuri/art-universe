@@ -1,0 +1,2 @@
+ALTER TABLE artist DROP COLUMN IF EXISTS is_streamable;
+ALTER TABLE artist DROP COLUMN IF EXISTS is_on_tour;

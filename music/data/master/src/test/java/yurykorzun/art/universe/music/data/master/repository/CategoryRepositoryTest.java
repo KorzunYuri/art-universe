@@ -9,19 +9,17 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import yurykorzun.art.universe.music.data.master.common.archetypes.JpaOnlyTest;
+import yurykorzun.art.universe.music.data.master.common.archetypes.BaseMasterDataJpaTest;
 import yurykorzun.art.universe.music.data.master.entity.Category;
 import yurykorzun.art.universe.music.data.master.entity.CategoryCategory;
 
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Tag("integration")
-class CategoryRepositoryTest extends JpaOnlyTest {
+class CategoryRepositoryTest extends BaseMasterDataJpaTest {
 
     @Autowired
     private CategoryRepository categoryRepository;

@@ -15,9 +15,8 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.relation
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.relationship.LastfmTrackTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.dto.EntityTagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTag;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.LastfmTagRepositoryCustomImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaTestWithHelper;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -25,7 +24,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class LastfmTagRepositoryCustomImplTest extends JpaOnlyTest {
+class LastfmTagRepositoryCustomImplTest extends JpaTestWithHelper {
 
     @Autowired
     private LastfmTagRepositoryCustomImpl customRepository;

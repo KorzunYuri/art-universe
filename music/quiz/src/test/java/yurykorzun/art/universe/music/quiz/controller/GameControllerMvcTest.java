@@ -10,7 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import yurykorzun.art.universe.music.quiz.common.archetypes.BaseMvcTest;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.BaseMvcTest;
 import yurykorzun.art.universe.music.quiz.dto.GameDto;
 import yurykorzun.art.universe.music.quiz.dto.GameWithGenerationsDto;
 import yurykorzun.art.universe.music.quiz.dto.GenerationDto;

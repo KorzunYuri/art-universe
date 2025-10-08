@@ -13,6 +13,9 @@ import yurykorzun.art.universe.music.data.master.service.RelationService;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Contains tests of auto-conversion of data type in controllers.
+ */
 @WebMvcTest(controllers = RelationController.class)
 class WebMvcConfigTest {
 

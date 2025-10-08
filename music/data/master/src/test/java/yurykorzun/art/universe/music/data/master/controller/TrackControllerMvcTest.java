@@ -12,6 +12,7 @@ import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProj
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.service.BindingService;
 import yurykorzun.art.universe.music.data.master.service.TrackService;
+import yurykorzun.art.universe.music.data.master.common.archetypes.BaseMasterDataMvcTest;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -25,7 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(TrackController.class)
-class TrackControllerMvcTest {
+class TrackControllerMvcTest extends BaseMasterDataMvcTest {
 
     @Autowired
     private ObjectMapper objectMapper;

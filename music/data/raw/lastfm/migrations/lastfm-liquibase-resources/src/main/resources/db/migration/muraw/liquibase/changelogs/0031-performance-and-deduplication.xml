@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="0031-0010-api-response-created-at-index" author="amazon-q">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0031-deletion-performance-indexes/0031-0010-api-response-created-at-index.sql"/>
+    </changeSet>
+
+    <changeSet id="0031-0020-entity-cleanup-indexes" author="amazon-q">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0031-deletion-performance-indexes/0031-0020-entity-cleanup-indexes.sql"/>
+    </changeSet>
+
+    <changeSet id="0031-0030-api-call-reference-indexes" author="amazon-q">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0031-deletion-performance-indexes/0031-0030-api-call-reference-indexes.sql"/>
+    </changeSet>
+
+    <changeSet id="0031-0040-relationship-api-call-indexes" author="amazon-q">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0031-deletion-performance-indexes/0031-0040-relationship-api-call-indexes.sql"/>
+    </changeSet>
+
+    <changeSet id="0031-0050-additional-performance-indexes" author="amazon-q">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0031-deletion-performance-indexes/0031-0050-additional-performance-indexes.sql"/>
+    </changeSet>
+
+    <changeSet id="0031-0060-change-api-call-fk-constraints-from-restrict-to-cascade" author="amazon-q">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0031-deletion-performance-indexes/0031-0060-change-api-call-fk-constraints-from-restrict-to-cascade.sql"/>
+    </changeSet>
+
+    <changeSet id="0031-0070-eliminate-track-duplicates" author="amazon-q">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0031-deletion-performance-indexes/0031-0070-eliminate-track-duplicates.sql"
+                 splitStatements="false"/>
+    </changeSet>
+
+    <changeSet id="0031-0080-eliminate-album-duplicates" author="amazon-q">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0031-deletion-performance-indexes/0031-0080-eliminate-album-duplicates.sql"
+                 splitStatements="false"/>
+    </changeSet>
+
+    <changeSet id="0031-0090-normalize-remaining-track-urls" author="amazon-q">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0031-deletion-performance-indexes/0031-0090-normalize-remaining-track-urls.sql"
+                 splitStatements="false"/>
+    </changeSet>
+
+    <changeSet id="0031-0100-add-unique-constraints" author="amazon-q">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0031-deletion-performance-indexes/0031-0100-add-unique-constraints.sql"
+                 splitStatements="false"/>
+    </changeSet>
+
+</databaseChangeLog>

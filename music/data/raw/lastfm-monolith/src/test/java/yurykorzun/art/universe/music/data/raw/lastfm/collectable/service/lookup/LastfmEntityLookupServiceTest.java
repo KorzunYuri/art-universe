@@ -8,16 +8,16 @@ import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTag;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 
 import jakarta.persistence.EntityManager;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaTestWithHelper;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class LastfmEntityLookupServiceTest extends JpaOnlyTest {
+class LastfmEntityLookupServiceTest extends JpaTestWithHelper {
 
     @Autowired
     private EntityManager entityManager;

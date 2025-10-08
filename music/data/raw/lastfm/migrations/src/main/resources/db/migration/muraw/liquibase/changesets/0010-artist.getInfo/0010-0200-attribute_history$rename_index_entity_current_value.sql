@@ -1,2 +1,0 @@
-ALTER INDEX attribute_history_I_current_value
-    RENAME TO attribute_history_I_entity_value_current;

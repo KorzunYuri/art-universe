@@ -1,0 +1,15 @@
+plugins {
+    id 'art-universe.java-library'
+}
+
+archivesBaseName = 'lastfm-repositories'
+
+dependencies {
+    api project(':music:data:raw:lastfm:lastfm-models')
+
+    api 'org.springframework.data:spring-data-commons'
+    api 'org.springframework.data:spring-data-jpa'
+    
+    runtimeOnly 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    runtimeOnly 'io.hypersistence:hypersistence-utils-hibernate-63'
+}

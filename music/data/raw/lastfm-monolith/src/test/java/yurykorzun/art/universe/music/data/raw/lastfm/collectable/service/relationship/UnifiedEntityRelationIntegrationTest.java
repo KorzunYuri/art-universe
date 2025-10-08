@@ -20,7 +20,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.relatio
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.relationship.impl.LastfmArtistTagServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.relationship.impl.LastfmArtistsRelationServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaTestWithHelper;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.*;
     LastfmArtistAlbumServiceImpl.class,
 })
 @Tag("integration")
-class UnifiedEntityRelationIntegrationTest extends JpaOnlyTest {
+class UnifiedEntityRelationIntegrationTest extends JpaTestWithHelper {
 
     @Autowired
     private EntityManager entityManager;

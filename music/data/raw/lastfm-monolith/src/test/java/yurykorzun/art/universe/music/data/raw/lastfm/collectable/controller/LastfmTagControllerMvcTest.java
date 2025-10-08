@@ -17,7 +17,6 @@ import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.controller.LastfmTagController;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.dto.EntityTagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.dto.EntityTagSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.dto.LastfmTagResponseDto;
@@ -26,7 +25,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTa
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.lookup.LastfmTagLookupService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.LastfmTagService;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.BaseMvcTest;
 
 import java.util.Collections;
 import java.util.List;
@@ -39,7 +37,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(LastfmTagController.class)
-class LastfmTagControllerMvcTest extends BaseMvcTest {
+class LastfmTagControllerMvcTest {
 
     @Autowired
     private MockMvc mockMvc;

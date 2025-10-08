@@ -1,0 +1,63 @@
+spring:
+  application:
+    name: lastfm-response-parser
+  profiles:
+    include: common
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://${MURAW_LASTFM_DB_HOST:localhost}:${MURAW_LASTFM_DB_PORT:5432}/${MURAW_LASTFM_DB_NAME:music_universe}?currentSchema=${MURAW_LASTFM_DB_SCHEMA:mu_raw_lastfm}
+    username: ${MURAW_LASTFM_DB_USER_NAME}
+    password: '${MURAW_LASTFM_DB_PASSWORD}'
+    hikari:
+      pool-name: LastfmResponseParserHikariPool
+      maximum-pool-size: 4
+      minimum-idle: 2
+  jpa:
+    database: postgresql
+    properties:
+      hibernate:
+        order_by:
+          default_null_ordering: last
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        show-sql: false
+        jdbc:
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
+        javax.persistence.validation.mode: none
+    hibernate:
+      ddl-auto: none
+
+server:
+  # dummy port to not occupy 8080 on dev
+  port: ${MURAW_LASTFM_RESPONSE_PARSER_ACTUATOR_INTERNAL_PORT}
+management:
+  server:
+    port: ${MURAW_LASTFM_RESPONSE_PARSER_ACTUATOR_INTERNAL_PORT}
+
+lastfm:
+  scheduling:
+    attribute-history:
+      fixedDelaySecs: 1
+    parsing:
+      fixedDelaySecs: 1
+  threshold:
+    artist:
+      listenersCount: 1000
+    album:
+      playCount: 10000
+    track:
+      playCount: 1000
+    tag:
+      usageCount: 1000
+  client:
+    methods:
+      artist:
+        getSimilar:
+          artistMatchThreshold: 0.2
+        topTags:
+          tagUsageCountThreshold: 10
+        topAlbums:
+          albumPlayCountThreshold: 10000
+        search:
+          artistSimilarityThreshold: 0.5

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
+
+    <changeSet id="0006_0000_api_response_fix_api_call_id_type" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0006-attribute-snapshots/0006-0000_api_response$fix_api_call_id_type.sql"/>
+    </changeSet>
+
+    <changeSet id="0006_0001_attribute_history_fix_entity_id_type" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0006-attribute-snapshots/0006-0001_attribute_history$fix_entity_id_type.sql"/>
+    </changeSet>
+
+    <changeSet id="0006_0002_api_call_fix_entity_id_type" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0006-attribute-snapshots/0006-0002_api_call$fix_entity_id_type.sql"/>
+    </changeSet>
+
+    <changeSet id="0006_0003_data_snapshotl_fix_entity_id_type" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0006-attribute-snapshots/0006-0003_data_snapshotl$fix_entity_id_type.sql"/>
+    </changeSet>
+
+    <changeSet id="0006_0010_entity_relation_initial" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0006-attribute-snapshots/0006-0010_entity_relation$initial.sql"/>
+    </changeSet>
+
+    <changeSet id="0006_0020_attribute_snapshot_initial" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0006-attribute-snapshots/0006-0020_attribute_snapshot$initial.sql"/>
+    </changeSet>
+
+    <changeSet id="0006_0030_api_response_remove_api_call_type" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0006-attribute-snapshots/0006-0030_api_response$remove_api_call_type.sql"/>
+    </changeSet>
+
+    <changeSet id="0006_0040_attribute_history_add_validity_dates" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0006-attribute-snapshots/0006-0040_attribute_history$add_validity_dates.sql"/>
+    </changeSet>
+
+    <changeSet id="0006_0050_attribute_history_add_value_uniquity_constraint" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0006-attribute-snapshots/0006-0050_attribute_history$add_value_uniquity_constraint.sql"/>
+    </changeSet>
+
+    <changeSet id="0006_0060_attribute_history_add_valid_from_uniquity_constraint" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0006-attribute-snapshots/0006-0060_attribute_history$add_valid_from_uniquity_constraint.sql"/>
+    </changeSet>
+
+    <changeSet id="0006_0061_attribute_history_add_valid_till_uniquity_constraint" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0006-attribute-snapshots/0006-0061_attribute_history$add_valid_till_uniquity_constraint.sql"/>
+    </changeSet>
+
+    <changeSet id="0006_0070_attribute_history_add_entity_index" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0006-attribute-snapshots/0006-0070_attribute_history$add_entity_index.sql"/>
+    </changeSet>
+
+    <changeSet id="0006_0080_attribute_history_add_current_attribute_index" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0006-attribute-snapshots/0006-0080_attribute_history$add_current_attribute_index.sql"/>
+    </changeSet>
+
+</databaseChangeLog>

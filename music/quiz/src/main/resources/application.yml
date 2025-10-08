@@ -1,7 +1,8 @@
 spring:
   application:
     name: music-universe-quiz-service
-
+  profiles:
+    include: common
   datasource:
     driverClassName: org.postgresql.Driver
     url: jdbc:postgresql://${MU_DATA_DB_HOST:localhost}:${MU_DATA_DB_PORT:5432}/music_universe?currentSchema=mu_quiz
@@ -14,7 +15,6 @@ spring:
   liquibase:
     default-schema: mu_quiz
     change-log: classpath:db/migration/muquiz/liquibase/db.changelog.xml
-
   jpa:
     database: postgresql
     properties:
@@ -29,7 +29,6 @@ spring:
         order_updates: true
     hibernate:
       ddl-auto: none
-
   docker:
     compose:
       enabled: false
@@ -39,26 +38,7 @@ server:
   port: ${MU_QUIZ_APP_INTERNAL_PORT:8080}
   allowed-origins: ${MU_QUIZ_APP_CORS_ALLOWED_ORIGINS}
 
-springdoc:
-  swagger-ui:
-    path: /swagger-ui.html
-  api-docs:
-    path: /v3/api-docs
-  show-actuator: true
-  use-management-port: true
-  packages-to-scan: yurykorzun.art.universe
-
 management:
   server:
-    port: ${MU_QUIZ_ACTUATOR_INTERNAL_PORT:8092}
-  endpoints:
-    web:
-      exposure:
-        include: "*"
-      base-path: /actuator
-  endpoint:
-    beans:
-      access: read_only
-    health:
-      show-details: always
-      show-components: always
+    port: ${MU_QUIZ_ACTUATOR_INTERNAL_PORT:8090}
+

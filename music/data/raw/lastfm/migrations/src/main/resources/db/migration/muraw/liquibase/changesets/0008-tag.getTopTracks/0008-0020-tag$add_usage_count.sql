@@ -1,2 +1,0 @@
-ALTER TABLE tag
-ADD COLUMN usage_count          INTEGER DEFAULT 0 NOT NULL;

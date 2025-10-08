@@ -1,0 +1,15 @@
+package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.dto;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.dto.ArtistDto;
+
+@Data
+@EqualsAndHashCode(callSuper = true)
+@NoArgsConstructor
+public class TagTopTracksTrackArtistDto extends ArtistDto {
+
+    private int streamable;
+
+}

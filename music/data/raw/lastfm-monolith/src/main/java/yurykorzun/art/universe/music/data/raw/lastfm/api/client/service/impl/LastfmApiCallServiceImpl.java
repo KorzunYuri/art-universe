@@ -49,16 +49,6 @@ public class LastfmApiCallServiceImpl implements LastfmApiCallService {
 
     @Override
     @Transactional
-    public long createApiCall(LastfmApiCallCreateRequest dto) {
-        LastfmApiCall call = dtoToApiCall(dto);
-        call.setStatus(ApiCallStatus.PENDING);
-        LastfmApiCall lastfmApiCall = apiCallRepository.save(call);
-
-        return lastfmApiCall.getId();
-    }
-
-    @Override
-    @Transactional
     public List<Long> createApiCalls(List<LastfmApiCallCreateRequest> lastfmApiCallCreateRequests) {
         List<LastfmApiCall> calls = lastfmApiCallCreateRequests.stream()
                 .map(this::dtoToApiCall)
@@ -71,22 +61,8 @@ public class LastfmApiCallServiceImpl implements LastfmApiCallService {
     }
 
     @Override
-    @Transactional
-    public void expireApiCallsForType(LastfmApiCallType type) {
-        apiCallRepository.expireOutdatedApiCallsByType(type);
-    }
-
-    @Override
     public List<LastfmApiCall> findAllUnexpiredByType(LastfmApiCallType apiCallType) {
         return apiCallRepository.findAllUnexpiredByType(apiCallType);
-    }
-
-    @Override
-    @Transactional
-    public void setStatus(long id, ApiCallStatus status) throws IllegalStateException {
-        LastfmApiCall call = apiCallRepository.getReferenceById(id);
-        call.setStatus(status);
-        apiCallRepository.save(call);
     }
 
     private LastfmApiCall dtoToApiCall(LastfmApiCallCreateRequest dto) {

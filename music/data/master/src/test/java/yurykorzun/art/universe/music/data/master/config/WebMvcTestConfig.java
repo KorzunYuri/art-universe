@@ -16,7 +16,7 @@ public class WebMvcTestConfig implements WebMvcConfigurer {
     public void addFormatters(FormatterRegistry registry) {
         // Register converter for EntityType
         registry.addConverter(String.class, MasterEntityType.class, MasterEntityType::fromString);
-        
+
         // Register converter for DataSource
         registry.addConverter(String.class, DataSource.class, DataSource::fromString);
     }

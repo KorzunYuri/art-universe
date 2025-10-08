@@ -58,7 +58,7 @@ or, create an IDE run configuration that uses the following env files:
 * .project-root.env
 * ./env/docker/local/music-data-raw-lastfm.env
 * ./env/docker/local/music-data-raw-lastfm.secrets.env
-* ./music-universe/music-data-raw-lastfm/dev.override.env
+* ./music/data/raw/lastfm/env/dev.override.env
 
 ### Docker Deployment
 Deploy the whole stack using the following command.

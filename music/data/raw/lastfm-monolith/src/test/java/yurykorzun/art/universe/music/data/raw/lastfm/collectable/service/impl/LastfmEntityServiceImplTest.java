@@ -15,7 +15,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.L
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.LastfmTagRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaTestWithHelper;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -29,7 +29,7 @@ import static yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstan
 
 @Tag("integration")
 @Import(LastfmApiCallEntityServiceImpl.class)
-class LastfmEntityServiceImplTest extends JpaOnlyTest {
+class LastfmEntityServiceImplTest extends JpaTestWithHelper {
 
     @Autowired
     private LastfmApiCallEntityServiceImpl service;

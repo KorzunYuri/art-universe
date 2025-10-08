@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: lastfm-calls-performer
+  profiles:
+    include: common
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://${MURAW_LASTFM_DB_HOST:localhost}:${MURAW_LASTFM_DB_PORT:5432}/${MURAW_LASTFM_DB_NAME:music_universe}?currentSchema=${MURAW_LASTFM_DB_SCHEMA:mu_raw_lastfm}
+    username: ${MURAW_LASTFM_DB_USER_NAME}
+    password: '${MURAW_LASTFM_DB_PASSWORD}'
+    hikari:
+      pool-name: LastfmCallsPerformerHikariPool
+      maximum-pool-size: 4
+      minimum-idle: 2
+  jpa:
+    database: postgresql
+    properties:
+      hibernate:
+        order_by:
+          default_null_ordering: last
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        show-sql: false
+        jdbc:
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
+        javax.persistence.validation.mode: none
+    hibernate:
+      ddl-auto: none
+
+server:
+  # dummy port to not occupy 8080 on dev
+  port: ${MURAW_LASTFM_CALLS_PERFORMER_ACTUATOR_INTERNAL_PORT}
+management:
+  server:
+    port: ${MURAW_LASTFM_CALLS_PERFORMER_ACTUATOR_INTERNAL_PORT}
+
+lastfm:
+  client:
+    baseUrl: "http://ws.audioscrobbler.com/2.0/"
+    apikey: ${MURAW_LASTFM_API_KEY}
+    calls:
+      fixedDelaySecs: 1
+      callsPerSec: 1.0
+      retry:
+        max-attempts: 3
+        initial-delay-ms: 500
+        multiplier: 1.5

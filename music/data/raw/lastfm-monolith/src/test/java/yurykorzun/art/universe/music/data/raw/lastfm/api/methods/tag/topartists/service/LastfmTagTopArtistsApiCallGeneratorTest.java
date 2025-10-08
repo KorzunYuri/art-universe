@@ -22,7 +22,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.L
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.LastfmDataSnapshotService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.LastfmApiCallEntityService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTag;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaTestWithHelper;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -38,7 +38,7 @@ import static org.mockito.Mockito.*;
 
 @Tag("integration")
 @Import(LastfmTagTopArtistsApiCallGenerator.class)
-class LastfmTagTopArtistsApiCallGeneratorTest extends JpaOnlyTest {
+class LastfmTagTopArtistsApiCallGeneratorTest extends JpaTestWithHelper {
 
     @MockitoBean
     private LastfmApiCallService apiCallService;

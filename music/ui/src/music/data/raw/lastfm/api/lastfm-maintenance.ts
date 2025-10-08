@@ -10,7 +10,7 @@ export async function triggerDbMaintenance(): Promise<string> {
     console.log('🔧 Triggering LastFM database maintenance...');
     
     const response = await axios.get<string>(
-        `${LastfmConfig.baseApiUrl}/maintenance/trigger`
+        `${LastfmConfig.writeApiUrl}/maintenance/trigger`
     );
     
     return response.data;

@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
-import yurykorzun.art.universe.music.data.master.common.archetypes.JpaOnlyTest;
+import yurykorzun.art.universe.music.data.master.common.archetypes.BaseMasterDataJpaTest;
 import yurykorzun.art.universe.music.data.master.dto.CategoryDagDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategoryDagNodeDTO;
 import yurykorzun.art.universe.music.data.master.entity.*;
@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Import({
         CategoryServiceImpl.class
 })
-class CategoryServiceHierarchyCountsTest extends JpaOnlyTest {
+class CategoryServiceHierarchyCountsTest extends BaseMasterDataJpaTest {
 
     @Autowired
     private CategoryService categoryService;

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
+
+    <changeSet id="0019_0000_v_attr_value_temporarily_remove" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0019-fix-numeric-attrs-boundaries/0019-0000-v_attr_value$temporarily_remove.sql"/>
+    </changeSet>
+
+    <changeSet id="0019_0010_attribute_history_enlarge_numeric_value" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0019-fix-numeric-attrs-boundaries/0019-0010-attribute_history$enlarge_numeric_value.sql"/>
+    </changeSet>
+
+    <changeSet id="0019_0020_artist_enlarge_playcount" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0019-fix-numeric-attrs-boundaries/0019-0020-artist$enlarge_playcount.sql"/>
+    </changeSet>
+
+    <changeSet id="0019_0030_album_enlarge_playcount" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0019-fix-numeric-attrs-boundaries/0019-0030-album$enlarge_playcount.sql"/>
+    </changeSet>
+
+    <changeSet id="0019_0040_track_enlarge_playcount" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0019-fix-numeric-attrs-boundaries/0019-0040-track$enlarge_playcount.sql"/>
+    </changeSet>
+
+    <changeSet id="0019_0050_v_attr_value_rename_int_value" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0019-fix-numeric-attrs-boundaries/0019-0050-v_attr_value$rename_int_value.sql"/>
+    </changeSet>
+
+</databaseChangeLog>

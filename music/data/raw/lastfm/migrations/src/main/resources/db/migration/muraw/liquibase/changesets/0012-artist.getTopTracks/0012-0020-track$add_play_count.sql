@@ -1,2 +1,0 @@
-ALTER TABLE track
-ADD COLUMN play_count INTEGER;

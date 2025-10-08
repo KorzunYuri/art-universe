@@ -1,1 +1,0 @@
-CREATE INDEX IF NOT EXISTS artist_I_listeners_count ON artist(listeners_count);

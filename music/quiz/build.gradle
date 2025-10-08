@@ -3,7 +3,15 @@ plugins {
     id 'org.liquibase.gradle'
 }
 
+archivesBaseName = 'music-quiz'
+
 dependencies {
-    implementation 'org.liquibase:liquibase-core'
+    implementation project(':common:commons-web')
+
     implementation 'org.springframework.boot:spring-boot-docker-compose'
+
+    runtimeOnly 'org.liquibase:liquibase-core'
+
+    testImplementation project(':common:commons-test-web')
+    testImplementation project(':common:test:commons-test-db')
 }

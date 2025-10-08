@@ -2,13 +2,13 @@ package yurykorzun.art.universe.music.data.master.repository;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import yurykorzun.art.universe.music.data.master.common.archetypes.JpaOnlyTest;
+import yurykorzun.art.universe.music.data.master.common.archetypes.BaseMasterDataJpaTest;
 import yurykorzun.art.universe.music.data.master.entity.Album;
 import yurykorzun.art.universe.music.data.master.entity.Artist;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class AlbumRepositoryTest extends JpaOnlyTest {
+public class AlbumRepositoryTest extends BaseMasterDataJpaTest {
 
     @Autowired
     private AlbumRepository albumRepository;

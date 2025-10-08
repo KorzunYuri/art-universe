@@ -1,44 +1,27 @@
 package yurykorzun.art.universe.music.quiz.common.archetypes;
 
-
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
+import yurykorzun.art.universe.common.test.db.PostgresJpaTest;
+import yurykorzun.art.universe.common.test.db.PostgresTestContainerHolder;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.BaseTest;
 
 /**
  * Base class for persistence layer testing.
  */
-@ActiveProfiles("test")
-@Testcontainers
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public abstract class JpaOnlyTest {
-
-    private static String IMAGE_NAME = "postgres:14-alpine";
-    static final PostgreSQLContainer<?> POSTGRESQL_CONTAINER;
-
-    static {
-        POSTGRESQL_CONTAINER = new PostgreSQLContainer<>(DockerImageName.parse(IMAGE_NAME))
-                .withDatabaseName("music_universe")
-                .withUsername("postgres")
-                .withPassword("postgres")
-                .withInitScript("db/init-schema.sql")
-                .withReuse(true);
-        POSTGRESQL_CONTAINER.start();
-    }
+@PostgresJpaTest(
+    databaseName = "music_universe",
+    initScript = "db/init-schema.sql",
+    schema = "mu_quiz"
+)
+public abstract class JpaOnlyTest extends BaseTest {
 
     @DynamicPropertySource
-    static void registerProperties(DynamicPropertyRegistry registry) {
-        final String jdbcUrl = POSTGRESQL_CONTAINER.getJdbcUrl();
-
-        registry.add("spring.datasource.url", () -> jdbcUrl + "?currentSchema=mu_quiz");
-        registry.add("spring.datasource.username", () -> "mu_quiz_dm");
-        registry.add("spring.datasource.password", () -> "mu_quiz_dm");
+    static void configureProperties(DynamicPropertyRegistry registry) {
+        PostgreSQLContainer<?> container = PostgresTestContainerHolder.getContainer(JpaOnlyTest.class);
+        registry.add("spring.datasource.url", () -> container.getJdbcUrl() + "?currentSchema=mu_quiz");
+        registry.add("spring.datasource.username", container::getUsername);
+        registry.add("spring.datasource.password", container::getPassword);
     }
-
 }

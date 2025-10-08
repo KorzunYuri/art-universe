@@ -9,7 +9,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.attribut
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.BaseLastfmEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 
 @Repository
 public interface LastfmAttributeSnapshotRepository extends JpaRepository<LastfmAttributeSnapshot, Long> {

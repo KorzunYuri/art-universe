@@ -3,8 +3,6 @@ plugins {
 }
 
 dependencies {
-    api project(':commons')
-    
     // messaging
     implementation 'org.springframework.kafka:spring-kafka'
     implementation 'com.fasterxml.jackson.core:jackson-databind'

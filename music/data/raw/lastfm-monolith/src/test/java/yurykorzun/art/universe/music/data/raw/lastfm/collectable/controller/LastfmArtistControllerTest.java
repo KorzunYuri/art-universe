@@ -10,7 +10,6 @@ import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.controller.LastfmArtistController;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.dto.ArtistSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.dto.LastfmArtistResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;

@@ -24,6 +24,7 @@ import yurykorzun.art.universe.music.data.master.dto.CategoryRelationDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.service.BindingService;
 import yurykorzun.art.universe.music.data.master.service.CategoryService;
+import yurykorzun.art.universe.music.data.master.common.archetypes.BaseMasterDataMvcTest;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -40,7 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(CategoryController.class)
-class CategoryControllerMvcTest {
+class CategoryControllerMvcTest extends BaseMasterDataMvcTest {
 
     @Autowired
     private ObjectMapper objectMapper;

@@ -13,6 +13,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
+import yurykorzun.art.universe.music.data.master.common.archetypes.BaseMasterDataMvcTest;
 import yurykorzun.art.universe.music.data.master.dto.ArtistDto;
 import yurykorzun.art.universe.music.data.master.dto.ArtistSaveRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.ArtistWithCategoriesDto;
@@ -38,7 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ArtistController.class)
-class ArtistControllerMvcTest {
+class ArtistControllerMvcTest extends BaseMasterDataMvcTest {
 
     @Autowired
     private ObjectMapper objectMapper;

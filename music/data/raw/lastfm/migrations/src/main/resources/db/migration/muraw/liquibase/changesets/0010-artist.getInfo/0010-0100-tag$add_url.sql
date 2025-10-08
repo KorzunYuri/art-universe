@@ -1,2 +1,0 @@
-ALTER TABLE tag
-    ADD COLUMN url VARCHAR(1024);

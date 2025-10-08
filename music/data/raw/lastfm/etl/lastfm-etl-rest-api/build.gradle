@@ -1,0 +1,18 @@
+plugins {
+    id 'art-universe.spring-boot-web-app'
+}
+
+archivesBaseName = 'lastfm-etl-rest-api'
+
+dependencies {
+    implementation project(':music:data:raw:lastfm:lastfm-repositories')
+    implementation project(':music:data:raw:lastfm:etl:lastfm-tasks-coordinator')
+
+    testImplementation project(':music:data:raw:lastfm:test:lastfm-commons-test-context')
+    testImplementation project(':music:data:raw:lastfm:test:lastfm-commons-test-db-helper')
+    testImplementation project(':common:commons-test-web')
+    testImplementation project(':music:data:raw:lastfm:test:lastfm-commons-test-jpa')
+
+    testRuntimeOnly 'org.testcontainers:postgresql'
+    testRuntimeOnly 'org.testcontainers:testcontainers'
+}

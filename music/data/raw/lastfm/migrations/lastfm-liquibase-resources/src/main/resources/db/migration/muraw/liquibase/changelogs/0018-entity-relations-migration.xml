@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
+
+    <changeSet id="0018_0010_create_temporary_indexes" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0018-entity-relations-migration/0018-0010-create-temporary-indexes.sql"/>
+    </changeSet>
+
+    <changeSet id="0018_0020_migrate_artists_relations" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0018-entity-relations-migration/0018-0020-migrate-artists-relations.sql"/>
+    </changeSet>
+
+    <changeSet id="0018_0030_migrate_artist_tag" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0018-entity-relations-migration/0018-0030-migrate-artist-tag.sql"/>
+    </changeSet>
+
+    <changeSet id="0018_0040_migrate_artist_album" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0018-entity-relations-migration/0018-0040-migrate-artist-album.sql"/>
+    </changeSet>
+
+    <changeSet id="0018_0050_migrate_artist_track" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0018-entity-relations-migration/0018-0050-migrate-artist-track.sql"/>
+    </changeSet>
+
+    <changeSet id="0018_0060_migrate_track_tag" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0018-entity-relations-migration/0018-0060-migrate-track-tag.sql"/>
+    </changeSet>
+
+    <changeSet id="0018_0070_drop_temporary_indexes" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0018-entity-relations-migration/0018-0070-drop-temporary-indexes.sql"/>
+    </changeSet>
+
+    <changeSet id="0018_0080_drop_entity_relations" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0018-entity-relations-migration/0018-0080-drop-entity-relations.sql"/>
+    </changeSet>
+
+    <changeSet id="0018_0100_cleanup_rank_attribute" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0018-entity-relations-migration/0018-0100-cleanup-rank-attribute.sql"/>
+    </changeSet>
+
+    <changeSet id="0018_0200_update_cleanup_entity_function" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0018-entity-relations-migration/0018-0200-update-cleanup-entity-function.sql"
+                splitStatements="false"/>
+    </changeSet>
+
+</databaseChangeLog>

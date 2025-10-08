@@ -67,27 +67,11 @@ if [ "$ENVIRONMENT" == "local" ]; then
     ENV_NAME="Local"
     # Source the environment file to get the ports
     source "$PROJECT_ROOT/env/docker/local/.env"
-    SERVICES_INFO="  - LastFM Raw Data: http://localhost:9081
-  - Music Data: http://localhost:9082
-  - Music Quiz: http://localhost:9083
-  - UI: http://localhost:4000
-  - Adminer: http://localhost:9980
-  - Prometheus: http://localhost:${PROMETHEUS_PORT}
-  - Grafana: http://localhost:${GRAFANA_PORT} "
 else
     COMPOSE_FILE="$PROJECT_ROOT/env/docker/prod/docker-compose.yml"
     ENV_NAME="Production"
     # Source the environment file to get the ports
     source "$PROJECT_ROOT/env/docker/prod/.env"
-    SERVICES_INFO="  - LastFM Raw Data: http://localhost:8081
-  - Music Data: http://localhost:8082
-  - Music Quiz: http://localhost:8083
-  - UI: http://localhost:3000
-  - Adminer: http://localhost:8880
-  - Prometheus: http://localhost:${PROMETHEUS_PORT}
-  - Grafana: http://localhost:${GRAFANA_PORT}
-
-Note: Applications connect to external databases on host machine"
 fi
 
 echo "=== Art Universe $ENV_NAME Environment Deployment ==="
@@ -129,7 +113,31 @@ if [ $? -eq 0 ]; then
     echo "✅ $ENV_NAME environment deployed successfully!"
     echo ""
     echo "Services available at:"
-    echo "$SERVICES_INFO"
+    if [ "$ENVIRONMENT" == "local" ]; then
+        echo "  - LastFM REST API: http://localhost:${MURAW_LASTFM_REST_API_EXTERNAL_PORT} (actuator: ${MURAW_LASTFM_REST_API_ACTUATOR_EXTERNAL_PORT})"
+        echo "  - LastFM ETL REST API: http://localhost:${MURAW_LASTFM_ETL_REST_API_EXTERNAL_PORT} (actuator: ${MURAW_LASTFM_ETL_REST_API_ACTUATOR_EXTERNAL_PORT})"
+        echo "  - LastFM Calls Generator: actuator http://localhost:${MURAW_LASTFM_CALLS_GENERATOR_ACTUATOR_EXTERNAL_PORT}"
+        echo "  - LastFM Calls Performer: actuator http://localhost:${MURAW_LASTFM_CALLS_PERFORMER_ACTUATOR_EXTERNAL_PORT}"
+        echo "  - LastFM Response Parser: actuator http://localhost:${MURAW_LASTFM_RESPONSE_PARSER_ACTUATOR_EXTERNAL_PORT}"
+        echo "  - Music Data: http://localhost:${MU_DATA_APP_EXTERNAL_PORT} (actuator: ${MU_DATA_ACTUATOR_EXTERNAL_PORT})"
+        echo "  - Music Quiz: http://localhost:${MU_QUIZ_APP_EXTERNAL_PORT} (actuator: ${MU_QUIZ_ACTUATOR_EXTERNAL_PORT})"
+        echo "  - UI: http://localhost:${MU_UI_EXTERNAL_PORT}"
+        echo "  - Adminer: http://localhost:${DB_ADMINER_PORT}"
+        echo "  - Prometheus: http://localhost:${PROMETHEUS_PORT}"
+        echo "  - Grafana: http://localhost:${GRAFANA_PORT}"
+    else
+        echo "  - LastFM REST API: http://localhost:${MURAW_LASTFM_REST_API_EXTERNAL_PORT} (actuator: ${MURAW_LASTFM_REST_API_ACTUATOR_EXTERNAL_PORT})"
+        echo "  - LastFM ETL REST API: http://localhost:${MURAW_LASTFM_ETL_REST_API_EXTERNAL_PORT} (actuator: ${MURAW_LASTFM_ETL_REST_API_ACTUATOR_EXTERNAL_PORT})"
+        echo "  - LastFM Calls Generator: actuator http://localhost:${MURAW_LASTFM_CALLS_GENERATOR_ACTUATOR_EXTERNAL_PORT}"
+        echo "  - LastFM Calls Performer: actuator http://localhost:${MURAW_LASTFM_CALLS_PERFORMER_ACTUATOR_EXTERNAL_PORT}"
+        echo "  - LastFM Response Parser: actuator http://localhost:${MURAW_LASTFM_RESPONSE_PARSER_ACTUATOR_EXTERNAL_PORT}"
+        echo "  - Music Data: http://localhost:${MU_DATA_APP_EXTERNAL_PORT} (actuator: ${MU_DATA_ACTUATOR_EXTERNAL_PORT})"
+        echo "  - Music Quiz: http://localhost:${MU_QUIZ_APP_EXTERNAL_PORT} (actuator: ${MU_QUIZ_ACTUATOR_EXTERNAL_PORT})"
+        echo "  - UI: http://localhost:${MU_UI_EXTERNAL_PORT}"
+        echo "  - Adminer: http://localhost:${DB_ADMINER_PORT}"
+        echo ""
+        echo "Note: Applications connect to external databases on host machine"
+    fi
 else
     echo "❌ Deployment failed!"
     exit 1

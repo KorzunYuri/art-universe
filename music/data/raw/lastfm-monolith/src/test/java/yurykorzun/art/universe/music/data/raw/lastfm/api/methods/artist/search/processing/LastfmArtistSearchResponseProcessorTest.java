@@ -21,12 +21,11 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmAr
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.LastfmArtistRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.attribute.LastfmAttributeHistoryProcessor;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl.LastfmArtistServiceImpl;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.attribute.LastfmAttribute;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.attribute.LastfmAttributeHistoryRecordRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.attribute.LastfmAttributeTypeSynchronizer;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.attribute.LastfmAttributeHistoryServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaOnlyTest;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.JpaTestWithHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.utils.StringUtils;
 import yurykorzun.art.universe.music.data.raw.lastfm.maintenance.service.TestTaskCoordinatorConfig;
 
@@ -51,7 +50,7 @@ import static org.junit.jupiter.api.Assertions.*;
         LastfmAttributeHistoryProcessor.class,
         TestTaskCoordinatorConfig.class,
 })
-class LastfmArtistSearchResponseProcessorTest extends JpaOnlyTest {
+class LastfmArtistSearchResponseProcessorTest extends JpaTestWithHelper {
 
     @Autowired
     private DbConsistencyHelper consistencyHelper;
