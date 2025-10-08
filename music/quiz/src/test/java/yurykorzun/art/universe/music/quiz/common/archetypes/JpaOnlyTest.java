@@ -3,12 +3,14 @@ package yurykorzun.art.universe.music.quiz.common.archetypes;
 
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
+import yurykorzun.art.universe.common.config.CommonConfig;
 
 /**
  * Base class for persistence layer testing.
@@ -17,6 +19,9 @@ import org.testcontainers.utility.DockerImageName;
 @Testcontainers
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Import({
+    CommonConfig.class,
+})
 public abstract class JpaOnlyTest {
 
     private static String IMAGE_NAME = "postgres:14-alpine";

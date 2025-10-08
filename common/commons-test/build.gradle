@@ -3,6 +3,8 @@ plugins {
 }
 
 dependencies {
+    api project(':common:commons-context')
+
     api 'org.springframework.boot:spring-boot-starter-test'
     api 'org.springframework:spring-test'
 }

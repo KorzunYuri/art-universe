@@ -7,7 +7,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import yurykorzun.art.universe.music.quiz.common.archetypes.BaseMvcTest;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.BaseMvcTest;
 import yurykorzun.art.universe.music.quiz.dto.CreateGenerationRequest;
 import yurykorzun.art.universe.music.quiz.dto.GenerationDto;
 import yurykorzun.art.universe.music.quiz.dto.GenerationTrackDto;
