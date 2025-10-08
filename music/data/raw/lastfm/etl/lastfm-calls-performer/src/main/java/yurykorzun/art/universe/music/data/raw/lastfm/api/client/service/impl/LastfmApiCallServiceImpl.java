@@ -49,7 +49,12 @@ public class LastfmApiCallServiceImpl implements LastfmApiCallService {
         //   TODO design complex priority logic to fit LastFm API calls rate limit
         Collection<LastfmApiCall> apiCalls = apiCallRepository.findAllUnprocessedUnexpired();
         apiCalls.forEach(apiCall -> {
-            log.info("initiating API call of type {} for entity {}", apiCall.getType(), apiCall.getEntityId());
+            log.info("initiating API call {} of type {} for entity {}: {}",
+                apiCall.getId(),
+                apiCall.getType(),
+                apiCall.getEntityType(),
+                apiCall.getEntityId()
+            );
             rateLimiter.acquire();
             self.makeApiCall(apiCall);
             log.info("API call has been performed");
