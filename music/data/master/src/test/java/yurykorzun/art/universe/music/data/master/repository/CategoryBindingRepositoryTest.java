@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import yurykorzun.art.universe.music.data.master.common.archetypes.JpaOnlyTest;
+import yurykorzun.art.universe.music.data.master.common.archetypes.BaseMasterDataJpaTest;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.entity.Category;
 import yurykorzun.art.universe.music.data.master.entity.CategoryBinding;
@@ -15,7 +15,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Tag("integration")
-public class CategoryBindingRepositoryTest extends JpaOnlyTest {
+public class CategoryBindingRepositoryTest extends BaseMasterDataJpaTest {
 
     @Autowired
     private CategoryBindingRepository bindingRepository;

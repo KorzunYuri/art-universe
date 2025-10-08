@@ -12,6 +12,6 @@ dependencies {
 
     runtimeOnly 'org.liquibase:liquibase-core'
 
-    testImplementation project(':common:commons-context')
     testImplementation project(':common:commons-test-web')
+    testImplementation project(':common:test:commons-test-db')
 }

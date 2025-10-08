@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.jdbc.Sql;
-import yurykorzun.art.universe.music.data.master.common.archetypes.JpaOnlyTest;
+import yurykorzun.art.universe.music.data.master.common.archetypes.BaseMasterDataJpaTest;
 import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindResponseDTO;
 import yurykorzun.art.universe.music.data.master.entity.*;
@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Import(
     BindingServiceImpl.class
 )
-class BindingServiceImplIntegrationTest extends JpaOnlyTest {
+class BindingServiceImplIntegrationTest extends BaseMasterDataJpaTest {
 
     @Autowired
     private EntityManager entityManager;
