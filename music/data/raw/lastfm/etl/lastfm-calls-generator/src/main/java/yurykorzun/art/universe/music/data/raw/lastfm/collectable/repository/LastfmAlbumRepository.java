@@ -12,8 +12,12 @@ import java.util.List;
 public interface LastfmAlbumRepository extends BaseLastfmAlbumRepository {
 
     /**
-     * Find albums with missing playCount and listenersCount that haven't been processed by album.getInfo yet.
+     * Find albums for album.getInfo method call with the following priority:
+     * 1. Albums with missing listenersCount
+     * 2. Orphaned albums (without artist_id)
+     * 3. Albums from popular artists (join by artist_id, sort by listenersCount)
      * Excludes albums that are blacklisted.
+     * Includes albums without artist_id (orphaned albums).
      */
     @Query(value = """
     WITH ranked_albums AS (
@@ -21,10 +25,13 @@ public interface LastfmAlbumRepository extends BaseLastfmAlbumRepository {
             a.*,
             ar.listeners_count AS artist_listeners_count,
             ar.approval_status AS artist_approval_status,
-            ROW_NUMBER() OVER (
-                PARTITION BY a.artist_id
-                ORDER BY a.id
-            ) AS artist_album_rank
+            CASE 
+                WHEN a.artist_id IS NULL THEN 1  -- orphaned albums always rank 1
+                ELSE ROW_NUMBER() OVER (
+                    PARTITION BY a.artist_id
+                    ORDER BY a.id
+                )
+            END AS artist_album_rank
         FROM
             album a
         LEFT JOIN
@@ -54,6 +61,9 @@ public interface LastfmAlbumRepository extends BaseLastfmAlbumRepository {
     ORDER BY
         CASE WHEN ra.listeners_count IS NULL
                 THEN 0
+                ELSE 1 END,
+        CASE WHEN ra.artist_id IS NULL
+                THEN 0  -- prioritize orphaned albums
                 ELSE 1 END,
         CASE WHEN ra.artist_approval_status = 2 -- APPROVED
                 THEN 0
