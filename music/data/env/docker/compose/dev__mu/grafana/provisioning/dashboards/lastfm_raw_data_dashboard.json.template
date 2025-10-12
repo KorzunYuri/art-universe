@@ -91,7 +91,7 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 16,
+        "w": 12,
         "x": 0,
         "y": 1
       },
@@ -150,8 +150,8 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 8,
-        "x": 16,
+        "w": 6,
+        "x": 12,
         "y": 1
       },
       "id": 3,
@@ -184,6 +184,70 @@
         }
       ],
       "title": "Current Entity Counts",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$PROMETHEUS_DATASOURCE_UID"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 18,
+        "y": 1
+      },
+      "id": 5,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.0.13",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$PROMETHEUS_DATASOURCE_UID"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "lastfm_api_call_count{status=\"PENDING\"}",
+          "instant": false,
+          "legendFormat": "{{api_call_type}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Pending API calls",
       "type": "stat"
     },
     {
@@ -262,7 +326,7 @@
         "x": 0,
         "y": 10
       },
-      "id": 6,
+      "id": 14,
       "options": {
         "legend": {
           "calcs": [],
@@ -283,13 +347,13 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "avg_over_time(increase(lastfm_api_call_count{status=\"SUCCESSFUL\"}[5m])[15m:1m])",
+          "expr": "avg_over_time(sum by (api_call_type) (delta(lastfm_api_call_count[5m]))[15m:1m])",
           "legendFormat": "{{api_call_type}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Successful API calls",
+      "title": "Created API calls",
       "type": "timeseries"
     },
     {
@@ -401,175 +465,6 @@
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 6,
-        "x": 12,
-        "y": 10
-      },
-      "id": 7,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "10.0.13",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$PROMETHEUS_DATASOURCE_UID"
-          },
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "avg_over_time(increase(lastfm_api_call_count{status=\"FAILED\"}[5m])[15m:1m])",
-          "instant": false,
-          "legendFormat": "{{api_call_type}}",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Failed API calls",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "$PROMETHEUS_DATASOURCE_UID"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 6,
-        "x": 18,
-        "y": 10
-      },
-      "id": 5,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "10.0.13",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$PROMETHEUS_DATASOURCE_UID"
-          },
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "lastfm_api_call_count{status=\"PENDING\"}",
-          "instant": false,
-          "legendFormat": "{{api_call_type}}",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Pending API calls",
-      "type": "stat"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 19
-      },
-      "id": 8,
-      "panels": [],
-      "title": "API Responses",
-      "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "$PROMETHEUS_DATASOURCE_UID"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
             "hideFrom": {
@@ -613,10 +508,10 @@
       "gridPos": {
         "h": 9,
         "w": 6,
-        "x": 0,
-        "y": 20
+        "x": 12,
+        "y": 10
       },
-      "id": 9,
+      "id": 6,
       "options": {
         "legend": {
           "calcs": [],
@@ -637,14 +532,183 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "avg_over_time(increase(lastfm_api_response_count{status=\"COMPLETED\"}[5m])[15m:1m])",
+          "expr": "avg_over_time(increase(lastfm_api_call_count{status=\"SUCCESSFUL\"}[5m])[15m:1m])",
           "legendFormat": "{{api_call_type}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Completed API responses",
+      "title": "Successful API calls",
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$PROMETHEUS_DATASOURCE_UID"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 6,
+        "x": 18,
+        "y": 10
+      },
+      "id": 7,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.0.13",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$PROMETHEUS_DATASOURCE_UID"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "avg_over_time(increase(lastfm_api_call_count{status=\"FAILED\"}[5m])[15m:1m])",
+          "instant": false,
+          "legendFormat": "{{api_call_type}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Failed API calls",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 19
+      },
+      "id": 8,
+      "panels": [],
+      "title": "API Responses",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$PROMETHEUS_DATASOURCE_UID"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 6,
+        "x": 0,
+        "y": 20
+      },
+      "id": 10,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.0.13",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$PROMETHEUS_DATASOURCE_UID"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "lastfm_api_response_count{status=\"PENDING\"}",
+          "instant": false,
+          "legendFormat": "{{api_call_type}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Pending API responses",
+      "type": "stat"
     },
     {
       "datasource": {
@@ -755,6 +819,99 @@
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 6,
+        "x": 12,
+        "y": 20
+      },
+      "id": 9,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.0.13",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$PROMETHEUS_DATASOURCE_UID"
+          },
+          "editorMode": "code",
+          "expr": "avg_over_time(increase(lastfm_api_response_count{status=\"COMPLETED\"}[5m])[15m:1m])",
+          "legendFormat": "{{api_call_type}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Completed API responses",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$PROMETHEUS_DATASOURCE_UID"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
             "fillOpacity": 0,
             "gradientMode": "none",
             "hideFrom": {
@@ -795,7 +952,7 @@
       "gridPos": {
         "h": 9,
         "w": 6,
-        "x": 12,
+        "x": 18,
         "y": 20
       },
       "id": 11,
@@ -829,73 +986,9 @@
       ],
       "title": "Failed API response processing",
       "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "$PROMETHEUS_DATASOURCE_UID"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 6,
-        "x": 18,
-        "y": 20
-      },
-      "id": 10,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "10.0.13",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$PROMETHEUS_DATASOURCE_UID"
-          },
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "lastfm_api_response_count{status=\"PENDING\"}",
-          "instant": false,
-          "legendFormat": "{{api_call_type}}",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Pending API responses",
-      "type": "stat"
     }
   ],
-  "refresh": "5s",
+  "refresh": "30s",
   "schemaVersion": 38,
   "style": "dark",
   "tags": [],
@@ -910,6 +1003,6 @@
   "timezone": "",
   "title": "LastFM Raw Data Dashboard",
   "uid": "lastfm-raw-data",
-  "version": 5,
+  "version": 10,
   "weekStart": ""
 }
