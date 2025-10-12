@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    api project(':common:commons-test')
+    api project(':common:test:commons-test')
 
     api 'org.springframework.boot:spring-boot-test-autoconfigure'
     api 'org.springframework:spring-tx'

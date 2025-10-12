@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    api project(':common:commons-test')
+    api project(':common:test:commons-test')
     api project(':common:commons-web')
 
     api 'org.springframework:spring-context'

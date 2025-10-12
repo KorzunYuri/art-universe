@@ -69,7 +69,7 @@ Use `scripts/run-module-dev.sh/.bat <module-path>` to run individual modules:
 - `:common:commons-context` - Spring configuration and ObjectMapper auto-configuration
 - `:common:commons-jpa` - JPA utilities, Coded registry, auto-configuration
 - `:common:commons-web` - Web utilities and exception handling
-- `:common:commons-test*` - Testing utilities and base classes
+- `:common:test:commons-test*` - Testing utilities and base classes
 - `:common:data:raw:*` - Common data collection utilities
 
 ### LastFM Data Collection

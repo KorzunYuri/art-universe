@@ -5,7 +5,7 @@ plugins {
 archivesBaseName = 'lastfm-commons-test'
 
 dependencies {
-    api project(':common:commons-test')
+    api project(':common:test:commons-test')
     
     implementation 'org.hamcrest:hamcrest:2.2'
     implementation 'org.mockito:mockito-core:5.14.2'
