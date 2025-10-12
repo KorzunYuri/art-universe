@@ -3,6 +3,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.config;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Gauge;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -23,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import yurykorzun.art.universe.music.data.raw.lastfm.maintenance.service.TaskCoordinator;
 
 @Configuration
+@DependsOn("codedRegistrySynchronizer")
 @Slf4j
 public class MetricsConfig {
 
