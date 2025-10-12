@@ -37,7 +37,13 @@ public interface LastfmAlbumRepository extends BaseLastfmAlbumRepository {
         LEFT JOIN
             artist ar ON a.artist_id = ar.id
         WHERE
-            NOT EXISTS (
+            -- Validation: album must have mbid OR (name AND artist.name)
+            (
+                    (a.mbid IS NOT NULL AND TRIM(a.mbid) != '')
+                OR  
+                    (ar.name IS NOT NULL AND TRIM(ar.name) != '')
+            )
+            AND NOT EXISTS (
                 SELECT 1
                 FROM api_call ac
                 WHERE ac.type           = 11    -- album.getInfo
