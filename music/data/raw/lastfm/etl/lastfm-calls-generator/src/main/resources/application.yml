@@ -66,4 +66,4 @@ lastfm:
           usageToPageRatio: 50000 # for each N usages of the tag, ONE 50-items api call will be generated
       track:
         getInfo:
-          dueDurationDays: 28
+          dueDurationDays: 56
