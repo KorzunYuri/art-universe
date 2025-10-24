@@ -44,20 +44,17 @@ class GameServiceTest {
     @Test
     void createGame_shouldReturnGameWithPipelineDto_whenSuccessful() {
         // given
-        Game tempGame = Game.builder().pipelineId(-1L).build();
         Game savedGame = Game.builder().pipelineId(1L).build();
         
         // Use reflection to set id and timestamps
         try {
             var idField = Game.class.getDeclaredField("id");
             idField.setAccessible(true);
-            idField.set(tempGame, 1L);
             idField.set(savedGame, 1L);
             
             var createdAtField = Game.class.getSuperclass().getDeclaredField("createdAt");
             createdAtField.setAccessible(true);
             Instant now = Instant.now();
-            createdAtField.set(tempGame, now);
             createdAtField.set(savedGame, now);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -65,13 +62,12 @@ class GameServiceTest {
 
         PipelineDto pipelineDto = PipelineDto.builder()
             .id(1L)
-            .gameId(1L)
             .immutable(false)
             .steps(List.of())
             .build();
 
-        when(gameRepository.save(any(Game.class))).thenReturn(tempGame).thenReturn(savedGame);
-        when(pipelineService.createBasicPipeline(1L)).thenReturn(pipelineDto);
+        when(gameRepository.save(any(Game.class))).thenReturn(savedGame);
+        when(pipelineService.createBasicPipeline()).thenReturn(pipelineDto);
 
         // when
         GameWithPipelineDto result = gameService.createGame();
@@ -83,8 +79,8 @@ class GameServiceTest {
         assertNotNull(result.getPipeline());
         assertEquals(1L, result.getPipeline().getId());
         
-        verify(gameRepository, times(2)).save(any(Game.class));
-        verify(pipelineService).createBasicPipeline(1L);
+        verify(gameRepository).save(any(Game.class));
+        verify(pipelineService).createBasicPipeline();
     }
 
     @Test

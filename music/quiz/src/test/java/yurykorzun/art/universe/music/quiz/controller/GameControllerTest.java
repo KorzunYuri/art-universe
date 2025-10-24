@@ -36,7 +36,6 @@ class GameControllerTest {
         // given
         PipelineDto pipelineDto = PipelineDto.builder()
             .id(1L)
-            .gameId(1L)
             .immutable(false)
             .steps(List.of())
             .build();

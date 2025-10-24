@@ -5,21 +5,21 @@ import yurykorzun.art.universe.music.quiz.dto.PipelineStepDto;
 
 public interface PipelineService {
     
-    PipelineDto createBasicPipeline(Long gameId);
+    PipelineDto createBasicPipeline();
     
-    PipelineDto addStep(Long gameId, PipelineStepDto stepDto, Integer position);
+    PipelineDto addStep(Long pipelineId, PipelineStepDto stepDto, Integer position);
     
-    PipelineDto moveStep(Long gameId, Long stepId, Integer newPosition);
+    PipelineDto moveStep(Long pipelineId, Long stepId, Integer newPosition);
     
-    PipelineDto removeStep(Long gameId, Long stepId);
+    PipelineDto removeStep(Long pipelineId, Long stepId);
     
-    PipelineDto updateStepConfiguration(Long gameId, Long stepId, PipelineStepDto stepDto);
+    PipelineDto updateStepConfiguration(Long pipelineId, Long stepId, PipelineStepDto stepDto);
     
-    PipelineDto getPipeline(Long gameId);
+    PipelineDto getPipeline(Long pipelineId);
     
     String getStepPreview(Long stepId);
     
-    PipelineDto executeStep(Long gameId, Long stepId);
+    PipelineDto executeStep(Long pipelineId, Long stepId);
     
-    void validatePipelineForGeneration(Long gameId);
+    void validatePipelineForGeneration(Long pipelineId);
 }

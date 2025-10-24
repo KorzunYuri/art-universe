@@ -16,6 +16,7 @@ import yurykorzun.art.universe.music.quiz.service.step.GenerationStepProcessorRe
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,11 +32,10 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     @Transactional
-    public PipelineDto createBasicPipeline(Long gameId) {
-        log.debug("Creating basic pipeline for game {}", gameId);
+    public PipelineDto createBasicPipeline() {
+        log.debug("Creating basic pipeline");
         
         Pipeline pipeline = Pipeline.builder()
-            .gameId(gameId)
             .immutable(false)
             .build();
         
@@ -46,10 +46,10 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     @Transactional
-    public PipelineDto addStep(Long gameId, PipelineStepDto stepDto, Integer position) {
-        log.debug("Adding step {} to pipeline for game {} at position {}", stepDto.getType(), gameId, position);
+    public PipelineDto addStep(Long pipelineId, PipelineStepDto stepDto, Integer position) {
+        log.debug("Adding step {} to pipeline {} at position {}", stepDto.getType(), pipelineId, position);
         
-        Pipeline pipeline = getPipelineByGameId(gameId);
+        Pipeline pipeline = getPipelineById(pipelineId);
         validateStepPosition(stepDto.getType());
         
         GenerationStepProcessor<?> processor = GenerationStepProcessorRegistry.get(stepDto.getType());
@@ -85,15 +85,15 @@ public class PipelineServiceImpl implements PipelineService {
         // Clear results for subsequent steps
         clearSubsequentStepResults(pipeline.getId(), position);
         
-        return getPipeline(gameId);
+        return getPipeline(pipelineId);
     }
 
     @Override
     @Transactional
-    public PipelineDto moveStep(Long gameId, Long stepId, Integer newPosition) {
-        log.debug("Moving step {} to position {} in pipeline for game {}", stepId, newPosition, gameId);
+    public PipelineDto moveStep(Long pipelineId, Long stepId, Integer newPosition) {
+        log.debug("Moving step {} to position {} in pipeline {}", stepId, newPosition, pipelineId);
         
-        Pipeline pipeline = getPipelineByGameId(gameId);
+        Pipeline pipeline = getPipelineById(pipelineId);
         List<PipelineStep> pipelineSteps = pipelineStepRepository.findByPipelineIdOrderByOrd(pipeline.getId());
         
         PipelineStep movingStep = pipelineSteps.stream()
@@ -119,15 +119,15 @@ public class PipelineServiceImpl implements PipelineService {
         Integer earliestPosition = Math.min(oldPosition, newPosition);
         clearSubsequentStepResults(pipeline.getId(), earliestPosition);
         
-        return getPipeline(gameId);
+        return getPipeline(pipelineId);
     }
 
     @Override
     @Transactional
-    public PipelineDto removeStep(Long gameId, Long stepId) {
-        log.debug("Removing step {} from pipeline for game {}", stepId, gameId);
+    public PipelineDto removeStep(Long pipelineId, Long stepId) {
+        log.debug("Removing step {} from pipeline {}", stepId, pipelineId);
         
-        Pipeline pipeline = getPipelineByGameId(gameId);
+        Pipeline pipeline = getPipelineById(pipelineId);
         List<PipelineStep> pipelineSteps = pipelineStepRepository.findByPipelineIdOrderByOrd(pipeline.getId());
         
         PipelineStep removingStep = pipelineSteps.stream()
@@ -152,15 +152,15 @@ public class PipelineServiceImpl implements PipelineService {
         // Clear results for subsequent steps
         clearSubsequentStepResults(pipeline.getId(), removedPosition);
         
-        return getPipeline(gameId);
+        return getPipeline(pipelineId);
     }
 
     @Override
     @Transactional
-    public PipelineDto updateStepConfiguration(Long gameId, Long stepId, PipelineStepDto stepDto) {
-        log.debug("Updating configuration for step {} in pipeline for game {}", stepId, gameId);
+    public PipelineDto updateStepConfiguration(Long pipelineId, Long stepId, PipelineStepDto stepDto) {
+        log.debug("Updating configuration for step {} in pipeline {}", stepId, pipelineId);
         
-        Pipeline pipeline = getPipelineByGameId(gameId);
+        Pipeline pipeline = getPipelineById(pipelineId);
         Step step = stepRepository.findById(stepId)
             .orElseThrow(() -> new IllegalArgumentException("Step not found"));
         
@@ -184,7 +184,7 @@ public class PipelineServiceImpl implements PipelineService {
             clearSubsequentStepResults(pipeline.getId(), stepPosition);
         }
         
-        return getPipeline(gameId);
+        return getPipeline(pipelineId);
     }
 
     @Override
@@ -206,10 +206,10 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     @Transactional
-    public PipelineDto executeStep(Long gameId, Long stepId) {
-        log.debug("Executing step {} in pipeline for game {}", stepId, gameId);
+    public PipelineDto executeStep(Long pipelineId, Long stepId) {
+        log.debug("Executing step {} in pipeline {}", stepId, pipelineId);
         
-        Pipeline pipeline = getPipelineByGameId(gameId);
+        Pipeline pipeline = getPipelineById(pipelineId);
         List<PipelineStep> pipelineSteps = pipelineStepRepository.findByPipelineIdOrderByOrd(pipeline.getId());
         
         // Find earliest step without result
@@ -221,15 +221,15 @@ public class PipelineServiceImpl implements PipelineService {
         // Execute steps starting from minPosition
         executeStepsFromPosition(pipeline.getId(), pipelineSteps, minPosition);
         
-        return getPipeline(gameId);
+        return getPipeline(pipelineId);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public void validatePipelineForGeneration(Long gameId) {
-        log.debug("Validating pipeline for generation for game {}", gameId);
+    public void validatePipelineForGeneration(Long pipelineId) {
+        log.debug("Validating pipeline for generation {}", pipelineId);
         
-        Pipeline pipeline = getPipelineByGameId(gameId);
+        Pipeline pipeline = getPipelineById(pipelineId);
         List<PipelineStep> pipelineSteps = pipelineStepRepository.findByPipelineIdOrderByOrd(pipeline.getId());
         
         if (pipelineSteps.isEmpty()) {
@@ -258,11 +258,11 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     @Transactional(readOnly = true)
-    public PipelineDto getPipeline(Long gameId) {
-        log.debug("Getting pipeline for game {}", gameId);
+    public PipelineDto getPipeline(Long pipelineId) {
+        log.debug("Getting pipeline {}", pipelineId);
         
-        Pipeline pipeline = pipelineRepository.findByGameId(gameId)
-            .orElseThrow(() -> new IllegalArgumentException("Pipeline not found for game: " + gameId));
+        Pipeline pipeline = pipelineRepository.findById(pipelineId)
+            .orElseThrow(() -> new IllegalArgumentException("Pipeline not found: " + pipelineId));
         
         List<PipelineStep> pipelineSteps = pipelineStepRepository.findByPipelineIdOrderByOrd(pipeline.getId());
         List<Long> stepIds = pipelineSteps.stream().map(PipelineStep::getStepId).toList();
@@ -270,19 +270,29 @@ public class PipelineServiceImpl implements PipelineService {
         Map<Long, Step> stepsMap = stepRepository.findAllById(stepIds).stream()
             .collect(Collectors.toMap(Step::getId, step -> step));
         
+        // Get step runs for result data
+        List<Long> stepRunIds = stepsMap.values().stream()
+            .map(Step::getLastStepRunId)
+            .filter(Objects::nonNull)
+            .toList();
+        
+        Map<Long, StepRun> stepRunsMap = stepRunRepository.findAllById(stepRunIds).stream()
+            .collect(Collectors.toMap(StepRun::getId, stepRun -> stepRun));
+        
         List<PipelineStepDto> stepDtos = pipelineSteps.stream()
             .map(ps -> {
                 Step step = stepsMap.get(ps.getStepId());
-                return mapStepToDto(step, ps.getOrd());
+                StepRun stepRun = step.getLastStepRunId() != null ? stepRunsMap.get(step.getLastStepRunId()) : null;
+                return mapStepToDto(step, ps.getOrd(), stepRun);
             })
             .toList();
         
         return mapToDto(pipeline, stepDtos);
     }
 
-    private Pipeline getPipelineByGameId(Long gameId) {
-        return pipelineRepository.findByGameId(gameId)
-            .orElseThrow(() -> new IllegalArgumentException("Pipeline not found for game: " + gameId));
+    private Pipeline getPipelineById(Long pipelineId) {
+        return pipelineRepository.findById(pipelineId)
+            .orElseThrow(() -> new IllegalArgumentException("Pipeline not found: " + pipelineId));
     }
 
     private void validateStepPosition(GenerationStepType stepType) {
@@ -309,8 +319,7 @@ public class PipelineServiceImpl implements PipelineService {
             Step step = stepRepository.findById(ps.getStepId()).orElse(null);
             if (step != null) {
                 step.setPreviewData(null);
-                step.setResultTableName(null);
-                step.setResultStats(null);
+                step.setLastStepRunId(null);
                 stepRepository.save(step);
             }
         }
@@ -319,11 +328,11 @@ public class PipelineServiceImpl implements PipelineService {
     private Integer findEarliestStepWithoutResult(List<PipelineStep> pipelineSteps) {
         for (PipelineStep ps : pipelineSteps) {
             Step step = stepRepository.findById(ps.getStepId()).orElse(null);
-            if (step == null || step.getResultTableName() == null) {
+            if (step == null || step.getLastStepRunId() == null) {
                 return ps.getOrd();
             }
         }
-        return pipelineSteps.isEmpty() ? 1 : pipelineSteps.get(pipelineSteps.size() - 1).getOrd();
+        return pipelineSteps.isEmpty() ? 1 : pipelineSteps.getLast().getOrd();
     }
 
     private void executeStepsFromPosition(Long pipelineId, List<PipelineStep> pipelineSteps, Integer fromPosition) {
@@ -336,21 +345,20 @@ public class PipelineServiceImpl implements PipelineService {
     private PipelineDto mapToDto(Pipeline pipeline, List<PipelineStepDto> steps) {
         return PipelineDto.builder()
             .id(pipeline.getId())
-            .gameId(pipeline.getGameId())
             .immutable(pipeline.getImmutable())
             .steps(steps)
             .build();
     }
 
-    private PipelineStepDto mapStepToDto(Step step, Integer ord) {
+    private PipelineStepDto mapStepToDto(Step step, Integer ord, StepRun stepRun) {
         return PipelineStepDto.builder()
             .id(step.getId())
             .type(step.getType())
             .algVersion(step.getAlgVersion())
             .cfgData(step.getCfgData())
             .previewData(step.getPreviewData())
-            .resultTableName(step.getResultTableName())
-            .resultStats(step.getResultStats())
+            .resultTableName(stepRun != null ? stepRun.getResultTableName() : null)
+            .resultStats(stepRun != null ? stepRun.getResultStats() : null)
             .ord(ord)
             .build();
     }

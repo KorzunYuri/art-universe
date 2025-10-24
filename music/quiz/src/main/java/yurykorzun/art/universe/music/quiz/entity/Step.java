@@ -39,12 +39,6 @@ public class Step extends BaseEntity {
     @Column(name = "preview_data", columnDefinition = "jsonb")
     private String previewData;
 
-    @Column(name = "result_table_name")
-    private String resultTableName;
-
-    @Column(name = "result_stats", columnDefinition = "jsonb")
-    private String resultStats;
-
     @Column(name = "last_step_run_id")
     private Long lastStepRunId;
 

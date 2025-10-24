@@ -12,7 +12,7 @@ public class PipelineStepDto {
     private Integer algVersion;
     private String cfgData;
     private String previewData;
-    private String resultTableName;
-    private String resultStats;
     private Integer ord;
+    private String resultTableName; // from lastStepRun
+    private String resultStats; // from lastStepRun
 }

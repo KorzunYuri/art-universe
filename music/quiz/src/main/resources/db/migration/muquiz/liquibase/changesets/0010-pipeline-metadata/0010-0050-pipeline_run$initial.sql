@@ -2,7 +2,7 @@
 CREATE TABLE mu_quiz.pipeline_run (
     id BIGSERIAL PRIMARY KEY,
     pipeline_id BIGINT NOT NULL REFERENCES mu_quiz.pipeline(id),
-    status INTEGER NOT NULL REFERENCES mu_quiz.execution_status(code),
+    status INTEGER NOT NULL,
     started_at TIMESTAMP WITH TIME ZONE,
     completed_at TIMESTAMP WITH TIME ZONE,
     result_table_name VARCHAR(255),

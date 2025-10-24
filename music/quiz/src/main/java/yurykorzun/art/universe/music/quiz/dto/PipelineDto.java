@@ -9,7 +9,6 @@ import java.util.List;
 @Builder
 public class PipelineDto {
     private Long id;
-    private Long gameId;
     private Boolean immutable;
     private List<PipelineStepDto> steps;
 }

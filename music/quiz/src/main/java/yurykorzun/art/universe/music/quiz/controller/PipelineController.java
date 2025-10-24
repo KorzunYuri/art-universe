@@ -15,40 +15,40 @@ public class PipelineController {
 
     private final PipelineService pipelineService;
 
-    @GetMapping("/games/{gameId}/pipeline")
-    public PipelineDto getPipeline(@PathVariable Long gameId) {
-        log.debug("Getting pipeline for game {}", gameId);
-        return pipelineService.getPipeline(gameId);
+    @GetMapping("/pipeline/{pipelineId}")
+    public PipelineDto getPipeline(@PathVariable Long pipelineId) {
+        log.debug("Getting pipeline {}", pipelineId);
+        return pipelineService.getPipeline(pipelineId);
     }
 
-    @PostMapping("/games/{gameId}/pipeline/steps")
-    public PipelineDto addStep(@PathVariable Long gameId, 
+    @PostMapping("/pipeline/{pipelineId}/steps")
+    public PipelineDto addStep(@PathVariable Long pipelineId, 
                               @RequestBody PipelineStepDto stepDto,
                               @RequestParam Integer position) {
-        log.info("Adding step {} to pipeline for game {} at position {}", stepDto.getType(), gameId, position);
-        return pipelineService.addStep(gameId, stepDto, position);
+        log.info("Adding step {} to pipeline {} at position {}", stepDto.getType(), pipelineId, position);
+        return pipelineService.addStep(pipelineId, stepDto, position);
     }
 
-    @PutMapping("/games/{gameId}/pipeline/steps/{stepId}/move")
-    public PipelineDto moveStep(@PathVariable Long gameId,
+    @PutMapping("/pipeline/{pipelineId}/steps/{stepId}/move")
+    public PipelineDto moveStep(@PathVariable Long pipelineId,
                                @PathVariable Long stepId,
                                @RequestParam Integer newPosition) {
-        log.info("Moving step {} to position {} in pipeline for game {}", stepId, newPosition, gameId);
-        return pipelineService.moveStep(gameId, stepId, newPosition);
+        log.info("Moving step {} to position {} in pipeline {}", stepId, newPosition, pipelineId);
+        return pipelineService.moveStep(pipelineId, stepId, newPosition);
     }
 
-    @DeleteMapping("/games/{gameId}/pipeline/steps/{stepId}")
-    public PipelineDto removeStep(@PathVariable Long gameId, @PathVariable Long stepId) {
-        log.info("Removing step {} from pipeline for game {}", stepId, gameId);
-        return pipelineService.removeStep(gameId, stepId);
+    @DeleteMapping("/pipeline/{pipelineId}/steps/{stepId}")
+    public PipelineDto removeStep(@PathVariable Long pipelineId, @PathVariable Long stepId) {
+        log.info("Removing step {} from pipeline {}", stepId, pipelineId);
+        return pipelineService.removeStep(pipelineId, stepId);
     }
 
-    @PutMapping("/games/{gameId}/pipeline/steps/{stepId}")
-    public PipelineDto updateStepConfiguration(@PathVariable Long gameId,
+    @PutMapping("/pipeline/{pipelineId}/steps/{stepId}")
+    public PipelineDto updateStepConfiguration(@PathVariable Long pipelineId,
                                               @PathVariable Long stepId,
                                               @RequestBody PipelineStepDto stepDto) {
-        log.info("Updating configuration for step {} in pipeline for game {}", stepId, gameId);
-        return pipelineService.updateStepConfiguration(gameId, stepId, stepDto);
+        log.info("Updating configuration for step {} in pipeline {}", stepId, pipelineId);
+        return pipelineService.updateStepConfiguration(pipelineId, stepId, stepDto);
     }
 
     @GetMapping("/steps/{stepId}/preview")
@@ -57,9 +57,9 @@ public class PipelineController {
         return pipelineService.getStepPreview(stepId);
     }
 
-    @PostMapping("/games/{gameId}/pipeline/steps/{stepId}/execute")
-    public PipelineDto executeStep(@PathVariable Long gameId, @PathVariable Long stepId) {
-        log.info("Executing step {} in pipeline for game {}", stepId, gameId);
-        return pipelineService.executeStep(gameId, stepId);
+    @PostMapping("/pipeline/{pipelineId}/steps/{stepId}/execute")
+    public PipelineDto executeStep(@PathVariable Long pipelineId, @PathVariable Long stepId) {
+        log.info("Executing step {} in pipeline {}", stepId, pipelineId);
+        return pipelineService.executeStep(pipelineId, stepId);
     }
 }

@@ -25,9 +25,6 @@ public class Pipeline extends BaseEntity {
     @Setter(value = AccessLevel.NONE)
     private Long id;
 
-    @Column(name = "game_id", nullable = false)
-    private Long gameId;
-
     @Builder.Default
     @Column(name = "immutable", nullable = false)
     private Boolean immutable = false;

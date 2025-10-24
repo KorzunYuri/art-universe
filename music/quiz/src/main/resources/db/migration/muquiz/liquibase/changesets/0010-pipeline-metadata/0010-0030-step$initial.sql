@@ -1,12 +1,10 @@
 -- Create step table
 CREATE TABLE mu_quiz.step (
     id BIGSERIAL PRIMARY KEY,
-    type INTEGER NOT NULL REFERENCES mu_quiz.generation_step_type(code),
+    type INTEGER NOT NULL,
     alg_version INTEGER NOT NULL,
     cfg_data JSONB,
     preview_data JSONB,
-    result_table_name VARCHAR(255),
-    result_stats JSONB,
     last_step_run_id BIGINT,
     deleted BOOLEAN NOT NULL DEFAULT FALSE,
     immutable BOOLEAN NOT NULL DEFAULT FALSE,

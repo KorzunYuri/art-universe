@@ -18,9 +18,31 @@ public abstract class BaseGenerationStepProcessor<T extends GenerationStep> impl
     }
     
     @Override
+    public Integer getCurrentVersion() {
+        return stepType.getVersion();
+    }
+    
+    @Override
     public String process(String inputTable, Long gameId, Long generationId, Integer stepOrder, T step) {
         validateInputTable(inputTable);
         return processStep(inputTable, gameId, generationId, stepOrder, step);
+    }
+    
+    @Override
+    public void validateConfiguration(String cfgData) {
+        // Default implementation - override if needed
+    }
+    
+    @Override
+    public String getPreview(String cfgData) {
+        // Default implementation - override if needed
+        return "{}";
+    }
+    
+    @Override
+    public String migrateConfiguration(String cfgData, Integer fromVersion, Integer toVersion) {
+        // Empty method for user implementation
+        return cfgData;
     }
     
     private void validateInputTable(String inputTable) {

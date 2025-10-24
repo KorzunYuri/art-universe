@@ -31,15 +31,11 @@ public class GameServiceImpl implements GameService {
         log.debug("Creating new game");
         
         // Create pipeline first to get its ID
-        Game tempGame = Game.builder().pipelineId(-1L).build(); // temporary
-        Game savedGame = gameRepository.save(tempGame);
+        PipelineDto pipeline = pipelineService.createBasicPipeline();
         
-        // Create pipeline for the game
-        PipelineDto pipeline = pipelineService.createBasicPipeline(savedGame.getId());
-        
-        // Update game with pipeline ID
-        savedGame.setPipelineId(pipeline.getId());
-        savedGame = gameRepository.save(savedGame);
+        // Create game with pipeline ID
+        Game game = Game.builder().pipelineId(pipeline.getId()).build();
+        Game savedGame = gameRepository.save(game);
         
         log.debug("Created game with id: {} and pipeline id: {}", savedGame.getId(), pipeline.getId());
         
