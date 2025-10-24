@@ -5,6 +5,7 @@ import yurykorzun.art.universe.common.CodedRegistry;
 
 import java.util.Arrays;
 
+// TODO use ExecutionStatus instead
 public enum GenerationStatus implements Coded {
 
     PENDING(1),

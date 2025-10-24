@@ -7,8 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.music.quiz.dto.PipelineDto;
 import yurykorzun.art.universe.music.quiz.dto.PipelineStepDto;
 import yurykorzun.art.universe.music.quiz.entity.*;
-import yurykorzun.art.universe.music.quiz.entity.step.GenerationStepPosition;
-import yurykorzun.art.universe.music.quiz.entity.step.GenerationStepType;
+import yurykorzun.art.universe.music.quiz.entity.StepPosition;
+import yurykorzun.art.universe.music.quiz.entity.StepType;
 import yurykorzun.art.universe.music.quiz.repository.*;
 import yurykorzun.art.universe.music.quiz.service.PipelineService;
 import yurykorzun.art.universe.music.quiz.service.step.GenerationStepProcessor;
@@ -244,11 +244,11 @@ public class PipelineServiceImpl implements PipelineService {
         List<Step> steps = stepRepository.findAllById(stepIds);
         
         long startSteps = steps.stream()
-            .filter(step -> getStepPosition(step.getType()) == GenerationStepPosition.START)
+            .filter(step -> getStepPosition(step.getType()) == StepPosition.START)
             .count();
         
         long finalSteps = steps.stream()
-            .filter(step -> getStepPosition(step.getType()) == GenerationStepPosition.FINAL)
+            .filter(step -> getStepPosition(step.getType()) == StepPosition.FINAL)
             .count();
         
         if (startSteps != 1) {
@@ -283,17 +283,17 @@ public class PipelineServiceImpl implements PipelineService {
             .orElseThrow(() -> new IllegalArgumentException("Pipeline not found: " + pipelineId));
     }
 
-    private void validateStepPosition(GenerationStepType stepType) {
+    private void validateStepPosition(StepType stepType) {
         // This method would validate that step type matches allowed position
         // Implementation depends on business rules
     }
 
-    private GenerationStepPosition getStepPosition(GenerationStepType stepType) {
+    private StepPosition getStepPosition(StepType stepType) {
         return switch (stepType) {
-            case START_DATASOURCE -> GenerationStepPosition.START;
+            case START_DATASOURCE -> StepPosition.START;
             case APPROVED_FILTER, BLACKLIST_FILTER, WHITELIST_FILTER, 
-                 TRACK_RECENCY_PENALTY, ARTIST_RECENCY_PENALTY, ARTIST_DIVERSITY -> GenerationStepPosition.MIDDLE;
-            case FINAL_SELECTION, FINAL_CATEGORIES_BALANCER -> GenerationStepPosition.FINAL;
+                 TRACK_RECENCY_PENALTY, ARTIST_RECENCY_PENALTY, ARTIST_DIVERSITY -> StepPosition.MIDDLE;
+            case FINAL_SELECTION, FINAL_CATEGORIES_BALANCER -> StepPosition.FINAL;
         };
     }
 
@@ -324,7 +324,7 @@ public class PipelineServiceImpl implements PipelineService {
         pipelineRunRepository.save(pipelineRun);
         
         try {
-            String currentTable = "mu_view.v_track";
+            String currentTable = null;
             
             for (PipelineStep pipelineStep : pipelineSteps) {
                 Step step = stepRepository.findById(pipelineStep.getStepId())
@@ -350,7 +350,7 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     private StepRun executeStepsInRange(List<PipelineStep> pipelineSteps, Integer fromPosition, Integer toPosition) {
-        String currentTable = "mu_view.v_track";
+        String currentTable = null;
         StepRun lastStepRun = null;
         
         for (PipelineStep pipelineStep : pipelineSteps) {

@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import yurykorzun.art.universe.common.persistence.entity.BaseEntity;
-import yurykorzun.art.universe.music.quiz.entity.step.GenerationStepType;
 
 import java.time.Instant;
 
@@ -31,8 +30,8 @@ public class StepRun extends BaseEntity {
     private Long stepId;
 
     @Column(name = "step_type", nullable = false)
-    @Convert(converter = yurykorzun.art.universe.music.quiz.entity.step.GenerationStepTypeConverter.class)
-    private GenerationStepType stepType;
+    @Convert(converter = StepTypeConverter.class)
+    private StepType stepType;
 
     @Column(name = "alg_version", nullable = false)
     private Integer algVersion;

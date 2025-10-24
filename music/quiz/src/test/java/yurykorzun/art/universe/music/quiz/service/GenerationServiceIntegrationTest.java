@@ -11,7 +11,7 @@ import yurykorzun.art.universe.music.quiz.dto.GenerationDto;
 import yurykorzun.art.universe.music.quiz.dto.GenerationStepDto;
 import yurykorzun.art.universe.music.quiz.entity.Game;
 import yurykorzun.art.universe.music.quiz.entity.GenerationStatus;
-import yurykorzun.art.universe.music.quiz.entity.step.GenerationStepType;
+import yurykorzun.art.universe.music.quiz.entity.StepType;
 import yurykorzun.art.universe.music.quiz.repository.GameRepository;
 
 import jakarta.persistence.EntityManager;
@@ -64,7 +64,7 @@ class GenerationServiceIntegrationTest extends JpaOnlyTest {
         
         // Create final step with targetCount
         GenerationStepDto finalStep = new GenerationStepDto();
-        finalStep.setType(GenerationStepType.FINAL_SELECTION);
+        finalStep.setType(StepType.FINAL_SELECTION);
         finalStep.setParams(Map.of("targetCount", 2));
         List<GenerationStepDto> steps = List.of(finalStep);
 
@@ -95,7 +95,7 @@ class GenerationServiceIntegrationTest extends JpaOnlyTest {
 
         // Create final step with targetCount
         GenerationStepDto finalStep = new GenerationStepDto();
-        finalStep.setType(GenerationStepType.FINAL_SELECTION);
+        finalStep.setType(StepType.FINAL_SELECTION);
         finalStep.setParams(Map.of("targetCount", 5));
         List<GenerationStepDto> steps = List.of(finalStep);
 
@@ -119,7 +119,7 @@ class GenerationServiceIntegrationTest extends JpaOnlyTest {
         
         // Create invalid step configuration that will cause error during step processing
         GenerationStepDto invalidStep = new GenerationStepDto();
-        invalidStep.setType(GenerationStepType.FINAL_SELECTION);
+        invalidStep.setType(StepType.FINAL_SELECTION);
         invalidStep.setParams(Map.of("targetCount", -1)); // Invalid target count that will cause DB constraint error
         List<GenerationStepDto> steps = List.of(invalidStep);
 

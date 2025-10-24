@@ -4,7 +4,7 @@ import org.springframework.lang.Nullable;
 import yurykorzun.art.universe.music.quiz.entity.ExecutionStatus;
 import yurykorzun.art.universe.music.quiz.entity.Step;
 import yurykorzun.art.universe.music.quiz.entity.StepRun;
-import yurykorzun.art.universe.music.quiz.entity.step.GenerationStepType;
+import yurykorzun.art.universe.music.quiz.entity.StepType;
 import yurykorzun.art.universe.music.quiz.repository.StepMetadataProjection;
 import yurykorzun.art.universe.music.quiz.repository.StepRepository;
 import yurykorzun.art.universe.music.quiz.repository.StepRunRepository;
@@ -13,11 +13,11 @@ import java.time.Instant;
 
 public abstract class BaseGenerationStepProcessor implements GenerationStepProcessor {
     
-    private final GenerationStepType stepType;
+    private final StepType stepType;
     private final StepRunRepository stepRunRepository;
     private final StepRepository stepRepository;
     
-    protected BaseGenerationStepProcessor(GenerationStepType stepType, StepRunRepository stepRunRepository, StepRepository stepRepository) {
+    protected BaseGenerationStepProcessor(StepType stepType, StepRunRepository stepRunRepository, StepRepository stepRepository) {
         this.stepType = stepType;
         this.stepRunRepository = stepRunRepository;
         this.stepRepository = stepRepository;
@@ -25,15 +25,15 @@ public abstract class BaseGenerationStepProcessor implements GenerationStepProce
     }
     
     @Override
-    public GenerationStepType getStepType() {
+    public StepType getStepType() {
         return stepType;
     }
-
+    
     @Override
     public Integer getStepTypeVersion() {
         return stepType.getVersion();
     }
-
+    
     /**
      * Processes a step and returns the output table name.
      * During execution, the Step entity will be saved and its lastStepRunId may be updated.
@@ -56,7 +56,7 @@ public abstract class BaseGenerationStepProcessor implements GenerationStepProce
         StepRun savedStepRun = stepRunRepository.save(stepRun);
         
         // Generate output table name
-        String outputTableName = generateOutputTableName(step, savedStepRun);
+        String outputTableName = generateOutputTableName(step, savedStepRun, pipelineRunId);
         
         // Update status to STARTED
         savedStepRun.setStatus(ExecutionStatus.STARTED);
@@ -65,13 +65,13 @@ public abstract class BaseGenerationStepProcessor implements GenerationStepProce
         stepRunRepository.save(savedStepRun);
         
         try {
-            // TODO: Call actual step processing procedure
-            // String resultStats = processStep(step, inputTableName, outputTableName, savedStepRun);
+            // Call actual step processing procedure
+            String resultStats = processStep(step, inputTableName, outputTableName, savedStepRun);
             
-            // For now, mark as completed with empty stats
+            // Mark as completed with result stats
             savedStepRun.setStatus(ExecutionStatus.COMPLETED);
             savedStepRun.setCompletedAt(Instant.now());
-            savedStepRun.setResultStats("{}");
+            savedStepRun.setResultStats(resultStats);
             stepRunRepository.save(savedStepRun);
             
             // Update step's lastStepRunId
@@ -98,16 +98,16 @@ public abstract class BaseGenerationStepProcessor implements GenerationStepProce
         // Default implementation - override if needed
         return "{}";
     }
-
-    protected String migrateConfiguration(String cfgData, Integer fromVersion, Integer toVersion) {
-        // Default implementation - override if needed
+    
+    @Override
+    public String migrateConfiguration(String cfgData, Integer fromVersion, Integer toVersion) {
+        // Empty method for user implementation
         return cfgData;
     }
     
     protected abstract String getStepSuffix();
     
-    // TODO: Implement actual step processing
-    // protected abstract String processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun);
+    protected abstract String processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun);
     
     private void validateStep(Step step) {
         if (step == null) {
@@ -128,15 +128,18 @@ public abstract class BaseGenerationStepProcessor implements GenerationStepProce
         }
     }
     
-    private String generateOutputTableName(Step step, StepRun stepRun) {
+    private String generateOutputTableName(Step step, StepRun stepRun, @Nullable Long pipelineRunId) {
         // Get metadata from repository
         StepMetadataProjection metadata = stepRepository.getStepMetadata(step.getId());
         
         StringBuilder tableName = new StringBuilder();
         
-        // Add context-specific
-        final Long pipelineRunId = stepRun.getPipelineRunId();
-        tableName.append(pipelineRunId != null ? "p_": "s_");
+        // Add prefix based on pipelineRunId
+        if (pipelineRunId != null) {
+            tableName.append("P_");
+        } else {
+            tableName.append("S_");
+        }
         
         tableName.append("g").append(metadata.getGameId());
         tableName.append("_p").append(metadata.getPipelineId());
@@ -148,12 +151,12 @@ public abstract class BaseGenerationStepProcessor implements GenerationStepProce
         tableName.append("_s").append(step.getId());
         tableName.append("_sr").append(stepRun.getId());
         
-        // Add step type-specific suffix
+        // Add step-specific suffix
         String suffix = getStepSuffix();
         if (suffix != null && !suffix.isEmpty()) {
             tableName.append("_").append(suffix);
         }
         
-        return "mu_quiz_stg." + tableName;
+        return "mu_quiz_stg." + tableName.toString();
     }
 }

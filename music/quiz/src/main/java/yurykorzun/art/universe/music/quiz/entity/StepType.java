@@ -1,4 +1,4 @@
-package yurykorzun.art.universe.music.quiz.entity.step;
+package yurykorzun.art.universe.music.quiz.entity;
 
 import lombok.Getter;
 import yurykorzun.art.universe.common.Coded;
@@ -7,7 +7,7 @@ import yurykorzun.art.universe.common.CodedRegistry;
 import java.util.Arrays;
 
 @Getter
-public enum GenerationStepType implements Coded {
+public enum StepType implements Coded {
 
     APPROVED_FILTER(1, 1),
     BLACKLIST_FILTER(2, 1),
@@ -22,7 +22,7 @@ public enum GenerationStepType implements Coded {
     private final Integer code;
     private final Integer version;
 
-    GenerationStepType(int code, int version) {
+    StepType(int code, int version) {
         this.code = code;
         this.version = version;
     }
@@ -33,6 +33,6 @@ public enum GenerationStepType implements Coded {
     }
 
     static {
-        CodedRegistry.register(Arrays.asList(values()), GenerationStepType.class);
+        CodedRegistry.register(Arrays.asList(values()), StepType.class);
     }
 }

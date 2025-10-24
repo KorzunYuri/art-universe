@@ -2,12 +2,12 @@ package yurykorzun.art.universe.music.quiz.service.step;
 
 import org.springframework.lang.Nullable;
 import yurykorzun.art.universe.music.quiz.entity.Step;
-import yurykorzun.art.universe.music.quiz.entity.step.GenerationStepType;
+import yurykorzun.art.universe.music.quiz.entity.StepType;
 
 public interface GenerationStepProcessor {
     
-    GenerationStepType getStepType();
-
+    StepType getStepType();
+    
     Integer getStepTypeVersion();
     
     String process(Step step, String inputTableName, @Nullable Long pipelineRunId);
@@ -15,4 +15,6 @@ public interface GenerationStepProcessor {
     void validateConfiguration(String cfgData);
     
     String getPreview(String cfgData);
+    
+    String migrateConfiguration(String cfgData, Integer fromVersion, Integer toVersion);
 }

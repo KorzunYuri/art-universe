@@ -1,4 +1,4 @@
-package yurykorzun.art.universe.music.quiz.entity.step;
+package yurykorzun.art.universe.music.quiz.entity;
 
 import lombok.Getter;
 import yurykorzun.art.universe.common.Coded;
@@ -7,7 +7,7 @@ import yurykorzun.art.universe.common.CodedRegistry;
 import java.util.Arrays;
 
 @Getter
-public enum GenerationStepPosition implements Coded {
+public enum StepPosition implements Coded {
             START(1)
         ,   MIDDLE(2)
         ,   FINAL(3)
@@ -15,7 +15,7 @@ public enum GenerationStepPosition implements Coded {
 
     private final Integer code;
 
-    GenerationStepPosition(int code) {
+    StepPosition(int code) {
         this.code = code;
     }
 
@@ -25,6 +25,6 @@ public enum GenerationStepPosition implements Coded {
     }
 
     static {
-        CodedRegistry.register(Arrays.asList(values()), GenerationStepPosition.class);
+        CodedRegistry.register(Arrays.asList(values()), StepPosition.class);
     }
 }

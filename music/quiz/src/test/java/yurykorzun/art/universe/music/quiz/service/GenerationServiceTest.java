@@ -9,7 +9,7 @@ import yurykorzun.art.universe.music.quiz.dto.GenerationDto;
 import yurykorzun.art.universe.music.quiz.dto.GenerationStepDto;
 import yurykorzun.art.universe.music.quiz.entity.Generation;
 import yurykorzun.art.universe.music.quiz.entity.GenerationStatus;
-import yurykorzun.art.universe.music.quiz.entity.step.GenerationStepType;
+import yurykorzun.art.universe.music.quiz.entity.StepType;
 import yurykorzun.art.universe.music.quiz.repository.GenerationRepository;
 import yurykorzun.art.universe.music.quiz.repository.GenerationTrackRepository;
 import yurykorzun.art.universe.music.quiz.service.impl.GenerationServiceImpl;
@@ -54,11 +54,11 @@ class GenerationServiceTest {
         // given
         Long gameId = 1L;
         GenerationStepDto finalStep1 = new GenerationStepDto();
-        finalStep1.setType(GenerationStepType.FINAL_SELECTION);
+        finalStep1.setType(StepType.FINAL_SELECTION);
         finalStep1.setParams(Map.of("targetCount", 20));
         
         GenerationStepDto finalStep2 = new GenerationStepDto();
-        finalStep2.setType(GenerationStepType.FINAL_CATEGORIES_BALANCER);
+        finalStep2.setType(StepType.FINAL_CATEGORIES_BALANCER);
         finalStep2.setParams(Map.of("targetCount", 20,  "defaultQuota", 0.0, "categories", List.of()));
         
         List<GenerationStepDto> steps = List.of(finalStep1, finalStep2);
@@ -77,7 +77,7 @@ class GenerationServiceTest {
         // given
         Long gameId = 1L;
         GenerationStepDto finalStep = new GenerationStepDto();
-        finalStep.setType(GenerationStepType.FINAL_SELECTION);
+        finalStep.setType(StepType.FINAL_SELECTION);
         finalStep.setParams(Map.of()); // Missing targetCount
         
         List<GenerationStepDto> steps = List.of(finalStep);
@@ -96,11 +96,11 @@ class GenerationServiceTest {
         // given
         Long gameId = 1L;
         GenerationStepDto finalStep = new GenerationStepDto();
-        finalStep.setType(GenerationStepType.FINAL_SELECTION);
+        finalStep.setType(StepType.FINAL_SELECTION);
         finalStep.setParams(Map.of("targetCount", 20));
         
         GenerationStepDto whitelistStep = new GenerationStepDto();
-        whitelistStep.setType(GenerationStepType.WHITELIST_FILTER);
+        whitelistStep.setType(StepType.WHITELIST_FILTER);
         whitelistStep.setParams(Map.of("categories", List.of()));
         
         List<GenerationStepDto> steps = List.of(finalStep, whitelistStep); // Final step not last
