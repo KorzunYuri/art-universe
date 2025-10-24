@@ -16,7 +16,6 @@ import yurykorzun.art.universe.music.quiz.repository.GameRepository;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import yurykorzun.art.universe.music.quiz.repository.impl.PipelineRepositoryImpl;
 import yurykorzun.art.universe.music.quiz.service.impl.GenerationServiceImpl;
 import yurykorzun.art.universe.music.quiz.config.StepProcessorConfig;
 
@@ -28,7 +27,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @Tag("integration")
 @Import({
         GenerationServiceImpl.class,
-        PipelineRepositoryImpl.class,
         StepProcessorConfig.class
 })
 class GenerationServiceIntegrationTest extends JpaOnlyTest {
@@ -62,7 +60,7 @@ class GenerationServiceIntegrationTest extends JpaOnlyTest {
     @Test
     void generateTracks_shouldCreateGenerationWithTracks_whenValidData() {
         // given
-        Game game = gameRepository.save(Game.builder().build());
+        Game game = gameRepository.save(Game.builder().pipelineId(1L).build());
         
         // Create final step with targetCount
         GenerationStepDto finalStep = new GenerationStepDto();
@@ -92,7 +90,7 @@ class GenerationServiceIntegrationTest extends JpaOnlyTest {
     @Test
     void generateTracks_shouldHandleEmptyData_gracefully() {
         // given
-        Game game = gameRepository.save(Game.builder().build());
+        Game game = gameRepository.save(Game.builder().pipelineId(1L).build());
         entityManager.createNativeQuery("TRUNCATE TABLE mu_quiz.track CASCADE").executeUpdate();
 
         // Create final step with targetCount
@@ -117,7 +115,7 @@ class GenerationServiceIntegrationTest extends JpaOnlyTest {
     @Test
     void generateTracks_shouldHandleError_whenStepProcessingFails() {
         // given
-        Game game = gameRepository.save(Game.builder().build());
+        Game game = gameRepository.save(Game.builder().pipelineId(1L).build());
         
         // Create invalid step configuration that will cause error during step processing
         GenerationStepDto invalidStep = new GenerationStepDto();

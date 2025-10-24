@@ -8,10 +8,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.music.quiz.dto.GameDto;
 import yurykorzun.art.universe.music.quiz.dto.GameWithGenerationsDto;
+import yurykorzun.art.universe.music.quiz.dto.GameWithPipelineDto;
+import yurykorzun.art.universe.music.quiz.dto.PipelineDto;
 import yurykorzun.art.universe.music.quiz.entity.Game;
 import yurykorzun.art.universe.music.quiz.repository.GameRepository;
 import yurykorzun.art.universe.music.quiz.service.GameService;
 import yurykorzun.art.universe.music.quiz.service.GenerationService;
+import yurykorzun.art.universe.music.quiz.service.PipelineService;
 
 @Service
 @RequiredArgsConstructor
@@ -20,20 +23,30 @@ public class GameServiceImpl implements GameService {
 
     private final GameRepository gameRepository;
     private final GenerationService generationService;
+    private final PipelineService pipelineService;
 
     @Override
     @Transactional
-    public GameDto createGame() {
+    public GameWithPipelineDto createGame() {
         log.debug("Creating new game");
         
-        Game game = Game.builder().build();
-        Game savedGame = gameRepository.save(game);
+        // Create pipeline first to get its ID
+        Game tempGame = Game.builder().pipelineId(-1L).build(); // temporary
+        Game savedGame = gameRepository.save(tempGame);
         
-        log.debug("Created game with id: {}", savedGame.getId());
+        // Create pipeline for the game
+        PipelineDto pipeline = pipelineService.createBasicPipeline(savedGame.getId());
         
-        return GameDto.builder()
+        // Update game with pipeline ID
+        savedGame.setPipelineId(pipeline.getId());
+        savedGame = gameRepository.save(savedGame);
+        
+        log.debug("Created game with id: {} and pipeline id: {}", savedGame.getId(), pipeline.getId());
+        
+        return GameWithPipelineDto.builder()
             .id(savedGame.getId())
             .createdAt(savedGame.getCreatedAt())
+            .pipeline(pipeline)
             .build();
     }
 

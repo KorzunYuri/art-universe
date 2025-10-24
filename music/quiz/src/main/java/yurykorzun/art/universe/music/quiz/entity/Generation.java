@@ -27,6 +27,9 @@ public class Generation extends BaseEntity {
     @Column(name = "game_id", nullable = false)
     private Long gameId;
 
+    @Column(name = "pipeline_run_id")
+    private Long pipelineRunId;
+
     @Column(name = "target_count", nullable = false)
     private Integer targetCount;
 

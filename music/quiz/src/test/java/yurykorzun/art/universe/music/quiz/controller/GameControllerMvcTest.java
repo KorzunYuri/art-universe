@@ -13,7 +13,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.BaseMvcTest;
 import yurykorzun.art.universe.music.quiz.dto.GameDto;
 import yurykorzun.art.universe.music.quiz.dto.GameWithGenerationsDto;
+import yurykorzun.art.universe.music.quiz.dto.GameWithPipelineDto;
 import yurykorzun.art.universe.music.quiz.dto.GenerationDto;
+import yurykorzun.art.universe.music.quiz.dto.PipelineDto;
 import yurykorzun.art.universe.music.quiz.service.GameService;
 
 import java.time.Instant;
@@ -36,11 +38,19 @@ class GameControllerMvcTest extends BaseMvcTest {
     private GameService gameService;
 
     @Test
-    void POST_games_shouldReturnGameDto_whenSuccessful() throws Exception {
+    void POST_games_shouldReturnGameWithPipelineDto_whenSuccessful() throws Exception {
         // given
-        GameDto expectedDto = GameDto.builder()
+        PipelineDto pipelineDto = PipelineDto.builder()
+            .id(1L)
+            .gameId(1L)
+            .immutable(false)
+            .steps(List.of())
+            .build();
+            
+        GameWithPipelineDto expectedDto = GameWithPipelineDto.builder()
             .id(1L)
             .createdAt(Instant.now())
+            .pipeline(pipelineDto)
             .build();
 
         when(gameService.createGame()).thenReturn(expectedDto);

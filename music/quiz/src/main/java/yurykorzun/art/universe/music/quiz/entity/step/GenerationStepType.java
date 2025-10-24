@@ -9,20 +9,22 @@ import java.util.Arrays;
 @Getter
 public enum GenerationStepType implements Coded {
 
-    APPROVED_FILTER(1),
-    BLACKLIST_FILTER(2),
-    WHITELIST_FILTER(3),
-    TRACK_RECENCY_PENALTY(4),
-    ARTIST_RECENCY_PENALTY(5),
-    ARTIST_DIVERSITY(6),
-    FINAL_SELECTION(7),
-    FINAL_CATEGORIES_BALANCER(8),
-    START_DATASOURCE(9);;
+    APPROVED_FILTER(1, 1),
+    BLACKLIST_FILTER(2, 1),
+    WHITELIST_FILTER(3, 1),
+    TRACK_RECENCY_PENALTY(4, 1),
+    ARTIST_RECENCY_PENALTY(5, 1),
+    ARTIST_DIVERSITY(6, 1),
+    FINAL_SELECTION(7, 1),
+    FINAL_CATEGORIES_BALANCER(8, 1),
+    START_DATASOURCE(9, 1);
 
     private final Integer code;
+    private final Integer version;
 
-    GenerationStepType(int code) {
+    GenerationStepType(int code, int version) {
         this.code = code;
+        this.version = version;
     }
     
     @Override

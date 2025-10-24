@@ -216,6 +216,7 @@ public class GenerationServiceImpl implements GenerationService {
         return GenerationDto.builder()
             .id(generation.getId())
             .gameId(generation.getGameId())
+            .pipelineRunId(generation.getPipelineRunId())
             .targetCount(generation.getTargetCount())
             .status(generation.getStatus())
             .approved(generation.getApproved())

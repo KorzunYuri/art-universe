@@ -11,7 +11,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import yurykorzun.art.universe.music.quiz.dto.GameDto;
 import yurykorzun.art.universe.music.quiz.dto.GameWithGenerationsDto;
+import yurykorzun.art.universe.music.quiz.dto.GameWithPipelineDto;
 import yurykorzun.art.universe.music.quiz.dto.GenerationDto;
+import yurykorzun.art.universe.music.quiz.dto.PipelineDto;
 import yurykorzun.art.universe.music.quiz.service.GameService;
 
 import java.time.Instant;
@@ -30,17 +32,25 @@ class GameControllerTest {
     private GameController gameController;
 
     @Test
-    void createGame_shouldReturnGameDto_whenSuccessful() {
+    void createGame_shouldReturnGameWithPipelineDto_whenSuccessful() {
         // given
-        GameDto expectedDto = GameDto.builder()
+        PipelineDto pipelineDto = PipelineDto.builder()
+            .id(1L)
+            .gameId(1L)
+            .immutable(false)
+            .steps(List.of())
+            .build();
+            
+        GameWithPipelineDto expectedDto = GameWithPipelineDto.builder()
             .id(1L)
             .createdAt(Instant.now())
+            .pipeline(pipelineDto)
             .build();
 
         when(gameService.createGame()).thenReturn(expectedDto);
 
         // when
-        GameDto result = gameController.createGame();
+        GameWithPipelineDto result = gameController.createGame();
 
         // then
         assertNotNull(result);

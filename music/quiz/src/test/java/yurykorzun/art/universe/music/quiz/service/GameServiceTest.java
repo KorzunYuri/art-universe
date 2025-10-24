@@ -11,7 +11,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import yurykorzun.art.universe.music.quiz.dto.GameDto;
 import yurykorzun.art.universe.music.quiz.dto.GameWithGenerationsDto;
+import yurykorzun.art.universe.music.quiz.dto.GameWithPipelineDto;
 import yurykorzun.art.universe.music.quiz.dto.GenerationDto;
+import yurykorzun.art.universe.music.quiz.dto.PipelineDto;
 import yurykorzun.art.universe.music.quiz.entity.Game;
 import yurykorzun.art.universe.music.quiz.repository.GameRepository;
 import yurykorzun.art.universe.music.quiz.service.impl.GameServiceImpl;
@@ -32,37 +34,57 @@ class GameServiceTest {
 
     @Mock
     private GenerationService generationService;
+    
+    @Mock
+    private PipelineService pipelineService;
 
     @InjectMocks
     private GameServiceImpl gameService;
 
     @Test
-    void createGame_shouldReturnGameDto_whenSuccessful() {
+    void createGame_shouldReturnGameWithPipelineDto_whenSuccessful() {
         // given
-        Game savedGame = Game.builder().build();
+        Game tempGame = Game.builder().pipelineId(-1L).build();
+        Game savedGame = Game.builder().pipelineId(1L).build();
+        
         // Use reflection to set id and timestamps
         try {
             var idField = Game.class.getDeclaredField("id");
             idField.setAccessible(true);
+            idField.set(tempGame, 1L);
             idField.set(savedGame, 1L);
             
             var createdAtField = Game.class.getSuperclass().getDeclaredField("createdAt");
             createdAtField.setAccessible(true);
-            createdAtField.set(savedGame, Instant.now());
+            Instant now = Instant.now();
+            createdAtField.set(tempGame, now);
+            createdAtField.set(savedGame, now);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        when(gameRepository.save(any(Game.class))).thenReturn(savedGame);
+        PipelineDto pipelineDto = PipelineDto.builder()
+            .id(1L)
+            .gameId(1L)
+            .immutable(false)
+            .steps(List.of())
+            .build();
+
+        when(gameRepository.save(any(Game.class))).thenReturn(tempGame).thenReturn(savedGame);
+        when(pipelineService.createBasicPipeline(1L)).thenReturn(pipelineDto);
 
         // when
-        GameDto result = gameService.createGame();
+        GameWithPipelineDto result = gameService.createGame();
 
         // then
         assertNotNull(result);
         assertEquals(1L, result.getId());
         assertNotNull(result.getCreatedAt());
-        verify(gameRepository).save(any(Game.class));
+        assertNotNull(result.getPipeline());
+        assertEquals(1L, result.getPipeline().getId());
+        
+        verify(gameRepository, times(2)).save(any(Game.class));
+        verify(pipelineService).createBasicPipeline(1L);
     }
 
     @Test
@@ -70,8 +92,8 @@ class GameServiceTest {
         // given
         Pageable pageable = PageRequest.of(0, 10);
         
-        Game game1 = Game.builder().build();
-        Game game2 = Game.builder().build();
+        Game game1 = Game.builder().pipelineId(1L).build();
+        Game game2 = Game.builder().pipelineId(2L).build();
         
         // Use reflection to set ids and timestamps
         try {
@@ -116,7 +138,7 @@ class GameServiceTest {
         // given
         Long gameId = 1L;
         
-        Game existingGame = Game.builder().build();
+        Game existingGame = Game.builder().pipelineId(1L).build();
         
         // Use reflection to set id and timestamps
         try {

@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.music.quiz.dto.GameDto;
 import yurykorzun.art.universe.music.quiz.dto.GameWithGenerationsDto;
+import yurykorzun.art.universe.music.quiz.dto.GameWithPipelineDto;
 import yurykorzun.art.universe.music.quiz.service.GameService;
 
 @RestController
@@ -18,7 +19,7 @@ public class GameController {
     private final GameService gameService;
 
     @PostMapping
-    public GameDto createGame() {
+    public GameWithPipelineDto createGame() {
         log.info("Creating new game");
         return gameService.createGame();
     }
