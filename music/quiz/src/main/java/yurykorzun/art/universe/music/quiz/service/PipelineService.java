@@ -21,5 +21,7 @@ public interface PipelineService {
     
     PipelineDto executeStep(Long pipelineId, Long stepId);
     
+    String executePipeline(Long pipelineId, Long pipelineRunId);
+    
     void validatePipelineForGeneration(Long pipelineId);
 }

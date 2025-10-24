@@ -1,19 +1,18 @@
 package yurykorzun.art.universe.music.quiz.service.step;
 
-import yurykorzun.art.universe.music.quiz.entity.step.GenerationStep;
+import org.springframework.lang.Nullable;
+import yurykorzun.art.universe.music.quiz.entity.Step;
 import yurykorzun.art.universe.music.quiz.entity.step.GenerationStepType;
 
-public interface GenerationStepProcessor<T extends GenerationStep> {
+public interface GenerationStepProcessor {
     
     GenerationStepType getStepType();
+
+    Integer getStepTypeVersion();
     
-    Integer getCurrentVersion();
-    
-    String process(String inputTable, Long gameId, Long generationId, Integer stepOrder, T step);
+    String process(Step step, String inputTableName, @Nullable Long pipelineRunId);
     
     void validateConfiguration(String cfgData);
     
     String getPreview(String cfgData);
-    
-    String migrateConfiguration(String cfgData, Integer fromVersion, Integer toVersion);
 }

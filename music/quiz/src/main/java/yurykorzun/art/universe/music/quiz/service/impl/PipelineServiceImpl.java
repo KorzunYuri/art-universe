@@ -49,7 +49,7 @@ public class PipelineServiceImpl implements PipelineService {
         Pipeline pipeline = getPipelineById(pipelineId);
         validateStepPosition(stepDto.getType());
         
-        GenerationStepProcessor<?> processor = GenerationStepProcessorRegistry.get(stepDto.getType());
+        GenerationStepProcessor processor = GenerationStepProcessorRegistry.get(stepDto.getType());
         processor.validateConfiguration(stepDto.getCfgData());
         
         Step step = Step.builder()
@@ -159,7 +159,7 @@ public class PipelineServiceImpl implements PipelineService {
         Step step = stepRepository.findById(stepId)
             .orElseThrow(() -> new IllegalArgumentException("Step not found"));
         
-        GenerationStepProcessor<?> processor = GenerationStepProcessorRegistry.get(step.getType());
+        GenerationStepProcessor processor = GenerationStepProcessorRegistry.get(step.getType());
         processor.validateConfiguration(stepDto.getCfgData());
         
         boolean configChanged = !stepDto.getCfgData().equals(step.getCfgData());
@@ -190,7 +190,7 @@ public class PipelineServiceImpl implements PipelineService {
         Step step = stepRepository.findById(stepId)
             .orElseThrow(() -> new IllegalArgumentException("Step not found"));
         
-        GenerationStepProcessor<?> processor = GenerationStepProcessorRegistry.get(step.getType());
+        GenerationStepProcessor processor = GenerationStepProcessorRegistry.get(step.getType());
         String preview = processor.getPreview(step.getCfgData());
         
         step.setPreviewData(preview);
@@ -205,16 +205,26 @@ public class PipelineServiceImpl implements PipelineService {
         log.debug("Executing step {} in pipeline {}", stepId, pipelineId);
         
         Pipeline pipeline = getPipelineById(pipelineId);
+        List<PipelineStep> pipelineSteps = pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId);
+        
+        // Find target step position
+        Integer targetPosition = pipelineSteps.stream()
+            .filter(ps -> ps.getStepId().equals(stepId))
+            .findFirst()
+            .map(PipelineStep::getOrd)
+            .orElseThrow(() -> new IllegalArgumentException("Step not found in pipeline"));
         
         // Find earliest step without result
         Integer minPosition = findEarliestStepWithoutResult(pipelineId);
+        if (minPosition > targetPosition) {
+            minPosition = targetPosition;
+        }
         
         // Clear results for steps after minPosition
         clearSubsequentStepResults(pipeline.getId(), minPosition);
         
-        // Execute steps starting from minPosition
-        List<PipelineStep> pipelineSteps = pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId);
-        executeStepsFromPosition(pipeline.getId(), pipelineSteps, minPosition);
+        // Execute steps from minPosition to targetPosition
+        executeStepsInRange(pipelineSteps, minPosition, targetPosition);
         
         return getPipeline(pipelineId);
     }
@@ -297,11 +307,60 @@ public class PipelineServiceImpl implements PipelineService {
             .orElse(1); // Default to position 1 if no steps or all have results
     }
 
-    private void executeStepsFromPosition(Long pipelineId, List<PipelineStep> pipelineSteps, Integer fromPosition) {
-        // This method would execute steps starting from the given position
-        // Implementation would involve calling step processors
-        // For now, leaving as placeholder
-        log.debug("Executing steps from position {} for pipeline {}", fromPosition, pipelineId);
+    @Override
+    @Transactional
+    public String executePipeline(Long pipelineId, Long pipelineRunId) {
+        log.debug("Executing pipeline {} with run {}", pipelineId, pipelineRunId);
+        
+        List<PipelineStep> pipelineSteps = pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId);
+        if (pipelineSteps.isEmpty()) {
+            throw new IllegalArgumentException("Pipeline has no steps");
+        }
+        
+        String currentTable = "mu_view.v_track";
+        
+        for (PipelineStep pipelineStep : pipelineSteps) {
+            Step step = stepRepository.findById(pipelineStep.getStepId())
+                .orElseThrow(() -> new IllegalArgumentException("Step not found: " + pipelineStep.getStepId()));
+            
+            GenerationStepProcessor processor = GenerationStepProcessorRegistry.get(step.getType());
+            currentTable = processor.process(step, currentTable, pipelineRunId);
+        }
+        
+        return currentTable;
+    }
+
+    private void executeStepsInRange(List<PipelineStep> pipelineSteps, Integer fromPosition, Integer toPosition) {
+        String currentTable = "mu_view.v_track";
+        
+        for (PipelineStep pipelineStep : pipelineSteps) {
+            if (pipelineStep.getOrd() < fromPosition || pipelineStep.getOrd() > toPosition) {
+                continue;
+            }
+            
+            // If not the first step, get input table from previous step
+            if (pipelineStep.getOrd() > 1) {
+                PipelineStep previousStep = pipelineSteps.stream()
+                    .filter(ps -> ps.getOrd().equals(pipelineStep.getOrd() - 1))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Previous step not found"));
+                
+                Step prevStep = stepRepository.findById(previousStep.getStepId())
+                    .orElseThrow(() -> new IllegalArgumentException("Previous step entity not found"));
+                
+                if (prevStep.getLastStepRunId() != null) {
+                    StepRun prevStepRun = stepRunRepository.findById(prevStep.getLastStepRunId())
+                        .orElseThrow(() -> new IllegalArgumentException("Previous step run not found"));
+                    currentTable = prevStepRun.getResultTableName();
+                }
+            }
+            
+            Step step = stepRepository.findById(pipelineStep.getStepId())
+                .orElseThrow(() -> new IllegalArgumentException("Step not found: " + pipelineStep.getStepId()));
+            
+            GenerationStepProcessor processor = GenerationStepProcessorRegistry.get(step.getType());
+            currentTable = processor.process(step, currentTable, null); // null = not pipeline run
+        }
     }
 
     private PipelineDto mapToDto(Pipeline pipeline, List<PipelineStepDto> steps) {

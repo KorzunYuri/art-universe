@@ -1,7 +1,6 @@
 package yurykorzun.art.universe.music.quiz.entity.step;
 
 import lombok.Data;
-import yurykorzun.art.universe.music.quiz.dto.GenerationStepDto;
 
 @Data
 public abstract class GenerationStep {
@@ -12,8 +11,4 @@ public abstract class GenerationStep {
     }
 
     public abstract GenerationStepPosition getPosition();
-    
-    public static GenerationStep fromDto(GenerationStepDto dto) {
-        return GenerationStepMapper.fromDto(dto);
-    }
 }

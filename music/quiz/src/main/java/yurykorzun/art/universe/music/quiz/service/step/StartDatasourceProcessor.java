@@ -6,14 +6,14 @@ import yurykorzun.art.universe.music.quiz.repository.StepRepository;
 import yurykorzun.art.universe.music.quiz.repository.StepRunRepository;
 
 @Component
-public class FinalCategoriesBalancerProcessor extends BaseGenerationStepProcessor {
+public class StartDatasourceProcessor extends BaseGenerationStepProcessor {
 
-    public FinalCategoriesBalancerProcessor(StepRunRepository stepRunRepository, StepRepository stepRepository) {
-        super(GenerationStepType.FINAL_CATEGORIES_BALANCER, stepRunRepository, stepRepository);
+    public StartDatasourceProcessor(StepRunRepository stepRunRepository, StepRepository stepRepository) {
+        super(GenerationStepType.START_DATASOURCE, stepRunRepository, stepRepository);
     }
 
     @Override
     protected String getStepSuffix() {
-        return "final_categories_balancer";
+        return "start_datasource";
     }
 }

@@ -1,6 +1,9 @@
 package yurykorzun.art.universe.music.quiz.entity.step;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import yurykorzun.art.universe.music.quiz.dto.GenerationStepDto;
+import yurykorzun.art.universe.music.quiz.entity.Step;
 import yurykorzun.art.universe.music.quiz.entity.step.finish.FinalCategoriesBalancerStep;
 import yurykorzun.art.universe.music.quiz.entity.step.finish.FinalSelectionStep;
 import yurykorzun.art.universe.music.quiz.entity.step.middle.*;
@@ -10,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 
 public class GenerationStepMapper {
+    
+    private static final ObjectMapper objectMapper = new ObjectMapper();
     
     public static GenerationStep fromDto(GenerationStepDto dto) {
         return switch (dto.getType()) {
@@ -23,6 +28,45 @@ public class GenerationStepMapper {
             case FINAL_SELECTION -> mapFinalSelection(dto);
             case FINAL_CATEGORIES_BALANCER -> mapFinalCategoriesBalancer(dto);
         };
+    }
+    
+    // Маппинг из entity в domain объект
+    public static GenerationStep fromEntity(Step step) {
+        try {
+            Map<String, Object> params = step.getCfgData() != null ? 
+                objectMapper.readValue(step.getCfgData(), Map.class) : Map.of();
+            
+            GenerationStepDto dto = new GenerationStepDto();
+            dto.setType(step.getType());
+            dto.setParams(params);
+            
+            return fromDto(dto);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to parse step configuration", e);
+        }
+    }
+    
+    // Маппинг из domain объекта в JSON конфигурацию
+    public static String toConfigJson(GenerationStep step) {
+        try {
+            Map<String, Object> config = switch (step.getType()) {
+                case BLACKLIST_FILTER -> Map.of("categoryIds", ((BlacklistFilterStep) step).getCategoryIds());
+                case WHITELIST_FILTER -> Map.of("categories", ((WhitelistFilterStep) step).getCategories());
+                case FINAL_SELECTION -> Map.of("targetCount", ((FinalSelectionStep) step).getTargetCount());
+                case FINAL_CATEGORIES_BALANCER -> {
+                    var balancer = (FinalCategoriesBalancerStep) step;
+                    yield Map.of(
+                        "targetCount", balancer.getTargetCount(),
+                        "categories", balancer.getCategories(),
+                        "defaultQuota", balancer.getDefaultQuota()
+                    );
+                }
+                default -> Map.of();
+            };
+            return objectMapper.writeValueAsString(config);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to serialize step configuration", e);
+        }
     }
     
     @SuppressWarnings("unchecked")

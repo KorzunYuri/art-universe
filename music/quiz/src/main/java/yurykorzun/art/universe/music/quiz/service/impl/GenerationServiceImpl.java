@@ -43,7 +43,7 @@ public class GenerationServiceImpl implements GenerationService {
         
         // Convert DTOs to typed steps
         List<GenerationStep> typedSteps = configuredSteps != null ?
-            configuredSteps.stream().map(GenerationStep::fromDto).toList() :
+            configuredSteps.stream().map(GenerationStepMapper::fromDto).toList() :
             List.of();
         
         // Validate step configuration
@@ -181,8 +181,9 @@ public class GenerationServiceImpl implements GenerationService {
     }
     
     private <T extends GenerationStep> String processTypedStep(T step, String currentTable, Long gameId, Long generationId, Integer stepOrder) {
-        GenerationStepProcessor<T> processor = GenerationStepProcessorRegistry.get(step.getType());
-        return processor.process(currentTable, gameId, generationId, stepOrder, step);
+        GenerationStepProcessor processor = GenerationStepProcessorRegistry.get(step.getType());
+        // TODO: Update this call when we implement the new process method
+        return "temp_table"; // placeholder
     }
 
     @Override

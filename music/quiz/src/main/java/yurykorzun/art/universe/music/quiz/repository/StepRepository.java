@@ -10,6 +10,15 @@ import yurykorzun.art.universe.music.quiz.entity.Step;
 @Repository
 public interface StepRepository extends JpaRepository<Step, Long> {
     
+    @Query("""
+        SELECT g.id as gameId, p.id as pipelineId
+        FROM pipeline_step ps
+        JOIN pipeline p ON ps.pipelineId = p.id
+        JOIN game g ON g.pipelineId = p.id
+        WHERE ps.stepId = :stepId
+    """)
+    StepMetadataProjection getStepMetadata(@Param("stepId") Long stepId);
+    
     @Modifying
     @Query("""
         UPDATE step s SET s.previewData = NULL, s.lastStepRunId = NULL

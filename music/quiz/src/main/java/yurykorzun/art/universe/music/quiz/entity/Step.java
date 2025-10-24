@@ -9,6 +9,7 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import yurykorzun.art.universe.common.persistence.entity.BaseEntity;
 import yurykorzun.art.universe.music.quiz.entity.step.GenerationStepType;
+import yurykorzun.art.universe.music.quiz.entity.step.GenerationStepTypeConverter;
 
 @Entity(name = "step")
 @SuperBuilder
@@ -27,7 +28,7 @@ public class Step extends BaseEntity {
     private Long id;
 
     @Column(name = "type", nullable = false)
-    @Convert(converter = yurykorzun.art.universe.music.quiz.entity.step.GenerationStepTypeConverter.class)
+    @Convert(converter = GenerationStepTypeConverter.class)
     private GenerationStepType type;
 
     @Column(name = "alg_version", nullable = false)
