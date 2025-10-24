@@ -15,9 +15,6 @@ import yurykorzun.art.universe.music.quiz.service.step.GenerationStepProcessor;
 import yurykorzun.art.universe.music.quiz.service.step.GenerationStepProcessorRegistry;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -65,14 +62,8 @@ public class PipelineServiceImpl implements PipelineService {
         
         Step savedStep = stepRepository.save(step);
         
-        // Shift existing steps if needed
-        List<PipelineStep> existingSteps = pipelineStepRepository.findByPipelineIdOrderByOrd(pipeline.getId());
-        for (PipelineStep ps : existingSteps) {
-            if (ps.getOrd() >= position) {
-                ps.setOrd(ps.getOrd() + 1);
-                pipelineStepRepository.save(ps);
-            }
-        }
+        // Shift existing steps using batch operation
+        pipelineStepRepository.incrementOrderAfter(pipeline.getId(), position);
         
         PipelineStep pipelineStep = PipelineStep.builder()
             .pipelineId(pipeline.getId())
@@ -103,17 +94,21 @@ public class PipelineServiceImpl implements PipelineService {
         
         Integer oldPosition = movingStep.getOrd();
         
-        // Reorder steps
-        for (PipelineStep ps : pipelineSteps) {
-            if (ps.getStepId().equals(stepId)) {
-                ps.setOrd(newPosition);
-            } else if (oldPosition < newPosition && ps.getOrd() > oldPosition && ps.getOrd() <= newPosition) {
-                ps.setOrd(ps.getOrd() - 1);
-            } else if (oldPosition > newPosition && ps.getOrd() >= newPosition && ps.getOrd() < oldPosition) {
-                ps.setOrd(ps.getOrd() + 1);
-            }
-            pipelineStepRepository.save(ps);
+        if (oldPosition.equals(newPosition)) {
+            return getPipeline(pipelineId); // No change needed
         }
+        
+        // Reorder steps using batch operations
+        if (oldPosition < newPosition) {
+            // Moving down: decrement steps between old and new position
+            pipelineStepRepository.decrementOrderBetween(pipelineId, oldPosition, newPosition);
+        } else {
+            // Moving up: increment steps between new and old position
+            pipelineStepRepository.incrementOrderBetween(pipelineId, newPosition, oldPosition);
+        }
+        
+        // Update the moving step to new position
+        pipelineStepRepository.updateStepOrder(pipelineId, stepId, newPosition);
         
         // Clear results from earliest affected position
         Integer earliestPosition = Math.min(oldPosition, newPosition);
@@ -210,15 +205,15 @@ public class PipelineServiceImpl implements PipelineService {
         log.debug("Executing step {} in pipeline {}", stepId, pipelineId);
         
         Pipeline pipeline = getPipelineById(pipelineId);
-        List<PipelineStep> pipelineSteps = pipelineStepRepository.findByPipelineIdOrderByOrd(pipeline.getId());
         
         // Find earliest step without result
-        Integer minPosition = findEarliestStepWithoutResult(pipelineSteps);
+        Integer minPosition = findEarliestStepWithoutResult(pipelineId);
         
         // Clear results for steps after minPosition
         clearSubsequentStepResults(pipeline.getId(), minPosition);
         
         // Execute steps starting from minPosition
+        List<PipelineStep> pipelineSteps = pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId);
         executeStepsFromPosition(pipeline.getId(), pipelineSteps, minPosition);
         
         return getPipeline(pipelineId);
@@ -264,27 +259,11 @@ public class PipelineServiceImpl implements PipelineService {
         Pipeline pipeline = pipelineRepository.findById(pipelineId)
             .orElseThrow(() -> new IllegalArgumentException("Pipeline not found: " + pipelineId));
         
-        List<PipelineStep> pipelineSteps = pipelineStepRepository.findByPipelineIdOrderByOrd(pipeline.getId());
-        List<Long> stepIds = pipelineSteps.stream().map(PipelineStep::getStepId).toList();
+        List<PipelineStepRepository.PipelineStepWithDetails> stepDetails = 
+            pipelineStepRepository.findPipelineStepsWithDetails(pipelineId);
         
-        Map<Long, Step> stepsMap = stepRepository.findAllById(stepIds).stream()
-            .collect(Collectors.toMap(Step::getId, step -> step));
-        
-        // Get step runs for result data
-        List<Long> stepRunIds = stepsMap.values().stream()
-            .map(Step::getLastStepRunId)
-            .filter(Objects::nonNull)
-            .toList();
-        
-        Map<Long, StepRun> stepRunsMap = stepRunRepository.findAllById(stepRunIds).stream()
-            .collect(Collectors.toMap(StepRun::getId, stepRun -> stepRun));
-        
-        List<PipelineStepDto> stepDtos = pipelineSteps.stream()
-            .map(ps -> {
-                Step step = stepsMap.get(ps.getStepId());
-                StepRun stepRun = step.getLastStepRunId() != null ? stepRunsMap.get(step.getLastStepRunId()) : null;
-                return mapStepToDto(step, ps.getOrd(), stepRun);
-            })
+        List<PipelineStepDto> stepDtos = stepDetails.stream()
+            .map(detail -> mapStepToDto(detail.getStep(), detail.getOrd(), detail.getStepRun()))
             .toList();
         
         return mapToDto(pipeline, stepDtos);
@@ -310,29 +289,12 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     private void clearSubsequentStepResults(Long pipelineId, Integer fromPosition) {
-        List<PipelineStep> subsequentSteps = pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId)
-            .stream()
-            .filter(ps -> ps.getOrd() >= fromPosition)
-            .toList();
-        
-        for (PipelineStep ps : subsequentSteps) {
-            Step step = stepRepository.findById(ps.getStepId()).orElse(null);
-            if (step != null) {
-                step.setPreviewData(null);
-                step.setLastStepRunId(null);
-                stepRepository.save(step);
-            }
-        }
+        stepRepository.clearSubsequentStepResults(pipelineId, fromPosition);
     }
 
-    private Integer findEarliestStepWithoutResult(List<PipelineStep> pipelineSteps) {
-        for (PipelineStep ps : pipelineSteps) {
-            Step step = stepRepository.findById(ps.getStepId()).orElse(null);
-            if (step == null || step.getLastStepRunId() == null) {
-                return ps.getOrd();
-            }
-        }
-        return pipelineSteps.isEmpty() ? 1 : pipelineSteps.getLast().getOrd();
+    private Integer findEarliestStepWithoutResult(Long pipelineId) {
+        return pipelineStepRepository.findEarliestStepWithoutResult(pipelineId)
+            .orElse(1); // Default to position 1 if no steps or all have results
     }
 
     private void executeStepsFromPosition(Long pipelineId, List<PipelineStep> pipelineSteps, Integer fromPosition) {
