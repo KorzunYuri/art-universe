@@ -1,8 +1,8 @@
 package yurykorzun.art.universe.music.quiz.service.step;
 
 import org.springframework.stereotype.Component;
-import yurykorzun.art.universe.music.quiz.entity.GenerationStepType;
-import yurykorzun.art.universe.music.quiz.entity.step.FinalSelectionStep;
+import yurykorzun.art.universe.music.quiz.entity.step.GenerationStepType;
+import yurykorzun.art.universe.music.quiz.entity.step.finish.FinalSelectionStep;
 import yurykorzun.art.universe.music.quiz.repository.PipelineRepository;
 
 @Component

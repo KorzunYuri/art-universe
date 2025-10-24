@@ -1,7 +1,7 @@
 package yurykorzun.art.universe.music.quiz.service.step;
 
-import yurykorzun.art.universe.music.quiz.entity.GenerationStep;
-import yurykorzun.art.universe.music.quiz.entity.GenerationStepType;
+import yurykorzun.art.universe.music.quiz.entity.step.GenerationStep;
+import yurykorzun.art.universe.music.quiz.entity.step.GenerationStepType;
 
 public abstract class BaseGenerationStepProcessor<T extends GenerationStep> implements GenerationStepProcessor<T> {
     

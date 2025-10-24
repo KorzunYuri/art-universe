@@ -1,9 +1,9 @@
-package yurykorzun.art.universe.music.quiz.entity.step;
+package yurykorzun.art.universe.music.quiz.entity.step.finish;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
-import yurykorzun.art.universe.music.quiz.entity.GenerationStepType;
+import yurykorzun.art.universe.music.quiz.entity.step.GenerationStepType;
 
 import java.util.List;
 

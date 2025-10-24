@@ -3,8 +3,8 @@ package yurykorzun.art.universe.music.quiz.service.step;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import org.springframework.stereotype.Component;
-import yurykorzun.art.universe.music.quiz.entity.GenerationStepType;
-import yurykorzun.art.universe.music.quiz.entity.step.WhitelistFilterStep;
+import yurykorzun.art.universe.music.quiz.entity.step.GenerationStepType;
+import yurykorzun.art.universe.music.quiz.entity.step.middle.WhitelistFilterStep;
 import yurykorzun.art.universe.music.quiz.repository.PipelineRepository;
 
 @Component

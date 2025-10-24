@@ -1,7 +1,10 @@
-package yurykorzun.art.universe.music.quiz.entity;
+package yurykorzun.art.universe.music.quiz.entity.step;
 
 import yurykorzun.art.universe.music.quiz.dto.GenerationStepDto;
-import yurykorzun.art.universe.music.quiz.entity.step.*;
+import yurykorzun.art.universe.music.quiz.entity.step.finish.FinalCategoriesBalancerStep;
+import yurykorzun.art.universe.music.quiz.entity.step.finish.FinalSelectionStep;
+import yurykorzun.art.universe.music.quiz.entity.step.middle.*;
+import yurykorzun.art.universe.music.quiz.entity.step.start.StartDatasourceStep;
 
 import java.util.List;
 import java.util.Map;
@@ -10,6 +13,7 @@ public class GenerationStepMapper {
     
     public static GenerationStep fromDto(GenerationStepDto dto) {
         return switch (dto.getType()) {
+            case START_DATASOURCE -> new StartDatasourceStep();
             case APPROVED_FILTER -> new ApprovedFilterStep();
             case BLACKLIST_FILTER -> mapBlacklistFilter(dto);
             case WHITELIST_FILTER -> mapWhitelistFilter(dto);

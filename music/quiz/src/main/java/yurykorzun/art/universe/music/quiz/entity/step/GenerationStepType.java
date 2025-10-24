@@ -1,4 +1,4 @@
-package yurykorzun.art.universe.music.quiz.entity;
+package yurykorzun.art.universe.music.quiz.entity.step;
 
 import lombok.Getter;
 import yurykorzun.art.universe.common.Coded;
@@ -16,7 +16,8 @@ public enum GenerationStepType implements Coded {
     ARTIST_RECENCY_PENALTY(5),
     ARTIST_DIVERSITY(6),
     FINAL_SELECTION(7),
-    FINAL_CATEGORIES_BALANCER(8);
+    FINAL_CATEGORIES_BALANCER(8),
+    START_DATASOURCE(9);;
 
     private final Integer code;
 

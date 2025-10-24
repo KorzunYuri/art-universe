@@ -5,7 +5,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import yurykorzun.art.universe.music.quiz.entity.step.ApprovedFilterStep;
+import yurykorzun.art.universe.music.quiz.entity.step.GenerationStepPosition;
+import yurykorzun.art.universe.music.quiz.entity.step.middle.ApprovedFilterStep;
 import yurykorzun.art.universe.music.quiz.repository.PipelineRepository;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -76,6 +77,6 @@ class ApprovedFilterProcessorTest {
         ApprovedFilterStep step = new ApprovedFilterStep();
 
         // when & then
-        assertFalse(step.isFinal());
+        assertSame(GenerationStepPosition.MIDDLE, step.getPosition());
     }
 }

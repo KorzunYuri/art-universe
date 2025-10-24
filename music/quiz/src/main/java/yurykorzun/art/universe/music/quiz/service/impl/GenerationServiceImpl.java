@@ -9,6 +9,9 @@ import yurykorzun.art.universe.music.quiz.dto.GenerationStepDto;
 import yurykorzun.art.universe.music.quiz.dto.GenerationTrackDto;
 import yurykorzun.art.universe.music.quiz.entity.*;
 import yurykorzun.art.universe.music.quiz.entity.step.*;
+import yurykorzun.art.universe.music.quiz.entity.step.finish.FinalGenerationStep;
+import yurykorzun.art.universe.music.quiz.entity.step.middle.ApprovedFilterStep;
+import yurykorzun.art.universe.music.quiz.entity.step.middle.TrackRecencyPenaltyStep;
 import yurykorzun.art.universe.music.quiz.repository.GenerationRepository;
 import yurykorzun.art.universe.music.quiz.repository.GenerationTrackRepository;
 import yurykorzun.art.universe.music.quiz.service.GenerationService;
@@ -19,7 +22,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -121,7 +123,7 @@ public class GenerationServiceImpl implements GenerationService {
         }
         
         List<GenerationStep> finalSteps = steps.stream()
-            .filter(GenerationStep::isFinal)
+            .filter(step -> GenerationStepPosition.FINAL == step.getPosition())
             .toList();
         
         if (finalSteps.isEmpty()) {
@@ -134,14 +136,14 @@ public class GenerationServiceImpl implements GenerationService {
         
         // Check that final step is the last step
         GenerationStep lastStep = steps.getLast();
-        if (!lastStep.isFinal()) {
+        if (GenerationStepPosition.FINAL != lastStep.getPosition()) {
             throw new IllegalArgumentException("Final step must be the last step in the configuration");
         }
     }
     
     private Integer extractTargetCountFromFinalStep(List<GenerationStep> steps) {
         GenerationStep finalStep = steps.stream()
-            .filter(GenerationStep::isFinal)
+            .filter(step -> GenerationStepPosition.FINAL == step.getPosition())
             .findFirst()
             .orElseThrow(() -> new IllegalArgumentException("No final step found"));
         

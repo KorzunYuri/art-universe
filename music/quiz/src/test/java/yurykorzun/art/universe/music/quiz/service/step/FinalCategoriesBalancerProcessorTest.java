@@ -7,7 +7,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import yurykorzun.art.universe.music.quiz.entity.step.FinalCategoriesBalancerStep;
+import yurykorzun.art.universe.music.quiz.entity.step.GenerationStepPosition;
+import yurykorzun.art.universe.music.quiz.entity.step.finish.FinalCategoriesBalancerStep;
 import yurykorzun.art.universe.music.quiz.repository.PipelineRepository;
 
 import java.util.List;
@@ -103,7 +104,7 @@ class FinalCategoriesBalancerProcessorTest {
         FinalCategoriesBalancerStep step = new FinalCategoriesBalancerStep(20, List.of(), 0.0);
 
         // when & then
-        assertTrue(step.isFinal());
+        assertSame(GenerationStepPosition.FINAL, step.getPosition());
     }
 
     @Test

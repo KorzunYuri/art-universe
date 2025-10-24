@@ -11,7 +11,7 @@ import yurykorzun.art.universe.music.quiz.dto.GenerationDto;
 import yurykorzun.art.universe.music.quiz.dto.GenerationStepDto;
 import yurykorzun.art.universe.music.quiz.entity.Game;
 import yurykorzun.art.universe.music.quiz.entity.GenerationStatus;
-import yurykorzun.art.universe.music.quiz.entity.GenerationStepType;
+import yurykorzun.art.universe.music.quiz.entity.step.GenerationStepType;
 import yurykorzun.art.universe.music.quiz.repository.GameRepository;
 
 import jakarta.persistence.EntityManager;

@@ -1,17 +1,16 @@
-package yurykorzun.art.universe.music.quiz.entity.step;
+package yurykorzun.art.universe.music.quiz.entity.step.middle;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
-import yurykorzun.art.universe.music.quiz.entity.GenerationStep;
-import yurykorzun.art.universe.music.quiz.entity.GenerationStepType;
+import yurykorzun.art.universe.music.quiz.entity.step.GenerationStepType;
 
 import java.util.List;
 
 @Getter
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class WhitelistFilterStep extends GenerationStep {
+public class WhitelistFilterStep extends MiddleGenerationStep {
     private final List<CategoryWeight> categories;
     
     public WhitelistFilterStep(List<CategoryWeight> categories) {

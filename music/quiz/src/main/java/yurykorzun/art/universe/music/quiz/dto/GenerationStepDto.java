@@ -1,7 +1,7 @@
 package yurykorzun.art.universe.music.quiz.dto;
 
 import lombok.Data;
-import yurykorzun.art.universe.music.quiz.entity.GenerationStepType;
+import yurykorzun.art.universe.music.quiz.entity.step.GenerationStepType;
 
 import java.util.Map;
 

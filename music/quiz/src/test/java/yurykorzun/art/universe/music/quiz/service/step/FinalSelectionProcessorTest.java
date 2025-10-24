@@ -5,7 +5,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import yurykorzun.art.universe.music.quiz.entity.step.FinalSelectionStep;
+import yurykorzun.art.universe.music.quiz.entity.step.GenerationStepPosition;
+import yurykorzun.art.universe.music.quiz.entity.step.finish.FinalSelectionStep;
 import yurykorzun.art.universe.music.quiz.repository.PipelineRepository;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -76,7 +77,7 @@ class FinalSelectionProcessorTest {
         FinalSelectionStep step = new FinalSelectionStep(20);
 
         // when & then
-        assertTrue(step.isFinal());
+        assertSame(GenerationStepPosition.FINAL, step.getPosition());
     }
 
     @Test

@@ -7,7 +7,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import yurykorzun.art.universe.music.quiz.entity.step.BlacklistFilterStep;
+import yurykorzun.art.universe.music.quiz.entity.step.GenerationStepPosition;
+import yurykorzun.art.universe.music.quiz.entity.step.middle.BlacklistFilterStep;
 import yurykorzun.art.universe.music.quiz.repository.PipelineRepository;
 
 import java.util.List;
@@ -96,6 +97,6 @@ class BlacklistFilterProcessorTest {
         BlacklistFilterStep step = new BlacklistFilterStep(List.of(1L, 2L));
 
         // when & then
-        assertFalse(step.isFinal());
+        assertSame(GenerationStepPosition.MIDDLE, step.getPosition());
     }
 }

@@ -9,7 +9,7 @@ import yurykorzun.art.universe.music.quiz.dto.GenerationDto;
 import yurykorzun.art.universe.music.quiz.dto.GenerationStepDto;
 import yurykorzun.art.universe.music.quiz.entity.Generation;
 import yurykorzun.art.universe.music.quiz.entity.GenerationStatus;
-import yurykorzun.art.universe.music.quiz.entity.GenerationStepType;
+import yurykorzun.art.universe.music.quiz.entity.step.GenerationStepType;
 import yurykorzun.art.universe.music.quiz.repository.GenerationRepository;
 import yurykorzun.art.universe.music.quiz.repository.GenerationTrackRepository;
 import yurykorzun.art.universe.music.quiz.service.impl.GenerationServiceImpl;
