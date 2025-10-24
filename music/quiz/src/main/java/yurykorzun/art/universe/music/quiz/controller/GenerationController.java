@@ -19,9 +19,9 @@ public class GenerationController {
     private final GenerationService generationService;
 
     @PostMapping("/games/{gameId}/generations")
-    public GenerationDto generateTracks(@PathVariable Long gameId, @RequestBody CreateGenerationRequest request) {
-        log.info("Generating tracks for game {} with {} steps", gameId, request.getSteps() != null ? request.getSteps().size() : 0);
-        return generationService.generateTracks(gameId, request.getSteps());
+    public GenerationDto generateTracks(@PathVariable Long gameId) {
+        log.info("Generating tracks for game {}", gameId);
+        return generationService.generateTracks(gameId);
     }
 
     @GetMapping("/games/{gameId}/generations")

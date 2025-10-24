@@ -1,10 +1,7 @@
 package yurykorzun.art.universe.music.quiz.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import yurykorzun.art.universe.common.persistence.entity.BaseEntity;
 
@@ -31,7 +28,8 @@ public class PipelineRun extends BaseEntity {
 
     @Column(name = "status", nullable = false)
     @Convert(converter = ExecutionStatusConverter.class)
-    private ExecutionStatus status;
+    @Builder.Default
+    private ExecutionStatus status = ExecutionStatus.PENDING;
 
     @Column(name = "started_at")
     private Instant startedAt;

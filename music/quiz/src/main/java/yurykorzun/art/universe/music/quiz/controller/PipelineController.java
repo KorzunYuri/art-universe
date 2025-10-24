@@ -60,6 +60,7 @@ public class PipelineController {
     @PostMapping("/pipeline/{pipelineId}/steps/{stepId}/execute")
     public PipelineDto executeStep(@PathVariable Long pipelineId, @PathVariable Long stepId) {
         log.info("Executing step {} in pipeline {}", stepId, pipelineId);
-        return pipelineService.executeStep(pipelineId, stepId);
+        pipelineService.executeStep(pipelineId, stepId);
+        return pipelineService.getPipeline(pipelineId);
     }
 }

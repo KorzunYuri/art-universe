@@ -2,6 +2,8 @@ package yurykorzun.art.universe.music.quiz.service;
 
 import yurykorzun.art.universe.music.quiz.dto.PipelineDto;
 import yurykorzun.art.universe.music.quiz.dto.PipelineStepDto;
+import yurykorzun.art.universe.music.quiz.entity.PipelineRun;
+import yurykorzun.art.universe.music.quiz.entity.StepRun;
 
 public interface PipelineService {
     
@@ -19,9 +21,9 @@ public interface PipelineService {
     
     String getStepPreview(Long stepId);
     
-    PipelineDto executeStep(Long pipelineId, Long stepId);
+    StepRun executeStep(Long pipelineId, Long stepId);
     
-    String executePipeline(Long pipelineId, Long pipelineRunId);
+    PipelineRun executePipeline(Long pipelineId, Long pipelineRunId);
     
     void validatePipelineForGeneration(Long pipelineId);
 }

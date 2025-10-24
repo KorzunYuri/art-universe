@@ -14,6 +14,7 @@ import yurykorzun.art.universe.music.quiz.service.PipelineService;
 import yurykorzun.art.universe.music.quiz.service.step.GenerationStepProcessor;
 import yurykorzun.art.universe.music.quiz.service.step.GenerationStepProcessorRegistry;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -201,7 +202,7 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     @Transactional
-    public PipelineDto executeStep(Long pipelineId, Long stepId) {
+    public StepRun executeStep(Long pipelineId, Long stepId) {
         log.debug("Executing step {} in pipeline {}", stepId, pipelineId);
         
         Pipeline pipeline = getPipelineById(pipelineId);
@@ -224,9 +225,7 @@ public class PipelineServiceImpl implements PipelineService {
         clearSubsequentStepResults(pipeline.getId(), minPosition);
         
         // Execute steps from minPosition to targetPosition
-        executeStepsInRange(pipelineSteps, minPosition, targetPosition);
-        
-        return getPipeline(pipelineId);
+        return executeStepsInRange(pipelineSteps, minPosition, targetPosition);
     }
 
     @Override
@@ -309,29 +308,50 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     @Transactional
-    public String executePipeline(Long pipelineId, Long pipelineRunId) {
+    public PipelineRun executePipeline(Long pipelineId, Long pipelineRunId) {
         log.debug("Executing pipeline {} with run {}", pipelineId, pipelineRunId);
+        
+        PipelineRun pipelineRun = pipelineRunRepository.findById(pipelineRunId)
+            .orElseThrow(() -> new IllegalArgumentException("Pipeline run not found: " + pipelineRunId));
         
         List<PipelineStep> pipelineSteps = pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId);
         if (pipelineSteps.isEmpty()) {
             throw new IllegalArgumentException("Pipeline has no steps");
         }
         
-        String currentTable = "mu_view.v_track";
+        pipelineRun.setStatus(ExecutionStatus.STARTED);
+        pipelineRun.setStartedAt(Instant.now());
+        pipelineRunRepository.save(pipelineRun);
         
-        for (PipelineStep pipelineStep : pipelineSteps) {
-            Step step = stepRepository.findById(pipelineStep.getStepId())
-                .orElseThrow(() -> new IllegalArgumentException("Step not found: " + pipelineStep.getStepId()));
+        try {
+            String currentTable = "mu_view.v_track";
             
-            GenerationStepProcessor processor = GenerationStepProcessorRegistry.get(step.getType());
-            currentTable = processor.process(step, currentTable, pipelineRunId);
+            for (PipelineStep pipelineStep : pipelineSteps) {
+                Step step = stepRepository.findById(pipelineStep.getStepId())
+                    .orElseThrow(() -> new IllegalArgumentException("Step not found: " + pipelineStep.getStepId()));
+                
+                GenerationStepProcessor processor = GenerationStepProcessorRegistry.get(step.getType());
+                currentTable = processor.process(step, currentTable, pipelineRunId);
+            }
+            
+            pipelineRun.setStatus(ExecutionStatus.COMPLETED);
+            pipelineRun.setCompletedAt(Instant.now());
+            pipelineRun.setResultTableName(currentTable);
+            
+        } catch (Exception e) {
+            pipelineRun.setStatus(ExecutionStatus.FAILED);
+            pipelineRun.setCompletedAt(Instant.now());
+            throw new RuntimeException("Pipeline execution failed", e);
+        } finally {
+            pipelineRunRepository.save(pipelineRun);
         }
         
-        return currentTable;
+        return pipelineRun;
     }
 
-    private void executeStepsInRange(List<PipelineStep> pipelineSteps, Integer fromPosition, Integer toPosition) {
+    private StepRun executeStepsInRange(List<PipelineStep> pipelineSteps, Integer fromPosition, Integer toPosition) {
         String currentTable = "mu_view.v_track";
+        StepRun lastStepRun = null;
         
         for (PipelineStep pipelineStep : pipelineSteps) {
             if (pipelineStep.getOrd() < fromPosition || pipelineStep.getOrd() > toPosition) {
@@ -360,7 +380,15 @@ public class PipelineServiceImpl implements PipelineService {
             
             GenerationStepProcessor processor = GenerationStepProcessorRegistry.get(step.getType());
             currentTable = processor.process(step, currentTable, null); // null = not pipeline run
+            
+            // Get the last step run for return
+            if (step.getLastStepRunId() != null) {
+                lastStepRun = stepRunRepository.findById(step.getLastStepRunId())
+                    .orElse(null);
+            }
         }
+        
+        return lastStepRun;
     }
 
     private PipelineDto mapToDto(Pipeline pipeline, List<PipelineStepDto> steps) {
