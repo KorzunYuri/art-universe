@@ -26,13 +26,11 @@ public class TrackRecencyPenaltyProcessor extends BaseGenerationStepProcessor {
     }
 
     @Override
-    protected String processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun) {
+    protected void processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun) {
         entityManager.createNativeQuery(
             "SELECT p_quiz_gen_tracks_step_track_recency_penalty(:inputTable, :outputTable)")
             .setParameter("inputTable", inputTableName)
             .setParameter("outputTable", outputTableName)
             .executeUpdate();
-        
-        return "{}"; // Empty stats, will be calculated separately
     }
 }

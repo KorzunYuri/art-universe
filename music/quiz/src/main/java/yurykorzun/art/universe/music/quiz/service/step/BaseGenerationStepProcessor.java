@@ -1,6 +1,10 @@
 package yurykorzun.art.universe.music.quiz.service.step;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.lang.Nullable;
+import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
+import yurykorzun.art.universe.music.quiz.dto.step.stats.BasicStepStats;
+import yurykorzun.art.universe.music.quiz.dto.step.stats.StepRunStats;
 import yurykorzun.art.universe.music.quiz.entity.ExecutionStatus;
 import yurykorzun.art.universe.music.quiz.entity.Step;
 import yurykorzun.art.universe.music.quiz.entity.StepRun;
@@ -9,6 +13,8 @@ import yurykorzun.art.universe.music.quiz.repository.StepMetadataProjection;
 import yurykorzun.art.universe.music.quiz.repository.StepRepository;
 import yurykorzun.art.universe.music.quiz.repository.StepRunRepository;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,6 +25,9 @@ public abstract class BaseGenerationStepProcessor implements GenerationStepProce
     private final StepType stepType;
     private final StepRunRepository stepRunRepository;
     private final StepRepository stepRepository;
+    
+    @PersistenceContext
+    protected EntityManager entityManager;
     
     // Cache for output table names with simple LRU behavior
     private static final ConcurrentMap<Long, String> outputTableCache = new ConcurrentHashMap<>();
@@ -42,13 +51,14 @@ public abstract class BaseGenerationStepProcessor implements GenerationStepProce
     }
     
     /**
-     * Processes a step and returns the output table name.
-     * During execution, the Step entity will be saved and its lastStepRunId may be updated.
+     * Processes a step and returns the result with statistics.
      */
     @Override
-    public String process(Step step, String inputTableName, @Nullable Long pipelineRunId) {
+    public StepRunResult process(Step step, String inputTableName, @Nullable Long pipelineRunId) {
         validateStep(step);
-        validateInputTable(inputTableName);
+        if (inputTableName != null) {
+            validateInputTable(inputTableName);
+        }
         
         // Create StepRun
         StepRun stepRun = StepRun.builder()
@@ -57,6 +67,7 @@ public abstract class BaseGenerationStepProcessor implements GenerationStepProce
             .stepType(step.getType())
             .algVersion(step.getAlgVersion())
             .stepCfgData(step.getCfgData())
+            .inputTableName(inputTableName)
             .status(ExecutionStatus.PENDING)
             .build();
         
@@ -73,20 +84,31 @@ public abstract class BaseGenerationStepProcessor implements GenerationStepProce
         stepRunRepository.save(savedStepRun);
         
         try {
-            // Call actual step processing procedure
-            String resultStats = processStep(step, inputTableName, outputTableName, savedStepRun);
+            // Measure execution time
+            long startTime = System.currentTimeMillis();
             
-            // Mark as completed with result stats
+            // Call actual step processing procedure
+            processStep(step, inputTableName, outputTableName, savedStepRun);
+            
+            long executionTime = System.currentTimeMillis() - startTime;
+            
+            // Calculate statistics
+            StepRunStats stats = getResultStats(savedStepRun);
+            stats.setExecutionTimeMs(executionTime);
+            
+            // Mark as completed
             savedStepRun.setStatus(ExecutionStatus.COMPLETED);
             savedStepRun.setCompletedAt(Instant.now());
-            savedStepRun.setResultStats(resultStats);
             stepRunRepository.save(savedStepRun);
             
             // Update step's lastStepRunId
             step.setLastStepRunId(savedStepRun.getId());
             stepRepository.save(step);
             
-            return outputTableName;
+            return StepRunResult.builder()
+                .outputTableName(outputTableName)
+                .resultStats(stats)
+                .build();
             
         } catch (Exception e) {
             savedStepRun.setStatus(ExecutionStatus.FAILED);
@@ -112,10 +134,54 @@ public abstract class BaseGenerationStepProcessor implements GenerationStepProce
         return "{}";
     }
 
+    @Override
+    public StepRunStats getResultStats(StepRun stepRun) {
+        BasicStepStats stats = new BasicStepStats();
+        
+        String inputTableName = stepRun.getInputTableName();
+        String outputTableName = stepRun.getResultTableName();
+        
+        // For START_DATASOURCE, copy output stats to input stats
+        if (inputTableName == null) {
+            Long outputRecords = getRecordCount(outputTableName);
+            Long outputArtists = getArtistCount(outputTableName);
+            
+            stats.setInputRecords(outputRecords);
+            stats.setInputArtists(outputArtists);
+            stats.setFilteredRecords(0L);
+            stats.setFilteredArtists(0L);
+            stats.setOutputRecords(outputRecords);
+            stats.setOutputArtists(outputArtists);
+        } else {
+            Long inputRecords = getRecordCount(inputTableName);
+            Long inputArtists = getArtistCount(inputTableName);
+            Long outputRecords = getRecordCount(outputTableName);
+            Long outputArtists = getArtistCount(outputTableName);
+            
+            stats.setInputRecords(inputRecords);
+            stats.setInputArtists(inputArtists);
+            stats.setFilteredRecords(inputRecords - outputRecords);
+            stats.setFilteredArtists(inputArtists - outputArtists);
+            stats.setOutputRecords(outputRecords);
+            stats.setOutputArtists(outputArtists);
+        }
+        
+        return stats;
+    }
     
     protected abstract String getStepSuffix();
     
-    protected abstract String processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun);
+    protected abstract void processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun);
+    
+    protected Long getRecordCount(String tableName) {
+        return ((Number) entityManager.createNativeQuery("SELECT COUNT(*) FROM " + tableName)
+            .getSingleResult()).longValue();
+    }
+    
+    protected Long getArtistCount(String tableName) {
+        return ((Number) entityManager.createNativeQuery("SELECT COUNT(DISTINCT primary_artist_id) FROM " + tableName)
+            .getSingleResult()).longValue();
+    }
     
     private void validateStep(Step step) {
         if (step == null) {
@@ -167,7 +233,6 @@ public abstract class BaseGenerationStepProcessor implements GenerationStepProce
 
         return "mu_quiz_stg." + tableName;
     }
-
 
     protected String generateAuxiliaryTableName(Step step, StepRun stepRun, String suffix) {
         String baseTableName = outputTableCache.get(stepRun.getId());

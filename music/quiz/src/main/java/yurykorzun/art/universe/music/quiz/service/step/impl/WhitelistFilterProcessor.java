@@ -7,6 +7,8 @@ import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.common.persistence.util.DatabaseUtils;
 import yurykorzun.art.universe.music.quiz.dto.step.config.CategoryWeight;
 import yurykorzun.art.universe.music.quiz.dto.step.config.WhitelistFilterStepConfig;
+import yurykorzun.art.universe.music.quiz.dto.step.stats.StepRunStats;
+import yurykorzun.art.universe.music.quiz.dto.step.stats.WhitelistFilterStats;
 import yurykorzun.art.universe.music.quiz.entity.Step;
 import yurykorzun.art.universe.music.quiz.entity.StepRun;
 import yurykorzun.art.universe.music.quiz.entity.StepType;
@@ -14,7 +16,9 @@ import yurykorzun.art.universe.music.quiz.repository.StepRepository;
 import yurykorzun.art.universe.music.quiz.repository.StepRunRepository;
 import yurykorzun.art.universe.music.quiz.service.step.BaseGenerationStepProcessor;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class WhitelistFilterProcessor extends BaseGenerationStepProcessor {
@@ -46,8 +50,9 @@ public class WhitelistFilterProcessor extends BaseGenerationStepProcessor {
     protected String getStepSuffix() {
         return "whitelist";
     }
+    
     @Override
-    protected String processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun) {
+    protected void processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun) {
         try {
             WhitelistFilterStepConfig config = parseConfig(step.getCfgData());
             List<CategoryWeight> weights = config.getCategories();
@@ -81,10 +86,90 @@ public class WhitelistFilterProcessor extends BaseGenerationStepProcessor {
                 .setParameter("outputTable", outputTableName)
                 .setParameter("whitelistTable", whitelistTable)
                 .executeUpdate();
-                
-            return "{}"; // Empty stats, will be calculated separately
         } catch (Exception e) {
             throw new RuntimeException("Failed to process whitelist filter step", e);
         }
+    }
+
+    @Override
+    public StepRunStats getResultStats(StepRun stepRun) {
+        WhitelistFilterStats stats = new WhitelistFilterStats();
+        
+        String inputTableName = stepRun.getInputTableName();
+        String outputTableName = stepRun.getResultTableName();
+        
+        // Fill basic stats
+        if (inputTableName == null) {
+            Long outputRecords = getRecordCount(outputTableName);
+            Long outputArtists = getArtistCount(outputTableName);
+            
+            stats.setInputRecords(outputRecords);
+            stats.setInputArtists(outputArtists);
+            stats.setFilteredRecords(0L);
+            stats.setFilteredArtists(0L);
+            stats.setOutputRecords(outputRecords);
+            stats.setOutputArtists(outputArtists);
+        } else {
+            Long inputRecords = getRecordCount(inputTableName);
+            Long inputArtists = getArtistCount(inputTableName);
+            Long outputRecords = getRecordCount(outputTableName);
+            Long outputArtists = getArtistCount(outputTableName);
+            
+            stats.setInputRecords(inputRecords);
+            stats.setInputArtists(inputArtists);
+            stats.setFilteredRecords(inputRecords - outputRecords);
+            stats.setFilteredArtists(inputArtists - outputArtists);
+            stats.setOutputRecords(outputRecords);
+            stats.setOutputArtists(outputArtists);
+        }
+        
+        // Calculate output records and artists by category
+        try {
+            WhitelistFilterStepConfig config = parseConfig(stepRun.getStepCfgData());
+            Map<Long, Long> recordsByCategory = new HashMap<>();
+            Map<Long, Long> artistsByCategory = new HashMap<>();
+            
+            if (config.getCategories() != null) {
+                for (CategoryWeight categoryWeight : config.getCategories()) {
+                    Long categoryId = categoryWeight.id();
+                    
+                    // Count tracks in this category
+                    @SuppressWarnings("unchecked")
+                    List<Object[]> trackResult = entityManager.createNativeQuery("""
+                        SELECT COUNT(*)
+                        FROM %s o
+                        JOIN mu_view.v_artist_category ac ON o.primary_artist_id = ac.artist_id
+                        WHERE ac.category_id = :categoryId
+                    """.formatted(outputTableName))
+                        .setParameter("categoryId", categoryId)
+                        .getResultList();
+                    
+                    Long trackCount = ((Number) trackResult.get(0)[0]).longValue();
+                    recordsByCategory.put(categoryId, trackCount);
+                    
+                    // Count artists in this category
+                    @SuppressWarnings("unchecked")
+                    List<Object[]> artistResult = entityManager.createNativeQuery("""
+                        SELECT COUNT(DISTINCT o.primary_artist_id)
+                        FROM %s o
+                        JOIN mu_view.v_artist_category ac ON o.primary_artist_id = ac.artist_id
+                        WHERE ac.category_id = :categoryId
+                    """.formatted(outputTableName))
+                        .setParameter("categoryId", categoryId)
+                        .getResultList();
+                    
+                    Long artistCount = ((Number) artistResult.get(0)[0]).longValue();
+                    artistsByCategory.put(categoryId, artistCount);
+                }
+            }
+            
+            stats.setOutputRecordsByCategory(recordsByCategory);
+            stats.setOutputArtistsByCategory(artistsByCategory);
+        } catch (Exception e) {
+            stats.setOutputRecordsByCategory(new HashMap<>());
+            stats.setOutputArtistsByCategory(new HashMap<>());
+        }
+        
+        return stats;
     }
 }

@@ -44,7 +44,7 @@ public class FinalSelectionProcessor extends BaseGenerationStepProcessor {
     }
 
     @Override
-    protected String processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun) {
+    protected void processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun) {
         try {
             FinalSelectionStepConfig config = parseConfig(step.getCfgData());
             
@@ -54,8 +54,6 @@ public class FinalSelectionProcessor extends BaseGenerationStepProcessor {
                 .setParameter("outputTable", outputTableName)
                 .setParameter("targetCount", config.getTargetCount())
                 .executeUpdate();
-                
-            return "{}"; // Empty stats, will be calculated separately
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse step configuration", e);
         }

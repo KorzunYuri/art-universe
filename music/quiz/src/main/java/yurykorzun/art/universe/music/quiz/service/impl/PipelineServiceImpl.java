@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.music.quiz.dto.PipelineDto;
 import yurykorzun.art.universe.music.quiz.dto.PipelineStepDto;
+import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
 import yurykorzun.art.universe.music.quiz.entity.*;
 import yurykorzun.art.universe.music.quiz.repository.*;
 import yurykorzun.art.universe.music.quiz.service.PipelineService;
@@ -325,7 +326,8 @@ public class PipelineServiceImpl implements PipelineService {
                     .orElseThrow(() -> new IllegalArgumentException("Step not found: " + pipelineStep.getStepId()));
                 
                 GenerationStepProcessor processor = GenerationStepProcessorRegistry.get(step.getType());
-                currentTable = processor.process(step, currentTable, pipelineRunId);
+                StepRunResult result = processor.process(step, currentTable, pipelineRunId);
+                currentTable = result.getOutputTableName();
             }
             
             pipelineRun.setStatus(ExecutionStatus.COMPLETED);
@@ -373,7 +375,8 @@ public class PipelineServiceImpl implements PipelineService {
                 .orElseThrow(() -> new IllegalArgumentException("Step not found: " + pipelineStep.getStepId()));
             
             GenerationStepProcessor processor = GenerationStepProcessorRegistry.get(step.getType());
-            currentTable = processor.process(step, currentTable, null); // null = not pipeline run
+            StepRunResult result = processor.process(step, currentTable, null); // null = not pipeline run
+            currentTable = result.getOutputTableName();
             
             // Get the last step run for return
             if (step.getLastStepRunId() != null) {

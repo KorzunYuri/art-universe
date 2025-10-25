@@ -9,6 +9,7 @@ CREATE TABLE mu_quiz.step_run (
     status INTEGER NOT NULL,
     started_at TIMESTAMP WITH TIME ZONE,
     completed_at TIMESTAMP WITH TIME ZONE,
+    input_table_name VARCHAR(255),
     result_table_name VARCHAR(255),
     result_stats JSONB,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,

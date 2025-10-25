@@ -11,13 +11,13 @@ import java.util.List;
 public class FinalCategoriesBalancerConfig extends StepConfig {
 
     private final Integer targetCount;
-    private final List<CategoryWeight> categories;
     private final Double defaultQuota;
+    private final List<CategoryWeight> categories;
     
-    public FinalCategoriesBalancerConfig(Integer targetCount, List<CategoryWeight> categories, Double defaultQuota) {
+    public FinalCategoriesBalancerConfig(Integer targetCount, Double defaultQuota, List<CategoryWeight> categories) {
         this.targetCount = targetCount;
-        this.categories = categories;
         this.defaultQuota = defaultQuota;
+        this.categories = categories;
     }
 
     @Override

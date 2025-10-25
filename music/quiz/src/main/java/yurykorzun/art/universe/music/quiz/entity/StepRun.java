@@ -53,6 +53,9 @@ public class StepRun extends BaseEntity {
     @Column(name = "result_table_name")
     private String resultTableName;
 
+    @Column(name = "input_table_name")
+    private String inputTableName;
+
     @Column(name = "result_stats", columnDefinition = "jsonb")
     private String resultStats;
 }

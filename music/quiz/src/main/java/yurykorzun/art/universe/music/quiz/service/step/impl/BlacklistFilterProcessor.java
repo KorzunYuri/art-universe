@@ -6,6 +6,8 @@ import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.common.persistence.util.DatabaseUtils;
 import yurykorzun.art.universe.music.quiz.dto.step.config.BlacklistFilterStepConfig;
+import yurykorzun.art.universe.music.quiz.dto.step.stats.BlacklistFilterStats;
+import yurykorzun.art.universe.music.quiz.dto.step.stats.StepRunStats;
 import yurykorzun.art.universe.music.quiz.entity.Step;
 import yurykorzun.art.universe.music.quiz.entity.StepRun;
 import yurykorzun.art.universe.music.quiz.entity.StepType;
@@ -13,7 +15,9 @@ import yurykorzun.art.universe.music.quiz.repository.StepRepository;
 import yurykorzun.art.universe.music.quiz.repository.StepRunRepository;
 import yurykorzun.art.universe.music.quiz.service.step.BaseGenerationStepProcessor;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class BlacklistFilterProcessor extends BaseGenerationStepProcessor {
@@ -47,7 +51,7 @@ public class BlacklistFilterProcessor extends BaseGenerationStepProcessor {
     }
 
     @Override
-    protected String processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun) {
+    protected void processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun) {
         try {
             BlacklistFilterStepConfig config = parseConfig(step.getCfgData());
             List<Long> categoryIds = config.getCategoryIds();
@@ -80,10 +84,73 @@ public class BlacklistFilterProcessor extends BaseGenerationStepProcessor {
                 .setParameter("outputTable", outputTableName)
                 .setParameter("blacklistTable", blacklistTable)
                 .executeUpdate();
-                
-            return "{}"; // Empty stats, will be calculated separately
         } catch (Exception e) {
             throw new RuntimeException("Failed to process blacklist filter step", e);
         }
+    }
+
+    @Override
+    public StepRunStats getResultStats(StepRun stepRun) {
+        BlacklistFilterStats stats = new BlacklistFilterStats();
+        
+        String inputTableName = stepRun.getInputTableName();
+        String outputTableName = stepRun.getResultTableName();
+        
+        // Fill basic stats
+        if (inputTableName == null) {
+            Long outputRecords = getRecordCount(outputTableName);
+            Long outputArtists = getArtistCount(outputTableName);
+            
+            stats.setInputRecords(outputRecords);
+            stats.setInputArtists(outputArtists);
+            stats.setFilteredRecords(0L);
+            stats.setFilteredArtists(0L);
+            stats.setOutputRecords(outputRecords);
+            stats.setOutputArtists(outputArtists);
+        } else {
+            Long inputRecords = getRecordCount(inputTableName);
+            Long inputArtists = getArtistCount(inputTableName);
+            Long outputRecords = getRecordCount(outputTableName);
+            Long outputArtists = getArtistCount(outputTableName);
+            
+            stats.setInputRecords(inputRecords);
+            stats.setInputArtists(inputArtists);
+            stats.setFilteredRecords(inputRecords - outputRecords);
+            stats.setFilteredArtists(inputArtists - outputArtists);
+            stats.setOutputRecords(outputRecords);
+            stats.setOutputArtists(outputArtists);
+        }
+        
+        // Calculate filtered records by category
+        try {
+            BlacklistFilterStepConfig config = parseConfig(stepRun.getStepCfgData());
+            Map<Long, Long> filteredByCategory = new HashMap<>();
+            
+            if (config.getCategoryIds() != null && inputTableName != null) {
+                for (Long categoryId : config.getCategoryIds()) {
+                    @SuppressWarnings("unchecked")
+                    List<Object[]> result = entityManager.createNativeQuery("""
+                        SELECT COUNT(*)
+                        FROM %s i
+                        JOIN mu_view.v_artist_category ac ON i.primary_artist_id = ac.artist_id
+                        WHERE ac.category_id = :categoryId
+                        AND NOT EXISTS (
+                            SELECT 1 FROM %s o WHERE o.track_id = i.track_id
+                        )
+                    """.formatted(inputTableName, outputTableName))
+                        .setParameter("categoryId", categoryId)
+                        .getResultList();
+                    
+                    Long filteredCount = ((Number) result.get(0)[0]).longValue();
+                    filteredByCategory.put(categoryId, filteredCount);
+                }
+            }
+            
+            stats.setFilteredRecordsByCategory(filteredByCategory);
+        } catch (Exception e) {
+            stats.setFilteredRecordsByCategory(new HashMap<>());
+        }
+        
+        return stats;
     }
 }

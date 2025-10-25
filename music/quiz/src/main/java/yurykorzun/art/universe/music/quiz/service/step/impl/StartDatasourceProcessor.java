@@ -22,7 +22,10 @@ public class StartDatasourceProcessor extends BaseGenerationStepProcessor {
     }
 
     @Override
-    protected String processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun) {
-        return StartDatasourceStepConfig.DEFAULT_DATASOURCE;
+    protected void processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun) {
+        // For START_DATASOURCE, we just copy from the default datasource
+        entityManager.createNativeQuery(
+            "CREATE TABLE " + outputTableName + " AS SELECT * FROM " + StartDatasourceStepConfig.DEFAULT_DATASOURCE)
+            .executeUpdate();
     }
 }
