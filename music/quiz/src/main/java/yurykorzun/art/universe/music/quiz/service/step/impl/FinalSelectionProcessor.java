@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Component;
+import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
 import yurykorzun.art.universe.music.quiz.entity.Step;
 import yurykorzun.art.universe.music.quiz.entity.StepRun;
 import yurykorzun.art.universe.music.quiz.entity.StepType;
@@ -44,7 +45,7 @@ public class FinalSelectionProcessor extends BaseGenerationStepProcessor {
     }
 
     @Override
-    protected void processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun) {
+    protected StepRunResult processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun) {
         try {
             FinalSelectionStepConfig config = parseConfig(step.getCfgData());
             
@@ -54,6 +55,10 @@ public class FinalSelectionProcessor extends BaseGenerationStepProcessor {
                 .setParameter("outputTable", outputTableName)
                 .setParameter("targetCount", config.getTargetCount())
                 .executeUpdate();
+                
+            return StepRunResult.builder()
+                .outputTableName(outputTableName)
+                .build();
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse step configuration", e);
         }

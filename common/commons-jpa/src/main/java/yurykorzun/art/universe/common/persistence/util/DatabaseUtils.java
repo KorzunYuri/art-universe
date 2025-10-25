@@ -38,6 +38,35 @@ public class DatabaseUtils {
         entityManager.createNativeQuery(sql).executeUpdate();
     }
     
+    /**
+     * Checks if a table exists in the database
+     * @param entityManager JPA EntityManager
+     * @param fullTableName Table name in format "schema.table"
+     * @return true if table exists, false otherwise
+     */
+    public static boolean tableExists(EntityManager entityManager, String fullTableName) {
+        validateTableName(fullTableName);
+        
+        String[] parts = fullTableName.split("\\.");
+        if (parts.length != 2) {
+            throw new IllegalArgumentException("Table name must be in format 'schema.table', got: " + fullTableName);
+        }
+        
+        String schema = parts[0];
+        String table = parts[1];
+        
+        validateIdentifier(schema, "schema");
+        validateIdentifier(table, "table");
+        
+        Long count = (Long) entityManager.createNativeQuery(
+            "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = :schema AND table_name = :table")
+            .setParameter("schema", schema)
+            .setParameter("table", table)
+            .getSingleResult();
+        
+        return count > 0;
+    }
+    
     private static void validateTableName(String tableName) {
         if (tableName == null || tableName.trim().isEmpty()) {
             throw new IllegalArgumentException("Table name cannot be null or empty");

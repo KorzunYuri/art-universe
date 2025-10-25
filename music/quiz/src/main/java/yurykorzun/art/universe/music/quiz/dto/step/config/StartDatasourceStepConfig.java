@@ -10,6 +10,10 @@ public class StartDatasourceStepConfig extends StepConfig {
 
     public final static String DEFAULT_DATASOURCE = "mu_view.v_track";
 
+    public String getDatasource() {
+        return DEFAULT_DATASOURCE;
+    }
+
     @Override
     public StepType getType() {
         return StepType.START_DATASOURCE;

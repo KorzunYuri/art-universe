@@ -13,7 +13,7 @@ public interface GenerationStepProcessor {
     
     Integer getStepTypeVersion();
     
-    StepRunResult process(Step step, String inputTableName, @Nullable Long pipelineRunId);
+    StepRun process(Step step, String inputTableName, @Nullable Long pipelineRunId);
     
     void validateConfiguration(String cfgData);
     

@@ -5,6 +5,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.common.persistence.util.DatabaseUtils;
+import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
 import yurykorzun.art.universe.music.quiz.dto.step.config.CategoryWeight;
 import yurykorzun.art.universe.music.quiz.dto.step.config.FinalCategoriesBalancerConfig;
 import yurykorzun.art.universe.music.quiz.dto.step.stats.FinalCategoriesBalancerStats;
@@ -54,7 +55,7 @@ public class FinalCategoriesBalancerProcessor extends BaseGenerationStepProcesso
     }
 
     @Override
-    protected void processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun) {
+    protected StepRunResult processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun) {
         try {
             FinalCategoriesBalancerConfig config = parseConfig(step.getCfgData());
             Integer targetCount = config.getTargetCount();
@@ -95,6 +96,10 @@ public class FinalCategoriesBalancerProcessor extends BaseGenerationStepProcesso
                 .setParameter("targetCount", targetCount)
                 .setParameter("defaultQuota", defaultQuota)
                 .executeUpdate();
+                
+            return StepRunResult.builder()
+                .outputTableName(outputTableName)
+                .build();
         } catch (Exception e) {
             throw new RuntimeException("Failed to process categories balancer step", e);
         }
@@ -102,35 +107,10 @@ public class FinalCategoriesBalancerProcessor extends BaseGenerationStepProcesso
 
     @Override
     public StepRunStats getResultStats(StepRun stepRun) {
-        FinalCategoriesBalancerStats stats = new FinalCategoriesBalancerStats();
+        FinalCategoriesBalancerStats stats = (FinalCategoriesBalancerStats) super.getResultStats(stepRun);
         
         String inputTableName = stepRun.getInputTableName();
         String outputTableName = stepRun.getResultTableName();
-        
-        // Fill basic stats
-        if (inputTableName == null) {
-            Long outputRecords = getRecordCount(outputTableName);
-            Long outputArtists = getArtistCount(outputTableName);
-            
-            stats.setInputRecords(outputRecords);
-            stats.setInputArtists(outputArtists);
-            stats.setFilteredRecords(0L);
-            stats.setFilteredArtists(0L);
-            stats.setOutputRecords(outputRecords);
-            stats.setOutputArtists(outputArtists);
-        } else {
-            Long inputRecords = getRecordCount(inputTableName);
-            Long inputArtists = getArtistCount(inputTableName);
-            Long outputRecords = getRecordCount(outputTableName);
-            Long outputArtists = getArtistCount(outputTableName);
-            
-            stats.setInputRecords(inputRecords);
-            stats.setInputArtists(inputArtists);
-            stats.setFilteredRecords(inputRecords - outputRecords);
-            stats.setFilteredArtists(inputArtists - outputArtists);
-            stats.setOutputRecords(outputRecords);
-            stats.setOutputArtists(outputArtists);
-        }
         
         // Calculate output records and artists by category + default quota
         try {
@@ -142,7 +122,7 @@ public class FinalCategoriesBalancerProcessor extends BaseGenerationStepProcesso
                 config.getCategories().stream().map(CategoryWeight::id).collect(Collectors.toSet()) : 
                 Set.of();
             
-            if (config.getCategories() != null) {
+            if (config.getCategories() != null && DatabaseUtils.tableExists(entityManager, outputTableName)) {
                 for (CategoryWeight categoryWeight : config.getCategories()) {
                     Long categoryId = categoryWeight.id();
                     
@@ -177,30 +157,35 @@ public class FinalCategoriesBalancerProcessor extends BaseGenerationStepProcesso
             }
             
             // Calculate default quota (tracks/artists not in any configured category)
-            String categoryFilter = configuredCategoryIds.isEmpty() ? "1=1" : 
-                "ac.category_id NOT IN (" + configuredCategoryIds.stream().map(String::valueOf).collect(Collectors.joining(",")) + ")";
+            Long defaultQuotaRecords = 0L;
+            Long defaultQuotaArtists = 0L;
             
-            @SuppressWarnings("unchecked")
-            List<Object[]> defaultTrackResult = entityManager.createNativeQuery("""
-                SELECT COUNT(*)
-                FROM %s o
-                LEFT JOIN mu_view.v_artist_category ac ON o.primary_artist_id = ac.artist_id
-                WHERE ac.category_id IS NULL OR (%s)
-            """.formatted(outputTableName, categoryFilter))
-                .getResultList();
-            
-            Long defaultQuotaRecords = ((Number) defaultTrackResult.get(0)[0]).longValue();
-            
-            @SuppressWarnings("unchecked")
-            List<Object[]> defaultArtistResult = entityManager.createNativeQuery("""
-                SELECT COUNT(DISTINCT o.primary_artist_id)
-                FROM %s o
-                LEFT JOIN mu_view.v_artist_category ac ON o.primary_artist_id = ac.artist_id
-                WHERE ac.category_id IS NULL OR (%s)
-            """.formatted(outputTableName, categoryFilter))
-                .getResultList();
-            
-            Long defaultQuotaArtists = ((Number) defaultArtistResult.get(0)[0]).longValue();
+            if (DatabaseUtils.tableExists(entityManager, outputTableName)) {
+                String categoryFilter = configuredCategoryIds.isEmpty() ? "1=1" : 
+                    "ac.category_id NOT IN (" + configuredCategoryIds.stream().map(String::valueOf).collect(Collectors.joining(",")) + ")";
+                
+                @SuppressWarnings("unchecked")
+                List<Object[]> defaultTrackResult = entityManager.createNativeQuery("""
+                    SELECT COUNT(*)
+                    FROM %s o
+                    LEFT JOIN mu_view.v_artist_category ac ON o.primary_artist_id = ac.artist_id
+                    WHERE ac.category_id IS NULL OR (%s)
+                """.formatted(outputTableName, categoryFilter))
+                    .getResultList();
+                
+                defaultQuotaRecords = ((Number) defaultTrackResult.get(0)[0]).longValue();
+                
+                @SuppressWarnings("unchecked")
+                List<Object[]> defaultArtistResult = entityManager.createNativeQuery("""
+                    SELECT COUNT(DISTINCT o.primary_artist_id)
+                    FROM %s o
+                    LEFT JOIN mu_view.v_artist_category ac ON o.primary_artist_id = ac.artist_id
+                    WHERE ac.category_id IS NULL OR (%s)
+                """.formatted(outputTableName, categoryFilter))
+                    .getResultList();
+                
+                defaultQuotaArtists = ((Number) defaultArtistResult.get(0)[0]).longValue();
+            }
             
             stats.setOutputRecordsByCategory(recordsByCategory);
             stats.setOutputArtistsByCategory(artistsByCategory);

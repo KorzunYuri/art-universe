@@ -326,8 +326,8 @@ public class PipelineServiceImpl implements PipelineService {
                     .orElseThrow(() -> new IllegalArgumentException("Step not found: " + pipelineStep.getStepId()));
                 
                 GenerationStepProcessor processor = GenerationStepProcessorRegistry.get(step.getType());
-                StepRunResult result = processor.process(step, currentTable, pipelineRunId);
-                currentTable = result.getOutputTableName();
+                StepRun stepRun = processor.process(step, currentTable, pipelineRunId);
+                currentTable = stepRun.getResultTableName();
             }
             
             pipelineRun.setStatus(ExecutionStatus.COMPLETED);
@@ -375,14 +375,11 @@ public class PipelineServiceImpl implements PipelineService {
                 .orElseThrow(() -> new IllegalArgumentException("Step not found: " + pipelineStep.getStepId()));
             
             GenerationStepProcessor processor = GenerationStepProcessorRegistry.get(step.getType());
-            StepRunResult result = processor.process(step, currentTable, null); // null = not pipeline run
-            currentTable = result.getOutputTableName();
+            StepRun stepRun = processor.process(step, currentTable, null); // null = not pipeline run
+            currentTable = stepRun.getResultTableName();
             
             // Get the last step run for return
-            if (step.getLastStepRunId() != null) {
-                lastStepRun = stepRunRepository.findById(step.getLastStepRunId())
-                    .orElse(null);
-            }
+            lastStepRun = stepRun;
         }
         
         return lastStepRun;

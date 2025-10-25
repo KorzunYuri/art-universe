@@ -60,17 +60,15 @@ class BaseGenerationStepProcessorTest {
         when(stepRunRepository.save(any(StepRun.class))).thenReturn(stepRun);
         when(stepRepository.getStepMetadata(1L)).thenReturn(metadata);
         when(entityManager.createNativeQuery(anyString())).thenReturn(query);
-        when(query.executeUpdate()).thenReturn(1);
-        when(entityManager.createNativeQuery("SELECT COUNT(*) FROM mu_quiz_stg.sr_g1_p1_s1_sr1_start")).thenReturn(query);
         when(query.getSingleResult()).thenReturn(0L);
-        when(entityManager.createNativeQuery("SELECT COUNT(DISTINCT primary_artist_id) FROM mu_quiz_stg.sr_g1_p1_s1_sr1_start")).thenReturn(query);
 
         // when
-        StepRunResult result = processor.process(step, null, null);
+        StepRun result = processor.process(step, null, null);
 
         // then
         assertNotNull(result);
-        assertNotNull(result.getOutputTableName());
+        assertEquals(ExecutionStatus.COMPLETED, result.getStatus());
+        assertNotNull(result.getResultTableName());
         assertNotNull(result.getResultStats());
         verify(stepRunRepository, atLeast(2)).save(any(StepRun.class));
         verify(stepRepository).save(step);
@@ -218,17 +216,15 @@ class BaseGenerationStepProcessorTest {
         when(stepRunRepository.save(any(StepRun.class))).thenReturn(stepRun);
         when(stepRepository.getStepMetadata(1L)).thenReturn(metadata);
         when(entityManager.createNativeQuery(anyString())).thenReturn(query);
-        when(query.executeUpdate()).thenReturn(1);
         when(query.getSingleResult()).thenReturn(5L);
 
         // when
-        StepRunResult result = processor.process(step, "schema.table", null);
+        StepRun result = processor.process(step, "schema.table", null);
 
         // then
         assertNotNull(result);
-        assertNotNull(result.getOutputTableName());
+        assertEquals(ExecutionStatus.COMPLETED, result.getStatus());
+        assertNotNull(result.getResultTableName());
         assertNotNull(result.getResultStats());
-        assertEquals(5L, result.getResultStats().getInputRecords());
-        assertEquals(5L, result.getResultStats().getOutputRecords());
     }
 }

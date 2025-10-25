@@ -5,6 +5,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.common.persistence.util.DatabaseUtils;
+import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
 import yurykorzun.art.universe.music.quiz.dto.step.config.CategoryWeight;
 import yurykorzun.art.universe.music.quiz.dto.step.config.WhitelistFilterStepConfig;
 import yurykorzun.art.universe.music.quiz.dto.step.stats.StepRunStats;
@@ -52,7 +53,7 @@ public class WhitelistFilterProcessor extends BaseGenerationStepProcessor {
     }
     
     @Override
-    protected void processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun) {
+    protected StepRunResult processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun) {
         try {
             WhitelistFilterStepConfig config = parseConfig(step.getCfgData());
             List<CategoryWeight> weights = config.getCategories();
@@ -86,6 +87,10 @@ public class WhitelistFilterProcessor extends BaseGenerationStepProcessor {
                 .setParameter("outputTable", outputTableName)
                 .setParameter("whitelistTable", whitelistTable)
                 .executeUpdate();
+                
+            return StepRunResult.builder()
+                .outputTableName(outputTableName)
+                .build();
         } catch (Exception e) {
             throw new RuntimeException("Failed to process whitelist filter step", e);
         }
@@ -93,35 +98,10 @@ public class WhitelistFilterProcessor extends BaseGenerationStepProcessor {
 
     @Override
     public StepRunStats getResultStats(StepRun stepRun) {
-        WhitelistFilterStats stats = new WhitelistFilterStats();
+        WhitelistFilterStats stats = (WhitelistFilterStats) super.getResultStats(stepRun);
         
         String inputTableName = stepRun.getInputTableName();
         String outputTableName = stepRun.getResultTableName();
-        
-        // Fill basic stats
-        if (inputTableName == null) {
-            Long outputRecords = getRecordCount(outputTableName);
-            Long outputArtists = getArtistCount(outputTableName);
-            
-            stats.setInputRecords(outputRecords);
-            stats.setInputArtists(outputArtists);
-            stats.setFilteredRecords(0L);
-            stats.setFilteredArtists(0L);
-            stats.setOutputRecords(outputRecords);
-            stats.setOutputArtists(outputArtists);
-        } else {
-            Long inputRecords = getRecordCount(inputTableName);
-            Long inputArtists = getArtistCount(inputTableName);
-            Long outputRecords = getRecordCount(outputTableName);
-            Long outputArtists = getArtistCount(outputTableName);
-            
-            stats.setInputRecords(inputRecords);
-            stats.setInputArtists(inputArtists);
-            stats.setFilteredRecords(inputRecords - outputRecords);
-            stats.setFilteredArtists(inputArtists - outputArtists);
-            stats.setOutputRecords(outputRecords);
-            stats.setOutputArtists(outputArtists);
-        }
         
         // Calculate output records and artists by category
         try {
@@ -129,7 +109,7 @@ public class WhitelistFilterProcessor extends BaseGenerationStepProcessor {
             Map<Long, Long> recordsByCategory = new HashMap<>();
             Map<Long, Long> artistsByCategory = new HashMap<>();
             
-            if (config.getCategories() != null) {
+            if (config.getCategories() != null && DatabaseUtils.tableExists(entityManager, outputTableName)) {
                 for (CategoryWeight categoryWeight : config.getCategories()) {
                     Long categoryId = categoryWeight.id();
                     
