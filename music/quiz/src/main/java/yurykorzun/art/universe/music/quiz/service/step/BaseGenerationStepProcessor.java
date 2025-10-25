@@ -100,17 +100,18 @@ public abstract class BaseGenerationStepProcessor implements GenerationStepProce
     public void validateConfiguration(String cfgData) {
         // override for processors that have configurations
     }
-    
-    @Override
-    public String getPreview(String cfgData) {
-        return "{}";
-    }
-    
+
     @Override
     public String migrateConfiguration(String cfgData, Integer fromVersion, Integer toVersion) {
         // backward compatibility is assumed by default
         return cfgData;
     }
+    
+    @Override
+    public String getPreview(String cfgData) {
+        return "{}";
+    }
+
     
     protected abstract String getStepSuffix();
     

@@ -31,6 +31,19 @@ public class FinalCategoriesBalancerProcessor extends BaseGenerationStepProcesso
     }
 
     @Override
+    public void validateConfiguration(String cfgData) {
+        parseConfig(cfgData);
+    }
+    
+    private FinalCategoriesBalancerConfig parseConfig(String cfgData) {
+        try {
+            return objectMapper.readValue(cfgData, FinalCategoriesBalancerConfig.class);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid configuration for categories balancer step", e);
+        }
+    }
+
+    @Override
     protected String getStepSuffix() {
         return "balancer";
     }
@@ -38,7 +51,7 @@ public class FinalCategoriesBalancerProcessor extends BaseGenerationStepProcesso
     @Override
     protected String processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun) {
         try {
-            FinalCategoriesBalancerConfig config = objectMapper.readValue(step.getCfgData(), FinalCategoriesBalancerConfig.class);
+            FinalCategoriesBalancerConfig config = parseConfig(step.getCfgData());
             Integer targetCount = config.getTargetCount();
             Double defaultQuota = config.getDefaultQuota();
             List<CategoryWeight> categories = config.getCategories();

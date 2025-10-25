@@ -30,14 +30,26 @@ public class WhitelistFilterProcessor extends BaseGenerationStepProcessor {
     }
 
     @Override
-    protected String getStepSuffix() {
-        return "whitelist";
+    public void validateConfiguration(String cfgData) {
+        parseConfig(cfgData);
+    }
+    
+    private WhitelistFilterStepConfig parseConfig(String cfgData) {
+        try {
+            return objectMapper.readValue(cfgData, WhitelistFilterStepConfig.class);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid configuration for whitelist filter step", e);
+        }
     }
 
     @Override
+    protected String getStepSuffix() {
+        return "whitelist";
+    }
+    @Override
     protected String processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun) {
         try {
-            WhitelistFilterStepConfig config = objectMapper.readValue(step.getCfgData(), WhitelistFilterStepConfig.class);
+            WhitelistFilterStepConfig config = parseConfig(step.getCfgData());
             List<CategoryWeight> weights = config.getCategories();
             
             // Create auxiliary whitelist table

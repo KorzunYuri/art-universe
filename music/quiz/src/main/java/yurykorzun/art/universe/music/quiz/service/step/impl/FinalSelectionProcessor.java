@@ -26,6 +26,19 @@ public class FinalSelectionProcessor extends BaseGenerationStepProcessor {
     }
 
     @Override
+    public void validateConfiguration(String cfgData) {
+        parseConfig(cfgData);
+    }
+    
+    private FinalSelectionStepConfig parseConfig(String cfgData) {
+        try {
+            return objectMapper.readValue(cfgData, FinalSelectionStepConfig.class);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid configuration for final selection step", e);
+        }
+    }
+
+    @Override
     protected String getStepSuffix() {
         return "final";
     }
@@ -33,7 +46,7 @@ public class FinalSelectionProcessor extends BaseGenerationStepProcessor {
     @Override
     protected String processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun) {
         try {
-            FinalSelectionStepConfig config = objectMapper.readValue(step.getCfgData(), FinalSelectionStepConfig.class);
+            FinalSelectionStepConfig config = parseConfig(step.getCfgData());
             
             entityManager.createNativeQuery(
                 "SELECT p_quiz_gen_tracks_step_final_selection(:inputTable, :outputTable, :targetCount)")

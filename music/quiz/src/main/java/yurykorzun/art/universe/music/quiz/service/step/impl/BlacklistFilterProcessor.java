@@ -29,6 +29,19 @@ public class BlacklistFilterProcessor extends BaseGenerationStepProcessor {
     }
 
     @Override
+    public void validateConfiguration(String cfgData) {
+        parseConfig(cfgData);
+    }
+    
+    private BlacklistFilterStepConfig parseConfig(String cfgData) {
+        try {
+            return objectMapper.readValue(cfgData, BlacklistFilterStepConfig.class);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid configuration for blacklist filter step", e);
+        }
+    }
+
+    @Override
     protected String getStepSuffix() {
         return "blacklist";
     }
@@ -36,7 +49,7 @@ public class BlacklistFilterProcessor extends BaseGenerationStepProcessor {
     @Override
     protected String processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun) {
         try {
-            BlacklistFilterStepConfig config = objectMapper.readValue(step.getCfgData(), BlacklistFilterStepConfig.class);
+            BlacklistFilterStepConfig config = parseConfig(step.getCfgData());
             List<Long> categoryIds = config.getCategoryIds();
             
             // Create auxiliary blacklist table
