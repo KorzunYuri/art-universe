@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Component;
+import yurykorzun.art.universe.common.persistence.util.DatabaseUtils;
 import yurykorzun.art.universe.music.quiz.dto.step.config.CategoryWeight;
 import yurykorzun.art.universe.music.quiz.dto.step.config.WhitelistFilterStepConfig;
 import yurykorzun.art.universe.music.quiz.entity.Step;
@@ -14,7 +15,6 @@ import yurykorzun.art.universe.music.quiz.repository.StepRunRepository;
 import yurykorzun.art.universe.music.quiz.service.step.BaseGenerationStepProcessor;
 
 import java.util.List;
-import java.util.Map;
 
 @Component
 public class WhitelistFilterProcessor extends BaseGenerationStepProcessor {
@@ -35,18 +35,20 @@ public class WhitelistFilterProcessor extends BaseGenerationStepProcessor {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     protected String processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun) {
         try {
             WhitelistFilterStepConfig config = objectMapper.readValue(step.getCfgData(), WhitelistFilterStepConfig.class);
             List<CategoryWeight> weights = config.getCategories();
             
-            // Create temporary whitelist table
-            String whitelistTable = "mu_quiz_stg.temp_whitelist_" + stepRun.getId();
+            // Create auxiliary whitelist table
+            String whitelistTable = generateAuxiliaryTableName(step, stepRun, "weights");
+            
+            // Drop table if exists for idempotency
+            DatabaseUtils.dropTable(entityManager, whitelistTable);
             
             // Create and populate whitelist table
             entityManager.createNativeQuery(
-                "CREATE TEMP TABLE " + whitelistTable + " (category_id BIGINT, weight DOUBLE PRECISION)")
+                "CREATE TABLE " + whitelistTable + " (category_id BIGINT, weight DOUBLE PRECISION)")
                 .executeUpdate();
             
             if (weights != null && !weights.isEmpty()) {
@@ -61,12 +63,14 @@ public class WhitelistFilterProcessor extends BaseGenerationStepProcessor {
                     .executeUpdate();
             }
             
-            return (String) entityManager.createNativeQuery(
+            entityManager.createNativeQuery(
                 "SELECT p_quiz_gen_tracks_step_categories_whitelist_filter(:inputTable, :outputTable, :whitelistTable)")
                 .setParameter("inputTable", inputTableName)
                 .setParameter("outputTable", outputTableName)
                 .setParameter("whitelistTable", whitelistTable)
-                .getSingleResult();
+                .executeUpdate();
+                
+            return "{}"; // Empty stats, will be calculated separately
         } catch (Exception e) {
             throw new RuntimeException("Failed to process whitelist filter step", e);
         }

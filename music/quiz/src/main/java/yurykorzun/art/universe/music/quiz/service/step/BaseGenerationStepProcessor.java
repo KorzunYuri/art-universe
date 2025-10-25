@@ -10,12 +10,19 @@ import yurykorzun.art.universe.music.quiz.repository.StepRepository;
 import yurykorzun.art.universe.music.quiz.repository.StepRunRepository;
 
 import java.time.Instant;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public abstract class BaseGenerationStepProcessor implements GenerationStepProcessor {
     
     private final StepType stepType;
     private final StepRunRepository stepRunRepository;
     private final StepRepository stepRepository;
+    
+    // Cache for output table names with simple LRU behavior
+    private static final ConcurrentMap<Long, String> outputTableCache = new ConcurrentHashMap<>();
+    private static final int MAX_CACHE_SIZE = 1000;
     
     protected BaseGenerationStepProcessor(StepType stepType, StepRunRepository stepRunRepository, StepRepository stepRepository) {
         this.stepType = stepType;
@@ -55,8 +62,9 @@ public abstract class BaseGenerationStepProcessor implements GenerationStepProce
         
         StepRun savedStepRun = stepRunRepository.save(stepRun);
         
-        // Generate output table name
+        // Generate output table name and cache it
         String outputTableName = generateOutputTableName(step, savedStepRun, pipelineRunId);
+        cacheOutputTableName(savedStepRun.getId(), outputTableName);
         
         // Update status to STARTED
         savedStepRun.setStatus(ExecutionStatus.STARTED);
@@ -90,18 +98,17 @@ public abstract class BaseGenerationStepProcessor implements GenerationStepProce
     
     @Override
     public void validateConfiguration(String cfgData) {
-        // Default implementation - override if needed
+        // override for processors that have configurations
     }
     
     @Override
     public String getPreview(String cfgData) {
-        // Default implementation - override if needed
         return "{}";
     }
     
     @Override
     public String migrateConfiguration(String cfgData, Integer fromVersion, Integer toVersion) {
-        // Empty method for user implementation
+        // backward compatibility is assumed by default
         return cfgData;
     }
     
@@ -136,27 +143,54 @@ public abstract class BaseGenerationStepProcessor implements GenerationStepProce
         
         // Add prefix based on pipelineRunId
         if (pipelineRunId != null) {
-            tableName.append("P_");
+            tableName.append("pr_");
         } else {
-            tableName.append("S_");
+            tableName.append("sr_");
         }
         
         tableName.append("g").append(metadata.getGameId());
         tableName.append("_p").append(metadata.getPipelineId());
-        
+
         if (pipelineRunId != null) {
             tableName.append("_pr").append(pipelineRunId);
         }
-        
+
         tableName.append("_s").append(step.getId());
         tableName.append("_sr").append(stepRun.getId());
-        
+
         // Add step-specific suffix
         String suffix = getStepSuffix();
         if (suffix != null && !suffix.isEmpty()) {
             tableName.append("_").append(suffix);
         }
-        
-        return "mu_quiz_stg." + tableName.toString();
+
+        return "mu_quiz_stg." + tableName;
+    }
+
+
+    protected String generateAuxiliaryTableName(Step step, StepRun stepRun, String suffix) {
+        String baseTableName = outputTableCache.get(stepRun.getId());
+        if (baseTableName == null) {
+            baseTableName = generateOutputTableName(step, stepRun, stepRun.getPipelineRunId());
+            cacheOutputTableName(stepRun.getId(), baseTableName);
+        }
+
+        // Extract table name without schema
+        String[] parts = baseTableName.split("\\.");
+        String tableName = parts.length == 2 ? parts[1] : baseTableName;
+
+        return "mu_quiz_stg." + tableName + "_" + suffix;
+    }
+
+    private void cacheOutputTableName(Long stepRunId, String outputTableName) {
+        // Simple cache size management
+        if (outputTableCache.size() >= MAX_CACHE_SIZE) {
+            // Remove some entries (simple approach - remove first 100)
+            outputTableCache.entrySet().stream()
+                .limit(100)
+                .map(Map.Entry::getKey)
+                .forEach(outputTableCache::remove);
+        }
+        outputTableCache.put(stepRunId, outputTableName);
     }
 }

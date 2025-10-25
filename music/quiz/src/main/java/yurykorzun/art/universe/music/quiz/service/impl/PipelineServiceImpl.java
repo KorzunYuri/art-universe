@@ -284,8 +284,11 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     private void validateStepPosition(StepType stepType) {
-        // This method would validate that step type matches allowed position
-        // Implementation depends on business rules
+        StepPosition requiredPosition = getStepPosition(stepType);
+        if (requiredPosition == null) {
+            throw new IllegalArgumentException("Unknown step type: " + stepType);
+        }
+        // Position validation is enforced by the getStepPosition mapping
     }
 
     private StepPosition getStepPosition(StepType stepType) {

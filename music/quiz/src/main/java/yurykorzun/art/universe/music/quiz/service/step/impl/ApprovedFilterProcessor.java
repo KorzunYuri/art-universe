@@ -27,10 +27,12 @@ public class ApprovedFilterProcessor extends BaseGenerationStepProcessor {
 
     @Override
     protected String processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun) {
-        return (String) entityManager.createNativeQuery(
+        entityManager.createNativeQuery(
             "SELECT p_quiz_gen_tracks_step_approved_filter(:inputTable, :outputTable)")
             .setParameter("inputTable", inputTableName)
             .setParameter("outputTable", outputTableName)
-            .getSingleResult();
+            .executeUpdate();
+        
+        return "{}"; // Empty stats, will be calculated separately
     }
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Component;
+import yurykorzun.art.universe.common.persistence.util.DatabaseUtils;
 import yurykorzun.art.universe.music.quiz.dto.step.config.BlacklistFilterStepConfig;
 import yurykorzun.art.universe.music.quiz.entity.Step;
 import yurykorzun.art.universe.music.quiz.entity.StepRun;
@@ -13,7 +14,6 @@ import yurykorzun.art.universe.music.quiz.repository.StepRunRepository;
 import yurykorzun.art.universe.music.quiz.service.step.BaseGenerationStepProcessor;
 
 import java.util.List;
-import java.util.Map;
 
 @Component
 public class BlacklistFilterProcessor extends BaseGenerationStepProcessor {
@@ -39,12 +39,15 @@ public class BlacklistFilterProcessor extends BaseGenerationStepProcessor {
             BlacklistFilterStepConfig config = objectMapper.readValue(step.getCfgData(), BlacklistFilterStepConfig.class);
             List<Long> categoryIds = config.getCategoryIds();
             
-            // Create temporary blacklist table
-            String blacklistTable = "mu_quiz_stg.temp_blacklist_" + stepRun.getId();
+            // Create auxiliary blacklist table
+            String blacklistTable = generateAuxiliaryTableName(step, stepRun, "blacklist");
+            
+            // Drop table if exists for idempotency
+            DatabaseUtils.dropTable(entityManager, blacklistTable);
             
             // Create and populate blacklist table
             entityManager.createNativeQuery(
-                "CREATE TEMP TABLE " + blacklistTable + " (category_id BIGINT)")
+                "CREATE TABLE " + blacklistTable + " (category_id BIGINT)")
                 .executeUpdate();
             
             if (categoryIds != null && !categoryIds.isEmpty()) {
@@ -58,12 +61,14 @@ public class BlacklistFilterProcessor extends BaseGenerationStepProcessor {
                     .executeUpdate();
             }
             
-            return (String) entityManager.createNativeQuery(
+            entityManager.createNativeQuery(
                 "SELECT p_quiz_gen_tracks_step_categories_blacklist_filter(:inputTable, :outputTable, :blacklistTable)")
                 .setParameter("inputTable", inputTableName)
                 .setParameter("outputTable", outputTableName)
                 .setParameter("blacklistTable", blacklistTable)
-                .getSingleResult();
+                .executeUpdate();
+                
+            return "{}"; // Empty stats, will be calculated separately
         } catch (Exception e) {
             throw new RuntimeException("Failed to process blacklist filter step", e);
         }

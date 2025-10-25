@@ -35,12 +35,14 @@ public class FinalSelectionProcessor extends BaseGenerationStepProcessor {
         try {
             FinalSelectionStepConfig config = objectMapper.readValue(step.getCfgData(), FinalSelectionStepConfig.class);
             
-            return (String) entityManager.createNativeQuery(
+            entityManager.createNativeQuery(
                 "SELECT p_quiz_gen_tracks_step_final_selection(:inputTable, :outputTable, :targetCount)")
                 .setParameter("inputTable", inputTableName)
                 .setParameter("outputTable", outputTableName)
                 .setParameter("targetCount", config.getTargetCount())
-                .getSingleResult();
+                .executeUpdate();
+                
+            return "{}"; // Empty stats, will be calculated separately
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse step configuration", e);
         }

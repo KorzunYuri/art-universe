@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Component;
+import yurykorzun.art.universe.common.persistence.util.DatabaseUtils;
 import yurykorzun.art.universe.music.quiz.dto.step.config.CategoryWeight;
 import yurykorzun.art.universe.music.quiz.dto.step.config.FinalCategoriesBalancerConfig;
 import yurykorzun.art.universe.music.quiz.entity.Step;
@@ -42,12 +43,15 @@ public class FinalCategoriesBalancerProcessor extends BaseGenerationStepProcesso
             Double defaultQuota = config.getDefaultQuota();
             List<CategoryWeight> categories = config.getCategories();
 
-            // Create temporary quota table
-            String quotaTable = "mu_quiz_stg.temp_quota_" + stepRun.getId();
+            // Create auxiliary quota table
+            String quotaTable = generateAuxiliaryTableName(step, stepRun, "quotas");
+
+            // Drop table if exists for idempotency
+            DatabaseUtils.dropTable(entityManager, quotaTable);
 
             // Create and populate quota table
             entityManager.createNativeQuery(
-                "CREATE TEMP TABLE " + quotaTable + " (category_id BIGINT, weight DOUBLE PRECISION)")
+                "CREATE TABLE " + quotaTable + " (category_id BIGINT, weight DOUBLE PRECISION)")
                 .executeUpdate();
 
             if (categories != null && !categories.isEmpty()) {
@@ -65,14 +69,16 @@ public class FinalCategoriesBalancerProcessor extends BaseGenerationStepProcesso
                     .executeUpdate();
             }
 
-            return (String) entityManager.createNativeQuery(
+            entityManager.createNativeQuery(
                 "SELECT p_quiz_gen_tracks_step_final_categories_balancer(:inputTable, :outputTable, :quotaTable, :targetCount, :defaultQuota)")
                 .setParameter("inputTable", inputTableName)
                 .setParameter("outputTable", outputTableName)
                 .setParameter("quotaTable", quotaTable)
                 .setParameter("targetCount", targetCount)
                 .setParameter("defaultQuota", defaultQuota)
-                .getSingleResult();
+                .executeUpdate();
+                
+            return "{}"; // Empty stats, will be calculated separately
         } catch (Exception e) {
             throw new RuntimeException("Failed to process categories balancer step", e);
         }
