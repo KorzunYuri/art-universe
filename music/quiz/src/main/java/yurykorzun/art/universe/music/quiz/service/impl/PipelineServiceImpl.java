@@ -7,15 +7,16 @@ import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.music.quiz.dto.PipelineDto;
 import yurykorzun.art.universe.music.quiz.dto.PipelineStepDto;
 import yurykorzun.art.universe.music.quiz.entity.*;
-import yurykorzun.art.universe.music.quiz.entity.StepPosition;
-import yurykorzun.art.universe.music.quiz.entity.StepType;
 import yurykorzun.art.universe.music.quiz.repository.*;
 import yurykorzun.art.universe.music.quiz.service.PipelineService;
 import yurykorzun.art.universe.music.quiz.service.step.GenerationStepProcessor;
 import yurykorzun.art.universe.music.quiz.service.step.GenerationStepProcessorRegistry;
+import yurykorzun.art.universe.music.quiz.util.PipelineValidationUtil;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -48,7 +49,11 @@ public class PipelineServiceImpl implements PipelineService {
         log.debug("Adding step {} to pipeline {} at position {}", stepDto.getType(), pipelineId, position);
         
         Pipeline pipeline = getPipelineById(pipelineId);
-        validateStepPosition(stepDto.getType());
+        List<PipelineStep> pipelineSteps = pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId);
+        
+        // Get existing step types for validation
+        List<StepType> existingStepTypes = getStepTypes(pipelineSteps);
+        PipelineValidationUtil.validateStepPosition(stepDto.getType(), position, existingStepTypes);
         
         GenerationStepProcessor processor = GenerationStepProcessorRegistry.get(stepDto.getType());
         processor.validateConfiguration(stepDto.getCfgData());
@@ -92,6 +97,12 @@ public class PipelineServiceImpl implements PipelineService {
             .filter(ps -> ps.getStepId().equals(stepId))
             .findFirst()
             .orElseThrow(() -> new IllegalArgumentException("Step not found in pipeline"));
+        
+        Step step = stepRepository.findById(stepId)
+            .orElseThrow(() -> new IllegalArgumentException("Step not found"));
+        
+        List<StepType> allStepTypes = getStepTypes(pipelineSteps);
+        PipelineValidationUtil.validateStepPositionForMove(step.getType(), newPosition, allStepTypes);
         
         Integer oldPosition = movingStep.getOrd();
         
@@ -243,21 +254,7 @@ public class PipelineServiceImpl implements PipelineService {
         List<Long> stepIds = pipelineSteps.stream().map(PipelineStep::getStepId).toList();
         List<Step> steps = stepRepository.findAllById(stepIds);
         
-        long startSteps = steps.stream()
-            .filter(step -> getStepPosition(step.getType()) == StepPosition.START)
-            .count();
-        
-        long finalSteps = steps.stream()
-            .filter(step -> getStepPosition(step.getType()) == StepPosition.FINAL)
-            .count();
-        
-        if (startSteps != 1) {
-            throw new IllegalArgumentException("Pipeline must have exactly one START step");
-        }
-        
-        if (finalSteps != 1) {
-            throw new IllegalArgumentException("Pipeline must have exactly one FINAL step");
-        }
+        PipelineValidationUtil.validatePipelineForGeneration(steps);
     }
 
     @Override
@@ -283,21 +280,15 @@ public class PipelineServiceImpl implements PipelineService {
             .orElseThrow(() -> new IllegalArgumentException("Pipeline not found: " + pipelineId));
     }
 
-    private void validateStepPosition(StepType stepType) {
-        StepPosition requiredPosition = getStepPosition(stepType);
-        if (requiredPosition == null) {
-            throw new IllegalArgumentException("Unknown step type: " + stepType);
-        }
-        // Position validation is enforced by the getStepPosition mapping
-    }
-
-    private StepPosition getStepPosition(StepType stepType) {
-        return switch (stepType) {
-            case START_DATASOURCE -> StepPosition.START;
-            case APPROVED_FILTER, BLACKLIST_FILTER, WHITELIST_FILTER, 
-                 TRACK_RECENCY_PENALTY, ARTIST_RECENCY_PENALTY, ARTIST_DIVERSITY -> StepPosition.MIDDLE;
-            case FINAL_SELECTION, FINAL_CATEGORIES_BALANCER -> StepPosition.FINAL;
-        };
+    private List<StepType> getStepTypes(List<PipelineStep> pipelineSteps) {
+        List<Long> stepIds = pipelineSteps.stream().map(PipelineStep::getStepId).toList();
+        List<Step> steps = stepRepository.findAllById(stepIds);
+        Map<Long, StepType> stepTypeMap = steps.stream()
+            .collect(Collectors.toMap(Step::getId, Step::getType));
+        
+        return pipelineSteps.stream()
+            .map(ps -> stepTypeMap.get(ps.getStepId()))
+            .toList();
     }
 
     private void clearSubsequentStepResults(Long pipelineId, Integer fromPosition) {
