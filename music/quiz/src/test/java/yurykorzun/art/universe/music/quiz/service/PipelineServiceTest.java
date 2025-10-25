@@ -1003,4 +1003,328 @@ class PipelineServiceTest {
         verify(stepRepository).clearSubsequentStepResults(pipelineId, 1);
         assertTrue(step1.getDeleted());
     }
+
+
+    @Test
+    void validatePipelineForGeneration_shouldThrowException_whenPipelineNotFound() {
+        // given
+        Long pipelineId = 999L;
+        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.empty());
+
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> pipelineService.validatePipelineForGeneration(pipelineId)
+        );
+
+        assertEquals("Pipeline not found: 999", exception.getMessage());
+    }
+
+    @Test
+    void validatePipelineForGeneration_shouldThrowException_whenPipelineWithoutStartStep() {
+        // given
+        Long pipelineId = 1L;
+        Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
+
+        Step step1 = Step.builder().id(1L).type(StepType.APPROVED_FILTER).build();
+        Step step2 = Step.builder().id(2L).type(StepType.FINAL_SELECTION).build();
+
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
+        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
+
+        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
+        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
+            .thenReturn(List.of(pipelineStep1, pipelineStep2));
+        when(stepRepository.findAllById(List.of(1L, 2L))).thenReturn(List.of(step1, step2));
+
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> pipelineService.validatePipelineForGeneration(pipelineId)
+        );
+
+        assertEquals("Pipeline must have exactly one START step", exception.getMessage());
+    }
+
+    @Test
+    void validatePipelineForGeneration_shouldThrowException_whenPipelineWithoutFinalStep() {
+        // given
+        Long pipelineId = 1L;
+        Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
+
+        Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
+        Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
+
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
+        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
+
+        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
+        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
+            .thenReturn(List.of(pipelineStep1, pipelineStep2));
+        when(stepRepository.findAllById(List.of(1L, 2L))).thenReturn(List.of(step1, step2));
+
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> pipelineService.validatePipelineForGeneration(pipelineId)
+        );
+
+        assertEquals("Pipeline must have exactly one FINAL step", exception.getMessage());
+    }
+
+    @Test
+    void validatePipelineForGeneration_shouldThrowException_whenPipelineWithMultipleStartSteps() {
+        // given
+        Long pipelineId = 1L;
+        Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
+
+        Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
+        Step step2 = Step.builder().id(2L).type(StepType.START_DATASOURCE).build();
+        Step step3 = Step.builder().id(3L).type(StepType.FINAL_SELECTION).build();
+
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
+        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
+        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(3).build();
+
+        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
+        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
+            .thenReturn(List.of(pipelineStep1, pipelineStep2, pipelineStep3));
+        when(stepRepository.findAllById(List.of(1L, 2L, 3L))).thenReturn(List.of(step1, step2, step3));
+
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> pipelineService.validatePipelineForGeneration(pipelineId)
+        );
+
+        assertEquals("Pipeline must have exactly one START step", exception.getMessage());
+    }
+
+    @Test
+    void validatePipelineForGeneration_shouldThrowException_whenPipelineWithMultipleFinalSteps() {
+        // given
+        Long pipelineId = 1L;
+        Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
+
+        Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
+        Step step2 = Step.builder().id(2L).type(StepType.FINAL_SELECTION).build();
+        Step step3 = Step.builder().id(3L).type(StepType.FINAL_CATEGORIES_BALANCER).build();
+
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
+        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
+        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(3).build();
+
+        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
+        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
+            .thenReturn(List.of(pipelineStep1, pipelineStep2, pipelineStep3));
+        when(stepRepository.findAllById(List.of(1L, 2L, 3L))).thenReturn(List.of(step1, step2, step3));
+
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> pipelineService.validatePipelineForGeneration(pipelineId)
+        );
+
+        assertEquals("Pipeline must have exactly one FINAL step", exception.getMessage());
+    }
+
+    @Test
+    void validatePipelineForGeneration_shouldPass_whenValidPipeline() {
+        // given
+        Long pipelineId = 1L;
+        Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
+
+        Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
+        Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
+        Step step3 = Step.builder().id(3L).type(StepType.FINAL_SELECTION).build();
+
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
+        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
+        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(3).build();
+
+        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
+        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
+            .thenReturn(List.of(pipelineStep1, pipelineStep2, pipelineStep3));
+        when(stepRepository.findAllById(List.of(1L, 2L, 3L))).thenReturn(List.of(step1, step2, step3));
+
+        // when & then
+        assertDoesNotThrow(() -> pipelineService.validatePipelineForGeneration(pipelineId));
+    }
+
+    @Test
+    void updateStepConfiguration_shouldThrowException_whenPipelineNotFound() {
+        // given
+        Long pipelineId = 999L;
+        Long stepId = 1L;
+        PipelineStepDto stepDto = PipelineStepDto.builder()
+            .cfgData("{\"updated\": true}")
+            .build();
+
+        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.empty());
+
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> pipelineService.updateStepConfiguration(pipelineId, stepId, stepDto)
+        );
+
+        assertEquals("Pipeline not found: 999", exception.getMessage());
+    }
+
+    @Test
+    void updateStepConfiguration_shouldThrowException_whenStepNotFound() {
+        // given
+        Long pipelineId = 1L;
+        Long stepId = 999L;
+        Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
+        PipelineStepDto stepDto = PipelineStepDto.builder()
+            .cfgData("{\"updated\": true}")
+            .build();
+
+        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
+        when(stepRepository.findById(stepId)).thenReturn(Optional.empty());
+
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> pipelineService.updateStepConfiguration(pipelineId, stepId, stepDto)
+        );
+
+        assertEquals("Step not found", exception.getMessage());
+    }
+
+    @Test
+    void updateStepConfiguration_shouldThrowException_whenInvalidConfiguration() {
+        // given
+        Long pipelineId = 1L;
+        Long stepId = 1L;
+        Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
+        Step step = Step.builder().id(stepId).type(StepType.START_DATASOURCE).cfgData("{}").build();
+        PipelineStepDto stepDto = PipelineStepDto.builder()
+            .cfgData("invalid")
+            .build();
+
+        GenerationStepProcessor mockProcessor = mock(GenerationStepProcessor.class);
+        doThrow(new IllegalArgumentException("Invalid configuration"))
+            .when(mockProcessor).validateConfiguration("invalid");
+
+        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
+        when(stepRepository.findById(stepId)).thenReturn(Optional.of(step));
+
+        try (MockedStatic<GenerationStepProcessorRegistry> mockedRegistry = mockStatic(GenerationStepProcessorRegistry.class)) {
+            mockedRegistry.when(() -> GenerationStepProcessorRegistry.get(StepType.START_DATASOURCE))
+                .thenReturn(mockProcessor);
+
+            // when & then
+            IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> pipelineService.updateStepConfiguration(pipelineId, stepId, stepDto)
+            );
+
+            assertEquals("Invalid configuration", exception.getMessage());
+        }
+    }
+
+    @Test
+    void updateStepConfiguration_shouldReturnPipeline_whenConfigurationNotChanged() {
+        // given
+        Long pipelineId = 1L;
+        Long stepId = 1L;
+        Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
+        Step step = Step.builder().id(stepId).type(StepType.START_DATASOURCE).cfgData("{}").build();
+        PipelineStepDto stepDto = PipelineStepDto.builder()
+            .cfgData("{}")
+            .build();
+
+        GenerationStepProcessor mockProcessor = mock(GenerationStepProcessor.class);
+
+        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
+        when(stepRepository.findById(stepId)).thenReturn(Optional.of(step));
+        when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
+
+        try (MockedStatic<GenerationStepProcessorRegistry> mockedRegistry = mockStatic(GenerationStepProcessorRegistry.class)) {
+            mockedRegistry.when(() -> GenerationStepProcessorRegistry.get(StepType.START_DATASOURCE))
+                .thenReturn(mockProcessor);
+
+            // when
+            PipelineDto result = pipelineService.updateStepConfiguration(pipelineId, stepId, stepDto);
+
+            // then
+            assertNotNull(result);
+            verify(mockProcessor).validateConfiguration("{}");
+            verify(stepRepository).save(step);
+            verify(pipelineStepRepository, never()).findByPipelineIdOrderByOrd(any());
+            verify(stepRepository, never()).clearSubsequentStepResults(any(), any());
+        }
+    }
+
+    @Test
+    void updateStepConfiguration_shouldUpdateAndClearResults_whenConfigurationChanged() {
+        // given
+        Long pipelineId = 1L;
+        Long stepId = 2L;
+        Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
+        Step step = Step.builder().id(stepId).type(StepType.APPROVED_FILTER).cfgData("{}").build();
+        PipelineStepDto stepDto = PipelineStepDto.builder()
+            .cfgData("{\"updated\": true}")
+            .build();
+
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
+        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
+        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(3).build();
+
+        GenerationStepProcessor mockProcessor = mock(GenerationStepProcessor.class);
+
+        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
+        when(stepRepository.findById(stepId)).thenReturn(Optional.of(step));
+        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
+            .thenReturn(List.of(pipelineStep1, pipelineStep2, pipelineStep3));
+        when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
+
+        try (MockedStatic<GenerationStepProcessorRegistry> mockedRegistry = mockStatic(GenerationStepProcessorRegistry.class)) {
+            mockedRegistry.when(() -> GenerationStepProcessorRegistry.get(StepType.APPROVED_FILTER))
+                .thenReturn(mockProcessor);
+
+            // when
+            PipelineDto result = pipelineService.updateStepConfiguration(pipelineId, stepId, stepDto);
+
+            // then
+            assertNotNull(result);
+            verify(mockProcessor).validateConfiguration("{\"updated\": true}");
+            verify(stepRepository).save(step);
+            verify(stepRepository).clearSubsequentStepResults(pipelineId, 2);
+            assertEquals("{\"updated\": true}", step.getCfgData());
+        }
+    }
+
+    @Test
+    void updateStepConfiguration_shouldThrowException_whenStepNotFoundInPipeline() {
+        // given
+        Long pipelineId = 1L;
+        Long stepId = 999L;
+        Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
+        Step step = Step.builder().id(stepId).type(StepType.APPROVED_FILTER).cfgData("{}").build();
+        PipelineStepDto stepDto = PipelineStepDto.builder()
+            .cfgData("{\"updated\": true}")
+            .build();
+
+        GenerationStepProcessor mockProcessor = mock(GenerationStepProcessor.class);
+
+        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
+        when(stepRepository.findById(stepId)).thenReturn(Optional.of(step));
+        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId)).thenReturn(List.of());
+
+        try (MockedStatic<GenerationStepProcessorRegistry> mockedRegistry = mockStatic(GenerationStepProcessorRegistry.class)) {
+            mockedRegistry.when(() -> GenerationStepProcessorRegistry.get(StepType.APPROVED_FILTER))
+                .thenReturn(mockProcessor);
+
+            // when & then
+            IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> pipelineService.updateStepConfiguration(pipelineId, stepId, stepDto)
+            );
+
+            assertEquals("Step not found in pipeline", exception.getMessage());
+        }
+    }
 }
