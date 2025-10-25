@@ -87,9 +87,9 @@ class PipelineValidationUtilTest {
     @Test
     void validateStepPosition_shouldRejectMiddleStepWithStartAfter() {
         // given
-        List<StepType> existingSteps = List.of(StepType.APPROVED_FILTER);
+        List<StepType> existingSteps = List.of(StepType.START_DATASOURCE);
         
-        // when & then
+        // when & then - trying to add MIDDLE step at position 1, which would put START after it
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
             PipelineValidationUtil.validateStepPosition(StepType.BLACKLIST_FILTER, 1, existingSteps));
         assertEquals("MIDDLE step cannot have START steps after it", exception.getMessage());
