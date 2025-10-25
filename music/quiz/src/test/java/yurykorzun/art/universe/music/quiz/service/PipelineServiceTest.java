@@ -1327,4 +1327,229 @@ class PipelineServiceTest {
             assertEquals("Step not found in pipeline", exception.getMessage());
         }
     }
+
+
+    @Test
+    void getStepPreview_shouldReturnPreview_whenStepExists() {
+        // given
+        Long stepId = 1L;
+        Step step = Step.builder().id(stepId).type(StepType.START_DATASOURCE).cfgData("{}").build();
+        GenerationStepProcessor mockProcessor = mock(GenerationStepProcessor.class);
+
+        when(stepRepository.findById(stepId)).thenReturn(Optional.of(step));
+        when(mockProcessor.getPreview("{}")).thenReturn("{\"preview\": \"data\"}");
+
+        try (MockedStatic<GenerationStepProcessorRegistry> mockedRegistry = mockStatic(GenerationStepProcessorRegistry.class)) {
+            mockedRegistry.when(() -> GenerationStepProcessorRegistry.get(StepType.START_DATASOURCE))
+                .thenReturn(mockProcessor);
+
+            // when
+            String result = pipelineService.getStepPreview(stepId);
+
+            // then
+            assertEquals("{\"preview\": \"data\"}", result);
+            verify(stepRepository).save(step);
+            assertEquals("{\"preview\": \"data\"}", step.getPreviewData());
+        }
+    }
+
+    @Test
+    void getStepPreview_shouldThrowException_whenStepNotFound() {
+        // given
+        Long stepId = 999L;
+        when(stepRepository.findById(stepId)).thenReturn(Optional.empty());
+
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> pipelineService.getStepPreview(stepId)
+        );
+
+        assertEquals("Step not found", exception.getMessage());
+    }
+
+    @Test
+    void executeStep_shouldThrowException_whenPipelineNotFound() {
+        // given
+        Long pipelineId = 999L;
+        Long stepId = 1L;
+        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.empty());
+
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> pipelineService.executeStep(pipelineId, stepId)
+        );
+
+        assertEquals("Pipeline not found: 999", exception.getMessage());
+    }
+
+    @Test
+    void executeStep_shouldThrowException_whenStepNotFoundInPipeline() {
+        // given
+        Long pipelineId = 1L;
+        Long stepId = 999L;
+        Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
+
+        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
+        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId)).thenReturn(List.of());
+
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> pipelineService.executeStep(pipelineId, stepId)
+        );
+
+        assertEquals("Step not found in pipeline", exception.getMessage());
+    }
+
+    @Test
+    void executeStep_shouldExecuteFromEarliestWithoutResult_whenPreviousStepsMissingResults() {
+        // given
+        Long pipelineId = 1L;
+        Long stepId = 3L;
+        Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
+
+        Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).lastStepRunId(1L).build();
+        Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
+        Step step3 = Step.builder().id(3L).type(StepType.FINAL_SELECTION).build();
+
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
+        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
+        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(3).build();
+
+        StepRun stepRun1 = StepRun.builder().id(1L).resultTableName("output_table_1").build();
+        StepRun stepRun2 = StepRun.builder().id(2L).resultTableName("output_table_2").build();
+        StepRun stepRun3 = StepRun.builder().id(3L).resultTableName("output_table_3").build();
+        
+        GenerationStepProcessor mockProcessor2 = mock(GenerationStepProcessor.class);
+        GenerationStepProcessor mockProcessor3 = mock(GenerationStepProcessor.class);
+
+        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
+        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
+            .thenReturn(List.of(pipelineStep1, pipelineStep2, pipelineStep3));
+        when(pipelineStepRepository.findEarliestStepWithoutResult(pipelineId)).thenReturn(Optional.of(2));
+        
+        when(stepRepository.findById(1L)).thenReturn(Optional.of(step1));
+        when(stepRepository.findById(2L)).thenReturn(Optional.of(step2));
+        when(stepRepository.findById(3L)).thenReturn(Optional.of(step3));
+        when(stepRunRepository.findById(1L)).thenReturn(Optional.of(stepRun1));
+        
+        when(mockProcessor2.process(step2, "output_table_1", null)).thenReturn(stepRun2);
+        when(mockProcessor3.process(step3, "output_table_2", null)).thenReturn(stepRun3);
+
+        try (MockedStatic<GenerationStepProcessorRegistry> mockedRegistry = mockStatic(GenerationStepProcessorRegistry.class)) {
+            mockedRegistry.when(() -> GenerationStepProcessorRegistry.get(StepType.APPROVED_FILTER))
+                .thenReturn(mockProcessor2);
+            mockedRegistry.when(() -> GenerationStepProcessorRegistry.get(StepType.FINAL_SELECTION))
+                .thenReturn(mockProcessor3);
+
+            // when
+            StepRun result = pipelineService.executeStep(pipelineId, stepId);
+
+            // then
+            assertNotNull(result);
+            assertEquals("output_table_3", result.getResultTableName());
+            verify(stepRepository).clearSubsequentStepResults(pipelineId, 2);
+        }
+    }
+
+    @Test
+    void executePipeline_shouldThrowException_whenPipelineRunNotFound() {
+        // given
+        Long pipelineId = 1L;
+        Long pipelineRunId = 999L;
+        when(pipelineRunRepository.findById(pipelineRunId)).thenReturn(Optional.empty());
+
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> pipelineService.executePipeline(pipelineId, pipelineRunId)
+        );
+
+        assertEquals("Pipeline run not found: 999", exception.getMessage());
+    }
+
+    @Test
+    void executePipeline_shouldThrowException_whenPipelineHasNoSteps() {
+        // given
+        Long pipelineId = 1L;
+        Long pipelineRunId = 1L;
+        PipelineRun pipelineRun = PipelineRun.builder().id(pipelineRunId).pipelineId(pipelineId).build();
+
+        when(pipelineRunRepository.findById(pipelineRunId)).thenReturn(Optional.of(pipelineRun));
+        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId)).thenReturn(List.of());
+
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> pipelineService.executePipeline(pipelineId, pipelineRunId)
+        );
+
+        assertEquals("Pipeline has no steps", exception.getMessage());
+    }
+
+    @Test
+    void executePipeline_shouldExecuteSuccessfully_whenValidPipeline() {
+        // given
+        Long pipelineId = 1L;
+        Long pipelineRunId = 1L;
+        PipelineRun pipelineRun = PipelineRun.builder().id(pipelineRunId).pipelineId(pipelineId).build();
+
+        Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
+
+        StepRun stepRun = StepRun.builder().id(1L).resultTableName("output_table").build();
+        GenerationStepProcessor mockProcessor = mock(GenerationStepProcessor.class);
+
+        when(pipelineRunRepository.findById(pipelineRunId)).thenReturn(Optional.of(pipelineRun));
+        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId)).thenReturn(List.of(pipelineStep1));
+        when(stepRepository.findById(1L)).thenReturn(Optional.of(step1));
+        when(mockProcessor.process(step1, null, pipelineRunId)).thenReturn(stepRun);
+
+        try (MockedStatic<GenerationStepProcessorRegistry> mockedRegistry = mockStatic(GenerationStepProcessorRegistry.class)) {
+            mockedRegistry.when(() -> GenerationStepProcessorRegistry.get(StepType.START_DATASOURCE))
+                .thenReturn(mockProcessor);
+
+            // when
+            PipelineRun result = pipelineService.executePipeline(pipelineId, pipelineRunId);
+
+            // then
+            assertEquals(ExecutionStatus.COMPLETED, result.getStatus());
+            assertEquals("output_table", result.getResultTableName());
+            assertNotNull(result.getCompletedAt());
+        }
+    }
+
+    @Test
+    void executePipeline_shouldHandleFailure_whenStepProcessingFails() {
+        // given
+        Long pipelineId = 1L;
+        Long pipelineRunId = 1L;
+        PipelineRun pipelineRun = PipelineRun.builder().id(pipelineRunId).pipelineId(pipelineId).build();
+
+        Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
+
+        GenerationStepProcessor mockProcessor = mock(GenerationStepProcessor.class);
+
+        when(pipelineRunRepository.findById(pipelineRunId)).thenReturn(Optional.of(pipelineRun));
+        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId)).thenReturn(List.of(pipelineStep1));
+        when(stepRepository.findById(1L)).thenReturn(Optional.of(step1));
+        when(mockProcessor.process(step1, null, pipelineRunId)).thenThrow(new RuntimeException("Processing failed"));
+
+        try (MockedStatic<GenerationStepProcessorRegistry> mockedRegistry = mockStatic(GenerationStepProcessorRegistry.class)) {
+            mockedRegistry.when(() -> GenerationStepProcessorRegistry.get(StepType.START_DATASOURCE))
+                .thenReturn(mockProcessor);
+
+            // when & then
+            RuntimeException exception = assertThrows(
+                RuntimeException.class,
+                () -> pipelineService.executePipeline(pipelineId, pipelineRunId)
+            );
+
+            assertEquals("Pipeline execution failed", exception.getMessage());
+            verify(pipelineRunRepository, atLeast(2)).save(any(PipelineRun.class)); // STARTED and FAILED saves
+        }
+    }
 }
