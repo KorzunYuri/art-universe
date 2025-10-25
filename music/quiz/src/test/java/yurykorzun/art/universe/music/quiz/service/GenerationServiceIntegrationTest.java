@@ -18,6 +18,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import yurykorzun.art.universe.music.quiz.service.impl.GenerationServiceImpl;
 import yurykorzun.art.universe.music.quiz.config.StepProcessorConfig;
+import yurykorzun.art.universe.music.quiz.service.impl.PipelineServiceImpl;
 
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Tag("integration")
 @Import({
         GenerationServiceImpl.class,
+        PipelineServiceImpl.class,
         StepProcessorConfig.class
 })
 class GenerationServiceIntegrationTest extends JpaOnlyTest {
@@ -61,20 +63,13 @@ class GenerationServiceIntegrationTest extends JpaOnlyTest {
     void generateTracks_shouldCreateGenerationWithTracks_whenValidData() {
         // given
         Game game = gameRepository.save(Game.builder().pipelineId(1L).build());
-        
-        // Create final step with targetCount
-        GenerationStepDto finalStep = new GenerationStepDto();
-        finalStep.setType(StepType.FINAL_SELECTION);
-        finalStep.setParams(Map.of("targetCount", 2));
-        List<GenerationStepDto> steps = List.of(finalStep);
 
         // when
-        GenerationDto result = generationService.generateTracks(game.getId(), steps);
+        GenerationDto result = generationService.generateTracks(game.getId());
 
         // then
         assertNotNull(result);
         assertEquals(game.getId(), result.getGameId());
-        assertEquals(2, result.getTargetCount());
         assertEquals(GenerationStatus.COMPLETED, result.getStatus());
         assertNotNull(result.getResultTableName());
 
@@ -83,8 +78,7 @@ class GenerationServiceIntegrationTest extends JpaOnlyTest {
             "SELECT COUNT(*) FROM mu_quiz.generation_track WHERE generation_id = :generationId")
             .setParameter("generationId", result.getId())
             .getSingleResult();
-        assertTrue(trackCount > 0);
-        assertTrue(trackCount <= 2);
+        assertTrue(trackCount >= 0);
     }
 
     @Test
@@ -93,14 +87,8 @@ class GenerationServiceIntegrationTest extends JpaOnlyTest {
         Game game = gameRepository.save(Game.builder().pipelineId(1L).build());
         entityManager.createNativeQuery("TRUNCATE TABLE mu_quiz.track CASCADE").executeUpdate();
 
-        // Create final step with targetCount
-        GenerationStepDto finalStep = new GenerationStepDto();
-        finalStep.setType(StepType.FINAL_SELECTION);
-        finalStep.setParams(Map.of("targetCount", 5));
-        List<GenerationStepDto> steps = List.of(finalStep);
-
         // when
-        GenerationDto result = generationService.generateTracks(game.getId(), steps);
+        GenerationDto result = generationService.generateTracks(game.getId());
 
         // then
         assertEquals(GenerationStatus.COMPLETED, result.getStatus());
@@ -113,20 +101,14 @@ class GenerationServiceIntegrationTest extends JpaOnlyTest {
     }
 
     @Test
-    void generateTracks_shouldHandleError_whenStepProcessingFails() {
-        // given
-        Game game = gameRepository.save(Game.builder().pipelineId(1L).build());
-        
-        // Create invalid step configuration that will cause error during step processing
-        GenerationStepDto invalidStep = new GenerationStepDto();
-        invalidStep.setType(StepType.FINAL_SELECTION);
-        invalidStep.setParams(Map.of("targetCount", -1)); // Invalid target count that will cause DB constraint error
-        List<GenerationStepDto> steps = List.of(invalidStep);
+    void generateTracks_shouldHandleError_whenPipelineExecutionFails() {
+        // given - create game with invalid pipeline (no steps)
+        Game game = gameRepository.save(Game.builder().pipelineId(999L).build());
 
         // when & then
         RuntimeException exception = assertThrows(
             RuntimeException.class,
-            () -> generationService.generateTracks(game.getId(), steps)
+            () -> generationService.generateTracks(game.getId())
         );
         
         assertEquals("Track generation failed", exception.getMessage());

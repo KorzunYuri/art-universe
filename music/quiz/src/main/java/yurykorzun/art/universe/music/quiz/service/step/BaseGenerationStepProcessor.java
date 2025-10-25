@@ -1,6 +1,7 @@
 package yurykorzun.art.universe.music.quiz.service.step;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.lang.Nullable;
 import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
 import yurykorzun.art.universe.music.quiz.dto.step.stats.BasicStepStats;
@@ -13,8 +14,6 @@ import yurykorzun.art.universe.music.quiz.repository.StepMetadataProjection;
 import yurykorzun.art.universe.music.quiz.repository.StepRepository;
 import yurykorzun.art.universe.music.quiz.repository.StepRunRepository;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

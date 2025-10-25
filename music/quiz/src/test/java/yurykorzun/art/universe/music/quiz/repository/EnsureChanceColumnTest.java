@@ -21,7 +21,7 @@ class EnsureChanceColumnTest extends JpaOnlyTest {
         entityManager.createNativeQuery("CREATE TABLE mu_quiz_stg.test_table_with_chance (id BIGINT, chance DECIMAL)").executeUpdate();
         
         // when
-        String result = (String) entityManager.createNativeQuery("SELECT p_ensure_chance_column('mu_quiz_stg', 'test_table_with_chance')")
+        String result = (String) entityManager.createNativeQuery("SELECT p_ensure_chance_column('mu_quiz_stg.test_table_with_chance')")
             .getSingleResult();
         
         // then
@@ -37,7 +37,7 @@ class EnsureChanceColumnTest extends JpaOnlyTest {
         entityManager.createNativeQuery("CREATE TABLE mu_quiz_stg.test_table_no_chance (id BIGINT)").executeUpdate();
         
         // when
-        String result = (String) entityManager.createNativeQuery("SELECT p_ensure_chance_column('mu_quiz_stg', 'test_table_no_chance')")
+        String result = (String) entityManager.createNativeQuery("SELECT p_ensure_chance_column('mu_quiz_stg.test_table_no_chance')")
             .getSingleResult();
         
         // then
@@ -59,7 +59,7 @@ class EnsureChanceColumnTest extends JpaOnlyTest {
         entityManager.createNativeQuery("CREATE VIEW mu_quiz_stg.test_view_with_chance AS SELECT 1 as id, 1.0 as chance").executeUpdate();
         
         // when
-        String result = (String) entityManager.createNativeQuery("SELECT p_ensure_chance_column('mu_quiz_stg', 'test_view_with_chance')")
+        String result = (String) entityManager.createNativeQuery("SELECT p_ensure_chance_column('mu_quiz_stg.test_view_with_chance')")
             .getSingleResult();
         
         // then
@@ -75,7 +75,7 @@ class EnsureChanceColumnTest extends JpaOnlyTest {
         entityManager.createNativeQuery("CREATE VIEW mu_quiz_stg.test_view_no_chance AS SELECT 1 as id").executeUpdate();
         
         // when
-        String result = (String) entityManager.createNativeQuery("SELECT p_ensure_chance_column('mu_quiz_stg', 'test_view_no_chance')")
+        String result = (String) entityManager.createNativeQuery("SELECT p_ensure_chance_column('mu_quiz_stg.test_view_no_chance')")
             .getSingleResult();
         
         // then

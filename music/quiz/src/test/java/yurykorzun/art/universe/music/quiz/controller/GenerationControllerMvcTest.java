@@ -37,8 +37,6 @@ class GenerationControllerMvcTest extends BaseMvcTest {
     void POST_gameGenerations_shouldReturnGenerationDto_whenSuccessful() throws Exception {
         // given
         Long gameId = 1L;
-        CreateGenerationRequest request = new CreateGenerationRequest();
-        request.setSteps(List.of()); // Will be validated by service
         
         GenerationDto expectedDto = GenerationDto.builder()
             .id(1L)
@@ -48,18 +46,17 @@ class GenerationControllerMvcTest extends BaseMvcTest {
             .createdAt(Instant.now())
             .build();
 
-        when(generationService.generateTracks(gameId, List.of())).thenReturn(expectedDto);
+        when(generationService.generateTracks(gameId)).thenReturn(expectedDto);
 
         String expectedJson = objectMapper.writeValueAsString(expectedDto);
 
         // when & then
         mockMvc.perform(post("/api/v1/games/{gameId}/generations", gameId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(content().json(expectedJson));
 
-        verify(generationService).generateTracks(gameId, List.of());
+        verify(generationService).generateTracks(gameId);
     }
 
     @Test

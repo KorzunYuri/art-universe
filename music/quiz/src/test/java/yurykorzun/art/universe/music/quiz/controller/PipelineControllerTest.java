@@ -1,0 +1,97 @@
+package yurykorzun.art.universe.music.quiz.controller;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import yurykorzun.art.universe.music.quiz.dto.PipelineDto;
+import yurykorzun.art.universe.music.quiz.dto.PipelineStepDto;
+import yurykorzun.art.universe.music.quiz.entity.StepType;
+import yurykorzun.art.universe.music.quiz.service.PipelineService;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class PipelineControllerTest {
+
+    @Mock
+    private PipelineService pipelineService;
+
+    @InjectMocks
+    private PipelineController pipelineController;
+
+    @Test
+    void getPipeline_shouldReturnPipelineDto_whenSuccessful() {
+        // given
+        Long pipelineId = 1L;
+        PipelineDto expectedDto = PipelineDto.builder()
+            .id(pipelineId)
+            .immutable(false)
+            .steps(List.of())
+            .build();
+
+        when(pipelineService.getPipeline(pipelineId)).thenReturn(expectedDto);
+
+        // when
+        PipelineDto result = pipelineController.getPipeline(pipelineId);
+
+        // then
+        assertNotNull(result);
+        assertEquals(expectedDto, result);
+        verify(pipelineService).getPipeline(pipelineId);
+    }
+
+    @Test
+    void addStep_shouldReturnUpdatedPipeline_whenSuccessful() {
+        // given
+        Long pipelineId = 1L;
+        Integer position = 1;
+        PipelineStepDto stepDto = PipelineStepDto.builder()
+            .type(StepType.START_DATASOURCE)
+            .cfgData("{}")
+            .build();
+
+        PipelineDto expectedDto = PipelineDto.builder()
+            .id(pipelineId)
+            .immutable(false)
+            .steps(List.of(stepDto))
+            .build();
+
+        when(pipelineService.addStep(pipelineId, stepDto, position)).thenReturn(expectedDto);
+
+        // when
+        PipelineDto result = pipelineController.addStep(pipelineId, stepDto, position);
+
+        // then
+        assertNotNull(result);
+        assertEquals(expectedDto, result);
+        verify(pipelineService).addStep(pipelineId, stepDto, position);
+    }
+
+    @Test
+    void executeStep_shouldReturnUpdatedPipeline_whenSuccessful() {
+        // given
+        Long pipelineId = 1L;
+        Long stepId = 2L;
+        PipelineDto expectedDto = PipelineDto.builder()
+            .id(pipelineId)
+            .immutable(false)
+            .steps(List.of())
+            .build();
+
+        when(pipelineService.getPipeline(pipelineId)).thenReturn(expectedDto);
+
+        // when
+        PipelineDto result = pipelineController.executeStep(pipelineId, stepId);
+
+        // then
+        assertNotNull(result);
+        assertEquals(expectedDto, result);
+        verify(pipelineService).executeStep(pipelineId, stepId);
+        verify(pipelineService).getPipeline(pipelineId);
+    }
+}

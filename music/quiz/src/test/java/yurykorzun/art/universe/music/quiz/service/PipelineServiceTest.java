@@ -71,7 +71,7 @@ class PipelineServiceTest {
             .build();
 
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
-        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId)).thenReturn(List.of());
+        when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
 
         // when
         PipelineDto result = pipelineService.getPipeline(pipelineId);
@@ -82,7 +82,7 @@ class PipelineServiceTest {
         assertTrue(result.getSteps().isEmpty());
         
         verify(pipelineRepository).findById(pipelineId);
-        verify(pipelineStepRepository).findByPipelineIdOrderByOrd(pipelineId);
+        verify(pipelineStepRepository).findPipelineStepsWithDetails(pipelineId);
     }
 
     @Test
