@@ -816,4 +816,191 @@ class PipelineServiceTest {
         
         assertEquals("MIDDLE step cannot have FINAL steps before it", exception.getMessage());
     }
+
+    @Test
+    void removeStep_shouldThrowException_whenPipelineNotFound() {
+        // given
+        Long pipelineId = 999L;
+        Long stepId = 1L;
+
+        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.empty());
+
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> pipelineService.removeStep(pipelineId, stepId)
+        );
+        
+        assertEquals("Pipeline not found: 999", exception.getMessage());
+    }
+
+    @Test
+    void removeStep_shouldThrowException_whenStepNotFoundInPipeline() {
+        // given
+        Long pipelineId = 1L;
+        Long stepId = 999L;
+        Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
+
+        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
+        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId)).thenReturn(List.of());
+
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> pipelineService.removeStep(pipelineId, stepId)
+        );
+        
+        assertEquals("Step not found in pipeline", exception.getMessage());
+    }
+
+    @Test
+    void removeStep_shouldThrowException_whenStepNotFound() {
+        // given
+        Long pipelineId = 1L;
+        Long stepId = 1L;
+        Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
+        PipelineStep pipelineStep = PipelineStep.builder()
+            .pipelineId(pipelineId)
+            .stepId(stepId)
+            .ord(1)
+            .build();
+
+        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
+        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
+            .thenReturn(List.of(pipelineStep));
+        when(stepRepository.findById(stepId)).thenReturn(Optional.empty());
+
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> pipelineService.removeStep(pipelineId, stepId)
+        );
+        
+        assertEquals("Step not found", exception.getMessage());
+    }
+
+    @Test
+    void removeStep_shouldRemoveStepAndShiftPositions_whenSuccessful() {
+        // given
+        Long pipelineId = 1L;
+        Long stepId = 2L; // Remove middle step
+        Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
+        
+        Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
+        Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
+        Step step3 = Step.builder().id(3L).type(StepType.FINAL_SELECTION).build();
+        
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
+        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
+        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(3).build();
+
+        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
+        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
+            .thenReturn(List.of(pipelineStep1, pipelineStep2, pipelineStep3));
+        when(stepRepository.findById(stepId)).thenReturn(Optional.of(step2));
+        when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
+
+        // when
+        PipelineDto result = pipelineService.removeStep(pipelineId, stepId);
+
+        // then
+        assertNotNull(result);
+        verify(pipelineStepRepository).deleteByPipelineIdAndStepId(pipelineId, stepId);
+        verify(stepRepository).save(step2); // Mark as deleted
+        verify(pipelineStepRepository).decrementOrderAfter(pipelineId, 2);
+        verify(stepRepository).clearSubsequentStepResults(pipelineId, 2);
+        assertTrue(step2.getDeleted());
+    }
+
+    @Test
+    void removeStep_shouldRemoveFirstStep_whenSuccessful() {
+        // given
+        Long pipelineId = 1L;
+        Long stepId = 1L; // Remove first step
+        Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
+        
+        Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
+        Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
+        
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
+        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
+
+        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
+        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
+            .thenReturn(List.of(pipelineStep1, pipelineStep2));
+        when(stepRepository.findById(stepId)).thenReturn(Optional.of(step1));
+        when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
+
+        // when
+        PipelineDto result = pipelineService.removeStep(pipelineId, stepId);
+
+        // then
+        assertNotNull(result);
+        verify(pipelineStepRepository).deleteByPipelineIdAndStepId(pipelineId, stepId);
+        verify(stepRepository).save(step1);
+        verify(pipelineStepRepository).decrementOrderAfter(pipelineId, 1);
+        verify(stepRepository).clearSubsequentStepResults(pipelineId, 1);
+        assertTrue(step1.getDeleted());
+    }
+
+    @Test
+    void removeStep_shouldRemoveLastStep_whenSuccessful() {
+        // given
+        Long pipelineId = 1L;
+        Long stepId = 3L; // Remove last step
+        Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
+        
+        Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
+        Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
+        Step step3 = Step.builder().id(3L).type(StepType.FINAL_SELECTION).build();
+        
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
+        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
+        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(3).build();
+
+        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
+        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
+            .thenReturn(List.of(pipelineStep1, pipelineStep2, pipelineStep3));
+        when(stepRepository.findById(stepId)).thenReturn(Optional.of(step3));
+        when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
+
+        // when
+        PipelineDto result = pipelineService.removeStep(pipelineId, stepId);
+
+        // then
+        assertNotNull(result);
+        verify(pipelineStepRepository).deleteByPipelineIdAndStepId(pipelineId, stepId);
+        verify(stepRepository).save(step3);
+        verify(pipelineStepRepository).decrementOrderAfter(pipelineId, 3);
+        verify(stepRepository).clearSubsequentStepResults(pipelineId, 3);
+        assertTrue(step3.getDeleted());
+    }
+
+    @Test
+    void removeStep_shouldRemoveOnlyStep_whenSingleStepPipeline() {
+        // given
+        Long pipelineId = 1L;
+        Long stepId = 1L;
+        Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
+        
+        Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
+
+        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
+        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
+            .thenReturn(List.of(pipelineStep1));
+        when(stepRepository.findById(stepId)).thenReturn(Optional.of(step1));
+        when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
+
+        // when
+        PipelineDto result = pipelineService.removeStep(pipelineId, stepId);
+
+        // then
+        assertNotNull(result);
+        verify(pipelineStepRepository).deleteByPipelineIdAndStepId(pipelineId, stepId);
+        verify(stepRepository).save(step1);
+        verify(pipelineStepRepository).decrementOrderAfter(pipelineId, 1);
+        verify(stepRepository).clearSubsequentStepResults(pipelineId, 1);
+        assertTrue(step1.getDeleted());
+    }
 }
