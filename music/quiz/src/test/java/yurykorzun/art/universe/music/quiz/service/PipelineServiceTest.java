@@ -530,4 +530,290 @@ class PipelineServiceTest {
         
         assertEquals("MIDDLE step cannot have FINAL steps before it", exception.getMessage());
     }
+
+    @Test
+    void moveStep_shouldThrowException_whenPipelineNotFound() {
+        // given
+        Long pipelineId = 999L;
+        Long stepId = 1L;
+        Integer newPosition = 2;
+
+        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.empty());
+
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> pipelineService.moveStep(pipelineId, stepId, newPosition)
+        );
+        
+        assertEquals("Pipeline not found: 999", exception.getMessage());
+    }
+
+    @Test
+    void moveStep_shouldThrowException_whenStepNotFoundInPipeline() {
+        // given
+        Long pipelineId = 1L;
+        Long stepId = 999L;
+        Integer newPosition = 2;
+        Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
+
+        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
+        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId)).thenReturn(List.of());
+
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> pipelineService.moveStep(pipelineId, stepId, newPosition)
+        );
+        
+        assertEquals("Step not found in pipeline", exception.getMessage());
+    }
+
+    @Test
+    void moveStep_shouldThrowException_whenStepNotFound() {
+        // given
+        Long pipelineId = 1L;
+        Long stepId = 1L;
+        Integer newPosition = 2;
+        Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
+        PipelineStep pipelineStep = PipelineStep.builder()
+            .pipelineId(pipelineId)
+            .stepId(stepId)
+            .ord(1)
+            .build();
+
+        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
+        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
+            .thenReturn(List.of(pipelineStep));
+        when(stepRepository.findById(stepId)).thenReturn(Optional.empty());
+
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> pipelineService.moveStep(pipelineId, stepId, newPosition)
+        );
+        
+        assertEquals("Step not found", exception.getMessage());
+    }
+
+    @Test
+    void moveStep_shouldReturnPipeline_whenMovingToSamePosition() {
+        // given
+        Long pipelineId = 1L;
+        Long stepId = 1L;
+        Integer newPosition = 1;
+        Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
+        Step step = Step.builder().id(stepId).type(StepType.START_DATASOURCE).build();
+        PipelineStep pipelineStep = PipelineStep.builder()
+            .pipelineId(pipelineId)
+            .stepId(stepId)
+            .ord(1)
+            .build();
+
+        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
+        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
+            .thenReturn(List.of(pipelineStep));
+        when(stepRepository.findById(stepId)).thenReturn(Optional.of(step));
+        when(stepRepository.findAllById(List.of(stepId))).thenReturn(List.of(step));
+        when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
+
+        // when
+        PipelineDto result = pipelineService.moveStep(pipelineId, stepId, newPosition);
+
+        // then
+        assertNotNull(result);
+        verify(pipelineStepRepository, never()).decrementOrderBetween(any(), any(), any());
+        verify(pipelineStepRepository, never()).incrementOrderBetween(any(), any(), any());
+        verify(pipelineStepRepository, never()).updateStepOrder(any(), any(), any());
+    }
+
+    @Test
+    void moveStep_shouldMoveStepDown_whenNewPositionIsHigher() {
+        // given
+        Long pipelineId = 1L;
+        Long stepId = 2L; // Moving MIDDLE step
+        Integer newPosition = 3;
+        Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
+        
+        Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
+        Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
+        Step step3 = Step.builder().id(3L).type(StepType.BLACKLIST_FILTER).build();
+        Step step4 = Step.builder().id(4L).type(StepType.FINAL_SELECTION).build();
+        
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
+        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
+        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(3).build();
+        PipelineStep pipelineStep4 = PipelineStep.builder().pipelineId(pipelineId).stepId(4L).ord(4).build();
+
+        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
+        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
+            .thenReturn(List.of(pipelineStep1, pipelineStep2, pipelineStep3, pipelineStep4));
+        when(stepRepository.findById(stepId)).thenReturn(Optional.of(step2));
+        when(stepRepository.findAllById(List.of(1L, 2L, 3L, 4L))).thenReturn(List.of(step1, step2, step3, step4));
+        when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
+
+        // when
+        PipelineDto result = pipelineService.moveStep(pipelineId, stepId, newPosition);
+
+        // then
+        assertNotNull(result);
+        verify(pipelineStepRepository).decrementOrderBetween(pipelineId, 2, 3);
+        verify(pipelineStepRepository).updateStepOrder(pipelineId, stepId, newPosition);
+        verify(stepRepository).clearSubsequentStepResults(pipelineId, 2);
+    }
+
+    @Test
+    void moveStep_shouldMoveStepUp_whenNewPositionIsLower() {
+        // given
+        Long pipelineId = 1L;
+        Long stepId = 3L; // Moving MIDDLE step
+        Integer newPosition = 2;
+        Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
+        
+        Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
+        Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
+        Step step3 = Step.builder().id(3L).type(StepType.BLACKLIST_FILTER).build();
+        Step step4 = Step.builder().id(4L).type(StepType.FINAL_SELECTION).build();
+        
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
+        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
+        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(3).build();
+        PipelineStep pipelineStep4 = PipelineStep.builder().pipelineId(pipelineId).stepId(4L).ord(4).build();
+
+        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
+        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
+            .thenReturn(List.of(pipelineStep1, pipelineStep2, pipelineStep3, pipelineStep4));
+        when(stepRepository.findById(stepId)).thenReturn(Optional.of(step3));
+        when(stepRepository.findAllById(List.of(1L, 2L, 3L, 4L))).thenReturn(List.of(step1, step2, step3, step4));
+        when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
+
+        // when
+        PipelineDto result = pipelineService.moveStep(pipelineId, stepId, newPosition);
+
+        // then
+        assertNotNull(result);
+        verify(pipelineStepRepository).incrementOrderBetween(pipelineId, 2, 3);
+        verify(pipelineStepRepository).updateStepOrder(pipelineId, stepId, newPosition);
+        verify(stepRepository).clearSubsequentStepResults(pipelineId, 2);
+    }
+
+    @Test
+    void moveStep_shouldThrowException_whenStartStepNotAtPosition1() {
+        // given
+        Long pipelineId = 1L;
+        Long stepId = 1L;
+        Integer newPosition = 2;
+        Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
+        
+        Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
+        Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
+        
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
+        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
+
+        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
+        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
+            .thenReturn(List.of(pipelineStep1, pipelineStep2));
+        when(stepRepository.findById(stepId)).thenReturn(Optional.of(step1));
+        when(stepRepository.findAllById(List.of(1L, 2L))).thenReturn(List.of(step1, step2));
+
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> pipelineService.moveStep(pipelineId, stepId, newPosition)
+        );
+        
+        assertEquals("START step must be at position 1", exception.getMessage());
+    }
+
+    @Test
+    void moveStep_shouldThrowException_whenFinalStepNotAtLastPosition() {
+        // given
+        Long pipelineId = 1L;
+        Long stepId = 3L;
+        Integer newPosition = 2;
+        Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
+        
+        Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
+        Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
+        Step step3 = Step.builder().id(3L).type(StepType.FINAL_SELECTION).build();
+        
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
+        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
+        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(3).build();
+
+        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
+        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
+            .thenReturn(List.of(pipelineStep1, pipelineStep2, pipelineStep3));
+        when(stepRepository.findById(stepId)).thenReturn(Optional.of(step3));
+        when(stepRepository.findAllById(List.of(1L, 2L, 3L))).thenReturn(List.of(step1, step2, step3));
+
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> pipelineService.moveStep(pipelineId, stepId, newPosition)
+        );
+        
+        assertEquals("FINAL step must be at last position", exception.getMessage());
+    }
+
+    @Test
+    void moveStep_shouldThrowException_whenMiddleStepHasStartAfter() {
+        // given
+        Long pipelineId = 1L;
+        Long stepId = 2L;
+        Integer newPosition = 1;
+        Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
+        
+        Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
+        Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
+        
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
+        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
+
+        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
+        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
+            .thenReturn(List.of(pipelineStep1, pipelineStep2));
+        when(stepRepository.findById(stepId)).thenReturn(Optional.of(step2));
+        when(stepRepository.findAllById(List.of(1L, 2L))).thenReturn(List.of(step1, step2));
+
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> pipelineService.moveStep(pipelineId, stepId, newPosition)
+        );
+        
+        assertEquals("MIDDLE step cannot have START steps after it", exception.getMessage());
+    }
+
+    @Test
+    void moveStep_shouldThrowException_whenMiddleStepHasFinalBefore() {
+        // given
+        Long pipelineId = 1L;
+        Long stepId = 2L;
+        Integer newPosition = 3;
+        Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
+        
+        Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
+        Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
+        Step step3 = Step.builder().id(3L).type(StepType.FINAL_SELECTION).build();
+        
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
+        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
+        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(3).build();
+
+        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
+        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
+            .thenReturn(List.of(pipelineStep1, pipelineStep2, pipelineStep3));
+        when(stepRepository.findById(stepId)).thenReturn(Optional.of(step2));
+        when(stepRepository.findAllById(List.of(1L, 2L, 3L))).thenReturn(List.of(step1, step2, step3));
+
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> pipelineService.moveStep(pipelineId, stepId, newPosition)
+        );
+        
+        assertEquals("MIDDLE step cannot have FINAL steps before it", exception.getMessage());
+    }
 }
