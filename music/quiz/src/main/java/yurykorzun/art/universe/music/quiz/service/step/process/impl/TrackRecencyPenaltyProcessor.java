@@ -1,11 +1,11 @@
-package yurykorzun.art.universe.music.quiz.service.step.impl;
+package yurykorzun.art.universe.music.quiz.service.step.process.impl;
 
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
 import yurykorzun.art.universe.music.quiz.entity.Step;
 import yurykorzun.art.universe.music.quiz.entity.StepRun;
 import yurykorzun.art.universe.music.quiz.entity.StepType;
-import yurykorzun.art.universe.music.quiz.service.step.StepProcessorRegistry;
+import yurykorzun.art.universe.music.quiz.service.step.process.StepProcessorRegistry;
 
 @Component
 public class TrackRecencyPenaltyProcessor extends BasicStepProcessor {

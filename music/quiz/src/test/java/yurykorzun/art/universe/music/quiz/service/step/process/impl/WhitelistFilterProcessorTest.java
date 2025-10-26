@@ -1,4 +1,4 @@
-package yurykorzun.art.universe.music.quiz.service.step.impl;
+package yurykorzun.art.universe.music.quiz.service.step.process.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
@@ -11,11 +11,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import yurykorzun.art.universe.common.persistence.util.DatabaseUtils;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.config.CommonTestConfig;
 import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
-import yurykorzun.art.universe.music.quiz.dto.step.stats.BlacklistFilterStats;
+import yurykorzun.art.universe.music.quiz.dto.step.stats.WhitelistFilterStats;
 import yurykorzun.art.universe.music.quiz.entity.Step;
 import yurykorzun.art.universe.music.quiz.entity.StepRun;
 import yurykorzun.art.universe.music.quiz.entity.StepType;
-import yurykorzun.art.universe.music.quiz.service.step.StepProcessorRegistry;
+import yurykorzun.art.universe.music.quiz.service.step.process.StepProcessorRegistry;
+import yurykorzun.art.universe.music.quiz.service.step.process.impl.WhitelistFilterProcessor;
 
 import java.util.List;
 
@@ -24,7 +25,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class BlacklistFilterProcessorTest {
+class WhitelistFilterProcessorTest {
 
     @Mock
     private EntityManager entityManager;
@@ -32,12 +33,12 @@ class BlacklistFilterProcessorTest {
     @Mock
     private Query query;
 
-    private BlacklistFilterProcessor processor;
+    private WhitelistFilterProcessor processor;
 
     @BeforeEach
     void setUp() {
         ObjectMapper objectMapper = CommonTestConfig.getObjectMapper();
-        processor = new BlacklistFilterProcessor(mock(StepProcessorRegistry.class), objectMapper);
+        processor = new WhitelistFilterProcessor(mock(StepProcessorRegistry.class), objectMapper);
         processor.setEntityManager(entityManager);
     }
 
@@ -46,8 +47,8 @@ class BlacklistFilterProcessorTest {
         // given
         Step step = Step.builder()
             .id(1L)
-            .type(StepType.BLACKLIST_FILTER)
-            .cfgData("{\"categoryIds\":[1,2,3]}")
+            .type(StepType.WHITELIST_FILTER)
+            .cfgData("{\"categories\":[{\"id\":1,\"weight\":1.0},{\"id\":2,\"weight\":0.5}]}")
             .build();
         
         StepRun stepRun = StepRun.builder().id(1L).build();
@@ -64,7 +65,7 @@ class BlacklistFilterProcessorTest {
 
         // then
         assertNotNull(result);
-        assertEquals(stepTableNameBase + "_blacklist_filter", result.getOutputTableName());
+        assertEquals(stepTableNameBase + "_track_recency", result.getOutputTableName());
         verify(entityManager, times(4)).createNativeQuery(anyString()); // DROP, CREATE, INSERT, PROCEDURE
         verify(query, atLeast(1)).executeUpdate();
     }
@@ -72,7 +73,7 @@ class BlacklistFilterProcessorTest {
     @Test
     void validateConfiguration_shouldPass_whenValidConfig() {
         // given
-        String validConfig = "{\"categoryIds\":[1,2,3]}";
+        String validConfig = "{\"categories\":[{\"id\":1,\"weight\":1.0}]}";
 
         // when & then
         assertDoesNotThrow(() -> processor.validateConfiguration(validConfig));
@@ -87,18 +88,18 @@ class BlacklistFilterProcessorTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, 
             () -> processor.validateConfiguration(invalidConfig));
         
-        assertEquals("Invalid configuration for blacklist filter step", exception.getMessage());
+        assertEquals("Invalid configuration for whitelist filter step", exception.getMessage());
     }
 
     @Test
-    void getResultStats_shouldCalculateFilteredByCategory_whenValidData() {
+    void getResultStats_shouldCalculateOutputByCategory_whenValidData() {
         // given
         final String inputTableName = "input.table";
         final String resultTableName = "output.table";
         StepRun stepRun = StepRun.builder()
             .inputTableName(inputTableName)
             .resultTableName(resultTableName)
-            .stepCfgData("{\"categoryIds\":[1,2]}")
+            .stepCfgData("{\"categories\":[{\"id\":1,\"weight\":1.0},{\"id\":2,\"weight\":0.5}]}")
             .build();
 
         try (var mockedStatic = mockStatic(DatabaseUtils.class)) {
@@ -120,7 +121,7 @@ class BlacklistFilterProcessorTest {
             when(inputArtistQuery.getSingleResult()).thenReturn(5L);
             when(outputCountQuery.getSingleResult()).thenReturn(8L);
             when(outputArtistQuery.getSingleResult()).thenReturn(4L);
-
+            
             // Mock category-specific queries
             Query categoryQuery = mock(Query.class);
             when(entityManager.createNativeQuery(contains("ac.category_id = :categoryId"))).thenReturn(categoryQuery);
@@ -128,7 +129,7 @@ class BlacklistFilterProcessorTest {
             when(categoryQuery.getResultList()).thenReturn(List.of(new Object[]{5L}));
 
             // when
-            BlacklistFilterStats result = (BlacklistFilterStats) processor.getResultStats(stepRun);
+            WhitelistFilterStats result = (WhitelistFilterStats) processor.getResultStats(stepRun);
 
             // then
             assertNotNull(result);
@@ -140,7 +141,8 @@ class BlacklistFilterProcessorTest {
             assertEquals(8L, result.getOutputRecords());
             assertEquals(4L, result.getOutputArtists());
             // Verify extended stats
-            assertNotNull(result.getFilteredRecordsByCategory());
+            assertNotNull(result.getOutputRecordsByCategory());
+            assertNotNull(result.getOutputArtistsByCategory());
         }
     }
 
@@ -152,7 +154,7 @@ class BlacklistFilterProcessorTest {
         StepRun stepRun = StepRun.builder()
             .inputTableName(inputTableName)
             .resultTableName(resultTableName)
-            .stepCfgData("{\"categoryIds\":[1]}")
+            .stepCfgData("{\"categories\":[{\"id\":1,\"weight\":1.0}]}")
             .build();
 
         try (var mockedStatic = mockStatic(DatabaseUtils.class)) {
@@ -164,11 +166,12 @@ class BlacklistFilterProcessorTest {
             when(query.getSingleResult()).thenReturn(8L).thenReturn(4L);
 
             // when
-            BlacklistFilterStats result = (BlacklistFilterStats) processor.getResultStats(stepRun);
+            WhitelistFilterStats result = (WhitelistFilterStats) processor.getResultStats(stepRun);
 
             // then
             assertNotNull(result);
-            assertTrue(result.getFilteredRecordsByCategory().isEmpty());
+            assertTrue(result.getOutputRecordsByCategory().isEmpty());
+            assertTrue(result.getOutputArtistsByCategory().isEmpty());
         }
     }
 
@@ -180,7 +183,7 @@ class BlacklistFilterProcessorTest {
         StepRun stepRun = StepRun.builder()
             .inputTableName(inputTableName)
             .resultTableName(resultTableName)
-            .stepCfgData("{\"categoryIds\":[1]}")
+            .stepCfgData("{\"categories\":[{\"id\":1,\"weight\":1.0}]}")
             .build();
 
         try (var mockedStatic = mockStatic(DatabaseUtils.class)) {
@@ -192,11 +195,12 @@ class BlacklistFilterProcessorTest {
             when(query.getSingleResult()).thenReturn(10L).thenReturn(5L);
 
             // when
-            BlacklistFilterStats result = (BlacklistFilterStats) processor.getResultStats(stepRun);
+            WhitelistFilterStats result = (WhitelistFilterStats) processor.getResultStats(stepRun);
 
             // then
             assertNotNull(result);
-            assertTrue(result.getFilteredRecordsByCategory().isEmpty());
+            assertTrue(result.getOutputRecordsByCategory().isEmpty());
+            assertTrue(result.getOutputArtistsByCategory().isEmpty());
         }
     }
 }

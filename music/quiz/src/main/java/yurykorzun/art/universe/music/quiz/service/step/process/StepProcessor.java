@@ -1,4 +1,4 @@
-package yurykorzun.art.universe.music.quiz.service.step;
+package yurykorzun.art.universe.music.quiz.service.step.process;
 
 import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
 import yurykorzun.art.universe.music.quiz.dto.step.stats.StepRunStats;

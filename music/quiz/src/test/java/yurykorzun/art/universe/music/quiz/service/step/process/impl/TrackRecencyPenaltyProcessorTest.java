@@ -1,4 +1,4 @@
-package yurykorzun.art.universe.music.quiz.service.step.impl;
+package yurykorzun.art.universe.music.quiz.service.step.process.impl;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
@@ -11,14 +11,15 @@ import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
 import yurykorzun.art.universe.music.quiz.entity.Step;
 import yurykorzun.art.universe.music.quiz.entity.StepRun;
 import yurykorzun.art.universe.music.quiz.entity.StepType;
-import yurykorzun.art.universe.music.quiz.service.step.StepProcessorRegistry;
+import yurykorzun.art.universe.music.quiz.service.step.process.StepProcessorRegistry;
+import yurykorzun.art.universe.music.quiz.service.step.process.impl.TrackRecencyPenaltyProcessor;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class ArtistDiversityProcessorTest {
+class TrackRecencyPenaltyProcessorTest {
 
     @Mock
     private EntityManager entityManager;
@@ -26,11 +27,11 @@ class ArtistDiversityProcessorTest {
     @Mock
     private Query query;
 
-    private ArtistDiversityProcessor processor;
+    private TrackRecencyPenaltyProcessor processor;
 
     @BeforeEach
     void setUp() {
-        processor = new ArtistDiversityProcessor(mock(StepProcessorRegistry.class));
+        processor = new TrackRecencyPenaltyProcessor(mock(StepProcessorRegistry.class));
         processor.setEntityManager(entityManager);
     }
 
@@ -39,15 +40,15 @@ class ArtistDiversityProcessorTest {
         // given
         Step step = Step.builder()
             .id(1L)
-            .type(StepType.ARTIST_DIVERSITY)
+            .type(StepType.TRACK_RECENCY_PENALTY)
             .cfgData("{}")
             .build();
-
+        
         StepRun stepRun = StepRun.builder().id(1L).build();
-
+        
         final String inputTableName = "input.table";
         final String stepTableNameBase = "output.table";
-
+        
         when(entityManager.createNativeQuery(anyString())).thenReturn(query);
         when(query.setParameter(anyString(), any())).thenReturn(query);
         when(query.executeUpdate()).thenReturn(1);
@@ -57,10 +58,11 @@ class ArtistDiversityProcessorTest {
 
         // then
         assertNotNull(result);
-        assertEquals(stepTableNameBase + "_artist_diversity", result.getOutputTableName());
-        verify(entityManager).createNativeQuery(contains("p_quiz_gen_tracks_step_artist_diversity"));
+        assertEquals(stepTableNameBase + "_track_recency", result.getOutputTableName());
+        verify(entityManager).createNativeQuery(contains("p_quiz_gen_tracks_step_track_recency_penalty"));
         verify(query).setParameter("inputTable", inputTableName);
-        verify(query).setParameter("outputTable", stepTableNameBase + "_artist_diversity");
+        verify(query).setParameter("outputTable", stepTableNameBase + "_track_recency");
+        verify(query).executeUpdate();
     }
 
     @Test

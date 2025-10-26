@@ -1,6 +1,5 @@
 package yurykorzun.art.universe.music.quiz.service.step;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
@@ -11,18 +10,16 @@ import yurykorzun.art.universe.music.quiz.entity.Step;
 import yurykorzun.art.universe.music.quiz.entity.StepRun;
 import yurykorzun.art.universe.music.quiz.repository.StepMetadataProjection;
 import yurykorzun.art.universe.music.quiz.repository.StepRepository;
-import yurykorzun.art.universe.music.quiz.repository.StepRunRepository;
-
-import java.time.Instant;
+import yurykorzun.art.universe.music.quiz.service.step.process.StepProcessor;
+import yurykorzun.art.universe.music.quiz.service.step.process.StepProcessorRegistry;
 
 @Service
 @RequiredArgsConstructor
 public class StepExecutionServiceImpl implements StepExecutionService {
 
-    private final StepRunRepository stepRunRepository;
     private final StepRepository stepRepository;
-    private final ObjectMapper objectMapper;
     private final StepProcessorRegistry stepProcessorRegistry;
+    private final StepRunService stepRunService;
 
     @Override
     public String getPreview(Step step) {
@@ -32,31 +29,21 @@ public class StepExecutionServiceImpl implements StepExecutionService {
 
     @Override
     public StepRun executeStep(Step step, String inputTableName, @Nullable Long pipelineRunId) {
+        if (step == null) {
+            throw new IllegalArgumentException("Step cannot be null");
+        }
         StepProcessor processor = stepProcessorRegistry.get(step.getType());
         validateStep(step, processor);
         validateInputTable(inputTableName);
 
-        // Create StepRun
-        StepRun stepRun = StepRun.builder()
-            .pipelineRunId(pipelineRunId)
-            .stepId(step.getId())
-            .stepType(step.getType())
-            .algVersion(step.getAlgVersion())
-            .stepCfgData(step.getCfgData())
-            .inputTableName(inputTableName)
-            .status(ExecutionStatus.PENDING)
-            .build();
-        
-        StepRun savedStepRun = stepRunRepository.save(stepRun);
+        // Create StepRun in separate transaction
+        StepRun savedStepRun = stepRunService.createStepRun(step, inputTableName, pipelineRunId);
         
         // Generate output table name and cache it
         String stepTableNameBase = generateStepTableNameBase(step, savedStepRun, pipelineRunId);
 
-        // Update status to STARTED
-        savedStepRun.setStatus(ExecutionStatus.STARTED);
-        savedStepRun.setStartedAt(Instant.now());
-        savedStepRun.setResultTableName(stepTableNameBase);
-        stepRunRepository.save(savedStepRun);
+        // Update status to STARTED in separate transaction
+        stepRunService.updateStepRunStatus(savedStepRun.getId(), ExecutionStatus.STARTED, stepTableNameBase);
         
         try {
             // Measure execution time
@@ -67,32 +54,23 @@ public class StepExecutionServiceImpl implements StepExecutionService {
             
             long executionTime = System.currentTimeMillis() - startTime;
             
-            // Update output table name from result
-            savedStepRun.setResultTableName(result.getOutputTableName());
-            
             // Calculate statistics
-            StepRunStats stats = getResultStats(processor, stepRun);
+            savedStepRun.setInputTableName(inputTableName);
+            savedStepRun.setResultTableName(result.getOutputTableName());
+            StepRunStats stats = getResultStats(processor, savedStepRun);
             stats.setExecutionTimeMs(executionTime);
             
-            // Serialize stats to JSON
-            String statsJson = objectMapper.writeValueAsString(stats);
-            savedStepRun.setResultStats(statsJson);
+            // Complete step run in separate transaction
+            stepRunService.completeStepRun(savedStepRun.getId(), result.getOutputTableName(), stats, step.getId());
             
-            // Mark as completed
+            // Return updated step run
             savedStepRun.setStatus(ExecutionStatus.COMPLETED);
-            savedStepRun.setCompletedAt(Instant.now());
-            stepRunRepository.save(savedStepRun);
-            
-            // Update step's lastStepRunId
-            step.setLastStepRunId(savedStepRun.getId());
-            stepRepository.save(step);
-            
+            savedStepRun.setResultTableName(result.getOutputTableName());
             return savedStepRun;
             
         } catch (Exception e) {
-            savedStepRun.setStatus(ExecutionStatus.FAILED);
-            savedStepRun.setCompletedAt(Instant.now());
-            stepRunRepository.save(savedStepRun);
+            // Mark as failed in separate transaction
+            stepRunService.failStepRun(savedStepRun.getId());
             throw new RuntimeException("Step processing failed", e);
         }
     }

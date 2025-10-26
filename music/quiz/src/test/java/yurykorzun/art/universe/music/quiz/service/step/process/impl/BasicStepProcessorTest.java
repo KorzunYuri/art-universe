@@ -1,7 +1,8 @@
-package yurykorzun.art.universe.music.quiz.service.step.impl;
+package yurykorzun.art.universe.music.quiz.service.step.process.impl;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,7 +13,7 @@ import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
 import yurykorzun.art.universe.music.quiz.entity.Step;
 import yurykorzun.art.universe.music.quiz.entity.StepRun;
 import yurykorzun.art.universe.music.quiz.entity.StepType;
-import yurykorzun.art.universe.music.quiz.service.step.StepProcessorRegistry;
+import yurykorzun.art.universe.music.quiz.service.step.process.StepProcessorRegistry;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -91,12 +92,12 @@ class BasicStepProcessorTest {
 
             // then
             assertNotNull(result);
-            assertEquals(10L, result.getInputRecords());
-            assertEquals(5L, result.getInputArtists());
-            assertEquals(2L, result.getFilteredRecords());
-            assertEquals(1L, result.getFilteredArtists());
-            assertEquals(8L, result.getOutputRecords());
-            assertEquals(4L, result.getOutputArtists());
+            Assertions.assertEquals(10L, result.getInputRecords());
+            Assertions.assertEquals(5L, result.getInputArtists());
+            Assertions.assertEquals(2L, result.getFilteredRecords());
+            Assertions.assertEquals(1L, result.getFilteredArtists());
+            Assertions.assertEquals(8L, result.getOutputRecords());
+            Assertions.assertEquals(4L, result.getOutputArtists());
         }
     }
 
@@ -121,12 +122,12 @@ class BasicStepProcessorTest {
 
             // then
             assertNotNull(result);
-            assertEquals(8L, result.getInputRecords());
-            assertEquals(4L, result.getInputArtists());
-            assertEquals(0L, result.getFilteredRecords());
-            assertEquals(0L, result.getFilteredArtists());
-            assertEquals(8L, result.getOutputRecords());
-            assertEquals(4L, result.getOutputArtists());
+            Assertions.assertEquals(8L, result.getInputRecords());
+            Assertions.assertEquals(4L, result.getInputArtists());
+            Assertions.assertEquals(0L, result.getFilteredRecords());
+            Assertions.assertEquals(0L, result.getFilteredArtists());
+            Assertions.assertEquals(8L, result.getOutputRecords());
+            Assertions.assertEquals(4L, result.getOutputArtists());
         }
     }
 
@@ -151,12 +152,12 @@ class BasicStepProcessorTest {
 
             // then
             assertNotNull(result);
-            assertEquals(10L, result.getInputRecords());
-            assertEquals(5L, result.getInputArtists());
-            assertEquals(10L, result.getFilteredRecords());
-            assertEquals(5L, result.getFilteredArtists());
-            assertEquals(0L, result.getOutputRecords());
-            assertEquals(0L, result.getOutputArtists());
+            Assertions.assertEquals(10L, result.getInputRecords());
+            Assertions.assertEquals(5L, result.getInputArtists());
+            Assertions.assertEquals(10L, result.getFilteredRecords());
+            Assertions.assertEquals(5L, result.getFilteredArtists());
+            Assertions.assertEquals(0L, result.getOutputRecords());
+            Assertions.assertEquals(0L, result.getOutputArtists());
         }
     }
 
@@ -177,12 +178,12 @@ class BasicStepProcessorTest {
 
             // then
             assertNotNull(result);
-            assertEquals(0L, result.getInputRecords());
-            assertEquals(0L, result.getInputArtists());
-            assertEquals(0L, result.getFilteredRecords());
-            assertEquals(0L, result.getFilteredArtists());
-            assertEquals(0L, result.getOutputRecords());
-            assertEquals(0L, result.getOutputArtists());
+            Assertions.assertEquals(0L, result.getInputRecords());
+            Assertions.assertEquals(0L, result.getInputArtists());
+            Assertions.assertEquals(0L, result.getFilteredRecords());
+            Assertions.assertEquals(0L, result.getFilteredArtists());
+            Assertions.assertEquals(0L, result.getOutputRecords());
+            Assertions.assertEquals(0L, result.getOutputArtists());
         }
     }
 

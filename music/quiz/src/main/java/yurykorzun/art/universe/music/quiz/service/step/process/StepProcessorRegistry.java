@@ -1,4 +1,4 @@
-package yurykorzun.art.universe.music.quiz.service.step;
+package yurykorzun.art.universe.music.quiz.service.step.process;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

@@ -1,4 +1,4 @@
-package yurykorzun.art.universe.music.quiz.service.step.impl;
+package yurykorzun.art.universe.music.quiz.service.step.process.impl;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
@@ -11,14 +11,14 @@ import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
 import yurykorzun.art.universe.music.quiz.entity.Step;
 import yurykorzun.art.universe.music.quiz.entity.StepRun;
 import yurykorzun.art.universe.music.quiz.entity.StepType;
-import yurykorzun.art.universe.music.quiz.service.step.StepProcessorRegistry;
+import yurykorzun.art.universe.music.quiz.service.step.process.StepProcessorRegistry;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class ArtistRecencyPenaltyProcessorTest {
+class ApprovedFilterProcessorTest {
 
     @Mock
     private EntityManager entityManager;
@@ -26,11 +26,11 @@ class ArtistRecencyPenaltyProcessorTest {
     @Mock
     private Query query;
 
-    private ArtistRecencyPenaltyProcessor processor;
+    private ApprovedFilterProcessor processor;
 
     @BeforeEach
     void setUp() {
-        processor = new ArtistRecencyPenaltyProcessor(mock(StepProcessorRegistry.class));
+        processor = new ApprovedFilterProcessor(mock(StepProcessorRegistry.class));
         processor.setEntityManager(entityManager);
     }
 
@@ -39,7 +39,7 @@ class ArtistRecencyPenaltyProcessorTest {
         // given
         Step step = Step.builder()
             .id(1L)
-            .type(StepType.ARTIST_RECENCY_PENALTY)
+            .type(StepType.APPROVED_FILTER)
             .cfgData("{}")
             .build();
         
@@ -57,23 +57,20 @@ class ArtistRecencyPenaltyProcessorTest {
 
         // then
         assertNotNull(result);
-        assertEquals(stepTableNameBase + "_artist_recency", result.getOutputTableName());
-        verify(entityManager).createNativeQuery(contains("p_quiz_gen_tracks_step_artist_recency_penalty"));
+        assertEquals(stepTableNameBase + "_approved", result.getOutputTableName());
+        verify(entityManager).createNativeQuery(contains("p_quiz_gen_tracks_step_approved_filter"));
         verify(query).setParameter("inputTable", inputTableName);
-        verify(query).setParameter("outputTable", stepTableNameBase + "_artist_recency");
+        verify(query).setParameter("outputTable", stepTableNameBase + "_approved");
         verify(query).executeUpdate();
     }
 
     @Test
-    void getPreview_shouldReturnEmptyJson() {
-        // given
-        Step step = Step.builder().build();
-
+    void getStepType_shouldReturnApprovedFilter() {
         // when
-        String result = processor.getPreview(step);
+        StepType result = processor.getStepType();
 
         // then
-        assertEquals("{}", result);
+        assertEquals(StepType.APPROVED_FILTER, result);
     }
 
     @Test
@@ -86,6 +83,18 @@ class ArtistRecencyPenaltyProcessorTest {
 
         // then
         assertEquals(validConfig, result);
+    }
+
+    @Test
+    void getPreview_shouldReturnEmptyJson() {
+        // given
+        Step step = Step.builder().build();
+
+        // when
+        String result = processor.getPreview(step);
+
+        // then
+        assertEquals("{}", result);
     }
 
     @Test

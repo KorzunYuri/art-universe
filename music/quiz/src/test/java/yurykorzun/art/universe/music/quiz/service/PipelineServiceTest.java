@@ -11,8 +11,8 @@ import yurykorzun.art.universe.music.quiz.entity.*;
 import yurykorzun.art.universe.music.quiz.repository.*;
 import yurykorzun.art.universe.music.quiz.service.impl.PipelineServiceImpl;
 import yurykorzun.art.universe.music.quiz.service.step.StepExecutionService;
-import yurykorzun.art.universe.music.quiz.service.step.StepProcessor;
-import yurykorzun.art.universe.music.quiz.service.step.StepProcessorRegistry;
+import yurykorzun.art.universe.music.quiz.service.step.process.StepProcessor;
+import yurykorzun.art.universe.music.quiz.service.step.process.StepProcessorRegistry;
 
 import java.util.List;
 import java.util.Optional;

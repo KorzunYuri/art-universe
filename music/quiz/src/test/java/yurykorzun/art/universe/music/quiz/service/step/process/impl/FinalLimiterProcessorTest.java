@@ -1,5 +1,6 @@
-package yurykorzun.art.universe.music.quiz.service.step.impl;
+package yurykorzun.art.universe.music.quiz.service.step.process.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import org.junit.jupiter.api.BeforeEach;
@@ -7,18 +8,19 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.config.CommonTestConfig;
 import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
 import yurykorzun.art.universe.music.quiz.entity.Step;
 import yurykorzun.art.universe.music.quiz.entity.StepRun;
 import yurykorzun.art.universe.music.quiz.entity.StepType;
-import yurykorzun.art.universe.music.quiz.service.step.StepProcessorRegistry;
+import yurykorzun.art.universe.music.quiz.service.step.process.StepProcessorRegistry;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class ApprovedFilterProcessorTest {
+class FinalLimiterProcessorTest {
 
     @Mock
     private EntityManager entityManager;
@@ -26,11 +28,12 @@ class ApprovedFilterProcessorTest {
     @Mock
     private Query query;
 
-    private ApprovedFilterProcessor processor;
+    private FinalLimiterProcessor processor;
 
     @BeforeEach
     void setUp() {
-        processor = new ApprovedFilterProcessor(mock(StepProcessorRegistry.class));
+        ObjectMapper objectMapper = CommonTestConfig.getObjectMapper();
+        processor = new FinalLimiterProcessor(mock(StepProcessorRegistry.class), objectMapper);
         processor.setEntityManager(entityManager);
     }
 
@@ -39,8 +42,8 @@ class ApprovedFilterProcessorTest {
         // given
         Step step = Step.builder()
             .id(1L)
-            .type(StepType.APPROVED_FILTER)
-            .cfgData("{}")
+            .type(StepType.FINAL_LIMITER)
+            .cfgData("{\"targetCount\":20}")
             .build();
         
         StepRun stepRun = StepRun.builder().id(1L).build();
@@ -57,32 +60,33 @@ class ApprovedFilterProcessorTest {
 
         // then
         assertNotNull(result);
-        assertEquals(stepTableNameBase + "_approved", result.getOutputTableName());
-        verify(entityManager).createNativeQuery(contains("p_quiz_gen_tracks_step_approved_filter"));
+        assertEquals(stepTableNameBase + "_limiter", result.getOutputTableName());
+        verify(entityManager).createNativeQuery(contains("p_quiz_gen_tracks_step_final_selection"));
         verify(query).setParameter("inputTable", inputTableName);
-        verify(query).setParameter("outputTable", stepTableNameBase + "_approved");
+        verify(query).setParameter("outputTable", stepTableNameBase + "_limiter");
+        verify(query).setParameter("targetCount", 20);
         verify(query).executeUpdate();
     }
 
     @Test
-    void getStepType_shouldReturnApprovedFilter() {
-        // when
-        StepType result = processor.getStepType();
+    void validateConfiguration_shouldPass_whenValidConfig() {
+        // given
+        String validConfig = "{\"targetCount\":20}";
 
-        // then
-        assertEquals(StepType.APPROVED_FILTER, result);
+        // when & then
+        assertDoesNotThrow(() -> processor.validateConfiguration(validConfig));
     }
 
     @Test
-    void verifyConfigurationIsActual_shouldReturnSameConfig_whenValid() {
+    void validateConfiguration_shouldThrow_whenInvalidJson() {
         // given
-        String validConfig = "{}";
+        String invalidConfig = "invalid json";
 
-        // when
-        String result = processor.verifyConfigurationIsActual(validConfig);
-
-        // then
-        assertEquals(validConfig, result);
+        // when & then
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, 
+            () -> processor.validateConfiguration(invalidConfig));
+        
+        assertEquals("Invalid configuration for final limiter step", exception.getMessage());
     }
 
     @Test
@@ -98,18 +102,21 @@ class ApprovedFilterProcessorTest {
     }
 
     @Test
-    void validateConfiguration_shouldPass_whenValidConfig() {
+    void verifyConfigurationIsActual_shouldReturnSameConfig_whenValid() {
         // given
-        String validConfig = "{}";
+        String validConfig = "{\"targetCount\":20}";
 
-        // when & then
-        assertDoesNotThrow(() -> processor.validateConfiguration(validConfig));
+        // when
+        String result = processor.verifyConfigurationIsActual(validConfig);
+
+        // then
+        assertEquals(validConfig, result);
     }
 
     @Test
     void isActualVersion_shouldReturnTrue() {
         // when
-        boolean result = processor.isActualVersion("{}");
+        boolean result = processor.isActualVersion("{\"targetCount\":20}");
 
         // then
         assertTrue(result);
@@ -118,7 +125,7 @@ class ApprovedFilterProcessorTest {
     @Test
     void migrateConfiguration_shouldReturnSameConfig() {
         // given
-        String config = "{}";
+        String config = "{\"targetCount\":20}";
 
         // when
         String result = processor.migrateConfiguration(config);

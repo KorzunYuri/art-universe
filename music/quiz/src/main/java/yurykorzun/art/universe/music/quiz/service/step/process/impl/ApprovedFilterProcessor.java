@@ -1,28 +1,28 @@
-package yurykorzun.art.universe.music.quiz.service.step.impl;
+package yurykorzun.art.universe.music.quiz.service.step.process.impl;
 
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
 import yurykorzun.art.universe.music.quiz.entity.Step;
 import yurykorzun.art.universe.music.quiz.entity.StepRun;
 import yurykorzun.art.universe.music.quiz.entity.StepType;
-import yurykorzun.art.universe.music.quiz.service.step.StepProcessorRegistry;
+import yurykorzun.art.universe.music.quiz.service.step.process.StepProcessorRegistry;
 
 @Component
-public class ArtistDiversityProcessor extends BasicStepProcessor {
-    public ArtistDiversityProcessor(StepProcessorRegistry registry) {
+public class ApprovedFilterProcessor extends BasicStepProcessor {
+    public ApprovedFilterProcessor(StepProcessorRegistry registry) {
         super(registry);
     }
 
     @Override
     public StepType getStepType() {
-        return StepType.ARTIST_DIVERSITY;
+        return StepType.APPROVED_FILTER;
     }
 
     @Override
     public StepRunResult processStep(Step step, String inputTableName, String stepTableNameBase, StepRun stepRun) {
-        String outputTableName = stepTableNameBase + "_artist_diversity";
+        String outputTableName = stepTableNameBase + "_approved";
         entityManager.createNativeQuery(
-            "SELECT p_quiz_gen_tracks_step_artist_diversity(:inputTable, :outputTable)")
+            "SELECT p_quiz_gen_tracks_step_approved_filter(:inputTable, :outputTable)")
             .setParameter("inputTable", inputTableName)
             .setParameter("outputTable", outputTableName)
             .executeUpdate();
