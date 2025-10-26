@@ -28,7 +28,7 @@ BEGIN
         FROM %I.%I it
         LEFT JOIN (
             SELECT tc.track_id, MAX(wl.weight) as weight
-            FROM mu.track_category tc
+            FROM mu_quiz.mu_v_track_category tc
             JOIN %I.%I wl ON tc.category_id = wl.category_id
             GROUP BY tc.track_id
         ) wl ON it.track_id = wl.track_id

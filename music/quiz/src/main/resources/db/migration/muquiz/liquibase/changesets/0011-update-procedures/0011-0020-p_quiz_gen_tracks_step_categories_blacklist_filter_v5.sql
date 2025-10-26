@@ -11,21 +11,24 @@ DECLARE
     input_parts TEXT[];
     output_parts TEXT[];
     blacklist_parts TEXT[];
+    actual_input_table TEXT;
 BEGIN
     input_parts := p_parse_table_name(input_table);
     output_parts := p_parse_table_name(output_table);
     blacklist_parts := p_parse_table_name(blacklist_table);
 
+    -- Ensure chance column exists, may return new table name
+    actual_input_table := p_ensure_chance_column(input_table);
+    input_parts := p_parse_table_name(actual_input_table);
+
     EXECUTE format('
         CREATE TABLE %I.%I AS
-        SELECT it.track_id,
-               it.primary_artist_id
-        FROM %I.%I it
-        WHERE NOT EXISTS (
-            SELECT 1 
-            FROM mu.track_category tc
+        SELECT inp.*
+        FROM %I.%I inp
+        WHERE inp.track_id NOT IN (
+            SELECT tc.track_id 
+            FROM mu_quiz.mu_v_track_category tc
             JOIN %I.%I bl ON tc.category_id = bl.category_id
-            WHERE tc.track_id = it.track_id
         )
     ', output_parts[1], output_parts[2], input_parts[1], input_parts[2], 
        blacklist_parts[1], blacklist_parts[2]);

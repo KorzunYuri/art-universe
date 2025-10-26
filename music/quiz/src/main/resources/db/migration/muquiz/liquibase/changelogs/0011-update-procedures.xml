@@ -17,6 +17,12 @@
                  endDelimiter="$$"/>
     </changeSet>
 
+    <changeSet id="0011-0007-mu_v_track_category_view" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0011-update-procedures/0011-0007-mu_v_track_category_view.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
     <changeSet id="0011-0010-approved-filter-v3" author="amazon-q">
         <sqlFile path="db/migration/muquiz/liquibase/changesets/0011-update-procedures/0011-0010-p_quiz_gen_tracks_step_approved_filter_v3.sql"
                  splitStatements="false"
