@@ -8,6 +8,7 @@ import yurykorzun.art.universe.common.persistence.util.DatabaseUtils;
 import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
 import yurykorzun.art.universe.music.quiz.dto.step.config.CategoryWeight;
 import yurykorzun.art.universe.music.quiz.dto.step.config.WhitelistFilterStepConfig;
+import yurykorzun.art.universe.music.quiz.dto.step.stats.BasicStepStats;
 import yurykorzun.art.universe.music.quiz.dto.step.stats.StepRunStats;
 import yurykorzun.art.universe.music.quiz.dto.step.stats.WhitelistFilterStats;
 import yurykorzun.art.universe.music.quiz.entity.Step;
@@ -92,7 +93,11 @@ public class WhitelistFilterProcessor extends BaseGenerationStepProcessor {
 
     @Override
     public StepRunStats getResultStats(StepRun stepRun) {
-        WhitelistFilterStats stats = (WhitelistFilterStats) super.getResultStats(stepRun);
+        WhitelistFilterStats stats = new WhitelistFilterStats();
+        
+        // Copy basic stats from parent
+        StepRunStats basicStats = super.getResultStats(stepRun);
+        BasicStepStats.copyBasicStats(basicStats, stats);
         
         String inputTableName = stepRun.getInputTableName();
         String outputTableName = stepRun.getResultTableName();

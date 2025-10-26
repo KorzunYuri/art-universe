@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.common.persistence.util.DatabaseUtils;
 import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
 import yurykorzun.art.universe.music.quiz.dto.step.config.BlacklistFilterStepConfig;
+import yurykorzun.art.universe.music.quiz.dto.step.stats.BasicStepStats;
 import yurykorzun.art.universe.music.quiz.dto.step.stats.BlacklistFilterStats;
 import yurykorzun.art.universe.music.quiz.dto.step.stats.StepRunStats;
 import yurykorzun.art.universe.music.quiz.entity.Step;
@@ -94,13 +95,7 @@ public class BlacklistFilterProcessor extends BaseGenerationStepProcessor {
         
         // Copy basic stats from parent
         StepRunStats basicStats = super.getResultStats(stepRun);
-        stats.setInputRecords(basicStats.getInputRecords());
-        stats.setFilteredRecords(basicStats.getFilteredRecords());
-        stats.setOutputRecords(basicStats.getOutputRecords());
-        stats.setInputArtists(basicStats.getInputArtists());
-        stats.setFilteredArtists(basicStats.getFilteredArtists());
-        stats.setOutputArtists(basicStats.getOutputArtists());
-        stats.setExecutionTimeMs(basicStats.getExecutionTimeMs());
+        BasicStepStats.copyBasicStats(basicStats, stats);
         
         String inputTableName = stepRun.getInputTableName();
         String outputTableName = stepRun.getResultTableName();
