@@ -23,9 +23,6 @@ import java.util.Map;
 @Component
 public class BlacklistFilterProcessor extends BaseGenerationStepProcessor {
 
-    @PersistenceContext
-    private EntityManager entityManager;
-
     public BlacklistFilterProcessor(StepRunRepository stepRunRepository, StepRepository stepRepository, ObjectMapper objectMapper) {
         super(StepType.BLACKLIST_FILTER, stepRunRepository, stepRepository, objectMapper);
     }

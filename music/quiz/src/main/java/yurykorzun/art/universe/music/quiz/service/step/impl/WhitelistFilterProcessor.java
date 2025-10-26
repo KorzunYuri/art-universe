@@ -24,9 +24,6 @@ import java.util.Map;
 @Component
 public class WhitelistFilterProcessor extends BaseGenerationStepProcessor {
 
-    @PersistenceContext
-    private EntityManager entityManager;
-
     public WhitelistFilterProcessor(StepRunRepository stepRunRepository, StepRepository stepRepository, ObjectMapper objectMapper) {
         super(StepType.WHITELIST_FILTER, stepRunRepository, stepRepository, objectMapper);
     }

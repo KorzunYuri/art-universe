@@ -26,9 +26,6 @@ import java.util.stream.Collectors;
 @Component
 public class FinalCategoriesBalancerProcessor extends BaseGenerationStepProcessor {
 
-    @PersistenceContext
-    private EntityManager entityManager;
-
     public FinalCategoriesBalancerProcessor(StepRunRepository stepRunRepository, StepRepository stepRepository, ObjectMapper objectMapper) {
         super(StepType.FINAL_CATEGORIES_BALANCER, stepRunRepository, stepRepository, objectMapper);
     }

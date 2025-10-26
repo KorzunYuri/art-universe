@@ -15,9 +15,6 @@ import yurykorzun.art.universe.music.quiz.service.step.BaseGenerationStepProcess
 @Component
 public class ApprovedFilterProcessor extends BaseGenerationStepProcessor {
 
-    @PersistenceContext
-    private EntityManager entityManager;
-
     public ApprovedFilterProcessor(StepRunRepository stepRunRepository, StepRepository stepRepository, ObjectMapper objectMapper) {
         super(StepType.APPROVED_FILTER, stepRunRepository, stepRepository, objectMapper);
     }

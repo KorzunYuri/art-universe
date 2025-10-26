@@ -16,9 +16,6 @@ import yurykorzun.art.universe.music.quiz.service.step.BaseGenerationStepProcess
 @Component
 public class FinalSelectionProcessor extends BaseGenerationStepProcessor {
 
-    @PersistenceContext
-    private EntityManager entityManager;
-
     public FinalSelectionProcessor(StepRunRepository stepRunRepository, StepRepository stepRepository, ObjectMapper objectMapper) {
         super(StepType.FINAL_SELECTION, stepRunRepository, stepRepository, objectMapper);
     }

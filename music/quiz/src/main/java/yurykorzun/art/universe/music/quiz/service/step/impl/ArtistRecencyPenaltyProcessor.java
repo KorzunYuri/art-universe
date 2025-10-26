@@ -15,9 +15,6 @@ import yurykorzun.art.universe.music.quiz.service.step.BaseGenerationStepProcess
 @Component
 public class ArtistRecencyPenaltyProcessor extends BaseGenerationStepProcessor {
 
-    @PersistenceContext
-    private EntityManager entityManager;
-
     public ArtistRecencyPenaltyProcessor(StepRunRepository stepRunRepository, StepRepository stepRepository, ObjectMapper objectMapper) {
         super(StepType.ARTIST_RECENCY_PENALTY, stepRunRepository, stepRepository, objectMapper);
     }
