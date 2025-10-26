@@ -45,6 +45,9 @@ class PipelineServiceTest {
     @Mock
     private StepExecutionService stepExecutionService;
 
+    @Mock
+    private PipelineRunService pipelineRunService;
+
     @InjectMocks
     private PipelineServiceImpl pipelineService;
 
@@ -1420,35 +1423,16 @@ class PipelineServiceTest {
     }
 
     @Test
-    void executePipeline_shouldThrowException_whenPipelineRunNotFound() {
-        // given
-        Long pipelineId = 1L;
-        Long pipelineRunId = 999L;
-        when(pipelineRunRepository.findById(pipelineRunId)).thenReturn(Optional.empty());
-
-        // when & then
-        IllegalArgumentException exception = assertThrows(
-            IllegalArgumentException.class,
-            () -> pipelineService.executePipeline(pipelineId, pipelineRunId)
-        );
-
-        assertEquals("Pipeline run not found: 999", exception.getMessage());
-    }
-
-    @Test
     void executePipeline_shouldThrowException_whenPipelineHasNoSteps() {
         // given
         Long pipelineId = 1L;
-        Long pipelineRunId = 1L;
-        PipelineRun pipelineRun = PipelineRun.builder().id(pipelineRunId).pipelineId(pipelineId).build();
 
-        when(pipelineRunRepository.findById(pipelineRunId)).thenReturn(Optional.of(pipelineRun));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId)).thenReturn(List.of());
 
         // when & then
         IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
-            () -> pipelineService.executePipeline(pipelineId, pipelineRunId)
+            () -> pipelineService.executePipeline(pipelineId)
         );
 
         assertEquals("Pipeline has no steps", exception.getMessage());
@@ -1458,50 +1442,51 @@ class PipelineServiceTest {
     void executePipeline_shouldExecuteSuccessfully_whenValidPipeline() {
         // given
         Long pipelineId = 1L;
-        Long pipelineRunId = 1L;
-        PipelineRun pipelineRun = PipelineRun.builder().id(pipelineRunId).pipelineId(pipelineId).build();
 
         Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
         PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
 
         StepRun stepRun = StepRun.builder().id(1L).resultTableName("output_table").build();
+        PipelineRun pipelineRun = PipelineRun.builder().id(1L).pipelineId(pipelineId).build();
 
-        when(pipelineRunRepository.findById(pipelineRunId)).thenReturn(Optional.of(pipelineRun));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId)).thenReturn(List.of(pipelineStep1));
+        when(pipelineRunService.createPipelineRun(pipelineId)).thenReturn(pipelineRun);
         when(stepRepository.findById(1L)).thenReturn(Optional.of(step1));
-        when(stepExecutionService.executeStep(step1, null, pipelineRunId)).thenReturn(stepRun);
+        when(stepExecutionService.executeStep(step1, null, 1L)).thenReturn(stepRun);
 
         // when
-        PipelineRun result = pipelineService.executePipeline(pipelineId, pipelineRunId);
+        PipelineRun result = pipelineService.executePipeline(pipelineId);
 
         // then
         assertEquals(ExecutionStatus.COMPLETED, result.getStatus());
         assertEquals("output_table", result.getResultTableName());
-        assertNotNull(result.getCompletedAt());
+        verify(pipelineRunService).createPipelineRun(pipelineId);
+        verify(pipelineRunService).startPipelineRun(1L);
+        verify(pipelineRunService).completePipelineRun(1L, "output_table");
     }
 
     @Test
     void executePipeline_shouldHandleFailure_whenStepProcessingFails() {
         // given
         Long pipelineId = 1L;
-        Long pipelineRunId = 1L;
-        PipelineRun pipelineRun = PipelineRun.builder().id(pipelineRunId).pipelineId(pipelineId).build();
+        PipelineRun pipelineRun = PipelineRun.builder().id(1L).pipelineId(pipelineId).build();
 
         Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
         PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
 
-        when(pipelineRunRepository.findById(pipelineRunId)).thenReturn(Optional.of(pipelineRun));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId)).thenReturn(List.of(pipelineStep1));
+        when(pipelineRunService.createPipelineRun(pipelineId)).thenReturn(pipelineRun);
         when(stepRepository.findById(1L)).thenReturn(Optional.of(step1));
-        when(stepExecutionService.executeStep(step1, null, pipelineRunId)).thenThrow(new RuntimeException("Processing failed"));
+        when(stepExecutionService.executeStep(step1, null, 1L)).thenThrow(new RuntimeException("Processing failed"));
 
         // when & then
         RuntimeException exception = assertThrows(
             RuntimeException.class,
-            () -> pipelineService.executePipeline(pipelineId, pipelineRunId)
+            () -> pipelineService.executePipeline(pipelineId)
         );
 
         assertEquals("Pipeline execution failed", exception.getMessage());
-        verify(pipelineRunRepository, atLeast(2)).save(any(PipelineRun.class)); // STARTED and FAILED saves
+        verify(pipelineRunService).startPipelineRun(1L);
+        verify(pipelineRunService).failPipelineRun(1L);
     }
 }

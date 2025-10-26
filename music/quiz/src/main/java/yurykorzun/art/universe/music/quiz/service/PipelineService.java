@@ -23,7 +23,7 @@ public interface PipelineService {
     
     StepRun executeStep(Long pipelineId, Long stepId);
     
-    PipelineRun executePipeline(Long pipelineId, Long pipelineRunId);
+    PipelineRun executePipeline(Long pipelineId);
     
     void validatePipelineForGeneration(Long pipelineId);
 }

@@ -3,19 +3,18 @@ package yurykorzun.art.universe.music.quiz.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.music.quiz.dto.PipelineDto;
 import yurykorzun.art.universe.music.quiz.dto.PipelineStepDto;
 import yurykorzun.art.universe.music.quiz.entity.*;
 import yurykorzun.art.universe.music.quiz.repository.*;
 import yurykorzun.art.universe.music.quiz.service.PipelineService;
+import yurykorzun.art.universe.music.quiz.service.PipelineRunService;
 import yurykorzun.art.universe.music.quiz.service.step.StepExecutionService;
 import yurykorzun.art.universe.music.quiz.service.step.process.StepProcessor;
 import yurykorzun.art.universe.music.quiz.service.step.process.StepProcessorRegistry;
 import yurykorzun.art.universe.music.quiz.util.PipelineValidationUtil;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -32,6 +31,7 @@ public class PipelineServiceImpl implements PipelineService {
     private final StepRunRepository stepRunRepository;
     private final StepProcessorRegistry processorRegistry;
     private final StepExecutionService stepExecutionService;
+    private final PipelineRunService pipelineRunService;
 
     @Override
     @Transactional
@@ -305,19 +305,20 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     @Override
-    public PipelineRun executePipeline(Long pipelineId, Long pipelineRunId) {
-        log.debug("Executing pipeline {} with run {}", pipelineId, pipelineRunId);
-        
-        PipelineRun pipelineRun = pipelineRunRepository.findById(pipelineRunId)
-            .orElseThrow(() -> new IllegalArgumentException("Pipeline run not found: " + pipelineRunId));
+    public PipelineRun executePipeline(Long pipelineId) {
+        log.debug("Executing pipeline {}", pipelineId);
         
         List<PipelineStep> pipelineSteps = pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId);
         if (pipelineSteps.isEmpty()) {
             throw new IllegalArgumentException("Pipeline has no steps");
         }
         
+        // Create pipeline run in separate transaction
+        PipelineRun pipelineRun = pipelineRunService.createPipelineRun(pipelineId);
+        Long pipelineRunId = pipelineRun.getId();
+        
         // Start pipeline run in separate transaction
-        startPipelineRun(pipelineRunId);
+        pipelineRunService.startPipelineRun(pipelineRunId);
         
         try {
             String currentTable = null;
@@ -331,14 +332,14 @@ public class PipelineServiceImpl implements PipelineService {
             }
             
             // Complete pipeline run in separate transaction
-            completePipelineRun(pipelineRunId, currentTable);
+            pipelineRunService.completePipelineRun(pipelineRunId, currentTable);
             
             pipelineRun.setStatus(ExecutionStatus.COMPLETED);
             pipelineRun.setResultTableName(currentTable);
             
         } catch (Exception e) {
             // Fail pipeline run in separate transaction
-            failPipelineRun(pipelineRunId);
+            pipelineRunService.failPipelineRun(pipelineRunId);
             throw new RuntimeException("Pipeline execution failed", e);
         }
         
@@ -382,37 +383,6 @@ public class PipelineServiceImpl implements PipelineService {
         }
         
         return lastStepRun;
-    }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    private void startPipelineRun(Long pipelineRunId) {
-        PipelineRun pipelineRun = pipelineRunRepository.findById(pipelineRunId)
-            .orElseThrow(() -> new IllegalArgumentException("Pipeline run not found: " + pipelineRunId));
-        
-        pipelineRun.setStatus(ExecutionStatus.STARTED);
-        pipelineRun.setStartedAt(Instant.now());
-        pipelineRunRepository.save(pipelineRun);
-    }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    private void completePipelineRun(Long pipelineRunId, String resultTableName) {
-        PipelineRun pipelineRun = pipelineRunRepository.findById(pipelineRunId)
-            .orElseThrow(() -> new IllegalArgumentException("Pipeline run not found: " + pipelineRunId));
-        
-        pipelineRun.setStatus(ExecutionStatus.COMPLETED);
-        pipelineRun.setCompletedAt(Instant.now());
-        pipelineRun.setResultTableName(resultTableName);
-        pipelineRunRepository.save(pipelineRun);
-    }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    private void failPipelineRun(Long pipelineRunId) {
-        PipelineRun pipelineRun = pipelineRunRepository.findById(pipelineRunId)
-            .orElseThrow(() -> new IllegalArgumentException("Pipeline run not found: " + pipelineRunId));
-        
-        pipelineRun.setStatus(ExecutionStatus.FAILED);
-        pipelineRun.setCompletedAt(Instant.now());
-        pipelineRunRepository.save(pipelineRun);
     }
 
     private PipelineDto mapToDto(Pipeline pipeline, List<PipelineStepDto> steps) {

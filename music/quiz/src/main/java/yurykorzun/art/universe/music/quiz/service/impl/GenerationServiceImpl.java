@@ -80,23 +80,20 @@ public class GenerationServiceImpl implements GenerationService {
             pipelineStepRepository.save(immutablePipelineStep);
         }
         
-        // Create pipeline run
-        PipelineRun pipelineRun = PipelineRun.builder()
-            .pipelineId(savedPipeline.getId())
-            .build();
-        PipelineRun savedPipelineRun = pipelineRunRepository.save(pipelineRun);
-        
-        // Create generation
+        // Create generation without pipeline run id
         Generation generation = Generation.builder()
             .gameId(gameId)
-            .pipelineRunId(savedPipelineRun.getId())
             .status(GenerationStatus.PENDING)
             .build();
         Generation savedGeneration = generationRepository.save(generation);
         
         try {
             // Execute pipeline
-            PipelineRun completedPipelineRun = pipelineService.executePipeline(savedPipeline.getId(), savedPipelineRun.getId());
+            PipelineRun completedPipelineRun = pipelineService.executePipeline(savedPipeline.getId());
+            
+            // Update generation with pipeline run id
+            savedGeneration.setPipelineRunId(completedPipelineRun.getId());
+            savedGeneration = generationRepository.save(savedGeneration);
             
             // Read results and save to GenerationTrack
             @SuppressWarnings("unchecked")
