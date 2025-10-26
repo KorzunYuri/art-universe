@@ -8,6 +8,7 @@ import yurykorzun.art.universe.common.persistence.util.DatabaseUtils;
 import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
 import yurykorzun.art.universe.music.quiz.dto.step.config.CategoryWeight;
 import yurykorzun.art.universe.music.quiz.dto.step.config.FinalCategoriesBalancerConfig;
+import yurykorzun.art.universe.music.quiz.dto.step.stats.BasicStepStats;
 import yurykorzun.art.universe.music.quiz.dto.step.stats.FinalCategoriesBalancerStats;
 import yurykorzun.art.universe.music.quiz.dto.step.stats.StepRunStats;
 import yurykorzun.art.universe.music.quiz.entity.Step;
@@ -101,7 +102,11 @@ public class FinalCategoriesBalancerProcessor extends BaseGenerationStepProcesso
 
     @Override
     public StepRunStats getResultStats(StepRun stepRun) {
-        FinalCategoriesBalancerStats stats = (FinalCategoriesBalancerStats) super.getResultStats(stepRun);
+        FinalCategoriesBalancerStats stats = new FinalCategoriesBalancerStats();
+        
+        // Copy basic stats from parent
+        StepRunStats basicStats = super.getResultStats(stepRun);
+        BasicStepStats.copyBasicStats(basicStats, stats);
         
         String inputTableName = stepRun.getInputTableName();
         String outputTableName = stepRun.getResultTableName();
