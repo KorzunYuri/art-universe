@@ -78,7 +78,7 @@ public class BlacklistFilterProcessor extends BasicStepProcessor {
                 .setParameter("inputTable", inputTableName)
                 .setParameter("outputTable", outputTableName)
                 .setParameter("blacklistTable", blacklistTable)
-                .executeUpdate();
+                .getSingleResult();
                 
             return StepRunResult.builder()
                 .outputTableName(outputTableName)
