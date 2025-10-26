@@ -1,7 +1,6 @@
 package yurykorzun.art.universe.music.quiz.service.step.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
 import yurykorzun.art.universe.music.quiz.dto.step.config.StartDatasourceStepConfig;
@@ -15,16 +14,22 @@ import yurykorzun.art.universe.music.quiz.service.step.BaseGenerationStepProcess
 @Component
 public class StartDatasourceProcessor extends BaseGenerationStepProcessor {
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    public StartDatasourceProcessor(StepRunRepository stepRunRepository, StepRepository stepRepository) {
-        super(StepType.START_DATASOURCE, stepRunRepository, stepRepository);
+    public StartDatasourceProcessor(StepRunRepository stepRunRepository, StepRepository stepRepository, ObjectMapper objectMapper) {
+        super(StepType.START_DATASOURCE, stepRunRepository, stepRepository, objectMapper);
     }
 
     @Override
     protected String getStepSuffix() {
         return "start";
+    }
+
+    @Override
+    public void validateConfiguration(String cfgData) {
+        try {
+            objectMapper.readValue(cfgData, StartDatasourceStepConfig.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse step configuration", e);
+        }
     }
 
     @Override

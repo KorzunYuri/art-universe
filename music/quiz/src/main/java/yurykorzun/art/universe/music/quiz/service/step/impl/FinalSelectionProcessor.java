@@ -18,12 +18,9 @@ public class FinalSelectionProcessor extends BaseGenerationStepProcessor {
 
     @PersistenceContext
     private EntityManager entityManager;
-    
-    private final ObjectMapper objectMapper;
 
     public FinalSelectionProcessor(StepRunRepository stepRunRepository, StepRepository stepRepository, ObjectMapper objectMapper) {
-        super(StepType.FINAL_SELECTION, stepRunRepository, stepRepository);
-        this.objectMapper = objectMapper;
+        super(StepType.FINAL_SELECTION, stepRunRepository, stepRepository, objectMapper);
     }
 
     @Override

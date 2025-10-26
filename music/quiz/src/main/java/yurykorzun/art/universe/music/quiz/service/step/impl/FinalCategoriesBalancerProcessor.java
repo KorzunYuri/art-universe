@@ -29,11 +29,8 @@ public class FinalCategoriesBalancerProcessor extends BaseGenerationStepProcesso
     @PersistenceContext
     private EntityManager entityManager;
 
-    private final ObjectMapper objectMapper;
-
     public FinalCategoriesBalancerProcessor(StepRunRepository stepRunRepository, StepRepository stepRepository, ObjectMapper objectMapper) {
-        super(StepType.FINAL_CATEGORIES_BALANCER, stepRunRepository, stepRepository);
-        this.objectMapper = objectMapper;
+        super(StepType.FINAL_CATEGORIES_BALANCER, stepRunRepository, stepRepository, objectMapper);
     }
 
     @Override

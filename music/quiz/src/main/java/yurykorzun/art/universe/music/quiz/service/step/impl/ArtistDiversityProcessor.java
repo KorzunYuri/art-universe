@@ -1,5 +1,6 @@
 package yurykorzun.art.universe.music.quiz.service.step.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Component;
@@ -17,8 +18,8 @@ public class ArtistDiversityProcessor extends BaseGenerationStepProcessor {
     @PersistenceContext
     private EntityManager entityManager;
 
-    public ArtistDiversityProcessor(StepRunRepository stepRunRepository, StepRepository stepRepository) {
-        super(StepType.ARTIST_DIVERSITY, stepRunRepository, stepRepository);
+    public ArtistDiversityProcessor(StepRunRepository stepRunRepository, StepRepository stepRepository, ObjectMapper objectMapper) {
+        super(StepType.ARTIST_DIVERSITY, stepRunRepository, stepRepository, objectMapper);
     }
 
     @Override

@@ -26,11 +26,8 @@ public class BlacklistFilterProcessor extends BaseGenerationStepProcessor {
     @PersistenceContext
     private EntityManager entityManager;
 
-    private final ObjectMapper objectMapper;
-
     public BlacklistFilterProcessor(StepRunRepository stepRunRepository, StepRepository stepRepository, ObjectMapper objectMapper) {
-        super(StepType.BLACKLIST_FILTER, stepRunRepository, stepRepository);
-        this.objectMapper = objectMapper;
+        super(StepType.BLACKLIST_FILTER, stepRunRepository, stepRepository, objectMapper);
     }
 
     @Override

@@ -1,18 +1,23 @@
 package yurykorzun.art.universe.music.quiz.service.step;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
-import yurykorzun.art.universe.music.quiz.entity.*;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.config.CommonTestConfig;
+import yurykorzun.art.universe.music.quiz.entity.ExecutionStatus;
+import yurykorzun.art.universe.music.quiz.entity.Step;
+import yurykorzun.art.universe.music.quiz.entity.StepRun;
+import yurykorzun.art.universe.music.quiz.entity.StepType;
 import yurykorzun.art.universe.music.quiz.repository.StepMetadataProjection;
 import yurykorzun.art.universe.music.quiz.repository.StepRepository;
 import yurykorzun.art.universe.music.quiz.repository.StepRunRepository;
-import yurykorzun.art.universe.music.quiz.service.step.impl.StartDatasourceProcessor;
+import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -34,10 +39,37 @@ class BaseGenerationStepProcessorTest {
     @Mock
     private Query query;
 
+    private ObjectMapper objectMapper;
+
+    // Test processor for testing BaseGenerationStepProcessor
+    private static class TestProcessor extends BaseGenerationStepProcessor {
+        
+        public TestProcessor(StepRunRepository stepRunRepository, StepRepository stepRepository, ObjectMapper objectMapper) {
+            super(StepType.START_DATASOURCE, stepRunRepository, stepRepository, objectMapper);
+        }
+
+        @Override
+        protected String getStepSuffix() {
+            return "test";
+        }
+
+        @Override
+        protected StepRunResult processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun) {
+            return StepRunResult.builder()
+                .outputTableName(outputTableName)
+                .build();
+        }
+    }
+
+    @BeforeEach
+    void setUp() {
+        objectMapper = CommonTestConfig.getObjectMapper();
+    }
+
     @Test
     void process_shouldCreateStepRunAndReturnResult() {
         // given
-        StartDatasourceProcessor processor = new StartDatasourceProcessor(stepRunRepository, stepRepository);
+        TestProcessor processor = new TestProcessor(stepRunRepository, stepRepository, objectMapper);
         ReflectionTestUtils.setField(processor, "entityManager", entityManager);
         
         Step step = Step.builder()
@@ -60,6 +92,7 @@ class BaseGenerationStepProcessorTest {
         when(stepRunRepository.save(any(StepRun.class))).thenReturn(stepRun);
         when(stepRepository.getStepMetadata(1L)).thenReturn(metadata);
         when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+        when(query.setParameter(anyString(), any())).thenReturn(query);
         when(query.getSingleResult()).thenReturn(0L);
 
         // when
@@ -77,7 +110,7 @@ class BaseGenerationStepProcessorTest {
     @Test
     void getStepType_shouldReturnCorrectType() {
         // given
-        StartDatasourceProcessor processor = new StartDatasourceProcessor(stepRunRepository, stepRepository);
+        TestProcessor processor = new TestProcessor(stepRunRepository, stepRepository, objectMapper);
 
         // when
         StepType result = processor.getStepType();
@@ -89,7 +122,7 @@ class BaseGenerationStepProcessorTest {
     @Test
     void process_shouldHandleProcessingFailure_whenExceptionThrown() {
         // given
-        StartDatasourceProcessor processor = new StartDatasourceProcessor(stepRunRepository, stepRepository);
+        TestProcessor processor = new TestProcessor(stepRunRepository, stepRepository, objectMapper);
         ReflectionTestUtils.setField(processor, "entityManager", entityManager);
         
         Step step = Step.builder()
@@ -124,7 +157,7 @@ class BaseGenerationStepProcessorTest {
     @Test
     void process_shouldValidateStep_whenStepIsNull() {
         // given
-        StartDatasourceProcessor processor = new StartDatasourceProcessor(stepRunRepository, stepRepository);
+        TestProcessor processor = new TestProcessor(stepRunRepository, stepRepository, objectMapper);
 
         // when & then
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
@@ -136,7 +169,7 @@ class BaseGenerationStepProcessorTest {
     @Test
     void process_shouldValidateStepType_whenTypeMismatch() {
         // given
-        StartDatasourceProcessor processor = new StartDatasourceProcessor(stepRunRepository, stepRepository);
+        TestProcessor processor = new TestProcessor(stepRunRepository, stepRepository, objectMapper);
         
         Step step = Step.builder()
             .id(1L)
@@ -155,7 +188,7 @@ class BaseGenerationStepProcessorTest {
     @Test
     void process_shouldValidateInputTable_whenInvalidFormat() {
         // given
-        StartDatasourceProcessor processor = new StartDatasourceProcessor(stepRunRepository, stepRepository);
+        TestProcessor processor = new TestProcessor(stepRunRepository, stepRepository, objectMapper);
         
         Step step = Step.builder()
             .id(1L)
@@ -174,7 +207,7 @@ class BaseGenerationStepProcessorTest {
     @Test
     void process_shouldValidateInputTable_whenNullOrEmpty() {
         // given
-        StartDatasourceProcessor processor = new StartDatasourceProcessor(stepRunRepository, stepRepository);
+        TestProcessor processor = new TestProcessor(stepRunRepository, stepRepository, objectMapper);
         
         Step step = Step.builder()
             .id(1L)
@@ -193,7 +226,7 @@ class BaseGenerationStepProcessorTest {
     @Test
     void process_shouldProcessWithInputTable_whenValidFormat() {
         // given
-        StartDatasourceProcessor processor = new StartDatasourceProcessor(stepRunRepository, stepRepository);
+        TestProcessor processor = new TestProcessor(stepRunRepository, stepRepository, objectMapper);
         ReflectionTestUtils.setField(processor, "entityManager", entityManager);
         
         Step step = Step.builder()
@@ -216,6 +249,7 @@ class BaseGenerationStepProcessorTest {
         when(stepRunRepository.save(any(StepRun.class))).thenReturn(stepRun);
         when(stepRepository.getStepMetadata(1L)).thenReturn(metadata);
         when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+        when(query.setParameter(anyString(), any())).thenReturn(query);
         when(query.getSingleResult()).thenReturn(5L);
 
         // when

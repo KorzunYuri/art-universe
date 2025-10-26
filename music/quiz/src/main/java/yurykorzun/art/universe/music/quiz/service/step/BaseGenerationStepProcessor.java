@@ -31,17 +31,17 @@ public abstract class BaseGenerationStepProcessor implements GenerationStepProce
     @PersistenceContext
     protected EntityManager entityManager;
     
-    @Autowired
-    protected ObjectMapper objectMapper;
+    protected final ObjectMapper objectMapper;
     
     // Cache for output table names with simple LRU behavior
     private static final ConcurrentMap<Long, String> outputTableCache = new ConcurrentHashMap<>();
     private static final int MAX_CACHE_SIZE = 1000;
     
-    protected BaseGenerationStepProcessor(StepType stepType, StepRunRepository stepRunRepository, StepRepository stepRepository) {
+    protected BaseGenerationStepProcessor(StepType stepType, StepRunRepository stepRunRepository, StepRepository stepRepository, ObjectMapper objectMapper) {
         this.stepType = stepType;
         this.stepRunRepository = stepRunRepository;
         this.stepRepository = stepRepository;
+        this.objectMapper = objectMapper;
         GenerationStepProcessorRegistry.register(this);
     }
     

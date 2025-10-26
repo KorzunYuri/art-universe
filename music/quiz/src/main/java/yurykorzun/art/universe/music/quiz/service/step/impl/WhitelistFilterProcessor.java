@@ -26,12 +26,9 @@ public class WhitelistFilterProcessor extends BaseGenerationStepProcessor {
 
     @PersistenceContext
     private EntityManager entityManager;
-    
-    private final ObjectMapper objectMapper;
 
     public WhitelistFilterProcessor(StepRunRepository stepRunRepository, StepRepository stepRepository, ObjectMapper objectMapper) {
-        super(StepType.WHITELIST_FILTER, stepRunRepository, stepRepository);
-        this.objectMapper = objectMapper;
+        super(StepType.WHITELIST_FILTER, stepRunRepository, stepRepository, objectMapper);
     }
 
     @Override
