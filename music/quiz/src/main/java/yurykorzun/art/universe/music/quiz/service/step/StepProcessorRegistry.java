@@ -1,30 +1,29 @@
 package yurykorzun.art.universe.music.quiz.service.step;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.music.quiz.entity.StepType;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Component
 @Slf4j
-public class GenerationStepProcessorRegistry {
+public class StepProcessorRegistry {
 
-    private static final Map<StepType, GenerationStepProcessor> REGISTRY = new ConcurrentHashMap<>();
+    private final Map<StepType, StepProcessor> registry = new ConcurrentHashMap<>();
 
-    private GenerationStepProcessorRegistry() {}
-
-    public static void register(GenerationStepProcessor processor) {
+    public void register(StepProcessor processor) {
         StepType stepType = processor.getStepType();
-        GenerationStepProcessor existing = REGISTRY.putIfAbsent(stepType, processor);
+        StepProcessor existing = registry.put(stepType, processor);
         if (existing != null) {
-            // don't throw exception - breaks processor tests
             log.warn("Processor already exists for type " + stepType);
         }
     }
 
     @SuppressWarnings("unchecked")
-    public static <T extends GenerationStepProcessor> T get(StepType stepType) {
-        GenerationStepProcessor processor = REGISTRY.get(stepType);
+    public <T extends StepProcessor> T get(StepType stepType) {
+        StepProcessor processor = registry.get(stepType);
         if (processor == null) {
             throw new IllegalArgumentException("No processor found for step type: " + stepType);
         }

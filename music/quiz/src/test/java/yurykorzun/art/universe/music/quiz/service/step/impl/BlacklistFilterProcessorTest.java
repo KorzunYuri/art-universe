@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 import yurykorzun.art.universe.common.persistence.util.DatabaseUtils;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.config.CommonTestConfig;
 import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
@@ -16,23 +15,16 @@ import yurykorzun.art.universe.music.quiz.dto.step.stats.BlacklistFilterStats;
 import yurykorzun.art.universe.music.quiz.entity.Step;
 import yurykorzun.art.universe.music.quiz.entity.StepRun;
 import yurykorzun.art.universe.music.quiz.entity.StepType;
-import yurykorzun.art.universe.music.quiz.repository.StepRepository;
-import yurykorzun.art.universe.music.quiz.repository.StepRunRepository;
+import yurykorzun.art.universe.music.quiz.service.step.StepProcessorRegistry;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class BlacklistFilterProcessorTest {
-
-    @Mock
-    private StepRunRepository stepRunRepository;
-
-    @Mock
-    private StepRepository stepRepository;
 
     @Mock
     private EntityManager entityManager;
@@ -45,8 +37,8 @@ class BlacklistFilterProcessorTest {
     @BeforeEach
     void setUp() {
         ObjectMapper objectMapper = CommonTestConfig.getObjectMapper();
-        processor = new BlacklistFilterProcessor(stepRunRepository, stepRepository, objectMapper);
-        ReflectionTestUtils.setField(processor, "entityManager", entityManager);
+        processor = new BlacklistFilterProcessor(mock(StepProcessorRegistry.class), objectMapper);
+        processor.setEntityManager(entityManager);
     }
 
     @Test
@@ -60,23 +52,19 @@ class BlacklistFilterProcessorTest {
         
         StepRun stepRun = StepRun.builder().id(1L).build();
         
-        // Mock getStepMetadata for generateAuxiliaryTableName
-        var metadata = mock(yurykorzun.art.universe.music.quiz.repository.StepMetadataProjection.class);
-        when(metadata.getGameId()).thenReturn(1L);
-        when(metadata.getPipelineId()).thenReturn(1L);
-        when(stepRepository.getStepMetadata(1L)).thenReturn(metadata);
+        final String inputTableName = "input.table";
+        final String stepTableNameBase = "output.table";
         
         when(entityManager.createNativeQuery(anyString())).thenReturn(query);
         when(query.setParameter(anyString(), any())).thenReturn(query);
         when(query.executeUpdate()).thenReturn(1);
 
         // when
-        StepRunResult result = ReflectionTestUtils.invokeMethod(processor, "processStep", 
-            step, "input.table", "output.table", stepRun);
+        StepRunResult result = processor.processStep(step, inputTableName, stepTableNameBase, stepRun);
 
         // then
         assertNotNull(result);
-        assertEquals("output.table", result.getOutputTableName());
+        assertEquals(stepTableNameBase + "_blacklist_filter", result.getOutputTableName());
         verify(entityManager, times(4)).createNativeQuery(anyString()); // DROP, CREATE, INSERT, PROCEDURE
         verify(query, atLeast(1)).executeUpdate();
     }
@@ -117,18 +105,42 @@ class BlacklistFilterProcessorTest {
             mockedStatic.when(() -> DatabaseUtils.tableExists(entityManager, inputTableName)).thenReturn(true);
             mockedStatic.when(() -> DatabaseUtils.tableExists(entityManager, resultTableName)).thenReturn(true);
             
-            when(entityManager.createNativeQuery(anyString())).thenReturn(query);
-            when(query.setParameter(anyString(), any())).thenReturn(query);
-            when(query.getSingleResult()).thenReturn(10L);
-            when(query.getResultList()).thenReturn(List.of(new Object[]{5L}));
+            // Mock basic stats calls
+            Query inputCountQuery = mock(Query.class);
+            Query inputArtistQuery = mock(Query.class);
+            Query outputCountQuery = mock(Query.class);
+            Query outputArtistQuery = mock(Query.class);
+            
+            when(entityManager.createNativeQuery("SELECT COUNT(*) FROM " + inputTableName)).thenReturn(inputCountQuery);
+            when(entityManager.createNativeQuery("SELECT COUNT(DISTINCT primary_artist_id) FROM " + inputTableName)).thenReturn(inputArtistQuery);
+            when(entityManager.createNativeQuery("SELECT COUNT(*) FROM " + resultTableName)).thenReturn(outputCountQuery);
+            when(entityManager.createNativeQuery("SELECT COUNT(DISTINCT primary_artist_id) FROM " + resultTableName)).thenReturn(outputArtistQuery);
+            
+            when(inputCountQuery.getSingleResult()).thenReturn(10L);
+            when(inputArtistQuery.getSingleResult()).thenReturn(5L);
+            when(outputCountQuery.getSingleResult()).thenReturn(8L);
+            when(outputArtistQuery.getSingleResult()).thenReturn(4L);
+
+            // Mock category-specific queries
+            Query categoryQuery = mock(Query.class);
+            when(entityManager.createNativeQuery(contains("ac.category_id = :categoryId"))).thenReturn(categoryQuery);
+            when(categoryQuery.setParameter(anyString(), any())).thenReturn(categoryQuery);
+            when(categoryQuery.getResultList()).thenReturn(List.of(new Object[]{5L}));
 
             // when
             BlacklistFilterStats result = (BlacklistFilterStats) processor.getResultStats(stepRun);
 
             // then
             assertNotNull(result);
+            // Verify basic stats are copied
+            assertEquals(10L, result.getInputRecords());
+            assertEquals(5L, result.getInputArtists());
+            assertEquals(2L, result.getFilteredRecords());
+            assertEquals(1L, result.getFilteredArtists());
+            assertEquals(8L, result.getOutputRecords());
+            assertEquals(4L, result.getOutputArtists());
+            // Verify extended stats
             assertNotNull(result.getFilteredRecordsByCategory());
-            assertTrue(result.getFilteredRecordsByCategory().isEmpty());
         }
     }
 
@@ -147,9 +159,10 @@ class BlacklistFilterProcessorTest {
             mockedStatic.when(() -> DatabaseUtils.tableExists(entityManager, inputTableName)).thenReturn(false);
             mockedStatic.when(() -> DatabaseUtils.tableExists(entityManager, resultTableName)).thenReturn(true);
             
-            when(entityManager.createNativeQuery(anyString())).thenReturn(query);
-            when(query.getSingleResult()).thenReturn(0L);
-            
+            when(entityManager.createNativeQuery("SELECT COUNT(*) FROM " + resultTableName)).thenReturn(query);
+            when(entityManager.createNativeQuery("SELECT COUNT(DISTINCT primary_artist_id) FROM " + resultTableName)).thenReturn(query);
+            when(query.getSingleResult()).thenReturn(8L).thenReturn(4L);
+
             // when
             BlacklistFilterStats result = (BlacklistFilterStats) processor.getResultStats(stepRun);
 
@@ -174,9 +187,10 @@ class BlacklistFilterProcessorTest {
             mockedStatic.when(() -> DatabaseUtils.tableExists(entityManager, inputTableName)).thenReturn(true);
             mockedStatic.when(() -> DatabaseUtils.tableExists(entityManager, resultTableName)).thenReturn(false);
             
-            when(entityManager.createNativeQuery(anyString())).thenReturn(query);
-            when(query.getSingleResult()).thenReturn(0L);
-            
+            when(entityManager.createNativeQuery("SELECT COUNT(*) FROM " + inputTableName)).thenReturn(query);
+            when(entityManager.createNativeQuery("SELECT COUNT(DISTINCT primary_artist_id) FROM " + inputTableName)).thenReturn(query);
+            when(query.getSingleResult()).thenReturn(10L).thenReturn(5L);
+
             // when
             BlacklistFilterStats result = (BlacklistFilterStats) processor.getResultStats(stepRun);
 

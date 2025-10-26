@@ -4,15 +4,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import yurykorzun.art.universe.music.quiz.dto.PipelineDto;
 import yurykorzun.art.universe.music.quiz.dto.PipelineStepDto;
 import yurykorzun.art.universe.music.quiz.entity.*;
 import yurykorzun.art.universe.music.quiz.repository.*;
 import yurykorzun.art.universe.music.quiz.service.impl.PipelineServiceImpl;
-import yurykorzun.art.universe.music.quiz.service.step.GenerationStepProcessor;
-import yurykorzun.art.universe.music.quiz.service.step.GenerationStepProcessorRegistry;
+import yurykorzun.art.universe.music.quiz.service.step.StepExecutionService;
+import yurykorzun.art.universe.music.quiz.service.step.StepProcessor;
+import yurykorzun.art.universe.music.quiz.service.step.StepProcessorRegistry;
 
 import java.util.List;
 import java.util.Optional;
@@ -38,6 +38,12 @@ class PipelineServiceTest {
     
     @Mock
     private StepRunRepository stepRunRepository;
+
+    @Mock
+    private StepProcessorRegistry processorRegistry;
+
+    @Mock
+    private StepExecutionService stepExecutionService;
 
     @InjectMocks
     private PipelineServiceImpl pipelineService;
@@ -161,27 +167,26 @@ class PipelineServiceTest {
             .cfgData("{}")
             .build();
 
-        GenerationStepProcessor mockProcessor = mock(GenerationStepProcessor.class);
+        StepProcessor mockProcessor = mock(StepProcessor.class);
 
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId)).thenReturn(List.of());
+        when(stepRepository.findAllById(List.of())).thenReturn(List.of());
+        when(processorRegistry.get(StepType.START_DATASOURCE)).thenReturn(mockProcessor);
+        when(mockProcessor.verifyConfigurationIsActual("{}")).thenReturn("{}");
         when(stepRepository.save(any(Step.class))).thenReturn(savedStep);
         when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
 
-        try (MockedStatic<GenerationStepProcessorRegistry> mockedRegistry = mockStatic(GenerationStepProcessorRegistry.class)) {
-            mockedRegistry.when(() -> GenerationStepProcessorRegistry.get(StepType.START_DATASOURCE))
-                .thenReturn(mockProcessor);
+        // when
+        PipelineDto result = pipelineService.addStep(pipelineId, stepDto, 1);
 
-            // when
-            PipelineDto result = pipelineService.addStep(pipelineId, stepDto, 1);
-
-            // then
-            assertNotNull(result);
-            assertEquals(pipelineId, result.getId());
-            verify(mockProcessor).validateConfiguration("{}");
-            verify(stepRepository).save(any(Step.class));
-            verify(pipelineStepRepository).save(any(PipelineStep.class));
-        }
+        // then
+        assertNotNull(result);
+        assertEquals(pipelineId, result.getId());
+        verify(mockProcessor).verifyConfigurationIsActual("{}");
+        verify(stepRepository).save(any(Step.class));
+        verify(pipelineStepRepository).save(any(PipelineStep.class));
+        verify(stepRepository).clearSubsequentStepResults(pipelineId, 1);
     }
 
     @Test
@@ -208,7 +213,7 @@ class PipelineServiceTest {
             .cfgData("{}")
             .build();
 
-        GenerationStepProcessor mockProcessor = mock(GenerationStepProcessor.class);
+        StepProcessor mockProcessor = mock(StepProcessor.class);
 
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
@@ -216,20 +221,17 @@ class PipelineServiceTest {
         when(stepRepository.findAllById(List.of(1L))).thenReturn(List.of(existingStep));
         when(stepRepository.save(any(Step.class))).thenReturn(savedStep);
         when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
+        when(processorRegistry.get(StepType.APPROVED_FILTER)).thenReturn(mockProcessor);
+        when(mockProcessor.verifyConfigurationIsActual("{}")).thenReturn("{}");
 
-        try (MockedStatic<GenerationStepProcessorRegistry> mockedRegistry = mockStatic(GenerationStepProcessorRegistry.class)) {
-            mockedRegistry.when(() -> GenerationStepProcessorRegistry.get(StepType.APPROVED_FILTER))
-                .thenReturn(mockProcessor);
+        // when
+        PipelineDto result = pipelineService.addStep(pipelineId, stepDto, 2);
 
-            // when
-            PipelineDto result = pipelineService.addStep(pipelineId, stepDto, 2);
-
-            // then
-            assertNotNull(result);
-            verify(mockProcessor).validateConfiguration("{}");
-            verify(pipelineStepRepository).incrementOrderAfter(pipelineId, 2);
-            verify(stepRepository).clearSubsequentStepResults(pipelineId, 2);
-        }
+        // then
+        assertNotNull(result);
+        verify(mockProcessor).verifyConfigurationIsActual("{}");
+        verify(pipelineStepRepository).incrementOrderAfter(pipelineId, 2);
+        verify(stepRepository).clearSubsequentStepResults(pipelineId, 2);
     }
 
     @Test
@@ -264,25 +266,22 @@ class PipelineServiceTest {
             .cfgData("invalid")
             .build();
 
-        GenerationStepProcessor mockProcessor = mock(GenerationStepProcessor.class);
+        StepProcessor mockProcessor = mock(StepProcessor.class);
         doThrow(new IllegalArgumentException("Invalid configuration"))
-            .when(mockProcessor).validateConfiguration("invalid");
+            .when(mockProcessor).verifyConfigurationIsActual("invalid");
 
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId)).thenReturn(List.of());
+        when(stepRepository.findAllById(List.of())).thenReturn(List.of());
+        when(processorRegistry.get(StepType.START_DATASOURCE)).thenReturn(mockProcessor);
 
-        try (MockedStatic<GenerationStepProcessorRegistry> mockedRegistry = mockStatic(GenerationStepProcessorRegistry.class)) {
-            mockedRegistry.when(() -> GenerationStepProcessorRegistry.get(StepType.START_DATASOURCE))
-                .thenReturn(mockProcessor);
-
-            // when & then
-            IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> pipelineService.addStep(pipelineId, stepDto, 1)
-            );
-            
-            assertEquals("Invalid configuration", exception.getMessage());
-        }
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> pipelineService.addStep(pipelineId, stepDto, 1)
+        );
+        
+        assertEquals("Invalid configuration", exception.getMessage());
     }
 
     @Test
@@ -291,7 +290,7 @@ class PipelineServiceTest {
         Long pipelineId = 1L;
         Pipeline pipeline = Pipeline.builder().id(pipelineId).immutable(false).build();
         PipelineStepDto stepDto = PipelineStepDto.builder()
-            .type(StepType.FINAL_SELECTION)
+            .type(StepType.FINAL_LIMITER)
             .cfgData("{}")
             .build();
 
@@ -304,12 +303,12 @@ class PipelineServiceTest {
         
         Step savedStep = Step.builder()
             .id(2L)
-            .type(StepType.FINAL_SELECTION)
+            .type(StepType.FINAL_LIMITER)
             .algVersion(1)
             .cfgData("{}")
             .build();
 
-        GenerationStepProcessor mockProcessor = mock(GenerationStepProcessor.class);
+        StepProcessor mockProcessor = mock(StepProcessor.class);
 
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
@@ -317,20 +316,17 @@ class PipelineServiceTest {
         when(stepRepository.findAllById(List.of(1L))).thenReturn(List.of(existingStep));
         when(stepRepository.save(any(Step.class))).thenReturn(savedStep);
         when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
+        when(processorRegistry.get(StepType.FINAL_LIMITER)).thenReturn(mockProcessor);
+        when(mockProcessor.verifyConfigurationIsActual("{}")).thenReturn("{}");
 
-        try (MockedStatic<GenerationStepProcessorRegistry> mockedRegistry = mockStatic(GenerationStepProcessorRegistry.class)) {
-            mockedRegistry.when(() -> GenerationStepProcessorRegistry.get(StepType.FINAL_SELECTION))
-                .thenReturn(mockProcessor);
+        // when
+        PipelineDto result = pipelineService.addStep(pipelineId, stepDto, 2);
 
-            // when
-            PipelineDto result = pipelineService.addStep(pipelineId, stepDto, 2);
-
-            // then
-            assertNotNull(result);
-            verify(mockProcessor).validateConfiguration("{}");
-            verify(stepRepository).save(any(Step.class));
-            verify(pipelineStepRepository).save(any(PipelineStep.class));
-        }
+        // then
+        assertNotNull(result);
+        verify(mockProcessor).verifyConfigurationIsActual("{}");
+        verify(stepRepository).save(any(Step.class));
+        verify(pipelineStepRepository).save(any(PipelineStep.class));
     }
 
     @Test
@@ -401,7 +397,7 @@ class PipelineServiceTest {
         Long pipelineId = 1L;
         Pipeline pipeline = Pipeline.builder().id(pipelineId).immutable(false).build();
         PipelineStepDto stepDto = PipelineStepDto.builder()
-            .type(StepType.FINAL_SELECTION)
+            .type(StepType.FINAL_LIMITER)
             .cfgData("{}")
             .build();
 
@@ -443,7 +439,7 @@ class PipelineServiceTest {
             .build();
 
         Step existingStep1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
-        Step existingStep2 = Step.builder().id(2L).type(StepType.FINAL_SELECTION).build();
+        Step existingStep2 = Step.builder().id(2L).type(StepType.FINAL_LIMITER).build();
         PipelineStep existingPipelineStep1 = PipelineStep.builder()
             .pipelineId(pipelineId)
             .stepId(1L)
@@ -510,7 +506,7 @@ class PipelineServiceTest {
             .cfgData("{}")
             .build();
 
-        Step existingStep = Step.builder().id(1L).type(StepType.FINAL_SELECTION).build();
+        Step existingStep = Step.builder().id(1L).type(StepType.FINAL_LIMITER).build();
         PipelineStep existingPipelineStep = PipelineStep.builder()
             .pipelineId(pipelineId)
             .stepId(1L)
@@ -638,7 +634,7 @@ class PipelineServiceTest {
         Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
         Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
         Step step3 = Step.builder().id(3L).type(StepType.BLACKLIST_FILTER).build();
-        Step step4 = Step.builder().id(4L).type(StepType.FINAL_SELECTION).build();
+        Step step4 = Step.builder().id(4L).type(StepType.FINAL_LIMITER).build();
         
         PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
         PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
@@ -673,7 +669,7 @@ class PipelineServiceTest {
         Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
         Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
         Step step3 = Step.builder().id(3L).type(StepType.BLACKLIST_FILTER).build();
-        Step step4 = Step.builder().id(4L).type(StepType.FINAL_SELECTION).build();
+        Step step4 = Step.builder().id(4L).type(StepType.FINAL_LIMITER).build();
         
         PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
         PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
@@ -736,7 +732,7 @@ class PipelineServiceTest {
         
         Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
         Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
-        Step step3 = Step.builder().id(3L).type(StepType.FINAL_SELECTION).build();
+        Step step3 = Step.builder().id(3L).type(StepType.FINAL_LIMITER).build();
         
         PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
         PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
@@ -796,7 +792,7 @@ class PipelineServiceTest {
         
         Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
         Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
-        Step step3 = Step.builder().id(3L).type(StepType.FINAL_SELECTION).build();
+        Step step3 = Step.builder().id(3L).type(StepType.FINAL_LIMITER).build();
         
         PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
         PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
@@ -888,7 +884,7 @@ class PipelineServiceTest {
         
         Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
         Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
-        Step step3 = Step.builder().id(3L).type(StepType.FINAL_SELECTION).build();
+        Step step3 = Step.builder().id(3L).type(StepType.FINAL_LIMITER).build();
         
         PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
         PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
@@ -952,7 +948,7 @@ class PipelineServiceTest {
         
         Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
         Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
-        Step step3 = Step.builder().id(3L).type(StepType.FINAL_SELECTION).build();
+        Step step3 = Step.builder().id(3L).type(StepType.FINAL_LIMITER).build();
         
         PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
         PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
@@ -1027,7 +1023,7 @@ class PipelineServiceTest {
         Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
 
         Step step1 = Step.builder().id(1L).type(StepType.APPROVED_FILTER).build();
-        Step step2 = Step.builder().id(2L).type(StepType.FINAL_SELECTION).build();
+        Step step2 = Step.builder().id(2L).type(StepType.FINAL_LIMITER).build();
 
         PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
         PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
@@ -1080,7 +1076,7 @@ class PipelineServiceTest {
 
         Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
         Step step2 = Step.builder().id(2L).type(StepType.START_DATASOURCE).build();
-        Step step3 = Step.builder().id(3L).type(StepType.FINAL_SELECTION).build();
+        Step step3 = Step.builder().id(3L).type(StepType.FINAL_LIMITER).build();
 
         PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
         PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
@@ -1107,7 +1103,7 @@ class PipelineServiceTest {
         Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
 
         Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
-        Step step2 = Step.builder().id(2L).type(StepType.FINAL_SELECTION).build();
+        Step step2 = Step.builder().id(2L).type(StepType.FINAL_LIMITER).build();
         Step step3 = Step.builder().id(3L).type(StepType.FINAL_CATEGORIES_BALANCER).build();
 
         PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
@@ -1136,7 +1132,7 @@ class PipelineServiceTest {
 
         Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
         Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
-        Step step3 = Step.builder().id(3L).type(StepType.FINAL_SELECTION).build();
+        Step step3 = Step.builder().id(3L).type(StepType.FINAL_LIMITER).build();
 
         PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
         PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
@@ -1204,25 +1200,21 @@ class PipelineServiceTest {
             .cfgData("invalid")
             .build();
 
-        GenerationStepProcessor mockProcessor = mock(GenerationStepProcessor.class);
+        StepProcessor mockProcessor = mock(StepProcessor.class);
         doThrow(new IllegalArgumentException("Invalid configuration"))
-            .when(mockProcessor).validateConfiguration("invalid");
+            .when(mockProcessor).verifyConfigurationIsActual("invalid");
 
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(stepRepository.findById(stepId)).thenReturn(Optional.of(step));
+        when(processorRegistry.get(StepType.START_DATASOURCE)).thenReturn(mockProcessor);
 
-        try (MockedStatic<GenerationStepProcessorRegistry> mockedRegistry = mockStatic(GenerationStepProcessorRegistry.class)) {
-            mockedRegistry.when(() -> GenerationStepProcessorRegistry.get(StepType.START_DATASOURCE))
-                .thenReturn(mockProcessor);
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> pipelineService.updateStepConfiguration(pipelineId, stepId, stepDto)
+        );
 
-            // when & then
-            IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> pipelineService.updateStepConfiguration(pipelineId, stepId, stepDto)
-            );
-
-            assertEquals("Invalid configuration", exception.getMessage());
-        }
+        assertEquals("Invalid configuration", exception.getMessage());
     }
 
     @Test
@@ -1236,26 +1228,22 @@ class PipelineServiceTest {
             .cfgData("{}")
             .build();
 
-        GenerationStepProcessor mockProcessor = mock(GenerationStepProcessor.class);
+        StepProcessor mockProcessor = mock(StepProcessor.class);
 
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(stepRepository.findById(stepId)).thenReturn(Optional.of(step));
         when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
+        when(processorRegistry.get(StepType.START_DATASOURCE)).thenReturn(mockProcessor);
 
-        try (MockedStatic<GenerationStepProcessorRegistry> mockedRegistry = mockStatic(GenerationStepProcessorRegistry.class)) {
-            mockedRegistry.when(() -> GenerationStepProcessorRegistry.get(StepType.START_DATASOURCE))
-                .thenReturn(mockProcessor);
+        // when
+        PipelineDto result = pipelineService.updateStepConfiguration(pipelineId, stepId, stepDto);
 
-            // when
-            PipelineDto result = pipelineService.updateStepConfiguration(pipelineId, stepId, stepDto);
-
-            // then
-            assertNotNull(result);
-            verify(mockProcessor).validateConfiguration("{}");
-            verify(stepRepository).save(step);
-            verify(pipelineStepRepository, never()).findByPipelineIdOrderByOrd(any());
-            verify(stepRepository, never()).clearSubsequentStepResults(any(), any());
-        }
+        // then
+        assertNotNull(result);
+        verify(mockProcessor).verifyConfigurationIsActual("{}");
+        verify(stepRepository).save(step);
+        verify(pipelineStepRepository, never()).findByPipelineIdOrderByOrd(any());
+        verify(stepRepository, never()).clearSubsequentStepResults(any(), any());
     }
 
     @Test
@@ -1273,28 +1261,25 @@ class PipelineServiceTest {
         PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
         PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(3).build();
 
-        GenerationStepProcessor mockProcessor = mock(GenerationStepProcessor.class);
+        StepProcessor mockProcessor = mock(StepProcessor.class);
 
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(stepRepository.findById(stepId)).thenReturn(Optional.of(step));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(pipelineStep1, pipelineStep2, pipelineStep3));
         when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
+        when(processorRegistry.get(StepType.APPROVED_FILTER)).thenReturn(mockProcessor);
+        when(mockProcessor.verifyConfigurationIsActual("{\"updated\": true}")).thenReturn("{\"updated\": true}");
 
-        try (MockedStatic<GenerationStepProcessorRegistry> mockedRegistry = mockStatic(GenerationStepProcessorRegistry.class)) {
-            mockedRegistry.when(() -> GenerationStepProcessorRegistry.get(StepType.APPROVED_FILTER))
-                .thenReturn(mockProcessor);
+        // when
+        PipelineDto result = pipelineService.updateStepConfiguration(pipelineId, stepId, stepDto);
 
-            // when
-            PipelineDto result = pipelineService.updateStepConfiguration(pipelineId, stepId, stepDto);
-
-            // then
-            assertNotNull(result);
-            verify(mockProcessor).validateConfiguration("{\"updated\": true}");
-            verify(stepRepository).save(step);
-            verify(stepRepository).clearSubsequentStepResults(pipelineId, 2);
-            assertEquals("{\"updated\": true}", step.getCfgData());
-        }
+        // then
+        assertNotNull(result);
+        verify(mockProcessor).verifyConfigurationIsActual("{\"updated\": true}");
+        verify(stepRepository).save(step);
+        verify(stepRepository).clearSubsequentStepResults(pipelineId, 2);
+        assertEquals("{\"updated\": true}", step.getCfgData());
     }
 
     @Test
@@ -1308,24 +1293,20 @@ class PipelineServiceTest {
             .cfgData("{\"updated\": true}")
             .build();
 
-        GenerationStepProcessor mockProcessor = mock(GenerationStepProcessor.class);
+        StepProcessor mockProcessor = mock(StepProcessor.class);
 
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(stepRepository.findById(stepId)).thenReturn(Optional.of(step));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId)).thenReturn(List.of());
+        when(processorRegistry.get(StepType.APPROVED_FILTER)).thenReturn(mockProcessor);
 
-        try (MockedStatic<GenerationStepProcessorRegistry> mockedRegistry = mockStatic(GenerationStepProcessorRegistry.class)) {
-            mockedRegistry.when(() -> GenerationStepProcessorRegistry.get(StepType.APPROVED_FILTER))
-                .thenReturn(mockProcessor);
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> pipelineService.updateStepConfiguration(pipelineId, stepId, stepDto)
+        );
 
-            // when & then
-            IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> pipelineService.updateStepConfiguration(pipelineId, stepId, stepDto)
-            );
-
-            assertEquals("Step not found in pipeline", exception.getMessage());
-        }
+        assertEquals("Step not found in pipeline", exception.getMessage());
     }
 
 
@@ -1334,23 +1315,17 @@ class PipelineServiceTest {
         // given
         Long stepId = 1L;
         Step step = Step.builder().id(stepId).type(StepType.START_DATASOURCE).cfgData("{}").build();
-        GenerationStepProcessor mockProcessor = mock(GenerationStepProcessor.class);
 
         when(stepRepository.findById(stepId)).thenReturn(Optional.of(step));
-        when(mockProcessor.getPreview("{}")).thenReturn("{\"preview\": \"data\"}");
+        when(stepExecutionService.getPreview(step)).thenReturn("{\"preview\": \"data\"}");
 
-        try (MockedStatic<GenerationStepProcessorRegistry> mockedRegistry = mockStatic(GenerationStepProcessorRegistry.class)) {
-            mockedRegistry.when(() -> GenerationStepProcessorRegistry.get(StepType.START_DATASOURCE))
-                .thenReturn(mockProcessor);
+        // when
+        String result = pipelineService.getStepPreview(stepId);
 
-            // when
-            String result = pipelineService.getStepPreview(stepId);
-
-            // then
-            assertEquals("{\"preview\": \"data\"}", result);
-            verify(stepRepository).save(step);
-            assertEquals("{\"preview\": \"data\"}", step.getPreviewData());
-        }
+        // then
+        assertEquals("{\"preview\": \"data\"}", result);
+        verify(stepRepository).save(step);
+        assertEquals("{\"preview\": \"data\"}", step.getPreviewData());
     }
 
     @Test
@@ -1412,7 +1387,7 @@ class PipelineServiceTest {
 
         Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).lastStepRunId(1L).build();
         Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
-        Step step3 = Step.builder().id(3L).type(StepType.FINAL_SELECTION).build();
+        Step step3 = Step.builder().id(3L).type(StepType.FINAL_LIMITER).build();
 
         PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
         PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
@@ -1421,9 +1396,6 @@ class PipelineServiceTest {
         StepRun stepRun1 = StepRun.builder().id(1L).resultTableName("output_table_1").build();
         StepRun stepRun2 = StepRun.builder().id(2L).resultTableName("output_table_2").build();
         StepRun stepRun3 = StepRun.builder().id(3L).resultTableName("output_table_3").build();
-        
-        GenerationStepProcessor mockProcessor2 = mock(GenerationStepProcessor.class);
-        GenerationStepProcessor mockProcessor3 = mock(GenerationStepProcessor.class);
 
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
@@ -1435,23 +1407,16 @@ class PipelineServiceTest {
         when(stepRepository.findById(3L)).thenReturn(Optional.of(step3));
         when(stepRunRepository.findById(1L)).thenReturn(Optional.of(stepRun1));
         
-        when(mockProcessor2.process(step2, "output_table_1", null)).thenReturn(stepRun2);
-        when(mockProcessor3.process(step3, "output_table_2", null)).thenReturn(stepRun3);
+        when(stepExecutionService.executeStep(step2, "output_table_1", null)).thenReturn(stepRun2);
+        when(stepExecutionService.executeStep(step3, "output_table_2", null)).thenReturn(stepRun3);
 
-        try (MockedStatic<GenerationStepProcessorRegistry> mockedRegistry = mockStatic(GenerationStepProcessorRegistry.class)) {
-            mockedRegistry.when(() -> GenerationStepProcessorRegistry.get(StepType.APPROVED_FILTER))
-                .thenReturn(mockProcessor2);
-            mockedRegistry.when(() -> GenerationStepProcessorRegistry.get(StepType.FINAL_SELECTION))
-                .thenReturn(mockProcessor3);
+        // when
+        StepRun result = pipelineService.executeStep(pipelineId, stepId);
 
-            // when
-            StepRun result = pipelineService.executeStep(pipelineId, stepId);
-
-            // then
-            assertNotNull(result);
-            assertEquals("output_table_3", result.getResultTableName());
-            verify(stepRepository).clearSubsequentStepResults(pipelineId, 2);
-        }
+        // then
+        assertNotNull(result);
+        assertEquals("output_table_3", result.getResultTableName());
+        verify(stepRepository).clearSubsequentStepResults(pipelineId, 2);
     }
 
     @Test
@@ -1500,25 +1465,19 @@ class PipelineServiceTest {
         PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
 
         StepRun stepRun = StepRun.builder().id(1L).resultTableName("output_table").build();
-        GenerationStepProcessor mockProcessor = mock(GenerationStepProcessor.class);
 
         when(pipelineRunRepository.findById(pipelineRunId)).thenReturn(Optional.of(pipelineRun));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId)).thenReturn(List.of(pipelineStep1));
         when(stepRepository.findById(1L)).thenReturn(Optional.of(step1));
-        when(mockProcessor.process(step1, null, pipelineRunId)).thenReturn(stepRun);
+        when(stepExecutionService.executeStep(step1, null, pipelineRunId)).thenReturn(stepRun);
 
-        try (MockedStatic<GenerationStepProcessorRegistry> mockedRegistry = mockStatic(GenerationStepProcessorRegistry.class)) {
-            mockedRegistry.when(() -> GenerationStepProcessorRegistry.get(StepType.START_DATASOURCE))
-                .thenReturn(mockProcessor);
+        // when
+        PipelineRun result = pipelineService.executePipeline(pipelineId, pipelineRunId);
 
-            // when
-            PipelineRun result = pipelineService.executePipeline(pipelineId, pipelineRunId);
-
-            // then
-            assertEquals(ExecutionStatus.COMPLETED, result.getStatus());
-            assertEquals("output_table", result.getResultTableName());
-            assertNotNull(result.getCompletedAt());
-        }
+        // then
+        assertEquals(ExecutionStatus.COMPLETED, result.getStatus());
+        assertEquals("output_table", result.getResultTableName());
+        assertNotNull(result.getCompletedAt());
     }
 
     @Test
@@ -1531,25 +1490,18 @@ class PipelineServiceTest {
         Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
         PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
 
-        GenerationStepProcessor mockProcessor = mock(GenerationStepProcessor.class);
-
         when(pipelineRunRepository.findById(pipelineRunId)).thenReturn(Optional.of(pipelineRun));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId)).thenReturn(List.of(pipelineStep1));
         when(stepRepository.findById(1L)).thenReturn(Optional.of(step1));
-        when(mockProcessor.process(step1, null, pipelineRunId)).thenThrow(new RuntimeException("Processing failed"));
+        when(stepExecutionService.executeStep(step1, null, pipelineRunId)).thenThrow(new RuntimeException("Processing failed"));
 
-        try (MockedStatic<GenerationStepProcessorRegistry> mockedRegistry = mockStatic(GenerationStepProcessorRegistry.class)) {
-            mockedRegistry.when(() -> GenerationStepProcessorRegistry.get(StepType.START_DATASOURCE))
-                .thenReturn(mockProcessor);
+        // when & then
+        RuntimeException exception = assertThrows(
+            RuntimeException.class,
+            () -> pipelineService.executePipeline(pipelineId, pipelineRunId)
+        );
 
-            // when & then
-            RuntimeException exception = assertThrows(
-                RuntimeException.class,
-                () -> pipelineService.executePipeline(pipelineId, pipelineRunId)
-            );
-
-            assertEquals("Pipeline execution failed", exception.getMessage());
-            verify(pipelineRunRepository, atLeast(2)).save(any(PipelineRun.class)); // STARTED and FAILED saves
-        }
+        assertEquals("Pipeline execution failed", exception.getMessage());
+        verify(pipelineRunRepository, atLeast(2)).save(any(PipelineRun.class)); // STARTED and FAILED saves
     }
 }

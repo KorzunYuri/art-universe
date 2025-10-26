@@ -1,23 +1,26 @@
 package yurykorzun.art.universe.music.quiz.service.step.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
+import yurykorzun.art.universe.music.quiz.dto.step.config.FinalLimiterStepConfig;
 import yurykorzun.art.universe.music.quiz.entity.Step;
 import yurykorzun.art.universe.music.quiz.entity.StepRun;
 import yurykorzun.art.universe.music.quiz.entity.StepType;
-import yurykorzun.art.universe.music.quiz.dto.step.config.FinalSelectionStepConfig;
-import yurykorzun.art.universe.music.quiz.repository.StepRepository;
-import yurykorzun.art.universe.music.quiz.repository.StepRunRepository;
-import yurykorzun.art.universe.music.quiz.service.step.BaseGenerationStepProcessor;
+import yurykorzun.art.universe.music.quiz.service.step.StepProcessorRegistry;
 
 @Component
-public class FinalSelectionProcessor extends BaseGenerationStepProcessor {
+public class FinalLimiterProcessor extends BasicStepProcessor {
+    private final ObjectMapper objectMapper;
 
-    public FinalSelectionProcessor(StepRunRepository stepRunRepository, StepRepository stepRepository, ObjectMapper objectMapper) {
-        super(StepType.FINAL_SELECTION, stepRunRepository, stepRepository, objectMapper);
+    public FinalLimiterProcessor(StepProcessorRegistry registry, ObjectMapper objectMapper) {
+        super(registry);
+        this.objectMapper = objectMapper;
+    }
+
+    @Override
+    public StepType getStepType() {
+        return StepType.FINAL_LIMITER;
     }
 
     @Override
@@ -25,23 +28,19 @@ public class FinalSelectionProcessor extends BaseGenerationStepProcessor {
         parseConfig(cfgData);
     }
     
-    private FinalSelectionStepConfig parseConfig(String cfgData) {
+    private FinalLimiterStepConfig parseConfig(String cfgData) {
         try {
-            return objectMapper.readValue(cfgData, FinalSelectionStepConfig.class);
+            return objectMapper.readValue(cfgData, FinalLimiterStepConfig.class);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid configuration for final selection step", e);
+            throw new IllegalArgumentException("Invalid configuration for final limiter step", e);
         }
     }
 
     @Override
-    protected String getStepSuffix() {
-        return "final";
-    }
-
-    @Override
-    protected StepRunResult processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun) {
+    public StepRunResult processStep(Step step, String inputTableName, String stepTableNameBase, StepRun stepRun) {
+        String outputTableName = stepTableNameBase + "_limiter";
         try {
-            FinalSelectionStepConfig config = parseConfig(step.getCfgData());
+            FinalLimiterStepConfig config = parseConfig(step.getCfgData());
             
             entityManager.createNativeQuery(
                 "SELECT p_quiz_gen_tracks_step_final_selection(:inputTable, :outputTable, :targetCount)")

@@ -6,7 +6,7 @@ public sealed interface StepConfig
     permits StartDatasourceStepConfig,
             BlacklistFilterStepConfig,
             WhitelistFilterStepConfig,
-            FinalSelectionStepConfig,
+    FinalLimiterStepConfig,
             FinalCategoriesBalancerConfig {
     StepType getType();
 }

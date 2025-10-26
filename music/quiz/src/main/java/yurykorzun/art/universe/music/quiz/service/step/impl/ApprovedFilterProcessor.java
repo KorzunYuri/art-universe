@@ -1,31 +1,26 @@
 package yurykorzun.art.universe.music.quiz.service.step.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
 import yurykorzun.art.universe.music.quiz.entity.Step;
 import yurykorzun.art.universe.music.quiz.entity.StepRun;
 import yurykorzun.art.universe.music.quiz.entity.StepType;
-import yurykorzun.art.universe.music.quiz.repository.StepRepository;
-import yurykorzun.art.universe.music.quiz.repository.StepRunRepository;
-import yurykorzun.art.universe.music.quiz.service.step.BaseGenerationStepProcessor;
+import yurykorzun.art.universe.music.quiz.service.step.StepProcessorRegistry;
 
 @Component
-public class ApprovedFilterProcessor extends BaseGenerationStepProcessor {
-
-    public ApprovedFilterProcessor(StepRunRepository stepRunRepository, StepRepository stepRepository, ObjectMapper objectMapper) {
-        super(StepType.APPROVED_FILTER, stepRunRepository, stepRepository, objectMapper);
+public class ApprovedFilterProcessor extends BasicStepProcessor {
+    public ApprovedFilterProcessor(StepProcessorRegistry registry) {
+        super(registry);
     }
 
     @Override
-    protected String getStepSuffix() {
-        return "approved";
+    public StepType getStepType() {
+        return StepType.APPROVED_FILTER;
     }
 
     @Override
-    protected StepRunResult processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun) {
+    public StepRunResult processStep(Step step, String inputTableName, String stepTableNameBase, StepRun stepRun) {
+        String outputTableName = stepTableNameBase + "_approved";
         entityManager.createNativeQuery(
             "SELECT p_quiz_gen_tracks_step_approved_filter(:inputTable, :outputTable)")
             .setParameter("inputTable", inputTableName)

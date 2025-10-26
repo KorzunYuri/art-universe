@@ -7,20 +7,21 @@ import yurykorzun.art.universe.music.quiz.dto.step.config.StartDatasourceStepCon
 import yurykorzun.art.universe.music.quiz.entity.Step;
 import yurykorzun.art.universe.music.quiz.entity.StepRun;
 import yurykorzun.art.universe.music.quiz.entity.StepType;
-import yurykorzun.art.universe.music.quiz.repository.StepRepository;
-import yurykorzun.art.universe.music.quiz.repository.StepRunRepository;
-import yurykorzun.art.universe.music.quiz.service.step.BaseGenerationStepProcessor;
+import yurykorzun.art.universe.music.quiz.service.step.StepProcessorRegistry;
 
 @Component
-public class StartDatasourceProcessor extends BaseGenerationStepProcessor {
+public class StartDatasourceProcessor extends BasicStepProcessor {
 
-    public StartDatasourceProcessor(StepRunRepository stepRunRepository, StepRepository stepRepository, ObjectMapper objectMapper) {
-        super(StepType.START_DATASOURCE, stepRunRepository, stepRepository, objectMapper);
+    private final ObjectMapper objectMapper;
+
+    public StartDatasourceProcessor(StepProcessorRegistry registry, ObjectMapper objectMapper) {
+        super(registry);
+        this.objectMapper = objectMapper;
     }
 
     @Override
-    protected String getStepSuffix() {
-        return "start";
+    public StepType getStepType() {
+        return StepType.START_DATASOURCE;
     }
 
     @Override
@@ -33,7 +34,7 @@ public class StartDatasourceProcessor extends BaseGenerationStepProcessor {
     }
 
     @Override
-    protected StepRunResult processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun) {
+    public StepRunResult processStep(Step step, String inputTableName, String stepTableNameBase, StepRun stepRun) {
         try {
             StartDatasourceStepConfig config = objectMapper.readValue(step.getCfgData(), StartDatasourceStepConfig.class);
             return StepRunResult.builder()

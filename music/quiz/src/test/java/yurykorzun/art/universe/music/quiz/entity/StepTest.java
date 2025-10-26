@@ -36,13 +36,13 @@ class StepTest {
     void builder_shouldCreateStepWithDefaults() {
         // when
         Step step = Step.builder()
-            .type(StepType.FINAL_SELECTION)
+            .type(StepType.FINAL_LIMITER)
             .algVersion(1)
             .build();
 
         // then
         assertNotNull(step);
-        assertEquals(StepType.FINAL_SELECTION, step.getType());
+        assertEquals(StepType.FINAL_LIMITER, step.getType());
         assertEquals(1, step.getAlgVersion());
         assertFalse(step.getDeleted());
         assertFalse(step.getImmutable());

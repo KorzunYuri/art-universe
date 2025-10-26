@@ -1,31 +1,26 @@
 package yurykorzun.art.universe.music.quiz.service.step.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
 import yurykorzun.art.universe.music.quiz.entity.Step;
 import yurykorzun.art.universe.music.quiz.entity.StepRun;
 import yurykorzun.art.universe.music.quiz.entity.StepType;
-import yurykorzun.art.universe.music.quiz.repository.StepRepository;
-import yurykorzun.art.universe.music.quiz.repository.StepRunRepository;
-import yurykorzun.art.universe.music.quiz.service.step.BaseGenerationStepProcessor;
+import yurykorzun.art.universe.music.quiz.service.step.StepProcessorRegistry;
 
 @Component
-public class ArtistDiversityProcessor extends BaseGenerationStepProcessor {
-
-    public ArtistDiversityProcessor(StepRunRepository stepRunRepository, StepRepository stepRepository, ObjectMapper objectMapper) {
-        super(StepType.ARTIST_DIVERSITY, stepRunRepository, stepRepository, objectMapper);
+public class ArtistDiversityProcessor extends BasicStepProcessor {
+    public ArtistDiversityProcessor(StepProcessorRegistry registry) {
+        super(registry);
     }
 
     @Override
-    protected String getStepSuffix() {
-        return "diversity";
+    public StepType getStepType() {
+        return StepType.ARTIST_DIVERSITY;
     }
 
     @Override
-    protected StepRunResult processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun) {
+    public StepRunResult processStep(Step step, String inputTableName, String stepTableNameBase, StepRun stepRun) {
+        String outputTableName = stepTableNameBase + "_artist_diversity";
         entityManager.createNativeQuery(
             "SELECT p_quiz_gen_tracks_step_artist_diversity(:inputTable, :outputTable)")
             .setParameter("inputTable", inputTableName)

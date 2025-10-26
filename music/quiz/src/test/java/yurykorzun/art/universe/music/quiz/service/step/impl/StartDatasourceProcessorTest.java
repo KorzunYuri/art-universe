@@ -1,40 +1,45 @@
 package yurykorzun.art.universe.music.quiz.service.step.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.config.CommonTestConfig;
 import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
 import yurykorzun.art.universe.music.quiz.dto.step.config.StartDatasourceStepConfig;
 import yurykorzun.art.universe.music.quiz.entity.Step;
 import yurykorzun.art.universe.music.quiz.entity.StepRun;
 import yurykorzun.art.universe.music.quiz.entity.StepType;
-import yurykorzun.art.universe.music.quiz.repository.StepRepository;
-import yurykorzun.art.universe.music.quiz.repository.StepRunRepository;
+import yurykorzun.art.universe.music.quiz.service.step.StepProcessorRegistry;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 class StartDatasourceProcessorTest {
 
     @Mock
-    private StepRunRepository stepRunRepository;
+    private EntityManager entityManager;
 
     @Mock
-    private StepRepository stepRepository;
+    private Query query;
 
-    @InjectMocks
     private StartDatasourceProcessor processor;
+
+    @BeforeEach
+    void setUp() {
+        ObjectMapper objectMapper = CommonTestConfig.getObjectMapper();
+        processor = new StartDatasourceProcessor(mock(StepProcessorRegistry.class), objectMapper);
+        processor.setEntityManager(entityManager);
+    }
 
     @Test
     void processStep_shouldReturnDatasourceFromConfig_whenValidConfig() {
         // given
-        ObjectMapper objectMapper = new ObjectMapper();
-        processor = new StartDatasourceProcessor(stepRunRepository, stepRepository, objectMapper);
-        
         Step step = Step.builder()
             .id(1L)
             .type(StepType.START_DATASOURCE)
@@ -43,8 +48,11 @@ class StartDatasourceProcessorTest {
         
         StepRun stepRun = StepRun.builder().id(1L).build();
 
+        final String inputTableName = null;
+        final String stepTableNameBase = "output_table";
+
         // when
-        StepRunResult result = ReflectionTestUtils.invokeMethod(processor, "processStep", step, null, "output_table", stepRun);
+        StepRunResult result = processor.processStep(step, inputTableName, stepTableNameBase, stepRun);
 
         // then
         assertNotNull(result);
@@ -54,9 +62,6 @@ class StartDatasourceProcessorTest {
     @Test
     void validateConfiguration_shouldPass_whenValidConfig() {
         // given
-        ObjectMapper objectMapper = new ObjectMapper();
-        processor = new StartDatasourceProcessor(stepRunRepository, stepRepository, objectMapper);
-        
         String validConfig = "{}";
 
         // when & then
@@ -66,9 +71,6 @@ class StartDatasourceProcessorTest {
     @Test
     void validateConfiguration_shouldThrow_whenInvalidJson() {
         // given
-        ObjectMapper objectMapper = new ObjectMapper();
-        processor = new StartDatasourceProcessor(stepRunRepository, stepRepository, objectMapper);
-        
         String invalidConfig = "invalid json";
 
         // when & then
@@ -76,5 +78,50 @@ class StartDatasourceProcessorTest {
             () -> processor.validateConfiguration(invalidConfig));
         
         assertEquals("Failed to parse step configuration", exception.getMessage());
+    }
+
+    @Test
+    void getPreview_shouldReturnEmptyJson() {
+        // given
+        Step step = Step.builder().build();
+
+        // when
+        String result = processor.getPreview(step);
+
+        // then
+        assertEquals("{}", result);
+    }
+
+    @Test
+    void verifyConfigurationIsActual_shouldReturnSameConfig_whenValid() {
+        // given
+        String validConfig = "{}";
+
+        // when
+        String result = processor.verifyConfigurationIsActual(validConfig);
+
+        // then
+        assertEquals(validConfig, result);
+    }
+
+    @Test
+    void isActualVersion_shouldReturnTrue() {
+        // when
+        boolean result = processor.isActualVersion("{}");
+
+        // then
+        assertTrue(result);
+    }
+
+    @Test
+    void migrateConfiguration_shouldReturnSameConfig() {
+        // given
+        String config = "{}";
+
+        // when
+        String result = processor.migrateConfiguration(config);
+
+        // then
+        assertEquals(config, result);
     }
 }

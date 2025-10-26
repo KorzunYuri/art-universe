@@ -1,0 +1,208 @@
+package yurykorzun.art.universe.music.quiz.service.step.impl;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import yurykorzun.art.universe.common.persistence.util.DatabaseUtils;
+import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
+import yurykorzun.art.universe.music.quiz.entity.Step;
+import yurykorzun.art.universe.music.quiz.entity.StepRun;
+import yurykorzun.art.universe.music.quiz.entity.StepType;
+import yurykorzun.art.universe.music.quiz.service.step.StepProcessorRegistry;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class BasicStepProcessorTest {
+
+    @Mock
+    private EntityManager entityManager;
+
+    @Mock
+    private Query query;
+
+    private TestStepProcessor processor;
+
+    @BeforeEach
+    void setUp() {
+        processor = new TestStepProcessor(mock(StepProcessorRegistry.class));
+        processor.setEntityManager(entityManager);
+    }
+
+    @Test
+    void getPreview_shouldReturnEmptyJson() {
+        // given
+        Step step = Step.builder().build();
+
+        // when
+        String result = processor.getPreview(step);
+
+        // then
+        assertEquals("{}", result);
+    }
+
+    @Test
+    void verifyConfigurationIsActual_shouldReturnSameConfig_whenValid() {
+        // given
+        String validConfig = "{}";
+
+        // when
+        String result = processor.verifyConfigurationIsActual(validConfig);
+
+        // then
+        assertEquals(validConfig, result);
+    }
+
+    @Test
+    void getResultStats_shouldCalculateBasicStats_whenBothTablesExist() {
+        // given
+        StepRun stepRun = StepRun.builder()
+            .inputTableName("input.table")
+            .resultTableName("output.table")
+            .build();
+
+        try (var mockedStatic = mockStatic(DatabaseUtils.class)) {
+            mockedStatic.when(() -> DatabaseUtils.tableExists(entityManager, "input.table")).thenReturn(true);
+            mockedStatic.when(() -> DatabaseUtils.tableExists(entityManager, "output.table")).thenReturn(true);
+            
+            Query inputCountQuery = mock(Query.class);
+            Query inputArtistQuery = mock(Query.class);
+            Query outputCountQuery = mock(Query.class);
+            Query outputArtistQuery = mock(Query.class);
+            
+            when(entityManager.createNativeQuery("SELECT COUNT(*) FROM input.table")).thenReturn(inputCountQuery);
+            when(entityManager.createNativeQuery("SELECT COUNT(DISTINCT primary_artist_id) FROM input.table")).thenReturn(inputArtistQuery);
+            when(entityManager.createNativeQuery("SELECT COUNT(*) FROM output.table")).thenReturn(outputCountQuery);
+            when(entityManager.createNativeQuery("SELECT COUNT(DISTINCT primary_artist_id) FROM output.table")).thenReturn(outputArtistQuery);
+            
+            when(inputCountQuery.getSingleResult()).thenReturn(10L);
+            when(inputArtistQuery.getSingleResult()).thenReturn(5L);
+            when(outputCountQuery.getSingleResult()).thenReturn(8L);
+            when(outputArtistQuery.getSingleResult()).thenReturn(4L);
+
+            // when
+            var result = processor.getResultStats(stepRun);
+
+            // then
+            assertNotNull(result);
+            assertEquals(10L, result.getInputRecords());
+            assertEquals(5L, result.getInputArtists());
+            assertEquals(2L, result.getFilteredRecords());
+            assertEquals(1L, result.getFilteredArtists());
+            assertEquals(8L, result.getOutputRecords());
+            assertEquals(4L, result.getOutputArtists());
+        }
+    }
+
+    @Test
+    void getResultStats_shouldHandleStartStep_whenInputTableNotExists() {
+        // given
+        StepRun stepRun = StepRun.builder()
+            .inputTableName("input.table")
+            .resultTableName("output.table")
+            .build();
+
+        try (var mockedStatic = mockStatic(DatabaseUtils.class)) {
+            mockedStatic.when(() -> DatabaseUtils.tableExists(entityManager, "input.table")).thenReturn(false);
+            mockedStatic.when(() -> DatabaseUtils.tableExists(entityManager, "output.table")).thenReturn(true);
+            
+            when(entityManager.createNativeQuery("SELECT COUNT(*) FROM output.table")).thenReturn(query);
+            when(entityManager.createNativeQuery("SELECT COUNT(DISTINCT primary_artist_id) FROM output.table")).thenReturn(query);
+            when(query.getSingleResult()).thenReturn(8L).thenReturn(4L);
+
+            // when
+            var result = processor.getResultStats(stepRun);
+
+            // then
+            assertNotNull(result);
+            assertEquals(8L, result.getInputRecords());
+            assertEquals(4L, result.getInputArtists());
+            assertEquals(0L, result.getFilteredRecords());
+            assertEquals(0L, result.getFilteredArtists());
+            assertEquals(8L, result.getOutputRecords());
+            assertEquals(4L, result.getOutputArtists());
+        }
+    }
+
+    @Test
+    void getResultStats_shouldHandleNoOutput_whenOutputTableNotExists() {
+        // given
+        StepRun stepRun = StepRun.builder()
+            .inputTableName("input.table")
+            .resultTableName("output.table")
+            .build();
+
+        try (var mockedStatic = mockStatic(DatabaseUtils.class)) {
+            mockedStatic.when(() -> DatabaseUtils.tableExists(entityManager, "input.table")).thenReturn(true);
+            mockedStatic.when(() -> DatabaseUtils.tableExists(entityManager, "output.table")).thenReturn(false);
+            
+            when(entityManager.createNativeQuery("SELECT COUNT(*) FROM input.table")).thenReturn(query);
+            when(entityManager.createNativeQuery("SELECT COUNT(DISTINCT primary_artist_id) FROM input.table")).thenReturn(query);
+            when(query.getSingleResult()).thenReturn(10L).thenReturn(5L);
+
+            // when
+            var result = processor.getResultStats(stepRun);
+
+            // then
+            assertNotNull(result);
+            assertEquals(10L, result.getInputRecords());
+            assertEquals(5L, result.getInputArtists());
+            assertEquals(10L, result.getFilteredRecords());
+            assertEquals(5L, result.getFilteredArtists());
+            assertEquals(0L, result.getOutputRecords());
+            assertEquals(0L, result.getOutputArtists());
+        }
+    }
+
+    @Test
+    void getResultStats_shouldReturnZeros_whenBothTablesNotExist() {
+        // given
+        StepRun stepRun = StepRun.builder()
+            .inputTableName("input.table")
+            .resultTableName("output.table")
+            .build();
+
+        try (var mockedStatic = mockStatic(DatabaseUtils.class)) {
+            mockedStatic.when(() -> DatabaseUtils.tableExists(entityManager, "input.table")).thenReturn(false);
+            mockedStatic.when(() -> DatabaseUtils.tableExists(entityManager, "output.table")).thenReturn(false);
+
+            // when
+            var result = processor.getResultStats(stepRun);
+
+            // then
+            assertNotNull(result);
+            assertEquals(0L, result.getInputRecords());
+            assertEquals(0L, result.getInputArtists());
+            assertEquals(0L, result.getFilteredRecords());
+            assertEquals(0L, result.getFilteredArtists());
+            assertEquals(0L, result.getOutputRecords());
+            assertEquals(0L, result.getOutputArtists());
+        }
+    }
+
+    // Test processor implementation
+    private static class TestStepProcessor extends BasicStepProcessor {
+        
+        public TestStepProcessor(StepProcessorRegistry registry) {
+            super(registry);
+        }
+
+        @Override
+        public StepType getStepType() {
+            return StepType.APPROVED_FILTER;
+        }
+
+        @Override
+        public StepRunResult processStep(Step step, String inputTableName, String stepTableNameBase, StepRun stepRun) {
+            return StepRunResult.builder()
+                .outputTableName(stepTableNameBase + "_test")
+                .build();
+        }
+    }
+}

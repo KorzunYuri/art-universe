@@ -1,8 +1,6 @@
 package yurykorzun.art.universe.music.quiz.service.step.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.common.persistence.util.DatabaseUtils;
 import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
@@ -14,9 +12,7 @@ import yurykorzun.art.universe.music.quiz.dto.step.stats.StepRunStats;
 import yurykorzun.art.universe.music.quiz.entity.Step;
 import yurykorzun.art.universe.music.quiz.entity.StepRun;
 import yurykorzun.art.universe.music.quiz.entity.StepType;
-import yurykorzun.art.universe.music.quiz.repository.StepRepository;
-import yurykorzun.art.universe.music.quiz.repository.StepRunRepository;
-import yurykorzun.art.universe.music.quiz.service.step.BaseGenerationStepProcessor;
+import yurykorzun.art.universe.music.quiz.service.step.StepProcessorRegistry;
 
 import java.util.HashMap;
 import java.util.List;
@@ -25,10 +21,17 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
-public class FinalCategoriesBalancerProcessor extends BaseGenerationStepProcessor {
+public class FinalCategoriesBalancerProcessor extends BasicStepProcessor {
+    private final ObjectMapper objectMapper;
 
-    public FinalCategoriesBalancerProcessor(StepRunRepository stepRunRepository, StepRepository stepRepository, ObjectMapper objectMapper) {
-        super(StepType.FINAL_CATEGORIES_BALANCER, stepRunRepository, stepRepository, objectMapper);
+    public FinalCategoriesBalancerProcessor(StepProcessorRegistry registry, ObjectMapper objectMapper) {
+        super(registry);
+        this.objectMapper = objectMapper;
+    }
+
+    @Override
+    public StepType getStepType() {
+        return StepType.FINAL_CATEGORIES_BALANCER;
     }
 
     @Override
@@ -45,12 +48,8 @@ public class FinalCategoriesBalancerProcessor extends BaseGenerationStepProcesso
     }
 
     @Override
-    protected String getStepSuffix() {
-        return "balancer";
-    }
-
-    @Override
-    protected StepRunResult processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun) {
+    public StepRunResult processStep(Step step, String inputTableName, String stepTableNameBase, StepRun stepRun) {
+        String outputTableName = stepTableNameBase + "_categories_balancer";
         try {
             FinalCategoriesBalancerConfig config = parseConfig(step.getCfgData());
             Integer targetCount = config.targetCount();
@@ -58,7 +57,7 @@ public class FinalCategoriesBalancerProcessor extends BaseGenerationStepProcesso
             List<CategoryWeight> categories = config.categories();
 
             // Create auxiliary quota table
-            String quotaTable = generateAuxiliaryTableName(step, stepRun, "quotas");
+            String quotaTable = outputTableName + "_quotas";
 
             // Drop table if exists for idempotency
             DatabaseUtils.dropTable(entityManager, quotaTable);
@@ -117,8 +116,8 @@ public class FinalCategoriesBalancerProcessor extends BaseGenerationStepProcesso
             Map<Long, Long> recordsByCategory = new HashMap<>();
             Map<Long, Long> artistsByCategory = new HashMap<>();
             
-            Set<Long> configuredCategoryIds = config.categories() != null ? 
-                config.categories().stream().map(CategoryWeight::id).collect(Collectors.toSet()) : 
+            Set<Long> configuredCategoryIds = config.categories() != null ?
+                config.categories().stream().map(CategoryWeight::id).collect(Collectors.toSet()) :
                 Set.of();
             
             if (config.categories() != null && DatabaseUtils.tableExists(entityManager, outputTableName)) {
@@ -136,7 +135,7 @@ public class FinalCategoriesBalancerProcessor extends BaseGenerationStepProcesso
                         .setParameter("categoryId", categoryId)
                         .getResultList();
                     
-                    Long trackCount = ((Number) trackResult.get(0)[0]).longValue();
+                    Long trackCount = ((Number) trackResult.getFirst()[0]).longValue();
                     recordsByCategory.put(categoryId, trackCount);
                     
                     // Count artists in this category
@@ -150,7 +149,7 @@ public class FinalCategoriesBalancerProcessor extends BaseGenerationStepProcesso
                         .setParameter("categoryId", categoryId)
                         .getResultList();
                     
-                    Long artistCount = ((Number) artistResult.get(0)[0]).longValue();
+                    Long artistCount = ((Number) artistResult.getFirst()[0]).longValue();
                     artistsByCategory.put(categoryId, artistCount);
                 }
             }
@@ -172,7 +171,7 @@ public class FinalCategoriesBalancerProcessor extends BaseGenerationStepProcesso
                 """.formatted(outputTableName, categoryFilter))
                     .getResultList();
                 
-                defaultQuotaRecords = ((Number) defaultTrackResult.get(0)[0]).longValue();
+                defaultQuotaRecords = ((Number) defaultTrackResult.getFirst()[0]).longValue();
                 
                 @SuppressWarnings("unchecked")
                 List<Object[]> defaultArtistResult = entityManager.createNativeQuery("""
@@ -183,7 +182,7 @@ public class FinalCategoriesBalancerProcessor extends BaseGenerationStepProcesso
                 """.formatted(outputTableName, categoryFilter))
                     .getResultList();
                 
-                defaultQuotaArtists = ((Number) defaultArtistResult.get(0)[0]).longValue();
+                defaultQuotaArtists = ((Number) defaultArtistResult.getFirst()[0]).longValue();
             }
             
             stats.setOutputRecordsByCategory(recordsByCategory);

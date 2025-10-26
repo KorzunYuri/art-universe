@@ -1,8 +1,6 @@
 package yurykorzun.art.universe.music.quiz.service.step.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.common.persistence.util.DatabaseUtils;
 import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
@@ -14,19 +12,24 @@ import yurykorzun.art.universe.music.quiz.dto.step.stats.WhitelistFilterStats;
 import yurykorzun.art.universe.music.quiz.entity.Step;
 import yurykorzun.art.universe.music.quiz.entity.StepRun;
 import yurykorzun.art.universe.music.quiz.entity.StepType;
-import yurykorzun.art.universe.music.quiz.repository.StepRepository;
-import yurykorzun.art.universe.music.quiz.repository.StepRunRepository;
-import yurykorzun.art.universe.music.quiz.service.step.BaseGenerationStepProcessor;
+import yurykorzun.art.universe.music.quiz.service.step.StepProcessorRegistry;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Component
-public class WhitelistFilterProcessor extends BaseGenerationStepProcessor {
+public class WhitelistFilterProcessor extends BasicStepProcessor {
+    private final ObjectMapper objectMapper;
 
-    public WhitelistFilterProcessor(StepRunRepository stepRunRepository, StepRepository stepRepository, ObjectMapper objectMapper) {
-        super(StepType.WHITELIST_FILTER, stepRunRepository, stepRepository, objectMapper);
+    public WhitelistFilterProcessor(StepProcessorRegistry registry, ObjectMapper objectMapper) {
+        super(registry);
+        this.objectMapper = objectMapper;
+    }
+
+    @Override
+    public StepType getStepType() {
+        return StepType.WHITELIST_FILTER;
     }
 
     @Override
@@ -43,18 +46,14 @@ public class WhitelistFilterProcessor extends BaseGenerationStepProcessor {
     }
 
     @Override
-    protected String getStepSuffix() {
-        return "whitelist";
-    }
-    
-    @Override
-    protected StepRunResult processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun) {
+    public StepRunResult processStep(Step step, String inputTableName, String stepTableNameBase, StepRun stepRun) {
+        String outputTableName = stepTableNameBase + "_track_recency";
         try {
             WhitelistFilterStepConfig config = parseConfig(step.getCfgData());
             List<CategoryWeight> weights = config.categories();
             
             // Create auxiliary whitelist table
-            String whitelistTable = generateAuxiliaryTableName(step, stepRun, "weights");
+            String whitelistTable = outputTableName + "_weights";
             
             // Drop table if exists for idempotency
             DatabaseUtils.dropTable(entityManager, whitelistTable);

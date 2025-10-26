@@ -49,7 +49,7 @@ class PipelineValidationUtilTest {
         
         // when & then
         assertDoesNotThrow(() -> 
-            PipelineValidationUtil.validateStepPosition(StepType.FINAL_SELECTION, 3, existingSteps));
+            PipelineValidationUtil.validateStepPosition(StepType.FINAL_LIMITER, 3, existingSteps));
     }
 
     @Test
@@ -59,14 +59,14 @@ class PipelineValidationUtilTest {
         
         // when & then
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
-            PipelineValidationUtil.validateStepPosition(StepType.FINAL_SELECTION, 2, existingSteps));
+            PipelineValidationUtil.validateStepPosition(StepType.FINAL_LIMITER, 2, existingSteps));
         assertEquals("FINAL step must be at last position", exception.getMessage());
     }
 
     @Test
     void validateStepPosition_shouldRejectMultipleFinalSteps() {
         // given
-        List<StepType> existingSteps = List.of(StepType.START_DATASOURCE, StepType.FINAL_SELECTION);
+        List<StepType> existingSteps = List.of(StepType.START_DATASOURCE, StepType.FINAL_LIMITER);
         
         // when & then
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
@@ -77,7 +77,7 @@ class PipelineValidationUtilTest {
     @Test
     void validateStepPosition_shouldAllowMiddleStepAnywhere() {
         // given
-        List<StepType> existingSteps = List.of(StepType.START_DATASOURCE, StepType.FINAL_SELECTION);
+        List<StepType> existingSteps = List.of(StepType.START_DATASOURCE, StepType.FINAL_LIMITER);
         
         // when & then
         assertDoesNotThrow(() -> 
@@ -98,7 +98,7 @@ class PipelineValidationUtilTest {
     @Test
     void validateStepPosition_shouldRejectMiddleStepWithFinalBefore() {
         // given
-        List<StepType> existingSteps = List.of(StepType.FINAL_SELECTION);
+        List<StepType> existingSteps = List.of(StepType.FINAL_LIMITER);
         
         // when & then
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
@@ -109,7 +109,7 @@ class PipelineValidationUtilTest {
     @Test
     void validateStepPositionForMove_shouldAllowValidMove() {
         // given
-        List<StepType> allSteps = List.of(StepType.START_DATASOURCE, StepType.APPROVED_FILTER, StepType.FINAL_SELECTION);
+        List<StepType> allSteps = List.of(StepType.START_DATASOURCE, StepType.APPROVED_FILTER, StepType.FINAL_LIMITER);
         
         // when & then
         assertDoesNotThrow(() -> 
@@ -119,11 +119,11 @@ class PipelineValidationUtilTest {
     @Test
     void validateStepPositionForMove_shouldRejectInvalidMove() {
         // given
-        List<StepType> allSteps = List.of(StepType.START_DATASOURCE, StepType.APPROVED_FILTER, StepType.FINAL_SELECTION);
+        List<StepType> allSteps = List.of(StepType.START_DATASOURCE, StepType.APPROVED_FILTER, StepType.FINAL_LIMITER);
         
         // when & then
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
-            PipelineValidationUtil.validateStepPositionForMove(StepType.FINAL_SELECTION, 2, allSteps));
+            PipelineValidationUtil.validateStepPositionForMove(StepType.FINAL_LIMITER, 2, allSteps));
         assertEquals("FINAL step must be at last position", exception.getMessage());
     }
 
@@ -133,7 +133,7 @@ class PipelineValidationUtilTest {
         List<Step> steps = List.of(
             Step.builder().type(StepType.START_DATASOURCE).build(),
             Step.builder().type(StepType.APPROVED_FILTER).build(),
-            Step.builder().type(StepType.FINAL_SELECTION).build()
+            Step.builder().type(StepType.FINAL_LIMITER).build()
         );
         
         // when & then
@@ -157,7 +157,7 @@ class PipelineValidationUtilTest {
         // given
         List<Step> steps = List.of(
             Step.builder().type(StepType.APPROVED_FILTER).build(),
-            Step.builder().type(StepType.FINAL_SELECTION).build()
+            Step.builder().type(StepType.FINAL_LIMITER).build()
         );
         
         // when & then
@@ -186,7 +186,7 @@ class PipelineValidationUtilTest {
         List<Step> steps = List.of(
             Step.builder().type(StepType.START_DATASOURCE).build(),
             Step.builder().type(StepType.START_DATASOURCE).build(),
-            Step.builder().type(StepType.FINAL_SELECTION).build()
+            Step.builder().type(StepType.FINAL_LIMITER).build()
         );
         
         // when & then
@@ -200,7 +200,7 @@ class PipelineValidationUtilTest {
         // given
         List<Step> steps = List.of(
             Step.builder().type(StepType.START_DATASOURCE).build(),
-            Step.builder().type(StepType.FINAL_SELECTION).build(),
+            Step.builder().type(StepType.FINAL_LIMITER).build(),
             Step.builder().type(StepType.FINAL_CATEGORIES_BALANCER).build()
         );
         

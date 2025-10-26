@@ -9,8 +9,9 @@ import yurykorzun.art.universe.music.quiz.dto.PipelineStepDto;
 import yurykorzun.art.universe.music.quiz.entity.*;
 import yurykorzun.art.universe.music.quiz.repository.*;
 import yurykorzun.art.universe.music.quiz.service.PipelineService;
-import yurykorzun.art.universe.music.quiz.service.step.GenerationStepProcessor;
-import yurykorzun.art.universe.music.quiz.service.step.GenerationStepProcessorRegistry;
+import yurykorzun.art.universe.music.quiz.service.step.StepExecutionService;
+import yurykorzun.art.universe.music.quiz.service.step.StepProcessor;
+import yurykorzun.art.universe.music.quiz.service.step.StepProcessorRegistry;
 import yurykorzun.art.universe.music.quiz.util.PipelineValidationUtil;
 
 import java.time.Instant;
@@ -28,6 +29,8 @@ public class PipelineServiceImpl implements PipelineService {
     private final PipelineStepRepository pipelineStepRepository;
     private final PipelineRunRepository pipelineRunRepository;
     private final StepRunRepository stepRunRepository;
+    private final StepProcessorRegistry processorRegistry;
+    private final StepExecutionService stepExecutionService;
 
     @Override
     @Transactional
@@ -55,13 +58,13 @@ public class PipelineServiceImpl implements PipelineService {
         List<StepType> existingStepTypes = getStepTypes(pipelineSteps);
         PipelineValidationUtil.validateStepPosition(stepDto.getType(), position, existingStepTypes);
         
-        GenerationStepProcessor processor = GenerationStepProcessorRegistry.get(stepDto.getType());
-        processor.validateConfiguration(stepDto.getCfgData());
+        StepProcessor processor = processorRegistry.get(stepDto.getType());
+        String actualCfgData = processor.verifyConfigurationIsActual(stepDto.getCfgData());
         
         Step step = Step.builder()
             .type(stepDto.getType())
             .algVersion(stepDto.getType().getVersion())
-            .cfgData(stepDto.getCfgData())
+            .cfgData(actualCfgData)
             .deleted(false)
             .immutable(false)
             .build();
@@ -171,8 +174,8 @@ public class PipelineServiceImpl implements PipelineService {
         Step step = stepRepository.findById(stepId)
             .orElseThrow(() -> new IllegalArgumentException("Step not found"));
         
-        GenerationStepProcessor processor = GenerationStepProcessorRegistry.get(step.getType());
-        processor.validateConfiguration(stepDto.getCfgData());
+        StepProcessor processor = processorRegistry.get(step.getType());
+        processor.verifyConfigurationIsActual(stepDto.getCfgData());
         
         boolean configChanged = !stepDto.getCfgData().equals(step.getCfgData());
         
@@ -202,8 +205,8 @@ public class PipelineServiceImpl implements PipelineService {
         Step step = stepRepository.findById(stepId)
             .orElseThrow(() -> new IllegalArgumentException("Step not found"));
         
-        GenerationStepProcessor processor = GenerationStepProcessorRegistry.get(step.getType());
-        String preview = processor.getPreview(step.getCfgData());
+        StepProcessor processor = processorRegistry.get(step.getType());
+        String preview = stepExecutionService.getPreview(step);
         
         step.setPreviewData(preview);
         stepRepository.save(step);
@@ -324,8 +327,7 @@ public class PipelineServiceImpl implements PipelineService {
                 Step step = stepRepository.findById(pipelineStep.getStepId())
                     .orElseThrow(() -> new IllegalArgumentException("Step not found: " + pipelineStep.getStepId()));
                 
-                GenerationStepProcessor processor = GenerationStepProcessorRegistry.get(step.getType());
-                StepRun stepRun = processor.process(step, currentTable, pipelineRunId);
+                StepRun stepRun = stepExecutionService.executeStep(step, currentTable, pipelineRunId);
                 currentTable = stepRun.getResultTableName();
             }
             
@@ -372,9 +374,8 @@ public class PipelineServiceImpl implements PipelineService {
             
             Step step = stepRepository.findById(pipelineStep.getStepId())
                 .orElseThrow(() -> new IllegalArgumentException("Step not found: " + pipelineStep.getStepId()));
-            
-            GenerationStepProcessor processor = GenerationStepProcessorRegistry.get(step.getType());
-            StepRun stepRun = processor.process(step, currentTable, null); // null = not pipeline run
+
+            StepRun stepRun = stepExecutionService.executeStep(step, currentTable, null); // null = not pipeline run
             currentTable = stepRun.getResultTableName();
             
             // Get the last step run for return

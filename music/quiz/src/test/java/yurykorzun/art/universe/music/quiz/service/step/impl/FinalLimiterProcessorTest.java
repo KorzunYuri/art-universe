@@ -8,27 +8,19 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.config.CommonTestConfig;
 import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
 import yurykorzun.art.universe.music.quiz.entity.Step;
 import yurykorzun.art.universe.music.quiz.entity.StepRun;
 import yurykorzun.art.universe.music.quiz.entity.StepType;
-import yurykorzun.art.universe.music.quiz.repository.StepRepository;
-import yurykorzun.art.universe.music.quiz.repository.StepRunRepository;
+import yurykorzun.art.universe.music.quiz.service.step.StepProcessorRegistry;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class FinalSelectionProcessorTest {
-
-    @Mock
-    private StepRunRepository stepRunRepository;
-
-    @Mock
-    private StepRepository stepRepository;
+class FinalLimiterProcessorTest {
 
     @Mock
     private EntityManager entityManager;
@@ -36,13 +28,13 @@ class FinalSelectionProcessorTest {
     @Mock
     private Query query;
 
-    private FinalSelectionProcessor processor;
+    private FinalLimiterProcessor processor;
 
     @BeforeEach
     void setUp() {
         ObjectMapper objectMapper = CommonTestConfig.getObjectMapper();
-        processor = new FinalSelectionProcessor(stepRunRepository, stepRepository, objectMapper);
-        ReflectionTestUtils.setField(processor, "entityManager", entityManager);
+        processor = new FinalLimiterProcessor(mock(StepProcessorRegistry.class), objectMapper);
+        processor.setEntityManager(entityManager);
     }
 
     @Test
@@ -50,26 +42,28 @@ class FinalSelectionProcessorTest {
         // given
         Step step = Step.builder()
             .id(1L)
-            .type(StepType.FINAL_SELECTION)
+            .type(StepType.FINAL_LIMITER)
             .cfgData("{\"targetCount\":20}")
             .build();
         
         StepRun stepRun = StepRun.builder().id(1L).build();
+        
+        final String inputTableName = "input.table";
+        final String stepTableNameBase = "output.table";
         
         when(entityManager.createNativeQuery(anyString())).thenReturn(query);
         when(query.setParameter(anyString(), any())).thenReturn(query);
         when(query.executeUpdate()).thenReturn(1);
 
         // when
-        StepRunResult result = ReflectionTestUtils.invokeMethod(processor, "processStep", 
-            step, "input.table", "output.table", stepRun);
+        StepRunResult result = processor.processStep(step, inputTableName, stepTableNameBase, stepRun);
 
         // then
         assertNotNull(result);
-        assertEquals("output.table", result.getOutputTableName());
+        assertEquals(stepTableNameBase + "_limiter", result.getOutputTableName());
         verify(entityManager).createNativeQuery(contains("p_quiz_gen_tracks_step_final_selection"));
-        verify(query).setParameter("inputTable", "input.table");
-        verify(query).setParameter("outputTable", "output.table");
+        verify(query).setParameter("inputTable", inputTableName);
+        verify(query).setParameter("outputTable", stepTableNameBase + "_limiter");
         verify(query).setParameter("targetCount", 20);
         verify(query).executeUpdate();
     }
@@ -92,6 +86,51 @@ class FinalSelectionProcessorTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, 
             () -> processor.validateConfiguration(invalidConfig));
         
-        assertEquals("Invalid configuration for final selection step", exception.getMessage());
+        assertEquals("Invalid configuration for final limiter step", exception.getMessage());
+    }
+
+    @Test
+    void getPreview_shouldReturnEmptyJson() {
+        // given
+        Step step = Step.builder().build();
+
+        // when
+        String result = processor.getPreview(step);
+
+        // then
+        assertEquals("{}", result);
+    }
+
+    @Test
+    void verifyConfigurationIsActual_shouldReturnSameConfig_whenValid() {
+        // given
+        String validConfig = "{\"targetCount\":20}";
+
+        // when
+        String result = processor.verifyConfigurationIsActual(validConfig);
+
+        // then
+        assertEquals(validConfig, result);
+    }
+
+    @Test
+    void isActualVersion_shouldReturnTrue() {
+        // when
+        boolean result = processor.isActualVersion("{\"targetCount\":20}");
+
+        // then
+        assertTrue(result);
+    }
+
+    @Test
+    void migrateConfiguration_shouldReturnSameConfig() {
+        // given
+        String config = "{\"targetCount\":20}";
+
+        // when
+        String result = processor.migrateConfiguration(config);
+
+        // then
+        assertEquals(config, result);
     }
 }

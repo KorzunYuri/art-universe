@@ -15,7 +15,7 @@ public enum StepType implements Coded {
     TRACK_RECENCY_PENALTY(4, 1, StepPosition.MIDDLE),
     ARTIST_RECENCY_PENALTY(5, 1, StepPosition.MIDDLE),
     ARTIST_DIVERSITY(6, 1, StepPosition.MIDDLE),
-    FINAL_SELECTION(7, 1, StepPosition.FINAL),
+    FINAL_LIMITER(7, 1, StepPosition.FINAL),
     FINAL_CATEGORIES_BALANCER(8, 1, StepPosition.FINAL),
     START_DATASOURCE(9, 1, StepPosition.START);
 
