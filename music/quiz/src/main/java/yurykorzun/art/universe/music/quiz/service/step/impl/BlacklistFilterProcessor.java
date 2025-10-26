@@ -52,7 +52,7 @@ public class BlacklistFilterProcessor extends BaseGenerationStepProcessor {
     protected StepRunResult processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun) {
         try {
             BlacklistFilterStepConfig config = parseConfig(step.getCfgData());
-            List<Long> categoryIds = config.getCategoryIds();
+            List<Long> categoryIds = config.categoryIds();
             
             // Create auxiliary blacklist table
             String blacklistTable = generateAuxiliaryTableName(step, stepRun, "blacklist");
@@ -93,7 +93,17 @@ public class BlacklistFilterProcessor extends BaseGenerationStepProcessor {
 
     @Override
     public StepRunStats getResultStats(StepRun stepRun) {
-        BlacklistFilterStats stats = (BlacklistFilterStats) super.getResultStats(stepRun);
+        BlacklistFilterStats stats = new BlacklistFilterStats();
+        
+        // Copy basic stats from parent
+        StepRunStats basicStats = super.getResultStats(stepRun);
+        stats.setInputRecords(basicStats.getInputRecords());
+        stats.setFilteredRecords(basicStats.getFilteredRecords());
+        stats.setOutputRecords(basicStats.getOutputRecords());
+        stats.setInputArtists(basicStats.getInputArtists());
+        stats.setFilteredArtists(basicStats.getFilteredArtists());
+        stats.setOutputArtists(basicStats.getOutputArtists());
+        stats.setExecutionTimeMs(basicStats.getExecutionTimeMs());
         
         String inputTableName = stepRun.getInputTableName();
         String outputTableName = stepRun.getResultTableName();
@@ -103,11 +113,11 @@ public class BlacklistFilterProcessor extends BaseGenerationStepProcessor {
             BlacklistFilterStepConfig config = parseConfig(stepRun.getStepCfgData());
             Map<Long, Long> filteredByCategory = new HashMap<>();
             
-            if (config.getCategoryIds() != null && inputTableName != null && 
+            if (config.categoryIds() != null && inputTableName != null && 
                 DatabaseUtils.tableExists(entityManager, inputTableName) && 
                 DatabaseUtils.tableExists(entityManager, outputTableName)) {
                 
-                for (Long categoryId : config.getCategoryIds()) {
+                for (Long categoryId : config.categoryIds()) {
                     @SuppressWarnings("unchecked")
                     List<Object[]> result = entityManager.createNativeQuery("""
                         SELECT COUNT(*)

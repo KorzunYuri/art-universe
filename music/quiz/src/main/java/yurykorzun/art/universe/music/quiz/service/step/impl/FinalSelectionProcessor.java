@@ -50,7 +50,7 @@ public class FinalSelectionProcessor extends BaseGenerationStepProcessor {
                 "SELECT p_quiz_gen_tracks_step_final_selection(:inputTable, :outputTable, :targetCount)")
                 .setParameter("inputTable", inputTableName)
                 .setParameter("outputTable", outputTableName)
-                .setParameter("targetCount", config.getTargetCount())
+                .setParameter("targetCount", config.targetCount())
                 .executeUpdate();
                 
             return StepRunResult.builder()

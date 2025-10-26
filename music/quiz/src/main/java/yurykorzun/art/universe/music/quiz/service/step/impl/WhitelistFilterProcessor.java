@@ -53,7 +53,7 @@ public class WhitelistFilterProcessor extends BaseGenerationStepProcessor {
     protected StepRunResult processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun) {
         try {
             WhitelistFilterStepConfig config = parseConfig(step.getCfgData());
-            List<CategoryWeight> weights = config.getCategories();
+            List<CategoryWeight> weights = config.categories();
             
             // Create auxiliary whitelist table
             String whitelistTable = generateAuxiliaryTableName(step, stepRun, "weights");
@@ -106,8 +106,8 @@ public class WhitelistFilterProcessor extends BaseGenerationStepProcessor {
             Map<Long, Long> recordsByCategory = new HashMap<>();
             Map<Long, Long> artistsByCategory = new HashMap<>();
             
-            if (config.getCategories() != null && DatabaseUtils.tableExists(entityManager, outputTableName)) {
-                for (CategoryWeight categoryWeight : config.getCategories()) {
+            if (config.categories() != null && DatabaseUtils.tableExists(entityManager, outputTableName)) {
+                for (CategoryWeight categoryWeight : config.categories()) {
                     Long categoryId = categoryWeight.id();
                     
                     // Count tracks in this category

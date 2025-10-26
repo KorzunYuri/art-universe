@@ -55,9 +55,9 @@ public class FinalCategoriesBalancerProcessor extends BaseGenerationStepProcesso
     protected StepRunResult processStep(Step step, String inputTableName, String outputTableName, StepRun stepRun) {
         try {
             FinalCategoriesBalancerConfig config = parseConfig(step.getCfgData());
-            Integer targetCount = config.getTargetCount();
-            Double defaultQuota = config.getDefaultQuota();
-            List<CategoryWeight> categories = config.getCategories();
+            Integer targetCount = config.targetCount();
+            Double defaultQuota = config.defaultQuota();
+            List<CategoryWeight> categories = config.categories();
 
             // Create auxiliary quota table
             String quotaTable = generateAuxiliaryTableName(step, stepRun, "quotas");
@@ -115,12 +115,12 @@ public class FinalCategoriesBalancerProcessor extends BaseGenerationStepProcesso
             Map<Long, Long> recordsByCategory = new HashMap<>();
             Map<Long, Long> artistsByCategory = new HashMap<>();
             
-            Set<Long> configuredCategoryIds = config.getCategories() != null ? 
-                config.getCategories().stream().map(CategoryWeight::id).collect(Collectors.toSet()) : 
+            Set<Long> configuredCategoryIds = config.categories() != null ? 
+                config.categories().stream().map(CategoryWeight::id).collect(Collectors.toSet()) : 
                 Set.of();
             
-            if (config.getCategories() != null && DatabaseUtils.tableExists(entityManager, outputTableName)) {
-                for (CategoryWeight categoryWeight : config.getCategories()) {
+            if (config.categories() != null && DatabaseUtils.tableExists(entityManager, outputTableName)) {
+                for (CategoryWeight categoryWeight : config.categories()) {
                     Long categoryId = categoryWeight.id();
                     
                     // Count tracks in this category
