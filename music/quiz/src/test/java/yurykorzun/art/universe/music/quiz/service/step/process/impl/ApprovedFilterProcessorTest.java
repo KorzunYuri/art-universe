@@ -50,7 +50,7 @@ class ApprovedFilterProcessorTest {
         
         when(entityManager.createNativeQuery(anyString())).thenReturn(query);
         when(query.setParameter(anyString(), any())).thenReturn(query);
-        when(query.executeUpdate()).thenReturn(1);
+        when(query.getSingleResult()).thenReturn(null);
 
         // when
         StepRunResult result = processor.processStep(step, inputTableName, stepTableNameBase, stepRun);
@@ -61,7 +61,7 @@ class ApprovedFilterProcessorTest {
         verify(entityManager).createNativeQuery(contains("p_quiz_gen_tracks_step_approved_filter"));
         verify(query).setParameter("inputTable", inputTableName);
         verify(query).setParameter("outputTable", stepTableNameBase + "_approved");
-        verify(query).executeUpdate();
+        verify(query).getSingleResult();
     }
 
     @Test

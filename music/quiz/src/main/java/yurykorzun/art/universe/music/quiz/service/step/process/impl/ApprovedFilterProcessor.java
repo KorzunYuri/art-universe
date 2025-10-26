@@ -25,7 +25,7 @@ public class ApprovedFilterProcessor extends BasicStepProcessor {
             "SELECT p_quiz_gen_tracks_step_approved_filter(:inputTable, :outputTable)")
             .setParameter("inputTable", inputTableName)
             .setParameter("outputTable", outputTableName)
-            .executeUpdate();
+            .getSingleResult();
         
         return StepRunResult.builder()
             .outputTableName(outputTableName)
