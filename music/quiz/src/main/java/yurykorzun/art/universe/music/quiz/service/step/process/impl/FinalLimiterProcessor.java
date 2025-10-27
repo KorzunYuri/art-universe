@@ -47,7 +47,7 @@ public class FinalLimiterProcessor extends BasicStepProcessor {
                 .setParameter("inputTable", inputTableName)
                 .setParameter("outputTable", outputTableName)
                 .setParameter("targetCount", config.targetCount())
-                .executeUpdate();
+                .getSingleResult();
                 
             return StepRunResult.builder()
                 .outputTableName(outputTableName)

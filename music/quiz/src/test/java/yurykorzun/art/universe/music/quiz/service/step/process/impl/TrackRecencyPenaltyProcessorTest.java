@@ -51,7 +51,7 @@ class TrackRecencyPenaltyProcessorTest {
         
         when(entityManager.createNativeQuery(anyString())).thenReturn(query);
         when(query.setParameter(anyString(), any())).thenReturn(query);
-        when(query.executeUpdate()).thenReturn(1);
+        when(query.getSingleResult()).thenReturn(null);
 
         // when
         StepRunResult result = processor.processStep(step, inputTableName, stepTableNameBase, stepRun);
@@ -62,7 +62,7 @@ class TrackRecencyPenaltyProcessorTest {
         verify(entityManager).createNativeQuery(contains("p_quiz_gen_tracks_step_track_recency_penalty"));
         verify(query).setParameter("inputTable", inputTableName);
         verify(query).setParameter("outputTable", stepTableNameBase + "_track_recency");
-        verify(query).executeUpdate();
+        verify(query).getSingleResult();
     }
 
     @Test

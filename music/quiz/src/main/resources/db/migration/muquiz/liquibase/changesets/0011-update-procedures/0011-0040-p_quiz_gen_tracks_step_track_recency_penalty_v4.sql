@@ -20,17 +20,35 @@ BEGIN
 
     EXECUTE format('
         CREATE TABLE %I.%I AS
-        SELECT it.track_id,
-               it.primary_artist_id,
-               COALESCE(it.chance, 1.0) * 
-               CASE 
-                   WHEN gt.last_used_at IS NULL THEN 1.0
-                   WHEN gt.last_used_at < NOW() - INTERVAL ''30 days'' THEN 1.0
-                   WHEN gt.last_used_at < NOW() - INTERVAL ''7 days'' THEN 0.5
-                   ELSE 0.1
-               END as chance
-        FROM %I.%I it
-        LEFT JOIN mu_quiz.generation_track gt ON it.track_id = gt.track_id
+        SELECT 
+            inp.track_id,
+            inp.primary_artist_id,
+            COALESCE(inp.chance, 1.0) * COALESCE(
+                CASE 
+                    WHEN lp.months_ago IS NULL THEN 1.0
+                    WHEN lp.months_ago >= 12 THEN 1.0
+                    WHEN lp.months_ago <= 1 THEN 0.0
+                    ELSE (lp.months_ago - 1) / 11.0
+                END, 1.0
+            ) as chance
+        FROM %I.%I inp
+        LEFT JOIN (
+            SELECT 
+                gt.track_id,
+                EXTRACT(EPOCH FROM (NOW() - MAX(gen.created_at))) / (30 * 24 * 3600) as months_ago
+            FROM mu_quiz.generation_track gt
+            JOIN mu_quiz.generation gen ON gt.generation_id = gen.id
+            WHERE gen.approved = true
+            GROUP BY gt.track_id
+        ) lp ON inp.track_id = lp.track_id
+        WHERE COALESCE(inp.chance, 1.0) * COALESCE(
+            CASE 
+                WHEN lp.months_ago IS NULL THEN 1.0
+                WHEN lp.months_ago >= 12 THEN 1.0
+                WHEN lp.months_ago <= 1 THEN 0.0
+                ELSE (lp.months_ago - 1) / 11.0
+            END, 1.0
+        ) > 0
     ', output_parts[1], output_parts[2], input_parts[1], input_parts[2]);
 
     EXECUTE format('CREATE INDEX ON %I.%I (track_id)', output_parts[1], output_parts[2]);

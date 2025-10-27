@@ -47,7 +47,7 @@ public class WhitelistFilterProcessor extends BasicStepProcessor {
 
     @Override
     public StepRunResult processStep(Step step, String inputTableName, String stepTableNameBase, StepRun stepRun) {
-        String outputTableName = stepTableNameBase + "_track_recency";
+        String outputTableName = stepTableNameBase + "_whitelist_filter";
         try {
             WhitelistFilterStepConfig config = parseConfig(step.getCfgData());
             List<CategoryWeight> weights = config.categories();
@@ -80,7 +80,7 @@ public class WhitelistFilterProcessor extends BasicStepProcessor {
                 .setParameter("inputTable", inputTableName)
                 .setParameter("outputTable", outputTableName)
                 .setParameter("whitelistTable", whitelistTable)
-                .executeUpdate();
+                .getSingleResult();
                 
             return StepRunResult.builder()
                 .outputTableName(outputTableName)
@@ -116,8 +116,8 @@ public class WhitelistFilterProcessor extends BasicStepProcessor {
                     List<Object[]> trackResult = entityManager.createNativeQuery("""
                         SELECT COUNT(*)
                         FROM %s o
-                        JOIN mu_view.v_artist_category ac ON o.primary_artist_id = ac.artist_id
-                        WHERE ac.category_id = :categoryId
+                        JOIN mu_quiz.mu_v_track_category tc ON o.track_id = tc.track_id
+                        WHERE tc.category_id = :categoryId
                     """.formatted(outputTableName))
                         .setParameter("categoryId", categoryId)
                         .getResultList();
@@ -130,8 +130,8 @@ public class WhitelistFilterProcessor extends BasicStepProcessor {
                     List<Object[]> artistResult = entityManager.createNativeQuery("""
                         SELECT COUNT(DISTINCT o.primary_artist_id)
                         FROM %s o
-                        JOIN mu_view.v_artist_category ac ON o.primary_artist_id = ac.artist_id
-                        WHERE ac.category_id = :categoryId
+                        JOIN mu_quiz.mu_v_track_category tc ON o.track_id = tc.track_id
+                        WHERE tc.category_id = :categoryId
                     """.formatted(outputTableName))
                         .setParameter("categoryId", categoryId)
                         .getResultList();

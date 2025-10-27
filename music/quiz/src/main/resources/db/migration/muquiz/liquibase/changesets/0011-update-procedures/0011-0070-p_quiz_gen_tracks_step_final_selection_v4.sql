@@ -21,14 +21,26 @@ BEGIN
 
     EXECUTE format('
         CREATE TABLE %I.%I AS
+        WITH ranked_tracks AS (
+            SELECT
+                track_id,
+                primary_artist_id,
+                ROW_NUMBER() OVER (ORDER BY RANDOM() * COALESCE(chance, 1.0) DESC) AS rank
+            FROM %I.%I
+        ),
+        deduplicated AS (
+            SELECT
+                track_id,
+                primary_artist_id,
+                rank,
+                ROW_NUMBER() OVER (PARTITION BY primary_artist_id ORDER BY rank) AS artist_rn
+            FROM ranked_tracks
+        )
         SELECT track_id, primary_artist_id
-        FROM (
-            SELECT it.track_id,
-                   it.primary_artist_id,
-                   ROW_NUMBER() OVER (ORDER BY RANDOM() * COALESCE(it.chance, 1.0) DESC) as rn
-            FROM %I.%I it
-        ) ranked
-        WHERE rn <= %s
+        FROM deduplicated
+        WHERE artist_rn = 1
+        ORDER BY rank
+        LIMIT %s
     ', output_parts[1], output_parts[2], input_parts[1], input_parts[2], target_count);
 
     EXECUTE format('CREATE INDEX ON %I.%I (track_id)', output_parts[1], output_parts[2]);

@@ -54,8 +54,8 @@ class ApprovedFilterProcessorIntegrationTest extends JpaOnlyTest {
     @Commit
     void tearDown() {
         // Clean up test data from existing tables
-        entityManager.createNativeQuery("TRUNCATE TABLE mu_view.v_track").executeUpdate();
-        entityManager.createNativeQuery("TRUNCATE TABLE mu_quiz.track").executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM mu_view.v_track").executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM mu_quiz.track").executeUpdate();
         
         // Drop created tables
         DatabaseUtils.dropTable(entityManager, "mu_quiz_stg.test_input_approved");

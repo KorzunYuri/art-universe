@@ -25,7 +25,7 @@ public class TrackRecencyPenaltyProcessor extends BasicStepProcessor {
             "SELECT p_quiz_gen_tracks_step_track_recency_penalty(:inputTable, :outputTable)")
             .setParameter("inputTable", inputTableName)
             .setParameter("outputTable", outputTableName)
-            .executeUpdate();
+            .getSingleResult();
         
         return StepRunResult.builder()
             .outputTableName(outputTableName)

@@ -58,6 +58,7 @@ class BlacklistFilterProcessorTest {
         when(entityManager.createNativeQuery(anyString())).thenReturn(query);
         when(query.setParameter(anyString(), any())).thenReturn(query);
         when(query.executeUpdate()).thenReturn(1);
+        when(query.getSingleResult()).thenReturn(null);
 
         // when
         StepRunResult result = processor.processStep(step, inputTableName, stepTableNameBase, stepRun);
@@ -67,6 +68,7 @@ class BlacklistFilterProcessorTest {
         assertEquals(stepTableNameBase + "_blacklist_filter", result.getOutputTableName());
         verify(entityManager, times(4)).createNativeQuery(anyString()); // DROP, CREATE, INSERT, PROCEDURE
         verify(query, atLeast(1)).executeUpdate();
+        verify(query).getSingleResult();
     }
 
     @Test

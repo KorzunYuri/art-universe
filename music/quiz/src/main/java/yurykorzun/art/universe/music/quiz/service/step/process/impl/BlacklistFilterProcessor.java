@@ -113,8 +113,8 @@ public class BlacklistFilterProcessor extends BasicStepProcessor {
                     List<Object[]> result = entityManager.createNativeQuery("""
                         SELECT COUNT(*)
                         FROM %s i
-                        JOIN mu_view.v_artist_category ac ON i.primary_artist_id = ac.artist_id
-                        WHERE ac.category_id = :categoryId
+                        JOIN mu_quiz.mu_v_track_category tc ON i.track_id = tc.track_id
+                        WHERE tc.category_id = :categoryId
                         AND NOT EXISTS (
                             SELECT 1 FROM %s o WHERE o.track_id = i.track_id
                         )

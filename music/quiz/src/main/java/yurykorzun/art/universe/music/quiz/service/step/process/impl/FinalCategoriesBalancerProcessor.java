@@ -89,7 +89,7 @@ public class FinalCategoriesBalancerProcessor extends BasicStepProcessor {
                 .setParameter("quotaTable", quotaTable)
                 .setParameter("targetCount", targetCount)
                 .setParameter("defaultQuota", defaultQuota)
-                .executeUpdate();
+                .getSingleResult();
                 
             return StepRunResult.builder()
                 .outputTableName(outputTableName)
@@ -129,8 +129,8 @@ public class FinalCategoriesBalancerProcessor extends BasicStepProcessor {
                     List<Object[]> trackResult = entityManager.createNativeQuery("""
                         SELECT COUNT(*)
                         FROM %s o
-                        JOIN mu_view.v_artist_category ac ON o.primary_artist_id = ac.artist_id
-                        WHERE ac.category_id = :categoryId
+                        JOIN mu_quiz.mu_v_track_category tc ON o.track_id = tc.track_id
+                        WHERE tc.category_id = :categoryId
                     """.formatted(outputTableName))
                         .setParameter("categoryId", categoryId)
                         .getResultList();
@@ -143,8 +143,8 @@ public class FinalCategoriesBalancerProcessor extends BasicStepProcessor {
                     List<Object[]> artistResult = entityManager.createNativeQuery("""
                         SELECT COUNT(DISTINCT o.primary_artist_id)
                         FROM %s o
-                        JOIN mu_view.v_artist_category ac ON o.primary_artist_id = ac.artist_id
-                        WHERE ac.category_id = :categoryId
+                        JOIN mu_quiz.mu_v_track_category tc ON o.track_id = tc.track_id
+                        WHERE tc.category_id = :categoryId
                     """.formatted(outputTableName))
                         .setParameter("categoryId", categoryId)
                         .getResultList();
@@ -160,14 +160,14 @@ public class FinalCategoriesBalancerProcessor extends BasicStepProcessor {
             
             if (DatabaseUtils.tableExists(entityManager, outputTableName)) {
                 String categoryFilter = configuredCategoryIds.isEmpty() ? "1=1" : 
-                    "ac.category_id NOT IN (" + configuredCategoryIds.stream().map(String::valueOf).collect(Collectors.joining(",")) + ")";
+                    "tc.category_id NOT IN (" + configuredCategoryIds.stream().map(String::valueOf).collect(Collectors.joining(",")) + ")";
                 
                 @SuppressWarnings("unchecked")
                 List<Object[]> defaultTrackResult = entityManager.createNativeQuery("""
                     SELECT COUNT(*)
                     FROM %s o
-                    LEFT JOIN mu_view.v_artist_category ac ON o.primary_artist_id = ac.artist_id
-                    WHERE ac.category_id IS NULL OR (%s)
+                    LEFT JOIN mu_quiz.mu_v_track_category tc ON o.track_id = tc.track_id
+                    WHERE tc.category_id IS NULL OR (%s)
                 """.formatted(outputTableName, categoryFilter))
                     .getResultList();
                 
@@ -177,8 +177,8 @@ public class FinalCategoriesBalancerProcessor extends BasicStepProcessor {
                 List<Object[]> defaultArtistResult = entityManager.createNativeQuery("""
                     SELECT COUNT(DISTINCT o.primary_artist_id)
                     FROM %s o
-                    LEFT JOIN mu_view.v_artist_category ac ON o.primary_artist_id = ac.artist_id
-                    WHERE ac.category_id IS NULL OR (%s)
+                    LEFT JOIN mu_quiz.mu_v_track_category tc ON o.track_id = tc.track_id
+                    WHERE tc.category_id IS NULL OR (%s)
                 """.formatted(outputTableName, categoryFilter))
                     .getResultList();
                 

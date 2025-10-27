@@ -25,7 +25,7 @@ public class ArtistDiversityProcessor extends BasicStepProcessor {
             "SELECT p_quiz_gen_tracks_step_artist_diversity(:inputTable, :outputTable)")
             .setParameter("inputTable", inputTableName)
             .setParameter("outputTable", outputTableName)
-            .executeUpdate();
+            .getSingleResult();
         
         return StepRunResult.builder()
             .outputTableName(outputTableName)

@@ -20,20 +20,19 @@ BEGIN
 
     EXECUTE format('
         CREATE TABLE %I.%I AS
-        SELECT it.track_id,
-               it.primary_artist_id,
-               COALESCE(it.chance, 1.0) * 
-               CASE 
-                   WHEN artist_track_count.track_count <= 3 THEN 1.0
-                   WHEN artist_track_count.track_count <= 10 THEN 0.7
-                   ELSE 0.3
-               END as chance
-        FROM %I.%I it
-        LEFT JOIN (
-            SELECT primary_artist_id, count(*) as track_count
+        SELECT 
+            inp.track_id,
+            inp.primary_artist_id,
+            COALESCE(inp.chance, 1.0) * (1.0 / ac.track_count) as chance
+        FROM %I.%I inp
+        JOIN (
+            SELECT 
+                primary_artist_id,
+                COUNT(*) as track_count
             FROM %I.%I
             GROUP BY primary_artist_id
-        ) artist_track_count ON it.primary_artist_id = artist_track_count.primary_artist_id
+        ) ac ON inp.primary_artist_id = ac.primary_artist_id
+        WHERE COALESCE(inp.chance, 1.0) * (1.0 / ac.track_count) > 0
     ', output_parts[1], output_parts[2], input_parts[1], input_parts[2], input_parts[1], input_parts[2]);
 
     EXECUTE format('CREATE INDEX ON %I.%I (track_id)', output_parts[1], output_parts[2]);

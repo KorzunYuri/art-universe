@@ -53,7 +53,7 @@ class FinalLimiterProcessorTest {
         
         when(entityManager.createNativeQuery(anyString())).thenReturn(query);
         when(query.setParameter(anyString(), any())).thenReturn(query);
-        when(query.executeUpdate()).thenReturn(1);
+        when(query.getSingleResult()).thenReturn(null);
 
         // when
         StepRunResult result = processor.processStep(step, inputTableName, stepTableNameBase, stepRun);
@@ -65,7 +65,7 @@ class FinalLimiterProcessorTest {
         verify(query).setParameter("inputTable", inputTableName);
         verify(query).setParameter("outputTable", stepTableNameBase + "_limiter");
         verify(query).setParameter("targetCount", 20);
-        verify(query).executeUpdate();
+        verify(query).getSingleResult();
     }
 
     @Test
