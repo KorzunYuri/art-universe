@@ -37,4 +37,8 @@
         <sqlFile path="db/migration/muquiz/liquibase/changesets/0010-pipeline-metadata/0010-0080-generation$add_pipeline_run_id.sql"/>
     </changeSet>
 
+    <changeSet id="0010-0090-generation_add_pipeline_id" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0010-pipeline-metadata/0010-0090-generation$add_pipeline_id.sql"/>
+    </changeSet>
+
 </databaseChangeLog>

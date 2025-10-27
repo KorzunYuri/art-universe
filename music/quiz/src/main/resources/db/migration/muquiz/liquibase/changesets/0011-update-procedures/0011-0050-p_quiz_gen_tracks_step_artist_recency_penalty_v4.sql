@@ -1,6 +1,5 @@
 -- Update artist recency penalty to use input_table and output_table parameters
 DROP FUNCTION IF EXISTS p_quiz_gen_tracks_step_artist_recency_penalty(TEXT, TEXT, BIGINT, BIGINT, INTEGER);
-DROP FUNCTION IF EXISTS p_quiz_gen_tracks_step_artist_recency_penalty(TEXT, TEXT);
 
 CREATE OR REPLACE FUNCTION p_quiz_gen_tracks_step_artist_recency_penalty(
     input_table TEXT,

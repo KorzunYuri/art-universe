@@ -13,6 +13,7 @@ import yurykorzun.art.universe.music.quiz.dto.GenerationDto;
 import yurykorzun.art.universe.music.quiz.dto.GenerationTrackDto;
 import yurykorzun.art.universe.music.quiz.entity.GenerationStatus;
 import yurykorzun.art.universe.music.quiz.service.GenerationService;
+import yurykorzun.art.universe.music.quiz.service.PipelineService;
 
 import java.time.Instant;
 import java.util.List;
@@ -32,6 +33,9 @@ class GenerationControllerMvcTest extends BaseMvcTest {
 
     @MockitoBean
     private GenerationService generationService;
+
+    @MockitoBean
+    private PipelineService pipelineService;
 
     @Test
     void POST_gameGenerations_shouldReturnGenerationDto_whenSuccessful() throws Exception {

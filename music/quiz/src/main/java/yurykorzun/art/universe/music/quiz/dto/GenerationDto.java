@@ -11,6 +11,7 @@ import java.time.Instant;
 public class GenerationDto {
     private Long id;
     private Long gameId;
+    private Long pipelineId;
     private Long pipelineRunId;
     private Integer targetCount;
     private GenerationStatus status;

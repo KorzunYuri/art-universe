@@ -7,7 +7,8 @@ import yurykorzun.art.universe.music.quiz.entity.StepRun;
 
 public interface StepExecutionService {
 
-    String getPreview(Step step);
+    String generatePreview(Long stepId);
+    String generatePreview(Step step);
 
     StepRun executeStep(Step step, String inputTableName, @Nullable Long pipelineRunId);
     

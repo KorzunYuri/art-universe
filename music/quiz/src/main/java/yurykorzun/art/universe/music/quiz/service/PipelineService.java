@@ -2,12 +2,15 @@ package yurykorzun.art.universe.music.quiz.service;
 
 import yurykorzun.art.universe.music.quiz.dto.PipelineDto;
 import yurykorzun.art.universe.music.quiz.dto.PipelineStepDto;
+import yurykorzun.art.universe.music.quiz.entity.Pipeline;
 import yurykorzun.art.universe.music.quiz.entity.PipelineRun;
 import yurykorzun.art.universe.music.quiz.entity.StepRun;
 
 public interface PipelineService {
     
     PipelineDto createBasicPipeline();
+    
+    Pipeline createImmutableCopy(Long originalPipelineId);
     
     PipelineDto addStep(Long pipelineId, PipelineStepDto stepDto, Integer position);
     

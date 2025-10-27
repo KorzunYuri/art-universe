@@ -1,6 +1,5 @@
 -- Update final selection to use input_table, output_table and target_count parameters
 DROP FUNCTION IF EXISTS p_quiz_gen_tracks_step_final_selection(TEXT, TEXT, BIGINT, BIGINT, INTEGER, INTEGER);
-DROP FUNCTION IF EXISTS p_quiz_gen_tracks_step_final_selection(TEXT, TEXT, INTEGER);
 
 CREATE OR REPLACE FUNCTION p_quiz_gen_tracks_step_final_selection(
     input_table TEXT,

@@ -47,49 +47,19 @@ public class GenerationServiceImpl implements GenerationService {
         pipelineService.validatePipelineForGeneration(game.getPipelineId());
         
         // Create immutable copy of pipeline
-        Pipeline originalPipeline = pipelineRepository.findById(game.getPipelineId())
-            .orElseThrow(() -> new IllegalArgumentException("Pipeline not found: " + game.getPipelineId()));
+        Pipeline immutablePipeline = pipelineService.createImmutableCopy(game.getPipelineId());
         
-        Pipeline immutablePipeline = Pipeline.builder()
-            .immutable(true)
-            .build();
-        Pipeline savedPipeline = pipelineRepository.save(immutablePipeline);
-        
-        // Copy pipeline steps and steps
-        List<PipelineStep> originalSteps = pipelineStepRepository.findByPipelineIdOrderByOrd(originalPipeline.getId());
-        for (PipelineStep originalPipelineStep : originalSteps) {
-            Step originalStep = stepRepository.findById(originalPipelineStep.getStepId())
-                .orElseThrow(() -> new IllegalArgumentException("Step not found: " + originalPipelineStep.getStepId()));
-            
-            // Create immutable copy of step
-            Step immutableStep = Step.builder()
-                .type(originalStep.getType())
-                .algVersion(originalStep.getAlgVersion())
-                .cfgData(originalStep.getCfgData())
-                .deleted(false)
-                .immutable(true)
-                .build();
-            Step savedStep = stepRepository.save(immutableStep);
-            
-            // Create pipeline step for immutable pipeline
-            PipelineStep immutablePipelineStep = PipelineStep.builder()
-                .pipelineId(savedPipeline.getId())
-                .stepId(savedStep.getId())
-                .ord(originalPipelineStep.getOrd())
-                .build();
-            pipelineStepRepository.save(immutablePipelineStep);
-        }
-        
-        // Create generation without pipeline run id
+        // Create generation with immutable pipeline
         Generation generation = Generation.builder()
             .gameId(gameId)
+            .pipelineId(immutablePipeline.getId())
             .status(GenerationStatus.PENDING)
             .build();
         Generation savedGeneration = generationRepository.save(generation);
         
         try {
             // Execute pipeline
-            PipelineRun completedPipelineRun = pipelineService.executePipeline(savedPipeline.getId());
+            PipelineRun completedPipelineRun = pipelineService.executePipeline(immutablePipeline.getId());
             
             // Update generation with pipeline run id
             savedGeneration.setPipelineRunId(completedPipelineRun.getId());
@@ -221,6 +191,7 @@ public class GenerationServiceImpl implements GenerationService {
         return GenerationDto.builder()
             .id(generation.getId())
             .gameId(generation.getGameId())
+            .pipelineId(generation.getPipelineId())
             .pipelineRunId(generation.getPipelineRunId())
             .status(generation.getStatus())
             .approved(generation.getApproved())

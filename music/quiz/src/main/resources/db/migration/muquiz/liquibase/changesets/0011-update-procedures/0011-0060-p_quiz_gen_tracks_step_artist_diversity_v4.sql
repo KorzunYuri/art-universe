@@ -1,6 +1,5 @@
 -- Update artist diversity to use input_table and output_table parameters
 DROP FUNCTION IF EXISTS p_quiz_gen_tracks_step_artist_diversity(TEXT, TEXT, BIGINT, BIGINT, INTEGER);
-DROP FUNCTION IF EXISTS p_quiz_gen_tracks_step_artist_diversity(TEXT, TEXT);
 
 CREATE OR REPLACE FUNCTION p_quiz_gen_tracks_step_artist_diversity(
     input_table TEXT,

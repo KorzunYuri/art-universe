@@ -74,11 +74,10 @@ class StepRunServiceTest {
         when(stepRunRepository.findById(1L)).thenReturn(Optional.of(stepRun));
 
         // when
-        stepRunService.updateStepRunStatus(1L, ExecutionStatus.STARTED, "output.table");
+        stepRunService.updateStepRunStatus(1L, ExecutionStatus.STARTED);
 
         // then
         assertEquals(ExecutionStatus.STARTED, stepRun.getStatus());
-        assertEquals("output.table", stepRun.getResultTableName());
         assertNotNull(stepRun.getStartedAt());
         verify(stepRunRepository).save(stepRun);
     }
@@ -91,7 +90,7 @@ class StepRunServiceTest {
         // when & then
         IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
-            () -> stepRunService.updateStepRunStatus(999L, ExecutionStatus.STARTED, "output.table")
+            () -> stepRunService.updateStepRunStatus(999L, ExecutionStatus.STARTED)
         );
         
         assertEquals("StepRun not found: 999", exception.getMessage());

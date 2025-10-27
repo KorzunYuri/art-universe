@@ -1,6 +1,5 @@
 -- Update blacklist filter to use input_table, output_table and blacklist_table parameters
 DROP FUNCTION IF EXISTS p_quiz_gen_tracks_step_categories_blacklist_filter(TEXT, TEXT, BIGINT, BIGINT, INTEGER, TEXT);
-DROP FUNCTION IF EXISTS p_quiz_gen_tracks_step_categories_blacklist_filter(TEXT, TEXT, TEXT);
 
 CREATE OR REPLACE FUNCTION p_quiz_gen_tracks_step_categories_blacklist_filter(
     input_table TEXT,

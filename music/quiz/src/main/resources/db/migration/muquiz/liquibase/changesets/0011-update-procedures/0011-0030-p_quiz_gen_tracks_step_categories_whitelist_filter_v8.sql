@@ -1,6 +1,5 @@
 -- Update whitelist filter to use input_table, output_table and whitelist_table parameters with v7 logic
 DROP FUNCTION IF EXISTS p_quiz_gen_tracks_step_categories_whitelist_filter(TEXT, TEXT, BIGINT, BIGINT, INTEGER, TEXT);
-DROP FUNCTION IF EXISTS p_quiz_gen_tracks_step_categories_whitelist_filter(TEXT, TEXT, TEXT);
 
 CREATE OR REPLACE FUNCTION p_quiz_gen_tracks_step_categories_whitelist_filter(
     input_table TEXT,

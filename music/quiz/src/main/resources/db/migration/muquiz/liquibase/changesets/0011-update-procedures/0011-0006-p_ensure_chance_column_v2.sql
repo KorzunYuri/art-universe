@@ -1,6 +1,5 @@
 -- Update p_ensure_chance_column to use input_table parameter
 DROP FUNCTION IF EXISTS p_ensure_chance_column(TEXT, TEXT);
-DROP FUNCTION IF EXISTS p_ensure_chance_column(TEXT);
 
 CREATE OR REPLACE FUNCTION p_ensure_chance_column(
     input_table TEXT

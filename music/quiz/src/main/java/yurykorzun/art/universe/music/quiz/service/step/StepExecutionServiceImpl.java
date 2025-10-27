@@ -9,7 +9,7 @@ import yurykorzun.art.universe.music.quiz.entity.ExecutionStatus;
 import yurykorzun.art.universe.music.quiz.entity.Step;
 import yurykorzun.art.universe.music.quiz.entity.StepRun;
 import yurykorzun.art.universe.music.quiz.repository.StepMetadataProjection;
-import yurykorzun.art.universe.music.quiz.repository.StepRepository;
+import yurykorzun.art.universe.music.quiz.service.StepService;
 import yurykorzun.art.universe.music.quiz.service.step.process.StepProcessor;
 import yurykorzun.art.universe.music.quiz.service.step.process.StepProcessorRegistry;
 
@@ -17,18 +17,30 @@ import yurykorzun.art.universe.music.quiz.service.step.process.StepProcessorRegi
 @RequiredArgsConstructor
 public class StepExecutionServiceImpl implements StepExecutionService {
 
-    private final StepRepository stepRepository;
+    private final StepService stepService;
     private final StepProcessorRegistry stepProcessorRegistry;
     private final StepRunService stepRunService;
 
     @Override
-    public String getPreview(Step step) {
+    public String generatePreview(Long stepId) {
+        return generatePreview(stepService.getStep(stepId));
+    }
+
+    @Override
+    public String generatePreview(Step step) {
+        // TODO cache preview
         StepProcessor processor = stepProcessorRegistry.get(step.getType());
-        return processor.getPreview(step);
+        String preview = processor.getPreview(step);
+
+        step.setPreviewData(preview);
+        stepService.updatePreview(step.getId(), preview);
+
+        return preview;
     }
 
     @Override
     public StepRun executeStep(Step step, String inputTableName, @Nullable Long pipelineRunId) {
+        // TODO cache results
         if (step == null) {
             throw new IllegalArgumentException("Step cannot be null");
         }
@@ -43,7 +55,7 @@ public class StepExecutionServiceImpl implements StepExecutionService {
         String stepTableNameBase = generateStepTableNameBase(step, savedStepRun, pipelineRunId);
 
         // Update status to STARTED in separate transaction
-        stepRunService.updateStepRunStatus(savedStepRun.getId(), ExecutionStatus.STARTED, stepTableNameBase);
+        stepRunService.updateStepRunStatus(savedStepRun.getId(), ExecutionStatus.STARTED);
         
         try {
             // Measure execution time
@@ -105,7 +117,7 @@ public class StepExecutionServiceImpl implements StepExecutionService {
     
     private String generateStepTableNameBase(Step step, StepRun stepRun, @Nullable Long pipelineRunId) {
         // Get metadata from repository
-        StepMetadataProjection metadata = stepRepository.getStepMetadata(step.getId());
+        StepMetadataProjection metadata = stepService.getStepMetadata(step.getId());
         
         StringBuilder tableName = new StringBuilder();
         

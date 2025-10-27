@@ -1,6 +1,5 @@
 package yurykorzun.art.universe.music.quiz.service.step;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -13,8 +12,7 @@ import yurykorzun.art.universe.music.quiz.entity.Step;
 import yurykorzun.art.universe.music.quiz.entity.StepRun;
 import yurykorzun.art.universe.music.quiz.entity.StepType;
 import yurykorzun.art.universe.music.quiz.repository.StepMetadataProjection;
-import yurykorzun.art.universe.music.quiz.repository.StepRepository;
-import yurykorzun.art.universe.music.quiz.repository.StepRunRepository;
+import yurykorzun.art.universe.music.quiz.service.StepService;
 import yurykorzun.art.universe.music.quiz.service.step.process.StepProcessor;
 import yurykorzun.art.universe.music.quiz.service.step.process.StepProcessorRegistry;
 
@@ -27,13 +25,13 @@ import static org.mockito.Mockito.*;
 class StepExecutionServiceTest {
 
     @Mock
-    private StepRepository stepRepository;
-
-    @Mock
     private StepProcessorRegistry stepProcessorRegistry;
 
     @Mock
     private StepRunService stepRunService;
+
+    @Mock
+    private StepService stepService;
 
     @Mock
     private StepProcessor stepProcessor;
@@ -45,21 +43,26 @@ class StepExecutionServiceTest {
     private StepExecutionServiceImpl stepExecutionService;
 
     @Test
-    void getPreview_shouldReturnProcessorPreview() {
+    void generatePreview_shouldReturnProcessorPreview() {
         // given
+        Long stepId = 1L;
         Step step = Step.builder()
+            .id(stepId)
             .type(StepType.START_DATASOURCE)
             .build();
 
+        when(stepService.getStep(stepId)).thenReturn(step);
         when(stepProcessorRegistry.get(StepType.START_DATASOURCE)).thenReturn(stepProcessor);
         when(stepProcessor.getPreview(step)).thenReturn("{\"preview\":\"data\"}");
 
         // when
-        String result = stepExecutionService.getPreview(step);
+        String result = stepExecutionService.generatePreview(stepId);
 
         // then
         assertEquals("{\"preview\":\"data\"}", result);
+        verify(stepService).getStep(stepId);
         verify(stepProcessor).getPreview(step);
+        verify(stepService).updatePreview(stepId, "{\"preview\":\"data\"}");
     }
 
     @Test
@@ -88,7 +91,7 @@ class StepExecutionServiceTest {
         when(stepProcessorRegistry.get(StepType.START_DATASOURCE)).thenReturn(stepProcessor);
         when(stepProcessor.getStepType()).thenReturn(StepType.START_DATASOURCE);
         when(stepRunService.createStepRun(step, "input.table", 1L)).thenReturn(stepRun);
-        when(stepRepository.getStepMetadata(1L)).thenReturn(stepMetadata);
+        when(stepService.getStepMetadata(1L)).thenReturn(stepMetadata);
         when(stepMetadata.getGameId()).thenReturn(1L);
         when(stepMetadata.getPipelineId()).thenReturn(1L);
         when(stepProcessor.processStep(eq(step), eq("input.table"), anyString(), eq(stepRun))).thenReturn(stepResult);
@@ -103,7 +106,7 @@ class StepExecutionServiceTest {
         assertEquals("output.table", result.getResultTableName());
         
         verify(stepRunService).createStepRun(step, "input.table", 1L);
-        verify(stepRunService).updateStepRunStatus(eq(1L), eq(ExecutionStatus.STARTED), anyString());
+        verify(stepRunService).updateStepRunStatus(eq(1L), eq(ExecutionStatus.STARTED));
         verify(stepRunService).completeStepRun(1L, "output.table", stats, 1L);
         verify(stepProcessor).processStep(eq(step), eq("input.table"), anyString(), eq(stepRun));
     }
@@ -127,7 +130,7 @@ class StepExecutionServiceTest {
         when(stepProcessorRegistry.get(StepType.START_DATASOURCE)).thenReturn(stepProcessor);
         when(stepProcessor.getStepType()).thenReturn(StepType.START_DATASOURCE);
         when(stepRunService.createStepRun(step, "input.table", 1L)).thenReturn(stepRun);
-        when(stepRepository.getStepMetadata(1L)).thenReturn(stepMetadata);
+        when(stepService.getStepMetadata(1L)).thenReturn(stepMetadata);
         when(stepMetadata.getGameId()).thenReturn(1L);
         when(stepMetadata.getPipelineId()).thenReturn(1L);
         when(stepProcessor.processStep(eq(step), eq("input.table"), anyString(), eq(stepRun)))

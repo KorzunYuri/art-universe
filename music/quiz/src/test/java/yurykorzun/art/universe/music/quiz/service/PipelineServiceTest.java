@@ -11,8 +11,6 @@ import yurykorzun.art.universe.music.quiz.entity.*;
 import yurykorzun.art.universe.music.quiz.repository.*;
 import yurykorzun.art.universe.music.quiz.service.impl.PipelineServiceImpl;
 import yurykorzun.art.universe.music.quiz.service.step.StepExecutionService;
-import yurykorzun.art.universe.music.quiz.service.step.process.StepProcessor;
-import yurykorzun.art.universe.music.quiz.service.step.process.StepProcessorRegistry;
 
 import java.util.List;
 import java.util.Optional;
@@ -34,19 +32,16 @@ class PipelineServiceTest {
     private PipelineStepRepository pipelineStepRepository;
     
     @Mock
-    private PipelineRunRepository pipelineRunRepository;
-    
-    @Mock
     private StepRunRepository stepRunRepository;
-
-    @Mock
-    private StepProcessorRegistry processorRegistry;
 
     @Mock
     private StepExecutionService stepExecutionService;
 
     @Mock
     private PipelineRunService pipelineRunService;
+
+    @Mock
+    private StepService stepService;
 
     @InjectMocks
     private PipelineServiceImpl pipelineService;
@@ -170,14 +165,9 @@ class PipelineServiceTest {
             .cfgData("{}")
             .build();
 
-        StepProcessor mockProcessor = mock(StepProcessor.class);
-
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId)).thenReturn(List.of());
-        when(stepRepository.findAllById(List.of())).thenReturn(List.of());
-        when(processorRegistry.get(StepType.START_DATASOURCE)).thenReturn(mockProcessor);
-        when(mockProcessor.verifyConfigurationIsActual("{}")).thenReturn("{}");
-        when(stepRepository.save(any(Step.class))).thenReturn(savedStep);
+        when(stepService.createStep(StepType.START_DATASOURCE, "{}")).thenReturn(savedStep);
         when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
 
         // when
@@ -186,10 +176,9 @@ class PipelineServiceTest {
         // then
         assertNotNull(result);
         assertEquals(pipelineId, result.getId());
-        verify(mockProcessor).verifyConfigurationIsActual("{}");
-        verify(stepRepository).save(any(Step.class));
+        verify(stepService).createStep(StepType.START_DATASOURCE, "{}");
         verify(pipelineStepRepository).save(any(PipelineStep.class));
-        verify(stepRepository).clearSubsequentStepResults(pipelineId, 1);
+        verify(stepService).clearResults(any());
     }
 
     @Test
@@ -216,25 +205,21 @@ class PipelineServiceTest {
             .cfgData("{}")
             .build();
 
-        StepProcessor mockProcessor = mock(StepProcessor.class);
-
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(existingPipelineStep));
         when(stepRepository.findAllById(List.of(1L))).thenReturn(List.of(existingStep));
-        when(stepRepository.save(any(Step.class))).thenReturn(savedStep);
+        when(stepService.createStep(StepType.APPROVED_FILTER, "{}")).thenReturn(savedStep);
         when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
-        when(processorRegistry.get(StepType.APPROVED_FILTER)).thenReturn(mockProcessor);
-        when(mockProcessor.verifyConfigurationIsActual("{}")).thenReturn("{}");
 
         // when
         PipelineDto result = pipelineService.addStep(pipelineId, stepDto, 2);
 
         // then
         assertNotNull(result);
-        verify(mockProcessor).verifyConfigurationIsActual("{}");
+        verify(stepService).createStep(StepType.APPROVED_FILTER, "{}");
         verify(pipelineStepRepository).incrementOrderAfter(pipelineId, 2);
-        verify(stepRepository).clearSubsequentStepResults(pipelineId, 2);
+        verify(stepService).clearResults(any());
     }
 
     @Test
@@ -269,14 +254,10 @@ class PipelineServiceTest {
             .cfgData("invalid")
             .build();
 
-        StepProcessor mockProcessor = mock(StepProcessor.class);
-        doThrow(new IllegalArgumentException("Invalid configuration"))
-            .when(mockProcessor).verifyConfigurationIsActual("invalid");
-
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId)).thenReturn(List.of());
-        when(stepRepository.findAllById(List.of())).thenReturn(List.of());
-        when(processorRegistry.get(StepType.START_DATASOURCE)).thenReturn(mockProcessor);
+        when(stepService.createStep(StepType.START_DATASOURCE, "invalid"))
+            .thenThrow(new IllegalArgumentException("Invalid configuration"));
 
         // when & then
         IllegalArgumentException exception = assertThrows(
@@ -311,25 +292,21 @@ class PipelineServiceTest {
             .cfgData("{}")
             .build();
 
-        StepProcessor mockProcessor = mock(StepProcessor.class);
-
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(existingPipelineStep));
         when(stepRepository.findAllById(List.of(1L))).thenReturn(List.of(existingStep));
-        when(stepRepository.save(any(Step.class))).thenReturn(savedStep);
+        when(stepService.createStep(StepType.FINAL_LIMITER, "{}")).thenReturn(savedStep);
         when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
-        when(processorRegistry.get(StepType.FINAL_LIMITER)).thenReturn(mockProcessor);
-        when(mockProcessor.verifyConfigurationIsActual("{}")).thenReturn("{}");
 
         // when
         PipelineDto result = pipelineService.addStep(pipelineId, stepDto, 2);
 
         // then
         assertNotNull(result);
-        verify(mockProcessor).verifyConfigurationIsActual("{}");
-        verify(stepRepository).save(any(Step.class));
+        verify(stepService).createStep(StepType.FINAL_LIMITER, "{}");
         verify(pipelineStepRepository).save(any(PipelineStep.class));
+        verify(stepService).clearResults(any());
     }
 
     @Test
@@ -584,7 +561,7 @@ class PipelineServiceTest {
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(pipelineStep));
-        when(stepRepository.findById(stepId)).thenReturn(Optional.empty());
+        when(stepService.getStep(stepId)).thenThrow(new IllegalArgumentException("Step not found"));
 
         // when & then
         IllegalArgumentException exception = assertThrows(
@@ -612,7 +589,7 @@ class PipelineServiceTest {
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(pipelineStep));
-        when(stepRepository.findById(stepId)).thenReturn(Optional.of(step));
+        when(stepService.getStep(stepId)).thenReturn(step);
         when(stepRepository.findAllById(List.of(stepId))).thenReturn(List.of(step));
         when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
 
@@ -647,7 +624,7 @@ class PipelineServiceTest {
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(pipelineStep1, pipelineStep2, pipelineStep3, pipelineStep4));
-        when(stepRepository.findById(stepId)).thenReturn(Optional.of(step2));
+        when(stepService.getStep(stepId)).thenReturn(step2);
         when(stepRepository.findAllById(List.of(1L, 2L, 3L, 4L))).thenReturn(List.of(step1, step2, step3, step4));
         when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
 
@@ -658,7 +635,7 @@ class PipelineServiceTest {
         assertNotNull(result);
         verify(pipelineStepRepository).decrementOrderBetween(pipelineId, 2, 3);
         verify(pipelineStepRepository).updateStepOrder(pipelineId, stepId, newPosition);
-        verify(stepRepository).clearSubsequentStepResults(pipelineId, 2);
+        verify(stepService).clearResults(any());
     }
 
     @Test
@@ -682,7 +659,7 @@ class PipelineServiceTest {
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(pipelineStep1, pipelineStep2, pipelineStep3, pipelineStep4));
-        when(stepRepository.findById(stepId)).thenReturn(Optional.of(step3));
+        when(stepService.getStep(stepId)).thenReturn(step3);
         when(stepRepository.findAllById(List.of(1L, 2L, 3L, 4L))).thenReturn(List.of(step1, step2, step3, step4));
         when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
 
@@ -693,7 +670,6 @@ class PipelineServiceTest {
         assertNotNull(result);
         verify(pipelineStepRepository).incrementOrderBetween(pipelineId, 2, 3);
         verify(pipelineStepRepository).updateStepOrder(pipelineId, stepId, newPosition);
-        verify(stepRepository).clearSubsequentStepResults(pipelineId, 2);
     }
 
     @Test
@@ -713,7 +689,7 @@ class PipelineServiceTest {
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(pipelineStep1, pipelineStep2));
-        when(stepRepository.findById(stepId)).thenReturn(Optional.of(step1));
+        when(stepService.getStep(stepId)).thenReturn(step1);
         when(stepRepository.findAllById(List.of(1L, 2L))).thenReturn(List.of(step1, step2));
 
         // when & then
@@ -744,7 +720,7 @@ class PipelineServiceTest {
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(pipelineStep1, pipelineStep2, pipelineStep3));
-        when(stepRepository.findById(stepId)).thenReturn(Optional.of(step3));
+        when(stepService.getStep(stepId)).thenReturn(step3);
         when(stepRepository.findAllById(List.of(1L, 2L, 3L))).thenReturn(List.of(step1, step2, step3));
 
         // when & then
@@ -773,7 +749,7 @@ class PipelineServiceTest {
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(pipelineStep1, pipelineStep2));
-        when(stepRepository.findById(stepId)).thenReturn(Optional.of(step2));
+        when(stepService.getStep(stepId)).thenReturn(step2);
         when(stepRepository.findAllById(List.of(1L, 2L))).thenReturn(List.of(step1, step2));
 
         // when & then
@@ -804,7 +780,7 @@ class PipelineServiceTest {
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(pipelineStep1, pipelineStep2, pipelineStep3));
-        when(stepRepository.findById(stepId)).thenReturn(Optional.of(step2));
+        when(stepService.getStep(stepId)).thenReturn(step2);
         when(stepRepository.findAllById(List.of(1L, 2L, 3L))).thenReturn(List.of(step1, step2, step3));
 
         // when & then
@@ -867,15 +843,15 @@ class PipelineServiceTest {
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(pipelineStep));
-        when(stepRepository.findById(stepId)).thenReturn(Optional.empty());
+        // No mock for stepService.getStep() - it's not called in removeStep
 
-        // when & then
-        IllegalArgumentException exception = assertThrows(
-            IllegalArgumentException.class,
-            () -> pipelineService.removeStep(pipelineId, stepId)
-        );
-        
-        assertEquals("Step not found", exception.getMessage());
+        // when - should not throw exception since removeStep doesn't validate step existence
+        PipelineDto result = pipelineService.removeStep(pipelineId, stepId);
+
+        // then
+        assertNotNull(result);
+        verify(pipelineStepRepository).deleteByPipelineIdAndStepId(pipelineId, stepId);
+        verify(stepService).softDeleteStep(stepId);
     }
 
     @Test
@@ -896,7 +872,6 @@ class PipelineServiceTest {
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(pipelineStep1, pipelineStep2, pipelineStep3));
-        when(stepRepository.findById(stepId)).thenReturn(Optional.of(step2));
         when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
 
         // when
@@ -905,10 +880,9 @@ class PipelineServiceTest {
         // then
         assertNotNull(result);
         verify(pipelineStepRepository).deleteByPipelineIdAndStepId(pipelineId, stepId);
-        verify(stepRepository).save(step2); // Mark as deleted
+        verify(stepService).softDeleteStep(stepId);
         verify(pipelineStepRepository).decrementOrderAfter(pipelineId, 2);
-        verify(stepRepository).clearSubsequentStepResults(pipelineId, 2);
-        assertTrue(step2.getDeleted());
+        verify(stepService).clearResults(any());
     }
 
     @Test
@@ -927,7 +901,6 @@ class PipelineServiceTest {
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(pipelineStep1, pipelineStep2));
-        when(stepRepository.findById(stepId)).thenReturn(Optional.of(step1));
         when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
 
         // when
@@ -936,10 +909,8 @@ class PipelineServiceTest {
         // then
         assertNotNull(result);
         verify(pipelineStepRepository).deleteByPipelineIdAndStepId(pipelineId, stepId);
-        verify(stepRepository).save(step1);
+        verify(stepService).softDeleteStep(stepId);
         verify(pipelineStepRepository).decrementOrderAfter(pipelineId, 1);
-        verify(stepRepository).clearSubsequentStepResults(pipelineId, 1);
-        assertTrue(step1.getDeleted());
     }
 
     @Test
@@ -960,7 +931,6 @@ class PipelineServiceTest {
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(pipelineStep1, pipelineStep2, pipelineStep3));
-        when(stepRepository.findById(stepId)).thenReturn(Optional.of(step3));
         when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
 
         // when
@@ -969,10 +939,8 @@ class PipelineServiceTest {
         // then
         assertNotNull(result);
         verify(pipelineStepRepository).deleteByPipelineIdAndStepId(pipelineId, stepId);
-        verify(stepRepository).save(step3);
+        verify(stepService).softDeleteStep(stepId);
         verify(pipelineStepRepository).decrementOrderAfter(pipelineId, 3);
-        verify(stepRepository).clearSubsequentStepResults(pipelineId, 3);
-        assertTrue(step3.getDeleted());
     }
 
     @Test
@@ -988,7 +956,6 @@ class PipelineServiceTest {
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(pipelineStep1));
-        when(stepRepository.findById(stepId)).thenReturn(Optional.of(step1));
         when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
 
         // when
@@ -997,10 +964,8 @@ class PipelineServiceTest {
         // then
         assertNotNull(result);
         verify(pipelineStepRepository).deleteByPipelineIdAndStepId(pipelineId, stepId);
-        verify(stepRepository).save(step1);
+        verify(stepService).softDeleteStep(stepId);
         verify(pipelineStepRepository).decrementOrderAfter(pipelineId, 1);
-        verify(stepRepository).clearSubsequentStepResults(pipelineId, 1);
-        assertTrue(step1.getDeleted());
     }
 
 
@@ -1181,7 +1146,7 @@ class PipelineServiceTest {
             .build();
 
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
-        when(stepRepository.findById(stepId)).thenReturn(Optional.empty());
+        when(stepService.getStep(stepId)).thenThrow(new IllegalArgumentException("Step not found: 999"));
 
         // when & then
         IllegalArgumentException exception = assertThrows(
@@ -1189,7 +1154,7 @@ class PipelineServiceTest {
             () -> pipelineService.updateStepConfiguration(pipelineId, stepId, stepDto)
         );
 
-        assertEquals("Step not found", exception.getMessage());
+        assertEquals("Step not found: 999", exception.getMessage());
     }
 
     @Test
@@ -1203,13 +1168,10 @@ class PipelineServiceTest {
             .cfgData("invalid")
             .build();
 
-        StepProcessor mockProcessor = mock(StepProcessor.class);
-        doThrow(new IllegalArgumentException("Invalid configuration"))
-            .when(mockProcessor).verifyConfigurationIsActual("invalid");
-
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
-        when(stepRepository.findById(stepId)).thenReturn(Optional.of(step));
-        when(processorRegistry.get(StepType.START_DATASOURCE)).thenReturn(mockProcessor);
+        when(stepService.getStep(stepId)).thenReturn(step);
+        when(stepService.updateStepConfiguration(stepId, "invalid"))
+            .thenThrow(new IllegalArgumentException("Invalid configuration"));
 
         // when & then
         IllegalArgumentException exception = assertThrows(
@@ -1231,22 +1193,18 @@ class PipelineServiceTest {
             .cfgData("{}")
             .build();
 
-        StepProcessor mockProcessor = mock(StepProcessor.class);
-
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
-        when(stepRepository.findById(stepId)).thenReturn(Optional.of(step));
+        when(stepService.getStep(stepId)).thenReturn(step);
+        when(stepService.updateStepConfiguration(stepId, "{}")).thenReturn(step);
         when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
-        when(processorRegistry.get(StepType.START_DATASOURCE)).thenReturn(mockProcessor);
 
         // when
         PipelineDto result = pipelineService.updateStepConfiguration(pipelineId, stepId, stepDto);
 
         // then
         assertNotNull(result);
-        verify(mockProcessor).verifyConfigurationIsActual("{}");
-        verify(stepRepository).save(step);
+        verify(stepService).updateStepConfiguration(stepId, "{}");
         verify(pipelineStepRepository, never()).findByPipelineIdOrderByOrd(any());
-        verify(stepRepository, never()).clearSubsequentStepResults(any(), any());
     }
 
     @Test
@@ -1264,25 +1222,19 @@ class PipelineServiceTest {
         PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
         PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(3).build();
 
-        StepProcessor mockProcessor = mock(StepProcessor.class);
-
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
-        when(stepRepository.findById(stepId)).thenReturn(Optional.of(step));
+        when(stepService.getStep(stepId)).thenReturn(step);
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(pipelineStep1, pipelineStep2, pipelineStep3));
         when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
-        when(processorRegistry.get(StepType.APPROVED_FILTER)).thenReturn(mockProcessor);
-        when(mockProcessor.verifyConfigurationIsActual("{\"updated\": true}")).thenReturn("{\"updated\": true}");
 
         // when
         PipelineDto result = pipelineService.updateStepConfiguration(pipelineId, stepId, stepDto);
 
         // then
         assertNotNull(result);
-        verify(mockProcessor).verifyConfigurationIsActual("{\"updated\": true}");
-        verify(stepRepository).save(step);
-        verify(stepRepository).clearSubsequentStepResults(pipelineId, 2);
-        assertEquals("{\"updated\": true}", step.getCfgData());
+        verify(stepService).updateStepConfiguration(stepId, "{\"updated\": true}");
+        verify(stepService).clearResults(any());
     }
 
     @Test
@@ -1296,12 +1248,9 @@ class PipelineServiceTest {
             .cfgData("{\"updated\": true}")
             .build();
 
-        StepProcessor mockProcessor = mock(StepProcessor.class);
-
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
-        when(stepRepository.findById(stepId)).thenReturn(Optional.of(step));
+        when(stepService.getStep(stepId)).thenReturn(step);
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId)).thenReturn(List.of());
-        when(processorRegistry.get(StepType.APPROVED_FILTER)).thenReturn(mockProcessor);
 
         // when & then
         IllegalArgumentException exception = assertThrows(
@@ -1317,25 +1266,22 @@ class PipelineServiceTest {
     void getStepPreview_shouldReturnPreview_whenStepExists() {
         // given
         Long stepId = 1L;
-        Step step = Step.builder().id(stepId).type(StepType.START_DATASOURCE).cfgData("{}").build();
 
-        when(stepRepository.findById(stepId)).thenReturn(Optional.of(step));
-        when(stepExecutionService.getPreview(step)).thenReturn("{\"preview\": \"data\"}");
+        when(stepExecutionService.generatePreview(stepId)).thenReturn("{\"preview\": \"data\"}");
 
         // when
         String result = pipelineService.getStepPreview(stepId);
 
         // then
         assertEquals("{\"preview\": \"data\"}", result);
-        verify(stepRepository).save(step);
-        assertEquals("{\"preview\": \"data\"}", step.getPreviewData());
+        verify(stepExecutionService).generatePreview(stepId);
     }
 
     @Test
     void getStepPreview_shouldThrowException_whenStepNotFound() {
         // given
         Long stepId = 999L;
-        when(stepRepository.findById(stepId)).thenReturn(Optional.empty());
+        when(stepExecutionService.generatePreview(stepId)).thenThrow(new IllegalArgumentException("Step not found"));
 
         // when & then
         IllegalArgumentException exception = assertThrows(
@@ -1419,7 +1365,6 @@ class PipelineServiceTest {
         // then
         assertNotNull(result);
         assertEquals("output_table_3", result.getResultTableName());
-        verify(stepRepository).clearSubsequentStepResults(pipelineId, 2);
     }
 
     @Test
@@ -1447,7 +1392,7 @@ class PipelineServiceTest {
         PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
 
         StepRun stepRun = StepRun.builder().id(1L).resultTableName("output_table").build();
-        PipelineRun pipelineRun = PipelineRun.builder().id(1L).pipelineId(pipelineId).build();
+        PipelineRun pipelineRun = PipelineRun.builder().id(1L).pipelineId(pipelineId).status(ExecutionStatus.COMPLETED).resultTableName("output_table").build();
 
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId)).thenReturn(List.of(pipelineStep1));
         when(pipelineRunService.createPipelineRun(pipelineId)).thenReturn(pipelineRun);

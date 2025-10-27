@@ -7,14 +7,17 @@ import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.music.quiz.dto.PipelineDto;
 import yurykorzun.art.universe.music.quiz.dto.PipelineStepDto;
 import yurykorzun.art.universe.music.quiz.entity.*;
-import yurykorzun.art.universe.music.quiz.repository.*;
-import yurykorzun.art.universe.music.quiz.service.PipelineService;
+import yurykorzun.art.universe.music.quiz.repository.PipelineRepository;
+import yurykorzun.art.universe.music.quiz.repository.PipelineStepRepository;
+import yurykorzun.art.universe.music.quiz.repository.StepRepository;
+import yurykorzun.art.universe.music.quiz.repository.StepRunRepository;
 import yurykorzun.art.universe.music.quiz.service.PipelineRunService;
+import yurykorzun.art.universe.music.quiz.service.PipelineService;
+import yurykorzun.art.universe.music.quiz.service.StepService;
 import yurykorzun.art.universe.music.quiz.service.step.StepExecutionService;
-import yurykorzun.art.universe.music.quiz.service.step.process.StepProcessor;
-import yurykorzun.art.universe.music.quiz.service.step.process.StepProcessorRegistry;
 import yurykorzun.art.universe.music.quiz.util.PipelineValidationUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -27,11 +30,10 @@ public class PipelineServiceImpl implements PipelineService {
     private final PipelineRepository pipelineRepository;
     private final StepRepository stepRepository;
     private final PipelineStepRepository pipelineStepRepository;
-    private final PipelineRunRepository pipelineRunRepository;
     private final StepRunRepository stepRunRepository;
-    private final StepProcessorRegistry processorRegistry;
     private final StepExecutionService stepExecutionService;
     private final PipelineRunService pipelineRunService;
+    private final StepService stepService;
 
     @Override
     @Transactional
@@ -49,6 +51,39 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     @Transactional
+    public Pipeline createImmutableCopy(Long originalPipelineId) {
+        log.debug("Creating immutable copy of pipeline {}", originalPipelineId);
+        
+        Pipeline originalPipeline = getPipelineById(originalPipelineId);
+        
+        // Create immutable pipeline
+        Pipeline immutablePipeline = Pipeline.builder()
+            .immutable(true)
+            .build();
+        Pipeline savedPipeline = pipelineRepository.save(immutablePipeline);
+        
+        // Copy pipeline steps and steps
+        List<PipelineStep> originalSteps = pipelineStepRepository.findByPipelineIdOrderByOrd(originalPipelineId);
+        List<PipelineStep> immutablePipelineSteps = new ArrayList<>();
+        for (PipelineStep originalPipelineStep : originalSteps) {
+            // Create immutable copy of step
+            Step immutableStep = stepService.createImmutableCopy(originalPipelineStep.getStepId());
+            
+            // Create pipeline step for immutable pipeline
+            PipelineStep immutablePipelineStep = PipelineStep.builder()
+                .pipelineId(savedPipeline.getId())
+                .stepId(immutableStep.getId())
+                .ord(originalPipelineStep.getOrd())
+                .build();
+            immutablePipelineSteps.add(immutablePipelineStep);
+        }
+        pipelineStepRepository.saveAll(immutablePipelineSteps);
+        
+        return savedPipeline;
+    }
+
+    @Override
+    @Transactional
     public PipelineDto addStep(Long pipelineId, PipelineStepDto stepDto, Integer position) {
         log.debug("Adding step {} to pipeline {} at position {}", stepDto.getType(), pipelineId, position);
         
@@ -59,18 +94,8 @@ public class PipelineServiceImpl implements PipelineService {
         List<StepType> existingStepTypes = getStepTypes(pipelineSteps);
         PipelineValidationUtil.validateStepPosition(stepDto.getType(), position, existingStepTypes);
         
-        StepProcessor processor = processorRegistry.get(stepDto.getType());
-        String actualCfgData = processor.verifyConfigurationIsActual(stepDto.getCfgData());
-        
-        Step step = Step.builder()
-            .type(stepDto.getType())
-            .algVersion(stepDto.getType().getVersion())
-            .cfgData(actualCfgData)
-            .deleted(false)
-            .immutable(false)
-            .build();
-        
-        Step savedStep = stepRepository.save(step);
+        // Create step using StepService
+        Step savedStep = stepService.createStep(stepDto.getType(), stepDto.getCfgData());
         
         // Shift existing steps using batch operation
         pipelineStepRepository.incrementOrderAfter(pipeline.getId(), position);
@@ -102,9 +127,8 @@ public class PipelineServiceImpl implements PipelineService {
             .findFirst()
             .orElseThrow(() -> new IllegalArgumentException("Step not found in pipeline"));
         
-        Step step = stepRepository.findById(stepId)
-            .orElseThrow(() -> new IllegalArgumentException("Step not found"));
-        
+        Step step = stepService.getStep(stepId);
+
         List<StepType> allStepTypes = getStepTypes(pipelineSteps);
         PipelineValidationUtil.validateStepPositionForMove(step.getType(), newPosition, allStepTypes);
         
@@ -151,11 +175,8 @@ public class PipelineServiceImpl implements PipelineService {
         // Remove from pipeline_step
         pipelineStepRepository.deleteByPipelineIdAndStepId(pipeline.getId(), stepId);
         
-        // Mark step as deleted
-        Step step = stepRepository.findById(stepId)
-            .orElseThrow(() -> new IllegalArgumentException("Step not found"));
-        step.setDeleted(true);
-        stepRepository.save(step);
+        // Mark step as deleted using StepService
+        stepService.softDeleteStep(stepId);
         
         // Shift subsequent steps
         pipelineStepRepository.decrementOrderAfter(pipeline.getId(), removedPosition);
@@ -172,16 +193,11 @@ public class PipelineServiceImpl implements PipelineService {
         log.debug("Updating configuration for step {} in pipeline {}", stepId, pipelineId);
         
         Pipeline pipeline = getPipelineById(pipelineId);
-        Step step = stepRepository.findById(stepId)
-            .orElseThrow(() -> new IllegalArgumentException("Step not found"));
-        
-        StepProcessor processor = processorRegistry.get(step.getType());
-        processor.verifyConfigurationIsActual(stepDto.getCfgData());
+        Step step = stepService.getStep(stepId);
         
         boolean configChanged = !stepDto.getCfgData().equals(step.getCfgData());
         
-        step.setCfgData(stepDto.getCfgData());
-        stepRepository.save(step);
+        stepService.updateStepConfiguration(stepId, stepDto.getCfgData());
         
         if (configChanged) {
             // Find step position and clear subsequent results
@@ -202,16 +218,9 @@ public class PipelineServiceImpl implements PipelineService {
     @Transactional
     public String getStepPreview(Long stepId) {
         log.debug("Getting preview for step {}", stepId);
-        
-        Step step = stepRepository.findById(stepId)
-            .orElseThrow(() -> new IllegalArgumentException("Step not found"));
-        
-        StepProcessor processor = processorRegistry.get(step.getType());
-        String preview = stepExecutionService.getPreview(step);
-        
-        step.setPreviewData(preview);
-        stepRepository.save(step);
-        
+
+        String preview = stepExecutionService.generatePreview(stepId);
+
         return preview;
     }
 
@@ -296,7 +305,13 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     private void clearSubsequentStepResults(Long pipelineId, Integer fromPosition) {
-        stepRepository.clearSubsequentStepResults(pipelineId, fromPosition);
+        List<Long> stepIds = pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId)
+            .stream()
+            .filter(ps -> ps.getOrd() >= fromPosition)
+            .map(PipelineStep::getStepId)
+            .toList();
+        
+        stepService.clearResults(stepIds);
     }
 
     private Integer findEarliestStepWithoutResult(Long pipelineId) {
@@ -313,32 +328,29 @@ public class PipelineServiceImpl implements PipelineService {
             throw new IllegalArgumentException("Pipeline has no steps");
         }
         
-        // Create pipeline run in separate transaction
         PipelineRun pipelineRun = pipelineRunService.createPipelineRun(pipelineId);
         Long pipelineRunId = pipelineRun.getId();
         
-        // Start pipeline run in separate transaction
         pipelineRunService.startPipelineRun(pipelineRunId);
         
         try {
             String currentTable = null;
-            
+
+            List<Step> stepsToExecute = new ArrayList<>();
             for (PipelineStep pipelineStep : pipelineSteps) {
                 Step step = stepRepository.findById(pipelineStep.getStepId())
                     .orElseThrow(() -> new IllegalArgumentException("Step not found: " + pipelineStep.getStepId()));
-                
+                stepsToExecute.add(step);
+            }
+
+            for (Step step : stepsToExecute) {
                 StepRun stepRun = stepExecutionService.executeStep(step, currentTable, pipelineRunId);
                 currentTable = stepRun.getResultTableName();
             }
-            
-            // Complete pipeline run in separate transaction
+
             pipelineRunService.completePipelineRun(pipelineRunId, currentTable);
-            
-            pipelineRun.setStatus(ExecutionStatus.COMPLETED);
-            pipelineRun.setResultTableName(currentTable);
-            
+
         } catch (Exception e) {
-            // Fail pipeline run in separate transaction
             pipelineRunService.failPipelineRun(pipelineRunId);
             throw new RuntimeException("Pipeline execution failed", e);
         }

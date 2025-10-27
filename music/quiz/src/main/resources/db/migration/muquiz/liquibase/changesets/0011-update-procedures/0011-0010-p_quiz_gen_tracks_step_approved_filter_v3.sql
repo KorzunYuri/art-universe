@@ -1,6 +1,5 @@
 -- Update approved filter to use input_table and output_table parameters
 DROP FUNCTION IF EXISTS p_quiz_gen_tracks_step_approved_filter(TEXT, TEXT, BIGINT, BIGINT, INTEGER);
-DROP FUNCTION IF EXISTS p_quiz_gen_tracks_step_approved_filter(TEXT, TEXT);
 
 CREATE OR REPLACE FUNCTION p_quiz_gen_tracks_step_approved_filter(
     input_table TEXT,

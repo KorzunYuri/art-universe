@@ -41,13 +41,12 @@ public class StepRunServiceImpl implements StepRunService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void updateStepRunStatus(Long stepRunId, ExecutionStatus status, String resultTableName) {
+    public void updateStepRunStatus(Long stepRunId, ExecutionStatus status) {
         StepRun stepRun = stepRunRepository.findById(stepRunId)
             .orElseThrow(() -> new IllegalArgumentException("StepRun not found: " + stepRunId));
         
         stepRun.setStatus(status);
         stepRun.setStartedAt(Instant.now());
-        stepRun.setResultTableName(resultTableName);
         stepRunRepository.save(stepRun);
     }
 

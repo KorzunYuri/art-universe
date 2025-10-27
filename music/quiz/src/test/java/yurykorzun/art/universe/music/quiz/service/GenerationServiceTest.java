@@ -60,6 +60,7 @@ class GenerationServiceTest {
         Long generationId = 1L;
         Generation generation = Generation.builder()
             .gameId(1L)
+            .pipelineId(1L)
             .pipelineRunId(1L)
             .targetCount(20)
             .status(GenerationStatus.COMPLETED)
@@ -68,6 +69,7 @@ class GenerationServiceTest {
         
         Generation approvedGeneration = Generation.builder()
             .gameId(1L)
+            .pipelineId(1L)
             .pipelineRunId(1L)
             .targetCount(20)
             .status(GenerationStatus.COMPLETED)
@@ -93,6 +95,7 @@ class GenerationServiceTest {
         Long generationId = 1L;
         Generation generation = Generation.builder()
             .gameId(1L)
+            .pipelineId(1L)
             .pipelineRunId(1L)
             .targetCount(20)
             .status(GenerationStatus.COMPLETED)
@@ -101,6 +104,7 @@ class GenerationServiceTest {
         
         Generation disapprovedGeneration = Generation.builder()
             .gameId(1L)
+            .pipelineId(1L)
             .pipelineRunId(1L)
             .targetCount(20)
             .status(GenerationStatus.COMPLETED)
@@ -179,6 +183,7 @@ class GenerationServiceTest {
         List<Generation> generations = List.of(
             Generation.builder()
                 .gameId(gameId)
+                .pipelineId(1L)
                 .pipelineRunId(1L)
                 .targetCount(20)
                 .status(GenerationStatus.COMPLETED)
@@ -186,6 +191,7 @@ class GenerationServiceTest {
                 .build(),
             Generation.builder()
                 .gameId(gameId)
+                .pipelineId(2L)
                 .pipelineRunId(2L)
                 .targetCount(15)
                 .status(GenerationStatus.PENDING)

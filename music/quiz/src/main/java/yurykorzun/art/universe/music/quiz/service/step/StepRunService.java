@@ -10,7 +10,7 @@ public interface StepRunService {
     
     StepRun createStepRun(Step step, String inputTableName, @Nullable Long pipelineRunId);
     
-    void updateStepRunStatus(Long stepRunId, ExecutionStatus status, String resultTableName);
+    void updateStepRunStatus(Long stepRunId, ExecutionStatus status);
     
     void completeStepRun(Long stepRunId, String resultTableName, StepRunStats stats, Long stepId);
     

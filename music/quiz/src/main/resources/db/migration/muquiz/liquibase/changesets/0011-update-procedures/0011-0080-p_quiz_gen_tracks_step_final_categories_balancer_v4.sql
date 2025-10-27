@@ -1,6 +1,5 @@
 -- Update final categories balancer to use input_table, output_table, quota_table and parameters
 DROP FUNCTION IF EXISTS p_quiz_gen_tracks_step_final_categories_balancer(TEXT, TEXT, BIGINT, BIGINT, INTEGER, INTEGER, DOUBLE PRECISION, TEXT);
-DROP FUNCTION IF EXISTS p_quiz_gen_tracks_step_final_categories_balancer(TEXT, TEXT, TEXT, INTEGER, DOUBLE PRECISION);
 
 CREATE OR REPLACE FUNCTION p_quiz_gen_tracks_step_final_categories_balancer(
     input_table TEXT,

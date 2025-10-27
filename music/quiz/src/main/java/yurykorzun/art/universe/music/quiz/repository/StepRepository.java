@@ -7,6 +7,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import yurykorzun.art.universe.music.quiz.entity.Step;
 
+import java.util.List;
+
 @Repository
 public interface StepRepository extends JpaRepository<Step, Long> {
     
@@ -18,14 +20,29 @@ public interface StepRepository extends JpaRepository<Step, Long> {
         WHERE ps.stepId = :stepId
     """)
     StepMetadataProjection getStepMetadata(@Param("stepId") Long stepId);
-    
+
     @Modifying
     @Query("""
-        UPDATE step s SET s.previewData = NULL, s.lastStepRunId = NULL
-        WHERE s.id IN (
-            SELECT ps.stepId FROM pipeline_step ps 
-            WHERE ps.pipelineId = :pipelineId AND ps.ord >= :fromPosition
-        )
+        UPDATE  step s
+        SET     s.previewData = :preview
+        WHERE   s.id = :stepId
     """)
-    void clearSubsequentStepResults(@Param("pipelineId") Long pipelineId, @Param("fromPosition") Integer fromPosition);
+    void updatePreview(@Param("stepId") Long stepId, @Param("preview") String preview);
+
+    @Modifying
+    @Query("""
+        UPDATE  step s
+        SET     s.deleted = true
+        WHERE   s.id = :stepId
+    """)
+    void softDelete(@Param("stepId") Long stepId);
+
+    @Modifying
+    @Query("""
+        UPDATE  step s
+        SET     s.previewData = null,
+                s.lastStepRunId = null
+        WHERE   s.id IN :stepIds
+    """)
+    void clearResults(@Param("stepIds") List<Long> stepIds);
 }
