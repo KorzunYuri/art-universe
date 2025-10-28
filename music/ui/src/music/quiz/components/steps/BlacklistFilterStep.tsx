@@ -1,4 +1,5 @@
 import { MasterEntityPicker } from '@/music/data/master/components/MasterEntityPicker/MasterEntityPicker.tsx';
+import { CategoryName } from '@/music/data/master/components/CategoryName/CategoryName.tsx';
 import type { LookupEntity } from '@/music/shared/types/lookup.ts';
 import { 
   type PipelineStepDto, 
@@ -78,7 +79,9 @@ export const BlacklistFilterStep = ({
         <div className={styles.categoriesList}>
           {categoryIds.map(id => (
             <div key={id} className={styles.categoryItem}>
-              <span className={styles.categoryName}>Category ID: {id}</span>
+              <span className={styles.categoryName}>
+                <CategoryName categoryId={id} />
+              </span>
               {!readonly && (
                 <button
                   className={styles.removeButton}

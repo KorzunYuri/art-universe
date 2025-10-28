@@ -1,4 +1,5 @@
 import { MasterEntityPicker } from '@/music/data/master/components/MasterEntityPicker/MasterEntityPicker.tsx';
+import { CategoryName } from '@/music/data/master/components/CategoryName/CategoryName.tsx';
 import type { LookupEntity } from '@/music/shared/types/lookup.ts';
 import { 
   type PipelineStepDto, 
@@ -157,7 +158,9 @@ export const FinalCategoriesBalancerStep = ({
         <div className={styles.categoriesList}>
           {categories.map(category => (
             <div key={category.id} className={styles.categoryItem}>
-              <span className={styles.categoryName}>Category ID: {category.id}</span>
+              <span className={styles.categoryName}>
+                <CategoryName categoryId={category.id} />
+              </span>
               <input
                 type="range"
                 min="0"
