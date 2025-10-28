@@ -41,4 +41,10 @@
         <sqlFile path="db/migration/muquiz/liquibase/changesets/0010-pipeline-metadata/0010-0090-generation$add_pipeline_id.sql"/>
     </changeSet>
 
+    <changeSet id="0010-0100-migrate-existing-data" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0010-pipeline-metadata/0010-0100-migrate_existing_data.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
 </databaseChangeLog>
