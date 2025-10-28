@@ -3,6 +3,8 @@ package yurykorzun.art.universe.music.quiz.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import yurykorzun.art.universe.common.persistence.entity.BaseEntity;
 
 import java.time.Instant;
@@ -37,6 +39,7 @@ public class StepRun extends BaseEntity {
     private Integer algVersion;
 
     @Column(name = "step_cfg_data", columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
     private String stepCfgData;
 
     @Column(name = "status", nullable = false)
@@ -57,5 +60,6 @@ public class StepRun extends BaseEntity {
     private String inputTableName;
 
     @Column(name = "result_stats", columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
     private String resultStats;
 }

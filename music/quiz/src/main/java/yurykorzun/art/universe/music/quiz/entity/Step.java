@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import yurykorzun.art.universe.common.persistence.entity.BaseEntity;
 
 @Entity(name = "step")
@@ -33,9 +35,11 @@ public class Step extends BaseEntity {
     private Integer algVersion;
 
     @Column(name = "cfg_data", columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
     private String cfgData;
 
     @Column(name = "preview_data", columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
     private String previewData;
 
     @Column(name = "last_step_run_id")
