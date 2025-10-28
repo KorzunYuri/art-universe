@@ -47,7 +47,7 @@ DECLARE
     new_start_step_run_id BIGINT;
     new_final_step_run_id BIGINT;
 BEGIN
-    FOR gen_rec IN SELECT id, game_id, target_count, result_table_name, created_at FROM mu_quiz.generation
+    FOR gen_rec IN SELECT id, game_id, target_count, result_table_name, created_at FROM mu_quiz.generation WHERE pipeline_id IS NULL
     LOOP
         -- Create immutable pipeline for generation
         INSERT INTO mu_quiz.pipeline (immutable, created_at, updated_at)
@@ -94,3 +94,9 @@ BEGIN
         WHERE id = gen_rec.id;
     END LOOP;
 END $$;
+
+-- Update sequences to match current data
+SELECT setval('mu_quiz.pipeline_seq', (SELECT COALESCE(MAX(id), 1) FROM mu_quiz.pipeline));
+SELECT setval('mu_quiz.step_seq', (SELECT COALESCE(MAX(id), 1) FROM mu_quiz.step));
+SELECT setval('mu_quiz.pipeline_run_seq', (SELECT COALESCE(MAX(id), 1) FROM mu_quiz.pipeline_run));
+SELECT setval('mu_quiz.step_run_seq', (SELECT COALESCE(MAX(id), 1) FROM mu_quiz.step_run));

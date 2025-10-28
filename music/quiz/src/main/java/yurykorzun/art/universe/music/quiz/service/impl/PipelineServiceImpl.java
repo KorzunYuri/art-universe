@@ -217,10 +217,7 @@ public class PipelineServiceImpl implements PipelineService {
     @Transactional
     public String getStepPreview(Long stepId) {
         log.debug("Getting preview for step {}", stepId);
-
-        String preview = stepExecutionService.generatePreview(stepId);
-
-        return preview;
+        return stepExecutionService.generatePreview(stepId);
     }
 
     @Override
