@@ -128,11 +128,10 @@ public class PipelineServiceImpl implements PipelineService {
             .orElseThrow(() -> new IllegalArgumentException("Step not found in pipeline"));
         
         Step step = stepService.getStep(stepId);
+        Integer oldPosition = movingStep.getOrd();
 
         List<StepType> allStepTypes = getStepTypes(pipelineSteps);
-        PipelineValidationUtil.validateStepPositionForMove(step.getType(), newPosition, allStepTypes);
-        
-        Integer oldPosition = movingStep.getOrd();
+        PipelineValidationUtil.validateStepPositionForMove(step.getType(), oldPosition, newPosition, allStepTypes);
         
         if (oldPosition.equals(newPosition)) {
             return getPipeline(pipelineId); // No change needed

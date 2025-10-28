@@ -13,8 +13,8 @@ public class PipelineValidationUtil {
         validateStepPositions(stepType, targetPosition, stepTypesAfterChange);
     }
 
-    public static void validateStepPositionForMove(StepType stepType, int newPosition, List<StepType> allStepTypes) {
-        List<StepType> stepTypesAfterMove = getStepTypesAfterMove(stepType, newPosition, allStepTypes);
+    public static void validateStepPositionForMove(StepType stepType, int currentPosition, int newPosition, List<StepType> allStepTypes) {
+        List<StepType> stepTypesAfterMove = getStepTypesAfterMove(currentPosition, newPosition, allStepTypes);
         validateStepPositions(stepType, newPosition, stepTypesAfterMove);
     }
 
@@ -45,8 +45,8 @@ public class PipelineValidationUtil {
 
         switch (stepPosition) {
             case START -> {
-                if (position != 1) {
-                    throw new IllegalArgumentException("START step must be at position 1");
+                if (position != 0) {
+                    throw new IllegalArgumentException("START step must be at position 0");
                 }
                 long startCount = stepTypesAfterChange.stream()
                     .filter(type -> type.getPosition() == StepPosition.START)
@@ -56,7 +56,7 @@ public class PipelineValidationUtil {
                 }
             }
             case FINAL -> {
-                if (position != stepTypesAfterChange.size()) {
+                if (position != stepTypesAfterChange.size() - 1) {
                     throw new IllegalArgumentException("FINAL step must be at last position");
                 }
                 long finalCount = stepTypesAfterChange.stream()
@@ -68,13 +68,13 @@ public class PipelineValidationUtil {
             }
             case MIDDLE -> {
                 // Check no START steps after this position
-                for (int i = position; i < stepTypesAfterChange.size(); i++) {
+                for (int i = position + 1; i < stepTypesAfterChange.size(); i++) {
                     if (stepTypesAfterChange.get(i).getPosition() == StepPosition.START) {
                         throw new IllegalArgumentException("MIDDLE step cannot have START steps after it");
                     }
                 }
                 // Check no FINAL steps before this position
-                for (int i = 0; i < position - 1; i++) {
+                for (int i = 0; i < position; i++) {
                     if (stepTypesAfterChange.get(i).getPosition() == StepPosition.FINAL) {
                         throw new IllegalArgumentException("MIDDLE step cannot have FINAL steps before it");
                     }
@@ -85,14 +85,14 @@ public class PipelineValidationUtil {
 
     private static List<StepType> getStepTypesAfterAdd(StepType newStepType, int targetPosition, List<StepType> existingStepTypes) {
         List<StepType> result = new java.util.ArrayList<>(existingStepTypes);
-        result.add(targetPosition - 1, newStepType);
+        result.add(targetPosition, newStepType);
         return result;
     }
 
-    private static List<StepType> getStepTypesAfterMove(StepType movingStepType, int newPosition, List<StepType> allStepTypes) {
+    private static List<StepType> getStepTypesAfterMove(int currentPosition, int newPosition, List<StepType> allStepTypes) {
         List<StepType> result = new java.util.ArrayList<>(allStepTypes);
-        result.remove(movingStepType);
-        result.add(newPosition - 1, movingStepType);
+        StepType movingStepType = result.remove(currentPosition);
+        result.add(newPosition, movingStepType);
         return result;
     }
 }
