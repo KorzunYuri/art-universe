@@ -38,6 +38,37 @@ class StartDatasourceProcessorTest {
     }
 
     @Test
+    void processStep_shouldNotValidateInputTable_whenNullInputTable() {
+        // given
+        Step step = Step.builder()
+            .id(1L)
+            .type(StepType.START_DATASOURCE)
+            .cfgData("{}")
+            .build();
+        
+        StepRun stepRun = StepRun.builder().id(1L).build();
+
+        // when & then - should not throw exception
+        assertDoesNotThrow(() -> processor.processStep(step, null, "output_table", stepRun));
+    }
+
+    @Test
+    void processStep_shouldNotValidateInputTable_whenInvalidInputTable() {
+        // given
+        Step step = Step.builder()
+            .id(1L)
+            .type(StepType.START_DATASOURCE)
+            .cfgData("{}")
+            .build();
+        
+        StepRun stepRun = StepRun.builder().id(1L).build();
+
+        // when & then - should not throw exception
+        assertDoesNotThrow(() -> processor.processStep(step, "invalid_table", "output_table", stepRun));
+        assertDoesNotThrow(() -> processor.processStep(step, "schema.table.extra", "output_table", stepRun));
+    }
+
+    @Test
     void processStep_shouldReturnDatasourceFromConfig_whenValidConfig() {
         // given
         Step step = Step.builder()

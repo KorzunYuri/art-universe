@@ -46,7 +46,6 @@ public class StepExecutionServiceImpl implements StepExecutionService {
         }
         StepProcessor processor = stepProcessorRegistry.get(step.getType());
         validateStep(step, processor);
-        validateInputTable(inputTableName);
 
         // Create StepRun in separate transaction
         StepRun savedStepRun = stepRunService.createStepRun(step, inputTableName, pipelineRunId);
@@ -102,16 +101,6 @@ public class StepExecutionServiceImpl implements StepExecutionService {
         }
         if (!processor.getStepType().equals(step.getType())) {
             throw new IllegalArgumentException("Step type mismatch: expected " + processor.getStepType() + ", got " + step.getType());
-        }
-    }
-    
-    private void validateInputTable(String inputTable) {
-        if (inputTable == null || inputTable.trim().isEmpty()) {
-            throw new IllegalArgumentException("Input table cannot be null or empty");
-        }
-        String[] parts = inputTable.split("\\.");
-        if (parts.length != 2) {
-            throw new IllegalArgumentException("Input table must be in format 'schema.table'");
         }
     }
     

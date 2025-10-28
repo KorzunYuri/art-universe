@@ -42,6 +42,36 @@ class FinalCategoriesBalancerProcessorTest {
     }
 
     @Test
+    void processStep_shouldThrowException_whenNullInputTable() {
+        // given
+        Step step = Step.builder().cfgData("{\"targetCount\":20,\"defaultQuota\":0.5,\"categories\":[{\"id\":1,\"weight\":1.0}]}").build();
+        StepRun stepRun = StepRun.builder().build();
+
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> processor.processStep(step, null, "output.table", stepRun)
+        );
+
+        assertEquals("Input table cannot be null or empty", exception.getMessage());
+    }
+
+    @Test
+    void processStep_shouldThrowException_whenInvalidInputTableFormat() {
+        // given
+        Step step = Step.builder().cfgData("{\"targetCount\":20,\"defaultQuota\":0.5,\"categories\":[{\"id\":1,\"weight\":1.0}]}").build();
+        StepRun stepRun = StepRun.builder().build();
+
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> processor.processStep(step, "invalid_table", "output.table", stepRun)
+        );
+
+        assertEquals("Input table must be in format 'schema.table'", exception.getMessage());
+    }
+
+    @Test
     void processStep_shouldCallProcedure_whenValidInput() {
         // given
         Step step = Step.builder()

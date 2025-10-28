@@ -8,14 +8,22 @@ import java.util.List;
 
 public class PipelineValidationUtil {
 
-    public static void validateStepPosition(StepType stepType, int targetPosition, List<StepType> existingStepTypes) {
-        List<StepType> stepTypesAfterChange = getStepTypesAfterAdd(stepType, targetPosition, existingStepTypes);
+    public static void validateStepPosition(StepType stepType, int targetPosition, List<StepType> existingStepTypesSequence) {
+        validateStepPosition(targetPosition, existingStepTypesSequence.size());
+        List<StepType> stepTypesAfterChange = getStepTypesAfterAdd(stepType, targetPosition, existingStepTypesSequence);
         validateStepPositions(stepType, targetPosition, stepTypesAfterChange);
     }
 
-    public static void validateStepPositionForMove(StepType stepType, int currentPosition, int newPosition, List<StepType> allStepTypes) {
-        List<StepType> stepTypesAfterMove = getStepTypesAfterMove(currentPosition, newPosition, allStepTypes);
-        validateStepPositions(stepType, newPosition, stepTypesAfterMove);
+    public static void validateStepPositionForMove(StepType stepType, int currentPosition, int targetPosition, List<StepType> existingStepTypesSequence) {
+        validateStepPosition(targetPosition, existingStepTypesSequence.size());
+        List<StepType> stepTypesAfterMove = getStepTypesAfterMove(currentPosition, targetPosition, existingStepTypesSequence);
+        validateStepPositions(stepType, targetPosition, stepTypesAfterMove);
+    }
+
+    private static void validateStepPosition(int targetPosition, int stepsCount) {
+        if (targetPosition > stepsCount || targetPosition < 0) {
+            throw new IllegalArgumentException(String.format("target step position %s is out of pipeline bounds %s", targetPosition, stepsCount));
+        }
     }
 
     public static void validatePipelineForGeneration(List<Step> steps) {
@@ -83,14 +91,14 @@ public class PipelineValidationUtil {
         }
     }
 
-    private static List<StepType> getStepTypesAfterAdd(StepType newStepType, int targetPosition, List<StepType> existingStepTypes) {
-        List<StepType> result = new java.util.ArrayList<>(existingStepTypes);
+    private static List<StepType> getStepTypesAfterAdd(StepType newStepType, int targetPosition, List<StepType> existingStepTypesSequence) {
+        List<StepType> result = new java.util.ArrayList<>(existingStepTypesSequence);
         result.add(targetPosition, newStepType);
         return result;
     }
 
-    private static List<StepType> getStepTypesAfterMove(int currentPosition, int newPosition, List<StepType> allStepTypes) {
-        List<StepType> result = new java.util.ArrayList<>(allStepTypes);
+    private static List<StepType> getStepTypesAfterMove(int currentPosition, int newPosition, List<StepType> existingStepTypesSequence) {
+        List<StepType> result = new java.util.ArrayList<>(existingStepTypesSequence);
         StepType movingStepType = result.remove(currentPosition);
         result.add(newPosition, movingStepType);
         return result;

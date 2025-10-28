@@ -171,7 +171,7 @@ class PipelineServiceTest {
         when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
 
         // when
-        PipelineDto result = pipelineService.addStep(pipelineId, stepDto, 1);
+        PipelineDto result = pipelineService.addStep(pipelineId, stepDto, 0);
 
         // then
         assertNotNull(result);
@@ -195,7 +195,7 @@ class PipelineServiceTest {
         PipelineStep existingPipelineStep = PipelineStep.builder()
             .pipelineId(pipelineId)
             .stepId(1L)
-            .ord(1)
+            .ord(0)
             .build();
         
         Step savedStep = Step.builder()
@@ -213,12 +213,12 @@ class PipelineServiceTest {
         when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
 
         // when
-        PipelineDto result = pipelineService.addStep(pipelineId, stepDto, 2);
+        PipelineDto result = pipelineService.addStep(pipelineId, stepDto, 1);
 
         // then
         assertNotNull(result);
         verify(stepService).createStep(StepType.APPROVED_FILTER, "{}");
-        verify(pipelineStepRepository).incrementOrderAfter(pipelineId, 2);
+        verify(pipelineStepRepository).incrementOrderAfter(pipelineId, 1);
         verify(stepService).clearResults(any());
     }
 
@@ -236,12 +236,12 @@ class PipelineServiceTest {
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId)).thenReturn(List.of());
 
         // when & then
-        IndexOutOfBoundsException exception = assertThrows(
-            IndexOutOfBoundsException.class,
-            () -> pipelineService.addStep(pipelineId, stepDto, 2) // START step must be at position 1
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> pipelineService.addStep(pipelineId, stepDto, 1)
         );
         
-        assertTrue(exception.getMessage().contains("Index: 1, Size: 0"));
+        assertEquals("target step position 1 is out of pipeline bounds 0", exception.getMessage());
     }
 
     @Test
@@ -262,7 +262,7 @@ class PipelineServiceTest {
         // when & then
         IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
-            () -> pipelineService.addStep(pipelineId, stepDto, 1)
+            () -> pipelineService.addStep(pipelineId, stepDto, 0)
         );
         
         assertEquals("Invalid configuration", exception.getMessage());
@@ -282,7 +282,7 @@ class PipelineServiceTest {
         PipelineStep existingPipelineStep = PipelineStep.builder()
             .pipelineId(pipelineId)
             .stepId(1L)
-            .ord(1)
+            .ord(0)
             .build();
         
         Step savedStep = Step.builder()
@@ -300,7 +300,7 @@ class PipelineServiceTest {
         when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
 
         // when
-        PipelineDto result = pipelineService.addStep(pipelineId, stepDto, 2);
+        PipelineDto result = pipelineService.addStep(pipelineId, stepDto, 1);
 
         // then
         assertNotNull(result);
@@ -323,7 +323,7 @@ class PipelineServiceTest {
         PipelineStep existingPipelineStep = PipelineStep.builder()
             .pipelineId(pipelineId)
             .stepId(1L)
-            .ord(1)
+            .ord(0)
             .build();
 
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
@@ -334,10 +334,10 @@ class PipelineServiceTest {
         // when & then
         IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
-            () -> pipelineService.addStep(pipelineId, stepDto, 2)
+            () -> pipelineService.addStep(pipelineId, stepDto, 1)
         );
         
-        assertEquals("START step must be at position 1", exception.getMessage());
+        assertEquals("START step must be at position 0", exception.getMessage());
     }
 
     @Test
@@ -354,7 +354,7 @@ class PipelineServiceTest {
         PipelineStep existingPipelineStep = PipelineStep.builder()
             .pipelineId(pipelineId)
             .stepId(1L)
-            .ord(1)
+            .ord(0)
             .build();
 
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
@@ -365,7 +365,7 @@ class PipelineServiceTest {
         // when & then
         IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
-            () -> pipelineService.addStep(pipelineId, stepDto, 1)
+            () -> pipelineService.addStep(pipelineId, stepDto, 0)
         );
         
         assertEquals("Only one START step is allowed", exception.getMessage());
@@ -386,12 +386,12 @@ class PipelineServiceTest {
         PipelineStep existingPipelineStep1 = PipelineStep.builder()
             .pipelineId(pipelineId)
             .stepId(1L)
-            .ord(1)
+            .ord(0)
             .build();
         PipelineStep existingPipelineStep2 = PipelineStep.builder()
             .pipelineId(pipelineId)
             .stepId(2L)
-            .ord(2)
+            .ord(1)
             .build();
 
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
@@ -402,7 +402,7 @@ class PipelineServiceTest {
         // when & then
         IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
-            () -> pipelineService.addStep(pipelineId, stepDto, 2) // Should be position 3
+            () -> pipelineService.addStep(pipelineId, stepDto, 1) // Should be position 2
         );
         
         assertEquals("FINAL step must be at last position", exception.getMessage());
@@ -423,12 +423,12 @@ class PipelineServiceTest {
         PipelineStep existingPipelineStep1 = PipelineStep.builder()
             .pipelineId(pipelineId)
             .stepId(1L)
-            .ord(1)
+            .ord(0)
             .build();
         PipelineStep existingPipelineStep2 = PipelineStep.builder()
             .pipelineId(pipelineId)
             .stepId(2L)
-            .ord(2)
+            .ord(1)
             .build();
 
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
@@ -439,7 +439,7 @@ class PipelineServiceTest {
         // when & then
         IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
-            () -> pipelineService.addStep(pipelineId, stepDto, 3)
+            () -> pipelineService.addStep(pipelineId, stepDto, 2)
         );
         
         assertEquals("Only one FINAL step is allowed", exception.getMessage());
@@ -459,7 +459,7 @@ class PipelineServiceTest {
         PipelineStep existingPipelineStep = PipelineStep.builder()
             .pipelineId(pipelineId)
             .stepId(1L)
-            .ord(1)
+            .ord(0)
             .build();
 
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
@@ -470,7 +470,7 @@ class PipelineServiceTest {
         // when & then
         IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
-            () -> pipelineService.addStep(pipelineId, stepDto, 1) // Trying to put MIDDLE before START
+            () -> pipelineService.addStep(pipelineId, stepDto, 0) // Trying to put MIDDLE before START
         );
         
         assertEquals("MIDDLE step cannot have START steps after it", exception.getMessage());
@@ -490,7 +490,7 @@ class PipelineServiceTest {
         PipelineStep existingPipelineStep = PipelineStep.builder()
             .pipelineId(pipelineId)
             .stepId(1L)
-            .ord(1)
+            .ord(0)
             .build();
 
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
@@ -501,7 +501,7 @@ class PipelineServiceTest {
         // when & then
         IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
-            () -> pipelineService.addStep(pipelineId, stepDto, 2) // Trying to put MIDDLE after FINAL
+            () -> pipelineService.addStep(pipelineId, stepDto, 1) // Trying to put MIDDLE after FINAL
         );
         
         assertEquals("MIDDLE step cannot have FINAL steps before it", exception.getMessage());
@@ -577,13 +577,13 @@ class PipelineServiceTest {
         // given
         Long pipelineId = 1L;
         Long stepId = 1L;
-        Integer newPosition = 1;
+        Integer newPosition = 0;
         Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
         Step step = Step.builder().id(stepId).type(StepType.START_DATASOURCE).build();
         PipelineStep pipelineStep = PipelineStep.builder()
             .pipelineId(pipelineId)
             .stepId(stepId)
-            .ord(1)
+            .ord(0)
             .build();
 
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
@@ -608,7 +608,7 @@ class PipelineServiceTest {
         // given
         Long pipelineId = 1L;
         Long stepId = 2L; // Moving MIDDLE step
-        Integer newPosition = 3;
+        Integer newPosition = 2;
         Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
         
         Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
@@ -616,10 +616,10 @@ class PipelineServiceTest {
         Step step3 = Step.builder().id(3L).type(StepType.BLACKLIST_FILTER).build();
         Step step4 = Step.builder().id(4L).type(StepType.FINAL_LIMITER).build();
         
-        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
-        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
-        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(3).build();
-        PipelineStep pipelineStep4 = PipelineStep.builder().pipelineId(pipelineId).stepId(4L).ord(4).build();
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(0).build();
+        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(1).build();
+        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(2).build();
+        PipelineStep pipelineStep4 = PipelineStep.builder().pipelineId(pipelineId).stepId(4L).ord(3).build();
 
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
@@ -633,7 +633,7 @@ class PipelineServiceTest {
 
         // then
         assertNotNull(result);
-        verify(pipelineStepRepository).decrementOrderBetween(pipelineId, 2, 3);
+        verify(pipelineStepRepository).decrementOrderBetween(pipelineId, 1, 2);
         verify(pipelineStepRepository).updateStepOrder(pipelineId, stepId, newPosition);
         verify(stepService).clearResults(any());
     }
@@ -643,7 +643,7 @@ class PipelineServiceTest {
         // given
         Long pipelineId = 1L;
         Long stepId = 3L; // Moving MIDDLE step
-        Integer newPosition = 2;
+        Integer newPosition = 1;
         Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
         
         Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
@@ -651,10 +651,10 @@ class PipelineServiceTest {
         Step step3 = Step.builder().id(3L).type(StepType.BLACKLIST_FILTER).build();
         Step step4 = Step.builder().id(4L).type(StepType.FINAL_LIMITER).build();
         
-        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
-        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
-        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(3).build();
-        PipelineStep pipelineStep4 = PipelineStep.builder().pipelineId(pipelineId).stepId(4L).ord(4).build();
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(0).build();
+        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(1).build();
+        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(2).build();
+        PipelineStep pipelineStep4 = PipelineStep.builder().pipelineId(pipelineId).stepId(4L).ord(3).build();
 
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
@@ -668,23 +668,23 @@ class PipelineServiceTest {
 
         // then
         assertNotNull(result);
-        verify(pipelineStepRepository).incrementOrderBetween(pipelineId, 2, 3);
+        verify(pipelineStepRepository).incrementOrderBetween(pipelineId, 1, 2);
         verify(pipelineStepRepository).updateStepOrder(pipelineId, stepId, newPosition);
     }
 
     @Test
-    void moveStep_shouldThrowException_whenStartStepNotAtPosition1() {
+    void moveStep_shouldThrowException_whenStartStepNotAtPosition0() {
         // given
         Long pipelineId = 1L;
         Long stepId = 1L;
-        Integer newPosition = 2;
+        Integer newPosition = 1;
         Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
         
         Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
         Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
         
-        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
-        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(0).build();
+        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(1).build();
 
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
@@ -698,7 +698,7 @@ class PipelineServiceTest {
             () -> pipelineService.moveStep(pipelineId, stepId, newPosition)
         );
         
-        assertEquals("START step must be at position 1", exception.getMessage());
+        assertEquals("START step must be at position 0", exception.getMessage());
     }
 
     @Test
@@ -706,16 +706,16 @@ class PipelineServiceTest {
         // given
         Long pipelineId = 1L;
         Long stepId = 3L;
-        Integer newPosition = 2;
+        Integer newPosition = 1;
         Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
         
         Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
         Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
         Step step3 = Step.builder().id(3L).type(StepType.FINAL_LIMITER).build();
         
-        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
-        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
-        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(3).build();
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(0).build();
+        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(1).build();
+        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(2).build();
 
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
@@ -737,14 +737,14 @@ class PipelineServiceTest {
         // given
         Long pipelineId = 1L;
         Long stepId = 2L;
-        Integer newPosition = 1;
+        Integer newPosition = 0;
         Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
         
         Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
         Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
         
-        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
-        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(0).build();
+        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(1).build();
 
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
@@ -766,16 +766,16 @@ class PipelineServiceTest {
         // given
         Long pipelineId = 1L;
         Long stepId = 2L;
-        Integer newPosition = 3;
+        Integer newPosition = 2;
         Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
         
         Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
         Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
         Step step3 = Step.builder().id(3L).type(StepType.FINAL_LIMITER).build();
         
-        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
-        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
-        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(3).build();
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(0).build();
+        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(1).build();
+        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(2).build();
 
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
@@ -865,9 +865,68 @@ class PipelineServiceTest {
         Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
         Step step3 = Step.builder().id(3L).type(StepType.FINAL_LIMITER).build();
         
-        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
-        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
-        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(3).build();
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(0).build();
+        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(1).build();
+        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(2).build();
+
+        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
+        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
+            .thenReturn(List.of(pipelineStep1, pipelineStep2, pipelineStep3));
+        when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
+
+        // when
+        PipelineDto result = pipelineService.removeStep(pipelineId, stepId);
+
+        // then
+        assertNotNull(result);
+        verify(pipelineStepRepository).deleteByPipelineIdAndStepId(pipelineId, stepId);
+        verify(stepService).softDeleteStep(stepId);
+        verify(pipelineStepRepository).decrementOrderAfter(pipelineId, 1);
+        verify(stepService).clearResults(any());
+    }
+
+    @Test
+    void removeStep_shouldRemoveFirstStep_whenSuccessful() {
+        // given
+        Long pipelineId = 1L;
+        Long stepId = 1L; // Remove first step
+        Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
+        
+        Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
+        Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
+        
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(0).build();
+        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(1).build();
+
+        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
+        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
+            .thenReturn(List.of(pipelineStep1, pipelineStep2));
+        when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
+
+        // when
+        PipelineDto result = pipelineService.removeStep(pipelineId, stepId);
+
+        // then
+        assertNotNull(result);
+        verify(pipelineStepRepository).deleteByPipelineIdAndStepId(pipelineId, stepId);
+        verify(stepService).softDeleteStep(stepId);
+        verify(pipelineStepRepository).decrementOrderAfter(pipelineId, 0);
+    }
+
+    @Test
+    void removeStep_shouldRemoveLastStep_whenSuccessful() {
+        // given
+        Long pipelineId = 1L;
+        Long stepId = 3L; // Remove last step
+        Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
+        
+        Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
+        Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
+        Step step3 = Step.builder().id(3L).type(StepType.FINAL_LIMITER).build();
+        
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(0).build();
+        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(1).build();
+        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(2).build();
 
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
@@ -882,65 +941,6 @@ class PipelineServiceTest {
         verify(pipelineStepRepository).deleteByPipelineIdAndStepId(pipelineId, stepId);
         verify(stepService).softDeleteStep(stepId);
         verify(pipelineStepRepository).decrementOrderAfter(pipelineId, 2);
-        verify(stepService).clearResults(any());
-    }
-
-    @Test
-    void removeStep_shouldRemoveFirstStep_whenSuccessful() {
-        // given
-        Long pipelineId = 1L;
-        Long stepId = 1L; // Remove first step
-        Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
-        
-        Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
-        Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
-        
-        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
-        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
-
-        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
-        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
-            .thenReturn(List.of(pipelineStep1, pipelineStep2));
-        when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
-
-        // when
-        PipelineDto result = pipelineService.removeStep(pipelineId, stepId);
-
-        // then
-        assertNotNull(result);
-        verify(pipelineStepRepository).deleteByPipelineIdAndStepId(pipelineId, stepId);
-        verify(stepService).softDeleteStep(stepId);
-        verify(pipelineStepRepository).decrementOrderAfter(pipelineId, 1);
-    }
-
-    @Test
-    void removeStep_shouldRemoveLastStep_whenSuccessful() {
-        // given
-        Long pipelineId = 1L;
-        Long stepId = 3L; // Remove last step
-        Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
-        
-        Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
-        Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
-        Step step3 = Step.builder().id(3L).type(StepType.FINAL_LIMITER).build();
-        
-        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
-        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
-        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(3).build();
-
-        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
-        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
-            .thenReturn(List.of(pipelineStep1, pipelineStep2, pipelineStep3));
-        when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
-
-        // when
-        PipelineDto result = pipelineService.removeStep(pipelineId, stepId);
-
-        // then
-        assertNotNull(result);
-        verify(pipelineStepRepository).deleteByPipelineIdAndStepId(pipelineId, stepId);
-        verify(stepService).softDeleteStep(stepId);
-        verify(pipelineStepRepository).decrementOrderAfter(pipelineId, 3);
     }
 
     @Test
@@ -951,7 +951,7 @@ class PipelineServiceTest {
         Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
         
         Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
-        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(0).build();
 
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
@@ -965,7 +965,7 @@ class PipelineServiceTest {
         assertNotNull(result);
         verify(pipelineStepRepository).deleteByPipelineIdAndStepId(pipelineId, stepId);
         verify(stepService).softDeleteStep(stepId);
-        verify(pipelineStepRepository).decrementOrderAfter(pipelineId, 1);
+        verify(pipelineStepRepository).decrementOrderAfter(pipelineId, 0);
     }
 
 
@@ -993,8 +993,8 @@ class PipelineServiceTest {
         Step step1 = Step.builder().id(1L).type(StepType.APPROVED_FILTER).build();
         Step step2 = Step.builder().id(2L).type(StepType.FINAL_LIMITER).build();
 
-        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
-        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(0).build();
+        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(1).build();
 
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
@@ -1019,8 +1019,8 @@ class PipelineServiceTest {
         Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
         Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
 
-        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
-        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(0).build();
+        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(1).build();
 
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
@@ -1046,9 +1046,9 @@ class PipelineServiceTest {
         Step step2 = Step.builder().id(2L).type(StepType.START_DATASOURCE).build();
         Step step3 = Step.builder().id(3L).type(StepType.FINAL_LIMITER).build();
 
-        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
-        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
-        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(3).build();
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(0).build();
+        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(1).build();
+        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(2).build();
 
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
@@ -1074,9 +1074,9 @@ class PipelineServiceTest {
         Step step2 = Step.builder().id(2L).type(StepType.FINAL_LIMITER).build();
         Step step3 = Step.builder().id(3L).type(StepType.FINAL_CATEGORIES_BALANCER).build();
 
-        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
-        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
-        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(3).build();
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(0).build();
+        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(1).build();
+        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(2).build();
 
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
@@ -1102,9 +1102,9 @@ class PipelineServiceTest {
         Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
         Step step3 = Step.builder().id(3L).type(StepType.FINAL_LIMITER).build();
 
-        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
-        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
-        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(3).build();
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(0).build();
+        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(1).build();
+        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(2).build();
 
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
@@ -1218,9 +1218,9 @@ class PipelineServiceTest {
             .cfgData("{\"updated\": true}")
             .build();
 
-        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
-        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
-        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(3).build();
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(0).build();
+        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(1).build();
+        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(2).build();
 
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(stepService.getStep(stepId)).thenReturn(step);
@@ -1338,9 +1338,9 @@ class PipelineServiceTest {
         Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
         Step step3 = Step.builder().id(3L).type(StepType.FINAL_LIMITER).build();
 
-        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
-        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(2).build();
-        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(3).build();
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(0).build();
+        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(1).build();
+        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(2).build();
 
         StepRun stepRun1 = StepRun.builder().id(1L).resultTableName("output_table_1").build();
         StepRun stepRun2 = StepRun.builder().id(2L).resultTableName("output_table_2").build();
@@ -1349,13 +1349,12 @@ class PipelineServiceTest {
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(pipelineStep1, pipelineStep2, pipelineStep3));
-        when(pipelineStepRepository.findEarliestStepWithoutResult(pipelineId)).thenReturn(Optional.of(2));
+        when(pipelineStepRepository.findEarliestStepWithoutResult(pipelineId)).thenReturn(Optional.of(1));
         
-        when(stepRepository.findById(1L)).thenReturn(Optional.of(step1));
-        when(stepRepository.findById(2L)).thenReturn(Optional.of(step2));
-        when(stepRepository.findById(3L)).thenReturn(Optional.of(step3));
+        // Batch loading: findAllById will be called with [1L, 2L, 3L]
+        when(stepRepository.findAllById(List.of(1L, 2L, 3L))).thenReturn(List.of(step1, step2, step3));
         when(stepRunRepository.findById(1L)).thenReturn(Optional.of(stepRun1));
-        
+
         when(stepExecutionService.executeStep(step2, "output_table_1", null)).thenReturn(stepRun2);
         when(stepExecutionService.executeStep(step3, "output_table_2", null)).thenReturn(stepRun3);
 
@@ -1389,7 +1388,7 @@ class PipelineServiceTest {
         Long pipelineId = 1L;
 
         Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
-        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(0).build();
 
         StepRun stepRun = StepRun.builder().id(1L).resultTableName("output_table").build();
         PipelineRun pipelineRun = PipelineRun.builder().id(1L).pipelineId(pipelineId).status(ExecutionStatus.COMPLETED).resultTableName("output_table").build();
@@ -1417,7 +1416,7 @@ class PipelineServiceTest {
         PipelineRun pipelineRun = PipelineRun.builder().id(1L).pipelineId(pipelineId).build();
 
         Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
-        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(1).build();
+        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(0).build();
 
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId)).thenReturn(List.of(pipelineStep1));
         when(pipelineRunService.createPipelineRun(pipelineId)).thenReturn(pipelineRun);

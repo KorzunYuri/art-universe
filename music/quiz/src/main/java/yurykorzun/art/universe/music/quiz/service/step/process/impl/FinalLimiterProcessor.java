@@ -37,7 +37,7 @@ public class FinalLimiterProcessor extends BasicStepProcessor {
     }
 
     @Override
-    public StepRunResult processStep(Step step, String inputTableName, String stepTableNameBase, StepRun stepRun) {
+    public StepRunResult executeStepLogic(Step step, String inputTableName, String stepTableNameBase, StepRun stepRun) {
         String outputTableName = stepTableNameBase + "_limiter";
         try {
             FinalLimiterStepConfig config = parseConfig(step.getCfgData());

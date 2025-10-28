@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.Setter;
 import yurykorzun.art.universe.common.persistence.util.DatabaseUtils;
+import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
 import yurykorzun.art.universe.music.quiz.dto.step.stats.BasicStepStats;
 import yurykorzun.art.universe.music.quiz.dto.step.stats.StepRunStats;
 import yurykorzun.art.universe.music.quiz.entity.Step;
@@ -48,6 +49,25 @@ public abstract class BasicStepProcessor implements StepProcessor {
         return cfgData;
     }
 
+    @Override
+    public final StepRunResult processStep(Step step, String inputTableName, String stepTableNameBase, StepRun stepRun) {
+        validateConfiguration(step.getCfgData());
+        validateInputTable(inputTableName);
+        return executeStepLogic(step, inputTableName, stepTableNameBase, stepRun);
+    }
+
+    protected abstract StepRunResult executeStepLogic(Step step, String inputTableName, String stepTableNameBase, StepRun stepRun);
+
+    protected void validateInputTable(String inputTableName) {
+        if (inputTableName == null || inputTableName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Input table cannot be null or empty");
+        }
+        String[] parts = inputTableName.split("\\.");
+        if (parts.length != 2) {
+            throw new IllegalArgumentException("Input table must be in format 'schema.table'");
+        }
+    }
+
     /**
      * Basic implementation of stats calculation. The return type can be extended by specific implementations.
      */
@@ -62,50 +82,12 @@ public abstract class BasicStepProcessor implements StepProcessor {
         boolean inputExists = inputTableName != null && DatabaseUtils.tableExists(entityManager, inputTableName);
         boolean outputExists = outputTableName != null && DatabaseUtils.tableExists(entityManager, outputTableName);
 
-        if (!inputExists && !outputExists) {
-            // Both tables don't exist - set all to 0
-            stats.setInputRecords(0L);
-            stats.setInputArtists(0L);
-            stats.setFilteredRecords(0L);
-            stats.setFilteredArtists(0L);
-            stats.setOutputRecords(0L);
-            stats.setOutputArtists(0L);
-        } else if (!inputExists) {
-            // Input doesn't exist (START_DATASOURCE case) - copy output stats to input stats
-            Long outputRecords = outputExists ? getTrackCount(outputTableName) : 0L;
-            Long outputArtists = outputExists ? getArtistCount(outputTableName) : 0L;
-
-            stats.setInputRecords(outputRecords);
-            stats.setInputArtists(outputArtists);
-            stats.setFilteredRecords(0L);
-            stats.setFilteredArtists(0L);
-            stats.setOutputRecords(outputRecords);
-            stats.setOutputArtists(outputArtists);
-        } else if (!outputExists) {
-            // Output doesn't exist - set output stats to 0
-            Long inputRecords = getTrackCount(inputTableName);
-            Long inputArtists = getArtistCount(inputTableName);
-
-            stats.setInputRecords(inputRecords);
-            stats.setInputArtists(inputArtists);
-            stats.setFilteredRecords(inputRecords);
-            stats.setFilteredArtists(inputArtists);
-            stats.setOutputRecords(0L);
-            stats.setOutputArtists(0L);
-        } else {
-            // Both tables exist - normal case
-            Long inputRecords = getTrackCount(inputTableName);
-            Long inputArtists = getArtistCount(inputTableName);
-            Long outputRecords = getTrackCount(outputTableName);
-            Long outputArtists = getArtistCount(outputTableName);
-
-            stats.setInputRecords(inputRecords);
-            stats.setInputArtists(inputArtists);
-            stats.setFilteredRecords(inputRecords - outputRecords);
-            stats.setFilteredArtists(inputArtists - outputArtists);
-            stats.setOutputRecords(outputRecords);
-            stats.setOutputArtists(outputArtists);
-        }
+        stats.setInputRecords(inputExists ? getTrackCount(inputTableName) : 0L);
+        stats.setInputArtists(inputExists ? getArtistCount(inputTableName) : 0L);
+        stats.setOutputRecords(outputExists ? getTrackCount(outputTableName) : 0L);
+        stats.setOutputArtists(outputExists ? getArtistCount(outputTableName) : 0L);
+        stats.setFilteredRecords(stats.getInputRecords() - stats.getOutputRecords());
+        stats.setFilteredArtists(stats.getInputArtists() - stats.getOutputArtists());
 
         return stats;
     }

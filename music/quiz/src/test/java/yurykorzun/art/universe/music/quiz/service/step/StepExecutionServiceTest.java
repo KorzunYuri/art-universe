@@ -157,43 +157,7 @@ class StepExecutionServiceTest {
         assertEquals("Step cannot be null", exception.getMessage());
     }
 
-    @Test
-    void executeStep_shouldThrowException_whenNullInputTable() {
-        // given
-        Step step = Step.builder()
-            .type(StepType.START_DATASOURCE)
-            .build();
 
-        when(stepProcessorRegistry.get(StepType.START_DATASOURCE)).thenReturn(stepProcessor);
-        when(stepProcessor.getStepType()).thenReturn(StepType.START_DATASOURCE);
-
-        // when & then
-        IllegalArgumentException exception = assertThrows(
-            IllegalArgumentException.class,
-            () -> stepExecutionService.executeStep(step, null, 1L)
-        );
-
-        assertEquals("Input table cannot be null or empty", exception.getMessage());
-    }
-
-    @Test
-    void executeStep_shouldThrowException_whenInvalidInputTableFormat() {
-        // given
-        Step step = Step.builder()
-            .type(StepType.START_DATASOURCE)
-            .build();
-
-        when(stepProcessorRegistry.get(StepType.START_DATASOURCE)).thenReturn(stepProcessor);
-        when(stepProcessor.getStepType()).thenReturn(StepType.START_DATASOURCE);
-
-        // when & then
-        IllegalArgumentException exception = assertThrows(
-            IllegalArgumentException.class,
-            () -> stepExecutionService.executeStep(step, "invalid_table", 1L)
-        );
-
-        assertEquals("Input table must be in format 'schema.table'", exception.getMessage());
-    }
 
     @Test
     void executeStep_shouldThrowException_whenStepTypeMismatch() {

@@ -15,6 +15,7 @@ import yurykorzun.art.universe.music.quiz.entity.StepRun;
 import yurykorzun.art.universe.music.quiz.entity.StepType;
 import yurykorzun.art.universe.music.quiz.service.step.process.StepProcessorRegistry;
 
+import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
@@ -58,6 +59,66 @@ class BasicStepProcessorTest {
 
         // then
         assertEquals(validConfig, result);
+    }
+
+    @Test
+    void processStep_shouldThrowException_whenNullInputTable() {
+        // given
+        Step step = Step.builder().cfgData("{}").build();
+        StepRun stepRun = StepRun.builder().build();
+
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> processor.processStep(step, null, "output.table", stepRun)
+        );
+
+        assertEquals("Input table cannot be null or empty", exception.getMessage());
+    }
+
+    @Test
+    void processStep_shouldThrowException_whenEmptyInputTable() {
+        // given
+        Step step = Step.builder().cfgData("{}").build();
+        StepRun stepRun = StepRun.builder().build();
+
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> processor.processStep(step, "  ", "output.table", stepRun)
+        );
+
+        assertEquals("Input table cannot be null or empty", exception.getMessage());
+    }
+
+    @Test
+    void processStep_shouldThrowException_whenInvalidInputTableFormat() {
+        // given
+        Step step = Step.builder().cfgData("{}").build();
+        StepRun stepRun = StepRun.builder().build();
+
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> processor.processStep(step, "invalid_table", "output.table", stepRun)
+        );
+
+        assertEquals("Input table must be in format 'schema.table'", exception.getMessage());
+    }
+
+    @Test
+    void processStep_shouldThrowException_whenTooManyDotsInInputTable() {
+        // given
+        Step step = Step.builder().cfgData("{}").build();
+        StepRun stepRun = StepRun.builder().build();
+
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> processor.processStep(step, "schema.table.extra", "output.table", stepRun)
+        );
+
+        assertEquals("Input table must be in format 'schema.table'", exception.getMessage());
     }
 
     @Test
@@ -122,10 +183,10 @@ class BasicStepProcessorTest {
 
             // then
             assertNotNull(result);
-            Assertions.assertEquals(8L, result.getInputRecords());
-            Assertions.assertEquals(4L, result.getInputArtists());
-            Assertions.assertEquals(0L, result.getFilteredRecords());
-            Assertions.assertEquals(0L, result.getFilteredArtists());
+            Assertions.assertEquals(0L, result.getInputRecords());
+            Assertions.assertEquals(0L, result.getInputArtists());
+            Assertions.assertEquals(-8L, result.getFilteredRecords()); // 0 - 8 = -8
+            Assertions.assertEquals(-4L, result.getFilteredArtists()); // 0 - 4 = -4
             Assertions.assertEquals(8L, result.getOutputRecords());
             Assertions.assertEquals(4L, result.getOutputArtists());
         }
@@ -200,7 +261,7 @@ class BasicStepProcessorTest {
         }
 
         @Override
-        public StepRunResult processStep(Step step, String inputTableName, String stepTableNameBase, StepRun stepRun) {
+        protected StepRunResult executeStepLogic(Step step, String inputTableName, String stepTableNameBase, StepRun stepRun) {
             return StepRunResult.builder()
                 .outputTableName(stepTableNameBase + "_test")
                 .build();

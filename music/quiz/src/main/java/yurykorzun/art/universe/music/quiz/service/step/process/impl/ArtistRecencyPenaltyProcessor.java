@@ -19,7 +19,7 @@ public class ArtistRecencyPenaltyProcessor extends BasicStepProcessor {
     }
 
     @Override
-    public StepRunResult processStep(Step step, String inputTableName, String stepTableNameBase, StepRun stepRun) {
+    protected StepRunResult executeStepLogic(Step step, String inputTableName, String stepTableNameBase, StepRun stepRun) {
         String outputTableName = stepTableNameBase + "_artist_recency";
         entityManager.createNativeQuery(
             "SELECT p_quiz_gen_tracks_step_artist_recency_penalty(:inputTable, :outputTable)")

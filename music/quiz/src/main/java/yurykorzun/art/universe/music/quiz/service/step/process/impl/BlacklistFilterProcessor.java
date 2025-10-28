@@ -45,7 +45,7 @@ public class BlacklistFilterProcessor extends BasicStepProcessor {
     }
 
     @Override
-    public StepRunResult processStep(Step step, String inputTableName, String stepTableNameBase, StepRun stepRun) {
+    protected StepRunResult executeStepLogic(Step step, String inputTableName, String stepTableNameBase, StepRun stepRun) {
         String outputTableName = stepTableNameBase + "_blacklist_filter";
         try {
             BlacklistFilterStepConfig config = parseConfig(step.getCfgData());

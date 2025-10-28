@@ -48,7 +48,7 @@ public class FinalCategoriesBalancerProcessor extends BasicStepProcessor {
     }
 
     @Override
-    public StepRunResult processStep(Step step, String inputTableName, String stepTableNameBase, StepRun stepRun) {
+    public StepRunResult executeStepLogic(Step step, String inputTableName, String stepTableNameBase, StepRun stepRun) {
         String outputTableName = stepTableNameBase + "_categories_balancer";
         try {
             FinalCategoriesBalancerConfig config = parseConfig(step.getCfgData());

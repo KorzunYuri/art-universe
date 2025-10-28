@@ -26,17 +26,26 @@ public class StartDatasourceProcessor extends BasicStepProcessor {
 
     @Override
     public void validateConfiguration(String cfgData) {
+        parseConfig(cfgData);
+    }
+
+    private StartDatasourceStepConfig parseConfig(String cfgData) {
         try {
-            objectMapper.readValue(cfgData, StartDatasourceStepConfig.class);
+            return objectMapper.readValue(cfgData, StartDatasourceStepConfig.class);
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse step configuration", e);
         }
     }
 
     @Override
-    public StepRunResult processStep(Step step, String inputTableName, String stepTableNameBase, StepRun stepRun) {
+    protected void validateInputTable(String inputTableName) {
+        // this step doesn't require input table
+    }
+
+    @Override
+    protected StepRunResult executeStepLogic(Step step, String inputTableName, String stepTableNameBase, StepRun stepRun) {
         try {
-            StartDatasourceStepConfig config = objectMapper.readValue(step.getCfgData(), StartDatasourceStepConfig.class);
+            StartDatasourceStepConfig config = parseConfig(step.getCfgData());
             return StepRunResult.builder()
                 .outputTableName(config.getDatasource())
                 .build();

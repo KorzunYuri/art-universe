@@ -19,7 +19,7 @@ public class ArtistDiversityProcessor extends BasicStepProcessor {
     }
 
     @Override
-    public StepRunResult processStep(Step step, String inputTableName, String stepTableNameBase, StepRun stepRun) {
+    protected StepRunResult executeStepLogic(Step step, String inputTableName, String stepTableNameBase, StepRun stepRun) {
         String outputTableName = stepTableNameBase + "_artist_diversity";
         entityManager.createNativeQuery(
             "SELECT p_quiz_gen_tracks_step_artist_diversity(:inputTable, :outputTable)")

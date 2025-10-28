@@ -46,7 +46,7 @@ public class WhitelistFilterProcessor extends BasicStepProcessor {
     }
 
     @Override
-    public StepRunResult processStep(Step step, String inputTableName, String stepTableNameBase, StepRun stepRun) {
+    public StepRunResult executeStepLogic(Step step, String inputTableName, String stepTableNameBase, StepRun stepRun) {
         String outputTableName = stepTableNameBase + "_whitelist_filter";
         try {
             WhitelistFilterStepConfig config = parseConfig(step.getCfgData());

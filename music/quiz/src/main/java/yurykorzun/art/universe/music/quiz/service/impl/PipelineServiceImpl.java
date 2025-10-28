@@ -312,7 +312,7 @@ public class PipelineServiceImpl implements PipelineService {
 
     private Integer findEarliestStepWithoutResult(Long pipelineId) {
         return pipelineStepRepository.findEarliestStepWithoutResult(pipelineId)
-            .orElse(1); // Default to position 1 if no steps or all have results
+            .orElse(0); // Default to position 0 if no steps or all have results
     }
 
     @Override
@@ -354,39 +354,45 @@ public class PipelineServiceImpl implements PipelineService {
         return pipelineRun;
     }
 
+    // pipeline steps are already sorted by ord
     private StepRun executeStepsInRange(List<PipelineStep> pipelineSteps, Integer fromPosition, Integer toPosition) {
-        String currentTable = null;
-        StepRun lastStepRun = null;
+        // Get step IDs for batch loading (including previous step for input table)
+        List<Long> stepIds = pipelineSteps.stream()
+            .filter(ps -> ps.getOrd() >= Math.max(0, fromPosition - 1) && ps.getOrd() <= toPosition)
+            .map(PipelineStep::getStepId)
+            .toList();
         
-        for (PipelineStep pipelineStep : pipelineSteps) {
-            if (pipelineStep.getOrd() < fromPosition || pipelineStep.getOrd() > toPosition) {
-                continue;
+        // Batch load all needed steps
+        List<Step> steps = stepRepository.findAllById(stepIds);
+        Map<Long, Step> stepMap = steps.stream()
+            .collect(Collectors.toMap(Step::getId, step -> step));
+        
+        // Get input table from previous step (if exists)
+        String currentTable = null;
+        if (fromPosition > 0) {
+            PipelineStep inputPipelineStep = pipelineSteps.get(fromPosition - 1);
+            Step inputStep = stepMap.get(inputPipelineStep.getStepId());
+            if (inputStep != null && inputStep.getLastStepRunId() != null) {
+                StepRun inputRun = stepRunRepository.findById(inputStep.getLastStepRunId())
+                    .orElseThrow(() -> new IllegalArgumentException("Input run not found with id " + inputStep.getLastStepRunId()));
+                currentTable = inputRun.getResultTableName();
             }
-            
-            // If not the first step, get input table from previous step
-            if (pipelineStep.getOrd() > 1) {
-                PipelineStep previousStep = pipelineSteps.stream()
-                    .filter(ps -> ps.getOrd().equals(pipelineStep.getOrd() - 1))
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException("Previous step not found"));
-                
-                Step prevStep = stepRepository.findById(previousStep.getStepId())
-                    .orElseThrow(() -> new IllegalArgumentException("Previous step entity not found"));
-                
-                if (prevStep.getLastStepRunId() != null) {
-                    StepRun prevStepRun = stepRunRepository.findById(prevStep.getLastStepRunId())
-                        .orElseThrow(() -> new IllegalArgumentException("Previous step run not found"));
-                    currentTable = prevStepRun.getResultTableName();
-                }
-            }
-            
-            Step step = stepRepository.findById(pipelineStep.getStepId())
-                .orElseThrow(() -> new IllegalArgumentException("Step not found: " + pipelineStep.getStepId()));
+        }
 
-            StepRun stepRun = stepExecutionService.executeStep(step, currentTable, null); // null = not pipeline run
-            currentTable = stepRun.getResultTableName();
+        // Execute steps in order (pipelineSteps is already sorted by ord)
+        StepRun lastStepRun = null;
+        List<PipelineStep> stepsToExecute = pipelineSteps.stream()
+            .filter(ps -> ps.getOrd() >= fromPosition && ps.getOrd() <= toPosition)
+            .toList();
+        
+        for (PipelineStep pipelineStep : stepsToExecute) {
+            Step step = stepMap.get(pipelineStep.getStepId());
+            if (step == null) {
+                throw new IllegalArgumentException("Step not found: " + pipelineStep.getStepId());
+            }
             
-            // Get the last step run for return
+            StepRun stepRun = stepExecutionService.executeStep(step, currentTable, null);
+            currentTable = stepRun.getResultTableName();
             lastStepRun = stepRun;
         }
         
