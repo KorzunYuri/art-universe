@@ -1,8 +1,6 @@
-import { MasterEntityPicker } from '@/music/data/master/components/MasterEntityPicker/MasterEntityPicker.tsx';
-import type { LookupEntity } from '@/music/shared/types/lookup.ts';
 import { 
   type PipelineStepDto, 
-  type BlacklistFilterStepConfig, 
+  type FinalLimiterStepConfig, 
   parseStepConfig, 
   serializeStepConfig 
 } from '@/music/quiz/types/pipeline-steps.ts';
@@ -10,7 +8,7 @@ import { StepPreview } from '../StepPreview/StepPreview.tsx';
 import { StepStats } from '../StepStats/StepStats.tsx';
 import styles from '../StepBuilder/StepBuilder.module.scss';
 
-interface BlacklistFilterStepProps {
+interface FinalLimiterStepProps {
   step: PipelineStepDto;
   onUpdate: (step: PipelineStepDto) => void;
   onRemove?: () => void;
@@ -22,7 +20,7 @@ interface BlacklistFilterStepProps {
   isDirty?: boolean;
 }
 
-export const BlacklistFilterStep = ({ 
+export const FinalLimiterStep = ({ 
   step, 
   onUpdate, 
   onRemove, 
@@ -32,28 +30,14 @@ export const BlacklistFilterStep = ({
   onExecute,
   readonly = false,
   isDirty = false
-}: BlacklistFilterStepProps) => {
-  const config = parseStepConfig(step.type, step.cfgData) as BlacklistFilterStepConfig;
-  const categoryIds = config.categoryIds || [];
+}: FinalLimiterStepProps) => {
+  const config = parseStepConfig(step.type, step.cfgData) as FinalLimiterStepConfig;
+  const targetCount = config.targetCount || 10;
 
-  const handleCategoryAdd = (entity: LookupEntity) => {
-    if (categoryIds.includes(entity.id)) return;
-    
-    const newConfig: BlacklistFilterStepConfig = {
-      type: 'BLACKLIST_FILTER',
-      categoryIds: [...categoryIds, entity.id]
-    };
-    
-    onUpdate({
-      ...step,
-      cfgData: serializeStepConfig(newConfig)
-    });
-  };
-
-  const handleCategoryRemove = (id: number) => {
-    const newConfig: BlacklistFilterStepConfig = {
-      type: 'BLACKLIST_FILTER',
-      categoryIds: categoryIds.filter(catId => catId !== id)
+  const handleTargetCountChange = (newTargetCount: number) => {
+    const newConfig: FinalLimiterStepConfig = {
+      type: 'FINAL_LIMITER',
+      targetCount: newTargetCount
     };
     
     onUpdate({
@@ -65,7 +49,7 @@ export const BlacklistFilterStep = ({
   return (
     <div className={`${styles.builder} ${styles.inline} ${readonly ? styles.readonly : ''} ${isDirty ? styles.dirty : ''}`}>
       <div className={styles.header}>
-        <h4>Blacklist Filter</h4>
+        <h4>Final Limiter</h4>
         <div className={styles.actions}>
           {!readonly && onMoveUp && (
             <button className={styles.moveButton} onClick={onMoveUp}>←</button>
@@ -86,33 +70,18 @@ export const BlacklistFilterStep = ({
       </div>
 
       <div className={styles.content}>
-        {!readonly && (
-          <div className={styles.picker}>
-            <MasterEntityPicker
-              entityType="category"
-              buttonLabel="Add"
-              onEntitySelected={handleCategoryAdd}
+        <div className={styles.targetCountSection}>
+          <label>
+            Target Count:
+            <input 
+              type="number" 
+              value={targetCount} 
+              onChange={(e) => handleTargetCountChange(Number(e.target.value))}
+              min="1"
+              disabled={readonly}
             />
-          </div>
-        )}
-
-        {categoryIds.length > 0 && (
-          <div className={styles.categoriesList}>
-            {categoryIds.map(id => (
-              <div key={id} className={styles.categoryItem}>
-                <span className={styles.categoryName}>Category ID: {id}</span>
-                {!readonly && (
-                  <button
-                    className={styles.removeButton}
-                    onClick={() => handleCategoryRemove(id)}
-                  >
-                    ×
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+          </label>
+        </div>
       </div>
 
       {step.id && <StepPreview stepId={step.id} previewData={step.previewData} />}

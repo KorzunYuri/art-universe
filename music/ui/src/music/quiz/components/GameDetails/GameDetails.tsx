@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useGame, useGenerateTracks, useApproveGeneration, useDisapproveGeneration } from '@/music/quiz/hooks/useQuizData.ts';
+import { useGame, useGenerations, useGenerateTracks, useApproveGeneration, useDisapproveGeneration } from '@/music/quiz/hooks/useQuizData.ts';
+import { useNotifications } from '@/music/shared/hooks/useNotifications.ts';
+import { validatePipeline, type PipelineDto } from '@/music/quiz/types/pipeline-steps.ts';
 import type {GenerationDto} from '../../types';
-import type { GenerationStepUI, StepType } from '@/music/quiz/types/generation-steps.ts';
-import { StepRegistry } from '@/music/quiz/types/step-registry.ts';
+import { PipelineEditor } from '../PipelineEditor/PipelineEditor.tsx';
 import { GenerationTracks } from '../GenerationTracks.tsx';
 import { GenerationsList } from '../GenerationsList/GenerationsList.tsx';
-import '../steps'; // Import to register steps
 import React from 'react';
 import styles from './GameDetails.module.scss';
 import commonStyles from '../../MusicQuizApp.module.scss';
@@ -14,61 +14,41 @@ import commonStyles from '../../MusicQuizApp.module.scss';
 export const GameDetails = () => {
   const { gameId } = useParams<{ gameId: string }>();
   const [selectedGeneration, setSelectedGeneration] = useState<GenerationDto | null>(null);
-  const [generationSteps, setGenerationSteps] = useState<GenerationStepUI[]>([]);
-  const [selectedStepType, setSelectedStepType] = useState<StepType>('WHITELIST_FILTER');
+  const [currentPipeline, setCurrentPipeline] = useState<PipelineDto | null>(null);
 
-  const { data: game, isLoading } = useGame(Number(gameId));
+  const { data: game, isLoading: gameLoading } = useGame(Number(gameId));
+  const { data: generations, isLoading: generationsLoading } = useGenerations(Number(gameId));
+  const { showNotification } = useNotifications();
   const generateTracksMutation = useGenerateTracks();
   const approveGenerationMutation = useApproveGeneration();
   const disapproveGenerationMutation = useDisapproveGeneration();
 
-  const hasFinalStep = generationSteps.some(step => {
-    const stepDef = StepRegistry.get(step.type);
-    return stepDef?.isFinal;
-  });
-  const canAddSteps = !hasFinalStep;
-  const availableSteps = StepRegistry.getAvailableSteps(generationSteps);
+  // Set pipeline when game loads
+  React.useEffect(() => {
+    if (game?.pipeline && !currentPipeline) {
+      setCurrentPipeline(game.pipeline);
+    }
+  }, [game, currentPipeline]);
 
-  const handleGenerateTracks = () => {
-    if (!gameId) return;
+  const handlePipelineUpdate = (updatedPipeline: PipelineDto) => {
+    setCurrentPipeline(updatedPipeline);
+  };
+
+  const handleGenerateTracks = async () => {
+    if (!gameId || !currentPipeline) return;
     
-    const steps = generationSteps.map(step => ({
-      type: step.type,
-      params: step.type === 'BLACKLIST_FILTER' 
-        ? { categoryIds: step.categoryIds }
-        : step.type === 'FINAL_SELECTION'
-        ? { targetCount: step.targetCount }
-        : step.type === 'FINAL_CATEGORIES_BALANCER'
-        ? { 
-            categories: step.categories?.map(cat => ({ id: cat.id, weight: cat.weight })),
-            defaultQuota: step.defaultQuota,
-            targetCount: step.targetCount 
-          }
-        : step.type === 'WHITELIST_FILTER'
-        ? { categories: step.categories?.map(cat => ({ id: cat.id, weight: cat.weight })) }
-        : {} // For ARTIST_RECENCY_PENALTY and ARTIST_DIVERSITY - no params
-    }));
+    const validation = validatePipeline(currentPipeline.steps);
+    if (!validation.isValid) {
+      showNotification('error', 'Pipeline is not valid for generation');
+      return;
+    }
 
-    generateTracksMutation.mutate({ 
-      gameId: Number(gameId), 
-      steps 
-    });
-  };
-
-  const handleStepUpdate = (stepId: string, updatedStep: GenerationStepUI) => {
-    setGenerationSteps(prev => prev.map(s => s.id === stepId ? updatedStep : s));
-  };
-
-  const handleStepRemove = (stepId: string) => {
-    setGenerationSteps(prev => prev.filter(step => step.id !== stepId));
-  };
-
-  const handleAddStep = () => {
-    const stepDef = StepRegistry.get(selectedStepType);
-    if (!stepDef) return;
-    
-    const newStep = stepDef.createDefault();
-    setGenerationSteps(prev => [...prev, newStep]);
+    try {
+      await generateTracksMutation.mutateAsync({ gameId: Number(gameId) });
+      showNotification('success', 'Tracks generated successfully');
+    } catch (error) {
+      showNotification('error', 'Failed to generate tracks');
+    }
   };
 
   const handleApproveGeneration = (generationId: number) => {
@@ -79,10 +59,11 @@ export const GameDetails = () => {
     disapproveGenerationMutation.mutate({ generationId });
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  if (gameLoading) return <div>Loading...</div>;
   if (!game) return <div>Game not found</div>;
 
-  const approvedGenerations = game.generations.filter(g => g.approved);
+  const validation = currentPipeline ? validatePipeline(currentPipeline.steps) : { isValid: false, errors: [] };
+  const approvedGenerations = generations?.filter(g => g.approved) || [];
 
   return (
     <div>
@@ -95,79 +76,47 @@ export const GameDetails = () => {
         )}
       </h1>
       
-      <div className={styles.generationSettings}>
-        <h2>Generate New Tracks</h2>
-
-        <div className={styles.stepsBuilder}>
-          <div className={styles.stepsGrid}>
-            {generationSteps.map((step, index) => {
-              const stepDef = StepRegistry.get(step.type);
-              if (!stepDef) return null;
-              
-              const StepComponent = stepDef.component;
-              
-              return (
-                <React.Fragment key={step.id}>
-                  <StepComponent
-                    step={step}
-                    onUpdate={(updatedStep) => handleStepUpdate(step.id, updatedStep)}
-                    onRemove={() => handleStepRemove(step.id)}
-                  />
-                  {index < generationSteps.length - 1 && (
-                    <div className={styles.pipelineArrow}>→</div>
-                  )}
-                </React.Fragment>
-              );
-            })}
-          </div>
-        </div>
-
+      <div className={styles.pipelineSection}>
+        <h2>Pipeline Configuration</h2>
+        {currentPipeline && (
+          <PipelineEditor 
+            pipeline={currentPipeline}
+            onPipelineUpdate={handlePipelineUpdate}
+          />
+        )}
+        
         <div className={styles.generateSection}>
-          {canAddSteps && (
-            <div className={styles.addStepSection}>
-              <select 
-                value={selectedStepType} 
-                onChange={(e) => setSelectedStepType(e.target.value as StepType)}
-              >
-                {availableSteps.map(stepDef => (
-                  <option key={stepDef.type} value={stepDef.type}>
-                    {stepDef.label}
-                  </option>
-                ))}
-              </select>
-              <button 
-                className={commonStyles.button}
-                onClick={handleAddStep}
-              >
-                Add Step
-              </button>
-            </div>
-          )}
           <button 
             className={commonStyles.button}
             onClick={handleGenerateTracks}
-            disabled={generateTracksMutation.isPending || generationSteps.length === 0 || !hasFinalStep}
+            disabled={generateTracksMutation.isPending || !validation.isValid}
           >
-            {generateTracksMutation.isPending ? 'Generating...' : 'Generate'}
+            {generateTracksMutation.isPending ? 'Generating...' : 'Generate Tracks'}
           </button>
         </div>
       </div>
 
-      <div className={styles.tablesContainer}>
-        <GenerationsList
-          generations={game.generations}
-          selectedGeneration={selectedGeneration}
-          onGenerationSelect={setSelectedGeneration}
-          onApprove={handleApproveGeneration}
-          onDisapprove={handleDisapproveGeneration}
-          isApprovePending={approveGenerationMutation.isPending}
-          isDisapprovePending={disapproveGenerationMutation.isPending}
-        />
+      {generationsLoading ? (
+        <div>Loading generations...</div>
+      ) : generations && generations.length > 0 ? (
+        <div className={styles.tablesContainer}>
+          <GenerationsList
+            generations={generations}
+            selectedGeneration={selectedGeneration}
+            onGenerationSelect={setSelectedGeneration}
+            onApprove={handleApproveGeneration}
+            onDisapprove={handleDisapproveGeneration}
+            isApprovePending={approveGenerationMutation.isPending}
+            isDisapprovePending={disapproveGenerationMutation.isPending}
+          />
 
-        {selectedGeneration && (
-          <GenerationTracks generation={selectedGeneration} />
-        )}
-      </div>
+          {selectedGeneration && (
+            <GenerationTracks generation={selectedGeneration} />
+          )}
+        </div>
+      ) : (
+        <div>No generations yet. Generate tracks to create the first generation.</div>
+      )}
     </div>
   );
 };
