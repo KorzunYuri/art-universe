@@ -7,7 +7,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.music.quiz.dto.GameDto;
-import yurykorzun.art.universe.music.quiz.dto.GameWithGenerationsDto;
 import yurykorzun.art.universe.music.quiz.dto.GameWithPipelineDto;
 import yurykorzun.art.universe.music.quiz.dto.PipelineDto;
 import yurykorzun.art.universe.music.quiz.entity.Game;
@@ -60,16 +59,18 @@ public class GameServiceImpl implements GameService {
 
     @Override
     @Transactional(readOnly = true)
-    public GameWithGenerationsDto getGameWithGenerations(Long gameId) {
-        log.debug("Getting game {} with generations", gameId);
+    public GameWithPipelineDto getGame(Long gameId) {
+        log.debug("Getting game {}", gameId);
         
         Game game = gameRepository.findById(gameId)
             .orElseThrow(() -> new IllegalArgumentException("Game not found: " + gameId));
         
-        return GameWithGenerationsDto.builder()
+        PipelineDto pipeline = pipelineService.getPipeline(game.getPipelineId());
+        
+        return GameWithPipelineDto.builder()
             .id(game.getId())
             .createdAt(game.getCreatedAt())
-            .generations(generationService.getGenerations(gameId))
+            .pipeline(pipeline)
             .build();
     }
 }

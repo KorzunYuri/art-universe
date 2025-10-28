@@ -10,9 +10,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import yurykorzun.art.universe.music.quiz.dto.GameDto;
-import yurykorzun.art.universe.music.quiz.dto.GameWithGenerationsDto;
 import yurykorzun.art.universe.music.quiz.dto.GameWithPipelineDto;
-import yurykorzun.art.universe.music.quiz.dto.GenerationDto;
 import yurykorzun.art.universe.music.quiz.dto.PipelineDto;
 import yurykorzun.art.universe.music.quiz.entity.Game;
 import yurykorzun.art.universe.music.quiz.repository.GameRepository;
@@ -130,7 +128,7 @@ class GameServiceTest {
     }
 
     @Test
-    void getGameWithGenerations_shouldReturnGameWithGenerations_whenGameExists() {
+    void getGame_shouldReturnGameWithPipelineDto_whenGameExists() {
         // given
         Long gameId = 1L;
         
@@ -149,28 +147,30 @@ class GameServiceTest {
             throw new RuntimeException(e);
         }
 
-        List<GenerationDto> generations = List.of(
-            GenerationDto.builder().id(1L).gameId(gameId).targetCount(20).build(),
-            GenerationDto.builder().id(2L).gameId(gameId).targetCount(15).build()
-        );
+        PipelineDto pipeline = PipelineDto.builder()
+            .id(1L)
+            .immutable(false)
+            .steps(List.of())
+            .build();
 
         when(gameRepository.findById(gameId)).thenReturn(Optional.of(existingGame));
-        when(generationService.getGenerations(gameId)).thenReturn(generations);
+        when(pipelineService.getPipeline(1L)).thenReturn(pipeline);
 
         // when
-        GameWithGenerationsDto result = gameService.getGameWithGenerations(gameId);
+        GameWithPipelineDto result = gameService.getGame(gameId);
 
         // then
         assertNotNull(result);
         assertEquals(gameId, result.getId());
         assertNotNull(result.getCreatedAt());
-        assertEquals(2, result.getGenerations().size());
+        assertNotNull(result.getPipeline());
+        assertEquals(1L, result.getPipeline().getId());
         verify(gameRepository).findById(gameId);
-        verify(generationService).getGenerations(gameId);
+        verify(pipelineService).getPipeline(1L);
     }
 
     @Test
-    void getGameWithGenerations_shouldThrowException_whenGameNotFound() {
+    void getGame_shouldThrowException_whenGameNotFound() {
         // given
         Long gameId = 999L;
 
@@ -179,11 +179,11 @@ class GameServiceTest {
         // when & then
         IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
-            () -> gameService.getGameWithGenerations(gameId)
+            () -> gameService.getGame(gameId)
         );
         
         assertEquals("Game not found: 999", exception.getMessage());
         verify(gameRepository).findById(gameId);
-        verify(generationService, never()).getGenerations(any());
+        verify(pipelineService, never()).getPipeline(any());
     }
 }

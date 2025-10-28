@@ -10,17 +10,17 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import yurykorzun.art.universe.music.quiz.dto.GameDto;
-import yurykorzun.art.universe.music.quiz.dto.GameWithGenerationsDto;
 import yurykorzun.art.universe.music.quiz.dto.GameWithPipelineDto;
-import yurykorzun.art.universe.music.quiz.dto.GenerationDto;
 import yurykorzun.art.universe.music.quiz.dto.PipelineDto;
 import yurykorzun.art.universe.music.quiz.service.GameService;
 
 import java.time.Instant;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class GameControllerTest {
@@ -79,25 +79,23 @@ class GameControllerTest {
     }
 
     @Test
-    void getGameWithGenerations_shouldReturnGameWithGenerationsDto_whenSuccessful() {
+    void getGame_shouldReturnGameWithPipelineDto_whenSuccessful() {
         // given
         Long gameId = 1L;
-        GameWithGenerationsDto expectedDto = GameWithGenerationsDto.builder()
+        GameWithPipelineDto expectedDto = GameWithPipelineDto.builder()
             .id(gameId)
             .createdAt(Instant.now())
-            .generations(List.of(
-                GenerationDto.builder().id(1L).gameId(gameId).targetCount(20).build()
-            ))
+            .pipeline(PipelineDto.builder().id(1L).immutable(false).steps(List.of()).build())
             .build();
 
-        when(gameService.getGameWithGenerations(gameId)).thenReturn(expectedDto);
+        when(gameService.getGame(gameId)).thenReturn(expectedDto);
 
         // when
-        GameWithGenerationsDto result = gameController.getGameWithGenerations(gameId);
+        GameWithPipelineDto result = gameController.getGame(gameId);
 
         // then
         assertNotNull(result);
         assertEquals(expectedDto, result);
-        verify(gameService).getGameWithGenerations(gameId);
+        verify(gameService).getGame(gameId);
     }
 }
