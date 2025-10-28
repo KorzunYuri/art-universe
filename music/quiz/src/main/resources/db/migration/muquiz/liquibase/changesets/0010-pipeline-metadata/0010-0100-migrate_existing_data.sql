@@ -97,6 +97,7 @@ END $$;
 
 -- Update sequences to match current data
 SELECT setval('mu_quiz.pipeline_seq', (SELECT COALESCE(MAX(id), 1) FROM mu_quiz.pipeline));
-SELECT setval('mu_quiz.step_seq', (SELECT COALESCE(MAX(id), 1) FROM mu_quiz.step));
 SELECT setval('mu_quiz.pipeline_run_seq', (SELECT COALESCE(MAX(id), 1) FROM mu_quiz.pipeline_run));
+SELECT setval('mu_quiz.pipeline_step_seq', (SELECT COALESCE(MAX(id), 1) FROM mu_quiz.pipeline_step));
+SELECT setval('mu_quiz.step_seq', (SELECT COALESCE(MAX(id), 1) FROM mu_quiz.step));
 SELECT setval('mu_quiz.step_run_seq', (SELECT COALESCE(MAX(id), 1) FROM mu_quiz.step_run));
