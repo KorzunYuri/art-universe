@@ -1,11 +1,14 @@
-import { type PipelineStepDto, STEP_LABELS } from '@/music/quiz/types/pipeline-steps.ts';
-import { StepPreview } from '../StepPreview/StepPreview.tsx';
-import { StepStats } from '../StepStats/StepStats.tsx';
-import styles from '../StepBuilder/StepBuilder.module.scss';
+import {type ReactNode} from 'react';
+import {type PipelineStepDto} from '@/music/quiz/types/pipeline-steps.ts';
+import {StepPreview} from '../StepPreview/StepPreview.tsx';
+import {StepStats} from '../StepStats/StepStats.tsx';
+import styles from './BaseStep.module.scss';
 
-interface SimpleStepProps {
+interface BaseStepProps {
   step: PipelineStepDto;
-  onUpdate: (step: PipelineStepDto) => void;
+  title: string;
+  description?: string;
+  children?: ReactNode;
   onRemove?: () => void;
   onMoveUp?: () => void;
   onMoveDown?: () => void;
@@ -15,8 +18,11 @@ interface SimpleStepProps {
   isDirty?: boolean;
 }
 
-export const SimpleStep = ({ 
-  step, 
+export const BaseStep = ({ 
+  step,
+  title,
+  description,
+  children,
   onRemove, 
   onMoveUp, 
   onMoveDown,
@@ -24,11 +30,11 @@ export const SimpleStep = ({
   onExecute,
   readonly = false,
   isDirty = false
-}: SimpleStepProps) => {
+}: BaseStepProps) => {
   return (
-    <div className={`${styles.builder} ${styles.inline} ${readonly ? styles.readonly : ''} ${isDirty ? styles.dirty : ''}`}>
+    <div className={`${styles.step} ${readonly ? styles.readonly : ''} ${isDirty ? styles.dirty : ''}`}>
       <div className={styles.header}>
-        <h4>{STEP_LABELS[step.type]}</h4>
+        <h4>{title}</h4>
         <div className={styles.actions}>
           {!readonly && onMoveUp && (
             <button className={styles.moveButton} onClick={onMoveUp}>←</button>
@@ -48,12 +54,20 @@ export const SimpleStep = ({
         </div>
       </div>
 
-      <div className={styles.content}>
-        <p>No configuration required for this step type.</p>
-      </div>
+      {description && (
+        <div className={styles.description}>
+          <span>{description}</span>
+        </div>
+      )}
+
+      {children && (
+        <div className={styles.configuration}>
+          {children}
+        </div>
+      )}
 
       {step.id && <StepPreview stepId={step.id} previewData={step.previewData} />}
-      <StepStats resultStats={step.resultStats} />
+      {step.id && <StepStats step={step} />}
     </div>
   );
 };

@@ -6,8 +6,7 @@ import {
   parseStepConfig, 
   serializeStepConfig 
 } from '@/music/quiz/types/pipeline-steps.ts';
-import { StepPreview } from '../StepPreview/StepPreview.tsx';
-import { StepStats } from '../StepStats/StepStats.tsx';
+import { BaseStep } from './BaseStep.tsx';
 import styles from '../StepBuilder/StepBuilder.module.scss';
 
 interface WhitelistFilterStepProps {
@@ -25,13 +24,8 @@ interface WhitelistFilterStepProps {
 export const WhitelistFilterStep = ({ 
   step, 
   onUpdate, 
-  onRemove, 
-  onMoveUp, 
-  onMoveDown,
-  onSave,
-  onExecute,
   readonly = false,
-  isDirty = false
+  ...props
 }: WhitelistFilterStepProps) => {
   const config = parseStepConfig(step.type, step.cfgData) as WhitelistFilterStepConfig;
   const categories = config.categories || [];
@@ -77,70 +71,50 @@ export const WhitelistFilterStep = ({
   };
 
   return (
-    <div className={`${styles.builder} ${styles.inline} ${readonly ? styles.readonly : ''} ${isDirty ? styles.dirty : ''}`}>
-      <div className={styles.header}>
-        <h4>Whitelist Filter</h4>
-        <div className={styles.actions}>
-          {!readonly && onMoveUp && (
-            <button className={styles.moveButton} onClick={onMoveUp}>←</button>
-          )}
-          {!readonly && onMoveDown && (
-            <button className={styles.moveButton} onClick={onMoveDown}>→</button>
-          )}
-          {!readonly && onSave && isDirty && (
-            <button className={styles.saveButton} onClick={onSave}>Save</button>
-          )}
-          {!readonly && onExecute && step.id && (
-            <button className={styles.executeButton} onClick={onExecute}>Execute</button>
-          )}
-          {!readonly && onRemove && (
-            <button className={styles.removeButton} onClick={onRemove}>×</button>
-          )}
+    <BaseStep
+      step={step}
+      title="Whitelist Filter"
+      description="Limit output to specific categories with weights"
+      readonly={readonly}
+      {...props}
+    >
+      {!readonly && (
+        <div className={styles.picker}>
+          <MasterEntityPicker
+            entityType="category"
+            buttonLabel="Add"
+            onEntitySelected={handleCategoryAdd}
+          />
         </div>
-      </div>
+      )}
 
-      <div className={styles.content}>
-        {!readonly && (
-          <div className={styles.picker}>
-            <MasterEntityPicker
-              entityType="category"
-              buttonLabel="Add"
-              onEntitySelected={handleCategoryAdd}
-            />
-          </div>
-        )}
-
-        {categories.length > 0 && (
-          <div className={styles.categoriesList}>
-            {categories.map(category => (
-              <div key={category.id} className={styles.categoryItem}>
-                <span className={styles.categoryName}>Category ID: {category.id}</span>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.01"
-                  value={category.weight}
-                  onChange={(e) => handleWeightChange(category.id, Number(e.target.value))}
-                  disabled={readonly}
-                />
-                <span>{category.weight.toFixed(2)}</span>
-                {!readonly && (
-                  <button
-                    className={styles.removeButton}
-                    onClick={() => handleCategoryRemove(category.id)}
-                  >
-                    ×
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {step.id && <StepPreview stepId={step.id} previewData={step.previewData} />}
-      <StepStats resultStats={step.resultStats} />
-    </div>
+      {categories.length > 0 && (
+        <div className={styles.categoriesList}>
+          {categories.map(category => (
+            <div key={category.id} className={styles.categoryItem}>
+              <span className={styles.categoryName}>Category ID: {category.id}</span>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={category.weight}
+                onChange={(e) => handleWeightChange(category.id, Number(e.target.value))}
+                disabled={readonly}
+              />
+              <span>{category.weight.toFixed(2)}</span>
+              {!readonly && (
+                <button
+                  className={styles.removeButton}
+                  onClick={() => handleCategoryRemove(category.id)}
+                >
+                  ×
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </BaseStep>
   );
 };

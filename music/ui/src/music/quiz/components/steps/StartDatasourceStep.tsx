@@ -1,7 +1,7 @@
 import { type PipelineStepDto } from '@/music/quiz/types/pipeline-steps.ts';
 import { BaseStep } from './BaseStep.tsx';
 
-interface ArtistDiversityStepProps {
+interface StartDatasourceStepProps {
   step: PipelineStepDto;
   onUpdate: (step: PipelineStepDto) => void;
   onRemove?: () => void;
@@ -13,12 +13,12 @@ interface ArtistDiversityStepProps {
   isDirty?: boolean;
 }
 
-export const ArtistDiversityStep = (props: ArtistDiversityStepProps) => {
+export const StartDatasourceStep = (props: StartDatasourceStepProps) => {
   return (
     <BaseStep
       {...props}
-      title="Artist Diversity"
-      description="Compensate artists with lots of tracks"
+      title="Start Datasource"
+      description="Choose start datasource"
     />
   );
 };

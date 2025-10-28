@@ -16,11 +16,15 @@ import {
   serializeStepConfig
 } from '@/music/quiz/types/pipeline-steps.ts';
 import { StepTypeSelector } from '../StepTypeSelector/StepTypeSelector.tsx';
+import { StartDatasourceStep } from '../steps/StartDatasourceStep.tsx';
+import { ApprovedFilterStep } from '../steps/ApprovedFilterStep.tsx';
 import { BlacklistFilterStep } from '../steps/BlacklistFilterStep.tsx';
 import { WhitelistFilterStep } from '../steps/WhitelistFilterStep.tsx';
+import { TrackRecencyPenaltyStep } from '../steps/TrackRecencyPenaltyStep.tsx';
+import { ArtistRecencyPenaltyStep } from '../steps/ArtistRecencyPenaltyStep.tsx';
+import { ArtistDiversityStep } from '../steps/ArtistDiversityStep.tsx';
 import { FinalLimiterStep } from '../steps/FinalLimiterStep.tsx';
 import { FinalCategoriesBalancerStep } from '../steps/FinalCategoriesBalancerStep.tsx';
-import { SimpleStep } from '../steps/SimpleStep.tsx';
 import styles from './PipelineEditor.module.scss';
 
 interface PipelineEditorProps {
@@ -65,9 +69,10 @@ export const PipelineEditor = ({ pipeline, onPipelineUpdate }: PipelineEditorPro
     setAddingStepAt(null);
   };
 
-  const handleStepUpdate = (stepIndex: number, updatedStep: PipelineStepDto) => {
-    const newSteps = [...localSteps];
-    newSteps[stepIndex] = updatedStep;
+  const handleStepUpdate = (step: PipelineStepDto, updatedStep: PipelineStepDto) => {
+    const newSteps = localSteps.map(s => 
+      s === step ? updatedStep : s
+    );
     setLocalSteps(newSteps);
     
     // Mark as dirty if it has an ID (existing step)
@@ -169,14 +174,45 @@ export const PipelineEditor = ({ pipeline, onPipelineUpdate }: PipelineEditorPro
     const isDirty = step.id ? dirtySteps.has(step.id) : true;
     const canMoveUp = index > 0 && step.id;
     const canMoveDown = index < sortedSteps.length - 1 && step.id;
+    
+    // Create stable key for React
+    const stepKey = step.id ? `step-${step.id}` : `temp-${step.ord}-${step.type}`;
 
     switch (step.type) {
+      case 'START_DATASOURCE':
+        return (
+          <StartDatasourceStep
+            key={stepKey}
+            step={step}
+            onUpdate={(updatedStep) => handleStepUpdate(step, updatedStep)}
+            onSave={() => handleStepSave(step)}
+            onRemove={() => handleStepRemove(step)}
+            onMoveUp={canMoveUp ? () => handleStepMove(step, 'up') : undefined}
+            onMoveDown={canMoveDown ? () => handleStepMove(step, 'down') : undefined}
+            onExecute={() => handleStepExecute(step)}
+            isDirty={isDirty}
+          />
+        );
+      case 'APPROVED_FILTER':
+        return (
+          <ApprovedFilterStep
+            key={stepKey}
+            step={step}
+            onUpdate={(updatedStep) => handleStepUpdate(step, updatedStep)}
+            onSave={() => handleStepSave(step)}
+            onRemove={() => handleStepRemove(step)}
+            onMoveUp={canMoveUp ? () => handleStepMove(step, 'up') : undefined}
+            onMoveDown={canMoveDown ? () => handleStepMove(step, 'down') : undefined}
+            onExecute={() => handleStepExecute(step)}
+            isDirty={isDirty}
+          />
+        );
       case 'BLACKLIST_FILTER':
         return (
           <BlacklistFilterStep
-            key={step.id || `temp-${index}`}
+            key={stepKey}
             step={step}
-            onUpdate={(updatedStep) => handleStepUpdate(index, updatedStep)}
+            onUpdate={(updatedStep) => handleStepUpdate(step, updatedStep)}
             onSave={() => handleStepSave(step)}
             onRemove={() => handleStepRemove(step)}
             onMoveUp={canMoveUp ? () => handleStepMove(step, 'up') : undefined}
@@ -188,9 +224,51 @@ export const PipelineEditor = ({ pipeline, onPipelineUpdate }: PipelineEditorPro
       case 'WHITELIST_FILTER':
         return (
           <WhitelistFilterStep
-            key={step.id || `temp-${index}`}
+            key={stepKey}
             step={step}
-            onUpdate={(updatedStep) => handleStepUpdate(index, updatedStep)}
+            onUpdate={(updatedStep) => handleStepUpdate(step, updatedStep)}
+            onSave={() => handleStepSave(step)}
+            onRemove={() => handleStepRemove(step)}
+            onMoveUp={canMoveUp ? () => handleStepMove(step, 'up') : undefined}
+            onMoveDown={canMoveDown ? () => handleStepMove(step, 'down') : undefined}
+            onExecute={() => handleStepExecute(step)}
+            isDirty={isDirty}
+          />
+        );
+      case 'TRACK_RECENCY_PENALTY':
+        return (
+          <TrackRecencyPenaltyStep
+            key={stepKey}
+            step={step}
+            onUpdate={(updatedStep) => handleStepUpdate(step, updatedStep)}
+            onSave={() => handleStepSave(step)}
+            onRemove={() => handleStepRemove(step)}
+            onMoveUp={canMoveUp ? () => handleStepMove(step, 'up') : undefined}
+            onMoveDown={canMoveDown ? () => handleStepMove(step, 'down') : undefined}
+            onExecute={() => handleStepExecute(step)}
+            isDirty={isDirty}
+          />
+        );
+      case 'ARTIST_RECENCY_PENALTY':
+        return (
+          <ArtistRecencyPenaltyStep
+            key={stepKey}
+            step={step}
+            onUpdate={(updatedStep) => handleStepUpdate(step, updatedStep)}
+            onSave={() => handleStepSave(step)}
+            onRemove={() => handleStepRemove(step)}
+            onMoveUp={canMoveUp ? () => handleStepMove(step, 'up') : undefined}
+            onMoveDown={canMoveDown ? () => handleStepMove(step, 'down') : undefined}
+            onExecute={() => handleStepExecute(step)}
+            isDirty={isDirty}
+          />
+        );
+      case 'ARTIST_DIVERSITY':
+        return (
+          <ArtistDiversityStep
+            key={stepKey}
+            step={step}
+            onUpdate={(updatedStep) => handleStepUpdate(step, updatedStep)}
             onSave={() => handleStepSave(step)}
             onRemove={() => handleStepRemove(step)}
             onMoveUp={canMoveUp ? () => handleStepMove(step, 'up') : undefined}
@@ -202,9 +280,9 @@ export const PipelineEditor = ({ pipeline, onPipelineUpdate }: PipelineEditorPro
       case 'FINAL_LIMITER':
         return (
           <FinalLimiterStep
-            key={step.id || `temp-${index}`}
+            key={stepKey}
             step={step}
-            onUpdate={(updatedStep) => handleStepUpdate(index, updatedStep)}
+            onUpdate={(updatedStep) => handleStepUpdate(step, updatedStep)}
             onSave={() => handleStepSave(step)}
             onRemove={() => handleStepRemove(step)}
             onMoveUp={canMoveUp ? () => handleStepMove(step, 'up') : undefined}
@@ -216,9 +294,9 @@ export const PipelineEditor = ({ pipeline, onPipelineUpdate }: PipelineEditorPro
       case 'FINAL_CATEGORIES_BALANCER':
         return (
           <FinalCategoriesBalancerStep
-            key={step.id || `temp-${index}`}
+            key={stepKey}
             step={step}
-            onUpdate={(updatedStep) => handleStepUpdate(index, updatedStep)}
+            onUpdate={(updatedStep) => handleStepUpdate(step, updatedStep)}
             onSave={() => handleStepSave(step)}
             onRemove={() => handleStepRemove(step)}
             onMoveUp={canMoveUp ? () => handleStepMove(step, 'up') : undefined}
@@ -229,17 +307,9 @@ export const PipelineEditor = ({ pipeline, onPipelineUpdate }: PipelineEditorPro
         );
       default:
         return (
-          <SimpleStep
-            key={step.id || `temp-${index}`}
-            step={step}
-            onUpdate={(updatedStep) => handleStepUpdate(index, updatedStep)}
-            onSave={() => handleStepSave(step)}
-            onRemove={() => handleStepRemove(step)}
-            onMoveUp={canMoveUp ? () => handleStepMove(step, 'up') : undefined}
-            onMoveDown={canMoveDown ? () => handleStepMove(step, 'down') : undefined}
-            onExecute={() => handleStepExecute(step)}
-            isDirty={isDirty}
-          />
+          <div key={stepKey} className={styles.unknownStep}>
+            Unknown step type: {step.type}
+          </div>
         );
     }
   };

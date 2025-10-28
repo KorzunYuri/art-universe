@@ -1,7 +1,7 @@
 import { type PipelineStepDto } from '@/music/quiz/types/pipeline-steps.ts';
 import { BaseStep } from './BaseStep.tsx';
 
-interface ArtistDiversityStepProps {
+interface ApprovedFilterStepProps {
   step: PipelineStepDto;
   onUpdate: (step: PipelineStepDto) => void;
   onRemove?: () => void;
@@ -13,12 +13,12 @@ interface ArtistDiversityStepProps {
   isDirty?: boolean;
 }
 
-export const ArtistDiversityStep = (props: ArtistDiversityStepProps) => {
+export const ApprovedFilterStep = (props: ApprovedFilterStepProps) => {
   return (
     <BaseStep
       {...props}
-      title="Artist Diversity"
-      description="Compensate artists with lots of tracks"
+      title="Approved Filter"
+      description="Filter our non-approved tracks/artists"
     />
   );
 };

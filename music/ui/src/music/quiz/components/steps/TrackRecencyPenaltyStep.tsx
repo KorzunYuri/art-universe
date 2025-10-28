@@ -1,7 +1,7 @@
 import { type PipelineStepDto } from '@/music/quiz/types/pipeline-steps.ts';
 import { BaseStep } from './BaseStep.tsx';
 
-interface ArtistDiversityStepProps {
+interface TrackRecencyPenaltyStepProps {
   step: PipelineStepDto;
   onUpdate: (step: PipelineStepDto) => void;
   onRemove?: () => void;
@@ -13,12 +13,12 @@ interface ArtistDiversityStepProps {
   isDirty?: boolean;
 }
 
-export const ArtistDiversityStep = (props: ArtistDiversityStepProps) => {
+export const TrackRecencyPenaltyStep = (props: TrackRecencyPenaltyStepProps) => {
   return (
     <BaseStep
       {...props}
-      title="Artist Diversity"
-      description="Compensate artists with lots of tracks"
+      title="Track Recency Penalty"
+      description="Compensate tracks that appeared in games recently"
     />
   );
 };
