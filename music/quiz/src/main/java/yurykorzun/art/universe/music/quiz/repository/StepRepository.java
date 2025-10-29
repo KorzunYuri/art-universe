@@ -40,9 +40,16 @@ public interface StepRepository extends JpaRepository<Step, Long> {
     @Modifying
     @Query("""
         UPDATE  step s
-        SET     s.previewData = null,
-                s.lastStepRunId = null
+        SET     s.lastStepRunId = :stepRunId
+        WHERE   s.id = :stepId
+    """)
+    void setLastRun(@Param("stepId") Long stepId, @Param("stepRunId") Long stepRunId);
+
+    @Modifying
+    @Query("""
+        UPDATE  step s
+        SET     s.lastStepRunId = null
         WHERE   s.id IN :stepIds
     """)
-    void clearResults(@Param("stepIds") List<Long> stepIds);
+    void clearLastRun(@Param("stepIds") List<Long> stepIds);
 }

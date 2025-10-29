@@ -1,7 +1,9 @@
 package yurykorzun.art.universe.music.quiz.service.step;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -17,10 +19,10 @@ import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class StepRunServiceImpl implements StepRunService {
 
     private final StepRunRepository stepRunRepository;
-    private final StepRepository stepRepository;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -41,48 +43,52 @@ public class StepRunServiceImpl implements StepRunService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void updateStepRunStatus(Long stepRunId, ExecutionStatus status) {
+    public StepRun updateStepRunStatus(Long stepRunId, ExecutionStatus status) {
         StepRun stepRun = stepRunRepository.findById(stepRunId)
             .orElseThrow(() -> new IllegalArgumentException("StepRun not found: " + stepRunId));
         
         stepRun.setStatus(status);
         stepRun.setStartedAt(Instant.now());
-        stepRunRepository.save(stepRun);
+        return stepRunRepository.save(stepRun);
     }
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void completeStepRun(Long stepRunId, String resultTableName, StepRunStats stats, Long stepId) {
-        try {
-            StepRun stepRun = stepRunRepository.findById(stepRunId)
-                .orElseThrow(() -> new IllegalArgumentException("StepRun not found: " + stepRunId));
-            
-            String statsJson = objectMapper.writeValueAsString(stats);
-            
-            stepRun.setResultTableName(resultTableName);
-            stepRun.setResultStats(statsJson);
-            stepRun.setStatus(ExecutionStatus.COMPLETED);
-            stepRun.setCompletedAt(Instant.now());
-            stepRunRepository.save(stepRun);
-            
-            // Update step's lastStepRunId
-            Step step = stepRepository.findById(stepId)
-                .orElseThrow(() -> new IllegalArgumentException("Step not found: " + stepId));
-            step.setLastStepRunId(stepRunId);
-            stepRepository.save(step);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to complete step run", e);
-        }
+    public StepRun completeStepRun(Long stepRunId, String resultTableName, Long stepId) {
+        StepRun stepRun = stepRunRepository.findById(stepRunId)
+            .orElseThrow(() -> new IllegalArgumentException("StepRun not found: " + stepRunId));
+
+        stepRun.setResultTableName(resultTableName);
+        stepRun.setStatus(ExecutionStatus.COMPLETED);
+        stepRun.setCompletedAt(Instant.now());
+        return stepRunRepository.save(stepRun);
     }
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void failStepRun(Long stepRunId) {
+    public StepRun failStepRun(Long stepRunId) {
         StepRun stepRun = stepRunRepository.findById(stepRunId)
             .orElseThrow(() -> new IllegalArgumentException("StepRun not found: " + stepRunId));
         
         stepRun.setStatus(ExecutionStatus.FAILED);
         stepRun.setCompletedAt(Instant.now());
-        stepRunRepository.save(stepRun);
+        return stepRunRepository.save(stepRun);
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public StepRun setResultStats(Long stepRunId, StepRunStats stats) {
+        StepRun stepRun = stepRunRepository.findById(stepRunId)
+            .orElseThrow(() -> new IllegalArgumentException("StepRun not found: " + stepRunId));
+
+        try {
+            String statsJson = objectMapper.writeValueAsString(stats);
+            stepRun.setResultStats(statsJson);
+            stepRun = stepRunRepository.save(stepRun);
+        } catch (JsonProcessingException e) {
+            log.error("Failed to serialize stats for step {}", stepRunId, e);
+        }
+
+        return stepRun;
     }
 }

@@ -3,6 +3,7 @@ package yurykorzun.art.universe.music.quiz.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.music.quiz.entity.Step;
 import yurykorzun.art.universe.music.quiz.entity.StepType;
@@ -100,9 +101,9 @@ public class StepServiceImpl implements StepService {
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void clearResults(List<Long> stepIds) {
         log.debug("Clearing results for {} steps", stepIds.size());
-        stepRepository.clearResults(stepIds);
+        stepRepository.clearLastRun(stepIds);
     }
 }

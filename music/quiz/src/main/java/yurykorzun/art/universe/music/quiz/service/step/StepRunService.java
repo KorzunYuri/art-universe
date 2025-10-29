@@ -9,10 +9,12 @@ import yurykorzun.art.universe.music.quiz.entity.StepRun;
 public interface StepRunService {
     
     StepRun createStepRun(Step step, String inputTableName, @Nullable Long pipelineRunId);
-    
-    void updateStepRunStatus(Long stepRunId, ExecutionStatus status);
-    
-    void completeStepRun(Long stepRunId, String resultTableName, StepRunStats stats, Long stepId);
-    
-    void failStepRun(Long stepRunId);
+
+    StepRun updateStepRunStatus(Long stepRunId, ExecutionStatus status);
+
+    StepRun completeStepRun(Long stepRunId, String resultTableName, Long stepId);
+
+    StepRun failStepRun(Long stepRunId);
+
+    StepRun setResultStats(Long stepRunId, StepRunStats stats);
 }

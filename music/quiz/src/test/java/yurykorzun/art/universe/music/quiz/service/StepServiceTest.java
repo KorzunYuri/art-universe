@@ -221,6 +221,6 @@ class StepServiceTest {
         stepService.clearResults(stepIds);
 
         // then
-        verify(stepRepository).clearResults(eq(stepIds));
+        verify(stepRepository).clearLastRun(eq(stepIds));
     }
 }

@@ -316,6 +316,7 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     @Override
+    @Transactional
     public PipelineRun executePipeline(Long pipelineId) {
         log.debug("Executing pipeline {}", pipelineId);
         

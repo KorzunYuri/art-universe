@@ -3,6 +3,8 @@ package yurykorzun.art.universe.music.quiz.service.step;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
 import yurykorzun.art.universe.music.quiz.dto.step.stats.StepRunStats;
 import yurykorzun.art.universe.music.quiz.entity.ExecutionStatus;
@@ -39,6 +41,7 @@ public class StepExecutionServiceImpl implements StepExecutionService {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public StepRun executeStep(Step step, String inputTableName, @Nullable Long pipelineRunId) {
         // TODO cache results
         if (step == null) {
@@ -48,40 +51,36 @@ public class StepExecutionServiceImpl implements StepExecutionService {
         validateStep(step, processor);
 
         // Create StepRun in separate transaction
-        StepRun savedStepRun = stepRunService.createStepRun(step, inputTableName, pipelineRunId);
+        StepRun stepRun = stepRunService.createStepRun(step, inputTableName, pipelineRunId);
         
         // Generate output table name and cache it
-        String stepTableNameBase = generateStepTableNameBase(step, savedStepRun, pipelineRunId);
+        String stepTableNameBase = generateStepTableNameBase(step, stepRun, pipelineRunId);
 
         // Update status to STARTED in separate transaction
-        stepRunService.updateStepRunStatus(savedStepRun.getId(), ExecutionStatus.STARTED);
+        stepRun = stepRunService.updateStepRunStatus(stepRun.getId(), ExecutionStatus.STARTED);
         
         try {
             // Measure execution time
             long startTime = System.currentTimeMillis();
             
             // Call actual step processing procedure
-            StepRunResult result = processor.processStep(step, inputTableName, stepTableNameBase, savedStepRun);
+            StepRunResult result = processor.processStep(step, inputTableName, stepTableNameBase, stepRun);
             
             long executionTime = System.currentTimeMillis() - startTime;
             
-            // Calculate statistics
-            savedStepRun.setInputTableName(inputTableName);
-            savedStepRun.setResultTableName(result.getOutputTableName());
-            StepRunStats stats = getResultStats(processor, savedStepRun);
-            stats.setExecutionTimeMs(executionTime);
-            
             // Complete step run in separate transaction
-            stepRunService.completeStepRun(savedStepRun.getId(), result.getOutputTableName(), stats, step.getId());
-            
-            // Return updated step run
-            savedStepRun.setStatus(ExecutionStatus.COMPLETED);
-            savedStepRun.setResultTableName(result.getOutputTableName());
-            return savedStepRun;
+            stepRun = stepRunService.completeStepRun(stepRun.getId(), result.getOutputTableName(), step.getId());
+
+            // Calculate statistics
+            StepRunStats stats = getResultStats(processor, stepRun);
+            stats.setExecutionTimeMs(executionTime);
+            stepRun = stepRunService.setResultStats(stepRun.getId(), stats);
+
+            return stepRun;
             
         } catch (Exception e) {
             // Mark as failed in separate transaction
-            stepRunService.failStepRun(savedStepRun.getId());
+            stepRunService.failStepRun(stepRun.getId());
             throw new RuntimeException("Step processing failed", e);
         }
     }

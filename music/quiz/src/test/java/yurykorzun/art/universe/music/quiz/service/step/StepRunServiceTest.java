@@ -1,5 +1,6 @@
 package yurykorzun.art.universe.music.quiz.service.step;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,9 +26,6 @@ class StepRunServiceTest {
 
     @Mock
     private StepRunRepository stepRunRepository;
-
-    @Mock
-    private StepRepository stepRepository;
 
     @Mock
     private ObjectMapper objectMapper;
@@ -97,35 +95,23 @@ class StepRunServiceTest {
     }
 
     @Test
-    void completeStepRun_shouldCompleteStepRunAndUpdateStep() throws Exception {
+    void completeStepRun_shouldCompleteStepRun() throws Exception {
         // given
         StepRun stepRun = StepRun.builder()
             .id(1L)
             .status(ExecutionStatus.STARTED)
             .build();
-        
-        Step step = Step.builder()
-            .id(1L)
-            .build();
-
-        BasicStepStats stats = new BasicStepStats();
-        stats.setOutputRecords(10L);
 
         when(stepRunRepository.findById(1L)).thenReturn(Optional.of(stepRun));
-        when(stepRepository.findById(1L)).thenReturn(Optional.of(step));
-        when(objectMapper.writeValueAsString(stats)).thenReturn("{\"outputRecords\":10}");
 
         // when
-        stepRunService.completeStepRun(1L, "result.table", stats, 1L);
+        stepRunService.completeStepRun(1L, "result.table", 1L);
 
         // then
         assertEquals(ExecutionStatus.COMPLETED, stepRun.getStatus());
         assertEquals("result.table", stepRun.getResultTableName());
-        assertEquals("{\"outputRecords\":10}", stepRun.getResultStats());
         assertNotNull(stepRun.getCompletedAt());
-        assertEquals(1L, step.getLastStepRunId());
         verify(stepRunRepository).save(stepRun);
-        verify(stepRepository).save(step);
     }
 
     @Test
@@ -134,12 +120,12 @@ class StepRunServiceTest {
         when(stepRunRepository.findById(999L)).thenReturn(Optional.empty());
 
         // when & then
-        RuntimeException exception = assertThrows(
-            RuntimeException.class,
-            () -> stepRunService.completeStepRun(999L, "result.table", new BasicStepStats(), 1L)
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> stepRunService.completeStepRun(999L, "result.table", 1L)
         );
         
-        assertEquals("Failed to complete step run", exception.getMessage());
+        assertEquals("StepRun not found: 999", exception.getMessage());
     }
 
     @Test
@@ -173,5 +159,59 @@ class StepRunServiceTest {
         );
         
         assertEquals("StepRun not found: 999", exception.getMessage());
+    }
+
+    @Test
+    void setResultStats_shouldUpdateStepRunWithStats() throws Exception {
+        // given
+        final long stepRunId = 1L;
+        BasicStepStats stats = new BasicStepStats();
+        stats.setOutputRecords(10L);
+        stats.setExecutionTimeMs(1500L);
+
+        StepRun stepRun = StepRun.builder()
+            .id(stepRunId)
+            .status(ExecutionStatus.COMPLETED)
+            .build();
+
+        StepRun updatedStepRun = StepRun.builder()
+            .id(stepRunId)
+            .status(ExecutionStatus.COMPLETED)
+            .resultStats("{\"outputRecords\":10,\"executionTimeMs\":1500}")
+            .build();
+
+        when(stepRunRepository.findById(stepRunId)).thenReturn(Optional.of(stepRun));
+        when(objectMapper.writeValueAsString(stats)).thenReturn("{\"outputRecords\":10,\"executionTimeMs\":1500}");
+        when(stepRunRepository.save(stepRun)).thenReturn(updatedStepRun);
+
+        // when
+        StepRun result = stepRunService.setResultStats(stepRunId, stats);
+
+        // then
+        assertNotNull(result);
+        assertEquals("{\"outputRecords\":10,\"executionTimeMs\":1500}", result.getResultStats());
+        verify(stepRunRepository).findById(stepRunId);
+        verify(objectMapper).writeValueAsString(stats);
+        verify(stepRunRepository).save(stepRun);
+    }
+
+    @Test
+    void setResultStats_shouldThrowException_whenStepRunNotFound() throws JsonProcessingException {
+        // given
+        final long stepRunId = 999L;
+        BasicStepStats stats = new BasicStepStats();
+
+        when(stepRunRepository.findById(stepRunId)).thenReturn(Optional.empty());
+
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> stepRunService.setResultStats(stepRunId, stats)
+        );
+
+        assertEquals("StepRun not found: " + stepRunId, exception.getMessage());
+        verify(stepRunRepository).findById(stepRunId);
+        verify(objectMapper, never()).writeValueAsString(any());
+        verify(stepRunRepository, never()).save(any());
     }
 }
