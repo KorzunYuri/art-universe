@@ -46,8 +46,21 @@ public class StartDatasourceProcessor extends BasicStepProcessor {
     protected StepRunResult executeStepLogic(Step step, String inputTableName, String stepTableNameBase, StepRun stepRun) {
         try {
             StartDatasourceStepConfig config = parseConfig(step.getCfgData());
+            String initialDatasourceName = config.getDatasource();
+            validateInputTable(initialDatasourceName);
+            String outputViewName = String.format("mu_quiz_stg.%s_%s_%s", stepTableNameBase, "startds", "view");
+            entityManager.createNativeQuery("""
+                CREATE OR REPLACE VIEW %s
+                AS 
+                SELECT
+                    ds.track_id,
+                    ds.name,
+                    ds.primary_artist_id
+                FROM %s as ds
+            """.formatted(outputViewName, initialDatasourceName))
+                .executeUpdate();
             return StepRunResult.builder()
-                .outputTableName(config.getDatasource())
+                .outputTableName(outputViewName)
                 .build();
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse step configuration", e);

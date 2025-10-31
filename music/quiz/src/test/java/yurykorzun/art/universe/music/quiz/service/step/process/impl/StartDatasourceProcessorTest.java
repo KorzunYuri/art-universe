@@ -10,14 +10,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.config.CommonTestConfig;
 import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
-import yurykorzun.art.universe.music.quiz.dto.step.config.StartDatasourceStepConfig;
 import yurykorzun.art.universe.music.quiz.entity.Step;
 import yurykorzun.art.universe.music.quiz.entity.StepRun;
 import yurykorzun.art.universe.music.quiz.entity.StepType;
 import yurykorzun.art.universe.music.quiz.service.step.process.StepProcessorRegistry;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class StartDatasourceProcessorTest {
@@ -35,6 +36,9 @@ class StartDatasourceProcessorTest {
         ObjectMapper objectMapper = CommonTestConfig.getObjectMapper();
         processor = new StartDatasourceProcessor(mock(StepProcessorRegistry.class), objectMapper);
         processor.setEntityManager(entityManager);
+
+        lenient().when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+        lenient().when(query.executeUpdate()).thenReturn(1);
     }
 
     @Test
@@ -69,7 +73,7 @@ class StartDatasourceProcessorTest {
     }
 
     @Test
-    void processStep_shouldReturnDatasourceFromConfig_whenValidConfig() {
+    void processStep_shouldCreateViewFromDatasource_whenValidConfig() {
         // given
         Step step = Step.builder()
             .id(1L)
@@ -87,7 +91,8 @@ class StartDatasourceProcessorTest {
 
         // then
         assertNotNull(result);
-        assertEquals(StartDatasourceStepConfig.DEFAULT_DATASOURCE, result.getOutputTableName());
+        assertEquals("mu_quiz_stg." + stepTableNameBase + "_startds_view", result.getOutputTableName());
+        verify(entityManager).createNativeQuery(contains("CREATE OR REPLACE VIEW"));
     }
 
     @Test

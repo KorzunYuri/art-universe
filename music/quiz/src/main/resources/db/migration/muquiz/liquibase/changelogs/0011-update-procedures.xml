@@ -18,9 +18,11 @@
     </changeSet>
 
     <changeSet id="0011-0007-mu_v_track_category_view" author="amazon-q">
-        <sqlFile path="db/migration/muquiz/liquibase/changesets/0011-update-procedures/0011-0007-mu_v_track_category_view.sql"
-                 splitStatements="false"
-                 endDelimiter="$$"/>
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0011-update-procedures/0011-0007-mu_v_track_category_view.sql"/>
+    </changeSet>
+
+    <changeSet id="0011-0008-ds_mu_v_track" author="yurykorzun">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0011-update-procedures/0011-0008-ds_mu_v_track.sql"/>
     </changeSet>
 
     <changeSet id="0011-0010-approved-filter-v3" author="amazon-q">
