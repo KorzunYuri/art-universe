@@ -45,25 +45,103 @@
   }
 }
 
+.actionPanel {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.actionButton {
+  flex: 1;
+  padding: 4px 8px;
+  border: none;
+  background: none;
+  color: #6c757d;
+  cursor: pointer;
+  font-size: 0.8rem;
+  border-radius: 2px;
+  
+  &:hover:not(:disabled) {
+    background-color: #6c757d;
+    color: white;
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  &.active {
+    background-color: #17a2b8;
+    color: white;
+  }
+}
+
 .configuration {
   margin-bottom: 12px;
 }
 
-.actions {
-  display: flex;
-  gap: 4px;
-  align-items: center;
+.expandedPanel {
+  margin-bottom: 12px;
+  padding: 8px;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
 }
 
-.moveButton,
-.saveButton,
-.executeButton {
+.panelContent {
+  margin: 0;
+  padding: 4px;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 2px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  color: #6c757d;
+  max-height: 100px;
+  overflow-y: auto;
+}
+
+.statsTable {
+  width: 100%;
+  font-size: 0.8rem;
+  border-collapse: collapse;
+  font-family: inherit;
+  
+  th, td {
+    padding: 4px 8px;
+    text-align: left;
+    border-bottom: 1px solid #e9ecef;
+  }
+  
+  th {
+    font-weight: 500;
+    background-color: #f8f9fa;
+  }
+  
+  th:first-child, td:first-child {
+    width: 25%;
+  }
+  
+  th:nth-child(2), th:nth-child(3), th:nth-child(4),
+  td:nth-child(2), td:nth-child(3), td:nth-child(4) {
+    width: 25%;
+    text-align: right;
+    font-family: monospace;
+  }
+}
+
+.moveActions {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.moveButton {
   background: none;
-  border: 1px solid #6c757d;
   color: #6c757d;
   cursor: pointer;
   font-size: 0.8rem;
-  line-height: 1;
   padding: 4px 8px;
   border-radius: 2px;
   
@@ -78,21 +156,28 @@
   }
 }
 
+.saveAction {
+  display: flex;
+  justify-content: center;
+}
+
 .saveButton {
-  border-color: #28a745;
+  background: none;
+  border: 1px solid #28a745;
   color: #28a745;
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 4px 8px;
+  border-radius: 2px;
   
   &:hover:not(:disabled) {
     background-color: #28a745;
+    color: white;
   }
-}
-
-.executeButton {
-  border-color: #17a2b8;
-  color: #17a2b8;
   
-  &:hover:not(:disabled) {
-    background-color: #17a2b8;
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 }
 

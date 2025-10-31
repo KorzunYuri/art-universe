@@ -421,7 +421,6 @@ public class PipelineServiceImpl implements PipelineService {
             .algVersion(step.getAlgVersion())
             .cfgData(step.getCfgData())
             .previewData(step.getPreviewData())
-            .resultTableName(stepRun != null ? stepRun.getResultTableName() : null)
             .resultStats(stepRun != null ? stepRun.getResultStats() : null)
             .ord(ord)
             .build();

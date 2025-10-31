@@ -17,6 +17,5 @@ public class PipelineStepDto {
     private String cfgData;
     private String previewData;
     private Integer ord;
-    private String resultTableName; // from lastStepRun
     private String resultStats; // from lastStepRun
 }
