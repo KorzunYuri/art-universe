@@ -195,7 +195,6 @@ public class GenerationServiceImpl implements GenerationService {
             .pipelineRunId(generation.getPipelineRunId())
             .status(generation.getStatus())
             .approved(generation.getApproved())
-            .resultTableName(generation.getResultTableName())
             .createdAt(generation.getCreatedAt())
             .build();
     }

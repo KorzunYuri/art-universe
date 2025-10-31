@@ -208,7 +208,7 @@ class PipelineServiceTest {
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(existingPipelineStep));
-        when(stepRepository.findAllById(List.of(1L))).thenReturn(List.of(existingStep));
+        when(stepService.getSteps(List.of(1L))).thenReturn(List.of(existingStep));
         when(stepService.createStep(StepType.APPROVED_FILTER, "{}")).thenReturn(savedStep);
         when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
 
@@ -295,7 +295,7 @@ class PipelineServiceTest {
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(existingPipelineStep));
-        when(stepRepository.findAllById(List.of(1L))).thenReturn(List.of(existingStep));
+        when(stepService.getSteps(List.of(1L))).thenReturn(List.of(existingStep));
         when(stepService.createStep(StepType.FINAL_LIMITER, "{}")).thenReturn(savedStep);
         when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
 
@@ -329,7 +329,7 @@ class PipelineServiceTest {
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(existingPipelineStep));
-        when(stepRepository.findAllById(List.of(1L))).thenReturn(List.of(existingStep));
+        when(stepService.getSteps(List.of(1L))).thenReturn(List.of(existingStep));
 
         // when & then
         IllegalArgumentException exception = assertThrows(
@@ -360,7 +360,7 @@ class PipelineServiceTest {
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(existingPipelineStep));
-        when(stepRepository.findAllById(List.of(1L))).thenReturn(List.of(existingStep));
+        when(stepService.getSteps(List.of(1L))).thenReturn(List.of(existingStep));
 
         // when & then
         IllegalArgumentException exception = assertThrows(
@@ -397,7 +397,7 @@ class PipelineServiceTest {
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(existingPipelineStep1, existingPipelineStep2));
-        when(stepRepository.findAllById(List.of(1L, 2L))).thenReturn(List.of(existingStep1, existingStep2));
+        when(stepService.getSteps(List.of(1L, 2L))).thenReturn(List.of(existingStep1, existingStep2));
 
         // when & then
         IllegalArgumentException exception = assertThrows(
@@ -434,7 +434,7 @@ class PipelineServiceTest {
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(existingPipelineStep1, existingPipelineStep2));
-        when(stepRepository.findAllById(List.of(1L, 2L))).thenReturn(List.of(existingStep1, existingStep2));
+        when(stepService.getSteps(List.of(1L, 2L))).thenReturn(List.of(existingStep1, existingStep2));
 
         // when & then
         IllegalArgumentException exception = assertThrows(
@@ -465,7 +465,7 @@ class PipelineServiceTest {
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(existingPipelineStep));
-        when(stepRepository.findAllById(List.of(1L))).thenReturn(List.of(existingStep));
+        when(stepService.getSteps(List.of(1L))).thenReturn(List.of(existingStep));
 
         // when & then
         IllegalArgumentException exception = assertThrows(
@@ -496,7 +496,7 @@ class PipelineServiceTest {
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(existingPipelineStep));
-        when(stepRepository.findAllById(List.of(1L))).thenReturn(List.of(existingStep));
+        when(stepService.getSteps(List.of(1L))).thenReturn(List.of(existingStep));
 
         // when & then
         IllegalArgumentException exception = assertThrows(
@@ -590,7 +590,7 @@ class PipelineServiceTest {
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(pipelineStep));
         when(stepService.getStep(stepId)).thenReturn(step);
-        when(stepRepository.findAllById(List.of(stepId))).thenReturn(List.of(step));
+        when(stepService.getSteps(List.of(stepId))).thenReturn(List.of(step));
         when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
 
         // when
@@ -625,7 +625,7 @@ class PipelineServiceTest {
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(pipelineStep1, pipelineStep2, pipelineStep3, pipelineStep4));
         when(stepService.getStep(stepId)).thenReturn(step2);
-        when(stepRepository.findAllById(List.of(1L, 2L, 3L, 4L))).thenReturn(List.of(step1, step2, step3, step4));
+        when(stepService.getSteps(List.of(1L, 2L, 3L, 4L))).thenReturn(List.of(step1, step2, step3, step4));
         when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
 
         // when
@@ -660,7 +660,7 @@ class PipelineServiceTest {
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(pipelineStep1, pipelineStep2, pipelineStep3, pipelineStep4));
         when(stepService.getStep(stepId)).thenReturn(step3);
-        when(stepRepository.findAllById(List.of(1L, 2L, 3L, 4L))).thenReturn(List.of(step1, step2, step3, step4));
+        when(stepService.getSteps(List.of(1L, 2L, 3L, 4L))).thenReturn(List.of(step1, step2, step3, step4));
         when(pipelineStepRepository.findPipelineStepsWithDetails(pipelineId)).thenReturn(List.of());
 
         // when
@@ -690,7 +690,7 @@ class PipelineServiceTest {
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(pipelineStep1, pipelineStep2));
         when(stepService.getStep(stepId)).thenReturn(step1);
-        when(stepRepository.findAllById(List.of(1L, 2L))).thenReturn(List.of(step1, step2));
+        when(stepService.getSteps(List.of(1L, 2L))).thenReturn(List.of(step1, step2));
 
         // when & then
         IllegalArgumentException exception = assertThrows(
@@ -721,7 +721,7 @@ class PipelineServiceTest {
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(pipelineStep1, pipelineStep2, pipelineStep3));
         when(stepService.getStep(stepId)).thenReturn(step3);
-        when(stepRepository.findAllById(List.of(1L, 2L, 3L))).thenReturn(List.of(step1, step2, step3));
+        when(stepService.getSteps(List.of(1L, 2L, 3L))).thenReturn(List.of(step1, step2, step3));
 
         // when & then
         IllegalArgumentException exception = assertThrows(
@@ -750,7 +750,7 @@ class PipelineServiceTest {
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(pipelineStep1, pipelineStep2));
         when(stepService.getStep(stepId)).thenReturn(step2);
-        when(stepRepository.findAllById(List.of(1L, 2L))).thenReturn(List.of(step1, step2));
+        when(stepService.getSteps(List.of(1L, 2L))).thenReturn(List.of(step1, step2));
 
         // when & then
         IllegalArgumentException exception = assertThrows(
@@ -781,7 +781,7 @@ class PipelineServiceTest {
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(pipelineStep1, pipelineStep2, pipelineStep3));
         when(stepService.getStep(stepId)).thenReturn(step2);
-        when(stepRepository.findAllById(List.of(1L, 2L, 3L))).thenReturn(List.of(step1, step2, step3));
+        when(stepService.getSteps(List.of(1L, 2L, 3L))).thenReturn(List.of(step1, step2, step3));
 
         // when & then
         IllegalArgumentException exception = assertThrows(
@@ -999,7 +999,7 @@ class PipelineServiceTest {
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(pipelineStep1, pipelineStep2));
-        when(stepRepository.findAllById(List.of(1L, 2L))).thenReturn(List.of(step1, step2));
+        when(stepService.getSteps(List.of(1L, 2L))).thenReturn(List.of(step1, step2));
 
         // when & then
         IllegalArgumentException exception = assertThrows(
@@ -1025,7 +1025,7 @@ class PipelineServiceTest {
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(pipelineStep1, pipelineStep2));
-        when(stepRepository.findAllById(List.of(1L, 2L))).thenReturn(List.of(step1, step2));
+        when(stepService.getSteps(List.of(1L, 2L))).thenReturn(List.of(step1, step2));
 
         // when & then
         IllegalArgumentException exception = assertThrows(
@@ -1053,7 +1053,7 @@ class PipelineServiceTest {
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(pipelineStep1, pipelineStep2, pipelineStep3));
-        when(stepRepository.findAllById(List.of(1L, 2L, 3L))).thenReturn(List.of(step1, step2, step3));
+        when(stepService.getSteps(List.of(1L, 2L, 3L))).thenReturn(List.of(step1, step2, step3));
 
         // when & then
         IllegalArgumentException exception = assertThrows(
@@ -1081,7 +1081,7 @@ class PipelineServiceTest {
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(pipelineStep1, pipelineStep2, pipelineStep3));
-        when(stepRepository.findAllById(List.of(1L, 2L, 3L))).thenReturn(List.of(step1, step2, step3));
+        when(stepService.getSteps(List.of(1L, 2L, 3L))).thenReturn(List.of(step1, step2, step3));
 
         // when & then
         IllegalArgumentException exception = assertThrows(
@@ -1109,7 +1109,7 @@ class PipelineServiceTest {
         when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
             .thenReturn(List.of(pipelineStep1, pipelineStep2, pipelineStep3));
-        when(stepRepository.findAllById(List.of(1L, 2L, 3L))).thenReturn(List.of(step1, step2, step3));
+        when(stepService.getSteps(List.of(1L, 2L, 3L))).thenReturn(List.of(step1, step2, step3));
 
         // when & then
         assertDoesNotThrow(() -> pipelineService.validatePipelineForGeneration(pipelineId));
@@ -1351,8 +1351,8 @@ class PipelineServiceTest {
             .thenReturn(List.of(pipelineStep1, pipelineStep2, pipelineStep3));
         when(pipelineStepRepository.findEarliestStepWithoutResult(pipelineId)).thenReturn(Optional.of(1));
         
-        // Batch loading: findAllById will be called with [1L, 2L, 3L]
-        when(stepRepository.findAllById(List.of(1L, 2L, 3L))).thenReturn(List.of(step1, step2, step3));
+        // Batch loading: stepService.getSteps will be called with [1L, 2L, 3L]
+        when(stepService.getSteps(List.of(1L, 2L, 3L))).thenReturn(List.of(step1, step2, step3));
         when(stepRunRepository.findById(1L)).thenReturn(Optional.of(stepRun1));
 
         when(stepExecutionService.executeStep(step2, "output_table_1", null)).thenReturn(stepRun2);
@@ -1395,8 +1395,9 @@ class PipelineServiceTest {
 
         when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId)).thenReturn(List.of(pipelineStep1));
         when(pipelineRunService.createPipelineRun(pipelineId)).thenReturn(pipelineRun);
-        when(stepRepository.findById(1L)).thenReturn(Optional.of(step1));
+        when(stepService.getSteps(List.of(1L))).thenReturn(List.of(step1));
         when(stepExecutionService.executeStep(step1, null, 1L)).thenReturn(stepRun);
+        when(pipelineRunService.completePipelineRun(1L, "output_table")).thenReturn(pipelineRun);
 
         // when
         PipelineRun result = pipelineService.executePipeline(pipelineId);

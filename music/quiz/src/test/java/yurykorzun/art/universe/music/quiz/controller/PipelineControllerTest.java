@@ -94,4 +94,26 @@ class PipelineControllerTest {
         verify(pipelineService).executeStep(pipelineId, stepId);
         verify(pipelineService).getPipeline(pipelineId);
     }
+
+    @Test
+    void moveStep_shouldReturnUpdatedPipeline_whenSuccessful() {
+        // given
+        Long pipelineId = 4L;
+        Long stepId = 2L;
+        PipelineDto expectedDto = PipelineDto.builder()
+            .id(pipelineId)
+            .immutable(false)
+            .steps(List.of())
+            .build();
+
+        when(pipelineService.moveStep(pipelineId, stepId, 0)).thenReturn(expectedDto);
+
+        // when
+        PipelineDto result = pipelineController.moveStep(pipelineId, stepId, 0);
+
+        // then
+        assertNotNull(result);
+        assertEquals(expectedDto, result);
+        verify(pipelineService).moveStep(pipelineId, stepId, 0);
+    }
 }

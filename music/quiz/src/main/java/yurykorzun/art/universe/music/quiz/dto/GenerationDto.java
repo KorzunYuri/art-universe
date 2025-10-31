@@ -13,9 +13,7 @@ public class GenerationDto {
     private Long gameId;
     private Long pipelineId;
     private Long pipelineRunId;
-    private Integer targetCount;
     private GenerationStatus status;
     private Boolean approved;
-    private String resultTableName;
     private Instant createdAt;
 }

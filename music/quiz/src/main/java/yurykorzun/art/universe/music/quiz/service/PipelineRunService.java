@@ -5,10 +5,10 @@ import yurykorzun.art.universe.music.quiz.entity.PipelineRun;
 public interface PipelineRunService {
     
     PipelineRun createPipelineRun(Long pipelineId);
-    
-    void startPipelineRun(Long pipelineRunId);
-    
-    void completePipelineRun(Long pipelineRunId, String resultTableName);
-    
-    void failPipelineRun(Long pipelineRunId);
+
+    PipelineRun startPipelineRun(Long pipelineRunId);
+
+    PipelineRun completePipelineRun(Long pipelineRunId, String resultTableName);
+
+    PipelineRun failPipelineRun(Long pipelineRunId);
 }

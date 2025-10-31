@@ -28,35 +28,35 @@ public class PipelineRunServiceImpl implements PipelineRunService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void startPipelineRun(Long pipelineRunId) {
+    public PipelineRun startPipelineRun(Long pipelineRunId) {
         PipelineRun pipelineRun = pipelineRunRepository.findById(pipelineRunId)
             .orElseThrow(() -> new IllegalArgumentException("Pipeline run not found: " + pipelineRunId));
         
         pipelineRun.setStatus(ExecutionStatus.STARTED);
         pipelineRun.setStartedAt(Instant.now());
-        pipelineRunRepository.save(pipelineRun);
+        return pipelineRunRepository.save(pipelineRun);
     }
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void completePipelineRun(Long pipelineRunId, String resultTableName) {
+    public PipelineRun completePipelineRun(Long pipelineRunId, String resultTableName) {
         PipelineRun pipelineRun = pipelineRunRepository.findById(pipelineRunId)
             .orElseThrow(() -> new IllegalArgumentException("Pipeline run not found: " + pipelineRunId));
         
         pipelineRun.setStatus(ExecutionStatus.COMPLETED);
         pipelineRun.setCompletedAt(Instant.now());
         pipelineRun.setResultTableName(resultTableName);
-        pipelineRunRepository.save(pipelineRun);
+        return pipelineRunRepository.save(pipelineRun);
     }
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void failPipelineRun(Long pipelineRunId) {
+    public PipelineRun failPipelineRun(Long pipelineRunId) {
         PipelineRun pipelineRun = pipelineRunRepository.findById(pipelineRunId)
             .orElseThrow(() -> new IllegalArgumentException("Pipeline run not found: " + pipelineRunId));
         
         pipelineRun.setStatus(ExecutionStatus.FAILED);
         pipelineRun.setCompletedAt(Instant.now());
-        pipelineRunRepository.save(pipelineRun);
+        return pipelineRunRepository.save(pipelineRun);
     }
 }

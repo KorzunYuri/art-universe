@@ -350,14 +350,12 @@ public class PipelineServiceImpl implements PipelineService {
                 currentTable = stepRun.getResultTableName();
             }
 
-            pipelineRunService.completePipelineRun(pipelineRunId, currentTable);
+            return pipelineRunService.completePipelineRun(pipelineRunId, currentTable);
 
         } catch (Exception e) {
             pipelineRunService.failPipelineRun(pipelineRunId);
             throw new RuntimeException("Pipeline execution failed", e);
         }
-        
-        return pipelineRun;
     }
 
     // pipeline steps are already sorted by ord

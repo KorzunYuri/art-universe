@@ -45,7 +45,6 @@ class GenerationControllerMvcTest extends BaseMvcTest {
         GenerationDto expectedDto = GenerationDto.builder()
             .id(1L)
             .gameId(gameId)
-            .targetCount(20)
             .status(GenerationStatus.COMPLETED)
             .createdAt(Instant.now())
             .build();
@@ -71,7 +70,6 @@ class GenerationControllerMvcTest extends BaseMvcTest {
             GenerationDto.builder()
                 .id(1L)
                 .gameId(gameId)
-                .targetCount(20)
                 .status(GenerationStatus.COMPLETED)
                 .createdAt(Instant.now())
                 .build()
