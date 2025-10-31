@@ -33,8 +33,9 @@ public class Generation extends BaseEntity {
     @Column(name = "pipeline_run_id")
     private Long pipelineRunId;
 
+    @Builder.Default
     @Column(name = "target_count", nullable = false)
-    private Integer targetCount;
+    private Integer targetCount = 0;
 
     @Column(name = "status", nullable = false)
     @Convert(converter = GenerationStatusConverter.class)

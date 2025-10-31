@@ -9,6 +9,7 @@ import java.util.List;
 public interface StepService {
 
     Step getStep(Long stepId);
+    List<Step> getSteps(List<Long> stepIds);
     StepMetadataProjection getStepMetadata(Long id);
 
     Step createStep(StepType type, String cfgData);
@@ -19,6 +20,8 @@ public interface StepService {
     String validateAndMigrateConfiguration(StepType stepType, String cfgData);
 
     void updatePreview(Long stepId, String preview);
+
+    void updateLastRun(Long stepId, Long lastRunId);
 
     void clearResults(List<Long> stepIds);
 }

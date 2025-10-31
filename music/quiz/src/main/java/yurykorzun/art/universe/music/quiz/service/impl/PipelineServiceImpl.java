@@ -3,13 +3,13 @@ package yurykorzun.art.universe.music.quiz.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.music.quiz.dto.PipelineDto;
 import yurykorzun.art.universe.music.quiz.dto.PipelineStepDto;
 import yurykorzun.art.universe.music.quiz.entity.*;
 import yurykorzun.art.universe.music.quiz.repository.PipelineRepository;
 import yurykorzun.art.universe.music.quiz.repository.PipelineStepRepository;
-import yurykorzun.art.universe.music.quiz.repository.StepRepository;
 import yurykorzun.art.universe.music.quiz.repository.StepRunRepository;
 import yurykorzun.art.universe.music.quiz.service.PipelineRunService;
 import yurykorzun.art.universe.music.quiz.service.PipelineService;
@@ -20,6 +20,7 @@ import yurykorzun.art.universe.music.quiz.util.PipelineValidationUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,7 +29,6 @@ import java.util.stream.Collectors;
 public class PipelineServiceImpl implements PipelineService {
 
     private final PipelineRepository pipelineRepository;
-    private final StepRepository stepRepository;
     private final PipelineStepRepository pipelineStepRepository;
     private final StepRunRepository stepRunRepository;
     private final StepExecutionService stepExecutionService;
@@ -36,7 +36,7 @@ public class PipelineServiceImpl implements PipelineService {
     private final StepService stepService;
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public PipelineDto createBasicPipeline() {
         log.debug("Creating basic pipeline");
         
@@ -50,7 +50,7 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Pipeline createImmutableCopy(Long originalPipelineId) {
         log.debug("Creating immutable copy of pipeline {}", originalPipelineId);
         
@@ -261,7 +261,7 @@ public class PipelineServiceImpl implements PipelineService {
         }
         
         List<Long> stepIds = pipelineSteps.stream().map(PipelineStep::getStepId).toList();
-        List<Step> steps = stepRepository.findAllById(stepIds);
+        List<Step> steps = stepService.getSteps(stepIds);
         
         PipelineValidationUtil.validatePipelineForGeneration(steps);
     }
@@ -291,7 +291,7 @@ public class PipelineServiceImpl implements PipelineService {
 
     private List<StepType> getStepTypes(List<PipelineStep> pipelineSteps) {
         List<Long> stepIds = pipelineSteps.stream().map(PipelineStep::getStepId).toList();
-        List<Step> steps = stepRepository.findAllById(stepIds);
+        List<Step> steps = stepService.getSteps(stepIds);
         Map<Long, StepType> stepTypeMap = steps.stream()
             .collect(Collectors.toMap(Step::getId, Step::getType));
         
@@ -324,6 +324,11 @@ public class PipelineServiceImpl implements PipelineService {
         if (pipelineSteps.isEmpty()) {
             throw new IllegalArgumentException("Pipeline has no steps");
         }
+        List<Long> stepIds = pipelineSteps.stream()
+            .map(PipelineStep::getStepId)
+            .toList();
+        Map<Long, Step> stepMap = stepService.getSteps(stepIds).stream()
+            .collect(Collectors.toMap(Step::getId, Function.identity()));
         
         PipelineRun pipelineRun = pipelineRunService.createPipelineRun(pipelineId);
         Long pipelineRunId = pipelineRun.getId();
@@ -335,13 +340,13 @@ public class PipelineServiceImpl implements PipelineService {
 
             List<Step> stepsToExecute = new ArrayList<>();
             for (PipelineStep pipelineStep : pipelineSteps) {
-                Step step = stepRepository.findById(pipelineStep.getStepId())
-                    .orElseThrow(() -> new IllegalArgumentException("Step not found: " + pipelineStep.getStepId()));
+                Step step = stepMap.get(pipelineStep.getStepId());
                 stepsToExecute.add(step);
             }
 
             for (Step step : stepsToExecute) {
                 StepRun stepRun = stepExecutionService.executeStep(step, currentTable, pipelineRunId);
+                stepService.updateLastRun(step.getId(), stepRun.getId());
                 currentTable = stepRun.getResultTableName();
             }
 
@@ -364,7 +369,7 @@ public class PipelineServiceImpl implements PipelineService {
             .toList();
         
         // Batch load all needed steps
-        List<Step> steps = stepRepository.findAllById(stepIds);
+        List<Step> steps = stepService.getSteps(stepIds);
         Map<Long, Step> stepMap = steps.stream()
             .collect(Collectors.toMap(Step::getId, step -> step));
         
@@ -393,6 +398,9 @@ public class PipelineServiceImpl implements PipelineService {
             }
             
             StepRun stepRun = stepExecutionService.executeStep(step, currentTable, null);
+
+            stepService.updateLastRun(step.getId(), stepRun.getId());
+
             currentTable = stepRun.getResultTableName();
             lastStepRun = stepRun;
         }

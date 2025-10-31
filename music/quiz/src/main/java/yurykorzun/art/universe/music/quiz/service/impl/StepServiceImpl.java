@@ -85,6 +85,12 @@ public class StepServiceImpl implements StepService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<Step> getSteps(List<Long> stepIds) {
+        return stepRepository.findAllById(stepIds);
+    }
+
+    @Override
     public StepMetadataProjection getStepMetadata(Long stepId) {
         return stepRepository.getStepMetadata(stepId);
     }
@@ -98,6 +104,11 @@ public class StepServiceImpl implements StepService {
     @Override
     public void updatePreview(Long stepId, String preview) {
         stepRepository.updatePreview(stepId, preview);
+    }
+
+    @Override
+    public void updateLastRun(Long stepId, Long lastRunId) {
+        stepRepository.setLastRun(stepId, lastRunId);
     }
 
     @Override

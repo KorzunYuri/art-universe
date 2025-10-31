@@ -13,7 +13,9 @@ import java.util.List;
 public interface StepRepository extends JpaRepository<Step, Long> {
     
     @Query("""
-        SELECT g.id as gameId, p.id as pipelineId
+        SELECT 
+            g.id as gameId, 
+            p.id as pipelineId
         FROM pipeline_step ps
         JOIN pipeline p ON ps.pipelineId = p.id
         JOIN game g ON g.pipelineId = p.id
