@@ -11,14 +11,22 @@ import java.util.List;
 
 @Repository
 public interface StepRepository extends JpaRepository<Step, Long> {
-    
+
+    /**
+     * Using a step, extract metadata of related entities.
+     * This method covers two cases:
+     * - single execution (step.id -> pipeline_step.step_id -> pipeline_step.pipeline_id -> pipeline.id -> game.pipeline_id
+     * - pipeline execution (step.id -> pipeline_step.step_id -> pipeline_step.pipeline_id -> pipeline.id -> generation.pipeline_id -> generation.game_id
+     */
     @Query("""
         SELECT 
-            g.id as gameId, 
-            p.id as pipelineId
+            COALESCE(g.id, gen.gameId) as gameId, 
+            p.id as pipelineId,
+            gen.id as generationId
         FROM pipeline_step ps
         JOIN pipeline p ON ps.pipelineId = p.id
-        JOIN game g ON g.pipelineId = p.id
+        LEFT JOIN game g ON g.pipelineId = p.id
+        LEFT JOIN generation gen ON gen.pipelineId = p.id
         WHERE ps.stepId = :stepId
     """)
     StepMetadataProjection getStepMetadata(@Param("stepId") Long stepId);
