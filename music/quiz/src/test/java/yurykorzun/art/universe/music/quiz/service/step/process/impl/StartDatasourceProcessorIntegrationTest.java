@@ -53,8 +53,9 @@ class StartDatasourceProcessorIntegrationTest extends JpaOnlyTest {
     private static final String TEST_DATASOURCE_INVALID = STG_SCHEMA + ".test_datasource_invalid";
     private static final String TEST_DATASOURCE_MISSING = STG_SCHEMA + ".test_datasource_missing";
     private static final String STEP_TABLENAME_BASE = "test_output";
-    private static final String OUTPUT_VIEW_NAME = STEP_TABLENAME_BASE + "_startds_view";
-    private static final String OUTPUT_VIEW_NAME_FULL = String.format("%s.%s", STG_SCHEMA, OUTPUT_VIEW_NAME);
+    private static final String OUTPUT_VIEW_NAME    = "test_output_startds_view";
+    private static final String STEP_TABLENAME_BASE_FULL = "mu_quiz_stg.test_output";
+    private static final String OUTPUT_VIEW_NAME_FULL = "mu_quiz_stg.test_output_startds_view";
 
     @BeforeEach
     void setUp() {
@@ -113,7 +114,6 @@ class StartDatasourceProcessorIntegrationTest extends JpaOnlyTest {
     void processStep_shouldCreateView_whenValidDatasource() throws JsonProcessingException {
 
         // given
-        final String outTableNameFull = "%s.%s".formatted(STG_SCHEMA, OUTPUT_VIEW_NAME);
         Step step = Step.builder()
             .type(StepType.START_DATASOURCE)
             .cfgData("{}")
@@ -124,13 +124,13 @@ class StartDatasourceProcessorIntegrationTest extends JpaOnlyTest {
         mockConfig(TEST_DATASOURCE_VALID);
 
         // when
-        StepRunResult result = processor.processStep(step, null, STEP_TABLENAME_BASE, stepRun);
+        StepRunResult result = processor.processStep(step, null, STEP_TABLENAME_BASE_FULL, stepRun);
 
         // then
-        assertEquals(outTableNameFull, result.getOutputTableName());
-        assertTrue(DatabaseUtils.tableExists(entityManager, outTableNameFull));
+        assertEquals(OUTPUT_VIEW_NAME_FULL, result.getOutputTableName());
+        assertTrue(DatabaseUtils.tableExists(entityManager, OUTPUT_VIEW_NAME_FULL));
 
-        Long count = (Long) entityManager.createNativeQuery("SELECT COUNT(*) FROM " + outTableNameFull)
+        Long count = (Long) entityManager.createNativeQuery("SELECT COUNT(*) FROM " + OUTPUT_VIEW_NAME_FULL)
             .getSingleResult();
         assertEquals(2L, count);
 
@@ -180,7 +180,7 @@ class StartDatasourceProcessorIntegrationTest extends JpaOnlyTest {
 
         // when & then
         assertThrows(RuntimeException.class, 
-            () -> processor.processStep(step, null, STEP_TABLENAME_BASE, stepRun));
+            () -> processor.processStep(step, null, STEP_TABLENAME_BASE_FULL, stepRun));
     }
 
     @Test
@@ -198,6 +198,6 @@ class StartDatasourceProcessorIntegrationTest extends JpaOnlyTest {
 
         // when & then
         assertThrows(RuntimeException.class, 
-            () -> processor.processStep(step, null, STEP_TABLENAME_BASE, stepRun));
+            () -> processor.processStep(step, null, STEP_TABLENAME_BASE_FULL, stepRun));
     }
 }

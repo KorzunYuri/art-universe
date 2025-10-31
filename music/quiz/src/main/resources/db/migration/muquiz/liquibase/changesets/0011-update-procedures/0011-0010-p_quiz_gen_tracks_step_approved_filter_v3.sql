@@ -14,10 +14,10 @@ BEGIN
 
     EXECUTE format('
         CREATE TABLE %I.%I AS
-        SELECT vt.id AS track_id,
+        SELECT vt.track_id,
                vt.primary_artist_id
         FROM %I.%I vt
-        JOIN mu_quiz.track qt ON vt.id = qt.master_id
+        JOIN mu_quiz.track qt ON vt.track_id = qt.master_id
     ', output_parts[1], output_parts[2], input_parts[1], input_parts[2]);
 
     EXECUTE format('CREATE INDEX ON %I.%I (track_id)', output_parts[1], output_parts[2]);

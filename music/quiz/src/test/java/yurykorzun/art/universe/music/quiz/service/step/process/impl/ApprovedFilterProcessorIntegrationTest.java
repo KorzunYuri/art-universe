@@ -43,7 +43,7 @@ class ApprovedFilterProcessorIntegrationTest extends JpaOnlyTest {
         // Create input table
         entityManager.createNativeQuery("""
             CREATE TABLE mu_quiz_stg.test_input_approved (
-                id BIGINT,
+                track_id BIGINT,
                 primary_artist_id BIGINT
             )
         """).executeUpdate();
@@ -68,8 +68,8 @@ class ApprovedFilterProcessorIntegrationTest extends JpaOnlyTest {
     void processStep_shouldFilterApprovedTracks_whenNormalInput() {
         // given - setup test data
         entityManager.createNativeQuery("""
-            INSERT INTO mu_view.v_track (id, primary_artist_id) VALUES 
-            (1, 101), (2, 102), (3, 103)
+            INSERT INTO mu_view.v_track (id, primary_artist_id) 
+            VALUES (1, 101), (2, 102), (3, 103)
         """).executeUpdate();
 
         entityManager.createNativeQuery("""
@@ -77,8 +77,8 @@ class ApprovedFilterProcessorIntegrationTest extends JpaOnlyTest {
         """).executeUpdate();
 
         entityManager.createNativeQuery("""
-            INSERT INTO mu_quiz_stg.test_input_approved (id, primary_artist_id) VALUES 
-            (1, 101), (2, 102), (3, 103)
+            INSERT INTO mu_quiz_stg.test_input_approved (track_id, primary_artist_id) 
+            VALUES (1, 101), (2, 102), (3, 103)
         """).executeUpdate();
 
         Step step = Step.builder()
@@ -122,7 +122,7 @@ class ApprovedFilterProcessorIntegrationTest extends JpaOnlyTest {
         """).executeUpdate();
 
         entityManager.createNativeQuery("""
-            INSERT INTO mu_quiz_stg.test_input_approved (id, primary_artist_id) VALUES 
+            INSERT INTO mu_quiz_stg.test_input_approved (track_id, primary_artist_id) VALUES 
             (1, 101), (2, 102)
         """).executeUpdate();
 
@@ -183,7 +183,7 @@ class ApprovedFilterProcessorIntegrationTest extends JpaOnlyTest {
         """).executeUpdate();
 
         entityManager.createNativeQuery("""
-            INSERT INTO mu_quiz_stg.test_input_approved (id, primary_artist_id) VALUES (1, 101)
+            INSERT INTO mu_quiz_stg.test_input_approved (track_id, primary_artist_id) VALUES (1, 101)
         """).executeUpdate();
 
         Step step = Step.builder()

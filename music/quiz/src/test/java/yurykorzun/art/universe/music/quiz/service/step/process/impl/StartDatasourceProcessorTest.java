@@ -53,7 +53,7 @@ class StartDatasourceProcessorTest {
         StepRun stepRun = StepRun.builder().id(1L).build();
 
         // when & then - should not throw exception
-        assertDoesNotThrow(() -> processor.processStep(step, null, "output_table", stepRun));
+        assertDoesNotThrow(() -> processor.processStep(step, null, "output.table", stepRun));
     }
 
     @Test
@@ -68,8 +68,8 @@ class StartDatasourceProcessorTest {
         StepRun stepRun = StepRun.builder().id(1L).build();
 
         // when & then - should not throw exception
-        assertDoesNotThrow(() -> processor.processStep(step, "invalid_table", "output_table", stepRun));
-        assertDoesNotThrow(() -> processor.processStep(step, "schema.table.extra", "output_table", stepRun));
+        assertDoesNotThrow(() -> processor.processStep(step, "invalid_table", "output.table", stepRun));
+        assertDoesNotThrow(() -> processor.processStep(step, "schema.table.extra", "output.table", stepRun));
     }
 
     @Test
@@ -84,14 +84,14 @@ class StartDatasourceProcessorTest {
         StepRun stepRun = StepRun.builder().id(1L).build();
 
         final String inputTableName = null;
-        final String stepTableNameBase = "output_table";
+        final String stepTableNameBase = "mu_quiz_stg.output_table";
 
         // when
         StepRunResult result = processor.processStep(step, inputTableName, stepTableNameBase, stepRun);
 
         // then
         assertNotNull(result);
-        assertEquals("mu_quiz_stg." + stepTableNameBase + "_startds_view", result.getOutputTableName());
+        assertEquals(stepTableNameBase + "_startds_view", result.getOutputTableName());
         verify(entityManager).createNativeQuery(contains("CREATE OR REPLACE VIEW"));
     }
 

@@ -48,7 +48,7 @@ public class StartDatasourceProcessor extends BasicStepProcessor {
             StartDatasourceStepConfig config = parseConfig(step.getCfgData());
             String initialDatasourceName = config.getDatasource();
             validateInputTable(initialDatasourceName);
-            String outputViewName = String.format("mu_quiz_stg.%s_%s_%s", stepTableNameBase, "startds", "view");
+            String outputViewName = String.format("%s_%s_%s", stepTableNameBase, "startds", "view");
             entityManager.createNativeQuery("""
                 CREATE OR REPLACE VIEW %s
                 AS 

@@ -11,25 +11,23 @@ public class DatabaseUtils {
         // Utility class
     }
 
-    private record DbObject (String schemaName, String objectName){}
-
     private enum DbObjectType {
         TABLE,
         VIEW
     }
 
     /**
-     * Validate and extract db object metadata
-     * @param objectNameFull object name in format "schemaName.objectName"
+     * Validate object name
      */
-    private static DbObject parseObject(String objectNameFull) {
-        validateObjectName(objectNameFull);
+    public static DbObjectMetadata validateObjectName(String objectNameFull) {
+        if (objectNameFull == null || objectNameFull.trim().isEmpty()) {
+            throw new IllegalArgumentException("DB object name cannot be null or empty");
+        }
 
         String[] parts = objectNameFull.split("\\.");
         if (parts.length != 2) {
-            throw new IllegalArgumentException("Object name must be in format 'schemaName.table', got: " + objectNameFull);
+            throw new IllegalArgumentException(String.format("DB object name must be in format 'schemaName.table', got: '%s'", objectNameFull));
         }
-
         String schema = parts[0];
         String table = parts[1];
 
@@ -37,12 +35,20 @@ public class DatabaseUtils {
         validateIdentifier(schema, "schemaName");
         validateIdentifier(table, "table");
 
-        return new DbObject(schema, table);
+        return new DbObjectMetadata(schema, table);
+    }
+
+    /**
+     * Validate and extract db object metadata
+     * @param objectNameFull object name in format "schemaName.objectName"
+     */
+    private static DbObjectMetadata parseObject(String objectNameFull) {
+        return validateObjectName(objectNameFull);
     }
 
     private static void dropObject(EntityManager entityManager, String objectNameFull, DbObjectType objectType) {
 
-        DbObject dbObj = parseObject(objectNameFull);
+        DbObjectMetadata dbObj = parseObject(objectNameFull);
 
         // Use format with %I for safe identifier substitution
         String sql = String.format("DROP %s IF EXISTS %s.%s",
@@ -76,7 +82,7 @@ public class DatabaseUtils {
      * @return true if table exists, false otherwise
      */
     public static boolean tableExists(EntityManager entityManager, String tableNameFull) {
-        DbObject dbObj = parseObject(tableNameFull);
+        DbObjectMetadata dbObj = parseObject(tableNameFull);
         
         Long count = (Long) entityManager.createNativeQuery(
             "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = :schema AND table_name = :table")
@@ -86,13 +92,7 @@ public class DatabaseUtils {
         
         return count > 0;
     }
-    
-    private static void validateObjectName(String objectName) {
-        if (objectName == null || objectName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Table objectName cannot be null or empty");
-        }
-    }
-    
+
     private static void validateIdentifier(String identifier, String type) {
         if (identifier == null || identifier.trim().isEmpty()) {
             throw new IllegalArgumentException(type + " objectName cannot be null or empty");

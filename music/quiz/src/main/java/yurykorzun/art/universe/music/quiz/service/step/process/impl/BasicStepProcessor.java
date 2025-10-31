@@ -41,6 +41,14 @@ public abstract class BasicStepProcessor implements StepProcessor {
         // override for steps that have parameters
     }
 
+    protected void validateInputTable(String inputTableName) {
+        DatabaseUtils.validateObjectName(inputTableName);
+    }
+
+    protected void validateStepTableNameBase(String stepTableNameBase) {
+        DatabaseUtils.validateObjectName(stepTableNameBase);
+    }
+
     protected boolean isActualVersion(String cfgData) {
         return true;
     }
@@ -52,21 +60,12 @@ public abstract class BasicStepProcessor implements StepProcessor {
     @Override
     public final StepRunResult processStep(Step step, String inputTableName, String stepTableNameBase, StepRun stepRun) {
         validateConfiguration(step.getCfgData());
+        validateStepTableNameBase(stepTableNameBase);
         validateInputTable(inputTableName);
         return executeStepLogic(step, inputTableName, stepTableNameBase, stepRun);
     }
 
     protected abstract StepRunResult executeStepLogic(Step step, String inputTableName, String stepTableNameBase, StepRun stepRun);
-
-    protected void validateInputTable(String inputTableName) {
-        if (inputTableName == null || inputTableName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Input table cannot be null or empty");
-        }
-        String[] parts = inputTableName.split("\\.");
-        if (parts.length != 2) {
-            throw new IllegalArgumentException("Input table must be in format 'schema.table'");
-        }
-    }
 
     /**
      * Basic implementation of stats calculation. The return type can be extended by specific implementations.

@@ -53,7 +53,7 @@ class BlacklistFilterProcessorTest {
             () -> processor.processStep(step, null, "output.table", stepRun)
         );
 
-        assertEquals("Input table cannot be null or empty", exception.getMessage());
+        assertEquals("DB object name cannot be null or empty", exception.getMessage());
     }
 
     @Test
@@ -68,7 +68,7 @@ class BlacklistFilterProcessorTest {
             () -> processor.processStep(step, "invalid_table", "output.table", stepRun)
         );
 
-        assertEquals("Input table must be in format 'schema.table'", exception.getMessage());
+        assertEquals("DB object name must be in format 'schemaName.table', got: 'invalid_table'", exception.getMessage());
     }
 
     @Test
