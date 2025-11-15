@@ -31,20 +31,12 @@ public class PipelineValidationUtil {
             throw new IllegalArgumentException("Pipeline must have at least one step");
         }
 
-        long startSteps = steps.stream()
-            .filter(step -> step.getType().getPosition() == StepPosition.START)
+        long initialSteps = steps.stream()
+            .filter(step -> step.getType().getPosition() == StepPosition.INITIAL)
             .count();
 
-        long finalSteps = steps.stream()
-            .filter(step -> step.getType().getPosition() == StepPosition.FINAL)
-            .count();
-
-        if (startSteps != 1) {
-            throw new IllegalArgumentException("Pipeline must have exactly one START step");
-        }
-
-        if (finalSteps != 1) {
-            throw new IllegalArgumentException("Pipeline must have exactly one FINAL step");
+        if (initialSteps != 1) {
+            throw new IllegalArgumentException("Pipeline must have exactly one INITIAL step");
         }
     }
 
@@ -52,39 +44,26 @@ public class PipelineValidationUtil {
         StepPosition stepPosition = stepType.getPosition();
 
         switch (stepPosition) {
-            case START -> {
+            case INITIAL -> {
                 if (position != 0) {
-                    throw new IllegalArgumentException("START step must be at position 0");
+                    throw new IllegalArgumentException("INITIAL step must be at position 0");
                 }
-                long startCount = stepTypesAfterChange.stream()
-                    .filter(type -> type.getPosition() == StepPosition.START)
+                long initialCount = stepTypesAfterChange.stream()
+                    .filter(type -> type.getPosition() == StepPosition.INITIAL)
                     .count();
-                if (startCount > 1) {
-                    throw new IllegalArgumentException("Only one START step is allowed");
+                if (initialCount > 1) {
+                    throw new IllegalArgumentException("Only one INITIAL step is allowed");
                 }
             }
-            case FINAL -> {
-                if (position != stepTypesAfterChange.size() - 1) {
-                    throw new IllegalArgumentException("FINAL step must be at last position");
+            case TRANSFORM -> {
+                // TRANSFORM steps must have INITIAL step before them
+                if (position == 0) {
+                    throw new IllegalArgumentException("TRANSFORM step cannot be at position 0");
                 }
-                long finalCount = stepTypesAfterChange.stream()
-                    .filter(type -> type.getPosition() == StepPosition.FINAL)
-                    .count();
-                if (finalCount > 1) {
-                    throw new IllegalArgumentException("Only one FINAL step is allowed");
-                }
-            }
-            case MIDDLE -> {
-                // Check no START steps after this position
+                // Check no INITIAL steps after this position
                 for (int i = position + 1; i < stepTypesAfterChange.size(); i++) {
-                    if (stepTypesAfterChange.get(i).getPosition() == StepPosition.START) {
-                        throw new IllegalArgumentException("MIDDLE step cannot have START steps after it");
-                    }
-                }
-                // Check no FINAL steps before this position
-                for (int i = 0; i < position; i++) {
-                    if (stepTypesAfterChange.get(i).getPosition() == StepPosition.FINAL) {
-                        throw new IllegalArgumentException("MIDDLE step cannot have FINAL steps before it");
+                    if (stepTypesAfterChange.get(i).getPosition() == StepPosition.INITIAL) {
+                        throw new IllegalArgumentException("TRANSFORM step cannot have INITIAL steps after it");
                     }
                 }
             }

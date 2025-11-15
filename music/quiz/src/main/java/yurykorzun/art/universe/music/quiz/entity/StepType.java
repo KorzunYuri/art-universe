@@ -9,15 +9,15 @@ import java.util.Arrays;
 @Getter
 public enum StepType implements Coded {
 
-    APPROVED_FILTER(1, 1, StepPosition.MIDDLE),
-    BLACKLIST_FILTER(2, 1, StepPosition.MIDDLE),
-    WHITELIST_FILTER(3, 1, StepPosition.MIDDLE),
-    TRACK_RECENCY_PENALTY(4, 1, StepPosition.MIDDLE),
-    ARTIST_RECENCY_PENALTY(5, 1, StepPosition.MIDDLE),
-    ARTIST_DIVERSITY(6, 1, StepPosition.MIDDLE),
-    FINAL_LIMITER(7, 1, StepPosition.FINAL),
-    FINAL_CATEGORIES_BALANCER(8, 1, StepPosition.FINAL),
-    START_DATASOURCE(9, 1, StepPosition.START);
+    APPROVED_FILTER(1, 1, StepPosition.TRANSFORM),
+    BLACKLIST_FILTER(2, 1, StepPosition.TRANSFORM),
+    WHITELIST_FILTER(3, 1, StepPosition.TRANSFORM),
+    TRACK_RECENCY_PENALTY(4, 1, StepPosition.TRANSFORM),
+    ARTIST_RECENCY_PENALTY(5, 1, StepPosition.TRANSFORM),
+    ARTIST_DIVERSITY(6, 1, StepPosition.TRANSFORM),
+    FINAL_LIMITER(7, 1, StepPosition.TRANSFORM),
+    FINAL_CATEGORIES_BALANCER(8, 1, StepPosition.TRANSFORM),
+    START_DATASOURCE(9, 1, StepPosition.INITIAL);
 
     private final Integer code;
     private final Integer version;

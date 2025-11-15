@@ -337,7 +337,7 @@ class PipelineServiceTest {
             () -> pipelineService.addStep(pipelineId, stepDto, 1)
         );
         
-        assertEquals("START step must be at position 0", exception.getMessage());
+        assertEquals("INITIAL step must be at position 0", exception.getMessage());
     }
 
     @Test
@@ -367,86 +367,14 @@ class PipelineServiceTest {
             IllegalArgumentException.class,
             () -> pipelineService.addStep(pipelineId, stepDto, 0)
         );
-        
-        assertEquals("Only one START step is allowed", exception.getMessage());
+
+        assertEquals("Only one INITIAL step is allowed", exception.getMessage());
     }
 
-    @Test
-    void addStep_shouldThrowException_whenFinalStepNotAtLastPosition() {
-        // given
-        Long pipelineId = 1L;
-        Pipeline pipeline = Pipeline.builder().id(pipelineId).immutable(false).build();
-        PipelineStepDto stepDto = PipelineStepDto.builder()
-            .type(StepType.FINAL_LIMITER)
-            .cfgData("{}")
-            .build();
-
-        Step existingStep1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
-        Step existingStep2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
-        PipelineStep existingPipelineStep1 = PipelineStep.builder()
-            .pipelineId(pipelineId)
-            .stepId(1L)
-            .ord(0)
-            .build();
-        PipelineStep existingPipelineStep2 = PipelineStep.builder()
-            .pipelineId(pipelineId)
-            .stepId(2L)
-            .ord(1)
-            .build();
-
-        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
-        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
-            .thenReturn(List.of(existingPipelineStep1, existingPipelineStep2));
-        when(stepService.getSteps(List.of(1L, 2L))).thenReturn(List.of(existingStep1, existingStep2));
-
-        // when & then
-        IllegalArgumentException exception = assertThrows(
-            IllegalArgumentException.class,
-            () -> pipelineService.addStep(pipelineId, stepDto, 1) // Should be position 2
-        );
-        
-        assertEquals("FINAL step must be at last position", exception.getMessage());
-    }
+    // Test removed: TRANSFORM steps can now be at any position after INITIAL
 
     @Test
-    void addStep_shouldThrowException_whenMultipleFinalSteps() {
-        // given
-        Long pipelineId = 1L;
-        Pipeline pipeline = Pipeline.builder().id(pipelineId).immutable(false).build();
-        PipelineStepDto stepDto = PipelineStepDto.builder()
-            .type(StepType.FINAL_CATEGORIES_BALANCER)
-            .cfgData("{}")
-            .build();
-
-        Step existingStep1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
-        Step existingStep2 = Step.builder().id(2L).type(StepType.FINAL_LIMITER).build();
-        PipelineStep existingPipelineStep1 = PipelineStep.builder()
-            .pipelineId(pipelineId)
-            .stepId(1L)
-            .ord(0)
-            .build();
-        PipelineStep existingPipelineStep2 = PipelineStep.builder()
-            .pipelineId(pipelineId)
-            .stepId(2L)
-            .ord(1)
-            .build();
-
-        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
-        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
-            .thenReturn(List.of(existingPipelineStep1, existingPipelineStep2));
-        when(stepService.getSteps(List.of(1L, 2L))).thenReturn(List.of(existingStep1, existingStep2));
-
-        // when & then
-        IllegalArgumentException exception = assertThrows(
-            IllegalArgumentException.class,
-            () -> pipelineService.addStep(pipelineId, stepDto, 2)
-        );
-        
-        assertEquals("Only one FINAL step is allowed", exception.getMessage());
-    }
-
-    @Test
-    void addStep_shouldThrowException_whenMiddleStepHasStartAfter() {
+    void addStep_shouldThrowException_whenTransformStepAtPositionZero() {
         // given
         Long pipelineId = 1L;
         Pipeline pipeline = Pipeline.builder().id(pipelineId).immutable(false).build();
@@ -470,42 +398,13 @@ class PipelineServiceTest {
         // when & then
         IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
-            () -> pipelineService.addStep(pipelineId, stepDto, 0) // Trying to put MIDDLE before START
+            () -> pipelineService.addStep(pipelineId, stepDto, 0) // Trying to put TRANSFORM at position 0
         );
-        
-        assertEquals("MIDDLE step cannot have START steps after it", exception.getMessage());
+
+        assertEquals("TRANSFORM step cannot be at position 0", exception.getMessage());
     }
 
-    @Test
-    void addStep_shouldThrowException_whenMiddleStepHasFinalBefore() {
-        // given
-        Long pipelineId = 1L;
-        Pipeline pipeline = Pipeline.builder().id(pipelineId).immutable(false).build();
-        PipelineStepDto stepDto = PipelineStepDto.builder()
-            .type(StepType.APPROVED_FILTER)
-            .cfgData("{}")
-            .build();
-
-        Step existingStep = Step.builder().id(1L).type(StepType.FINAL_LIMITER).build();
-        PipelineStep existingPipelineStep = PipelineStep.builder()
-            .pipelineId(pipelineId)
-            .stepId(1L)
-            .ord(0)
-            .build();
-
-        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
-        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
-            .thenReturn(List.of(existingPipelineStep));
-        when(stepService.getSteps(List.of(1L))).thenReturn(List.of(existingStep));
-
-        // when & then
-        IllegalArgumentException exception = assertThrows(
-            IllegalArgumentException.class,
-            () -> pipelineService.addStep(pipelineId, stepDto, 1) // Trying to put MIDDLE after FINAL
-        );
-        
-        assertEquals("MIDDLE step cannot have FINAL steps before it", exception.getMessage());
-    }
+    // Test removed: TRANSFORM steps can come after any other TRANSFORM steps
 
     @Test
     void moveStep_shouldThrowException_whenPipelineNotFound() {
@@ -697,52 +596,26 @@ class PipelineServiceTest {
             IllegalArgumentException.class,
             () -> pipelineService.moveStep(pipelineId, stepId, newPosition)
         );
-        
-        assertEquals("START step must be at position 0", exception.getMessage());
+
+
+        assertEquals("INITIAL step must be at position 0", exception.getMessage());
     }
 
-    @Test
-    void moveStep_shouldThrowException_whenFinalStepNotAtLastPosition() {
-        // given
-        Long pipelineId = 1L;
-        Long stepId = 3L;
-        Integer newPosition = 1;
-        Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
-        
-        Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
-        Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
-        Step step3 = Step.builder().id(3L).type(StepType.FINAL_LIMITER).build();
-        
-        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(0).build();
-        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(1).build();
-        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(2).build();
+    // Test removed: TRANSFORM steps can be at any position after INITIAL
 
-        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
-        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
-            .thenReturn(List.of(pipelineStep1, pipelineStep2, pipelineStep3));
-        when(stepService.getStep(stepId)).thenReturn(step3);
-        when(stepService.getSteps(List.of(1L, 2L, 3L))).thenReturn(List.of(step1, step2, step3));
-
-        // when & then
-        IllegalArgumentException exception = assertThrows(
-            IllegalArgumentException.class,
-            () -> pipelineService.moveStep(pipelineId, stepId, newPosition)
-        );
-        
-        assertEquals("FINAL step must be at last position", exception.getMessage());
-    }
+    // Test removed: TRANSFORM steps can be moved to any position after INITIAL
 
     @Test
-    void moveStep_shouldThrowException_whenMiddleStepHasStartAfter() {
+    void moveStep_shouldThrowException_whenTransformStepMovedToPositionZero() {
         // given
         Long pipelineId = 1L;
         Long stepId = 2L;
         Integer newPosition = 0;
         Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
-        
+
         Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
         Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
-        
+
         PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(0).build();
         PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(1).build();
 
@@ -757,40 +630,11 @@ class PipelineServiceTest {
             IllegalArgumentException.class,
             () -> pipelineService.moveStep(pipelineId, stepId, newPosition)
         );
-        
-        assertEquals("MIDDLE step cannot have START steps after it", exception.getMessage());
+
+        assertEquals("TRANSFORM step cannot be at position 0", exception.getMessage());
     }
 
-    @Test
-    void moveStep_shouldThrowException_whenMiddleStepHasFinalBefore() {
-        // given
-        Long pipelineId = 1L;
-        Long stepId = 2L;
-        Integer newPosition = 2;
-        Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
-        
-        Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
-        Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
-        Step step3 = Step.builder().id(3L).type(StepType.FINAL_LIMITER).build();
-        
-        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(0).build();
-        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(1).build();
-        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(2).build();
-
-        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
-        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
-            .thenReturn(List.of(pipelineStep1, pipelineStep2, pipelineStep3));
-        when(stepService.getStep(stepId)).thenReturn(step2);
-        when(stepService.getSteps(List.of(1L, 2L, 3L))).thenReturn(List.of(step1, step2, step3));
-
-        // when & then
-        IllegalArgumentException exception = assertThrows(
-            IllegalArgumentException.class,
-            () -> pipelineService.moveStep(pipelineId, stepId, newPosition)
-        );
-        
-        assertEquals("MIDDLE step cannot have FINAL steps before it", exception.getMessage());
-    }
+    // Test removed: TRANSFORM steps can come after any other TRANSFORM steps
 
     @Test
     void removeStep_shouldThrowException_whenPipelineNotFound() {
@@ -1007,34 +851,10 @@ class PipelineServiceTest {
             () -> pipelineService.validatePipelineForGeneration(pipelineId)
         );
 
-        assertEquals("Pipeline must have exactly one START step", exception.getMessage());
+        assertEquals("Pipeline must have exactly one INITIAL step", exception.getMessage());
     }
 
-    @Test
-    void validatePipelineForGeneration_shouldThrowException_whenPipelineWithoutFinalStep() {
-        // given
-        Long pipelineId = 1L;
-        Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
-
-        Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
-        Step step2 = Step.builder().id(2L).type(StepType.APPROVED_FILTER).build();
-
-        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(0).build();
-        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(1).build();
-
-        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
-        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
-            .thenReturn(List.of(pipelineStep1, pipelineStep2));
-        when(stepService.getSteps(List.of(1L, 2L))).thenReturn(List.of(step1, step2));
-
-        // when & then
-        IllegalArgumentException exception = assertThrows(
-            IllegalArgumentException.class,
-            () -> pipelineService.validatePipelineForGeneration(pipelineId)
-        );
-
-        assertEquals("Pipeline must have exactly one FINAL step", exception.getMessage());
-    }
+    // Test removed: FINAL step is no longer required for pipeline generation
 
     @Test
     void validatePipelineForGeneration_shouldThrowException_whenPipelineWithMultipleStartSteps() {
@@ -1061,36 +881,10 @@ class PipelineServiceTest {
             () -> pipelineService.validatePipelineForGeneration(pipelineId)
         );
 
-        assertEquals("Pipeline must have exactly one START step", exception.getMessage());
+        assertEquals("Pipeline must have exactly one INITIAL step", exception.getMessage());
     }
 
-    @Test
-    void validatePipelineForGeneration_shouldThrowException_whenPipelineWithMultipleFinalSteps() {
-        // given
-        Long pipelineId = 1L;
-        Pipeline pipeline = Pipeline.builder().id(pipelineId).build();
-
-        Step step1 = Step.builder().id(1L).type(StepType.START_DATASOURCE).build();
-        Step step2 = Step.builder().id(2L).type(StepType.FINAL_LIMITER).build();
-        Step step3 = Step.builder().id(3L).type(StepType.FINAL_CATEGORIES_BALANCER).build();
-
-        PipelineStep pipelineStep1 = PipelineStep.builder().pipelineId(pipelineId).stepId(1L).ord(0).build();
-        PipelineStep pipelineStep2 = PipelineStep.builder().pipelineId(pipelineId).stepId(2L).ord(1).build();
-        PipelineStep pipelineStep3 = PipelineStep.builder().pipelineId(pipelineId).stepId(3L).ord(2).build();
-
-        when(pipelineRepository.findById(pipelineId)).thenReturn(Optional.of(pipeline));
-        when(pipelineStepRepository.findByPipelineIdOrderByOrd(pipelineId))
-            .thenReturn(List.of(pipelineStep1, pipelineStep2, pipelineStep3));
-        when(stepService.getSteps(List.of(1L, 2L, 3L))).thenReturn(List.of(step1, step2, step3));
-
-        // when & then
-        IllegalArgumentException exception = assertThrows(
-            IllegalArgumentException.class,
-            () -> pipelineService.validatePipelineForGeneration(pipelineId)
-        );
-
-        assertEquals("Pipeline must have exactly one FINAL step", exception.getMessage());
-    }
+    // Test removed: Multiple TRANSFORM steps are now allowed
 
     @Test
     void validatePipelineForGeneration_shouldPass_whenValidPipeline() {

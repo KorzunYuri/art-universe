@@ -8,10 +8,8 @@ import java.util.Arrays;
 
 @Getter
 public enum StepPosition implements Coded {
-            START(1)
-        ,   MIDDLE(2)
-        ,   FINAL(3)
-    ;
+    INITIAL(1),     // Doesn't require input, produces initial dataset
+    TRANSFORM(2);   // Requires input, transforms data
 
     private final Integer code;
 
