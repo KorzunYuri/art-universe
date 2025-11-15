@@ -1,44 +1,40 @@
 import { MasterEntityPicker } from '@/music/data/master/components/MasterEntityPicker/MasterEntityPicker.tsx';
 import { CategoryName } from '@/music/data/master/components/CategoryName/CategoryName.tsx';
 import type { LookupEntity } from '@/music/shared/types/lookup.ts';
-import { 
-  type PipelineStepDto, 
-  type WhitelistFilterStepConfig, 
-  parseStepConfig, 
-  serializeStepConfig 
+import {
+  type PipelineStepDto,
+  type FinalCategoriesBalancerConfig as FinalCategoriesBalancerStepConfig,
+  parseStepConfig,
+  serializeStepConfig
 } from '@/music/quiz/types/pipeline-steps.ts';
-import { BaseStep } from './BaseStep.tsx';
 import styles from '../StepBuilder/StepBuilder.module.scss';
 
-interface WhitelistFilterStepProps {
+interface FinalCategoriesBalancerConfigProps {
   step: PipelineStepDto;
   onUpdate: (step: PipelineStepDto) => void;
-  onRemove?: () => void;
-  onMoveUp?: () => void;
-  onMoveDown?: () => void;
-  onSave?: () => void;
-  onExecute?: () => void;
   readonly?: boolean;
-  isDirty?: boolean;
 }
 
-export const WhitelistFilterStep = ({ 
-  step, 
-  onUpdate, 
-  readonly = false,
-  ...props
-}: WhitelistFilterStepProps) => {
-  const config = parseStepConfig(step.type, step.cfgData) as WhitelistFilterStepConfig;
+export const FinalCategoriesBalancerConfig = ({
+  step,
+  onUpdate,
+  readonly = false
+}: FinalCategoriesBalancerConfigProps) => {
+  const config = parseStepConfig(step.type, step.cfgData) as FinalCategoriesBalancerStepConfig;
   const categories = config.categories || [];
+  const targetCount = config.targetCount || 10;
+  const defaultQuota = config.defaultQuota || 0.5;
 
   const handleCategoryAdd = (entity: LookupEntity) => {
     if (categories.some(cat => cat.id === entity.id)) return;
-    
-    const newConfig: WhitelistFilterStepConfig = {
-      type: 'WHITELIST_FILTER',
+
+    const newConfig: FinalCategoriesBalancerStepConfig = {
+      type: 'FINAL_CATEGORIES_BALANCER',
+      targetCount,
+      defaultQuota,
       categories: [...categories, { id: entity.id, weight: 0.5 }]
     };
-    
+
     onUpdate({
       ...step,
       cfgData: serializeStepConfig(newConfig)
@@ -46,13 +42,15 @@ export const WhitelistFilterStep = ({
   };
 
   const handleWeightChange = (id: number, weight: number) => {
-    const newConfig: WhitelistFilterStepConfig = {
-      type: 'WHITELIST_FILTER',
-      categories: categories.map(cat => 
+    const newConfig: FinalCategoriesBalancerStepConfig = {
+      type: 'FINAL_CATEGORIES_BALANCER',
+      targetCount,
+      defaultQuota,
+      categories: categories.map(cat =>
         cat.id === id ? { ...cat, weight } : cat
       )
     };
-    
+
     onUpdate({
       ...step,
       cfgData: serializeStepConfig(newConfig)
@@ -60,11 +58,41 @@ export const WhitelistFilterStep = ({
   };
 
   const handleCategoryRemove = (id: number) => {
-    const newConfig: WhitelistFilterStepConfig = {
-      type: 'WHITELIST_FILTER',
+    const newConfig: FinalCategoriesBalancerStepConfig = {
+      type: 'FINAL_CATEGORIES_BALANCER',
+      targetCount,
+      defaultQuota,
       categories: categories.filter(cat => cat.id !== id)
     };
-    
+
+    onUpdate({
+      ...step,
+      cfgData: serializeStepConfig(newConfig)
+    });
+  };
+
+  const handleTargetCountChange = (newTargetCount: number) => {
+    const newConfig: FinalCategoriesBalancerStepConfig = {
+      type: 'FINAL_CATEGORIES_BALANCER',
+      targetCount: newTargetCount,
+      defaultQuota,
+      categories
+    };
+
+    onUpdate({
+      ...step,
+      cfgData: serializeStepConfig(newConfig)
+    });
+  };
+
+  const handleDefaultQuotaChange = (newDefaultQuota: number) => {
+    const newConfig: FinalCategoriesBalancerStepConfig = {
+      type: 'FINAL_CATEGORIES_BALANCER',
+      targetCount,
+      defaultQuota: newDefaultQuota,
+      categories
+    };
+
     onUpdate({
       ...step,
       cfgData: serializeStepConfig(newConfig)
@@ -72,13 +100,7 @@ export const WhitelistFilterStep = ({
   };
 
   return (
-    <BaseStep
-      step={step}
-      title="Whitelist Filter"
-      description="Limit output to specific categories with weights"
-      readonly={readonly}
-      {...props}
-    >
+    <div className={styles.content}>
       {!readonly && (
         <div className={styles.picker}>
           <MasterEntityPicker
@@ -88,6 +110,35 @@ export const WhitelistFilterStep = ({
           />
         </div>
       )}
+
+      <div className={styles.targetCountSection}>
+        <label>
+          Target Count:
+          <input
+            type="number"
+            value={targetCount}
+            onChange={(e) => handleTargetCountChange(Number(e.target.value))}
+            min="1"
+            disabled={readonly}
+          />
+        </label>
+      </div>
+
+      <div className={styles.targetCountSection}>
+        <label>
+          Default Quota:
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value={defaultQuota}
+            onChange={(e) => handleDefaultQuotaChange(Number(e.target.value))}
+            disabled={readonly}
+          />
+          <span>{defaultQuota.toFixed(2)}</span>
+        </label>
+      </div>
 
       {categories.length > 0 && (
         <div className={styles.categoriesList}>
@@ -118,6 +169,6 @@ export const WhitelistFilterStep = ({
           ))}
         </div>
       )}
-    </BaseStep>
+    </div>
   );
 };

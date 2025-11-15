@@ -12,6 +12,7 @@ export interface GameWithGenerationsDto {
 export interface GenerationDto {
   id: number;
   gameId: number;
+  pipelineId: number;
   targetCount: number;
   status: string;
   approved: boolean;

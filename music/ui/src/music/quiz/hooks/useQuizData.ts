@@ -229,3 +229,11 @@ export const useStepPreview = (stepId: number, enabled: boolean = true) => {
     enabled: !!stepId && enabled,
   });
 };
+
+export const useGenerationPipeline = (pipelineId: number | undefined) => {
+  return useQuery({
+    queryKey: quizKeys.pipeline(pipelineId!),
+    queryFn: () => musicQuizApi.getPipeline(pipelineId!),
+    enabled: !!pipelineId,
+  });
+};

@@ -10,7 +10,7 @@ export type PipelineStepType =
   | 'FINAL_CATEGORIES_BALANCER'
   | 'START_DATASOURCE';
 
-export type StepPosition = 'START' | 'MIDDLE' | 'FINAL';
+export type StepPosition = 'INITIAL' | 'TRANSFORM';
 
 // Step configuration interfaces matching backend DTOs
 export interface CategoryWeight {
@@ -78,17 +78,17 @@ export interface GameWithPipelineDto {
   pipeline: PipelineDto;
 }
 
-// Step position mapping
+// Step position mapping - INITIAL steps must be at position 0, TRANSFORM steps can be anywhere after
 export const STEP_POSITIONS: Record<PipelineStepType, StepPosition> = {
-  'START_DATASOURCE': 'START',
-  'APPROVED_FILTER': 'MIDDLE',
-  'BLACKLIST_FILTER': 'MIDDLE',
-  'WHITELIST_FILTER': 'MIDDLE',
-  'TRACK_RECENCY_PENALTY': 'MIDDLE',
-  'ARTIST_RECENCY_PENALTY': 'MIDDLE',
-  'ARTIST_DIVERSITY': 'MIDDLE',
-  'FINAL_LIMITER': 'FINAL',
-  'FINAL_CATEGORIES_BALANCER': 'FINAL'
+  'START_DATASOURCE': 'INITIAL',
+  'APPROVED_FILTER': 'TRANSFORM',
+  'BLACKLIST_FILTER': 'TRANSFORM',
+  'WHITELIST_FILTER': 'TRANSFORM',
+  'TRACK_RECENCY_PENALTY': 'TRANSFORM',
+  'ARTIST_RECENCY_PENALTY': 'TRANSFORM',
+  'ARTIST_DIVERSITY': 'TRANSFORM',
+  'FINAL_LIMITER': 'TRANSFORM',
+  'FINAL_CATEGORIES_BALANCER': 'TRANSFORM'
 };
 
 // Step labels for UI
@@ -119,42 +119,43 @@ export function parseStepConfig(type: PipelineStepType, cfgData?: string): StepC
 }
 
 export function serializeStepConfig(config: StepConfig): string {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { type, ...rest } = config;
   return JSON.stringify(rest);
 }
 
-export function validatePipeline(steps: PipelineStepDto[]): { isValid: boolean; errors: string[] } {
+export function validatePipeline(steps: PipelineStepDto[]): { isValid: boolean; errors: string[]; warnings: string[] } {
   const errors: string[] = [];
-  
+  const warnings: string[] = [];
+
   if (steps.length === 0) {
     errors.push('Pipeline must have at least one step');
-    return { isValid: false, errors };
+    return { isValid: false, errors, warnings };
   }
-  
+
   const sortedSteps = [...steps].sort((a, b) => a.ord - b.ord);
   const positions = sortedSteps.map(step => STEP_POSITIONS[step.type]);
-  
-  // Check for START step
-  if (positions[0] !== 'START') {
-    errors.push('Pipeline must start with a START step');
+
+  // Check for INITIAL step at position 0
+  if (positions[0] !== 'INITIAL') {
+    errors.push('Pipeline must start with an INITIAL step (START_DATASOURCE)');
   }
-  
-  // Check for FINAL step
-  if (positions[positions.length - 1] !== 'FINAL') {
-    errors.push('Pipeline must end with a FINAL step');
+
+  // Check for exactly one INITIAL step
+  const initialCount = positions.filter(p => p === 'INITIAL').length;
+
+  if (initialCount === 0) {
+    errors.push('Pipeline must have exactly one INITIAL step');
+  } else if (initialCount > 1) {
+    errors.push('Pipeline can have only one INITIAL step');
   }
-  
-  // Check for multiple START or FINAL steps
-  const startCount = positions.filter(p => p === 'START').length;
-  const finalCount = positions.filter(p => p === 'FINAL').length;
-  
-  if (startCount > 1) {
-    errors.push('Pipeline can have only one START step');
-  }
-  
-  if (finalCount > 1) {
-    errors.push('Pipeline can have only one FINAL step');
-  }
-  
-  return { isValid: errors.length === 0, errors };
+
+  // Check for INITIAL steps in positions > 0 (warning, not error)
+  positions.forEach((pos, index) => {
+    if (pos === 'INITIAL' && index > 0) {
+      warnings.push('INITIAL step should be at position 0');
+    }
+  });
+
+  return { isValid: errors.length === 0, errors, warnings };
 }

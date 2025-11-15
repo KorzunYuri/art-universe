@@ -1,30 +1,23 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNotifications } from '@/music/shared/hooks/useNotifications.ts';
-import { 
-  useAddStep, 
-  useMoveStep, 
-  useRemoveStep, 
+import {
+  useAddStep,
+  useMoveStep,
+  useRemoveStep,
   useUpdateStepConfiguration,
-  useExecuteStep 
+  useExecuteStep
 } from '@/music/quiz/hooks/useQuizData.ts';
-import { 
-  type PipelineDto, 
-  type PipelineStepDto, 
+import {
+  type PipelineDto,
+  type PipelineStepDto,
   type PipelineStepType,
   type StepPosition,
   validatePipeline,
   serializeStepConfig
 } from '@/music/quiz/types/pipeline-steps.ts';
 import { StepTypeSelector } from '../StepTypeSelector/StepTypeSelector.tsx';
-import { StartDatasourceStep } from '../steps/StartDatasourceStep.tsx';
-import { ApprovedFilterStep } from '../steps/ApprovedFilterStep.tsx';
-import { BlacklistFilterStep } from '../steps/BlacklistFilterStep.tsx';
-import { WhitelistFilterStep } from '../steps/WhitelistFilterStep.tsx';
-import { TrackRecencyPenaltyStep } from '../steps/TrackRecencyPenaltyStep.tsx';
-import { ArtistRecencyPenaltyStep } from '../steps/ArtistRecencyPenaltyStep.tsx';
-import { ArtistDiversityStep } from '../steps/ArtistDiversityStep.tsx';
-import { FinalLimiterStep } from '../steps/FinalLimiterStep.tsx';
-import { FinalCategoriesBalancerStep } from '../steps/FinalCategoriesBalancerStep.tsx';
+import { PipelineStepper } from '../PipelineStepper/PipelineStepper.tsx';
+import { PipelineStepDetail } from '../PipelineStepDetail/PipelineStepDetail.tsx';
 import styles from './PipelineEditor.module.scss';
 
 interface PipelineEditorProps {
@@ -34,9 +27,10 @@ interface PipelineEditorProps {
 
 export const PipelineEditor = ({ pipeline, onPipelineUpdate }: PipelineEditorProps) => {
   const [localSteps, setLocalSteps] = useState<PipelineStepDto[]>(pipeline.steps);
+  const [selectedStepIndex, setSelectedStepIndex] = useState<number>(0);
   const [addingStepAt, setAddingStepAt] = useState<number | null>(null);
   const [dirtySteps, setDirtySteps] = useState<Set<number>>(new Set());
-  
+
   const { showNotification } = useNotifications();
   const addStepMutation = useAddStep();
   const moveStepMutation = useMoveStep();
@@ -46,6 +40,15 @@ export const PipelineEditor = ({ pipeline, onPipelineUpdate }: PipelineEditorPro
 
   const sortedSteps = [...localSteps].sort((a, b) => a.ord - b.ord);
   const validation = validatePipeline(sortedSteps);
+
+  // Ensure selected step index is valid when steps change
+  useEffect(() => {
+    if (sortedSteps.length > 0 && selectedStepIndex >= sortedSteps.length) {
+      setSelectedStepIndex(sortedSteps.length - 1);
+    } else if (sortedSteps.length === 0) {
+      setSelectedStepIndex(0);
+    }
+  }, [sortedSteps.length, selectedStepIndex]);
 
   const handleAddStepClick = (position: number) => {
     setAddingStepAt(position);
@@ -107,7 +110,7 @@ export const PipelineEditor = ({ pipeline, onPipelineUpdate }: PipelineEditorPro
         setLocalSteps(updatedPipeline.steps);
       }
       showNotification('success', 'Step saved successfully');
-    } catch (error) {
+    } catch {
       showNotification('error', 'Failed to save step');
     }
   };
@@ -127,29 +130,27 @@ export const PipelineEditor = ({ pipeline, onPipelineUpdate }: PipelineEditorPro
         setLocalSteps(prev => prev.filter(s => s !== step));
       }
       showNotification('success', 'Step removed successfully');
-    } catch (error) {
+    } catch {
       showNotification('error', 'Failed to remove step');
     }
   };
 
-  const handleStepMove = async (step: PipelineStepDto, direction: 'up' | 'down') => {
+  const handleReorder = async (fromIndex: number, toIndex: number) => {
+    const step = sortedSteps[fromIndex];
     if (!step.id) return;
-
-    const currentIndex = sortedSteps.findIndex(s => s.id === step.id);
-    const newPosition = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
-    
-    if (newPosition < 0 || newPosition >= sortedSteps.length) return;
 
     try {
       const updatedPipeline = await moveStepMutation.mutateAsync({
         pipelineId: pipeline.id,
         stepId: step.id,
-        newPosition
+        newPosition: toIndex
       });
       onPipelineUpdate(updatedPipeline);
       setLocalSteps(updatedPipeline.steps);
+      // Update selected index to follow the moved step
+      setSelectedStepIndex(toIndex);
       showNotification('success', 'Step moved successfully');
-    } catch (error) {
+    } catch {
       showNotification('error', 'Failed to move step');
     }
   };
@@ -165,173 +166,28 @@ export const PipelineEditor = ({ pipeline, onPipelineUpdate }: PipelineEditorPro
       onPipelineUpdate(updatedPipeline);
       setLocalSteps(updatedPipeline.steps);
       showNotification('success', 'Step executed successfully');
-    } catch (error) {
+    } catch {
       showNotification('error', 'Failed to execute step');
     }
   };
 
-  const renderStep = (step: PipelineStepDto, index: number) => {
-    const isDirty = step.id ? dirtySteps.has(step.id) : true;
-    const canMoveUp = index > 0 && step.id;
-    const canMoveDown = index < sortedSteps.length - 1 && step.id;
-    
-    // Create stable key for React
-    const stepKey = step.id ? `step-${step.id}` : `temp-${step.ord}-${step.type}`;
-
-    switch (step.type) {
-      case 'START_DATASOURCE':
-        return (
-          <StartDatasourceStep
-            key={stepKey}
-            step={step}
-            onUpdate={(updatedStep) => handleStepUpdate(step, updatedStep)}
-            onSave={() => handleStepSave(step)}
-            onRemove={() => handleStepRemove(step)}
-            onMoveUp={canMoveUp ? () => handleStepMove(step, 'up') : undefined}
-            onMoveDown={canMoveDown ? () => handleStepMove(step, 'down') : undefined}
-            onExecute={() => handleStepExecute(step)}
-            isDirty={isDirty}
-          />
-        );
-      case 'APPROVED_FILTER':
-        return (
-          <ApprovedFilterStep
-            key={stepKey}
-            step={step}
-            onUpdate={(updatedStep) => handleStepUpdate(step, updatedStep)}
-            onSave={() => handleStepSave(step)}
-            onRemove={() => handleStepRemove(step)}
-            onMoveUp={canMoveUp ? () => handleStepMove(step, 'up') : undefined}
-            onMoveDown={canMoveDown ? () => handleStepMove(step, 'down') : undefined}
-            onExecute={() => handleStepExecute(step)}
-            isDirty={isDirty}
-          />
-        );
-      case 'BLACKLIST_FILTER':
-        return (
-          <BlacklistFilterStep
-            key={stepKey}
-            step={step}
-            onUpdate={(updatedStep) => handleStepUpdate(step, updatedStep)}
-            onSave={() => handleStepSave(step)}
-            onRemove={() => handleStepRemove(step)}
-            onMoveUp={canMoveUp ? () => handleStepMove(step, 'up') : undefined}
-            onMoveDown={canMoveDown ? () => handleStepMove(step, 'down') : undefined}
-            onExecute={() => handleStepExecute(step)}
-            isDirty={isDirty}
-          />
-        );
-      case 'WHITELIST_FILTER':
-        return (
-          <WhitelistFilterStep
-            key={stepKey}
-            step={step}
-            onUpdate={(updatedStep) => handleStepUpdate(step, updatedStep)}
-            onSave={() => handleStepSave(step)}
-            onRemove={() => handleStepRemove(step)}
-            onMoveUp={canMoveUp ? () => handleStepMove(step, 'up') : undefined}
-            onMoveDown={canMoveDown ? () => handleStepMove(step, 'down') : undefined}
-            onExecute={() => handleStepExecute(step)}
-            isDirty={isDirty}
-          />
-        );
-      case 'TRACK_RECENCY_PENALTY':
-        return (
-          <TrackRecencyPenaltyStep
-            key={stepKey}
-            step={step}
-            onUpdate={(updatedStep) => handleStepUpdate(step, updatedStep)}
-            onSave={() => handleStepSave(step)}
-            onRemove={() => handleStepRemove(step)}
-            onMoveUp={canMoveUp ? () => handleStepMove(step, 'up') : undefined}
-            onMoveDown={canMoveDown ? () => handleStepMove(step, 'down') : undefined}
-            onExecute={() => handleStepExecute(step)}
-            isDirty={isDirty}
-          />
-        );
-      case 'ARTIST_RECENCY_PENALTY':
-        return (
-          <ArtistRecencyPenaltyStep
-            key={stepKey}
-            step={step}
-            onUpdate={(updatedStep) => handleStepUpdate(step, updatedStep)}
-            onSave={() => handleStepSave(step)}
-            onRemove={() => handleStepRemove(step)}
-            onMoveUp={canMoveUp ? () => handleStepMove(step, 'up') : undefined}
-            onMoveDown={canMoveDown ? () => handleStepMove(step, 'down') : undefined}
-            onExecute={() => handleStepExecute(step)}
-            isDirty={isDirty}
-          />
-        );
-      case 'ARTIST_DIVERSITY':
-        return (
-          <ArtistDiversityStep
-            key={stepKey}
-            step={step}
-            onUpdate={(updatedStep) => handleStepUpdate(step, updatedStep)}
-            onSave={() => handleStepSave(step)}
-            onRemove={() => handleStepRemove(step)}
-            onMoveUp={canMoveUp ? () => handleStepMove(step, 'up') : undefined}
-            onMoveDown={canMoveDown ? () => handleStepMove(step, 'down') : undefined}
-            onExecute={() => handleStepExecute(step)}
-            isDirty={isDirty}
-          />
-        );
-      case 'FINAL_LIMITER':
-        return (
-          <FinalLimiterStep
-            key={stepKey}
-            step={step}
-            onUpdate={(updatedStep) => handleStepUpdate(step, updatedStep)}
-            onSave={() => handleStepSave(step)}
-            onRemove={() => handleStepRemove(step)}
-            onMoveUp={canMoveUp ? () => handleStepMove(step, 'up') : undefined}
-            onMoveDown={canMoveDown ? () => handleStepMove(step, 'down') : undefined}
-            onExecute={() => handleStepExecute(step)}
-            isDirty={isDirty}
-          />
-        );
-      case 'FINAL_CATEGORIES_BALANCER':
-        return (
-          <FinalCategoriesBalancerStep
-            key={stepKey}
-            step={step}
-            onUpdate={(updatedStep) => handleStepUpdate(step, updatedStep)}
-            onSave={() => handleStepSave(step)}
-            onRemove={() => handleStepRemove(step)}
-            onMoveUp={canMoveUp ? () => handleStepMove(step, 'up') : undefined}
-            onMoveDown={canMoveDown ? () => handleStepMove(step, 'down') : undefined}
-            onExecute={() => handleStepExecute(step)}
-            isDirty={isDirty}
-          />
-        );
-      default:
-        return (
-          <div key={stepKey} className={styles.unknownStep}>
-            Unknown step type: {step.type}
-          </div>
-        );
-    }
-  };
 
   const getAvailablePositions = (position: number): StepPosition[] => {
-    const positions: StepPosition[] = [];
-    
+    // Position 0: only INITIAL steps allowed
+    // Position > 0: only TRANSFORM steps allowed
     if (position === 0) {
-      positions.push('START');
+      return ['INITIAL'];
     }
-    
-    positions.push('MIDDLE');
-    
-    if (position === sortedSteps.length) {
-      positions.push('FINAL');
-    }
-    
-    return positions;
+
+    return ['TRANSFORM'];
   };
+
+  const selectedStep = sortedSteps[selectedStepIndex];
+  const readonly = pipeline.immutable;
 
   return (
     <div className={styles.editor}>
+      {/* Validation messages */}
       <div className={styles.validation}>
         {!validation.isValid && (
           <div className={styles.validationErrors}>
@@ -340,48 +196,70 @@ export const PipelineEditor = ({ pipeline, onPipelineUpdate }: PipelineEditorPro
             ))}
           </div>
         )}
+        {validation.warnings && validation.warnings.length > 0 && (
+          <div className={styles.validationWarnings}>
+            {validation.warnings.map((warning, index) => (
+              <div key={index} className={styles.validationWarning}>{warning}</div>
+            ))}
+          </div>
+        )}
       </div>
 
-      <div className={styles.steps}>
-        {/* Add button at start */}
-        {addingStepAt === 0 ? (
-          <StepTypeSelector
-            allowedPositions={getAvailablePositions(0)}
-            onSelect={handleStepTypeSelect}
-            onCancel={() => setAddingStepAt(null)}
-          />
-        ) : (
-          <button 
-            className={styles.addButton}
-            onClick={() => handleAddStepClick(0)}
-          >
-            +
-          </button>
-        )}
-
-        {/* Render steps with add buttons between them */}
-        {sortedSteps.map((step, index) => (
-          <>
-            {renderStep(step, index)}
-            
-            {/* Add button after each step */}
-            {addingStepAt === index + 1 ? (
+      {/* Pipeline Stepper - shows all steps */}
+      {sortedSteps.length > 0 && (
+        <>
+          <PipelineStepper
+            steps={sortedSteps}
+            selectedStepIndex={selectedStepIndex}
+            onStepSelect={setSelectedStepIndex}
+            onReorder={handleReorder}
+            onAddStep={handleAddStepClick}
+            onRemoveStep={(index) => handleStepRemove(sortedSteps[index])}
+            addingStepAt={addingStepAt}
+            stepSelectorRenderer={(position) => (
               <StepTypeSelector
-                allowedPositions={getAvailablePositions(index + 1)}
+                allowedPositions={getAvailablePositions(position)}
                 onSelect={handleStepTypeSelect}
                 onCancel={() => setAddingStepAt(null)}
               />
-            ) : (
-              <button 
-                className={styles.addButton}
-                onClick={() => handleAddStepClick(index + 1)}
-              >
-                +
-              </button>
             )}
-          </>
-        ))}
-      </div>
+            readonly={readonly}
+          />
+
+          {/* Step Detail - shows selected step configuration */}
+          {selectedStep && (
+            <PipelineStepDetail
+              step={selectedStep}
+              stepIndex={selectedStepIndex}
+              totalSteps={sortedSteps.length}
+              onUpdate={(updatedStep) => handleStepUpdate(selectedStep, updatedStep)}
+              onSave={() => handleStepSave(selectedStep)}
+              onRemove={() => handleStepRemove(selectedStep)}
+              onExecute={() => handleStepExecute(selectedStep)}
+              readonly={readonly}
+              isDirty={selectedStep.id ? dirtySteps.has(selectedStep.id) : true}
+            />
+          )}
+        </>
+      )}
+
+      {sortedSteps.length === 0 && !readonly && (
+        <div className={styles.emptyState}>
+          <button
+            className={styles.addFirstStepButton}
+            onClick={() => handleAddStepClick(0)}
+            type="button"
+          >
+            + Add First Step
+          </button>
+        </div>
+      )}
+
+      {sortedSteps.length === 0 && readonly && (
+        <div className={styles.emptyState}>
+          No steps in pipeline.
+        </div>
+      )}
     </div>
   );
 };

@@ -1,0 +1,245 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid #e1e4e8;
+  border-radius: 8px;
+  height: 500px;
+  overflow: hidden;
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 20px;
+}
+
+.titleSection {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #e1e4e8;
+}
+
+.titleContent {
+  flex: 1;
+}
+
+.stepName {
+  margin: 0 0 12px 0;
+  font-size: 26px;
+  font-weight: 700;
+  color: #24292e;
+  line-height: 1.2;
+}
+
+.stepLogic {
+  font-size: 15px;
+  color: #586069;
+  line-height: 1.6;
+  font-style: italic;
+}
+
+.executeButton {
+  padding: 10px 20px;
+  background: #22863a;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  &:hover {
+    background: #2ea043;
+  }
+
+  &:active {
+    background: #1a7f37;
+  }
+}
+
+.horizontalSections {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  max-width: 500px;
+}
+
+.sectionTitle {
+  margin: 0 0 12px 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #586069;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.configContent {
+  flex: 1;
+}
+
+.noConfig {
+  color: #999;
+  font-size: 18px;
+  text-align: center;
+  padding: 20px;
+}
+
+.sectionContent {
+  font-size: 14px;
+  color: #24292e;
+  line-height: 1.6;
+  word-wrap: break-word;
+}
+
+.configDisplay {
+  font-size: 12px;
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  background: #f6f8fa;
+  border: 1px solid #e1e4e8;
+  border-radius: 6px;
+  padding: 12px;
+  margin: 0;
+  overflow-x: auto;
+  color: #24292e;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.statsDisplay {
+  font-size: 13px;
+}
+
+.statsTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+
+  th, td {
+    padding: 6px 8px;
+    text-align: center;
+    border: 1px solid #e1e4e8;
+
+    &:first-child {
+      text-align: left;
+      font-weight: 600;
+    }
+  }
+
+  th {
+    background: #f6f8fa;
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #586069;
+  }
+
+  td {
+    background: white;
+  }
+}
+
+.positive {
+  color: #22863a;
+  font-weight: 600;
+}
+
+.negative {
+  color: #d73a49;
+  font-weight: 600;
+}
+
+.executionTime {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #586069;
+  font-weight: 600;
+}
+
+.noStats {
+  font-size: 13px;
+  color: #959da5;
+  font-style: italic;
+}
+
+.unknownStep {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #d73a49;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+// Responsive adjustments
+@media (max-width: 1200px) {
+  .horizontalSections {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .container {
+    height: 450px;
+  }
+
+  .content {
+    padding: 16px;
+  }
+
+  .stepName {
+    font-size: 24px;
+  }
+
+  .stepLogic {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    height: 400px;
+  }
+
+  .content {
+    padding: 14px;
+  }
+
+  .titleSection {
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+  }
+
+  .stepName {
+    font-size: 22px;
+  }
+
+  .stepLogic {
+    font-size: 13px;
+  }
+
+  .sectionTitle {
+    font-size: 12px;
+  }
+
+  .configDisplay {
+    font-size: 11px;
+    padding: 10px;
+  }
+}
