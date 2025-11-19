@@ -22,14 +22,14 @@ import styles from './PipelineEditor.module.scss';
 
 interface PipelineEditorProps {
   pipeline: PipelineDto;
-  onPipelineUpdate: (pipeline: PipelineDto) => void;
 }
 
-export const PipelineEditor = ({ pipeline, onPipelineUpdate }: PipelineEditorProps) => {
+export const PipelineEditor = ({ pipeline }: PipelineEditorProps) => {
   const [localSteps, setLocalSteps] = useState<PipelineStepDto[]>(pipeline.steps);
   const [selectedStepIndex, setSelectedStepIndex] = useState<number>(0);
   const [addingStepAt, setAddingStepAt] = useState<number | null>(null);
   const [dirtySteps, setDirtySteps] = useState<Set<number>>(new Set());
+  const [savingStepId, setSavingStepId] = useState<number | null>(null);
 
   const { showNotification } = useNotifications();
   const addStepMutation = useAddStep();
@@ -40,6 +40,11 @@ export const PipelineEditor = ({ pipeline, onPipelineUpdate }: PipelineEditorPro
 
   const sortedSteps = [...localSteps].sort((a, b) => a.ord - b.ord);
   const validation = validatePipeline(sortedSteps);
+
+  // Sync localSteps when pipeline prop changes (e.g., after cache update)
+  useEffect(() => {
+    setLocalSteps(pipeline.steps);
+  }, [pipeline.steps]);
 
   // Ensure selected step index is valid when steps change
   useEffect(() => {
@@ -88,12 +93,12 @@ export const PipelineEditor = ({ pipeline, onPipelineUpdate }: PipelineEditorPro
     try {
       if (step.id) {
         // Update existing step
-        const updatedPipeline = await updateStepMutation.mutateAsync({
+        setSavingStepId(step.id);
+        await updateStepMutation.mutateAsync({
           pipelineId: pipeline.id,
           stepId: step.id,
           stepDto: step
         });
-        onPipelineUpdate(updatedPipeline);
         setDirtySteps(prev => {
           const newSet = new Set(prev);
           newSet.delete(step.id!);
@@ -101,17 +106,19 @@ export const PipelineEditor = ({ pipeline, onPipelineUpdate }: PipelineEditorPro
         });
       } else {
         // Add new step
+        setSavingStepId(-1); // Use -1 for new steps
         const updatedPipeline = await addStepMutation.mutateAsync({
           pipelineId: pipeline.id,
           stepDto: step,
           position: step.ord
         });
-        onPipelineUpdate(updatedPipeline);
         setLocalSteps(updatedPipeline.steps);
       }
       showNotification('success', 'Step saved successfully');
     } catch {
       showNotification('error', 'Failed to save step');
+    } finally {
+      setSavingStepId(null);
     }
   };
 
@@ -123,7 +130,6 @@ export const PipelineEditor = ({ pipeline, onPipelineUpdate }: PipelineEditorPro
           pipelineId: pipeline.id,
           stepId: step.id
         });
-        onPipelineUpdate(updatedPipeline);
         setLocalSteps(updatedPipeline.steps);
       } else {
         // Remove locally
@@ -145,7 +151,6 @@ export const PipelineEditor = ({ pipeline, onPipelineUpdate }: PipelineEditorPro
         stepId: step.id,
         newPosition: toIndex
       });
-      onPipelineUpdate(updatedPipeline);
       setLocalSteps(updatedPipeline.steps);
       // Update selected index to follow the moved step
       setSelectedStepIndex(toIndex);
@@ -163,7 +168,6 @@ export const PipelineEditor = ({ pipeline, onPipelineUpdate }: PipelineEditorPro
         pipelineId: pipeline.id,
         stepId: step.id
       });
-      onPipelineUpdate(updatedPipeline);
       setLocalSteps(updatedPipeline.steps);
       showNotification('success', 'Step executed successfully');
     } catch {
@@ -239,6 +243,7 @@ export const PipelineEditor = ({ pipeline, onPipelineUpdate }: PipelineEditorPro
               onExecute={() => handleStepExecute(selectedStep)}
               readonly={readonly}
               isDirty={selectedStep.id ? dirtySteps.has(selectedStep.id) : true}
+              isSaving={savingStepId === selectedStep.id || (savingStepId === -1 && !selectedStep.id)}
             />
           )}
         </>

@@ -1,21 +1,19 @@
 import { useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { useGame, useGenerations, useGenerateTracks, useApproveGeneration, useDisapproveGeneration, useGenerationPipeline } from '@/music/quiz/hooks/useQuizData.ts';
+import { useGame, useGenerations, useGenerateTracks, useApproveGeneration, useDisapproveGeneration, usePipeline } from '@/music/quiz/hooks/useQuizData.ts';
 import { useNotifications } from '@/music/shared/hooks/useNotifications.ts';
-import { validatePipeline, type PipelineDto } from '@/music/quiz/types/pipeline-steps.ts';
+import { validatePipeline } from '@/music/quiz/types/pipeline-steps.ts';
 import type {GenerationDto} from '../../types';
 import { PipelineEditor } from '../PipelineEditor/PipelineEditor.tsx';
 import { GenerationTracks } from '../GenerationTracks.tsx';
 import { GenerationsList } from '../GenerationsList/GenerationsList.tsx';
 import { PipelineTabs, type PipelineTab } from '../PipelineTabs/PipelineTabs.tsx';
-import React from 'react';
 import styles from './GameDetails.module.scss';
 import commonStyles from '../../MusicQuizApp.module.scss';
 
 export const GameDetails = () => {
   const { gameId } = useParams<{ gameId: string }>();
   const [selectedGeneration, setSelectedGeneration] = useState<GenerationDto | null>(null);
-  const [currentPipeline, setCurrentPipeline] = useState<PipelineDto | null>(null);
   const [activeTabId, setActiveTabId] = useState<string>('game');
   const [openGenerationTabs, setOpenGenerationTabs] = useState<Map<number, number>>(new Map());
 
@@ -39,19 +37,11 @@ export const GameDetails = () => {
     return generations.find(g => g.id === activeGenerationId);
   }, [activeGenerationId, generations]);
 
-  // Fetch generation pipeline if needed
-  const { data: generationPipeline } = useGenerationPipeline(activeGeneration?.pipelineId);
+  // Fetch game pipeline (cached separately from game)
+  const { data: gamePipeline } = usePipeline(game?.pipelineId);
 
-  // Set pipeline when game loads
-  React.useEffect(() => {
-    if (game?.pipeline && !currentPipeline) {
-      setCurrentPipeline(game.pipeline);
-    }
-  }, [game, currentPipeline]);
-
-  const handlePipelineUpdate = (updatedPipeline: PipelineDto) => {
-    setCurrentPipeline(updatedPipeline);
-  };
+  // Fetch generation pipeline only when viewing a generation tab
+  const { data: generationPipeline } = usePipeline(activeGeneration?.pipelineId);
 
   const handleGenerationClick = (generation: GenerationDto) => {
     const tabId = `generation-${generation.id}`;
@@ -97,9 +87,9 @@ export const GameDetails = () => {
   };
 
   const handleGenerateTracks = async () => {
-    if (!gameId || !currentPipeline) return;
-    
-    const validation = validatePipeline(currentPipeline.steps);
+    if (!gameId || !gamePipeline) return;
+
+    const validation = validatePipeline(gamePipeline.steps);
     if (!validation.isValid) {
       showNotification('error', 'Pipeline is not valid for generation');
       return;
@@ -144,7 +134,7 @@ export const GameDetails = () => {
   ];
 
   // Determine which pipeline to display
-  const displayPipeline = activeTabId === 'game' ? currentPipeline : generationPipeline;
+  const displayPipeline = activeTabId === 'game' ? gamePipeline : generationPipeline;
 
   const validation = displayPipeline ? validatePipeline(displayPipeline.steps) : { isValid: false, errors: [] };
   const approvedGenerations = generations?.filter(g => g.approved) || [];
@@ -177,7 +167,6 @@ export const GameDetails = () => {
         {displayPipeline && (
           <PipelineEditor
             pipeline={displayPipeline}
-            onPipelineUpdate={handlePipelineUpdate}
           />
         )}
 

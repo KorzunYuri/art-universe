@@ -18,6 +18,7 @@ interface PipelineStepDetailProps {
   onExecute: () => void;
   readonly?: boolean;
   isDirty?: boolean;
+  isSaving?: boolean;
 }
 
 export const PipelineStepDetail = ({
@@ -31,7 +32,8 @@ export const PipelineStepDetail = ({
   onMoveRight,
   onExecute,
   readonly = false,
-  isDirty = false
+  isDirty = false,
+  isSaving = false
 }: PipelineStepDetailProps) => {
   const stepLabel = STEP_LABELS[step.type] || step.type;
   const stepLogic = getStepDescription(step.type);
@@ -41,7 +43,7 @@ export const PipelineStepDetail = ({
     const configProps = {
       step,
       onUpdate,
-      readonly
+      readonly: readonly || isSaving
     };
 
     switch (step.type) {
@@ -129,8 +131,9 @@ export const PipelineStepDetail = ({
                 className={styles.saveButton}
                 onClick={onSave}
                 type="button"
+                disabled={isSaving}
               >
-                Save
+                {isSaving ? 'Saving...' : 'Save'}
               </button>
             )}
           </div>

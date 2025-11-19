@@ -78,6 +78,12 @@ export interface GameWithPipelineDto {
   pipeline: PipelineDto;
 }
 
+export interface GameWithPipelineIdDto {
+  id: number;
+  createdAt: string;
+  pipelineId: number;
+}
+
 // Step position mapping - INITIAL steps must be at position 0, TRANSFORM steps can be anywhere after
 export const STEP_POSITIONS: Record<PipelineStepType, StepPosition> = {
   'START_DATASOURCE': 'INITIAL',

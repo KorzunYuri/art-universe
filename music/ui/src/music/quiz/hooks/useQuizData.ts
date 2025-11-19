@@ -1,34 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { musicQuizApi } from '../api/musicQuizApi.ts';
 import { quizKeys } from '@/music/quiz/utils/query-keys.ts';
-import type { PipelineStepDto, PipelineDto, GameWithPipelineDto } from '@/music/quiz/types/pipeline-steps.ts';
+import type { PipelineStepDto, PipelineDto } from '@/music/quiz/types/pipeline-steps.ts';
 
 /**
- * Helper function to update all caches related to a pipeline update
- * This avoids invalidating queries and triggering unnecessary refetches
+ * Helper function to update pipeline cache
+ * Game and pipeline are cached separately, so we only update the pipeline cache
  */
 const updatePipelineCache = (queryClient: any, updatedPipeline: PipelineDto) => {
-  // 1. Update the pipeline cache directly
   queryClient.setQueryData(quizKeys.pipeline(updatedPipeline.id), updatedPipeline);
-
-  // 2. Update individual game caches that contain this pipeline
-  queryClient.setQueriesData(
-    {
-      queryKey: quizKeys.all,
-      predicate: (query: any) => {
-        // Match queries like ['quiz', 'game', <gameId>]
-        return query.queryKey[0] === 'quiz' &&
-               query.queryKey[1] === 'game' &&
-               typeof query.queryKey[2] === 'number';
-      }
-    },
-    (oldData: GameWithPipelineDto | undefined) => {
-      if (oldData?.pipeline?.id === updatedPipeline.id) {
-        return { ...oldData, pipeline: updatedPipeline };
-      }
-      return oldData;
-    }
-  );
 };
 
 export const useGames = (page = 0, size = 20) => {
@@ -39,9 +19,28 @@ export const useGames = (page = 0, size = 20) => {
 };
 
 export const useGame = (gameId: number) => {
+  const queryClient = useQueryClient();
+
   return useQuery({
     queryKey: quizKeys.game(gameId),
-    queryFn: () => musicQuizApi.getGame(gameId),
+    queryFn: async () => {
+      const gameWithPipeline = await musicQuizApi.getGame(gameId);
+
+      // Separate pipeline from game and cache it separately
+      if (gameWithPipeline.pipeline) {
+        queryClient.setQueryData(
+          quizKeys.pipeline(gameWithPipeline.pipeline.id),
+          gameWithPipeline.pipeline
+        );
+      }
+
+      // Return game without pipeline for the game cache
+      const { pipeline, ...gameData } = gameWithPipeline;
+      return {
+        ...gameData,
+        pipelineId: pipeline?.id
+      };
+    },
     enabled: !!gameId,
   });
 };
@@ -251,10 +250,19 @@ export const useStepPreview = (stepId: number, enabled: boolean = true) => {
   });
 };
 
-export const useGenerationPipeline = (pipelineId: number | undefined) => {
+/**
+ * Hook to fetch a pipeline by ID
+ * Used for both game pipelines and generation pipelines
+ */
+export const usePipeline = (pipelineId: number | undefined) => {
   return useQuery({
     queryKey: quizKeys.pipeline(pipelineId!),
     queryFn: () => musicQuizApi.getPipeline(pipelineId!),
     enabled: !!pipelineId,
   });
 };
+
+/**
+ * @deprecated Use usePipeline instead
+ */
+export const useGenerationPipeline = usePipeline;
