@@ -30,7 +30,7 @@ export const PipelineTabs = ({
         return (
           <div
             key={tab.id}
-            className={`${styles.tab} ${isActive ? styles.active : ''}`}
+            className={`${styles.tab} ${isActive ? styles.active : ''} ${tab.type === 'generation' ? styles.generation : ''}`}
           >
             <button
               className={styles.tabButton}
@@ -38,9 +38,6 @@ export const PipelineTabs = ({
               type="button"
             >
               <span className={styles.tabLabel}>{tab.label}</span>
-              {tab.type === 'generation' && (
-                <span className={styles.tabBadge}>Gen</span>
-              )}
             </button>
 
             {canClose && (

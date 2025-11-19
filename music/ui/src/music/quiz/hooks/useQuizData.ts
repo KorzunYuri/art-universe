@@ -1,7 +1,35 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { musicQuizApi } from '../api/musicQuizApi.ts';
 import { quizKeys } from '@/music/quiz/utils/query-keys.ts';
-import type { PipelineStepDto } from '@/music/quiz/types/pipeline-steps.ts';
+import type { PipelineStepDto, PipelineDto, GameWithPipelineDto } from '@/music/quiz/types/pipeline-steps.ts';
+
+/**
+ * Helper function to update all caches related to a pipeline update
+ * This avoids invalidating queries and triggering unnecessary refetches
+ */
+const updatePipelineCache = (queryClient: any, updatedPipeline: PipelineDto) => {
+  // 1. Update the pipeline cache directly
+  queryClient.setQueryData(quizKeys.pipeline(updatedPipeline.id), updatedPipeline);
+
+  // 2. Update individual game caches that contain this pipeline
+  queryClient.setQueriesData(
+    {
+      queryKey: quizKeys.all,
+      predicate: (query: any) => {
+        // Match queries like ['quiz', 'game', <gameId>]
+        return query.queryKey[0] === 'quiz' &&
+               query.queryKey[1] === 'game' &&
+               typeof query.queryKey[2] === 'number';
+      }
+    },
+    (oldData: GameWithPipelineDto | undefined) => {
+      if (oldData?.pipeline?.id === updatedPipeline.id) {
+        return { ...oldData, pipeline: updatedPipeline };
+      }
+      return oldData;
+    }
+  );
+};
 
 export const useGames = (page = 0, size = 20) => {
   return useQuery({
@@ -39,11 +67,22 @@ export const useCreateGame = () => {
 
 export const useGenerateTracks = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: ({ gameId, steps }: { gameId: number; steps?: any[] }) =>
       musicQuizApi.generateTracks(gameId, steps),
-    onSuccess: (_, { gameId }) => {
+    onSuccess: (newGeneration, { gameId }) => {
+      // Add the new generation to the generations list cache
+      queryClient.setQueryData(
+        quizKeys.generations(gameId),
+        (oldData: any[] | undefined) => {
+          if (!oldData) return [newGeneration];
+          return [...oldData, newGeneration];
+        }
+      );
+
+      // Invalidate the game query since it may have pipeline changes
+      // We could avoid this if the backend returns the updated game
       queryClient.invalidateQueries({ queryKey: quizKeys.game(gameId) });
     },
   });
@@ -51,40 +90,77 @@ export const useGenerateTracks = () => {
 
 export const useApproveGeneration = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: ({ generationId }: { generationId: number }) =>
       musicQuizApi.approveGeneration(generationId),
-    onSuccess: (_, { generationId }) => {
-      // Find the game that contains this generation and invalidate it
-      queryClient.invalidateQueries({ queryKey: quizKeys.games() });
-      queryClient.invalidateQueries({ queryKey: quizKeys.all });
+    onSuccess: (updatedGeneration) => {
+      // Update all generations list caches that contain this generation
+      queryClient.setQueriesData(
+        {
+          queryKey: quizKeys.all,
+          predicate: (query: any) => {
+            // Match queries like ['quiz', 'generations', <gameId>]
+            return query.queryKey[0] === 'quiz' &&
+                   query.queryKey[1] === 'generations' &&
+                   typeof query.queryKey[2] === 'number';
+          }
+        },
+        (oldData: any[] | undefined) => {
+          if (!oldData) return oldData;
+          return oldData.map(gen =>
+            gen.id === updatedGeneration.id ? updatedGeneration : gen
+          );
+        }
+      );
     },
   });
 };
 
 export const useDisapproveGeneration = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: ({ generationId }: { generationId: number }) =>
       musicQuizApi.disapproveGeneration(generationId),
-    onSuccess: (_, { generationId }) => {
-      // Find the game that contains this generation and invalidate it
-      queryClient.invalidateQueries({ queryKey: quizKeys.games() });
-      queryClient.invalidateQueries({ queryKey: quizKeys.all });
+    onSuccess: (updatedGeneration) => {
+      // Update all generations list caches that contain this generation
+      queryClient.setQueriesData(
+        {
+          queryKey: quizKeys.all,
+          predicate: (query: any) => {
+            // Match queries like ['quiz', 'generations', <gameId>]
+            return query.queryKey[0] === 'quiz' &&
+                   query.queryKey[1] === 'generations' &&
+                   typeof query.queryKey[2] === 'number';
+          }
+        },
+        (oldData: any[] | undefined) => {
+          if (!oldData) return oldData;
+          return oldData.map(gen =>
+            gen.id === updatedGeneration.id ? updatedGeneration : gen
+          );
+        }
+      );
     },
   });
 };
 
 export const useDeleteGenerationTrack = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: ({ generationId, trackId }: { generationId: number; trackId: number }) =>
       musicQuizApi.deleteGenerationTrack(generationId, trackId),
-    onSuccess: (_, { generationId }) => {
-      queryClient.invalidateQueries({ queryKey: quizKeys.generationTracks(generationId) });
+    onSuccess: (_, { generationId, trackId }) => {
+      // Optimistically remove the track from the cache instead of invalidating
+      queryClient.setQueryData(
+        quizKeys.generationTracks(generationId),
+        (oldData: any[] | undefined) => {
+          if (!oldData) return oldData;
+          return oldData.filter(track => track.id !== trackId);
+        }
+      );
     },
   });
 };
@@ -92,124 +168,69 @@ export const useDeleteGenerationTrack = () => {
 // Pipeline management hooks
 export const useAddStep = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: ({ pipelineId, stepDto, position }: { 
-      pipelineId: number; 
-      stepDto: PipelineStepDto; 
+    mutationFn: ({ pipelineId, stepDto, position }: {
+      pipelineId: number;
+      stepDto: PipelineStepDto;
       position: number;
     }) => musicQuizApi.addStep(pipelineId, stepDto, position),
     onSuccess: (updatedPipeline) => {
-      queryClient.setQueryData(quizKeys.pipeline(updatedPipeline.id), updatedPipeline);
-      queryClient.invalidateQueries({ queryKey: quizKeys.games() });
-      // Update game cache with new pipeline
-      queryClient.setQueriesData(
-        { queryKey: quizKeys.all, predicate: (query) => query.queryKey.includes('game') },
-        (oldData: any) => {
-          if (oldData?.pipeline?.id === updatedPipeline.id) {
-            return { ...oldData, pipeline: updatedPipeline };
-          }
-          return oldData;
-        }
-      );
+      updatePipelineCache(queryClient, updatedPipeline);
     },
   });
 };
 
 export const useMoveStep = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: ({ pipelineId, stepId, newPosition }: { 
-      pipelineId: number; 
-      stepId: number; 
+    mutationFn: ({ pipelineId, stepId, newPosition }: {
+      pipelineId: number;
+      stepId: number;
       newPosition: number;
     }) => musicQuizApi.moveStep(pipelineId, stepId, newPosition),
     onSuccess: (updatedPipeline) => {
-      queryClient.setQueryData(quizKeys.pipeline(updatedPipeline.id), updatedPipeline);
-      queryClient.invalidateQueries({ queryKey: quizKeys.games() });
-      // Update game cache with new pipeline
-      queryClient.setQueriesData(
-        { queryKey: quizKeys.all, predicate: (query) => query.queryKey.includes('game') },
-        (oldData: any) => {
-          if (oldData?.pipeline?.id === updatedPipeline.id) {
-            return { ...oldData, pipeline: updatedPipeline };
-          }
-          return oldData;
-        }
-      );
+      updatePipelineCache(queryClient, updatedPipeline);
     },
   });
 };
 
 export const useRemoveStep = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: ({ pipelineId, stepId }: { pipelineId: number; stepId: number }) =>
       musicQuizApi.removeStep(pipelineId, stepId),
     onSuccess: (updatedPipeline) => {
-      queryClient.setQueryData(quizKeys.pipeline(updatedPipeline.id), updatedPipeline);
-      queryClient.invalidateQueries({ queryKey: quizKeys.games() });
-      // Update game cache with new pipeline
-      queryClient.setQueriesData(
-        { queryKey: quizKeys.all, predicate: (query) => query.queryKey.includes('game') },
-        (oldData: any) => {
-          if (oldData?.pipeline?.id === updatedPipeline.id) {
-            return { ...oldData, pipeline: updatedPipeline };
-          }
-          return oldData;
-        }
-      );
+      updatePipelineCache(queryClient, updatedPipeline);
     },
   });
 };
 
 export const useUpdateStepConfiguration = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: ({ pipelineId, stepId, stepDto }: { 
-      pipelineId: number; 
-      stepId: number; 
+    mutationFn: ({ pipelineId, stepId, stepDto }: {
+      pipelineId: number;
+      stepId: number;
       stepDto: PipelineStepDto;
     }) => musicQuizApi.updateStepConfiguration(pipelineId, stepId, stepDto),
     onSuccess: (updatedPipeline) => {
-      queryClient.setQueryData(quizKeys.pipeline(updatedPipeline.id), updatedPipeline);
-      queryClient.invalidateQueries({ queryKey: quizKeys.games() });
-      // Update game cache with new pipeline
-      queryClient.setQueriesData(
-        { queryKey: quizKeys.all, predicate: (query) => query.queryKey.includes('game') },
-        (oldData: any) => {
-          if (oldData?.pipeline?.id === updatedPipeline.id) {
-            return { ...oldData, pipeline: updatedPipeline };
-          }
-          return oldData;
-        }
-      );
+      updatePipelineCache(queryClient, updatedPipeline);
     },
   });
 };
 
 export const useExecuteStep = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: ({ pipelineId, stepId }: { pipelineId: number; stepId: number }) =>
       musicQuizApi.executeStep(pipelineId, stepId),
     onSuccess: (updatedPipeline) => {
-      queryClient.setQueryData(quizKeys.pipeline(updatedPipeline.id), updatedPipeline);
-      queryClient.invalidateQueries({ queryKey: quizKeys.games() });
-      // Update game cache with new pipeline
-      queryClient.setQueriesData(
-        { queryKey: quizKeys.all, predicate: (query) => query.queryKey.includes('game') },
-        (oldData: any) => {
-          if (oldData?.pipeline?.id === updatedPipeline.id) {
-            return { ...oldData, pipeline: updatedPipeline };
-          }
-          return oldData;
-        }
-      );
+      updatePipelineCache(queryClient, updatedPipeline);
     },
   });
 };

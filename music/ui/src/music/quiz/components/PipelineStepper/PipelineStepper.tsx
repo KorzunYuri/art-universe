@@ -26,6 +26,7 @@ interface PipelineStepperProps {
   onReorder?: (fromIndex: number, toIndex: number) => void;
   onAddStep?: (position: number) => void;
   onRemoveStep?: (index: number) => void;
+  onExecuteStep?: (index: number) => void;
   addingStepAt?: number | null;
   stepSelectorRenderer?: (position: number) => ReactNode;
   readonly?: boolean;
@@ -47,6 +48,7 @@ interface SortableStepProps {
   selectedStepIndex: number;
   onStepSelect: (index: number) => void;
   onRemove?: () => void;
+  onExecute?: () => void;
   readonly: boolean;
   renderStats: (step: PipelineStepDto) => ReactElement;
   isDraggable: boolean;
@@ -58,6 +60,7 @@ const SortableStep = ({
   selectedStepIndex,
   onStepSelect,
   onRemove,
+  onExecute,
   readonly,
   renderStats,
   isDraggable,
@@ -66,6 +69,13 @@ const SortableStep = ({
     e.stopPropagation();
     if (onRemove && window.confirm('Are you sure you want to remove this step?')) {
       onRemove();
+    }
+  };
+
+  const handleExecute = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onExecute) {
+      onExecute();
     }
   };
   const {
@@ -118,6 +128,16 @@ const SortableStep = ({
         {status === 'warning' && (
           <div className={styles.warningIndicator}>⚠</div>
         )}
+        {!readonly && onExecute && step.id && (
+          <button
+            className={styles.executeButton}
+            onClick={handleExecute}
+            type="button"
+            title="Execute step"
+          >
+            ▶
+          </button>
+        )}
         {!readonly && onRemove && (
           <button
             className={styles.removeButton}
@@ -160,6 +180,7 @@ export const PipelineStepper = ({
   onReorder,
   onAddStep,
   onRemoveStep,
+  onExecuteStep,
   addingStepAt = null,
   stepSelectorRenderer,
   readonly = false
@@ -311,6 +332,7 @@ export const PipelineStepper = ({
                     selectedStepIndex={selectedStepIndex}
                     onStepSelect={onStepSelect}
                     onRemove={onRemoveStep ? () => onRemoveStep(index) : undefined}
+                    onExecute={onExecuteStep ? () => onExecuteStep(index) : undefined}
                     readonly={readonly}
                     renderStats={renderStats}
                     isDraggable={isDraggable}

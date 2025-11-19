@@ -57,13 +57,13 @@ export const StepStats = ({ step }: StepStatsProps) => {
               <tr>
                 <td>Tracks</td>
                 <td>{stats.inputRecords || 0}</td>
-                <td>{tracksDelta >= 0 ? '+' : ''}{tracksDelta}</td>
+                <td>{tracksDelta === 0 ? '0' : (tracksDelta > 0 ? `+${tracksDelta}` : tracksDelta)}</td>
                 <td>{stats.outputRecords || 0}</td>
               </tr>
               <tr>
                 <td>Artists</td>
                 <td>{stats.inputArtists || 0}</td>
-                <td>{artistsDelta >= 0 ? '+' : ''}{artistsDelta}</td>
+                <td>{artistsDelta === 0 ? '0' : (artistsDelta > 0 ? `+${artistsDelta}` : artistsDelta)}</td>
                 <td>{stats.outputArtists || 0}</td>
               </tr>
             </tbody>

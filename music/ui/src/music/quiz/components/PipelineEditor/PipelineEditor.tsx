@@ -215,6 +215,7 @@ export const PipelineEditor = ({ pipeline, onPipelineUpdate }: PipelineEditorPro
             onReorder={handleReorder}
             onAddStep={handleAddStepClick}
             onRemoveStep={(index) => handleStepRemove(sortedSteps[index])}
+            onExecuteStep={(index) => handleStepExecute(sortedSteps[index])}
             addingStepAt={addingStepAt}
             stepSelectorRenderer={(position) => (
               <StepTypeSelector

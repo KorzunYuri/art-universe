@@ -124,6 +124,15 @@ export const PipelineStepDetail = ({
             <div className={styles.configContent}>
               {renderStepConfiguration()}
             </div>
+            {!readonly && isDirty && (
+              <button
+                className={styles.saveButton}
+                onClick={onSave}
+                type="button"
+              >
+                Save
+              </button>
+            )}
           </div>
 
           {/* Statistics Section */}
@@ -144,16 +153,16 @@ export const PipelineStepDetail = ({
                     <tr>
                       <td>Artists</td>
                       <td>{stats.artists.input}</td>
-                      <td className={stats.artists.delta >= 0 ? styles.positive : styles.negative}>
-                        {stats.artists.delta >= 0 ? `+${stats.artists.delta}` : stats.artists.delta}
+                      <td className={stats.artists.delta === 0 ? styles.neutral : (stats.artists.delta > 0 ? styles.positive : styles.negative)}>
+                        {stats.artists.delta === 0 ? '0' : (stats.artists.delta > 0 ? `+${stats.artists.delta}` : stats.artists.delta)}
                       </td>
                       <td>{stats.artists.output}</td>
                     </tr>
                     <tr>
                       <td>Tracks</td>
                       <td>{stats.tracks.input}</td>
-                      <td className={stats.tracks.delta >= 0 ? styles.positive : styles.negative}>
-                        {stats.tracks.delta >= 0 ? `+${stats.tracks.delta}` : stats.tracks.delta}
+                      <td className={stats.tracks.delta === 0 ? styles.neutral : (stats.tracks.delta > 0 ? styles.positive : styles.negative)}>
+                        {stats.tracks.delta === 0 ? '0' : (stats.tracks.delta > 0 ? `+${stats.tracks.delta}` : stats.tracks.delta)}
                       </td>
                       <td>{stats.tracks.output}</td>
                     </tr>
