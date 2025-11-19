@@ -103,10 +103,12 @@ public class BlacklistFilterProcessor extends BasicStepProcessor {
         try {
             BlacklistFilterStepConfig config = parseConfig(stepRun.getStepCfgData());
             Map<Long, Long> filteredByCategory = new HashMap<>();
-            
-            if (config.categoryIds() != null && inputTableName != null && 
-                DatabaseUtils.tableExists(entityManager, inputTableName) && 
-                DatabaseUtils.tableExists(entityManager, outputTableName)) {
+
+            if (config.categoryIds() != null
+                && inputTableName != null
+                && DatabaseUtils.tableExists(entityManager, inputTableName)
+                && DatabaseUtils.tableExists(entityManager, outputTableName)
+            ) {
                 
                 for (Long categoryId : config.categoryIds()) {
                     @SuppressWarnings("unchecked")
