@@ -46,7 +46,7 @@
 
 .executeButton {
   padding: 10px 20px;
-  background: #22863a;
+  background: #0366d6;
   color: white;
   border: none;
   border-radius: 6px;
@@ -58,11 +58,11 @@
   flex-shrink: 0;
 
   &:hover {
-    background: #2ea043;
+    background: #0256c2;
   }
 
   &:active {
-    background: #1a7f37;
+    background: #024ea4;
   }
 }
 
@@ -161,6 +161,32 @@
 .negative {
   color: #d73a49;
   font-weight: 600;
+}
+
+.neutral {
+  color: #999;
+  font-weight: 400;
+}
+
+.saveButton {
+  margin-top: 12px;
+  padding: 8px 16px;
+  background: #0366d6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background: #0256c2;
+  }
+
+  &:active {
+    background: #024ea4;
+  }
 }
 
 .executionTime {

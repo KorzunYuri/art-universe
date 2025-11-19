@@ -18,6 +18,14 @@
   overflow: hidden;
   transition: all 0.2s ease;
 
+  &.generation {
+    background: #9ca3af;
+
+    &:not(.active):hover {
+      background: #8891a0;
+    }
+  }
+
   &.active {
     background: white;
     border: 1px solid #e1e4e8;
@@ -28,11 +36,6 @@
     .tabButton {
       font-weight: 600;
       color: #0366d6;
-    }
-
-    .tabBadge {
-      background: #0366d6;
-      color: white;
     }
   }
 
@@ -64,17 +67,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.tabBadge {
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  padding: 2px 6px;
-  background: #6a737d;
-  color: white;
-  border-radius: 10px;
-  letter-spacing: 0.5px;
 }
 
 .closeButton {
