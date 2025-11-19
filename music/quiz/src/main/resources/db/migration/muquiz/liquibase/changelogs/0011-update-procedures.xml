@@ -73,4 +73,10 @@
                  endDelimiter="$$"/>
     </changeSet>
 
+    <changeSet id="0011-0090-ensure-chance-column-v3" author="claude-code">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0011-update-procedures/0011-0090-p_ensure_chance_column_v3.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
 </databaseChangeLog>
