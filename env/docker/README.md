@@ -1,10 +1,29 @@
-# Docker Management Scripts
+# Docker Deployment and Environment Configuration
 
-This directory contains cross-platform scripts for managing Docker environments for the Art Universe project.
+This directory contains cross-platform scripts for Docker deployment AND the **central environment configuration** used by all deployment modes.
+
+> **Important**: Despite the "docker" name, the `env/docker/` directory is the **configuration hub for ALL environments** - including individual module development (non-Docker), Docker Compose local, and production deployments.
+
+## Quick Start
+
+```bash
+# Deploy full stack locally (Docker Compose)
+./gradlew build -x test
+./env/docker/deploy.sh local
+
+# Run individual service in dev mode (non-Docker)
+./scripts/run-module-dev.sh music:data:master
+```
 
 ## Scripts
 
-### deploy.sh / deploy.bat
+Features:
+
+- **Automatic OS Detection**: Scripts detect the operating system and use appropriate commands
+- **Gradle Wrapper Detection**: Automatically uses `gradlew` or `gradlew.bat` based on environment
+- **Path Resolution**: Handles different path formats across platforms
+
+### Deploy
 Deploys the specified environment (local or production) with optimized build strategies:
 
 - **Local environment**: Pre-builds the project with Gradle, then uses `Dockerfile.local` for fast container builds
@@ -14,82 +33,89 @@ Deploys the specified environment (local or production) with optimized build str
 **Usage:**
 ```bash
 # Unix/Linux/macOS/WSL/Git Bash
-./env/docker/deploy.sh local
-./env/docker/deploy.sh prod
+./env/docker/deploy.sh <local|prod>
 
 # Windows Command Prompt
-env\docker\deploy.bat local
-env\docker\deploy.bat prod
+env\docker\deploy.bat <local|prod>
 ```
 
-### stop.sh / stop.bat
+### Stop
 Stops containers for the specified environment without removing them.
 
 **Usage:**
 ```bash
 # Unix/Linux/macOS/WSL/Git Bash
-./env/docker/stop.sh local
-./env/docker/stop.sh prod
-./env/docker/stop.sh all
+./env/docker/stop.sh <local|prod>
 
 # Windows Command Prompt
-env\docker\stop.bat local
-env\docker\stop.bat prod
-env\docker\stop.bat all
+env\docker\stop.bat <local|prod>
 ```
 
-### cleanup.sh / cleanup.bat
+### Cleanup
 Stops and removes containers, images, and networks for the specified environment.
 
 **Usage:**
 ```bash
 # Unix/Linux/macOS/WSL/Git Bash
-./env/docker/cleanup.sh local
-./env/docker/cleanup.sh prod
-./env/docker/cleanup.sh all
+./env/docker/cleanup.sh <local|prod|all>
 
 # Windows Command Prompt
-env\docker\cleanup.bat local
-env\docker\cleanup.bat prod
-env\docker\cleanup.bat all
+env\docker\cleanup.bat <local|prod|all>
 ```
 
-## Cross-Platform Compatibility
 
-All scripts are designed to work across different environments:
+## Environment Configuration System
 
-- **Unix/Linux/macOS**: Use `.sh` scripts
-- **Windows WSL**: Use `.sh` scripts (automatically detects WSL)
-- **Windows Git Bash**: Use `.sh` scripts (automatically detects Windows)
-- **Windows Command Prompt**: Use `.bat` scripts
+The `env/docker/` directory is the **central configuration hub** for all deployment modes. This organizational structure ensures consistency across development, local testing, and production.
 
-### Features
+### Why "docker" for non-Docker configs?
 
-- **Automatic OS Detection**: Scripts detect the operating system and use appropriate commands
-- **Gradle Wrapper Detection**: Automatically uses `gradlew` or `gradlew.bat` based on environment
-- **Path Resolution**: Handles different path formats across platforms
-- **Error Handling**: Proper error checking and user feedback
-- **Colored Output**: Uses emojis and formatting for better user experience
+Historical/organizational reasons - the directory was initially for Docker Compose only, but evolved into the central config hub for all modes. The name stuck, but the purpose expanded.
 
-## Environment Configuration
+**Key principle**: Environment parity - same configs work across all modes (dev/local/prod).
 
-The environment files have been separated to ensure proper isolation between services:
+### File Purposes
 
-- `env/docker/local/music-data.env` - Configuration for music-data service in local environment
-- `env/docker/local/music-quiz.env` - Configuration for music-quiz service in local environment
-- `env/docker/prod/music-data.env` - Configuration for music-data service in production environment
-- `env/docker/prod/music-quiz.env` - Configuration for music-quiz service in production environment
+| Directory | Purpose | Used By | Example Variables |
+|-----------|---------|---------|-------------------|
+| **common/** | Domain/group-specific config shared across ALL modes | Dev, Local, Prod | `MURAW_LASTFM_DB_SCHEMA=mu_raw_lastfm` |
+| **local/** | Docker Compose local deployment settings | Local (Docker), Dev (as base) | `MU_DATA_APP_EXTERNAL_PORT=9082` |
+| **prod/** | Docker Compose production deployment settings | Prod (Docker) | `MU_DATA_APP_EXTERNAL_PORT=8082` |
+| **dev/** | Development monitoring settings | Dev (non-Docker) | `PROMETHEUS_PORT=7090` |
+| **Module dev.override.env** | Module-specific overrides for dev mode | Dev (non-Docker) | `MU_DATA_APP_EXTERNAL_PORT=7082` |
 
-This separation ensures that music-data and music-quiz services don't have knowledge of each other's configuration details.
+### How Each Mode Uses These Files
+
+**Dev Mode (Individual services via IDE or script):**
+- Loads: `common/*.env` → `local/*.env` → `local/*.secrets.env` → module `dev.override.env`
+- Services run on host (not containerized)
+- Uses ports 7xxx
+- See [DEVELOPMENT.md](../../docs/DEVELOPMENT.md) for details
+
+**Local Mode (Docker Compose):**
+- Loads: `common/*.env` → `local/*.env` → `local/*.secrets.env`
+- All services containerized
+- Uses ports 9xxx
+- Uses Docker Compose with `local/docker-compose.yml`
+
+**Production Mode (Docker Compose):**
+- Loads: `common/*.env` → `prod/*.env` → `prod/*.secrets.env`
+- All services containerized, external databases
+- Uses ports 8xxx
+- Uses Docker Compose with `prod/docker-compose.yml`
+
+### Configuration Principles
+
+1. **Separation of Concerns**: Services don't see each other's configs (separate .env files)
+2. **Environment Parity**: Same config structure across all modes
+3. **Layering**: Common → Environment-specific → Module-specific (later overrides earlier)
+4. **Security**: Secrets in `.secrets.env` files (git-ignored)
 
 ## Services and Ports
 
-After successful deployment, the following services will be available:
+After successful deployment, services will be available at configured ports.
 
-| Environment | LastFM Raw | Music Data | Music Quiz | UI | Adminer |
-|-------------|------------|------------|------------|----|---------| 
-| **Local**   | :9081      | :9082      | :9083      | :4000 | :9980 |
-| **Production** | :8081   | :8082      | :8083      | :3000 | :8880 |
+See **[SERVICES.md](../../docs/SERVICES.md)** for complete service listing with all ports (main and actuator).
 
 ## Troubleshooting
 
