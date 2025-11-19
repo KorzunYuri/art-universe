@@ -72,11 +72,12 @@ export const useGenerateTracks = () => {
       musicQuizApi.generateTracks(gameId, steps),
     onSuccess: (newGeneration, { gameId }) => {
       // Add the new generation to the generations list cache
+      // Prepend to maintain descending order by createdAt (backend sorts: OrderByCreatedAtDesc)
       queryClient.setQueryData(
         quizKeys.generations(gameId),
         (oldData: any[] | undefined) => {
           if (!oldData) return [newGeneration];
-          return [...oldData, newGeneration];
+          return [newGeneration, ...oldData];
         }
       );
 
