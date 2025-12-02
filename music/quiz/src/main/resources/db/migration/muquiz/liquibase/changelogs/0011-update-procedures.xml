@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
+
+    <changeSet id="0011-0005-parse-table-name-helper" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0011-update-procedures/0011-0005-p_parse_table_name.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
+    <changeSet id="0011-0006-ensure-chance-column-v2" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0011-update-procedures/0011-0006-p_ensure_chance_column_v2.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
+    <changeSet id="0011-0007-mu_v_track_category_view" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0011-update-procedures/0011-0007-mu_v_track_category_view.sql"/>
+    </changeSet>
+
+    <changeSet id="0011-0008-ds_mu_v_track" author="yurykorzun">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0011-update-procedures/0011-0008-ds_mu_v_track.sql"/>
+    </changeSet>
+
+    <changeSet id="0011-0010-approved-filter-v3" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0011-update-procedures/0011-0010-p_quiz_gen_tracks_step_approved_filter_v3.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
+    <changeSet id="0011-0020-blacklist-filter-v5" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0011-update-procedures/0011-0020-p_quiz_gen_tracks_step_categories_blacklist_filter_v5.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
+    <changeSet id="0011-0030-whitelist-filter-v8" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0011-update-procedures/0011-0030-p_quiz_gen_tracks_step_categories_whitelist_filter_v8.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
+    <changeSet id="0011-0040-track-recency-penalty-v4" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0011-update-procedures/0011-0040-p_quiz_gen_tracks_step_track_recency_penalty_v4.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
+    <changeSet id="0011-0050-artist-recency-penalty-v4" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0011-update-procedures/0011-0050-p_quiz_gen_tracks_step_artist_recency_penalty_v4.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
+    <changeSet id="0011-0060-artist-diversity-v4" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0011-update-procedures/0011-0060-p_quiz_gen_tracks_step_artist_diversity_v4.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
+    <changeSet id="0011-0070-final-selection-v4" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0011-update-procedures/0011-0070-p_quiz_gen_tracks_step_final_selection_v4.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
+    <changeSet id="0011-0080-final-categories-balancer-v4" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0011-update-procedures/0011-0080-p_quiz_gen_tracks_step_final_categories_balancer_v4.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
+    <changeSet id="0011-0090-ensure-chance-column-v3" author="claude-code">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0011-update-procedures/0011-0090-p_ensure_chance_column_v3.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
+</databaseChangeLog>
