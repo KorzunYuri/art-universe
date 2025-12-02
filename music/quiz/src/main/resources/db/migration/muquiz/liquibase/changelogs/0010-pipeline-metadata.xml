@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
+
+    <changeSet id="0010-0010-execution-status-dict" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0010-pipeline-metadata/0010-0010-execution_status$dict.sql"/>
+    </changeSet>
+
+    <changeSet id="0010-0020-pipeline-table" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0010-pipeline-metadata/0010-0020-pipeline$initial.sql"/>
+    </changeSet>
+
+    <changeSet id="0010-0030-step-table" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0010-pipeline-metadata/0010-0030-step$initial.sql"/>
+    </changeSet>
+
+    <changeSet id="0010-0040-pipeline-step-table" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0010-pipeline-metadata/0010-0040-pipeline_step$initial.sql"/>
+    </changeSet>
+
+    <changeSet id="0010-0050-pipeline-run-table" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0010-pipeline-metadata/0010-0050-pipeline_run$initial.sql"/>
+    </changeSet>
+
+    <changeSet id="0010-0060-step-run-table" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0010-pipeline-metadata/0010-0060-step_run$initial.sql"/>
+    </changeSet>
+
+    <changeSet id="0010-0070-update-game-table" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0010-pipeline-metadata/0010-0070-game$add_pipeline_id.sql"/>
+    </changeSet>
+
+    <changeSet id="0010-0080-update-generation-table" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0010-pipeline-metadata/0010-0080-generation$add_pipeline_run_id.sql"/>
+    </changeSet>
+
+    <changeSet id="0010-0090-generation_add_pipeline_id" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0010-pipeline-metadata/0010-0090-generation$add_pipeline_id.sql"/>
+    </changeSet>
+
+    <changeSet id="0010-0100-migrate-existing-data" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0010-pipeline-metadata/0010-0100-migrate_existing_data.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
+</databaseChangeLog>

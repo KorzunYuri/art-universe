@@ -5,16 +5,16 @@ import yurykorzun.art.universe.common.CodedRegistry;
 
 import java.util.Arrays;
 
-// TODO use ExecutionStatus instead
-public enum GenerationStatus implements Coded {
+public enum ExecutionStatus implements Coded {
 
     PENDING(1),
-    COMPLETED(2),
-    FAILED(3);
+    STARTED(2),
+    COMPLETED(3),
+    FAILED(4);
 
     private final int code;
 
-    GenerationStatus(int code) {
+    ExecutionStatus(int code) {
         this.code = code;
     }
 
@@ -29,6 +29,6 @@ public enum GenerationStatus implements Coded {
     }
 
     static {
-        CodedRegistry.register(Arrays.asList(values()), GenerationStatus.class);
+        CodedRegistry.register(Arrays.asList(values()), ExecutionStatus.class);
     }
 }
