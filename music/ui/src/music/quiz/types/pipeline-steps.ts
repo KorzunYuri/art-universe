@@ -110,6 +110,57 @@ export const STEP_LABELS: Record<PipelineStepType, string> = {
   'FINAL_CATEGORIES_BALANCER': 'Final Categories Balancer'
 };
 
+// Steps that don't require configuration
+export const CONFIG_FREE_STEPS: Set<PipelineStepType> = new Set([
+  'START_DATASOURCE',
+  'APPROVED_FILTER',
+  'TRACK_RECENCY_PENALTY',
+  'ARTIST_RECENCY_PENALTY',
+  'ARTIST_DIVERSITY'
+]);
+
+export function isConfigFreeStep(stepType: PipelineStepType): boolean {
+  return CONFIG_FREE_STEPS.has(stepType);
+}
+
+/**
+ * Returns the default configuration for a given step type.
+ * This ensures that default values are included in cfgData when steps are created.
+ */
+export function getDefaultStepConfig(stepType: PipelineStepType): StepConfig {
+  switch (stepType) {
+    case 'FINAL_LIMITER':
+      return { type: 'FINAL_LIMITER', targetCount: 10 };
+
+    case 'FINAL_CATEGORIES_BALANCER':
+      return {
+        type: 'FINAL_CATEGORIES_BALANCER',
+        targetCount: 10,
+        defaultQuota: 0.5,
+        categories: []
+      };
+
+    case 'BLACKLIST_FILTER':
+      return { type: 'BLACKLIST_FILTER', categoryIds: [] };
+
+    case 'WHITELIST_FILTER':
+      return { type: 'WHITELIST_FILTER', categories: [] };
+
+    case 'START_DATASOURCE':
+      return { type: 'START_DATASOURCE' };
+
+    // Config-free steps (no configuration needed)
+    case 'APPROVED_FILTER':
+    case 'TRACK_RECENCY_PENALTY':
+    case 'ARTIST_RECENCY_PENALTY':
+    case 'ARTIST_DIVERSITY':
+      return { type: stepType };
+
+    default:
+      return { type: stepType };
+  }
+}
+
 // Utility functions
 export function parseStepConfig(type: PipelineStepType, cfgData?: string): StepConfig {
   if (!cfgData) {

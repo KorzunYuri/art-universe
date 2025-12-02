@@ -6,6 +6,7 @@ interface GenerationsListProps {
   generations: GenerationDto[];
   selectedGeneration: GenerationDto | null;
   onGenerationSelect: (generation: GenerationDto) => void;
+  onGenerationClick?: (generation: GenerationDto) => void;
   onApprove: (generationId: number) => void;
   onDisapprove: (generationId: number) => void;
   isApprovePending: boolean;
@@ -16,6 +17,7 @@ export const GenerationsList = ({
   generations,
   selectedGeneration,
   onGenerationSelect,
+  onGenerationClick,
   onApprove,
   onDisapprove,
   isApprovePending,
@@ -38,13 +40,17 @@ export const GenerationsList = ({
         </thead>
         <tbody>
           {generations.map((generation) => (
-            <tr 
-              key={generation.id} 
-              onClick={() => onGenerationSelect(generation)}
+            <tr
+              key={generation.id}
+              onClick={() => {
+                onGenerationSelect(generation);
+                onGenerationClick?.(generation);
+              }}
               className={`
                 ${selectedGeneration?.id === generation.id ? commonStyles.selected : ''}
                 ${generation.approved ? commonStyles.approved : ''}
               `}
+              title="Click to view generation pipeline in new tab"
             >
               <td>{generation.id}</td>
               <td>{generation.status}</td>
@@ -52,7 +58,7 @@ export const GenerationsList = ({
               <td>{new Date(generation.createdAt).toLocaleString()}</td>
               <td onClick={(e) => e.stopPropagation()}>
                 {generation.approved ? (
-                  <button 
+                  <button
                     className={commonStyles.unapproveButton}
                     onClick={() => onDisapprove(generation.id)}
                     disabled={isDisapprovePending}
@@ -60,7 +66,7 @@ export const GenerationsList = ({
                     {isDisapprovePending ? 'Disapproving...' : 'Disapprove'}
                   </button>
                 ) : (
-                  <button 
+                  <button
                     className={commonStyles.approveButton}
                     onClick={() => onApprove(generation.id)}
                     disabled={isApprovePending}
