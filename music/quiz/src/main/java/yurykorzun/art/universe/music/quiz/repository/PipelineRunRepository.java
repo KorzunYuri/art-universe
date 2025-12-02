@@ -2,8 +2,8 @@ package yurykorzun.art.universe.music.quiz.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import yurykorzun.art.universe.music.quiz.entity.Pipeline;
+import yurykorzun.art.universe.music.quiz.entity.PipelineRun;
 
 @Repository
-public interface PipelineRepository extends JpaRepository<Pipeline, Long> {
+public interface PipelineRunRepository extends JpaRepository<PipelineRun, Long> {
 }
