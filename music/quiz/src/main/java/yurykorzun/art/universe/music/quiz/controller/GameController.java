@@ -6,7 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.music.quiz.dto.GameDto;
-import yurykorzun.art.universe.music.quiz.dto.GameWithGenerationsDto;
+import yurykorzun.art.universe.music.quiz.dto.GameWithPipelineDto;
 import yurykorzun.art.universe.music.quiz.service.GameService;
 
 @RestController
@@ -18,7 +18,7 @@ public class GameController {
     private final GameService gameService;
 
     @PostMapping
-    public GameDto createGame() {
+    public GameWithPipelineDto createGame() {
         log.info("Creating new game");
         return gameService.createGame();
     }
@@ -30,8 +30,8 @@ public class GameController {
     }
 
     @GetMapping("/{gameId}")
-    public GameWithGenerationsDto getGameWithGenerations(@PathVariable Long gameId) {
-        log.debug("Getting game {} with generations", gameId);
-        return gameService.getGameWithGenerations(gameId);
+    public GameWithPipelineDto getGame(@PathVariable Long gameId) {
+        log.debug("Getting game {}", gameId);
+        return gameService.getGame(gameId);
     }
 }
