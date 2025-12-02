@@ -1,9 +1,6 @@
-import { type PipelineStepDto, STEP_LABELS } from '@/music/quiz/types/pipeline-steps.ts';
-import { getStepDescription } from '@/music/quiz/utils/stepDescriptions.ts';
-import { FinalLimiterConfig } from '@/music/quiz/components/stepConfigs/FinalLimiterConfig.tsx';
-import { FinalCategoriesBalancerConfig } from '@/music/quiz/components/stepConfigs/FinalCategoriesBalancerConfig.tsx';
-import { WhitelistFilterConfig } from '@/music/quiz/components/stepConfigs/WhitelistFilterConfig.tsx';
-import { BlacklistFilterConfig } from '@/music/quiz/components/stepConfigs/BlacklistFilterConfig.tsx';
+import { type PipelineStepDto } from '@/music/quiz/types/pipeline-steps.ts';
+import { stepRegistry } from '@/music/quiz/steps';
+import { getStepConfigComponent } from '@/music/quiz/components/stepConfigs/stepComponentConfigRegistry.ts';
 import styles from './PipelineStepDetail.module.scss';
 
 interface PipelineStepDetailProps {
@@ -35,36 +32,20 @@ export const PipelineStepDetail = ({
   isDirty = false,
   isSaving = false
 }: PipelineStepDetailProps) => {
-  const stepLabel = STEP_LABELS[step.type] || step.type;
-  const stepLogic = getStepDescription(step.type);
+  const stepInstance = stepRegistry.get(step.type);
+  const stepLabel = stepInstance.getLabel();
+  const stepLogic = stepInstance.getDescription();
 
   // Render step configuration component (only the config UI, not the full step)
   const renderStepConfiguration = () => {
-    const configProps = {
-      step,
-      onUpdate,
-      readonly: readonly || isSaving
-    };
+    const ConfigComponent = getStepConfigComponent(step.type);
 
-    switch (step.type) {
-      case 'FINAL_LIMITER':
-        return <FinalLimiterConfig {...configProps} />;
-      case 'FINAL_CATEGORIES_BALANCER':
-        return <FinalCategoriesBalancerConfig {...configProps} />;
-      case 'WHITELIST_FILTER':
-        return <WhitelistFilterConfig {...configProps} />;
-      case 'BLACKLIST_FILTER':
-        return <BlacklistFilterConfig {...configProps} />;
-      // Steps without configuration
-      case 'START_DATASOURCE':
-      case 'APPROVED_FILTER':
-      case 'TRACK_RECENCY_PENALTY':
-      case 'ARTIST_RECENCY_PENALTY':
-      case 'ARTIST_DIVERSITY':
-        return <div className={styles.noConfig}>-</div>;
-      default:
-        return <div className={styles.noConfig}>-</div>;
+    if (!ConfigComponent) {
+      // Config-free steps
+      return <div className={styles.noConfig}>-</div>;
     }
+
+    return <ConfigComponent step={step} onUpdate={onUpdate} readonly={readonly || isSaving} />;
   };
 
   // Parse result stats for display

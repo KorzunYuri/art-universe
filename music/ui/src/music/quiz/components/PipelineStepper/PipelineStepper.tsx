@@ -15,8 +15,8 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { ReactElement, ReactNode } from 'react';
-import { type PipelineStepDto, STEP_LABELS, STEP_POSITIONS } from '@/music/quiz/types/pipeline-steps.ts';
-import { getStepConfigSummary } from '@/music/quiz/utils/stepConfigSummary.ts';
+import { type PipelineStepDto } from '@/music/quiz/types/pipeline-steps.ts';
+import { stepRegistry } from '@/music/quiz/steps';
 import styles from './PipelineStepper.module.scss';
 
 interface PipelineStepperProps {
@@ -99,7 +99,7 @@ const SortableStep = ({
   const getStepStatus = (): 'active' | 'completed' | 'pending' | 'warning' => {
     if (index === selectedStepIndex) return 'active';
 
-    const position = STEP_POSITIONS[step.type];
+    const position = stepRegistry.get(step.type).getPosition();
     if (position === 'INITIAL' && index !== 0) {
       return 'warning';
     }
@@ -113,8 +113,9 @@ const SortableStep = ({
 
   const status = getStepStatus();
   const isActive = index === selectedStepIndex;
-  const stepLabel = STEP_LABELS[step.type] || step.type;
-  const configSummary = getStepConfigSummary(step);
+  const stepInstance = stepRegistry.get(step.type);
+  const stepLabel = stepInstance.getLabel();
+  const configSummary = stepInstance.getConfigSummary(step);
 
   return (
     <div ref={setNodeRef} style={style} className={styles.stepContainer}>
@@ -270,7 +271,7 @@ export const PipelineStepper = ({
 
     // Prevent dragging INITIAL step away from position 0
     const draggedStep = sortedSteps[oldIndex];
-    const position = STEP_POSITIONS[draggedStep.type];
+    const position = stepRegistry.get(draggedStep.type).getPosition();
     if (position === 'INITIAL' && newIndex !== 0) {
       return; // Don't allow drag
     }
@@ -297,7 +298,7 @@ export const PipelineStepper = ({
         <SortableContext items={stepIds} strategy={verticalListSortingStrategy}>
           <div className={styles.stepsList}>
             {sortedSteps.map((step, index) => {
-              const position = STEP_POSITIONS[step.type];
+              const position = stepRegistry.get(step.type).getPosition();
               const isDraggable = !(position === 'INITIAL' && index === 0);
 
               return (

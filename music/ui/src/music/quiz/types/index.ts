@@ -3,12 +3,6 @@ export interface GameDto {
   createdAt: string;
 }
 
-export interface GameWithGenerationsDto {
-  id: number;
-  createdAt: string;
-  generations: GenerationDto[];
-}
-
 export interface GenerationDto {
   id: number;
   gameId: number;
@@ -25,10 +19,6 @@ export interface GenerationTrackDto {
   trackName: string;
   artistName: string;
   orderIndex: number;
-}
-
-export interface CreateGenerationRequest {
-  targetCount: number;
 }
 
 export interface Page<T> {

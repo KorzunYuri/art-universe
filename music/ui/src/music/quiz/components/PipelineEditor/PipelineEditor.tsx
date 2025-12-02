@@ -13,11 +13,9 @@ import {
   type PipelineStepType,
   type StepPosition,
   validatePipeline,
-  serializeStepConfig,
-  isConfigFreeStep,
-  STEP_LABELS,
-  getDefaultStepConfig
+  serializeStepConfig
 } from '@/music/quiz/types/pipeline-steps.ts';
+import { stepRegistry } from '@/music/quiz/steps';
 import { StepTypeSelector } from '../StepTypeSelector/StepTypeSelector.tsx';
 import { PipelineStepper } from '../PipelineStepper/PipelineStepper.tsx';
 import { PipelineStepDetail } from '../PipelineStepDetail/PipelineStepDetail.tsx';
@@ -65,14 +63,15 @@ export const PipelineEditor = ({ pipeline }: PipelineEditorProps) => {
   const handleStepTypeSelect = async (stepType: PipelineStepType) => {
     if (addingStepAt === null) return;
 
+    const stepInstance = stepRegistry.get(stepType);
     const newStep: PipelineStepDto = {
       type: stepType,
       ord: addingStepAt,
-      cfgData: serializeStepConfig(getDefaultStepConfig(stepType))
+      cfgData: serializeStepConfig(stepInstance.getDefaultConfig())
     };
 
     // Check if this is a config-free step
-    if (isConfigFreeStep(stepType)) {
+    if (!stepInstance.isConfigurable()) {
       // Auto-save config-free steps immediately
       try {
         setSavingStepId(-1);
@@ -83,7 +82,7 @@ export const PipelineEditor = ({ pipeline }: PipelineEditorProps) => {
         });
         setLocalSteps(updatedPipeline.steps);
         setAddingStepAt(null);
-        showNotification('success', `${STEP_LABELS[stepType]} added successfully`);
+        showNotification('success', `${stepInstance.getLabel()} added successfully`);
       } catch {
         showNotification('error', 'Failed to add step');
         setAddingStepAt(null);
@@ -100,7 +99,7 @@ export const PipelineEditor = ({ pipeline }: PipelineEditorProps) => {
       setLocalSteps([...updatedSteps, newStep]);
       setSelectedStepIndex(addingStepAt); // Auto-select the newly added step
       setAddingStepAt(null);
-      showNotification('info', `Configure ${STEP_LABELS[stepType]} and click Save`);
+      showNotification('success', `Configure ${stepInstance.getLabel()} and click Save`);
     }
   };
 

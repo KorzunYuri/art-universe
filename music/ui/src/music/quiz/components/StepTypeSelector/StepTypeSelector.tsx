@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { STEP_LABELS, STEP_POSITIONS, type PipelineStepType, type StepPosition } from '@/music/quiz/types/pipeline-steps.ts';
+import { type PipelineStepType, type StepPosition } from '@/music/quiz/types/pipeline-steps.ts';
+import { stepRegistry } from '@/music/quiz/steps';
 import styles from './StepTypeSelector.module.scss';
 
 interface StepTypeSelectorProps {
@@ -12,9 +13,9 @@ export const StepTypeSelector = ({ allowedPositions, onSelect, onCancel }: StepT
   const [selectedType, setSelectedType] = useState<PipelineStepType | ''>('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const availableSteps = Object.entries(STEP_POSITIONS)
-    .filter(([, position]) => allowedPositions.includes(position))
-    .map(([type]) => type as PipelineStepType);
+  const availableSteps = stepRegistry.getAll()
+    .filter(step => allowedPositions.includes(step.getPosition()))
+    .map(step => step.getType());
 
   const handleSelect = async () => {
     if (selectedType) {
@@ -48,11 +49,14 @@ export const StepTypeSelector = ({ allowedPositions, onSelect, onCancel }: StepT
           disabled={isLoading}
         >
           <option value="">Choose step type...</option>
-          {availableSteps.map(stepType => (
-            <option key={stepType} value={stepType}>
-              {STEP_LABELS[stepType]}
-            </option>
-          ))}
+          {availableSteps.map(stepType => {
+            const step = stepRegistry.get(stepType);
+            return (
+              <option key={stepType} value={stepType}>
+                {step.getLabel()}
+              </option>
+            );
+          })}
         </select>
 
         <div className={styles.actions}>
