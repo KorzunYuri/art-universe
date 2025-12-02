@@ -31,13 +31,15 @@ Data storage system for art-related information designed to create quizzes. Prim
 
 ## Module Dependencies
 
+> **Note**: See **[MODULES.md](MODULES.md)** for complete module listing, detailed dependencies, and build commands.
+
 ### Data Flow
 1. **Raw Data Modules** collect from external APIs (LastFM, MusicBrainz, etc.)
 2. **Music Data** manages approved/curated entities and bindings
 3. **Music Quiz** generates quizzes from approved data subset
 4. **UI** provides unified management interface for all three modules
 
-### Dependency Graph
+### High-Level Dependency Graph
 ```
 music-data-raw-* ──┐
                    ├──▶ music-data ──▶ music-quiz
@@ -135,6 +137,40 @@ External entities can be bound to internal approved entities:
 - API keys stored in `.secrets.env` files
 - Database credentials separated by environment
 
+## Monitoring and Observability
+
+### Current Implementation
+
+The system includes integrated monitoring using Prometheus and Grafana for metrics collection and visualization.
+
+#### Prometheus
+- **Purpose**: Metrics collection and time-series storage
+- **Scrape Interval**: 15 seconds
+- **Targets**: All Spring Boot services via actuator endpoints
+- **Metrics Collected**:
+  - JVM metrics (memory, threads, garbage collection)
+  - Spring Boot metrics (HTTP requests, response times)
+  - Database connection pool metrics
+  - Custom application metrics
+
+#### Grafana
+- **Purpose**: Metrics visualization and dashboards
+- **Data Source**: Prometheus
+- **Dashboards**: JVM metrics, Spring Boot metrics, custom application metrics
+
+#### Actuator Endpoints
+All Spring Boot services expose actuator endpoints for monitoring:
+- **Health**: `/actuator/health` - Service health status
+- **Metrics**: `/actuator/metrics` - Available metrics
+- **Prometheus**: `/actuator/prometheus` - Prometheus-formatted metrics
+
+See **[SERVICES.md](SERVICES.md)** for actuator port configurations.
+
+### Logging
+- **Format**: Structured logging with correlation IDs (planned)
+- **Output**: Console logs (captured by Docker)
+- **Future**: Centralized log aggregation (ELK stack or similar)
+
 ## Scalability Considerations
 
 ### Current Limitations
@@ -144,14 +180,7 @@ External entities can be bound to internal approved entities:
 
 ### Planned Improvements
 - **Kafka Integration**: Asynchronous message processing
-- **Kubernetes Deployment**: Container orchestration
-- **API Rate Limiting**: Per-key scaling for external APIs
-- **Caching Layer**: Redis for frequently accessed data
-
-## Monitoring and Observability
-
-### Planned Implementation
-- **Prometheus**: Metrics collection
-- **Grafana**: Visualization and alerting
 - **Structured Logging**: JSON logs with correlation IDs
-- **Health Checks**: Application and dependency monitoring
+- **Centralized Logging**: ELK stack or similar for log aggregation
+- **Kubernetes Deployment**: Container orchestration
+- **Caching Layer**: Redis for frequently accessed data

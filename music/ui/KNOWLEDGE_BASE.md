@@ -1,5 +1,7 @@
 # Music Universe UI
 
+> **For developers:** See [Claude Code Documentation](../../.claude/commands/mu-ui/OVERVIEW.md) for detailed technical reference
+>
 > **See also**: [Development Guide](../../DEVELOPMENT.md) | [Architecture Overview](../../ARCHITECTURE.md)
 
 ## Module Purpose
@@ -16,9 +18,13 @@ React application providing management interface for Art Universe music data. Al
 
 ### Core UI Components
 - `EntityTable` - Generic table for entity management with pagination/search
-- `ApprovalToggle` - Toggle approval status (PENDING/APPROVED/DECLINED)
 - `EntityBinding` - Bind raw entities to master entities
-- `PaginatedResource` - Custom hook for API data management
+- `EntityPicker` - Universal entity selection modal with autocomplete
+- `LookupRegistry` - Centralized entity search and autocomplete system
+- `ApprovalToggle` - Toggle approval status (PENDING/APPROVED/DECLINED) for raw entities
+- `CategoryDag` - Interactive graph visualization for category hierarchies
+- `QuizBinding` - Bind master entities to quiz module
+- `PipelineEditor` - Visual editor for quiz track generation pipelines
 
 ### Entity Architecture
 - **Raw Entities** - Entities from external sources (e.g., LastFM artists, tracks, tags)
@@ -35,11 +41,17 @@ React application providing management interface for Art Universe music data. Al
 
 #### Music Data (Master Entities)
 
-- `Categories` - Master categories for associating with artists, albums & tracks
-- `Dimensions` - Category dimensions. Any category belongs to one dimension only and inherits dimension from its parent.
+- `Categories` - Master categories with DAG visualization for hierarchy
 - `Artists` - Master artists (future development)
 - `Albums` - Master albums (future development)
 - `Tracks` - Master tracks (future development)
+
+#### Music Quiz
+
+- `Games` - Quiz game management
+- `PipelineEditor` - Configure multi-step track generation pipelines (filters, penalties, balancers)
+- `Generations` - View and manage quiz track generations
+- Various step types for flexible track curation
 
 ## Data Flow Patterns
 
@@ -87,8 +99,10 @@ React application providing management interface for Art Universe music data. Al
 - **SASS** - Advanced CSS features
 
 ### State Management
-- React built-in state (useState, useEffect)
-- Custom hooks for complex logic (`PaginatedResource`)
+- **React Query** (@tanstack/react-query) - Server state management with caching
+- React built-in state (useState, useEffect) - Local UI state
+- Custom hooks for complex logic (table management, entity lookups)
+- Context API for global state (notifications)
 - Props and callbacks for component communication
 
 ## Development
@@ -120,23 +134,31 @@ npm run dev
 ## Project Structure
 
 ```
-src/music-universe/
-├── shared/                  # Shared components and utilities
-│   ├── components/          # Reusable UI components
+src/music/
+├── main.tsx                 # Application entry point
+├── MusicUniverseApp.tsx     # Root router component
+├── shared/                  # Shared across all modules
+│   ├── components/          # Reusable UI components (EntityTable, EntityPicker)
 │   ├── hooks/               # Custom React hooks
-│   └── types/               # TypeScript type definitions
-├── sources/                 # Source-specific modules (raw entities)
-│   ├── lastfm/              # LastFM-specific components
-│   └── adapters/            # Adapters for raw entities
-├── music-data/              # Music Data integration (master entities)
-│   ├── api/                 # API clients for master entities
-│   ├── components/          # Components for master entities
-│   ├── types/               # Types for master entities
-│   └── adapters/            # Adapters for master entities
-├── music-quiz/              # Music Quiz integration
-│   ├── api/                 # API clients for quiz bindings
-│   └── components/          # Components for quiz bindings
-└── main.tsx                 # Application entry point
+│   ├── services/            # Core services (LookupRegistry)
+│   ├── types/               # Core type definitions
+│   └── utils/               # Utilities (query keys)
+├── data/                    # Data management layer
+│   ├── raw/lastfm/          # LastFM raw data integration
+│   │   ├── api/             # LastFM API clients
+│   │   ├── components/      # LastFM components (ApprovalToggle, EntityBinding)
+│   │   ├── pages/           # LastFM pages (Artists, Tracks, Tags)
+│   │   └── types/           # LastFM types
+│   └── master/              # Master data management
+│       ├── api/             # Master data API clients
+│       ├── components/      # Master components (CategoryDag)
+│       ├── pages/           # Master pages (Categories, Artists)
+│       └── types/           # Master entity types
+└── quiz/                    # Quiz game management
+    ├── api/                 # Quiz API client
+    ├── components/          # Quiz components (PipelineEditor, Games)
+    ├── types/               # Pipeline step types
+    └── utils/               # Quiz utilities
 ```
 
 ## Integration Points
