@@ -1,5 +1,6 @@
 import axios from 'axios';
-import type {GameDto, GenerationDto, GenerationTrackDto, Page, GameWithGenerationsDto} from '../types';
+import type {GameDto, GenerationDto, GenerationTrackDto, Page} from '../types';
+import type { PipelineDto, PipelineStepDto, GameWithPipelineDto } from '../types/pipeline-steps.ts';
 
 const API_BASE_URL = `http://${import.meta.env.VITE_MU_QUIZ_APP_HOST || 'localhost'}:${import.meta.env.VITE_MU_QUIZ_APP_EXTERNAL_PORT || '7083'}`;
 
@@ -16,7 +17,7 @@ export const musicQuizApi = {
     return response.data;
   },
 
-  getGameWithGenerations: async (gameId: number): Promise<GameWithGenerationsDto> => {
+  getGame: async (gameId: number): Promise<GameWithPipelineDto> => {
     const response = await api.get(`/games/${gameId}`);
     return response.data;
   },
@@ -55,5 +56,41 @@ export const musicQuizApi = {
 
   deleteGenerationTrack: async (generationId: number, trackId: number): Promise<void> => {
     await api.delete(`/generations/${generationId}/tracks/${trackId}`);
+  },
+
+  // Pipeline management
+  getPipeline: async (pipelineId: number): Promise<PipelineDto> => {
+    const response = await api.get(`/pipeline/${pipelineId}`);
+    return response.data;
+  },
+
+  addStep: async (pipelineId: number, stepDto: PipelineStepDto, position: number): Promise<PipelineDto> => {
+    const response = await api.post(`/pipeline/${pipelineId}/steps?position=${position}`, stepDto);
+    return response.data;
+  },
+
+  moveStep: async (pipelineId: number, stepId: number, newPosition: number): Promise<PipelineDto> => {
+    const response = await api.put(`/pipeline/${pipelineId}/steps/${stepId}/move?newPosition=${newPosition}`);
+    return response.data;
+  },
+
+  removeStep: async (pipelineId: number, stepId: number): Promise<PipelineDto> => {
+    const response = await api.delete(`/pipeline/${pipelineId}/steps/${stepId}`);
+    return response.data;
+  },
+
+  updateStepConfiguration: async (pipelineId: number, stepId: number, stepDto: PipelineStepDto): Promise<PipelineDto> => {
+    const response = await api.put(`/pipeline/${pipelineId}/steps/${stepId}`, stepDto);
+    return response.data;
+  },
+
+  getStepPreview: async (stepId: number): Promise<string> => {
+    const response = await api.get(`/steps/${stepId}/preview`);
+    return response.data;
+  },
+
+  executeStep: async (pipelineId: number, stepId: number): Promise<PipelineDto> => {
+    const response = await api.post(`/pipeline/${pipelineId}/steps/${stepId}/execute`);
+    return response.data;
   },
 };
