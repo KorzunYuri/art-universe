@@ -5,21 +5,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.music.quiz.dto.GenerationDto;
-import yurykorzun.art.universe.music.quiz.dto.GenerationStepDto;
 import yurykorzun.art.universe.music.quiz.dto.GenerationTrackDto;
 import yurykorzun.art.universe.music.quiz.entity.*;
-import yurykorzun.art.universe.music.quiz.entity.step.*;
-import yurykorzun.art.universe.music.quiz.repository.GenerationRepository;
-import yurykorzun.art.universe.music.quiz.repository.GenerationTrackRepository;
+import yurykorzun.art.universe.music.quiz.repository.*;
 import yurykorzun.art.universe.music.quiz.service.GenerationService;
-import yurykorzun.art.universe.music.quiz.service.step.GenerationStepProcessor;
-import yurykorzun.art.universe.music.quiz.service.step.GenerationStepProcessorRegistry;
+import yurykorzun.art.universe.music.quiz.service.PipelineService;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -30,41 +24,46 @@ public class GenerationServiceImpl implements GenerationService {
 
     private final GenerationRepository generationRepository;
     private final GenerationTrackRepository generationTrackRepository;
+    private final GameRepository gameRepository;
+    private final PipelineRepository pipelineRepository;
+    private final PipelineStepRepository pipelineStepRepository;
+    private final StepRepository stepRepository;
+    private final PipelineRunRepository pipelineRunRepository;
+    private final PipelineService pipelineService;
     
     @PersistenceContext
     private EntityManager entityManager;
 
     @Override
     @Transactional
-    public GenerationDto generateTracks(Long gameId, List<GenerationStepDto> configuredSteps) {
-        log.info("Generating tracks for game {} with {} configured steps", gameId, configuredSteps != null ? configuredSteps.size() : 0);
+    public GenerationDto generateTracks(Long gameId) {
+        log.info("Generating tracks for game {}", gameId);
         
-        // Convert DTOs to typed steps
-        List<GenerationStep> typedSteps = configuredSteps != null ?
-            configuredSteps.stream().map(GenerationStep::fromDto).toList() :
-            List.of();
+        // Get game and its pipeline
+        Game game = gameRepository.findById(gameId)
+            .orElseThrow(() -> new IllegalArgumentException("Game not found: " + gameId));
         
-        // Validate step configuration
-        validateStepConfiguration(typedSteps);
+        // Validate pipeline for generation
+        pipelineService.validatePipelineForGeneration(game.getPipelineId());
         
-        // Extract target count from final step
-        Integer actualTargetCount = extractTargetCountFromFinalStep(typedSteps);
+        // Create immutable copy of pipeline
+        Pipeline immutablePipeline = pipelineService.createImmutableCopy(game.getPipelineId());
         
-        // Create generation record
+        // Create generation with immutable pipeline
         Generation generation = Generation.builder()
             .gameId(gameId)
-            .targetCount(actualTargetCount)
+            .pipelineId(immutablePipeline.getId())
             .status(GenerationStatus.PENDING)
             .build();
-        
         Generation savedGeneration = generationRepository.save(generation);
         
         try {
-            // Build complete step chain
-            List<GenerationStep> allSteps = buildStepChain(typedSteps);
+            // Execute pipeline
+            PipelineRun completedPipelineRun = pipelineService.executePipeline(immutablePipeline.getId());
             
-            // Execute step chain
-            String resultTableName = executeStepChain(allSteps, gameId, savedGeneration.getId());
+            // Update generation with pipeline run id
+            savedGeneration.setPipelineRunId(completedPipelineRun.getId());
+            savedGeneration = generationRepository.save(savedGeneration);
             
             // Read results and save to GenerationTrack
             @SuppressWarnings("unchecked")
@@ -80,7 +79,7 @@ public class GenerationServiceImpl implements GenerationService {
                     JOIN mu_view.v_artist va
                         ON rt.primary_artist_id = va.id
                     ORDER BY RANDOM()
-                """.formatted(resultTableName))
+                """.formatted(completedPipelineRun.getResultTableName()))
                 .getResultList();
             
             AtomicInteger orderIndex = new AtomicInteger(1);
@@ -100,7 +99,7 @@ public class GenerationServiceImpl implements GenerationService {
             
             // Update generation status
             savedGeneration.setStatus(GenerationStatus.COMPLETED);
-            savedGeneration.setResultTableName(resultTableName);
+            savedGeneration.setResultTableName(completedPipelineRun.getResultTableName());
             savedGeneration = generationRepository.save(savedGeneration);
             
             log.info("Generated {} tracks for game {}", tracks.size(), gameId);
@@ -113,74 +112,6 @@ public class GenerationServiceImpl implements GenerationService {
         }
         
         return mapToDto(savedGeneration);
-    }
-
-    private void validateStepConfiguration(List<GenerationStep> steps) {
-        if (steps == null || steps.isEmpty()) {
-            throw new IllegalArgumentException("At least one final step is required");
-        }
-        
-        List<GenerationStep> finalSteps = steps.stream()
-            .filter(GenerationStep::isFinal)
-            .toList();
-        
-        if (finalSteps.isEmpty()) {
-            throw new IllegalArgumentException("No final step found. One of FINAL_SELECTION or FINAL_CATEGORIES_BALANCER is required");
-        }
-        
-        if (finalSteps.size() > 1) {
-            throw new IllegalArgumentException("Multiple final steps found. Only one final step is allowed");
-        }
-        
-        // Check that final step is the last step
-        GenerationStep lastStep = steps.getLast();
-        if (!lastStep.isFinal()) {
-            throw new IllegalArgumentException("Final step must be the last step in the configuration");
-        }
-    }
-    
-    private Integer extractTargetCountFromFinalStep(List<GenerationStep> steps) {
-        GenerationStep finalStep = steps.stream()
-            .filter(GenerationStep::isFinal)
-            .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("No final step found"));
-        
-        if (finalStep instanceof FinalGenerationStep finalGenerationStep) {
-            return finalGenerationStep.getTargetCount();
-        }
-        
-        throw new IllegalArgumentException("Final step must extend FinalGenerationStep");
-    }
-
-    private List<GenerationStep> buildStepChain(List<GenerationStep> uiSteps) {
-        List<GenerationStep> allSteps = new ArrayList<>();
-        
-        // Fixed steps at the beginning
-        allSteps.add(new ApprovedFilterStep());
-        allSteps.add(new TrackRecencyPenaltyStep());
-        
-        // UI steps (including final step)
-        if (uiSteps != null) {
-            allSteps.addAll(uiSteps);
-        }
-        
-        return allSteps;
-    }
-    
-    private String executeStepChain(List<GenerationStep> steps, Long gameId, Long generationId) {
-        String currentTable = "mu_view.v_track";
-        
-        for (int i = 0; i < steps.size(); i++) {
-            GenerationStep step = steps.get(i);
-            currentTable = processTypedStep(step, currentTable, gameId, generationId, i + 1);
-        }
-        
-        return currentTable;
-    }
-    
-    private <T extends GenerationStep> String processTypedStep(T step, String currentTable, Long gameId, Long generationId, Integer stepOrder) {
-        GenerationStepProcessor<T> processor = GenerationStepProcessorRegistry.get(step.getType());
-        return processor.process(currentTable, gameId, generationId, stepOrder, step);
     }
 
     @Override
@@ -210,18 +141,6 @@ public class GenerationServiceImpl implements GenerationService {
             .toList();
     }
     
-    private GenerationDto mapToDto(Generation generation) {
-        return GenerationDto.builder()
-            .id(generation.getId())
-            .gameId(generation.getGameId())
-            .targetCount(generation.getTargetCount())
-            .status(generation.getStatus())
-            .approved(generation.getApproved())
-            .resultTableName(generation.getResultTableName())
-            .createdAt(generation.getCreatedAt())
-            .build();
-    }
-
     @Override
     @Transactional
     public GenerationDto approveGeneration(Long generationId) {
@@ -266,5 +185,17 @@ public class GenerationServiceImpl implements GenerationService {
         generationTrackRepository.deleteByGenerationIdAndTrackId(generationId, trackId);
         
         log.debug("Removed track {} from generation {}", trackId, generationId);
+    }
+    
+    private GenerationDto mapToDto(Generation generation) {
+        return GenerationDto.builder()
+            .id(generation.getId())
+            .gameId(generation.getGameId())
+            .pipelineId(generation.getPipelineId())
+            .pipelineRunId(generation.getPipelineRunId())
+            .status(generation.getStatus())
+            .approved(generation.getApproved())
+            .createdAt(generation.getCreatedAt())
+            .build();
     }
 }
