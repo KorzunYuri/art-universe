@@ -71,7 +71,38 @@ if "%ENVIRONMENT%"=="local" (
 REM Start with rebuilding images
 echo.
 echo Step 3: Starting %ENVIRONMENT% environment...
-docker compose -f "%COMPOSE_FILE%" up -d --build --force-recreate
+echo Building services in batches to manage memory...
+echo.
+echo Batch 1: Core data services...
+docker compose -f "%COMPOSE_FILE%" build music-data lastfm-liquibase-service
+if !errorlevel! neq 0 (
+    echo [ERROR] Batch 1 build failed!
+    exit /b !errorlevel!
+)
+echo.
+echo Batch 2: ETL parser services...
+docker compose -f "%COMPOSE_FILE%" build lastfm-response-parser lastfm-calls-performer
+if !errorlevel! neq 0 (
+    echo [ERROR] Batch 2 build failed!
+    exit /b !errorlevel!
+)
+echo.
+echo Batch 3: ETL generator and API services...
+docker compose -f "%COMPOSE_FILE%" build lastfm-calls-generator lastfm-etl-rest-api
+if !errorlevel! neq 0 (
+    echo [ERROR] Batch 3 build failed!
+    exit /b !errorlevel!
+)
+echo.
+echo Batch 4: Application services...
+docker compose -f "%COMPOSE_FILE%" build lastfm-rest-api music-quiz music-universe-ui
+if !errorlevel! neq 0 (
+    echo [ERROR] Batch 4 build failed!
+    exit /b !errorlevel!
+)
+echo.
+echo Starting all services...
+docker compose -f "%COMPOSE_FILE%" up -d --force-recreate
 set "DEPLOY_ERROR=%ERRORLEVEL%"
 
 if "%DEPLOY_ERROR%"=="0" (

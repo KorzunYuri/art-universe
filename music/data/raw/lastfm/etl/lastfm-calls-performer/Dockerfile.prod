@@ -5,6 +5,9 @@ WORKDIR /app
 # Copy build files
 COPY build.gradle settings.gradle ./
 
+# Copy gradle.properties for build cache and JVM settings
+COPY gradle.properties ./
+
 # Copy buildSrc for custom plugins
 COPY buildSrc/ buildSrc/
 
@@ -27,8 +30,11 @@ COPY music/data/raw/lastfm/etl/lastfm-tasks-coordinator/src/ music/data/raw/last
 COPY music/data/raw/lastfm/etl/lastfm-calls-performer/build.gradle music/data/raw/lastfm/etl/lastfm-calls-performer/
 COPY music/data/raw/lastfm/etl/lastfm-calls-performer/src/ music/data/raw/lastfm/etl/lastfm-calls-performer/src/
 
+# Set Gradle JVM options for 4GB WSL2 environment (1.5GB heap + 384MB metaspace = ~1.9GB total)
+ENV GRADLE_OPTS="-Xmx1536m -XX:MaxMetaspaceSize=384m -XX:+HeapDumpOnOutOfMemoryError"
+
 # Build the application and extract layers
-RUN gradle :music:data:raw:lastfm:etl:lastfm-calls-performer:bootJar :music:data:raw:lastfm:etl:lastfm-calls-performer:extractLayers --no-daemon
+RUN gradle :music:data:raw:lastfm:etl:lastfm-calls-performer:bootJar :music:data:raw:lastfm:etl:lastfm-calls-performer:extractLayers --no-daemon --info
 
 # Runtime stage
 FROM eclipse-temurin:21-jre

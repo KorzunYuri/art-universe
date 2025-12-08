@@ -5,6 +5,9 @@ WORKDIR /app
 # Copy build files
 COPY build.gradle settings.gradle ./
 
+# Copy gradle.properties for build cache and JVM settings
+COPY gradle.properties ./
+
 # Copy buildSrc for custom plugins
 COPY buildSrc/ buildSrc/
 
@@ -26,6 +29,9 @@ COPY music/data/raw/lastfm/etl/lastfm-tasks-coordinator/src/ music/data/raw/last
 # Copy current module
 COPY music/data/raw/lastfm/etl/lastfm-etl-rest-api/build.gradle music/data/raw/lastfm/etl/lastfm-etl-rest-api/
 COPY music/data/raw/lastfm/etl/lastfm-etl-rest-api/src/ music/data/raw/lastfm/etl/lastfm-etl-rest-api/src/
+
+# Set Gradle JVM options for 4GB WSL2 environment (1.5GB heap + 384MB metaspace = ~1.9GB total)
+ENV GRADLE_OPTS="-Xmx1536m -XX:MaxMetaspaceSize=384m -XX:+HeapDumpOnOutOfMemoryError"
 
 # Build the application and extract layers
 RUN gradle :music:data:raw:lastfm:etl:lastfm-etl-rest-api:bootJar :music:data:raw:lastfm:etl:lastfm-etl-rest-api:extractLayers --no-daemon
