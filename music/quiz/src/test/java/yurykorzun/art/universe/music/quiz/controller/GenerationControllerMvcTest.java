@@ -13,6 +13,7 @@ import yurykorzun.art.universe.music.quiz.dto.GenerationDto;
 import yurykorzun.art.universe.music.quiz.dto.GenerationTrackDto;
 import yurykorzun.art.universe.music.quiz.entity.GenerationStatus;
 import yurykorzun.art.universe.music.quiz.service.GenerationService;
+import yurykorzun.art.universe.music.quiz.service.PipelineService;
 
 import java.time.Instant;
 import java.util.List;
@@ -33,33 +34,32 @@ class GenerationControllerMvcTest extends BaseMvcTest {
     @MockitoBean
     private GenerationService generationService;
 
+    @MockitoBean
+    private PipelineService pipelineService;
+
     @Test
     void POST_gameGenerations_shouldReturnGenerationDto_whenSuccessful() throws Exception {
         // given
         Long gameId = 1L;
-        CreateGenerationRequest request = new CreateGenerationRequest();
-        request.setSteps(List.of()); // Will be validated by service
         
         GenerationDto expectedDto = GenerationDto.builder()
             .id(1L)
             .gameId(gameId)
-            .targetCount(20)
             .status(GenerationStatus.COMPLETED)
             .createdAt(Instant.now())
             .build();
 
-        when(generationService.generateTracks(gameId, List.of())).thenReturn(expectedDto);
+        when(generationService.generateTracks(gameId)).thenReturn(expectedDto);
 
         String expectedJson = objectMapper.writeValueAsString(expectedDto);
 
         // when & then
         mockMvc.perform(post("/api/v1/games/{gameId}/generations", gameId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(content().json(expectedJson));
 
-        verify(generationService).generateTracks(gameId, List.of());
+        verify(generationService).generateTracks(gameId);
     }
 
     @Test
@@ -70,7 +70,6 @@ class GenerationControllerMvcTest extends BaseMvcTest {
             GenerationDto.builder()
                 .id(1L)
                 .gameId(gameId)
-                .targetCount(20)
                 .status(GenerationStatus.COMPLETED)
                 .createdAt(Instant.now())
                 .build()

@@ -41,6 +41,7 @@ bin/
 
 ### AI ###
 .amazonq
+.claude
 /knowledge
 
 ### project
@@ -48,6 +49,7 @@ bin/
 **/docker/compose/**/.env
 **/logs/
 **/*.env
+!dev.override.env
 !env/docker/local/*.env
 !env/docker/prod/*.env
 **/*.secrets.env

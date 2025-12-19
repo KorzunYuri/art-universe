@@ -1,21 +1,20 @@
 package yurykorzun.art.universe.music.quiz.service;
 
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import yurykorzun.art.universe.music.quiz.dto.GenerationDto;
-import yurykorzun.art.universe.music.quiz.dto.GenerationStepDto;
+import yurykorzun.art.universe.music.quiz.dto.GenerationTrackDto;
 import yurykorzun.art.universe.music.quiz.entity.Generation;
 import yurykorzun.art.universe.music.quiz.entity.GenerationStatus;
-import yurykorzun.art.universe.music.quiz.entity.GenerationStepType;
-import yurykorzun.art.universe.music.quiz.repository.GenerationRepository;
-import yurykorzun.art.universe.music.quiz.repository.GenerationTrackRepository;
+import yurykorzun.art.universe.music.quiz.entity.GenerationTrack;
+import yurykorzun.art.universe.music.quiz.repository.*;
 import yurykorzun.art.universe.music.quiz.service.impl.GenerationServiceImpl;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -31,88 +30,29 @@ class GenerationServiceTest {
     @Mock
     private GenerationTrackRepository generationTrackRepository;
 
+    @Mock
+    private GameRepository gameRepository;
+
+    @Mock
+    private PipelineRepository pipelineRepository;
+
+    @Mock
+    private PipelineStepRepository pipelineStepRepository;
+
+    @Mock
+    private StepRepository stepRepository;
+
+    @Mock
+    private PipelineRunRepository pipelineRunRepository;
+
+    @Mock
+    private PipelineService pipelineService;
+
+    @Mock
+    private EntityManager entityManager;
+
     @InjectMocks
     private GenerationServiceImpl generationService;
-
-    @Test
-    void generateTracks_shouldThrowException_whenNoFinalStep() {
-        // given
-        Long gameId = 1L;
-        List<GenerationStepDto> steps = List.of(); // No final step
-
-        // when & then
-        IllegalArgumentException exception = assertThrows(
-            IllegalArgumentException.class,
-            () -> generationService.generateTracks(gameId, steps)
-        );
-        
-        assertEquals("At least one final step is required", exception.getMessage());
-    }
-
-    @Test
-    void generateTracks_shouldThrowException_whenMultipleFinalSteps() {
-        // given
-        Long gameId = 1L;
-        GenerationStepDto finalStep1 = new GenerationStepDto();
-        finalStep1.setType(GenerationStepType.FINAL_SELECTION);
-        finalStep1.setParams(Map.of("targetCount", 20));
-        
-        GenerationStepDto finalStep2 = new GenerationStepDto();
-        finalStep2.setType(GenerationStepType.FINAL_CATEGORIES_BALANCER);
-        finalStep2.setParams(Map.of("targetCount", 20,  "defaultQuota", 0.0, "categories", List.of()));
-        
-        List<GenerationStepDto> steps = List.of(finalStep1, finalStep2);
-
-        // when & then
-        IllegalArgumentException exception = assertThrows(
-            IllegalArgumentException.class,
-            () -> generationService.generateTracks(gameId, steps)
-        );
-        
-        assertEquals("Multiple final steps found. Only one final step is allowed", exception.getMessage());
-    }
-
-    @Test
-    void generateTracks_shouldThrowException_whenFinalStepMissingTargetCount() {
-        // given
-        Long gameId = 1L;
-        GenerationStepDto finalStep = new GenerationStepDto();
-        finalStep.setType(GenerationStepType.FINAL_SELECTION);
-        finalStep.setParams(Map.of()); // Missing targetCount
-        
-        List<GenerationStepDto> steps = List.of(finalStep);
-
-        // when & then
-        IllegalArgumentException exception = assertThrows(
-            IllegalArgumentException.class,
-            () -> generationService.generateTracks(gameId, steps)
-        );
-        
-        assertEquals("Final step must contain 'targetCount' parameter", exception.getMessage());
-    }
-
-    @Test
-    void generateTracks_shouldThrowException_whenFinalStepNotLast() {
-        // given
-        Long gameId = 1L;
-        GenerationStepDto finalStep = new GenerationStepDto();
-        finalStep.setType(GenerationStepType.FINAL_SELECTION);
-        finalStep.setParams(Map.of("targetCount", 20));
-        
-        GenerationStepDto whitelistStep = new GenerationStepDto();
-        whitelistStep.setType(GenerationStepType.WHITELIST_FILTER);
-        whitelistStep.setParams(Map.of("categories", List.of()));
-        
-        List<GenerationStepDto> steps = List.of(finalStep, whitelistStep); // Final step not last
-
-        // when & then
-        IllegalArgumentException exception = assertThrows(
-            IllegalArgumentException.class,
-            () -> generationService.generateTracks(gameId, steps)
-        );
-        
-        assertEquals("Final step must be the last step in the configuration", exception.getMessage());
-    }
 
     @Test
     void approveGeneration_shouldReturnApprovedGeneration_whenGenerationExists() {
@@ -120,6 +60,8 @@ class GenerationServiceTest {
         Long generationId = 1L;
         Generation generation = Generation.builder()
             .gameId(1L)
+            .pipelineId(1L)
+            .pipelineRunId(1L)
             .targetCount(20)
             .status(GenerationStatus.COMPLETED)
             .approved(false)
@@ -127,6 +69,8 @@ class GenerationServiceTest {
         
         Generation approvedGeneration = Generation.builder()
             .gameId(1L)
+            .pipelineId(1L)
+            .pipelineRunId(1L)
             .targetCount(20)
             .status(GenerationStatus.COMPLETED)
             .approved(true)
@@ -151,6 +95,8 @@ class GenerationServiceTest {
         Long generationId = 1L;
         Generation generation = Generation.builder()
             .gameId(1L)
+            .pipelineId(1L)
+            .pipelineRunId(1L)
             .targetCount(20)
             .status(GenerationStatus.COMPLETED)
             .approved(true)
@@ -158,6 +104,8 @@ class GenerationServiceTest {
         
         Generation disapprovedGeneration = Generation.builder()
             .gameId(1L)
+            .pipelineId(1L)
+            .pipelineRunId(1L)
             .targetCount(20)
             .status(GenerationStatus.COMPLETED)
             .approved(false)
@@ -226,5 +174,71 @@ class GenerationServiceTest {
         assertEquals("Generation not found: 999", exception.getMessage());
         verify(generationRepository).existsById(generationId);
         verify(generationTrackRepository, never()).deleteByGenerationIdAndTrackId(any(), any());
+    }
+
+    @Test
+    void getGenerations_shouldReturnGenerationList_whenGenerationsExist() {
+        // given
+        Long gameId = 1L;
+        List<Generation> generations = List.of(
+            Generation.builder()
+                .gameId(gameId)
+                .pipelineId(1L)
+                .pipelineRunId(1L)
+                .targetCount(20)
+                .status(GenerationStatus.COMPLETED)
+                .approved(true)
+                .build(),
+            Generation.builder()
+                .gameId(gameId)
+                .pipelineId(2L)
+                .pipelineRunId(2L)
+                .targetCount(15)
+                .status(GenerationStatus.PENDING)
+                .approved(false)
+                .build()
+        );
+
+        when(generationRepository.findByGameIdOrderByCreatedAtDesc(gameId)).thenReturn(generations);
+
+        // when
+        List<GenerationDto> result = generationService.getGenerations(gameId);
+
+        // then
+        assertEquals(2, result.size());
+        verify(generationRepository).findByGameIdOrderByCreatedAtDesc(gameId);
+    }
+
+    @Test
+    void getGenerationTracks_shouldReturnTrackList_whenTracksExist() {
+        // given
+        Long generationId = 1L;
+        List<GenerationTrack> tracks = List.of(
+            GenerationTrack.builder()
+                .generationId(generationId)
+                .trackId(100L)
+                .trackName("Track 1")
+                .artistName("Artist 1")
+                .orderIndex(1)
+                .build(),
+            GenerationTrack.builder()
+                .generationId(generationId)
+                .trackId(200L)
+                .trackName("Track 2")
+                .artistName("Artist 2")
+                .orderIndex(2)
+                .build()
+        );
+
+        when(generationTrackRepository.findByGenerationIdOrderByOrderIndex(generationId)).thenReturn(tracks);
+
+        // when
+        List<GenerationTrackDto> result = generationService.getGenerationTracks(generationId);
+
+        // then
+        assertEquals(2, result.size());
+        assertEquals("Track 1", result.get(0).getTrackName());
+        assertEquals("Track 2", result.get(1).getTrackName());
+        verify(generationTrackRepository).findByGenerationIdOrderByOrderIndex(generationId);
     }
 }

@@ -12,4 +12,10 @@ export const quizKeys = {
     [...quizKeys.all, 'generation', generationId] as const,
   generationTracks: (generationId: number) => 
     [...quizKeys.generation(generationId), 'tracks'] as const,
+  pipeline: (pipelineId: number) =>
+    [...quizKeys.all, 'pipeline', pipelineId] as const,
+  generations: (gameId: number) =>
+    [...quizKeys.all, 'generations', gameId] as const,
+  stepPreview: (stepId: number) =>
+    [...quizKeys.all, 'step', stepId, 'preview'] as const,
 };

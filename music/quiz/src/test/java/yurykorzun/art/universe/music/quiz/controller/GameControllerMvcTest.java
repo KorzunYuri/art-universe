@@ -12,16 +12,18 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.BaseMvcTest;
 import yurykorzun.art.universe.music.quiz.dto.GameDto;
-import yurykorzun.art.universe.music.quiz.dto.GameWithGenerationsDto;
-import yurykorzun.art.universe.music.quiz.dto.GenerationDto;
+import yurykorzun.art.universe.music.quiz.dto.GameWithPipelineDto;
+import yurykorzun.art.universe.music.quiz.dto.PipelineDto;
 import yurykorzun.art.universe.music.quiz.service.GameService;
 
 import java.time.Instant;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(GameController.class)
 class GameControllerMvcTest extends BaseMvcTest {
@@ -36,11 +38,18 @@ class GameControllerMvcTest extends BaseMvcTest {
     private GameService gameService;
 
     @Test
-    void POST_games_shouldReturnGameDto_whenSuccessful() throws Exception {
+    void POST_games_shouldReturnGameWithPipelineDto_whenSuccessful() throws Exception {
         // given
-        GameDto expectedDto = GameDto.builder()
+        PipelineDto pipelineDto = PipelineDto.builder()
+            .id(1L)
+            .immutable(false)
+            .steps(List.of())
+            .build();
+            
+        GameWithPipelineDto expectedDto = GameWithPipelineDto.builder()
             .id(1L)
             .createdAt(Instant.now())
+            .pipeline(pipelineDto)
             .build();
 
         when(gameService.createGame()).thenReturn(expectedDto);
@@ -79,18 +88,16 @@ class GameControllerMvcTest extends BaseMvcTest {
     }
 
     @Test
-    void GET_gameWithGenerations_shouldReturnGameWithGenerationsDto_whenSuccessful() throws Exception {
+    void GET_game_shouldReturnGameWithPipelineDto_whenSuccessful() throws Exception {
         // given
         Long gameId = 1L;
-        GameWithGenerationsDto expectedDto = GameWithGenerationsDto.builder()
+        GameWithPipelineDto expectedDto = GameWithPipelineDto.builder()
             .id(gameId)
             .createdAt(Instant.now())
-            .generations(List.of(
-                GenerationDto.builder().id(1L).gameId(gameId).targetCount(20).build()
-            ))
+            .pipeline(PipelineDto.builder().id(1L).immutable(false).steps(List.of()).build())
             .build();
 
-        when(gameService.getGameWithGenerations(gameId)).thenReturn(expectedDto);
+        when(gameService.getGame(gameId)).thenReturn(expectedDto);
 
         String expectedJson = objectMapper.writeValueAsString(expectedDto);
 
@@ -100,6 +107,6 @@ class GameControllerMvcTest extends BaseMvcTest {
             .andExpect(status().isOk())
             .andExpect(content().json(expectedJson));
 
-        verify(gameService).getGameWithGenerations(gameId);
+        verify(gameService).getGame(gameId);
     }
 }

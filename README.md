@@ -10,25 +10,15 @@ Data storage system for art-related information designed to create quizzes. Prim
 ./env/docker/deploy.sh local
 ```
 
-**Services:** LastFM APIs (:9084/:9085) • Music Data (:9082) • Quiz (:9083) • UI (:4000) • [Full port reference →](DEVELOPMENT.md#service-ports)
-
-## Development
-
-- **[Environment Setup →](DEVELOPMENT.md#environment-configuration)** - Local development and Docker deployment
-- **[Module Development →](DEVELOPMENT.md#individual-module-development)** - Running specific modules
-- **[Build & Test →](DEVELOPMENT.md#build-and-testing)** - Gradle commands and testing
-- **[IDE Setup →](DEVELOPMENT.md#ide-setup)** - IntelliJ IDEA and VS Code configuration
-
 ## Architecture
 
-### Module Structure
-- **Common** - Shared utilities, JPA, web components
-- **LastFM Collection** - API data collection with read/write separation and ETL pipeline
-- **Master Data** - Curated data management and binding
-- **Quiz** - Quiz generation from approved data
-- **UI** - React management interface
+### Services 
 
-**[Detailed module descriptions →](DEVELOPMENT.md#module-structure)**
+**[All services & ports →](docs/SERVICES.md)**
+
+### Module Structure
+
+**[Complete module reference →](docs/MODULES.md)**
 
 ### Technology Stack
 - **Backend**: Spring Boot 3.4.3, PostgreSQL, Liquibase
@@ -38,12 +28,16 @@ Data storage system for art-related information designed to create quizzes. Prim
 
 ## Documentation
 
-- **[Development Guide](DEVELOPMENT.md)** - Complete development workflow
-- **[Architecture Overview](ARCHITECTURE.md)** - System design and relationships
-- **[Docker Scripts](env/docker/README.md)** - Deployment management
+- **[Services Reference](docs/SERVICES.md)** - All services, ports, and deployment configurations
+- **[Modules Reference](docs/MODULES.md)** - Complete module listing and build commands
+- **[Development Guide](docs/DEVELOPMENT.md)** - Complete development workflow
+- **[Docker Scripts](env/docker/README.md)** - Deployment guide
+- **[Architecture Overview](docs/ARCHITECTURE.md)** - System design and relationships
 - **[Development Scripts](scripts/README.md)** - Individual module tools
 
----
+## Development
 
-> **Note**: This is a Gradle multi-project build. All commands must be executed from the project root directory.
-
+- **[Environment Setup →](docs/DEVELOPMENT.md#environment-configuration)** - Local development and Docker deployment
+- **[Module Development →](docs/DEVELOPMENT.md#individual-module-development)** - Running specific modules
+- **[Build & Test →](docs/DEVELOPMENT.md#build-and-testing)** - Gradle commands and testing
+- **[IDE Setup →](docs/DEVELOPMENT.md#ide-setup)** - IntelliJ IDEA and VS Code configuration

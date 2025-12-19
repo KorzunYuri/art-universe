@@ -110,7 +110,53 @@
 
 .actions {
   display: flex;
-  justify-content: flex-end;
+  gap: 4px;
+  align-items: center;
+}
+
+.moveButton,
+.saveButton,
+.executeButton {
+  background: none;
+  color: #6c757d;
+  cursor: pointer;
+  font-size: 0.8rem;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 2px;
+  
+  &:hover:not(:disabled) {
+    background-color: #6c757d;
+    color: white;
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.saveButton {
+  border-color: #28a745;
+  color: #28a745;
+  
+  &:hover:not(:disabled) {
+    background-color: #28a745;
+  }
+}
+
+.executeButton {
+  border-color: #17a2b8;
+  color: #17a2b8;
+  
+  &:hover:not(:disabled) {
+    background-color: #17a2b8;
+  }
+}
+
+.dirty {
+  border-color: #ffc107;
+  background-color: #fff8dc;
 }
 
 .createButton {
@@ -129,5 +175,16 @@
   &:disabled {
     background-color: #6c757d;
     cursor: not-allowed;
+  }
+}
+
+.previewButton {
+  color: #17a2b8;
+  font-size: 0.8rem;
+  padding: 4px 8px;
+  
+  &:hover:not(:disabled) {
+    background-color: #17a2b8;
+    color: white;
   }
 }

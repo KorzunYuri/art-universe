@@ -11,9 +11,9 @@ import java.time.Instant;
 public class GenerationDto {
     private Long id;
     private Long gameId;
-    private Integer targetCount;
+    private Long pipelineId;
+    private Long pipelineRunId;
     private GenerationStatus status;
     private Boolean approved;
-    private String resultTableName;
     private Instant createdAt;
 }

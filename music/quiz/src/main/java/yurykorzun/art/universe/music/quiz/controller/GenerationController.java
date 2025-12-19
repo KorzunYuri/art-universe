@@ -3,10 +3,11 @@ package yurykorzun.art.universe.music.quiz.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import yurykorzun.art.universe.music.quiz.dto.CreateGenerationRequest;
 import yurykorzun.art.universe.music.quiz.dto.GenerationDto;
 import yurykorzun.art.universe.music.quiz.dto.GenerationTrackDto;
+import yurykorzun.art.universe.music.quiz.dto.PipelineDto;
 import yurykorzun.art.universe.music.quiz.service.GenerationService;
+import yurykorzun.art.universe.music.quiz.service.PipelineService;
 
 import java.util.List;
 
@@ -17,11 +18,12 @@ import java.util.List;
 public class GenerationController {
 
     private final GenerationService generationService;
+    private final PipelineService pipelineService;
 
     @PostMapping("/games/{gameId}/generations")
-    public GenerationDto generateTracks(@PathVariable Long gameId, @RequestBody CreateGenerationRequest request) {
-        log.info("Generating tracks for game {} with {} steps", gameId, request.getSteps() != null ? request.getSteps().size() : 0);
-        return generationService.generateTracks(gameId, request.getSteps());
+    public GenerationDto generateTracks(@PathVariable Long gameId) {
+        log.info("Generating tracks for game {}", gameId);
+        return generationService.generateTracks(gameId);
     }
 
     @GetMapping("/games/{gameId}/generations")
@@ -52,5 +54,20 @@ public class GenerationController {
     public void removeTrackFromGeneration(@PathVariable Long generationId, @PathVariable Long trackId) {
         log.info("Removing track {} from generation {}", trackId, generationId);
         generationService.removeTrackFromGeneration(generationId, trackId);
+    }
+
+    @GetMapping("/generations/{generationId}/pipeline")
+    public PipelineDto getGenerationPipeline(@PathVariable Long generationId) {
+        log.debug("Getting pipeline for generation {}", generationId);
+        GenerationDto generation = generationService.getGenerations(null).stream()
+            .filter(g -> g.getId().equals(generationId))
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("Generation not found: " + generationId));
+        
+        if (generation.getPipelineId() == null) {
+            throw new IllegalArgumentException("Generation has no associated pipeline");
+        }
+        
+        return pipelineService.getPipeline(generation.getPipelineId());
     }
 }

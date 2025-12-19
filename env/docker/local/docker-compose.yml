@@ -16,7 +16,7 @@ services:
       - ./music-data-raw-lastfm.secrets.env
     volumes:
       - local__lastfm__db-postgres-data:/var/lib/postgresql/data
-      - ../../../music/data/raw/lastfm-monolith/src/main/resources/docker/compose/common/initdb/templates:/docker-entrypoint-initdb.d
+      - ../../../music/data/raw/lastfm/env/docker/compose/dev__music-data-raw-lastfm/initdb/templates:/docker-entrypoint-initdb.d
     command: bash -c "envsubst < /docker-entrypoint-initdb.d/init.sql.template > /docker-entrypoint-initdb.d/init.sql && exec docker-entrypoint.sh postgres"
     ports:
       - "${MURAW_LASTFM_DB_PORT}:5432"
