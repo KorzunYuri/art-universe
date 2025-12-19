@@ -26,6 +26,18 @@ All service ports are documented in **[SERVICES.md](SERVICES.md)** - the single 
 
 Run individual services in dev mode (non-Docker) for fast iteration and debugging.
 
+### Running via IDE
+
+Configure your IDE run configuration to load the environment files:
+
+1. `.project-root.env` See [PROJECT_ROOT_SETUP](../scripts/PROJECT_ROOT_SETUP.md) for details
+2. `env/docker/common/*.env` (depends on the module)
+3. `env/docker/local/{module-name}.env`
+4. `env/docker/local/{module-name}.secrets.env`
+5. `{module-path}/dev.override.env`
+
+> **See**: [Environment Configuration](../env/docker/README.md) for complete details on environment file loading and structure.
+
 ### Running via Script
 
 ```bash
@@ -39,19 +51,7 @@ Run individual services in dev mode (non-Docker) for fast iteration and debuggin
 
 **Prerequisites:**
 - `.project-root.env` must exist (create with `./scripts/set-project-root.sh` or `scripts\set-project-root.bat`)
-- See **[MODULES.md](MODULES.md)** for complete list of module paths
-
-### Running via IDE
-
-Configure your IDE run configuration to load the environment files:
-
-1. `.project-root.env` See [PROJECT_ROOT_SETUP](../scripts/PROJECT_ROOT_SETUP.md) for details
-2. `env/docker/common/*.env` (depends on the module)
-3. `env/docker/local/{module-name}.env`
-4. `env/docker/local/{module-name}.secrets.env`
-5. `{module-path}/dev.override.env`
-
-> **See**: [Environment Configuration](../env/docker/README.md) for complete details on environment file loading and structure.
+- See **[MODULES.md](kb/guides/gradle-commands)** for complete list of module paths
 
 ## Docker Deployment (Local & Production Modes)
 
@@ -78,45 +78,20 @@ Configure your IDE run configuration to load the environment files:
 ./gradlew :<module-path>:build
 ```
 
-See **[MODULES.md](MODULES.md)** for module-specific build commands and complete module listing.
+See **[MODULES.md](kb/guides/gradle-commands)** for module-specific build commands and complete module listing.
 
 ## Module Structure
 
-See **[MODULES.md](MODULES.md)** for complete module reference, dependency graph, and build commands.
+See **[MODULES.md](kb/guides/gradle-commands)** for complete module reference, dependency graph, and build commands.
 
 ## Development Patterns
 
-### Entity Architecture
-- All entities extend `BaseEntity` with audit timestamps
-- Enums implement `Coded` interface for database storage
-- Entity relationships managed through JPA annotations
-- Liquibase migrations written in SQL
-
-### Testing Conventions
-- **Method Naming**:
-  - normal tests: `method_shouldBehavior_whenCondition()`, camel case
-  - MVC tests: `HTTPMETHOD_path_shouldBehaviour_whenCondition()`, camel case
-- **JpaOnlyTest** - test archetype for persistence layer testing with TestContainers
-- **EntityCreationHelper** - creates (without persistence) entities with all required fields
-- **DbConsistencyHelper** - creates and persists entities in test database
-- **@MockitoBean** is used instead of @MockBean for Spring Boot tests
-- **Unit Tests** - Use `@ExtendWith(MockitoExtension.class)` with `@Mock` and `@InjectMocks`
-- **MVC Tests** - Use `@WebMvcTest` with `@MockitoBean` for service dependencies
-- **JSON Assertions**: Build `expectedJson` with `ObjectMapper` instead of `jsonPath()` assertions
-- **Response Validation**: Assert `ResponseWrapper` structure in unit tests
-- Integration tests tagged with "integration"
-- Test report is placed in {module_root}/build/reports/tests/test/index.html
-- Reports for each test class are placed in {module_root}/build/reports/tests/test/classes
-
-### API Standards
-- REST endpoints follow `/api/v1/{entity}` pattern
-- Consistent `ApiResponse<T>` wrapper for all responses
-- CORS configured for development origins
+For complete development patterns, see **[patterns reference](kb/patterns/README.md)**.
 
 ## Database Configuration
 
 ### PostgreSQL Setup
-- **Local Dev**: Containers via Docker Compose
+- **Dev & Local(test)**: Containers via Docker Compose
 - **Production**: External host databases
 - **Schemas**: `mu_raw_lastfm`, `mu`, `mu_quiz`
 - **Migration**: Liquibase with XML changelogs

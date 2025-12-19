@@ -1,59 +1,18 @@
 # Art Universe - Architecture Overview
 
-## System Purpose
-
-Data storage system for art-related information designed to create quizzes. Primary focus: "Guess the Track" game where participants listen to tracks and guess artist/title.
-
-## High-Level Architecture
-
-```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   External      │    │   Raw Data       │    │   Curated       │
-│   APIs          │───▶│   Collection     │───▶│   Data          │
-│                 │    │                  │    │   Management    │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-                                │                  │        │
-                                │                  ▼        │
-                                │       ┌─────────────────┐ │
-                                │       │   Quiz          │ │
-                                │       │   Generation    │ │
-                                │       └─────────────────┘ │
-                                │               │           │
-                                ▼               ▼           ▼
-                       ┌─────────────────────────────────────┐
-                       │          UI Management              │
-                       │   ┌─────────┬─────────┬─────────┐   │
-                       │   │Raw Data │ Curated │  Quiz   │   │
-                       │   │ Admin   │  Data   │ Config  │   │
-                       │   └─────────┴─────────┴─────────┘   │
-                       └─────────────────────────────────────┘
-```
-
 ## Module Dependencies
 
-> **Note**: See **[MODULES.md](MODULES.md)** for complete module listing, detailed dependencies, and build commands.
+> **Note**: See **[MODULES.md](MODULES.md)** for complete module listing.
 
 ### Data Flow
-1. **Raw Data Modules** collect from external APIs (LastFM, MusicBrainz, etc.)
-2. **Music Data** manages approved/curated entities and bindings
-3. **Music Quiz** generates quizzes from approved data subset
+1. **Raw Data Modules** collect 'raw' data (artists, albums, tracks etc. and their attributes) from external APIs:
+   1. implemented: LastFM
+   2. planned: Spotify, MusicBrainz, etc.
+2. **Music Data Master** manages 'master' entities and bindings of 'raw' data from external APIs to them
+3. **Music Quiz** generates quizzes from master entities
+   1. implemented: single subset of master entities approved by admin as the only datasource
+   2. planned: subsets of master entities defined by different users
 4. **UI** provides unified management interface for all three modules
-
-### High-Level Dependency Graph
-```
-music-data-raw-* ──┐
-                   ├──▶ music-data ──▶ music-quiz
-art-universe-commons ──┘        │           │
-                                │           │
-                                ▼           ▼
-                       ┌─────────────────────────┐
-                       │        music-ui         │
-                       │  ┌─────┬─────┬─────┐    │
-                       │  │Raw  │Data │Quiz │    │
-                       │  │Admin│Mgmt │Cfg  │    │
-                       │  └─────┴─────┴─────┘    │
-                       └─────────────────────────┘
-```
 
 ### UI Module Responsibilities
 - **Raw Data Administration**: Approve/decline entities, manage API collection settings
@@ -64,73 +23,28 @@ art-universe-commons ──┘        │           │
 
 ### Entity Hierarchy
 - **Raw Entities**: Direct API mappings with full attribute history
-- **Approved Entities**: Curated subset with manual approval workflow  
-- **Quiz Entities**: Approved subset specifically marked for quiz use
+- **Master Entities**: Curated 'single source of truth'-entities with manual approval workflow  
+- **Quiz Entities**: Approved subset specifically marked for quiz use, user-defined subsets in the future
 
-### Binding System
-External entities can be bound to internal approved entities:
-- **ArtistBinding**: Links external artists to approved artists
-- **AlbumBinding**: Links external albums to approved albums
-- **TrackBinding**: Links external tracks to approved tracks
-
-### Approval Workflow
-1. **PENDING** (1): Default state from external APIs
-2. **APPROVED** (2): Manually approved for use
-3. **DECLINED** (3): Manually rejected
-4. **AUTOAPPROVED** (4): Automatically approved (temporary)
+### Entity Relationships
+- External entities can be bound to master entities (name unification & correction): for example, artist "Lyapis Trubetskoy" from Spotify should be bound to master artist "Ляпис Трубецкой")
+- Master entities can be bound to other master entities (artist A is a featuring artist on track T, track X is a remix of track Y etc.)
 
 ## Database Schema Design
-
-### Schema Separation
-- `mu_raw_lastfm`: LastFM raw data with full API responses
-- `mu`: Approved/curated music data with bindings
+Data are persisted in a single Postgres instance with the following databases:
+- `mu`: Master data with bindings
 - `mu_quiz`: Quiz-specific data and configurations
+- `mu_raw_lastfm`: LastFM raw data with full API responses
 
-### Common Patterns
-- All entities extend BaseEntity (id, created_at, updated_at)
-- Coded enums stored in dictionary tables
-- Attribute history using SCD2 (Slowly Changing Dimension)
-- Foreign key constraints ensure referential integrity
+## Common Patterns
 
-## API Design Patterns
-
-### REST Conventions
-- **GET** `/api/v1/{entities}/search` - List with pagination/filtering
-- **GET** `/api/v1/{entities}/{id}` - Single entity retrieval
-- **POST** `/api/v1/{entities}` - Create new entity
-- **PATCH** `/api/v1/{entities}/{id}` - Partial update
-- **DELETE** `/api/v1/{entities}/{id}` - Remove entity
-
-### Response Format
-```json
-{
-  "success": boolean,
-  "message": "string",
-  "data": T | null
-}
-```
-
-### Pagination
-```json
-{
-  "content": T,
-  "totalElements": number,
-  "totalPages": number,
-  "size": number,
-  "number": number
-}
-```
+For common patterns used in the project, see **[Patterns Reference](kb/patterns/README.md)**.
 
 ## Security Architecture
 
-### Authentication
-- Currently: No authentication (local development)
-- Planned: JWT-based authentication with role-based access
-
-### Authorization
-- Module-level access control
-- Data source specific permissions
-- Approval workflow permissions
+### Authentication & Authorization
+- Currently: No authentication
+- Planned: role-based access, API GW with JWT-based authentication / OAuth 2.0
 
 ### Data Protection
 - Secrets management via environment files
@@ -151,7 +65,7 @@ The system includes integrated monitoring using Prometheus and Grafana for metri
   - JVM metrics (memory, threads, garbage collection)
   - Spring Boot metrics (HTTP requests, response times)
   - Database connection pool metrics
-  - Custom application metrics
+  - Custom application metrics (number of created entities and others)
 
 #### Grafana
 - **Purpose**: Metrics visualization and dashboards

@@ -1,120 +1,77 @@
 # Music Universe - Master Data Management Service
 
-## Module Purpose
+This module is a Spring Boot web application serving as data management service for music master data.
 
-Central data management service for music master data. Manages master entities from external sources and provides binding APIs to link external entities with internal master entities.
 
-> **See also**: [Entity Relations Docs](ENTITY_RELATIONS.md)
+## Entities
 
-> **See also**: [Development Guide](../../../DEVELOPMENT.md) | [Architecture Overview](../../../ARCHITECTURE.md)
+- **Core Master Entities**: Artist, Album, Track, Category - the authoritative master data
+- **Binding Entities**: External entities (from LastFM, Spotify, etc.) bound to master entities
+- **Relation Entities**: Relationships between master entities (ArtistCategory, ArtistTrack, CategoryCategory)
+- **Relation Binding Entities**: External entities relations bound to master entities relations
 
-## Key Components
+For a detailed entity relations explanation see [Entity Relations Reference](docs/entity-relations.md)
 
-### Entity Management
-- `Artist`, `Album`, `Track` - Core master entities
-- `Category`, `Dimension` - Classification entities
-- `ArtistBinding`, `AlbumBinding`, `TrackBinding`, `CategoryBinding` - External entity bindings
-- `DataSource` enum - External data source definitions (LASTFM, SPOTIFY, MUSICBRAINZ)
+TODO: move external entity binding entities to `entity/binding` package
+TODO: move category DAG DTOs and entities to `.../categorydag`
 
-### Relation Management
-- `ArtistCategory`, `ArtistTrack` - Internal relations between master entities
-- `ArtistCategoryBinding`, `ArtistTrackBinding` - External relation bindings
-- `RelationEntity`, `RelationBindingEntity` - Interfaces for relation entities
 
-### Service Layer
-- `{Entity}Service` - Entity management and binding operations
-- `RelationService` - Entity relation management operations
+## Endpoints
 
-### Repository Layer
-- Custom `@Query` methods for bulk binding lookups
-- Projection interfaces for optimized queries
-- Search functionality with pagination and sorting
+The module provides the following groups of endpoints:
+- endpoints for master entities management
+- endpoints to manage relationships between master entities
+- endpoints for binding entities and their relations from external sources (LastFM, Spotify, etc.) to master entities and their relations
+- endpoints with read access to master entities:
+  - paginated search
+  - lookup for dropdowns
 
-## API Conventions
+For the full list of endpoints see [API Reference](docs/api.md)
 
-### Search vs Lookup Endpoints
-- **`GET /{entities}/search`** - Full-featured search with pagination, sorting, and detailed results
-  - Returns `Page<DetailedDTO>` with hierarchy information
-  - Supports complex filtering and sorting
-  - Used for management interfaces
-  
-- **`GET /{entities}/lookup`** - Lightweight search for dropdown lists and autocomplete
-  - Returns `List<LookupResultDTO>` with only id and name
-  - Default limit of 20 results, configurable via `limit` parameter
-  - Used for form dropdowns and quick selection
 
-### Entity Binding
-- **`POST /{entities}/bind/existing/{dataSource}/{externalId}`** - Bind external entity to existing master entity
-- **`POST /{entities}/bind/new/{dataSource}/{externalId}`** - Create new master entity from an external entity and bind them
-- **`DELETE /{entities}/unbind/{dataSource}/{externalId}`** - Unbind
-- **`GET /{entities}/bound/{dataSource}?externalIds=1,2,3`** - Get bound master entities for the external entities from a specific data source.
+## Special Features
 
-### Relation Management
-- **`POST /relations/bind/{dataSource}/{sourceEntityType}/{sourceExternalEntityId}/{targetEntityType}/{targetExternalEntityId}`** - Bind external relation to internal relation
-- **`DELETE /relations/unbind/{dataSource}/{sourceEntityType}/{sourceExternalEntityId}/{targetEntityType}/{targetExternalEntityId}`** - Unbind external relation
-- **`GET /relations/bound/{dataSource}/{sourceEntityType}/{sourceExternalEntityId}/{targetEntityType}?ids=[targetExternalEntityIds]`** - Get bound relations
-- **`GET /relations/{sourceEntityType}/{sourceEntityId}/{targetEntityType}`** - Get related entities
-- **`POST /relations/internal/{sourceEntityType}/{sourceEntityId}/{targetEntityType}/{targetEntityId}`** - Create internal relation
-- **`DELETE /relations/internal/{sourceEntityType}/{sourceEntityId}/{targetEntityType}/{targetEntityId}`** - Delete internal relation by entity types and IDs
-- **`DELETE /relations/internal/{relationId}`** - Delete internal relation by relation ID
+- [Relations Handling Using Reflection](docs/features/relations-handling-with-reflection.md) - See how reflection allows unified handling of entity relations
+- [Lookup Implementation](docs/features/lookup) - See how lookup (used by UI for dropdowns) is implemented
+- [Category DAG](docs/features/category-dag.md) - See how categories hierarchy is designed
 
-## Business Rules
+## Patterns Used
 
-### Track Binding
-1. Artist must be bound before binding tracks
-2. Track binding creates internal master track if it doesn't exist
-3. Track lookup by name and primary artist combination
+This module follows these project-wide patterns:
 
-### Artist Binding
-1. Artist binding creates internal master artist if it doesn't exist
-2. Artist lookup by name only
-3. Binding updates allowed (rebinding to different master entity)
+| Pattern                                                                                 | Usage in Module |
+|-----------------------------------------------------------------------------------------|-----------------|
+| [REST API Conventions](../../../docs/kb/patterns/backend/api/conventions.md)            | Standard HTTP methods, response codes, pagination for all endpoints |
+| [Search vs Lookup](../../../docs/kb/patterns/backend/api/search-and-lookup.md)          | Two retrieval patterns: full search (paginated) and minimal lookup (dropdowns) |
+| [Coded Enums](../../../docs/kb/patterns/backend/entities/coded-enums.md)                | ApprovalStatus, DataSource, EntityType with JPA converters |
+| [Testing With Persistence Layer](../../../docs/kb/patterns/backend/testing/testing)     | TestContainers PostgreSQL for integration tests |
+| [Controllers Testing](../../../docs/kb/patterns/backend/testing/testing-controllers.md) | MockMvc for controller tests |
 
-### Category Binding
-1. Categories can be organized in hierarchies with parent-child relationships
-2. Categories belong to dimensions (e.g., genre, mood, era)
-3. Category lookup supports hierarchical display
 
-### Relation Binding
-1. Both entities must be bound before binding their relation
-2. External relation binding requires or creates an internal relation
-3. Unbinding an external relation doesn't delete the internal relation
 
-### Search Rules
-1. Case insensitive partial matching (LIKE %term%)
-2. Default limit of 20 results, configurable
-3. Alphabetical sorting by name
+## Build & Deployment
 
-## Development
+**See**: [Gradle Commands Guide](../../../docs/kb/guides/gradle-commands.md) for standard build/test commands
 
-**Local Development:**
-```bash
-# Run from project root directory
-./scripts/run-module-dev.sh music-universe:music-data
-# Runs on port 7082 with dev profile
-```
+**See**: [Docker Deployment Guide](../../../env/docker/README.md) for deployment procedures
 
-**Docker Deployment:**
-```bash
-# Run from project root directory
-./env/docker/deploy.sh local   # Port 9082
-./env/docker/deploy.sh prod    # Port 8082
-```
 
-## Configuration
+## Related Documentation
 
-### Environment Variables
-- `MU_DATA_DB_*` - Database connection parameters
-- `MU_DATA_APP_*` - Application server configuration
+### Patterns This Module Uses
+- [Backend Patterns](../../../docs/kb/patterns/backend/README.md) - TBD
 
-### Database
-- **Schema**: `mu` in PostgreSQL
-- **Connection Pool**: HikariCP
-- **Migrations**: Liquibase XML changelogs
+### Other Modules
+- **[LastFM REST API](../../../docs/kb/modules/lastfm-rest-api/README.md)**: Provides external entity data for binding
+- **[LastFM ETL Pipeline](../../../docs/MODULES.md)**: Provides external relation data
+- **[Music Quiz](../../../docs/MODULES.md)**: Consumes master data and relations for quiz generation
+- **[Music UI](../../../docs/MODULES.md)**: Management interface for binding operations
+- **[Commons Web](../../../common/commons-web/README.md)**: REST API utilities (dependency)
+- **[Commons Test](../../../common/test/commons-test-db/README.md)**: Database test utilities (test dependency)
 
-## Integration Points
-
-- **Music Data Raw Modules** - Provides external entity data for binding
-- **Music Quiz Service** - Consumes master data for quiz generation
-- **Music Universe UI** - Management interface for binding operations
-- **PostgreSQL** - Shared database with `mu` schema
+### Other Docs
+- [Architecture Overview](../../../docs/kb/guides/README.md) - System architecture and design
+- [Project Modules Index](../../../docs/MODULES.md) - Complete modules index
+- [Development Workflow](../../../docs/kb/guides/development-workflow.md) - Git workflow, code review, testing
+- [Gradle Commands](../../../docs/kb/guides/gradle-commands.md) - Build and test commands
+- [Deployment Guide](../../../docs/kb/guides/deployment.md) - Environment setup and deployment

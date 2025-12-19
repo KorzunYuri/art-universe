@@ -1,4 +1,4 @@
-export * from './UniversalEntityLookup'
+export * from './EntityLookup'
 export * from './EditableText'
 export * from './ExternalLink'
 export * from './LabelWithPopup'

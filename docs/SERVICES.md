@@ -13,21 +13,21 @@ The project is currently deployable to a local machine only:
 
 > ETL services (Calls Generator, Performer, Parser) only expose actuator ports in dev and local environments, not in production.
 
-| Service                     | Purpose | Module | Docs | Dev | Local | Prod |
-|-----------------------------|---------|--------|------|-----|-------|------|
-| LastFM REST API (Read)      | Read-only REST API for LastFM raw data | `:music:data:raw:lastfm:lastfm-rest-api` | - | 7084 / 7094 | 9084 / 9094 | 8084 / 8094 |
-| LastFM ETL REST API (Write) | Write operations REST API for LastFM ETL | `:music:data:raw:lastfm:etl:lastfm-etl-rest-api` | - | 7085 / 7095 | 9085 / 9095 | 8085 / 8095 |
-| LastFM Calls Generator      | Generates API calls for LastFM data collection | `:music:data:raw:lastfm:etl:lastfm-calls-generator` | - | - / 7096 | - / 9096 | - / - |
-| LastFM Calls Performer      | Executes API calls against LastFM API | `:music:data:raw:lastfm:etl:lastfm-calls-performer` | - | - / 7097 | - / 9097 | - / - |
-| LastFM Response Parser      | Parses and processes LastFM API responses | `:music:data:raw:lastfm:etl:lastfm-response-parser` | - | - / 7098 | - / 9098 | - / - |
-| Music Data Master           | Curated data management and binding service | `:music:data:master` | [README](../music/data/master/README.md) | 7082 / 7092 | 9082 / 9092 | 8082 / 8092 |
-| Music Quiz                  | Quiz generation from approved data | `:music:quiz` | - | 7083 / 7093 | 9083 / 9093 | 8083 / 8093 |
-| Music UI                    | React management interface for all services | `:music:ui` | - | 5173 / - | 4000 / - | 3000 / - |
-| PostgreSQL (LastFM)         | Database for LastFM raw data (schema: `mu_raw_lastfm`) | N/A | - | 7799 / - | 9999 / - | - / - |
-| PostgreSQL (Music Data)     | Database for music data and quiz (schemas: `mu`, `mu_quiz`) | N/A | - | 7789 / - | 9989 / - | - / - |
-| Adminer                     | Web-based database administration tool | N/A | - | 7788 / - | 9980 / - | 8880 / - |
-| Prometheus                  | Metrics collection and monitoring | N/A | - | 7090 / - | 9090 / - | 8090 / - |
-| Grafana                     | Metrics visualization and dashboards | N/A | - | 7000 / - | 9000 / - | 8000 / - |
+| Service                     | Purpose | Module | Dev | Local | Prod |
+|-----------------------------|---------|--------|-----|-------|------|
+| [LastFM REST API (Read)](../music/data/raw/lastfm/lastfm-rest-api/README.md) | Read-only REST API for LastFM raw data | [`:music:data:raw:lastfm:lastfm-rest-api`](../music/data/raw/lastfm/lastfm-rest-api/README.md) | 7084 / 7094 | 9084 / 9094 | 8084 / 8094 |
+| [LastFM ETL REST API (Write)](../music/data/raw/lastfm/etl/lastfm-etl-rest-api/README.md) | Write operations REST API for LastFM ETL | [`:music:data:raw:lastfm:etl:lastfm-etl-rest-api`](../music/data/raw/lastfm/etl/lastfm-etl-rest-api/README.md) | 7085 / 7095 | 9085 / 9095 | 8085 / 8095 |
+| [LastFM Calls Generator](../music/data/raw/lastfm/etl/lastfm-calls-generator/README.md) | Generates API calls for LastFM data collection | [`:music:data:raw:lastfm:etl:lastfm-calls-generator`](../music/data/raw/lastfm/etl/lastfm-calls-generator/README.md) | - / 7096 | - / 9096 | - / - |
+| [LastFM Calls Performer](../music/data/raw/lastfm/etl/lastfm-calls-performer/README.md) | Executes API calls against LastFM API | [`:music:data:raw:lastfm:etl:lastfm-calls-performer`](../music/data/raw/lastfm/etl/lastfm-calls-performer/README.md) | - / 7097 | - / 9097 | - / - |
+| [LastFM Response Parser](../music/data/raw/lastfm/etl/lastfm-response-parser/README.md) | Parses and processes LastFM API responses | [`:music:data:raw:lastfm:etl:lastfm-response-parser`](../music/data/raw/lastfm/etl/lastfm-response-parser/README.md) | - / 7098 | - / 9098 | - / - |
+| [Music Data Master](../music/data/master/README.md) | Curated data management and binding service | [`:music:data:master`](../music/data/master/README.md) | 7082 / 7092 | 9082 / 9092 | 8082 / 8092 |
+| [Music Quiz](../music/quiz/README.md) | Quiz generation from approved data | [`:music:quiz`](../music/quiz/README.md) | 7083 / 7093 | 9083 / 9093 | 8083 / 8093 |
+| [Music UI](../music/ui/README.md) | React management interface for all services | [`:music:ui`](../music/ui/README.md) | 5173 / - | 4000 / - | 3000 / - |
+| PostgreSQL (LastFM)         | Database for LastFM raw data (schema: `mu_raw_lastfm`) | N/A | 7799 / - | 9999 / - | - / - |
+| PostgreSQL (Music Data)     | Database for music data and quiz (schemas: `mu`, `mu_quiz`) | N/A | 7789 / - | 9989 / - | - / - |
+| Adminer                     | Web-based database administration tool | N/A | 7788 / - | 9980 / - | 8880 / - |
+| Prometheus                  | Metrics collection and monitoring | N/A | 7090 / - | 9090 / - | 8090 / - |
+| Grafana                     | Metrics visualization and dashboards | N/A | 7000 / - | 9000 / - | 8000 / - |
 
 ## Environment Descriptions
 
@@ -52,34 +52,15 @@ Production Docker Compose deployment configuration.
 - Optimized builds with multi-stage Dockerfiles
 - Reduced port exposure (actuator ports typically not exposed)
 
-## Service Dependencies
-
-### Runtime Dependencies
-- **Music Data Master** ← depends on PostgreSQL (Music Data)
-- **Music Quiz** ← depends on PostgreSQL (Music Data), Music Data API
-- **LastFM ETL services** ← depend on PostgreSQL (LastFM)
-- **Music UI** ← depends on Music Data API, Music Quiz API, LastFM APIs
-
-### Build Dependencies
-See [MODULES.md](MODULES.md) for complete module dependency graph.
-
 ## API Endpoints
 
-All REST services follow the pattern: `http://localhost:<port>/api/v1/{resource}`
+All REST services follow the [same pattern](kb/patterns/backend/api/conventions.md).
 
 ### Actuator Endpoints
 Services with actuator ports expose health and metrics:
 - **Health**: `http://localhost:<actuator-port>/actuator/health`
 - **Metrics**: `http://localhost:<actuator-port>/actuator/metrics`
 - **Prometheus**: `http://localhost:<actuator-port>/actuator/prometheus`
-
-## Database Schemas
-
-| Service | Database | Schema |
-|---------|----------|--------|
-| LastFM services | `music_universe` | `mu_raw_lastfm` |
-| Music Data | `music_universe` | `mu` |
-| Music Quiz | `music_universe` | `mu_quiz` |
 
 ## Monitoring
 
@@ -93,7 +74,7 @@ Services with actuator ports expose health and metrics:
 
 ## See Also
 
-- [MODULES.md](MODULES.md) - Complete module reference and build commands
-- [DEVELOPMENT.md](DEVELOPMENT.md) - Development workflow and environment setup
-- [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture and design patterns
-- [env/docker/README.md](../env/docker/README.md) - Docker deployment scripts
+- [Modules reference](MODULES.md) - Complete module reference and build commands
+- [Development reference](DEVELOPMENT.md) - Development workflow and environment setup
+- [Architecture reference](ARCHITECTURE.md) - System architecture and design patterns
+- [Docker Deployment reference](../env/docker/README.md) - Docker deployment scripts

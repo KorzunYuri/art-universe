@@ -1,6 +1,8 @@
 # Art Universe
 
-Data storage system for art-related information designed to create quizzes. Primary focus: "Guess the Track" game where participants listen to tracks and guess artist/title.
+**Art Universe** is a platform for collecting, curating, and utilizing data from the art domain. 
+
+The project currently focuses on music data and quiz applications - generating sets of tracks for "Guess the Track" game where participants listen to tracks and guess artist/title.
 
 ## Quick Start
 
@@ -10,34 +12,58 @@ Data storage system for art-related information designed to create quizzes. Prim
 ./env/docker/deploy.sh local
 ```
 
-## Architecture
+## High-level Architecture
 
-### Services 
+```
+┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│   External      │     │   Raw Data       │     │   Master        │     │   Quiz          │
+│   APIs          │---->│   Collection     │---->│   Data          │---->│   Generation    │
+│                 │     │                  │     │   Management    │     │                 │
+└─────────────────┘     └──────────────────┘     └─────────────────┘     └─────────────────┘
+                                │                      │                         │
+                                │                      │                         │
+                                ▼                      ▼                         ▼
+                         ┌───────────────────────────────────────────────────────────┐
+                         │                     UI Management                         │
+                         │    ┌─────────────┬─────────────┬─────────────────────┐    │
+                         │    │  Raw        │  Master     │  Quiz               │    │
+                         │    │  Data       │  Data       │  Admin              │    │
+                         │    │  Admin      │  Admin      │                     │    │
+                         │    └─────────────┴─────────────┴─────────────────────┘    │
+                         └───────────────────────────────────────────────────────────┘
+```
 
-**[All services & ports →](docs/SERVICES.md)**
+## Technology Stack
 
-### Module Structure
+### Backend (Java Modules)
+- **Java**: 21
+- **Spring Boot**: 3.4.3
+- **Spring Data JPA**: Included in Spring Boot
+- **Liquibase**: 4.15.0
+- **Lombok**: 1.18.30
+- **TestContainers**: 1.20.4
+- **PostgreSQL Driver**: Latest (from Spring Boot BOM)
 
-**[Complete module reference →](docs/MODULES.md)**
+### Frontend (UI Module)
+- **React**: 19.1.0
+- **TypeScript**: 5.8.3
+- **Vite**: 6.3.5
+- **React Router**: 6.30.0
+- **TanStack Query**: 5.28.0
+- **Axios**: 1.12.0
 
-### Technology Stack
-- **Backend**: Spring Boot 3.4.3, PostgreSQL, Liquibase
-- **Frontend**: React, TypeScript, Vite
-- **Build**: Gradle multi-project
-- **Deployment**: Docker, Docker Compose
+### Build Tools
+- **Gradle**: 8.10
+- **Gradle Wrapper**: Included (use `./gradlew`)
 
 ## Documentation
 
-- **[Services Reference](docs/SERVICES.md)** - All services, ports, and deployment configurations
-- **[Modules Reference](docs/MODULES.md)** - Complete module listing and build commands
+- **[Architecture](docs/ARCHITECTURE.md)** - More detailed architecture reference
+- **[All modules](docs/MODULES.md)** - List of deployable services with ports
+- **[All services & ports](docs/SERVICES.md)** - List of deployable services with ports
+- **[Knowledge Base](docs/kb/README.md)** - LLM-oriented knowledge base
+- **[Gradle commands reference](docs/kb/guides/gradle-commands.md)** - Complete modules list
 - **[Development Guide](docs/DEVELOPMENT.md)** - Complete development workflow
-- **[Docker Scripts](env/docker/README.md)** - Deployment guide
-- **[Architecture Overview](docs/ARCHITECTURE.md)** - System design and relationships
+- **[Docker Deployment Scripts](env/docker/README.md)** - Deployment guide (Docker)
 - **[Development Scripts](scripts/README.md)** - Individual module tools
 
-## Development
-
-- **[Environment Setup →](docs/DEVELOPMENT.md#environment-configuration)** - Local development and Docker deployment
-- **[Module Development →](docs/DEVELOPMENT.md#individual-module-development)** - Running specific modules
-- **[Build & Test →](docs/DEVELOPMENT.md#build-and-testing)** - Gradle commands and testing
-- **[IDE Setup →](docs/DEVELOPMENT.md#ide-setup)** - IntelliJ IDEA and VS Code configuration

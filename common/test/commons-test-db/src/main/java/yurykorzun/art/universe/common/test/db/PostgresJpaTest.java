@@ -21,7 +21,7 @@ import java.lang.annotation.Target;
 @PostgresTestContainer
 public @interface PostgresJpaTest {
     
-    // Делегируем параметры к @PostgresTestContainer
+    // Delegate parameters to @PostgresTestContainer
     String databaseName() default "test_db";
     String username() default "postgres";
     String password() default "postgres";
