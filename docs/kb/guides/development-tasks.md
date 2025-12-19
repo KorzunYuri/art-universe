@@ -11,8 +11,8 @@
 Before modifying any module, always read these files first:
 
 **For all modules:**
-- Knowledge Base (if exists): reach list of modules using `@modules/README.md`
-- Module README (if exists): `<module-path>/README.md`
+- [Project Modules Index](../../MODULES.md) (lists all modules with their READMEs)
+- Module README: `<module-path>/README.md` (each module has README in its root)
 - Build configuration: `<module-path>/build.gradle` or `package.json`
 
 **For Java/Spring Boot modules:**
@@ -87,7 +87,7 @@ After making changes, run tests to verify behavior:
 ./gradlew :<module>:test --tests "ArtistServiceTest"
 ```
 
-**See**: @patterns/backend/build/gradle-commands.md
+**See**: [Gradle Commands](../guides/gradle-commands.md)
 
 ### 3. Check for Compilation
 
@@ -118,7 +118,7 @@ Keep tests in sync with changes:
 - Update tests for modified behavior
 - Ensure test names reflect actual behavior
 
-**See**: @patterns/backend/testing/overview.md
+**See**: [Testing Patterns](../patterns/backend/testing/overview.md)
 
 ---
 
@@ -302,7 +302,7 @@ git log --oneline --graph
 ./gradlew :<module-path>:clean build
 ```
 
-**See**: @patterns/backend/build/gradle-commands.md
+**See**: [Gradle Commands](../guides/gradle-commands.md)
 
 ---
 
@@ -317,7 +317,7 @@ Understanding module types helps determine workflow:
 | **ETL Modules** | Process data, scheduled jobs | lastfm-calls-generator |
 | **Test Support** | Testing utilities | commons-test-db |
 
-**See**: @modules/README.md
+**See**: [Project Modules Index](../../MODULES.md)
 
 ---
 
@@ -369,8 +369,10 @@ env\docker\stop.bat all
 **In `docs/kb/`** (LLM documentation):
 - Patterns - New or modified patterns
 - Features - New features or feature changes
-- Modules - Module-specific documentation
 - Guides - Workflow or architecture changes
+
+**In module roots** (Module-specific):
+- `<module-path>/README.md` - Module documentation and usage
 
 ### Update Process
 
@@ -384,10 +386,10 @@ env\docker\stop.bat all
 
 ### Adding a New Feature
 
-1. Read architecture overview: @guides/architecture-overview.md
-2. Identify affected modules: @modules/README.md
-3. Review similar features: @features/
-4. Check patterns to use: @patterns/
+1. Read architecture overview: [Architecture Overview](./architecture-overview.md)
+2. Identify affected modules: [Project Modules Index](../../MODULES.md)
+3. Review similar features: [Features](../features/README.md)
+4. Check patterns to use: [Patterns](../patterns/README.md)
 5. Implement feature
 6. Write tests
 7. Update documentation
@@ -438,9 +440,9 @@ env\docker\stop.bat all
 
 ## See Also
 
-- **@patterns/backend/build/gradle-commands.md** - Gradle commands
-- **@patterns/backend/testing/overview.md** - Testing patterns
-- **@guides/architecture-overview.md** - System architecture
-- **@modules/README.md** - Module reference
-- **@features/** - Feature documentation
-- **Main docs**: `docs/DEVELOPMENT.md` - Complete development guide
+- [Gradle Commands](../guides/gradle-commands.md) - Gradle commands
+- [Testing Patterns](../patterns/backend/testing/overview.md) - Testing patterns
+- [Architecture Overview](./architecture-overview.md) - System architecture
+- [Project Modules Index](../../MODULES.md) - Module reference
+- [Features Index](../features/README.md) - Feature documentation
+- [Development Reference](../../DEVELOPMENT.md) - Complete development guide
