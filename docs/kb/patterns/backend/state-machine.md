@@ -29,21 +29,21 @@ States: `CREATED` → `PENDING` → `PROCESSING` → `SUCCESSFUL`/`FAILED`/`DUE_
 
 Valid transitions defined in inner Transition enum with EnumMap for O(1) lookup.
 
-### Approach 2: Private Enum for Internal State
+### Approach 2: Coded Enum with Provider Pattern
 
-For runtime state management not persisted to database.
+For distributed state management persisted to database but accessed through provider abstraction.
 
 **Key components**:
-- Private enum within class (e.g., `private enum Status { NORMAL, REQUESTED, RUNNING }`)
-- State transitions managed through synchronized methods
-- No database persistence required
-- Simpler than coded enums when no DB storage needed
+- Coded enum defines states (e.g., `NORMAL`, `REQUESTED`, `RUNNING`)
+- Provider interface abstracts state management (database or in-memory)
+- State transitions managed through provider implementations
+- Database provider uses transactions for thread-safety
 
-**Example**: [TaskCoordinator.java](../../../music/data/raw/lastfm/etl/lastfm-tasks-coordinator/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/maintenance/service/TaskCoordinator.java)
+**Example**: [CoordinationStatus.java](../../../music/data/raw/lastfm/lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/coordination/entity/CoordinationStatus.java) with [CoordinationStateProvider.java](../../../music/data/raw/lastfm/etl/lastfm-tasks-coordinator/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/maintenance/coordination/CoordinationStateProvider.java)
 
 States: `NORMAL` → `REQUESTED` → `RUNNING` → `NORMAL`
 
-State transitions synchronized to prevent race conditions.
+State transitions coordinated across multiple application instances via database.
 
 
 ## Key Principles

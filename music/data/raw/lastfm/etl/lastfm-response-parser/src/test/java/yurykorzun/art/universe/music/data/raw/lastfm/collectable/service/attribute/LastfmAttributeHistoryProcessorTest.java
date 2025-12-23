@@ -12,7 +12,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.L
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.attribute.LastfmAttributeTypeSynchronizer;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.LastfmJpaTestHelper;
-import yurykorzun.art.universe.music.data.raw.lastfm.maintenance.service.TestTaskCoordinatorConfig;
+import yurykorzun.art.universe.music.data.raw.lastfm.config.TaskCoordinationTestAutoConfiguration;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
     LastfmAttributeHistoryProcessor.class,
     LastfmAttributeHistoryServiceImpl.class,
     LastfmAttributeTypeSynchronizer.class,
-    TestTaskCoordinatorConfig.class,
+    TaskCoordinationTestAutoConfiguration.class,
 })
 class LastfmAttributeHistoryProcessorTest extends LastfmJpaTestHelper {
 

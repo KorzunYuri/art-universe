@@ -53,7 +53,7 @@ This document is the **single source of truth** for list of modules.
 
 | Module | Type | Purpose |
 |--------|------|---------|
-| [`:music:data:raw:lastfm:etl:lastfm-tasks-coordinator`](../music/data/raw/lastfm/etl/lastfm-tasks-coordinator/README.md) | Library | ETL task coordination and orchestration |
+| [`:music:data:raw:lastfm:etl:lastfm-tasks-coordinator`](../music/data/raw/lastfm/etl/lastfm-tasks-coordinator/README.md) | Library | Distributed task coordination with database-backed state |
 | [`:music:data:raw:lastfm:migrations:lastfm-liquibase-resources`](../music/data/raw/lastfm/migrations/lastfm-liquibase-resources/README.md) | Library | Liquibase changelog definitions (SQL) |
 
 #### Test Modules

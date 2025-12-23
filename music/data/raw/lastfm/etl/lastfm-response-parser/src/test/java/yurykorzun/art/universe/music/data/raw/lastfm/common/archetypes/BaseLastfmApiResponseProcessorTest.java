@@ -8,7 +8,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.attr
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.BlacklistedEntityUrlService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.attribute.LastfmAttributeHistoryProcessor;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.attribute.LastfmAttributeHistoryServiceImpl;
-import yurykorzun.art.universe.music.data.raw.lastfm.maintenance.service.TestTaskCoordinatorConfig;
+import yurykorzun.art.universe.music.data.raw.lastfm.config.TaskCoordinationTestAutoConfiguration;
 
 /**
  * Base test class for LastFM API response processor tests.
@@ -25,7 +25,8 @@ import yurykorzun.art.universe.music.data.raw.lastfm.maintenance.service.TestTas
         LastfmAttributeHistoryServiceImpl.class,
         LastfmAttributeTypeSynchronizer.class,
         LastfmAttributeHistoryProcessor.class,
-        TestTaskCoordinatorConfig.class,
+        // other mandatory beans & configs
+        TaskCoordinationTestAutoConfiguration.class,
 })
 public abstract class BaseLastfmApiResponseProcessorTest extends LastfmJpaTestHelper {
 }

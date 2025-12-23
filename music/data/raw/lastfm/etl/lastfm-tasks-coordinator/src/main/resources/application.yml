@@ -1,0 +1,11 @@
+# Task Coordination Configuration
+#
+# Configuration is provided via @ConfigurationProperties (CoordinationProperties.java)
+# with programmatic defaults. Environment variables can override:
+#
+# LASTFM_COORDINATION_PROVIDER - "in-memory" or "database"
+# LASTFM_COORDINATION_HEARTBEAT_INTERVAL - heartbeat interval in seconds
+# LASTFM_COORDINATION_HEARTBEAT_TIMEOUT - stale timeout in seconds
+# LASTFM_COORDINATION_CLEANUP_INTERVAL - cleanup interval in seconds
+#
+# No configuration needed here - defaults are centralized in CoordinationProperties

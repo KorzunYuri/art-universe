@@ -39,4 +39,5 @@
     <include file="changelogs/0032-case-insensitive-deduplication.xml" relativeToChangelogFile="true"/>
     <include file="changelogs/0033-attribute-history-cleanup.xml" relativeToChangelogFile="true"/>
     <include file="changelogs/0034-attribute-history-staging.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0035-coordination-state.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

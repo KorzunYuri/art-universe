@@ -1,85 +1,103 @@
 # LastFM Tasks Coordinator
 
-**IMPORTANT!** After extraction from Lastfm monolith the module stopped serving its coordination purpose.
-To be a coordination point for disconnected modules it has to be redesigned
-The code was kept and the module was not excluded from dependencies to make the future update seamless.
-
 ## Overview
 
-LastFM Tasks Coordinator is a shared library module that coordinates database-related tasks across the LastFM subsystem.
-It prevents database operations from running during maintenance by implementing a task queue and rejecting tasks during maintenance.
-
-Maintenance is triggered by [ETL REST API module](../lastfm-etl-rest-api/README.md) in two ways:
-- scheduled daily execution
-- manual (from UI via REST endpoint)
-
+Distributed task coordination library for the LastFM subsystem.
+Enables multiple application instances to coordinate task execution and maintenance operations using database-backed distributed state or in-memory state for testing.
 
 ## Key Components
 
-- [TaskCoordinator.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/etl/maintenance/service/TaskCoordinator.java) - Central coordinator using state machine to prevent tasks from running during maintenance
-- [DbTaskQueue.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/etl/maintenance/service/DbTaskQueue.java) - Thread-safe FIFO queue with duplicate detection
-- [TaskCoordinationConfig.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/etl/config/TaskCoordinationConfig.java) - Spring Boot auto-configuration providing 5-thread executor pool. The number is calculated based on max possible number of **different** tasks running in parallel.
+### Core Services
 
+- [TaskCoordinator.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/maintenance/service/TaskCoordinator.java) - Main coordinator service using state machine to prevent concurrent task execution and manage maintenance windows
+- [CoordinationStateProvider.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/maintenance/coordination/CoordinationStateProvider.java) - Provider interface for pluggable coordination backends
+- [DbTaskQueue.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/maintenance/service/DbTaskQueue.java) - Thread-safe FIFO queue with duplicate detection
+
+### Coordination Providers
+
+- [DatabaseCoordinationProvider.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/maintenance/coordination/provider/DatabaseCoordinationProvider.java) - **Default** production provider. Uses database tables for distributed coordination with heartbeat-based crash detection and automatic cleanup of stale tasks
+- [InMemoryCoordinationProvider.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/maintenance/coordination/provider/InMemoryCoordinationProvider.java) - Single-instance provider for testing. Fast, no database overhead
+
+### Configuration
+
+- [TaskCoordinationAutoConfiguration.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/config/TaskCoordinationAutoConfiguration.java) - Runtime auto-configuration with database provider by default
+- [TaskCoordinationTestAutoConfiguration.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/config/TaskCoordinationTestAutoConfiguration.java) - Test auto-configuration with in-memory provider
+- [CoordinationProperties.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/config/CoordinationProperties.java) - Configuration properties with programmatic defaults
+- [application.yml](src/main/resources/application.yml) - Configuration documentation
 
 ## Usage Patterns
 
 ### State Machine
 
-[TaskCoordinator.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/etl/maintenance/service/TaskCoordinator.java) uses a three-state [machine](../../../../../../docs/kb/patterns/backend/state-machine.md):
+[TaskCoordinator](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/maintenance/service/TaskCoordinator.java) uses a three-state machine:
 
-- **NORMAL**: Tasks execute normally via executeIfAllowed()
+- **NORMAL**: Tasks execute normally
 - **REQUESTED**: Maintenance requested, new tasks blocked, waiting for running tasks to complete
-- **RUNNING**: Maintenance tasks executing, all regular tasks blocked
+- **RUNNING**: Maintenance in progress, all tasks blocked
 
-State transitions: NORMAL → REQUESTED (when maintenance requested) → RUNNING (when all tasks finish) → NORMAL (when maintenance completes)
+Transitions: `NORMAL` → `REQUESTED` → `RUNNING` → `NORMAL`
 
 ### Regular Task Execution
 
-ETL modules should wrap database operations with executeIfAllowed() to respect maintenance windows:
-
-- Inject [TaskCoordinator.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/etl/maintenance/service/TaskCoordinator.java) via Spring autowiring
-- Call executeIfAllowed(task, taskKey) where taskKey uniquely identifies the task
+Wrap database operations with `coordinator.executeIfAllowed(task, taskKey)`:
+- Tasks are silently skipped if maintenance is active (REQUESTED or RUNNING)
 - Tasks with duplicate keys are silently skipped if already running
-- Tasks are silently skipped when status is REQUESTED or RUNNING
-- Otherwise, tasks are submitted to the 5-thread executor pool for execution
+- Otherwise, tasks execute on the thread pool
 
 ### Maintenance Execution
 
-Maintenance operations should be triggered via requestMaintenance():
+Trigger maintenance via `coordinator.requestMaintenance(maintenanceTask)`:
+- Transitions to REQUESTED state
+- Waits for running tasks to complete
+- Executes maintenance task
+- Returns to NORMAL state
 
-- Call requestMaintenance(maintenanceTask) to schedule maintenance
-- Throws IllegalStateException if maintenance is already requested or running
-- Coordinator blocks new tasks, waits for running tasks to complete, then executes maintenance
-- After maintenance completes, coordinator returns to NORMAL state and regular tasks resume
+Throws `IllegalStateException` if maintenance is already requested or running.
 
-### Task Deduplication
+### Configuration
 
-The coordinator prevents duplicate task execution:
+**Defaults** (no configuration required):
+- Provider: `database`
+- Heartbeat interval: 30 seconds
+- Stale timeout: 120 seconds
+- Cleanup interval: 60 seconds
 
-- Each task requires a unique taskKey parameter
-- If a task with the same key is already running, subsequent calls are ignored
-- Keys are automatically removed when tasks complete
+Override via environment variables: `LASTFM_COORDINATION_PROVIDER`, `LASTFM_COORDINATION_HEARTBEAT_INTERVAL_SECONDS`, etc. See [application.yml](src/main/resources/application.yml) for full list.
 
 ### Thread Safety
 
-The coordinator uses synchronized blocks for state transitions and atomic counters for tracking running tasks.
-The [DbTaskQueue](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/etl/maintenance/service/DbTaskQueue.java) has all methods synchronized for thread-safe access. 
-Regular tasks execute on a multi-thread pool while maintenance tasks execute sequentially on a single-thread executor.
-
+- [DatabaseCoordinationProvider](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/maintenance/coordination/provider/DatabaseCoordinationProvider.java) - Thread-safe via database transactions
+- [InMemoryCoordinationProvider](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/maintenance/coordination/provider/InMemoryCoordinationProvider.java) - Thread-safe via concurrent data structures
+- [TaskCoordinator](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/maintenance/service/TaskCoordinator.java) - Synchronized state transitions
+- [DbTaskQueue](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/maintenance/service/DbTaskQueue.java) - All methods synchronized
 
 ## Adding to Your Module
 
-Add dependency to your module's build.gradle and autowire [TaskCoordinator](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/etl/maintenance/service/TaskCoordinator.java). The coordinator and executor beans are auto-configured via [TaskCoordinationConfig](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/etl/config/TaskCoordinationConfig.java). No environment variables or application properties are required.
+1. Add dependency: `implementation project(':music:data:raw:lastfm:etl:lastfm-tasks-coordinator')`
+2. Inject `TaskCoordinator` via constructor injection
+3. Auto-configuration provides all beans automatically
 
+### Testing
+
+**Integration tests** (`@SpringBootTest`): [TaskCoordinator](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/maintenance/service/TaskCoordinator.java) auto-configured with in-memory provider
+
+**Slice tests** (`@DataJpaTest`, `@WebMvcTest`): Must explicitly import [TaskCoordinationTestAutoConfiguration](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/config/TaskCoordinationTestAutoConfiguration.java) via `@Import`
+
+## Database Schema
+
+Coordination tables in `mu_raw_lastfm` schema:
+- `coordination_state` - Global coordination state
+- `coordination_instance` - Instance registry with heartbeats
+- `coordination_running_task` - Currently executing tasks
+
+Migrations: [Coordination State Changeset](../../migrations/lastfm-liquibase-resources/src/main/resources/db/migration/muraw/liquibase/changesets/0035-coordination-state/)
 
 ## Patterns Used
 
-This module follows these project-wide patterns:
-
-- [State Machine](../../../../../../docs/kb/patterns/backend/state-machine.md) - Internal state machine (NORMAL → REQUESTED → RUNNING) coordinates maintenance windows
-
+- [State Machine](../../../../../../docs/kb/patterns/backend/state-machine.md) - Three-state coordination
+- Strategy Pattern - Pluggable [CoordinationStateProvider](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/maintenance/coordination/CoordinationStateProvider.java) implementations
 
 ## Related Documentation
 
-- [LastFM Modules Overview](../../README.md) - Overview of all LastFM modules
-- [Project Modules Index](../../../../../../docs/MODULES.md) - All modules index
+- [LastFM Modules Overview](../../README.md)
+- [Project Modules Index](../../../../../../docs/MODULES.md)

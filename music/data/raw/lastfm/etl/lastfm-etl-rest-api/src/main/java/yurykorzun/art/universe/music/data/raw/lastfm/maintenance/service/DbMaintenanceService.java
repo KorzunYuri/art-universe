@@ -66,13 +66,13 @@ public class DbMaintenanceService {
     }
 
     private void performDatabaseOptimization() {
-        log.debug("Executing VACUUM FULL");
+        log.info("Executing VACUUM FULL");
         long vacuumStart = System.currentTimeMillis();
         jdbc.execute("VACUUM FULL");
         long vacuumDuration = System.currentTimeMillis() - vacuumStart;
         log.info("VACUUM FULL completed in {} ms", vacuumDuration);
 
-        log.debug("Executing ANALYZE");
+        log.info("Executing ANALYZE");
         long analyzeStart = System.currentTimeMillis();
         jdbc.execute("ANALYZE");
         long analyzeDuration = System.currentTimeMillis() - analyzeStart;
