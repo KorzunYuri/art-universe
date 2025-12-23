@@ -19,6 +19,12 @@ This document provides a quick reference guide to all database-related patterns 
 
 **Used In**: [LastFM Raw Data Module](../../../modules/mu-data-raw-lastfm/README.md)
 
+### [Index Naming Conventions](index-naming-conventions.md)
+
+**Problem**: Need to use consistent index naming across the project with ability to distinguish index type and owning table by its name.
+
+**Solution**: Use naming patterns defined on the project level.
+
 
 ## Common Database Design Principles
 

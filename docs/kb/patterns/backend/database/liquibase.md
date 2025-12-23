@@ -264,6 +264,7 @@ Liquibase creates two tables to track migrations:
 
 ## See Also
 
+- [Index Naming Conventions](index-naming-conventions.md) - Index naming conventions
 - [Entity Patterns Overview](../entities/overview.md) - Entity design patterns
 - [Project Structure Pattern](../project-structure.md) - Module structure
 - [SCD2 Attribute History](./scd2-attribute-history.md) - Historical data tracking
