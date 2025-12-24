@@ -29,11 +29,8 @@ spring:
       ddl-auto: none
 
 server:
-  # dummy port to not occupy 8080 on dev
+  # Non-web app - only needs actuator endpoints
   port: ${MURAW_LASTFM_RESPONSE_PARSER_ACTUATOR_INTERNAL_PORT}
-management:
-  server:
-    port: ${MURAW_LASTFM_RESPONSE_PARSER_ACTUATOR_INTERNAL_PORT}
 
 lastfm:
   scheduling:

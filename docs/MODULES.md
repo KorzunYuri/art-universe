@@ -22,6 +22,7 @@ This document is the **single source of truth** for list of modules.
 |--------|------|---------|
 | [`:common:commons-context`](../common/commons-context/README.md) | Library | Spring configuration, ObjectMapper auto-configuration |
 | [`:common:commons-jpa`](../common/commons-jpa/README.md) | Library | JPA utilities, Coded registry, JPA auto-configuration |
+| [`:common:commons-observability`](../common/commons-observability/README.md) | Library | Monitoring and observability (Actuator, Prometheus metrics) |
 | [`:common:commons-web`](../common/commons-web/README.md) | Library | Web utilities, exception handling, CORS configuration |
 | [`:common:test:commons-test`](../common/test/commons-test/README.md) | Library | Base testing utilities, test helpers |
 | [`:common:test:commons-test-web`](../common/test/commons-test-web/README.md) | Library | Web testing utilities, MockMvc helpers |
