@@ -1,12 +1,15 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptracks.processing;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.config.MappingConfig;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingResult;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiResponseProcessor;
@@ -58,9 +61,10 @@ public class LastfmTagTopTracksResponseProcessor extends LastfmApiResponseProces
         LastfmArtistTrackService artistTrackService,
         LastfmApiDtoProcessingService dtoProcessingService,
         DtoQualityService dtoQualityService,
-        EntityFactory<LastfmArtist, TagTopTracksTrackArtistDto> artistFactory
+        EntityFactory<LastfmArtist, TagTopTracksTrackArtistDto> artistFactory,
+        @Qualifier(MappingConfig.LASTFM_API_RESPONSE_OBJECT_MAPPER_BEAN_NAME) ObjectMapper objectMapper
     ) {
-        super(TagTopTracksDtoRoot.class);
+        super(TagTopTracksDtoRoot.class, objectMapper);
 
         this.artistService = artistService;
         this.trackService = trackService;
