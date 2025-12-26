@@ -430,26 +430,6 @@ services:
     networks:
       - mu__network
 
-  # Admin tools
-  db-adminer:
-    container_name: local__mu__db-adminer
-    image: adminer
-    restart: unless-stopped
-    env_file:
-      - ./common.env
-    ports:
-      - "${DB_ADMINER_PORT}:8080"
-    deploy:
-      resources:
-        limits:
-          memory: 32M
-          cpus: '0.1'
-        reservations:
-          memory: 8M
-          cpus: '0.01'
-    networks:
-      - mu__network
-
 networks:
   mu__network:
     name: local__mu__network

@@ -120,7 +120,6 @@ if "%DEPLOY_ERROR%"=="0" (
     echo   - Music Data: http://localhost:!MU_DATA_APP_EXTERNAL_PORT!
     echo   - Music Quiz: http://localhost:!MU_QUIZ_APP_EXTERNAL_PORT!
     echo   - UI: http://localhost:!MU_UI_EXTERNAL_PORT!
-    echo   - Adminer: http://localhost:!DB_ADMINER_PORT!
     echo   - Prometheus: http://localhost:!PROMETHEUS_PORT!
     echo   - Grafana: http://localhost:!GRAFANA_PORT!
     echo.

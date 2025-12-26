@@ -122,7 +122,6 @@ if [ $? -eq 0 ]; then
         echo "  - Music Data: http://localhost:${MU_DATA_APP_EXTERNAL_PORT}"
         echo "  - Music Quiz: http://localhost:${MU_QUIZ_APP_EXTERNAL_PORT}"
         echo "  - UI: http://localhost:${MU_UI_EXTERNAL_PORT}"
-        echo "  - Adminer: http://localhost:${DB_ADMINER_PORT}"
         echo "  - Prometheus: http://localhost:${PROMETHEUS_PORT}"
         echo "  - Grafana: http://localhost:${GRAFANA_PORT}"
     else
@@ -134,7 +133,6 @@ if [ $? -eq 0 ]; then
         echo "  - Music Data: http://localhost:${MU_DATA_APP_EXTERNAL_PORT}"
         echo "  - Music Quiz: http://localhost:${MU_QUIZ_APP_EXTERNAL_PORT}"
         echo "  - UI: http://localhost:${MU_UI_EXTERNAL_PORT}"
-        echo "  - Adminer: http://localhost:${DB_ADMINER_PORT}"
         echo ""
         echo "Note: Applications connect to external databases on host machine"
     fi

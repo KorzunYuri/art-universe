@@ -163,7 +163,6 @@ Curated data powers various applications:
 | **Music Data** | :7082 | :9082 | :8082 |
 | **Music Quiz** | :7083 | :9083 | :8083 |
 | **Music UI** | :5173 | :4000 | :3000 |
-| **Adminer** | :7780 | :9980 | :8880 |
 | **Prometheus** | :7090 | :9090 | :8090 |
 | **Grafana** | :7000 | :9000 | :8000 |
 
