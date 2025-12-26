@@ -1,8 +1,12 @@
 spring:
   application:
     name: lastfm-etl-rest-api
-  profiles:
-    include: common
+  config:
+    import:
+      - classpath:commons-context.yml
+      - optional:classpath:commons-context-${spring.profiles.active}.yml
+      - classpath:commons-observability.yml
+      - optional:classpath:commons-observability-${spring.profiles.active}.yml
   datasource:
     driverClassName: org.postgresql.Driver
     url: jdbc:postgresql://${MURAW_LASTFM_DB_HOST}:${MURAW_LASTFM_DB_PORT}/${MURAW_LASTFM_DB_NAME}?currentSchema=${MURAW_LASTFM_DB_SCHEMA}

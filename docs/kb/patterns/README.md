@@ -111,6 +111,7 @@ When you identify a reusable pattern:
 | Test JPA repositories | Backend > [Testing](backend/testing/overview.md) | [Testing with Persistence Layer](backend/testing/testing-with-persistence-layer.md) |
 | Test REST controllers | Backend > [Testing](backend/testing/overview.md) | [Testing Controllers](backend/testing/testing-controllers.md) |
 | Configure environments | Backend > Configuration | [Environment Profiles](backend/configuration/environment-profiles.md) |
+| Share config from library | Backend > Configuration | [Spring Config Import](backend/configuration/spring-config-import.md) |
 | Manage entity state | Backend > Core | [State Machine](backend/state-machine.md) |
 | Organize project structure | Backend > Core | [Project Structure](backend/project-structure.md) |
 

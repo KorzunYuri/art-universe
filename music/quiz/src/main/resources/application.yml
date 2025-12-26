@@ -1,8 +1,12 @@
 spring:
   application:
     name: music-universe-quiz-service
-  profiles:
-    include: common
+  config:
+    import:
+      - classpath:commons-context.yml
+      - optional:classpath:commons-context-${spring.profiles.active}.yml
+      - classpath:commons-observability.yml
+      - optional:classpath:commons-observability-${spring.profiles.active}.yml
   datasource:
     driverClassName: org.postgresql.Driver
     url: jdbc:postgresql://${MU_DATA_DB_HOST:localhost}:${MU_DATA_DB_PORT:5432}/music_universe?currentSchema=mu_quiz

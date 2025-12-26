@@ -6,12 +6,12 @@ The module provides monitoring and observability configuration for all Spring Bo
 
 ### Actuator Configuration
 
-- [Main Configuration](src/main/resources/application.yml)
+- [Main Configuration](src/main/resources/commons-observability.yml)
   - Exposes health and prometheus endpoints via Spring Boot Actuator
   - Configures prometheus endpoint as read-only
   - Disables JMX to reduce overhead
   - Works with both **Spring Web MVC** and **Spring WebFlux** (Reactive)
-- [Development Overrides](src/main/resources/application-dev.yml)
+- [Development Overrides](src/main/resources/commons-observability-dev.yml)
   - Exposes all actuator endpoints for development
   - Enables JMX for advanced monitoring and debugging
   - Activated automatically when `dev` profile is active
@@ -29,18 +29,23 @@ Spring Boot Actuator auto-detects which web framework is on the classpath and co
 ### Adding to a Module
 
 - Add `:common:commons-observability` dependency to module's `build.gradle`
-- Add Spring Web MVC or Spring WebFlux dependency
+- Add Spring Web MVC (`org.springframework.boot:spring-boot-starter-web`) or Spring WebFlux (`org.springframework.boot:spring-boot-starter-webflux`) dependency to module's `build.gradle`
+- Import configurations:
+```yaml
+config:
+  import:
+    - classpath:commons-observability.yml
+    - optional:classpath:commons-observability-${spring.profiles.active}.yml 
+```
 
 ### Port Configuration
 
 **Web applications** (REST APIs):
 - Actuator endpoints are exposed on the **same port** as the main application
 - Example: If your app runs on port `8080`, actuator is at `http://localhost:8080/actuator`
-
-**Non-web applications** (ETL services):
-- Actuator endpoints require `spring-boot-starter-web` dependency
-- Configure a dedicated port via `server.port` property
-- Example: `server.port=${ACTUATOR_PORT:8090}`
+- To override ports, modify the `application[-[profile]].yml` of the consumer module:
+  - To change the port for the application AND actuator, override `server.port` property
+  - To expose the actuator on a **separate** port, set `management.server.port` property
 
 ### Available Endpoints
 
