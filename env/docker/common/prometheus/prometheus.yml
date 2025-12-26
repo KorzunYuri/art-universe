@@ -33,14 +33,14 @@ scrape_configs:
   - job_name: 'lastfm-calls-generator'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: ['lastfm-calls-generator:8090']
+      - targets: ['lastfm-calls-generator:8080']
 
   - job_name: 'lastfm-calls-performer'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: ['lastfm-calls-performer:8090']
+      - targets: ['lastfm-calls-performer:8080']
 
   - job_name: 'lastfm-response-parser'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: ['lastfm-response-parser:8090']
+      - targets: ['lastfm-response-parser:8080']

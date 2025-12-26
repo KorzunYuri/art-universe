@@ -101,7 +101,6 @@ services:
       - ./music-data-raw-lastfm.secrets.env
     ports:
       - "${MURAW_LASTFM_REST_API_EXTERNAL_PORT}:${MURAW_LASTFM_REST_API_INTERNAL_PORT}"
-      - "${MURAW_LASTFM_REST_API_ACTUATOR_EXTERNAL_PORT}:${MURAW_LASTFM_REST_API_ACTUATOR_INTERNAL_PORT}"
     volumes:
       - local__lastfm-rest-api__app-logs:/app/logs
     depends_on:
@@ -139,7 +138,6 @@ services:
       - ./music-data-raw-lastfm.secrets.env
     ports:
       - "${MURAW_LASTFM_ETL_REST_API_EXTERNAL_PORT}:${MURAW_LASTFM_ETL_REST_API_INTERNAL_PORT}"
-      - "${MURAW_LASTFM_ETL_REST_API_ACTUATOR_EXTERNAL_PORT}:${MURAW_LASTFM_ETL_REST_API_ACTUATOR_INTERNAL_PORT}"
     volumes:
       - local__lastfm-etl-rest-api__app-logs:/app/logs
     depends_on:
@@ -270,7 +268,6 @@ services:
       - ./music-data.secrets.env
     ports:
       - "${MU_DATA_APP_EXTERNAL_PORT}:${MU_DATA_APP_INTERNAL_PORT}"
-      - "${MU_DATA_ACTUATOR_EXTERNAL_PORT}:${MU_DATA_ACTUATOR_INTERNAL_PORT}"
     volumes:
       - local__mu-data__app-logs:/app/logs
     depends_on:
@@ -304,7 +301,6 @@ services:
       - ./music-quiz.secrets.env
     ports:
       - "${MU_QUIZ_APP_EXTERNAL_PORT}:${MU_QUIZ_APP_INTERNAL_PORT}"
-      - "${MU_QUIZ_ACTUATOR_EXTERNAL_PORT}:${MU_QUIZ_ACTUATOR_INTERNAL_PORT}"
     volumes:
       - local__mu-quiz__app-logs:/app/logs
     depends_on:

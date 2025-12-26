@@ -80,7 +80,6 @@ Configuration and error handling (`common/`):
 - `MURAW_LASTFM_DB_USER_NAME` - Database username
 - `MURAW_LASTFM_DB_PASSWORD` - Database password
 - `MURAW_LASTFM_REST_API_INTERNAL_PORT` - Application HTTP port
-- `MURAW_LASTFM_REST_API_ACTUATOR_INTERNAL_PORT` - Actuator port
 - `MURAW_LASTFM_REST_API_CORS_ALLOWED_ORIGINS` - CORS allowed origins
 
 ### Deployment Notes

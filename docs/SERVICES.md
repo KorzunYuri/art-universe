@@ -17,17 +17,16 @@ The project is currently deployable to a local machine only:
 |-----------------------------|---------|--------|-----|-------|------|
 | [LastFM REST API (Read)](../music/data/raw/lastfm/lastfm-rest-api/README.md) | Read-only REST API for LastFM raw data | [`:music:data:raw:lastfm:lastfm-rest-api`](../music/data/raw/lastfm/lastfm-rest-api/README.md) | 7084 | 9084 | 8084 |
 | [LastFM ETL REST API (Write)](../music/data/raw/lastfm/etl/lastfm-etl-rest-api/README.md) | Write operations REST API for LastFM ETL | [`:music:data:raw:lastfm:etl:lastfm-etl-rest-api`](../music/data/raw/lastfm/etl/lastfm-etl-rest-api/README.md) | 7085 | 9085 | 8085 |
-| [LastFM Calls Generator](../music/data/raw/lastfm/etl/lastfm-calls-generator/README.md) | Generates API calls for LastFM data collection | [`:music:data:raw:lastfm:etl:lastfm-calls-generator`](../music/data/raw/lastfm/etl/lastfm-calls-generator/README.md) | 7096 | 9096 | - |
-| [LastFM Calls Performer](../music/data/raw/lastfm/etl/lastfm-calls-performer/README.md) | Executes API calls against LastFM API | [`:music:data:raw:lastfm:etl:lastfm-calls-performer`](../music/data/raw/lastfm/etl/lastfm-calls-performer/README.md) | 7097 | 9097 | - |
-| [LastFM Response Parser](../music/data/raw/lastfm/etl/lastfm-response-parser/README.md) | Parses and processes LastFM API responses | [`:music:data:raw:lastfm:etl:lastfm-response-parser`](../music/data/raw/lastfm/etl/lastfm-response-parser/README.md) | 7098 | 9098 | - |
+| [LastFM Calls Generator](../music/data/raw/lastfm/etl/lastfm-calls-generator/README.md) | Generates API calls for LastFM data collection | [`:music:data:raw:lastfm:etl:lastfm-calls-generator`](../music/data/raw/lastfm/etl/lastfm-calls-generator/README.md) | 7086 | 9086 | 8086 |
+| [LastFM Calls Performer](../music/data/raw/lastfm/etl/lastfm-calls-performer/README.md) | Executes API calls against LastFM API | [`:music:data:raw:lastfm:etl:lastfm-calls-performer`](../music/data/raw/lastfm/etl/lastfm-calls-performer/README.md) | 7087 | 9087 | 8087 |
+| [LastFM Response Parser](../music/data/raw/lastfm/etl/lastfm-response-parser/README.md) | Parses and processes LastFM API responses | [`:music:data:raw:lastfm:etl:lastfm-response-parser`](../music/data/raw/lastfm/etl/lastfm-response-parser/README.md) | 7088 | 9088 | 8088 |
 | [Music Data Master](../music/data/master/README.md) | Curated data management and binding service | [`:music:data:master`](../music/data/master/README.md) | 7082 | 9082 | 8082 |
 | [Music Quiz](../music/quiz/README.md) | Quiz generation from approved data | [`:music:quiz`](../music/quiz/README.md) | 7083 | 9083 | 8083 |
-| [Music UI](../music/ui/README.md) | React management interface for all services | [`:music:ui`](../music/ui/README.md) | 5173 / - | 4000 / - | 3000 / - |
-| PostgreSQL (LastFM)         | Database for LastFM raw data (schema: `mu_raw_lastfm`) | N/A | 7799 / - | 9999 / - | - / - |
-| PostgreSQL (Music Data)     | Database for music data and quiz (schemas: `mu`, `mu_quiz`) | N/A | 7789 / - | 9989 / - | - / - |
-| Adminer                     | Web-based database administration tool | N/A | 7788 / - | 9980 / - | 8880 / - |
-| Prometheus                  | Metrics collection and monitoring | N/A | 7090 / - | 9090 / - | 8090 / - |
-| Grafana                     | Metrics visualization and dashboards | N/A | 7000 / - | 9000 / - | 8000 / - |
+| [Music UI](../music/ui/README.md) | React management interface for all services | [`:music:ui`](../music/ui/README.md) | 5173 | 4000 | 3000 |
+| PostgreSQL (LastFM)         | Database for LastFM raw data (schema: `mu_raw_lastfm`) | N/A | 7799 | 9999 | -    |
+| PostgreSQL (Music Data)     | Database for music data and quiz (schemas: `mu`, `mu_quiz`) | N/A | 7789 | 9989 | -    |
+| Prometheus                  | Metrics collection and monitoring | N/A | 7080 | 9090 | 8080 |
+| Grafana                     | Metrics visualization and dashboards | N/A | 7000 | 9000 | 8000 |
 
 ## Environment Descriptions
 
