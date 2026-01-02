@@ -49,7 +49,7 @@ services:
 
 networks:
   default:
-    name: dev__network
+    name: dev__mu-observability-network
 
 volumes:
   prometheus-data:
