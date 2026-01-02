@@ -221,3 +221,4 @@ Database: status = 3
 ### Related Patterns
 - [Entity Patterns Overview](overview.md) - All entity patterns index
 - [Base Entity Pattern](base-entity.md) - Entity base class
+- [Strategy Registry Pattern](../strategy-registry.md) - Different registry pattern for Spring bean strategies (not enums)

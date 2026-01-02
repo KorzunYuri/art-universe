@@ -62,4 +62,5 @@ State transitions coordinated across multiple application instances via database
 
 - [Coded Enums](entities/coded-enums.md) - Foundation for database-persisted state machines
 - [Base Entity](entities/base-entity.md) - Entities using state machine pattern
+- [Strategy Registry](strategy-registry.md) - Registry pattern for strategy components (different from enum registry)
 - [SCD2 Attribute History](database/scd2-attribute-history.md) - Track state changes over time

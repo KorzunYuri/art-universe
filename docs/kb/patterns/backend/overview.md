@@ -13,9 +13,10 @@ Cross-cutting patterns used across multiple layers.
 
 **Files**:
 - [state-machine.md](state-machine.md) - State machine pattern for entity lifecycle management
+- [strategy-registry.md](strategy-registry.md) - Strategy Registry pattern with Spring AOP proxy support
 - [project-structure.md](project-structure.md) - Standard project structure
 
-**Use when**: Managing entity state transitions, coordinating operations across modules
+**Use when**: Managing entity state transitions, implementing plugin architectures, coordinating operations across modules
 
 ---
 
