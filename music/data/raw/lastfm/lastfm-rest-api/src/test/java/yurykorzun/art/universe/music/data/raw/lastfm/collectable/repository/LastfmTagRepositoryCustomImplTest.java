@@ -4,7 +4,6 @@ import jakarta.persistence.Entity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -25,20 +24,19 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Import({ DbConsistencyHelper.class })
 class LastfmTagRepositoryCustomImplTest extends LastfmJpaTestHelper {
 
     @Autowired
     private LastfmTagRepositoryCustomImpl customRepository;
     
     @Autowired
-    private DbConsistencyHelper dbHelper;
+    private DbConsistencyHelper consistencyHelper;
 
     @BeforeEach
     void setUp() throws Exception {
         // Force re-initialization of the repository
         customRepository.init();
-        dbHelper.cleanup();
+        consistencyHelper.cleanup();
     }
 
     @Test
@@ -100,24 +98,24 @@ class LastfmTagRepositoryCustomImplTest extends LastfmJpaTestHelper {
     @Test
     void findTagsByEntityWithFilters_shouldReturnTagsWithEntityData() {
         // Given
-        LastfmArtist artist = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist artist = consistencyHelper.createAndSaveArtist(builder -> builder
             .approvalStatus(ApprovalStatus.APPROVED));
         
-        LastfmTag tag1 = dbHelper.createAndSaveTag(builder -> builder
+        LastfmTag tag1 = consistencyHelper.createAndSaveTag(builder -> builder
             .name("rock")
             .approvalStatus(ApprovalStatus.PENDING));
         
-        LastfmTag tag2 = dbHelper.createAndSaveTag(builder -> builder
+        LastfmTag tag2 = consistencyHelper.createAndSaveTag(builder -> builder
             .name("pop")
             .approvalStatus(ApprovalStatus.APPROVED));
         
         // Create entity relations with usage counts
-        dbHelper.createAndSaveArtistTag(builder -> builder
+        consistencyHelper.createAndSaveArtistTag(builder -> builder
             .artist(artist)
             .tag(tag1)
             .usageCount(50));
         
-        dbHelper.createAndSaveArtistTag(builder -> builder
+        consistencyHelper.createAndSaveArtistTag(builder -> builder
             .artist(artist)
             .tag(tag2)
             .usageCount(100));
@@ -147,24 +145,24 @@ class LastfmTagRepositoryCustomImplTest extends LastfmJpaTestHelper {
     @Test
     void findTagsByEntityWithFilters_shouldFilterByMinUsageCount() {
         // Given
-        LastfmArtist artist = dbHelper.createAndSaveArtist();
+        LastfmArtist artist = consistencyHelper.createAndSaveArtist();
         
-        LastfmTag tag1 = dbHelper.createAndSaveTag(builder -> builder.name("tag1"));
-        LastfmTag tag2 = dbHelper.createAndSaveTag(builder -> builder.name("tag2"));
-        LastfmTag tag3 = dbHelper.createAndSaveTag(builder -> builder.name("tag3"));
+        LastfmTag tag1 = consistencyHelper.createAndSaveTag(builder -> builder.name("tag1"));
+        LastfmTag tag2 = consistencyHelper.createAndSaveTag(builder -> builder.name("tag2"));
+        LastfmTag tag3 = consistencyHelper.createAndSaveTag(builder -> builder.name("tag3"));
         
         // Create relations with different usage counts
-        dbHelper.createAndSaveArtistTag(builder -> builder
+        consistencyHelper.createAndSaveArtistTag(builder -> builder
             .artist(artist)
             .tag(tag1)
             .usageCount(10));
         
-        dbHelper.createAndSaveArtistTag(builder -> builder
+        consistencyHelper.createAndSaveArtistTag(builder -> builder
             .artist(artist)
             .tag(tag2)
             .usageCount(30));
         
-        dbHelper.createAndSaveArtistTag(builder -> builder
+        consistencyHelper.createAndSaveArtistTag(builder -> builder
             .artist(artist)
             .tag(tag3)
             .usageCount(20));
@@ -196,17 +194,17 @@ class LastfmTagRepositoryCustomImplTest extends LastfmJpaTestHelper {
     @Test
     void findTagsByEntityWithFilters_shouldSortByEntityApprovalStatus() {
         // Given
-        LastfmArtist artist1 = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist artist1 = consistencyHelper.createAndSaveArtist(builder -> builder
             .approvalStatus(ApprovalStatus.PENDING));
         
-        LastfmArtist artist2 = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist artist2 = consistencyHelper.createAndSaveArtist(builder -> builder
             .approvalStatus(ApprovalStatus.APPROVED));
         
-        LastfmTag tag = dbHelper.createAndSaveTag();
+        LastfmTag tag = consistencyHelper.createAndSaveTag();
         
         // Create entity relations
-        dbHelper.createAndSaveArtistTag(artist1, tag);
-        dbHelper.createAndSaveArtistTag(artist2, tag);
+        consistencyHelper.createAndSaveArtistTag(artist1, tag);
+        consistencyHelper.createAndSaveArtistTag(artist2, tag);
         
         // When - sort by entity approval status ascending
         Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "entityApprovalStatus"));
@@ -229,11 +227,11 @@ class LastfmTagRepositoryCustomImplTest extends LastfmJpaTestHelper {
     @Test
     void findTagsByEntityWithFilters_shouldHandleNullUsageCount() {
         // Given
-        LastfmArtist artist = dbHelper.createAndSaveArtist();
-        LastfmTag tag = dbHelper.createAndSaveTag(builder -> builder.name("nullUsageTag"));
+        LastfmArtist artist = consistencyHelper.createAndSaveArtist();
+        LastfmTag tag = consistencyHelper.createAndSaveTag(builder -> builder.name("nullUsageTag"));
         
         // Create relation with null usage count
-        LastfmArtistTag artistTag = dbHelper.createAndSaveArtistTag(builder -> builder
+        LastfmArtistTag artistTag = consistencyHelper.createAndSaveArtistTag(builder -> builder
             .artist(artist)
             .tag(tag)
             .usageCount(null));

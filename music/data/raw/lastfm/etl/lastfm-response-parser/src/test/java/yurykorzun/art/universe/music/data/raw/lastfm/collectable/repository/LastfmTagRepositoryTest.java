@@ -1,39 +1,25 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Import;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTag;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.LastfmJpaTestHelper;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Import({
-        DbConsistencyHelper.class,
-})
 class LastfmTagRepositoryTest extends LastfmJpaTestHelper {
 
     @Autowired
     private LastfmTagRepository tagRepository;
 
-    @Autowired
-    private DbConsistencyHelper dbHelper;
-
-    @BeforeEach
-    void setUp() {
-        dbHelper.cleanup();
-    }
-
     @Test
     void findAllByNameIn_shouldReturnMatchingTags() {
         // Given
-        LastfmTag tag1 = dbHelper.createAndSaveTag(builder -> builder.name("rock"));
-        LastfmTag tag2 = dbHelper.createAndSaveTag(builder -> builder.name("pop"));
-        LastfmTag tag3 = dbHelper.createAndSaveTag(builder -> builder.name("jazz"));
+        LastfmTag tag1 = consistencyHelper.createAndSaveTag(builder -> builder.name("rock"));
+        LastfmTag tag2 = consistencyHelper.createAndSaveTag(builder -> builder.name("pop"));
+        LastfmTag tag3 = consistencyHelper.createAndSaveTag(builder -> builder.name("jazz"));
         
         // When
         List<LastfmTag> result = tagRepository.findAllByNameIn(List.of("rock", "jazz"));

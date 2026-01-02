@@ -43,7 +43,8 @@ Creation methods usually have two types of signatures:
 Features:
 - extends [LastfmJpaTest.java](../lastfm-commons-test-db/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/common/archetypes/LastfmJpaTest.java) from [lastfm-commons-test-db](../lastfm-commons-test-db/README.md) module,
 so Spring context limited to persistence layer with containerized database is loaded when the test starts
-- also adds [DbConsistencyHelper.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/common/DbConsistencyHelper.java) and test repositories to the context
+- adds [DbConsistencyHelper.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/common/DbConsistencyHelper.java) and test repositories to the context
+- autowires [DbConsistencyHelper.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/common/DbConsistencyHelper.java) for usage in extending classes
 
 #### How to use
 
@@ -59,9 +60,6 @@ class LastfmAlbumRepositoryTest extends LastfmJpaTestHelper {
 
     @Autowired
     private LastfmAlbumRepository albumRepository;
-
-    @Autowired
-    private DbConsistencyHelper consistencyHelper;
 
     @BeforeEach
     void setUp() {

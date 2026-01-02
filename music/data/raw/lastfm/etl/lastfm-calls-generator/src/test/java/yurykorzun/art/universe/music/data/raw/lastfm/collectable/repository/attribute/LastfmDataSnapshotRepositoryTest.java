@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.attribute.LastfmDataSnapshot;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.BaseLastfmEntity;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.LastfmJpaTestHelper;
 
 import java.time.LocalDate;
@@ -20,9 +19,6 @@ class LastfmDataSnapshotRepositoryTest extends LastfmJpaTestHelper {
 
     @Autowired
     private EntityManager entityManager;
-
-    @Autowired
-    private DbConsistencyHelper consistencyHelper;
 
     @Test
     void save_shouldSaveCorrectValues_whenNewDataSnapshotPersisted() {

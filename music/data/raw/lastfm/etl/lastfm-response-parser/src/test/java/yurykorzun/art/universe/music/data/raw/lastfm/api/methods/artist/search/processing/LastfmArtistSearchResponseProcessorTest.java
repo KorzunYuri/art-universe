@@ -2,7 +2,6 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.search.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +18,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmAr
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.LastfmArtistRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.attribute.TestLastfmAttributeHistoryRecordRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl.LastfmArtistServiceImpl;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.BaseLastfmApiResponseProcessorTest;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.utils.StringUtils;
 
@@ -38,8 +36,6 @@ import static org.junit.jupiter.api.Assertions.*;
     LastfmArtistServiceImpl.class,
 })
 class LastfmArtistSearchResponseProcessorTest extends BaseLastfmApiResponseProcessorTest {
-    @Autowired
-    private DbConsistencyHelper consistencyHelper;
 
     @Autowired
     private LastfmArtistSearchResponseProcessor processor;
@@ -60,16 +56,9 @@ class LastfmArtistSearchResponseProcessorTest extends BaseLastfmApiResponseProce
 
     @BeforeEach
     public void setUp() throws IOException {
-        consistencyHelper.cleanup();
-        
         // Load test data once for all tests
         responseJsonString = LastfmApiClientResourceUtil.getApiClientResponse(TEST_RESPONSE_KEY);
         dtoRoot = parseResponse(responseJsonString);
-    }
-
-    @AfterEach
-    public void cleanDatabase() {
-        consistencyHelper.cleanup();
     }
 
     /**

@@ -8,7 +8,6 @@ import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.lookup.LastfmTagLookupService;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.LastfmJpaTestHelper;
 
 import java.util.List;
@@ -24,32 +23,27 @@ class LastfmTagLookupServiceTest extends LastfmJpaTestHelper {
     @Autowired
     private LastfmTagLookupService lookupService;
 
-    @Autowired
-    private DbConsistencyHelper dbHelper;
-
     @Test
     void lookup_shouldPrioritizeByApprovalStatus_whenMultipleTagsMatch() {
-        // Given
-        dbHelper.cleanup();
         
         // Create tags with different approval statuses but similar names
-        LastfmTag pendingTag = dbHelper.createAndSaveTag(builder -> builder
+        LastfmTag pendingTag = consistencyHelper.createAndSaveTag(builder -> builder
             .name("rock-n-roll")
             .approvalStatus(ApprovalStatus.PENDING));
         
-        LastfmTag approvedTag = dbHelper.createAndSaveTag(builder -> builder
+        LastfmTag approvedTag = consistencyHelper.createAndSaveTag(builder -> builder
             .name("rock music")
             .approvalStatus(ApprovalStatus.APPROVED));
         
-        LastfmTag preApprovedTag = dbHelper.createAndSaveTag(builder -> builder
+        LastfmTag preApprovedTag = consistencyHelper.createAndSaveTag(builder -> builder
             .name("rock and roll")
             .approvalStatus(ApprovalStatus.PRE_APPROVED));
         
-        LastfmTag declinedTag = dbHelper.createAndSaveTag(builder -> builder
+        LastfmTag declinedTag = consistencyHelper.createAndSaveTag(builder -> builder
             .name("rock alternative")
             .approvalStatus(ApprovalStatus.DECLINED));
 
-        dbHelper.flush();
+        consistencyHelper.flush();
 
         // When
         LookupRequestDTO request = LookupRequestDTO.builder()
@@ -73,18 +67,18 @@ class LastfmTagLookupServiceTest extends LastfmJpaTestHelper {
     @Test
     void lookup_shouldPrioritizeExactMatch_whenSearchTermMatchesExactly() {
         // Given
-        dbHelper.cleanup();
+        consistencyHelper.cleanup();
         
         // Create tags where one matches exactly
-        LastfmTag exactMatch = dbHelper.createAndSaveTag(builder -> builder
+        LastfmTag exactMatch = consistencyHelper.createAndSaveTag(builder -> builder
             .name("jazz")
             .approvalStatus(ApprovalStatus.PENDING));
         
-        LastfmTag partialMatch = dbHelper.createAndSaveTag(builder -> builder
+        LastfmTag partialMatch = consistencyHelper.createAndSaveTag(builder -> builder
             .name("jazz fusion")
             .approvalStatus(ApprovalStatus.APPROVED)); // Higher approval status but not exact match
 
-        dbHelper.flush();
+        consistencyHelper.flush();
 
         // When
         LookupRequestDTO request = LookupRequestDTO.builder()

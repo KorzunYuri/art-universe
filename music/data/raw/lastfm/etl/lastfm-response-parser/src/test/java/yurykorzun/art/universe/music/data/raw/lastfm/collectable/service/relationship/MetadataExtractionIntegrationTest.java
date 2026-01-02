@@ -1,7 +1,6 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.relationship;
 
 import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -15,7 +14,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.rela
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.relationship.impl.LastfmArtistAlbumServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.relationship.impl.LastfmArtistTagServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.relationship.impl.LastfmArtistsRelationServiceImpl;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.LastfmJpaTestHelper;
 
@@ -45,21 +43,13 @@ class MetadataExtractionIntegrationTest extends LastfmJpaTestHelper {
     @Autowired
     private EntityManager entityManager;
 
-    @Autowired
-    private DbConsistencyHelper dbHelper;
-
-    @BeforeEach
-    void setUp() {
-        dbHelper.cleanup();
-    }
-
     @Test
     void upsertAll_shouldThrowException_whenDataIntegrityViolated() {
         // Given - create valid entity
-        LastfmArtistTag validEntity = dbHelper.createArtistTagForPersistence();
+        LastfmArtistTag validEntity = consistencyHelper.createArtistTagForPersistence();
         
         // Create invalid entity with non-existent IDs but valid structure
-        LastfmApiCall apiCall = dbHelper.createAndSaveApiCall();
+        LastfmApiCall apiCall = consistencyHelper.createAndSaveApiCall();
         
         // Create entities with valid structure but non-existent IDs
         LastfmArtist fakeArtist = EntityCreationHelper.createArtist(builder -> 
@@ -82,9 +72,9 @@ class MetadataExtractionIntegrationTest extends LastfmJpaTestHelper {
     void upsertAll_shouldBeTransactional() {
         // Given
         List<LastfmArtistTag> batch = List.of(
-            dbHelper.createArtistTagForPersistence(),
-            dbHelper.createArtistTagForPersistence(),
-            dbHelper.createArtistTagForPersistence()
+            consistencyHelper.createArtistTagForPersistence(),
+            consistencyHelper.createArtistTagForPersistence(),
+            consistencyHelper.createArtistTagForPersistence()
         );
 
         // When
@@ -123,7 +113,7 @@ class MetadataExtractionIntegrationTest extends LastfmJpaTestHelper {
         assertDoesNotThrow(() -> service.initializeMetadata());
         
         // Then - should be able to generate SQL with inherited fields
-        LastfmArtistTag sampleEntity = dbHelper.createArtistTagForPersistence();
+        LastfmArtistTag sampleEntity = consistencyHelper.createArtistTagForPersistence();
         
         assertDoesNotThrow(() -> {
             String sql = service.buildUpsertSql(sampleEntity);
@@ -141,19 +131,19 @@ class MetadataExtractionIntegrationTest extends LastfmJpaTestHelper {
         // Test different entity relationship patterns
         
         // 1. Different entity types (Artist-Tag)
-        LastfmArtistTag artistTag = dbHelper.createArtistTagForPersistence();
+        LastfmArtistTag artistTag = consistencyHelper.createArtistTagForPersistence();
         String artistTagSql = ((LastfmArtistTagServiceImpl) artistTagService).buildUpsertSql(artistTag);
         assertTrue(artistTagSql.contains("ON CONFLICT (artist_id, tag_id)"), 
             "Different entity types should use simple conflict columns");
 
         // 2. Same entity types (Artist-Artist)
-        LastfmArtistsRelation artistsRelation = dbHelper.createArtistsRelationForPersistence();
+        LastfmArtistsRelation artistsRelation = consistencyHelper.createArtistsRelationForPersistence();
         String artistsRelationSql = ((LastfmArtistsRelationServiceImpl) artistsRelationService).buildUpsertSql(artistsRelation);
         assertTrue(artistsRelationSql.contains("ON CONFLICT (source_artist_id, target_artist_id, relation_type)"), 
             "Same entity types should use source/target prefixes and include relation_type");
 
         // 3. No updatable fields (Artist-Album)
-        LastfmArtistAlbum artistAlbum = dbHelper.createArtistAlbumForPersistence();
+        LastfmArtistAlbum artistAlbum = consistencyHelper.createArtistAlbumForPersistence();
         String artistAlbumSql = ((LastfmArtistAlbumServiceImpl) artistAlbumService).buildUpsertSql(artistAlbum);
         assertTrue(artistAlbumSql.contains("DO NOTHING"), 
             "Entities with no updatable fields should use DO NOTHING");
@@ -166,7 +156,7 @@ class MetadataExtractionIntegrationTest extends LastfmJpaTestHelper {
         service.initializeMetadata();
         
         // When
-        LastfmArtistTag sampleEntity = dbHelper.createArtistTagForPersistence();
+        LastfmArtistTag sampleEntity = consistencyHelper.createArtistTagForPersistence();
         String sql = ((LastfmArtistTagServiceImpl) artistTagService).buildUpsertSql(sampleEntity);
         
         // Then - should correctly extract from annotations
@@ -187,7 +177,7 @@ class MetadataExtractionIntegrationTest extends LastfmJpaTestHelper {
     @Test
     void metadataExtraction_shouldHandleConverters() {
         // Given - entity with converter (approval_status uses ApprovalStatusConverter)
-        LastfmArtistTag sampleEntity = dbHelper.createArtistTagForPersistence();
+        LastfmArtistTag sampleEntity = consistencyHelper.createArtistTagForPersistence();
         
         // When & Then - should handle converter without errors
         assertDoesNotThrow(() -> {
@@ -200,7 +190,7 @@ class MetadataExtractionIntegrationTest extends LastfmJpaTestHelper {
     @Test
     void parameterMapper_shouldHandleComplexFields() {
         // Given
-        LastfmArtistTag entity = dbHelper.createArtistTagForPersistence();
+        LastfmArtistTag entity = consistencyHelper.createArtistTagForPersistence();
         
         // When & Then - should handle JoinColumn fields (extracting IDs from referenced entities)
         assertDoesNotThrow(() -> {

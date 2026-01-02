@@ -2,7 +2,6 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getsimi
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +22,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.rela
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.BlacklistedEntityUrlService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl.LastfmArtistServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.relationship.impl.LastfmArtistsRelationServiceImpl;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.BaseLastfmApiResponseProcessorTest;
 
 import java.io.IOException;
@@ -43,8 +41,6 @@ import static org.junit.jupiter.api.Assertions.*;
     LastfmArtistsRelationServiceImpl.class,
 })
 class LastfmArtistGetSimilarResponseProcessorTest extends BaseLastfmApiResponseProcessorTest {
-    @Autowired
-    private DbConsistencyHelper consistencyHelper;
 
     @Autowired
     private LastfmArtistGetSimilarResponseProcessor processor;
@@ -68,7 +64,6 @@ class LastfmArtistGetSimilarResponseProcessorTest extends BaseLastfmApiResponseP
 
     @BeforeEach
     public void setUp() throws IOException {
-        consistencyHelper.cleanup();
 
         // Load test data once for all tests
         responseJsonString = LastfmApiClientResourceUtil.getApiClientResponse(TEST_RESPONSE_KEY);
@@ -76,11 +71,6 @@ class LastfmArtistGetSimilarResponseProcessorTest extends BaseLastfmApiResponseP
 
         // Set threshold to 0 to process all similar artists by default
         ReflectionTestUtils.setField(processor, "artistMatchThreshold", DEFAULT_THRESHOLD);
-    }
-
-    @AfterEach
-    public void cleanDatabase() {
-        consistencyHelper.cleanup();
     }
 
     /**

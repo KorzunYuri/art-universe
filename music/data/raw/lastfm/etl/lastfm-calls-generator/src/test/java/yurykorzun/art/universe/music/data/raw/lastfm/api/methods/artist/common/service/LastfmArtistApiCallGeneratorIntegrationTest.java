@@ -29,7 +29,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.L
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.LastfmDataSnapshotService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.attribute.LastfmAttributeSnapshotService;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.LastfmJpaTestHelper;
 
@@ -86,8 +85,6 @@ public class LastfmArtistApiCallGeneratorIntegrationTest extends LastfmJpaTestHe
 
     @Autowired
     private ApplicationContext ctx;
-    @Autowired
-    protected DbConsistencyHelper consistencyHelper;
 
     /**
      * Test parameters set contains:

@@ -1,6 +1,5 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +8,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApi
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.LastfmJpaTestHelper;
 
 import java.util.ArrayList;
@@ -21,9 +19,6 @@ class LastfmTrackRepositoryTest extends LastfmJpaTestHelper {
 
     @Autowired
     private LastfmTrackRepository trackRepository;
-
-    @Autowired
-    private DbConsistencyHelper consistencyHelper;
 
     private LastfmArtist artist;
     private List<LastfmTrack> testTracks;
@@ -87,11 +82,6 @@ class LastfmTrackRepositoryTest extends LastfmJpaTestHelper {
             
         // Save all test tracks
         trackRepository.saveAll(testTracks);
-    }
-    
-    @AfterEach
-    void tearDown() {
-        consistencyHelper.cleanup();
     }
 
     @Test

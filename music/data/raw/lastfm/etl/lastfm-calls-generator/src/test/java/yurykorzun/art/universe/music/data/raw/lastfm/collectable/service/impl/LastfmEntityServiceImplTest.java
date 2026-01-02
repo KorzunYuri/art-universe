@@ -13,7 +13,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTa
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.attribute.LastfmDataSnapshot;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.TestLastfmTagRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.LastfmJpaTestHelper;
 
 import java.time.Duration;
@@ -29,15 +28,11 @@ import static yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstan
 
 @Import({
     LastfmApiCallEntityServiceImpl.class,
-    DbConsistencyHelper.class,
 })
 class LastfmEntityServiceImplTest extends LastfmJpaTestHelper {
 
     @Autowired
     private LastfmApiCallEntityServiceImpl service;
-
-    @Autowired
-    private DbConsistencyHelper consistencyHelper;
 
     @Autowired
     private LastfmApiCallRepository apiCallRepository;

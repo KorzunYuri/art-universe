@@ -1,7 +1,6 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.maintenance.service;
 
 import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -10,9 +9,8 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmAr
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.TestBlacklistedEntityUrlRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.LastfmArtistRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.TestBlacklistedEntityUrlRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.LastfmJpaTestHelper;
 
 import java.util.List;
@@ -27,9 +25,6 @@ class DbMaintenanceServiceIntegrationTest extends LastfmJpaTestHelper {
     private JdbcTemplate jdbcTemplate;
 
     @Autowired
-    private DbConsistencyHelper dbHelper;
-
-    @Autowired
     private EntityManager entityManager;
 
     @Autowired
@@ -38,26 +33,21 @@ class DbMaintenanceServiceIntegrationTest extends LastfmJpaTestHelper {
     @Autowired
     private TestBlacklistedEntityUrlRepository blacklistRepository;
 
-    @BeforeEach
-    void setUp() {
-        dbHelper.cleanup();
-    }
-
     @Test
     void mtnc_cleanup_entity_shouldPerformDryRun_whenDryRunIsTrue() {
         // Given: Create test entities with low popularity scores
-        LastfmArtist lowPopularityArtist = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist lowPopularityArtist = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("Low Popularity Artist")
             .listenersCount(500)); // Below threshold of 1000
 
-        LastfmArtist highPopularityArtist = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist highPopularityArtist = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("High Popularity Artist")
             .listenersCount(5000)); // Above threshold
 
         // Create some relationships
-        LastfmTag tag = dbHelper.createAndSaveTag();
-        dbHelper.createAndSaveArtistTag(lowPopularityArtist, tag);
-        dbHelper.createAndSaveArtistTag(highPopularityArtist, tag);
+        LastfmTag tag = consistencyHelper.createAndSaveTag();
+        consistencyHelper.createAndSaveArtistTag(lowPopularityArtist, tag);
+        consistencyHelper.createAndSaveArtistTag(highPopularityArtist, tag);
 
         // Flush to ensure entities are persisted to database
         entityManager.flush();
@@ -95,18 +85,18 @@ class DbMaintenanceServiceIntegrationTest extends LastfmJpaTestHelper {
     @Test
     void mtnc_cleanup_entity_shouldDeleteLowPopularityEntities_whenDryRunIsFalse() {
         // Given: Create test entities
-        LastfmArtist lowPopularityArtist = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist lowPopularityArtist = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("Low Popularity Artist")
             .listenersCount(500)); // Below threshold
 
-        LastfmArtist highPopularityArtist = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist highPopularityArtist = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("High Popularity Artist")
             .listenersCount(5000)); // Above threshold
 
         // Create relationships that should be cleaned up via CASCADE
-        LastfmTag tag = dbHelper.createAndSaveTag();
-        dbHelper.createAndSaveArtistTag(lowPopularityArtist, tag);
-        dbHelper.createAndSaveArtistTag(highPopularityArtist, tag);
+        LastfmTag tag = consistencyHelper.createAndSaveTag();
+        consistencyHelper.createAndSaveArtistTag(lowPopularityArtist, tag);
+        consistencyHelper.createAndSaveArtistTag(highPopularityArtist, tag);
 
         Long lowPopularityArtistId = lowPopularityArtist.getId();
         Long highPopularityArtistId = highPopularityArtist.getId();
@@ -157,16 +147,16 @@ class DbMaintenanceServiceIntegrationTest extends LastfmJpaTestHelper {
     @Test
     void mtnc_cleanup_entity_shouldHandleMultipleEntityTypes() {
         // Given: Create entities of different types with low popularity
-        LastfmArtist lowPopularityArtist = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist lowPopularityArtist = consistencyHelper.createAndSaveArtist(builder -> builder
             .listenersCount(500)); // Below threshold 1000
 
-        LastfmAlbum lowPopularityAlbum = dbHelper.createAndSaveAlbum(builder -> builder
+        LastfmAlbum lowPopularityAlbum = consistencyHelper.createAndSaveAlbum(builder -> builder
             .playCount(5000L)); // Below threshold 10000
 
-        LastfmTrack lowPopularityTrack = dbHelper.createAndSaveTrack(builder -> builder
+        LastfmTrack lowPopularityTrack = consistencyHelper.createAndSaveTrack(builder -> builder
             .playCount(5000L)); // Below threshold 10000
 
-        LastfmTag lowPopularityTag = dbHelper.createAndSaveTag(builder -> builder
+        LastfmTag lowPopularityTag = consistencyHelper.createAndSaveTag(builder -> builder
             .usageCount(500)); // Below threshold 1000
 
         // Flush to ensure entities are persisted to database
@@ -204,7 +194,7 @@ class DbMaintenanceServiceIntegrationTest extends LastfmJpaTestHelper {
     @Test
     void mtnc_cleanup_entity_shouldOnlyDeletePendingEntities() {
         // Given: Create artists with different approval statuses
-        LastfmArtist pendingArtist = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist pendingArtist = consistencyHelper.createAndSaveArtist(builder -> builder
             .listenersCount(500)); // Below threshold, PENDING status
 
         // Flush to ensure entity is persisted to database
@@ -250,7 +240,7 @@ class DbMaintenanceServiceIntegrationTest extends LastfmJpaTestHelper {
     @Test
     void mtnc_cleanup_entity_shouldHandleDivisionByZero_whenNoDataExists() {
         // Given: Empty database (no entities, no attribute_history, etc.)
-        dbHelper.cleanup();
+        consistencyHelper.cleanup();
 
         // When: Execute dry run cleanup (should not fail with division by zero)
         assertDoesNotThrow(() -> {
@@ -273,7 +263,7 @@ class DbMaintenanceServiceIntegrationTest extends LastfmJpaTestHelper {
     @Test
     void mtnc_cleanup_entity_shouldReturnCleanupHistory() {
         // Given: Create test data
-        dbHelper.createAndSaveArtist(builder -> builder.listenersCount(500));
+        consistencyHelper.createAndSaveArtist(builder -> builder.listenersCount(500));
 
         // When: Execute cleanup
         List<Map<String, Object>> results = jdbcTemplate.queryForList(
@@ -302,17 +292,17 @@ class DbMaintenanceServiceIntegrationTest extends LastfmJpaTestHelper {
     @Test
     void shouldAddArtistsToBlacklistDuringCleanup() {
         // Given - create artists with low listener counts (below threshold of 1000)
-        LastfmArtist lowPopularityArtist1 = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist lowPopularityArtist1 = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("Low Popularity Artist 1")
             .url("https://www.last.fm/music/Low+Popularity+Artist+1")
             .listenersCount(500));
 
-        LastfmArtist lowPopularityArtist2 = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist lowPopularityArtist2 = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("Low Popularity Artist 2")
             .url("https://www.last.fm/music/Low+Popularity+Artist+2")
             .listenersCount(300));
 
-        LastfmArtist highPopularityArtist = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist highPopularityArtist = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("High Popularity Artist")
             .url("https://www.last.fm/music/High+Popularity+Artist")
             .listenersCount(5000));
@@ -363,17 +353,17 @@ class DbMaintenanceServiceIntegrationTest extends LastfmJpaTestHelper {
     @Test
     void shouldHandleArtistsWithNullUrls() {
         // Given - create artist with null URL
-        LastfmArtist artistWithNullUrl = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist artistWithNullUrl = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("Artist With Null URL")
             .url(null)
             .listenersCount(500));
 
-        LastfmArtist artistWithEmptyUrl = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist artistWithEmptyUrl = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("Artist With Empty URL")
             .url("")
             .listenersCount(300));
 
-        LastfmArtist artistWithValidUrl = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist artistWithValidUrl = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("Artist With Valid URL")
             .url("https://www.last.fm/music/Valid+Artist")
             .listenersCount(200));
@@ -406,7 +396,7 @@ class DbMaintenanceServiceIntegrationTest extends LastfmJpaTestHelper {
         String existingBlacklistedUrl = "https://www.last.fm/music/Already+Blacklisted";
         blacklistRepository.insertIgnoreDuplicate(LastfmEntityType.ARTIST, existingBlacklistedUrl);
 
-        LastfmArtist artistWithBlacklistedUrl = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist artistWithBlacklistedUrl = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("Artist With Blacklisted URL")
             .url(existingBlacklistedUrl)
             .listenersCount(500));
@@ -436,7 +426,7 @@ class DbMaintenanceServiceIntegrationTest extends LastfmJpaTestHelper {
     @Test
     void shouldNotBlacklistApprovedArtists() {
         // Given - create approved artist with low popularity (should not be cleaned up)
-        LastfmArtist approvedLowPopularityArtist = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist approvedLowPopularityArtist = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("Approved Low Popularity Artist")
             .url("https://www.last.fm/music/Approved+Low+Popularity+Artist")
             .listenersCount(500));
@@ -450,7 +440,7 @@ class DbMaintenanceServiceIntegrationTest extends LastfmJpaTestHelper {
             approvedLowPopularityArtist.getId()
         );
 
-        LastfmArtist pendingLowPopularityArtist = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist pendingLowPopularityArtist = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("Pending Low Popularity Artist")
             .url("https://www.last.fm/music/Pending+Low+Popularity+Artist")
             .listenersCount(300));

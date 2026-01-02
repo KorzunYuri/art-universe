@@ -1,14 +1,9 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository;
 
-import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Import;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmAlbum;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.LastfmJpaTestHelper;
 
 import java.time.LocalDateTime;
@@ -16,30 +11,10 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Import({
-        DbConsistencyHelper.class,
-})
 class LastfmAlbumRepositoryTest extends LastfmJpaTestHelper {
 
     @Autowired
     private LastfmAlbumRepository albumRepository;
-
-    @Autowired
-    private DbConsistencyHelper consistencyHelper;
-
-    @Autowired
-    private EntityManager entityManager;
-    
-    @BeforeEach
-    void setUp() {
-        // Clean up before each test to ensure consistent state
-        consistencyHelper.cleanup();
-    }
-    
-    @AfterEach
-    void tearDown() {
-        consistencyHelper.cleanup();
-    }
 
     @Test
     void save_shouldSaveAlbum_whenValidDataProvided() {

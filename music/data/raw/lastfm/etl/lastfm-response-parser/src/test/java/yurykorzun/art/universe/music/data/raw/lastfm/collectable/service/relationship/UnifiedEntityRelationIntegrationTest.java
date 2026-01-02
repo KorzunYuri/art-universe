@@ -1,7 +1,6 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.relationship;
 
 import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -18,7 +17,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.rela
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.relationship.impl.LastfmArtistAlbumServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.relationship.impl.LastfmArtistTagServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.relationship.impl.LastfmArtistsRelationServiceImpl;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.LastfmJpaTestHelper;
 
 import java.math.BigDecimal;
@@ -33,7 +31,6 @@ import static org.junit.jupiter.api.Assertions.*;
     LastfmArtistTagServiceImpl.class,
     LastfmArtistsRelationServiceImpl.class,
     LastfmArtistAlbumServiceImpl.class,
-    DbConsistencyHelper.class
 })
 class UnifiedEntityRelationIntegrationTest extends LastfmJpaTestHelper {
 
@@ -58,25 +55,17 @@ class UnifiedEntityRelationIntegrationTest extends LastfmJpaTestHelper {
     @Autowired
     private TestLastfmArtistAlbumRepository artistAlbumRepository;
 
-    @Autowired
-    private DbConsistencyHelper dbHelper;
-
-    @BeforeEach
-    void setUp() {
-        dbHelper.cleanup();
-    }
-
     @Test
     void upsertAll_shouldWorkForDifferentEntityTypes() {
         // Given - ArtistTag (different entity types)
-        LastfmArtist artist = dbHelper.createAndSaveArtist();
-        LastfmTag tag = dbHelper.createAndSaveTag();
+        LastfmArtist artist = consistencyHelper.createAndSaveArtist();
+        LastfmTag tag = consistencyHelper.createAndSaveTag();
         
         LastfmArtistTag artistTag = LastfmArtistTag.builder()
                 .artist(artist)
                 .tag(tag)
                 .usageCount(100)
-                .apiCall(dbHelper.createAndSaveApiCall())
+                .apiCall(consistencyHelper.createAndSaveApiCall())
                 .build();
         entityManager.flush();
 
@@ -95,15 +84,15 @@ class UnifiedEntityRelationIntegrationTest extends LastfmJpaTestHelper {
     @Test
     void upsertAll_shouldWorkForSameEntityTypes() {
         // Given - ArtistsRelation (same entity types)
-        LastfmArtist sourceArtist = dbHelper.createAndSaveArtist();
-        LastfmArtist targetArtist = dbHelper.createAndSaveArtist();
+        LastfmArtist sourceArtist = consistencyHelper.createAndSaveArtist();
+        LastfmArtist targetArtist = consistencyHelper.createAndSaveArtist();
         
         LastfmArtistsRelation artistsRelation = LastfmArtistsRelation.builder()
                 .sourceArtist(sourceArtist)
                 .targetArtist(targetArtist)
                 .matchScore(BigDecimal.valueOf(0.85))
                 .relationType(LastfmEntityRelationType.SIMILARITY)
-                .apiCall(dbHelper.createAndSaveApiCall())
+                .apiCall(consistencyHelper.createAndSaveApiCall())
                 .build();
         entityManager.flush();
 
@@ -123,13 +112,13 @@ class UnifiedEntityRelationIntegrationTest extends LastfmJpaTestHelper {
     @Test
     void upsertAll_shouldWorkForNoUpdatableFields() {
         // Given - ArtistAlbum (no updatable fields)
-        LastfmArtist artist = dbHelper.createAndSaveArtist();
-        LastfmAlbum album = dbHelper.createAndSaveAlbum();
+        LastfmArtist artist = consistencyHelper.createAndSaveArtist();
+        LastfmAlbum album = consistencyHelper.createAndSaveAlbum();
         
         LastfmArtistAlbum artistAlbum = LastfmArtistAlbum.builder()
                 .artist(artist)
                 .album(album)
-                .apiCall(dbHelper.createAndSaveApiCall())
+                .apiCall(consistencyHelper.createAndSaveApiCall())
                 .build();
         entityManager.flush();
 
@@ -147,14 +136,14 @@ class UnifiedEntityRelationIntegrationTest extends LastfmJpaTestHelper {
     @Test
     void upsertAll_shouldHandleConflictsCorrectly() {
         // Given - Create initial ArtistTag
-        LastfmArtist artist = dbHelper.createAndSaveArtist();
-        LastfmTag tag = dbHelper.createAndSaveTag();
+        LastfmArtist artist = consistencyHelper.createAndSaveArtist();
+        LastfmTag tag = consistencyHelper.createAndSaveTag();
         
         LastfmArtistTag initialArtistTag = LastfmArtistTag.builder()
                 .artist(artist)
                 .tag(tag)
                 .usageCount(100)
-                .apiCall(dbHelper.createAndSaveApiCall())
+                .apiCall(consistencyHelper.createAndSaveApiCall())
                 .build();
         entityManager.flush();
         
@@ -166,7 +155,7 @@ class UnifiedEntityRelationIntegrationTest extends LastfmJpaTestHelper {
                 .artist(artist)
                 .tag(tag)
                 .usageCount(200) // Updated
-                .apiCall(dbHelper.createAndSaveApiCall())
+                .apiCall(consistencyHelper.createAndSaveApiCall())
                 .build();
         entityManager.flush();
         
@@ -182,15 +171,15 @@ class UnifiedEntityRelationIntegrationTest extends LastfmJpaTestHelper {
     @Test
     void upsertAll_shouldHandleSameEntityConflictsCorrectly() {
         // Given - Create initial ArtistsRelation
-        LastfmArtist sourceArtist = dbHelper.createAndSaveArtist();
-        LastfmArtist targetArtist = dbHelper.createAndSaveArtist();
+        LastfmArtist sourceArtist = consistencyHelper.createAndSaveArtist();
+        LastfmArtist targetArtist = consistencyHelper.createAndSaveArtist();
         
         LastfmArtistsRelation initialRelation = LastfmArtistsRelation.builder()
                 .sourceArtist(sourceArtist)
                 .targetArtist(targetArtist)
                 .matchScore(BigDecimal.valueOf(0.75))
                 .relationType(LastfmEntityRelationType.SIMILARITY)
-                .apiCall(dbHelper.createAndSaveApiCall())
+                .apiCall(consistencyHelper.createAndSaveApiCall())
                 .build();
         entityManager.flush();
         
@@ -203,7 +192,7 @@ class UnifiedEntityRelationIntegrationTest extends LastfmJpaTestHelper {
                 .targetArtist(targetArtist)
                 .matchScore(BigDecimal.valueOf(0.90)) // Updated
                 .relationType(LastfmEntityRelationType.SIMILARITY)
-                .apiCall(dbHelper.createAndSaveApiCall())
+                .apiCall(consistencyHelper.createAndSaveApiCall())
                 .build();
         entityManager.flush();
         
