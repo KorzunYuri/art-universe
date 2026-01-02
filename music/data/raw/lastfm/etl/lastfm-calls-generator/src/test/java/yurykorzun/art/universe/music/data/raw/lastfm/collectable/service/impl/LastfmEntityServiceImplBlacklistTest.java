@@ -1,7 +1,6 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -21,7 +20,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Tag("integration")
 @Import({
     LastfmApiCallEntityServiceImpl.class,
     DbConsistencyHelper.class

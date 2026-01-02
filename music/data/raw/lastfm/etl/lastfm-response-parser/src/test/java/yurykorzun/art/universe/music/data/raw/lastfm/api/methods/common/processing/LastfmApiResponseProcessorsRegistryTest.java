@@ -1,6 +1,5 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.aop.support.AopUtils;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
@@ -23,7 +22,6 @@ import static org.junit.jupiter.api.Assertions.*;
  * 2. Registry returns Spring proxies (not raw instances)
  * 3. Concurrent registration/retrieval works safely
  */
-@Tag("integration")
 class LastfmApiResponseProcessorsRegistryTest extends LastfmContextTestWithDb {
 
     private static final Set<Class<? extends DtoRoot>> DTO_CLASSES = Arrays.stream(LastfmApiCallType.values())

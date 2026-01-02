@@ -5,7 +5,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -19,9 +18,9 @@ import yurykorzun.art.universe.music.quiz.entity.StepRun;
 import yurykorzun.art.universe.music.quiz.entity.StepType;
 import yurykorzun.art.universe.music.quiz.service.step.process.StepProcessorRegistry;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@Tag("integration")
 @Import({
     StepProcessorRegistry.class,
     ObjectMapper.class,

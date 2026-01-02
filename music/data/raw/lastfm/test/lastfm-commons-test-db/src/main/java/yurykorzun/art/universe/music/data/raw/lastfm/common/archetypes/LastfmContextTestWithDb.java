@@ -1,5 +1,6 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes;
 
+import org.junit.jupiter.api.Tag;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -14,6 +15,7 @@ import yurykorzun.art.universe.common.test.db.PostgresDynamicPropertyConfigurer;
  */
 @SpringBootTest
 @LastfmPostgresTestContainer
+@Tag("integration")
 public abstract class LastfmContextTestWithDb extends BaseTest {
 
     @DynamicPropertySource

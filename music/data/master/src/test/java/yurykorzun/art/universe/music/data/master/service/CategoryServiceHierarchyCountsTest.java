@@ -1,7 +1,6 @@
 package yurykorzun.art.universe.music.data.master.service;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -13,7 +12,6 @@ import yurykorzun.art.universe.music.data.master.repository.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Tag("integration")
 @Import({
         CategoryServiceImpl.class
 })

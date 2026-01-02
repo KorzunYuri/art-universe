@@ -55,7 +55,6 @@ so Spring context limited to persistence layer with containerized database is lo
 #### Example
 
 ```java
-@Tag("integration")
 class LastfmAlbumRepositoryTest extends LastfmJpaTestHelper {
 
     @Autowired

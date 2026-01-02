@@ -1,6 +1,5 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -28,7 +27,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants.HIBERNATE_BATCH_SIZE;
 
-@Tag("integration")
 @Import({
     LastfmApiCallEntityServiceImpl.class,
     DbConsistencyHelper.class,

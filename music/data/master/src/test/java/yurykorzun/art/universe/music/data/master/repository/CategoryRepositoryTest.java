@@ -1,7 +1,6 @@
 package yurykorzun.art.universe.music.data.master.repository;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
@@ -18,7 +17,6 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Tag("integration")
 class CategoryRepositoryTest extends BaseMasterDataJpaTest {
 
     @Autowired

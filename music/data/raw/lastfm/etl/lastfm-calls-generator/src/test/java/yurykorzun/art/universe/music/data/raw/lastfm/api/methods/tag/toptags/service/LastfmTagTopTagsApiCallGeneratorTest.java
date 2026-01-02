@@ -1,7 +1,6 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.service;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +32,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static yurykorzun.art.universe.music.data.raw.lastfm.api.LastfmApiConstants.PAGE_SIZE;
 
-@Tag("integration")
 @Import(LastfmTagTopTagsApiCallGenerator.class)
 class LastfmTagTopTagsApiCallGeneratorTest extends LastfmJpaTestHelper {
 

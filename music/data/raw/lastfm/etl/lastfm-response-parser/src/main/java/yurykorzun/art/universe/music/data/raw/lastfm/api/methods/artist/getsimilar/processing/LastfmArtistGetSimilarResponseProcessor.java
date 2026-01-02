@@ -46,8 +46,6 @@ public class LastfmArtistGetSimilarResponseProcessor extends LastfmApiResponsePr
     private final LastfmAttributeHistoryService attributeHistoryService;
     private final DtoQualityService dtoQualityService;
 
-    // TODO provide default value to injected values
-    // TODO implement on-the-fly value management
     @Value("${lastfm.client.methods.artist.getSimilar.artistMatchThreshold}")
     private float artistMatchThreshold;
 

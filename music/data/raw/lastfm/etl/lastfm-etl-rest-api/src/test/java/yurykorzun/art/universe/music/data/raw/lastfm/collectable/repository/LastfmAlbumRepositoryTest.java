@@ -2,7 +2,6 @@ package yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository;
 
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
@@ -13,7 +12,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.LastfmJpa
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Tag("integration")
 class LastfmAlbumRepositoryTest extends LastfmJpaTestHelper {
 
     @Autowired

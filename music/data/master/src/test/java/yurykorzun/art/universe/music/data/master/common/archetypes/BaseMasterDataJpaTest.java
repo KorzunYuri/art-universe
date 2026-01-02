@@ -1,5 +1,6 @@
 package yurykorzun.art.universe.music.data.master.common.archetypes;
 
+import org.junit.jupiter.api.Tag;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -8,7 +9,6 @@ import yurykorzun.art.universe.common.test.db.PostgresDynamicPropertyConfigurer;
 import yurykorzun.art.universe.common.test.db.PostgresTestContainer;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.BaseTest;
 
-// TODO rename class
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @PostgresTestContainer(
@@ -18,6 +18,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.BaseTest;
     password = "mu_dm_password",
     schema = "mu"
 )
+@Tag("integration")
 public abstract class BaseMasterDataJpaTest extends BaseTest {
 
     @DynamicPropertySource

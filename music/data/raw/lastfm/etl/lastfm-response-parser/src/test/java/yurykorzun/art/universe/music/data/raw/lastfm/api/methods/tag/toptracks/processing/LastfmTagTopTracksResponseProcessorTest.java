@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -38,7 +37,6 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Tag("integration")
 @Import({
     // processing
     LastfmTagTopTracksResponseProcessor.class,

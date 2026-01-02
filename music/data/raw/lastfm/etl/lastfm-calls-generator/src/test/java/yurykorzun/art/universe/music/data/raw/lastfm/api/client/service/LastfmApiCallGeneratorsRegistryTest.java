@@ -1,6 +1,5 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.client.service;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.aop.support.AopUtils;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
@@ -11,8 +10,6 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
-// TODO move tag to base class
-@Tag("integration")
 class LastfmApiCallGeneratorsRegistryTest extends LastfmContextTestWithDb {
 
     @Test

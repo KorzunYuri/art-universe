@@ -2,7 +2,6 @@ package yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.relati
 
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -36,7 +35,6 @@ import static org.junit.jupiter.api.Assertions.*;
     LastfmArtistAlbumServiceImpl.class,
     DbConsistencyHelper.class
 })
-@Tag("integration")
 class UnifiedEntityRelationIntegrationTest extends LastfmJpaTestHelper {
 
     @Autowired
