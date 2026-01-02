@@ -4,14 +4,14 @@ import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import yurykorzun.art.universe.music.quiz.common.archetypes.JpaOnlyTest;
+import yurykorzun.art.universe.music.quiz.common.archetypes.BaseQuizJpaTest;
 import yurykorzun.art.universe.music.quiz.entity.Game;
 
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class GameRepositoryTest extends JpaOnlyTest {
+class GameRepositoryTest extends BaseQuizJpaTest {
 
     @Autowired
     private GameRepository gameRepository;

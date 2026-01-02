@@ -4,7 +4,7 @@ import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import yurykorzun.art.universe.music.quiz.common.archetypes.JpaOnlyTest;
+import yurykorzun.art.universe.music.quiz.common.archetypes.BaseQuizJpaTest;
 import yurykorzun.art.universe.music.quiz.entity.Game;
 import yurykorzun.art.universe.music.quiz.entity.Generation;
 import yurykorzun.art.universe.music.quiz.entity.GenerationStatus;
@@ -13,7 +13,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class GenerationRepositoryTest extends JpaOnlyTest {
+class GenerationRepositoryTest extends BaseQuizJpaTest {
 
     @Autowired
     private GenerationRepository generationRepository;

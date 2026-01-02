@@ -16,7 +16,7 @@ import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.common.persistence.util.DatabaseUtils;
-import yurykorzun.art.universe.music.quiz.common.archetypes.JpaOnlyTest;
+import yurykorzun.art.universe.music.quiz.common.archetypes.BaseQuizJpaTest;
 import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
 import yurykorzun.art.universe.music.quiz.dto.step.config.StartDatasourceStepConfig;
 import yurykorzun.art.universe.music.quiz.entity.Step;
@@ -37,7 +37,7 @@ import static org.mockito.Mockito.when;
     StepProcessorRegistry.class,
     StartDatasourceProcessor.class
 })
-class StartDatasourceProcessorIntegrationTest extends JpaOnlyTest {
+class StartDatasourceProcessorIntegrationTest extends BaseQuizJpaTest {
 
     @PersistenceContext
     private EntityManager entityManager;

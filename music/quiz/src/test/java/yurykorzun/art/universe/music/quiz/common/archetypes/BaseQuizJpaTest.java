@@ -19,10 +19,10 @@ import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.BaseTest;
     initScript = "db/init-schema.sql",
     schema = "mu_quiz"
 )
-public abstract class JpaOnlyTest extends BaseTest {
+public abstract class BaseQuizJpaTest extends BaseTest {
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        PostgresDynamicPropertyConfigurer.register(JpaOnlyTest.class, registry);
+        PostgresDynamicPropertyConfigurer.register(BaseQuizJpaTest.class, registry);
     }
 }

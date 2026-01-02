@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.Commit;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.common.persistence.util.DatabaseUtils;
-import yurykorzun.art.universe.music.quiz.common.archetypes.JpaOnlyTest;
+import yurykorzun.art.universe.music.quiz.common.archetypes.BaseQuizJpaTest;
 import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
 import yurykorzun.art.universe.music.quiz.entity.Step;
 import yurykorzun.art.universe.music.quiz.entity.StepRun;
@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
     StepProcessorRegistry.class,
     TrackRecencyPenaltyProcessor.class
 })
-class TrackRecencyPenaltyProcessorIntegrationTest extends JpaOnlyTest {
+class TrackRecencyPenaltyProcessorIntegrationTest extends BaseQuizJpaTest {
 
     @PersistenceContext
     private EntityManager entityManager;
