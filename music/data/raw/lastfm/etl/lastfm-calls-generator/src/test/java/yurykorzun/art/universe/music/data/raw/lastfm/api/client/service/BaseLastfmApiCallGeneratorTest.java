@@ -18,7 +18,7 @@ class BaseLastfmApiCallGeneratorTest {
             TestableGenerator generator = new TestableGenerator();
 
             // then
-            registry.verify(() -> LastfmApiCallGeneratorsRegistry.register(LastfmApiCallType.ARTIST_GET_INFO, generator));
+            registry.verify(() -> LastfmApiCallGeneratorsRegistry.register(LastfmApiCallType.ARTIST_GET_INFO, TestableGenerator.class));
         }
     }
 

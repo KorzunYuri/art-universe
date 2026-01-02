@@ -1,6 +1,7 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
@@ -13,6 +14,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@Tag("integration")
 class LastfmArtistRepositoryMbidDeduplicationTest extends LastfmJpaTestHelper {
 
     @Autowired

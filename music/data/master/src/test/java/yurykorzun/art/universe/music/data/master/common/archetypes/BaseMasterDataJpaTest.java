@@ -1,14 +1,17 @@
 package yurykorzun.art.universe.music.data.master.common.archetypes;
 
-
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.PostgreSQLContainer;
-import yurykorzun.art.universe.common.test.db.PostgresJpaTest;
-import yurykorzun.art.universe.common.test.db.PostgresTestContainerHolder;
+import yurykorzun.art.universe.common.test.db.PostgresDynamicPropertyConfigurer;
+import yurykorzun.art.universe.common.test.db.PostgresTestContainer;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.BaseTest;
 
-@PostgresJpaTest(
+// TODO rename class
+@DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@PostgresTestContainer(
     databaseName = "music_universe",
     initScript = "db/init-schema.sql",
     username = "mu_dm",
@@ -19,9 +22,6 @@ public abstract class BaseMasterDataJpaTest extends BaseTest {
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        PostgreSQLContainer<?> container = PostgresTestContainerHolder.getContainer(BaseMasterDataJpaTest.class);
-        registry.add("spring.datasource.url", () -> container.getJdbcUrl() + "?currentSchema=mu");
-        registry.add("spring.datasource.username", container::getUsername);
-        registry.add("spring.datasource.password", container::getPassword);
+        PostgresDynamicPropertyConfigurer.register(BaseMasterDataJpaTest.class, registry);
     }
 }
