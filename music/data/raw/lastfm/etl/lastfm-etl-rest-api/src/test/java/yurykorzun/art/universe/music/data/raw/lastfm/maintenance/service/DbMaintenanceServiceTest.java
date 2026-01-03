@@ -33,8 +33,8 @@ class DbMaintenanceServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new DbMaintenanceService(taskCoordinator, jdbcTemplate, musicDataIntegrationService);
-        
+        service = new DbMaintenanceService(taskCoordinator, jdbcTemplate, musicDataIntegrationService, null);
+
         // Set thresholds via reflection or create a test constructor
         // For now, we'll test the unbind logic directly
     }
@@ -68,8 +68,8 @@ class DbMaintenanceServiceTest {
         // For now, we'll test the public method that would call this logic
         // Let's create a test method in the service for testing
         TestableDbMaintenanceService testableService = new TestableDbMaintenanceService(
-                taskCoordinator, jdbcTemplate, musicDataIntegrationService);
-        
+                taskCoordinator, jdbcTemplate, musicDataIntegrationService, null);
+
         testableService.testUnbindDeletedEntitiesFromCleanupRun(cleanupRunId);
 
         // Then: Verify calls to MusicDataIntegrationService
@@ -105,8 +105,8 @@ class DbMaintenanceServiceTest {
 
         // When: Call unbind logic
         TestableDbMaintenanceService testableService = new TestableDbMaintenanceService(
-                taskCoordinator, jdbcTemplate, musicDataIntegrationService);
-        
+                taskCoordinator, jdbcTemplate, musicDataIntegrationService, null);
+
         testableService.testUnbindDeletedEntitiesFromCleanupRun(cleanupRunId);
 
         // Then: No calls to MusicDataIntegrationService should be made
@@ -120,8 +120,8 @@ class DbMaintenanceServiceTest {
 
         // When: Call unbind logic
         TestableDbMaintenanceService testableService = new TestableDbMaintenanceService(
-                taskCoordinator, jdbcTemplate, musicDataIntegrationService);
-        
+                taskCoordinator, jdbcTemplate, musicDataIntegrationService, null);
+
         testableService.testUnbindDeletedEntitiesFromCleanupRun(cleanupRunId);
 
         // Then: No database queries or service calls should be made
@@ -131,12 +131,13 @@ class DbMaintenanceServiceTest {
 
     // Test subclass to expose private method for testing
     private static class TestableDbMaintenanceService extends DbMaintenanceService {
-        
+
         public TestableDbMaintenanceService(
                 TaskCoordinator taskCoordinator,
                 JdbcTemplate jdbc,
-                MusicDataIntegrationService musicDataIntegrationService) {
-            super(taskCoordinator, jdbc, musicDataIntegrationService);
+                MusicDataIntegrationService musicDataIntegrationService,
+                DbMaintenanceService self) {
+            super(taskCoordinator, jdbc, musicDataIntegrationService, self);
         }
 
         public void testUnbindDeletedEntitiesFromCleanupRun(Long cleanupRunId) {
