@@ -16,6 +16,14 @@ The module provides monitoring and observability configuration for all Spring Bo
   - Enables JMX for advanced monitoring and debugging
   - Activated automatically when `dev` profile is active
 
+### Trace Noise Reduction
+
+[SharedObservabilityConfiguration](src/main/java/yurykorzun/art/universe/common/observability/config/SharedObservabilityConfiguration.java) provides default rules for observations:
+- Removes scheduled tasks from tracing. 
+  - To change the default behaviour, consumer module must provide `ObservationFilter` bean with `SharedObservabilityConfiguration.SCHEDULED_OBSERVATION_FILTER_BEAN_NAME` as the name
+- Removes actuator endpoints from tracing.
+  - to change the default behaviour, consumer module must provide `ObservationFilter` bean with `SharedObservabilityConfiguration.ACTUATOR_OBSERVATION_FILTER_BEAN_NAME` as the name
+
 ## Web Framework Compatibility
 
 This module is **fully compatible** with both:
