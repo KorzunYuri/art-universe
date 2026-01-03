@@ -68,6 +68,10 @@ public class SharedObservabilityConfiguration {
                                 log.trace("Skipping observation for actuator endpoint: {}", uri);
                                 return false;
                             }
+                            if (uri.startsWith("/health")) {
+                                log.trace("Skipping observation for health endpoint: {}", uri);
+                                return false;
+                            }
                         }
                     }
                 }
