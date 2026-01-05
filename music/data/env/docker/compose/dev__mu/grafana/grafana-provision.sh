@@ -71,6 +71,14 @@ else
     echo "WARNING: repository_performance_dashboard.json.template not found"
 fi
 
+# Generate REST API performance dashboard
+if [ -f "/tmp/dashboard-templates/rest_api_performance_dashboard.json.template" ]; then
+    envsubst '$PROMETHEUS_DATASOURCE_UID' < /tmp/dashboard-templates/rest_api_performance_dashboard.json.template > /etc/grafana/provisioning/dashboards/rest_api_performance_dashboard.json
+    echo "REST API performance dashboard generated successfully"
+else
+    echo "WARNING: rest_api_performance_dashboard.json.template not found"
+fi
+
 # Generate datasource from template
 echo "Generating datasource configuration..."
 if [ -f "/tmp/datasource-templates/datasource.yml.template" ]; then
