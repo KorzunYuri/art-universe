@@ -1,6 +1,7 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.impl;
 
 import com.google.common.util.concurrent.RateLimiter;
+import io.micrometer.observation.annotation.Observed;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
@@ -67,11 +68,11 @@ public class LastfmApiCallServiceImpl implements LastfmApiCallService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    protected void makeApiCall(LastfmApiCall call) {
+    public void makeApiCall(LastfmApiCall call) {
         self.updateApiCallStatus(call, ApiCallStatus.PROCESSING);
 
         try {
-            String response = makeApiCallWithRetry(call);
+            String response = self.makeApiCallWithRetry(call);
             responseService.createResponse(createApiResponseCreateDto(call, response));
             self.updateApiCallStatus(call, ApiCallStatus.SUCCESSFUL);
         } catch (Exception ex) {
