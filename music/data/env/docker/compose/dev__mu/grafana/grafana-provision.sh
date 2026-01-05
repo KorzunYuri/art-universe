@@ -63,6 +63,14 @@ else
     echo "WARNING: system_metrics_dashboard.json.template not found"
 fi
 
+# Generate repository performance dashboard
+if [ -f "/tmp/dashboard-templates/repository_performance_dashboard.json.template" ]; then
+    envsubst '$PROMETHEUS_DATASOURCE_UID' < /tmp/dashboard-templates/repository_performance_dashboard.json.template > /etc/grafana/provisioning/dashboards/repository_performance_dashboard.json
+    echo "Repository performance dashboard generated successfully"
+else
+    echo "WARNING: repository_performance_dashboard.json.template not found"
+fi
+
 # Generate datasource from template
 echo "Generating datasource configuration..."
 if [ -f "/tmp/datasource-templates/datasource.yml.template" ]; then
