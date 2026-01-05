@@ -25,6 +25,7 @@ services:
       dockerfile: music/data/raw/lastfm/lastfm-rest-api/Dockerfile.prod
     env_file:
       - ../common/music-data-raw-lastfm.env
+      - ./common.env
       - ./music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.secrets.env
     ports:
@@ -62,6 +63,7 @@ services:
       dockerfile: music/data/raw/lastfm/etl/lastfm-etl-rest-api/Dockerfile.prod
     env_file:
       - ../common/music-data-raw-lastfm.env
+      - ./common.env
       - ./music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.secrets.env
     ports:
@@ -101,6 +103,7 @@ services:
       dockerfile: music/data/raw/lastfm/etl/lastfm-calls-generator/Dockerfile.prod
     env_file:
       - ../common/music-data-raw-lastfm.env
+      - ./common.env
       - ./music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.secrets.env
     ports:
@@ -132,6 +135,7 @@ services:
       dockerfile: music/data/raw/lastfm/etl/lastfm-calls-performer/Dockerfile.prod
     env_file:
       - ../common/music-data-raw-lastfm.env
+      - ./common.env
       - ./music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.secrets.env
     ports:
@@ -163,6 +167,7 @@ services:
       dockerfile: music/data/raw/lastfm/etl/lastfm-response-parser/Dockerfile.prod
     env_file:
       - ../common/music-data-raw-lastfm.env
+      - ./common.env
       - ./music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.secrets.env
     ports:
@@ -192,6 +197,7 @@ services:
       context: ../../../
       dockerfile: music/data/master/Dockerfile.prod
     env_file:
+      - ./common.env
       - ./music-data.env
       - ./music-data.secrets.env
     ports:
@@ -224,6 +230,7 @@ services:
       context: ../../../
       dockerfile: music/quiz/Dockerfile.prod
     env_file:
+      - ./common.env
       - ./music-quiz.env
       - ./music-quiz.secrets.env
     ports:
@@ -269,6 +276,7 @@ services:
         - VITE_MU_QUIZ_APP_HOST=${MU_QUIZ_APP_HOST}
         - VITE_MU_QUIZ_APP_EXTERNAL_PORT=${MU_QUIZ_APP_EXTERNAL_PORT}
     env_file:
+      - ./common.env
       - ./music-universe-ui.env
       - ./music-universe-ui.secrets.env
     ports:
@@ -356,6 +364,29 @@ services:
         reservations:
           memory: 96M
           cpus: '0.05'
+    networks:
+      - mu__network
+
+  # Distributed Tracing
+  zipkin:
+    container_name: prod__mu__zipkin
+    image: openzipkin/zipkin:3.4
+    restart: unless-stopped
+    ports:
+      - "8411:9411"
+    environment:
+      - STORAGE_TYPE=mem
+      - JAVA_OPTS=-Xms128m -Xmx256m
+    depends_on:
+      - prometheus
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.3'
+        reservations:
+          memory: 256M
+          cpus: '0.1'
     networks:
       - mu__network
 

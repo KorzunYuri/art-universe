@@ -47,6 +47,19 @@ services:
     depends_on:
       - prometheus
 
+  # Distributed Tracing
+  zipkin:
+    container_name: dev__mu__zipkin
+    image: openzipkin/zipkin:3.4
+    restart: unless-stopped
+    ports:
+      - "${ZIPKIN_EXTERNAL_PORT}:9411"
+    environment:
+      - STORAGE_TYPE=mem
+      - JAVA_OPTS=-Xms128m -Xmx256m
+    depends_on:
+      - prometheus
+
 networks:
   default:
     name: dev__mu-observability-network
