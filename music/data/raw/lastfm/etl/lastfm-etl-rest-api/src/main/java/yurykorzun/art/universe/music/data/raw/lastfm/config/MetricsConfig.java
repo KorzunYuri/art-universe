@@ -2,6 +2,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.config;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.annotation.Timed;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.io.Resource;
@@ -174,6 +175,7 @@ public class MetricsConfig {
         }
     }
     
+    @Timed(value = "music.data.raw.lastfm.metrics.update", extraTags = {"category", "entities"})
     @Scheduled(
             fixedRateString = "${metrics.update.entity-counts.interval:60000}"
     )
@@ -202,6 +204,7 @@ public class MetricsConfig {
         );
     }
     
+    @Timed(value = "music.data.raw.lastfm.metrics.update", extraTags = {"category", "api_calls"})
     @Scheduled(
             fixedRateString = "${metrics.update.api-call-counts.interval:60000}"
     )
@@ -229,6 +232,7 @@ public class MetricsConfig {
         }, "metrics-update-api-call-counts");
     }
     
+    @Timed(value = "music.data.raw.lastfm.metrics.update", extraTags = {"category", "api_responses"})
     @Scheduled(
             fixedRateString = "${metrics.update.api-response-counts.interval:60000}"
     )
@@ -256,6 +260,7 @@ public class MetricsConfig {
         }, "metrics-update-api-response-counts");
     }
     
+    @Timed(value = "music.data.raw.lastfm.metrics.update", extraTags = {"category", "table_sizes"})
     @Scheduled(
             fixedRateString = "${metrics.update.table-sizes.interval:300000}"
     )
