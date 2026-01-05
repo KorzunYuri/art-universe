@@ -1,6 +1,6 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -31,6 +31,8 @@ public class LastfmApiResponseServiceImpl implements LastfmApiResponseService {
         this.self = self;
     }
 
+    @Timed(value = "music.data.raw.lastfm.api.response.batch",
+           description = "Lastfm API response processing duration: batch")
     @Override
     public void processResponses() {
         List<LastfmApiResponse> unprocessed = repository.findAllPending();
