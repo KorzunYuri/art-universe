@@ -127,14 +127,14 @@
       "id": 2,
       "options": {
         "legend": {
-          "calcs": [],
-          "displayMode": "list",
+          "calcs": ["mean", "lastNotNull", "max"],
+          "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
         },
         "tooltip": {
-          "mode": "single",
-          "sort": "none"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "targets": [
@@ -145,7 +145,7 @@
           },
           "editorMode": "code",
           "expr": "jvm_memory_used_bytes{job=~\"$job\",area=\"heap\"}",
-          "legendFormat": "{{id}} Used",
+          "legendFormat": "{{job}} - {{id}} Used",
           "range": true,
           "refId": "A"
         },
@@ -156,7 +156,7 @@
           },
           "editorMode": "code",
           "expr": "jvm_memory_max_bytes{job=~\"$job\",area=\"heap\"}",
-          "legendFormat": "{{id}} Max",
+          "legendFormat": "{{job}} - {{id}} Max",
           "range": true,
           "refId": "B"
         }
@@ -227,14 +227,14 @@
       "id": 12,
       "options": {
         "legend": {
-          "calcs": [],
-          "displayMode": "list",
+          "calcs": ["mean", "lastNotNull", "max"],
+          "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
         },
         "tooltip": {
-          "mode": "single",
-          "sort": "none"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "targets": [
@@ -245,7 +245,7 @@
           },
           "editorMode": "code",
           "expr": "jvm_threads_live_threads{job=~\"$job\"}",
-          "legendFormat": "Live Threads",
+          "legendFormat": "{{job}} - Live Threads",
           "range": true,
           "refId": "A"
         },
@@ -256,7 +256,7 @@
           },
           "editorMode": "code",
           "expr": "jvm_threads_daemon_threads{job=~\"$job\"}",
-          "legendFormat": "Daemon Threads",
+          "legendFormat": "{{job}} - Daemon Threads",
           "range": true,
           "refId": "B"
         },
@@ -267,7 +267,7 @@
           },
           "editorMode": "code",
           "expr": "jvm_threads_peak_threads{job=~\"$job\"}",
-          "legendFormat": "Peak Threads",
+          "legendFormat": "{{job}} - Peak Threads",
           "range": true,
           "refId": "C"
         }
@@ -337,7 +337,7 @@
           },
           "editorMode": "code",
           "expr": "((disk_total_bytes{job=~\"$job\"} - disk_free_bytes{job=~\"$job\"}) / disk_total_bytes{job=~\"$job\"}) * 100",
-          "legendFormat": "Disk Usage %",
+          "legendFormat": "{{job}} - Disk Usage %",
           "range": true,
           "refId": "A"
         }
@@ -406,8 +406,8 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "(sum(jvm_memory_used_bytes{job=~\"$job\",area=\"heap\"}) / sum(jvm_memory_max_bytes{job=~\"$job\",area=\"heap\"})) * 100",
-          "legendFormat": "Heap Usage %",
+          "expr": "(sum by (job) (jvm_memory_used_bytes{job=~\"$job\",area=\"heap\"}) / sum by (job) (jvm_memory_max_bytes{job=~\"$job\",area=\"heap\"})) * 100",
+          "legendFormat": "{{job}} - Heap Usage %",
           "range": true,
           "refId": "A"
         }
@@ -491,14 +491,14 @@
       "id": 5,
       "options": {
         "legend": {
-          "calcs": [],
-          "displayMode": "list",
+          "calcs": ["mean", "lastNotNull", "max"],
+          "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
         },
         "tooltip": {
-          "mode": "single",
-          "sort": "none"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "targets": [
@@ -509,7 +509,7 @@
           },
           "editorMode": "code",
           "expr": "rate(jvm_gc_pause_seconds_sum{job=~\"$job\"}[5m])",
-          "legendFormat": "{{gc}} GC Time",
+          "legendFormat": "{{job}} - {{gc}} GC Time",
           "range": true,
           "refId": "A"
         }
@@ -580,14 +580,14 @@
       "id": 6,
       "options": {
         "legend": {
-          "calcs": [],
-          "displayMode": "list",
+          "calcs": ["mean", "lastNotNull", "max"],
+          "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
         },
         "tooltip": {
-          "mode": "single",
-          "sort": "none"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "targets": [
@@ -598,7 +598,7 @@
           },
           "editorMode": "code",
           "expr": "rate(jvm_gc_pause_seconds_count{job=~\"$job\"}[5m])",
-          "legendFormat": "{{gc}} GC Count",
+          "legendFormat": "{{job}} - {{gc}} GC Count",
           "range": true,
           "refId": "A"
         }
@@ -692,14 +692,14 @@
       "id": 8,
       "options": {
         "legend": {
-          "calcs": [],
-          "displayMode": "list",
+          "calcs": ["mean", "lastNotNull", "max"],
+          "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
         },
         "tooltip": {
-          "mode": "single",
-          "sort": "none"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "targets": [
@@ -710,7 +710,7 @@
           },
           "editorMode": "code",
           "expr": "process_cpu_usage{job=~\"$job\"}",
-          "legendFormat": "Process CPU Usage",
+          "legendFormat": "{{job}} - Process CPU Usage",
           "range": true,
           "refId": "A"
         },
@@ -721,7 +721,7 @@
           },
           "editorMode": "code",
           "expr": "system_cpu_usage{job=~\"$job\"}",
-          "legendFormat": "System CPU Usage",
+          "legendFormat": "{{job}} - System CPU Usage",
           "range": true,
           "refId": "B"
         }
@@ -792,14 +792,14 @@
       "id": 9,
       "options": {
         "legend": {
-          "calcs": [],
-          "displayMode": "list",
+          "calcs": ["mean", "lastNotNull", "max"],
+          "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
         },
         "tooltip": {
-          "mode": "single",
-          "sort": "none"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "targets": [
@@ -810,7 +810,7 @@
           },
           "editorMode": "code",
           "expr": "system_load_average_1m{job=~\"$job\"}",
-          "legendFormat": "Load Average 1m",
+          "legendFormat": "{{job}} - Load Average 1m",
           "range": true,
           "refId": "A"
         },
@@ -821,7 +821,7 @@
           },
           "editorMode": "code",
           "expr": "system_cpu_count{job=~\"$job\"}",
-          "legendFormat": "CPU Count",
+          "legendFormat": "{{job}} - CPU Count",
           "range": true,
           "refId": "B"
         }
@@ -905,14 +905,14 @@
       "id": 14,
       "options": {
         "legend": {
-          "calcs": [],
-          "displayMode": "list",
+          "calcs": ["mean", "lastNotNull", "max"],
+          "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
         },
         "tooltip": {
-          "mode": "single",
-          "sort": "none"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "targets": [
@@ -923,7 +923,7 @@
           },
           "editorMode": "code",
           "expr": "hikaricp_connections_active{job=~\"$job\"}",
-          "legendFormat": "Active Connections",
+          "legendFormat": "{{job}} - Active Connections",
           "range": true,
           "refId": "A"
         },
@@ -934,7 +934,7 @@
           },
           "editorMode": "code",
           "expr": "hikaricp_connections_idle{job=~\"$job\"}",
-          "legendFormat": "Idle Connections",
+          "legendFormat": "{{job}} - Idle Connections",
           "range": true,
           "refId": "B"
         },
@@ -945,7 +945,7 @@
           },
           "editorMode": "code",
           "expr": "hikaricp_connections_max{job=~\"$job\"}",
-          "legendFormat": "Max Connections",
+          "legendFormat": "{{job}} - Max Connections",
           "range": true,
           "refId": "C"
         }
@@ -1016,14 +1016,14 @@
       "id": 15,
       "options": {
         "legend": {
-          "calcs": [],
-          "displayMode": "list",
+          "calcs": ["mean", "lastNotNull", "max"],
+          "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
         },
         "tooltip": {
-          "mode": "single",
-          "sort": "none"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "targets": [
@@ -1034,7 +1034,7 @@
           },
           "editorMode": "code",
           "expr": "rate(hikaricp_connections_acquire_seconds_sum{job=~\"$job\"}[5m]) / rate(hikaricp_connections_acquire_seconds_count{job=~\"$job\"}[5m])",
-          "legendFormat": "Avg Acquire Time",
+          "legendFormat": "{{job}} - Avg Acquire Time",
           "range": true,
           "refId": "A"
         },
@@ -1045,7 +1045,7 @@
           },
           "editorMode": "code",
           "expr": "hikaricp_connections_acquire_seconds_max{job=~\"$job\"}",
-          "legendFormat": "Max Acquire Time",
+          "legendFormat": "{{job}} - Max Acquire Time",
           "range": true,
           "refId": "B"
         }
