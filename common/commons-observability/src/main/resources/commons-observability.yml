@@ -23,10 +23,11 @@ management:
     tags:
       application: ${spring.application.name}
       environment: prod
-    distribution:
-      percentiles-histogram:
-        http.server.requests: true
-        spring.data.repository.invocations: true
+    # Histogram metrics disabled to reduce Prometheus memory usage and time series explosion
+    # distribution:
+    #   percentiles-histogram:
+    #     http.server.requests: true
+    #     spring.data.repository.invocations: true
 
 # Logging configuration
 logging:

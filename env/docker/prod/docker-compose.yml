@@ -23,6 +23,8 @@ services:
     build:
       context: ../../../
       dockerfile: music/data/raw/lastfm/lastfm-rest-api/Dockerfile.prod
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx768m -XX:MaxMetaspaceSize=192m
     env_file:
       - ../common/music-data-raw-lastfm.env
       - ./common.env
@@ -61,6 +63,8 @@ services:
     build:
       context: ../../../
       dockerfile: music/data/raw/lastfm/etl/lastfm-etl-rest-api/Dockerfile.prod
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx768m -XX:MaxMetaspaceSize=192m
     env_file:
       - ../common/music-data-raw-lastfm.env
       - ./common.env
@@ -101,6 +105,8 @@ services:
     build:
       context: ../../../
       dockerfile: music/data/raw/lastfm/etl/lastfm-calls-generator/Dockerfile.prod
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx768m -XX:MaxMetaspaceSize=192m
     env_file:
       - ../common/music-data-raw-lastfm.env
       - ./common.env
@@ -133,6 +139,8 @@ services:
     build:
       context: ../../../
       dockerfile: music/data/raw/lastfm/etl/lastfm-calls-performer/Dockerfile.prod
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx768m -XX:MaxMetaspaceSize=192m
     env_file:
       - ../common/music-data-raw-lastfm.env
       - ./common.env
@@ -165,6 +173,8 @@ services:
     build:
       context: ../../../
       dockerfile: music/data/raw/lastfm/etl/lastfm-response-parser/Dockerfile.prod
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx1536m -XX:MaxMetaspaceSize=192m
     env_file:
       - ../common/music-data-raw-lastfm.env
       - ./common.env
@@ -196,6 +206,8 @@ services:
     build:
       context: ../../../
       dockerfile: music/data/master/Dockerfile.prod
+    environment:
+      - JAVA_OPTS=-Xms128m -Xmx384m -XX:MaxMetaspaceSize=96m
     env_file:
       - ./common.env
       - ./music-data.env
@@ -229,6 +241,8 @@ services:
     build:
       context: ../../../
       dockerfile: music/quiz/Dockerfile.prod
+    environment:
+      - JAVA_OPTS=-Xms128m -Xmx384m -XX:MaxMetaspaceSize=96m
     env_file:
       - ./common.env
       - ./music-quiz.env
@@ -310,6 +324,8 @@ services:
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=8h'
+      - '--storage.tsdb.retention.size=800MB'
       - '--web.console.libraries=/usr/share/prometheus/console_libraries'
       - '--web.console.templates=/usr/share/prometheus/consoles'
     ports:
@@ -324,11 +340,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 128M
-          cpus: '0.2'
+          memory: 1Gb
+          cpus: '0.5'
         reservations:
-          memory: 64M
-          cpus: '0.05'
+          memory: 512M
+          cpus: '0.2'
     networks:
       - mu__network
 
@@ -376,6 +392,7 @@ services:
       - "8411:9411"
     environment:
       - STORAGE_TYPE=mem
+      - STORAGE_SPAN_RETENTION_PERIOD=28800
       - JAVA_OPTS=-Xms128m -Xmx256m
     depends_on:
       - prometheus

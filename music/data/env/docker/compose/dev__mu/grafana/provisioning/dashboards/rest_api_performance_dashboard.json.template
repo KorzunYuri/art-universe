@@ -154,8 +154,8 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{application=~\"$service\", uri=~\"$uri\", method=~\"$http_method\"}[5m])) by (application, uri, method, le))",
-          "legendFormat": "P95 - {{application}} {{method}} {{uri}}",
+          "expr": "sum by (application, uri, method) (rate(http_server_requests_seconds_sum{application=~\"$service\", uri=~\"$uri\", method=~\"$http_method\"}[5m])) / sum by (application, uri, method) (rate(http_server_requests_seconds_count{application=~\"$service\", uri=~\"$uri\", method=~\"$http_method\"}[5m]))",
+          "legendFormat": "Avg - {{application}} {{method}} {{uri}}",
           "range": true,
           "refId": "A"
         },
@@ -165,13 +165,13 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.99, sum(rate(http_server_requests_seconds_bucket{application=~\"$service\", uri=~\"$uri\", method=~\"$http_method\"}[5m])) by (application, uri, method, le))",
-          "legendFormat": "P99 - {{application}} {{method}} {{uri}}",
+          "expr": "max by (application, uri, method) (http_server_requests_seconds_max{application=~\"$service\", uri=~\"$uri\", method=~\"$http_method\"})",
+          "legendFormat": "Max - {{application}} {{method}} {{uri}}",
           "range": true,
           "refId": "B"
         }
       ],
-      "title": "HTTP Request P95/P99 Latency",
+      "title": "HTTP Request Average/Max Latency",
       "type": "timeseries"
     },
     {
@@ -181,16 +181,50 @@
       },
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "Latency (seconds)",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
               "viz": false
             },
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
             "scaleDistribution": {
               "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
             }
-          }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "s"
         },
         "overrides": []
       },
@@ -202,41 +236,17 @@
       },
       "id": 3,
       "options": {
-        "calculate": false,
-        "cellGap": 2,
-        "cellValues": {},
-        "color": {
-          "exponent": 0.5,
-          "fill": "dark-orange",
-          "mode": "scheme",
-          "reverse": false,
-          "scale": "exponential",
-          "scheme": "Spectral",
-          "steps": 128
-        },
-        "exemplars": {
-          "color": "rgba(255,0,255,0.7)"
-        },
-        "filterValues": {
-          "le": 1e-9
-        },
         "legend": {
-          "show": true
-        },
-        "rowsFrame": {
-          "layout": "auto"
+          "calcs": ["mean", "lastNotNull", "max"],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
-          "show": true,
-          "yHistogram": false
-        },
-        "yAxis": {
-          "axisPlacement": "left",
-          "reverse": false,
-          "unit": "s"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
-      "pluginVersion": "10.0.13",
       "targets": [
         {
           "datasource": {
@@ -244,15 +254,14 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "sum(increase(http_server_requests_seconds_bucket{application=~\"$service\", uri=~\"$uri\", method=~\"$http_method\"}[1m])) by (le)",
-          "format": "heatmap",
-          "legendFormat": "{{le}}",
+          "expr": "sum by (application, uri, method) (rate(http_server_requests_seconds_sum{application=~\"$service\", uri=~\"$uri\", method=~\"$http_method\"}[1m])) / sum by (application, uri, method) (rate(http_server_requests_seconds_count{application=~\"$service\", uri=~\"$uri\", method=~\"$http_method\"}[1m]))",
+          "legendFormat": "{{application}} - {{method}} {{uri}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "HTTP Request Latency Heatmap",
-      "type": "heatmap"
+      "title": "HTTP Request Latency Over Time",
+      "type": "timeseries"
     },
     {
       "collapsed": false,
@@ -450,7 +459,7 @@
       "type": "timeseries"
     }
   ],
-  "refresh": "10s",
+  "refresh": "30s",
   "schemaVersion": 38,
   "style": "dark",
   "tags": ["http", "api", "performance", "rest"],

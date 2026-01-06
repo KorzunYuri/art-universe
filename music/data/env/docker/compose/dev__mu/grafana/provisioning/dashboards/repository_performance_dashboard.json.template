@@ -123,13 +123,13 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(spring_data_repository_invocations_seconds_bucket{application=~\"$service\", repository=~\"$repository\"}[5m])) by (application, repository, method, le))",
+          "expr": "sum by (application, repository, method) (rate(spring_data_repository_invocations_seconds_sum{application=~\"$service\", repository=~\"$repository\"}[5m])) / sum by (application, repository, method) (rate(spring_data_repository_invocations_seconds_count{application=~\"$service\", repository=~\"$repository\"}[5m]))",
           "legendFormat": "{{application}} - {{repository}}.{{method}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Repository P95 Latency",
+      "title": "Repository Average Latency",
       "type": "timeseries"
     },
     {
@@ -334,16 +334,50 @@
       },
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "Latency (seconds)",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
               "viz": false
             },
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
             "scaleDistribution": {
               "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
             }
-          }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "s"
         },
         "overrides": []
       },
@@ -355,41 +389,17 @@
       },
       "id": 6,
       "options": {
-        "calculate": false,
-        "cellGap": 2,
-        "cellValues": {},
-        "color": {
-          "exponent": 0.5,
-          "fill": "dark-orange",
-          "mode": "scheme",
-          "reverse": false,
-          "scale": "exponential",
-          "scheme": "Spectral",
-          "steps": 128
-        },
-        "exemplars": {
-          "color": "rgba(255,0,255,0.7)"
-        },
-        "filterValues": {
-          "le": 1e-9
-        },
         "legend": {
-          "show": true
-        },
-        "rowsFrame": {
-          "layout": "auto"
+          "calcs": ["mean", "lastNotNull", "max"],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
-          "show": true,
-          "yHistogram": false
-        },
-        "yAxis": {
-          "axisPlacement": "left",
-          "reverse": false,
-          "unit": "s"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
-      "pluginVersion": "10.0.13",
       "targets": [
         {
           "datasource": {
@@ -397,18 +407,17 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "sum(increase(spring_data_repository_invocations_seconds_bucket{application=~\"$service\", repository=~\"$repository\"}[1m])) by (le)",
-          "format": "heatmap",
-          "legendFormat": "{{le}}",
+          "expr": "sum by (application, repository, method) (rate(spring_data_repository_invocations_seconds_sum{application=~\"$service\", repository=~\"$repository\"}[1m])) / sum by (application, repository, method) (rate(spring_data_repository_invocations_seconds_count{application=~\"$service\", repository=~\"$repository\"}[1m]))",
+          "legendFormat": "{{application}} - {{repository}}.{{method}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "DB Query Latency Heatmap",
-      "type": "heatmap"
+      "title": "DB Query Latency Over Time",
+      "type": "timeseries"
     }
   ],
-  "refresh": "10s",
+  "refresh": "30s",
   "schemaVersion": 38,
   "style": "dark",
   "tags": ["database", "performance", "repository"],

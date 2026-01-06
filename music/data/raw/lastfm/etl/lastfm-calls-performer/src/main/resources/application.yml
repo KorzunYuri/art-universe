@@ -14,7 +14,7 @@ spring:
     password: '${MURAW_LASTFM_DB_PASSWORD}'
     hikari:
       pool-name: LastfmCallsPerformerHikariPool
-      maximum-pool-size: 4
+      maximum-pool-size: 8
       minimum-idle: 2
   jpa:
     database: postgresql
