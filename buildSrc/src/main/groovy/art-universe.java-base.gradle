@@ -63,3 +63,12 @@ jacocoTestReport {
 test {
     finalizedBy jacocoTestReport  // report is always generated after tests run
 }
+
+clean.doLast {
+    def logsDir = file('logs')
+    if (logsDir.exists() && logsDir.isDirectory()) {
+        logsDir.listFiles().each { file ->
+            delete file
+        }
+    }
+}

@@ -42,5 +42,13 @@ tasks.register('npmClean', Delete) {
 }
 
 clean.dependsOn npmClean
+clean.doLast {
+    def logsDir = file('logs')
+    if (logsDir.exists() && logsDir.isDirectory()) {
+        logsDir.listFiles().each { file ->
+            delete file
+        }
+    }
+}
 build.dependsOn npmBuild
 assemble.dependsOn npmBuild
