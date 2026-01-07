@@ -1,0 +1,74 @@
+plugins {
+    id 'java'
+    id 'io.spring.dependency-management'
+    id 'jacoco'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.boot:spring-boot-dependencies:3.4.3"
+    }
+    dependencies {
+        dependency "org.projectlombok:lombok:1.18.30"
+        dependency "org.liquibase:liquibase-core:4.15.0"
+    }
+}
+
+dependencies {
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.mockito:mockito-core'
+    testImplementation 'org.mockito:mockito-junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform {
+        if (project.hasProperty("excludeIntegrationTests")) {
+            excludeTags 'integration'
+        }
+    }
+}
+
+tasks.register('integrationTest', Test) {
+    description = "Runs integration tests"
+    group = "verification"
+
+    useJUnitPlatform {
+        includeTags 'integration'
+    }
+
+    shouldRunAfter test
+}
+
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the jacoco report
+}
+
+test {
+    finalizedBy jacocoTestReport  // report is always generated after tests run
+}
+
+clean.doLast {
+    def logsDir = file('logs')
+    if (logsDir.exists() && logsDir.isDirectory()) {
+        logsDir.listFiles().each { file ->
+            delete file
+        }
+    }
+}

@@ -1,19 +1,21 @@
 plugins {
-    id 'java'
+    id 'com.autonomousapps.dependency-analysis' version '1.28.0'
 }
 
-group = 'yurykorzun.art'
-version = '1.0-SNAPSHOT'
-
-repositories {
-    mavenCentral()
+ext {
+    lombokVersion = '1.18.30'
+    liquibaseVersion = '4.15.0'
+    testContainersVersion = '1.20.4'
+    testContainersPostgreVersion = '1.19.6'
+    openapiVersion = '2.8.6'
 }
 
-dependencies {
-    testImplementation platform('org.junit:junit-bom:5.10.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
-}
-
-test {
-    useJUnitPlatform()
+allprojects {
+    group = 'yurykorzun.art'
+    version = '0.0.1-SNAPSHOT'
+    repositories {
+        mavenCentral()
+        maven { url 'https://repo.spring.io/milestone' }
+        maven { url 'https://repo.spring.io/snapshot' }
+    }
 }

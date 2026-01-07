@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
+
+    <changeSet id="0011_0010_api_cal_set_null_entity_id" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0011-handle-nulls/0011-0010-api_cal$set_null_entity_id.sql"/>
+    </changeSet>
+
+    <changeSet id="0011_0020_artist_set_null_listeners_count" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0011-handle-nulls/0011-0020-artist$set_null_listeners_count.sql"/>
+    </changeSet>
+
+    <changeSet id="0011_0021_artist_set_null_play_count" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0011-handle-nulls/0011-0021-artist$set_null_play_count.sql"/>
+    </changeSet>
+
+    <changeSet id="0011_0030_attribute_history_set_null_scope_entity_id" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0011-handle-nulls/0011-0030-attribute_history$set_null_scope_entity_id.sql"/>
+    </changeSet>
+
+    <changeSet id="0011_0040_attribute_snapshot_set_null_scope_entity_id" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0011-handle-nulls/0011-0040-attribute_snapshot$set_null_scope_entity_id.sql"/>
+    </changeSet>
+
+    <changeSet id="0011_0041_attribute_snapshot_set_null_data_snapshot_id_prev" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0011-handle-nulls/0011-0041-attribute_snapshot$set_null_data_snapshot_id_prev.sql"/>
+    </changeSet>
+
+    <changeSet id="0011_0050_data_snapshot_set_null_entity_id" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0011-handle-nulls/0011-0050-data_snapshot$set_null_entity_id.sql"/>
+    </changeSet>
+
+    <changeSet id="0011_0060_tag_set_null_usage_count" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0011-handle-nulls/0011-0060-tag$set_null_usage_count.sql"/>
+    </changeSet>
+
+    <changeSet id="0011_0061_tag_set_null_usage_users_count" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0011-handle-nulls/0011-0061-tag$set_null_usage_users_count.sql"/>
+    </changeSet>
+
+    <changeSet id="0011_0070_track_set_null_duration" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0011-handle-nulls/0011-0070-track$set_null_duration.sql"/>
+    </changeSet>
+
+    <changeSet id="0011_0080_attribute_snapshot_remove_duplicates" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0011-handle-nulls/0011-0080-attribute_snapshot$remove_duplicates.sql"/>
+    </changeSet>
+
+</databaseChangeLog>

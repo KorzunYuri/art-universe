@@ -1,0 +1,129 @@
+// hooks
+import { useLastfmEntityTable } from "@/music/data/raw/lastfm/hooks/useLastfmEntityTable.tsx";
+import { useApprovalStatusFilter } from "@/music/data/raw/shared/hooks";
+import { usePlayCountFilter, useListenersCountFilter, useArtistFilter, useTagFilter } from "@/music/data/raw/lastfm/hooks/useLastfmFilters.tsx";
+import { useSearchParams } from "react-router-dom";
+// components
+import { EntityTable, type EntityTableColumn } from "@/music/shared/components/EntityTable/EntityTable.tsx";
+import { LastfmAlbumsTableRow } from "@/music/data/raw/lastfm/components";
+// types
+import type { AdditionalSearchConfig } from "@/music/shared/components/EntityTable/types.ts";
+// styles
+import albumStyles from "./LastfmAlbumsTable.module.css";
+
+const columns: EntityTableColumn[] = [
+    { key: 'artist', label: 'Artist', className: albumStyles.artist },
+    { key: 'name', label: 'Album name', sortable: true, className: albumStyles.name },
+    { key: 'mbid', label: 'MusicBrainz', className: albumStyles.mbid },
+    { key: 'status', label: 'Approval', className: albumStyles.status },
+    { key: 'masterBinding', label: 'Master', className: albumStyles.masterBinding },
+    { key: 'playCount', label: 'Plays', sortable: true, className: albumStyles.count },
+    { key: 'listenersCount', label: 'Listeners', sortable: true, className: albumStyles.count },
+];
+
+interface LastfmAlbumsTableProps {
+    artistId?: number;
+}
+
+export const LastfmAlbumsTable = ({ artistId }: LastfmAlbumsTableProps) => {
+    const [searchParams] = useSearchParams();
+    const urlArtistId = searchParams.get('artistId') ? parseInt(searchParams.get('artistId')!) : undefined;
+    const effectiveArtistId = artistId || urlArtistId;
+
+    const {
+        rawEntityIds,
+        pagination,
+        search,
+        sort,
+        isLoading,
+        setSearch,
+        setSort,
+        nextPage,
+        prevPage,
+        goToPage,
+        updateParams,
+        refresh,
+        handleSearchSubmit: submitSearch
+    } = useLastfmEntityTable("album", { artistId: effectiveArtistId });
+
+    // Filter hooks
+    const { approvalStatuses, approvalStatusField } = useApprovalStatusFilter();
+    const { minPlayCount, minPlayCountField } = usePlayCountFilter();
+    const { minListenersCount, minListenersCountField } = useListenersCountFilter();
+    const { artistId: artistIdFilter, artistField, setSelectedArtist } = useArtistFilter();
+    const { tagId, tagField } = useTagFilter();
+
+    const handleArtistFilter = (artistId: number, artistName: string) => {
+        setSelectedArtist({ id: artistId, name: artistName });
+        // Trigger search immediately
+        updateParams({
+            approvalStatuses: approvalStatuses.length > 0 ? approvalStatuses : undefined,
+            minPlayCount: minPlayCount || undefined,
+            minListenersCount: minListenersCount || undefined,
+            artistId: artistId,
+            tagId: tagId || undefined
+        });
+    };
+
+    const handleSearchSubmit = () => {
+        submitSearch();
+        updateParams({
+            approvalStatuses: approvalStatuses.length > 0 ? approvalStatuses : undefined,
+            minPlayCount: minPlayCount || undefined,
+            minListenersCount: minListenersCount || undefined,
+            artistId: artistIdFilter || effectiveArtistId || undefined, // Preserve URL artistId
+            tagId: tagId || undefined
+        });
+    };
+
+    const additionalSearchConfig: AdditionalSearchConfig = {
+        title: "Advanced Filters",
+        collapsible: true,
+        defaultCollapsed: true,
+        fields: [
+            minPlayCountField,
+            minListenersCountField,
+            artistField,
+            tagField,
+            approvalStatusField
+        ]
+    };
+
+    return (
+        <EntityTable
+            search={search}
+            onSearchChange={setSearch}
+            onSearchSubmit={handleSearchSubmit}
+            searchPlaceholder="Search album name..."
+            
+            additionalSearch={additionalSearchConfig}
+            
+            columns={columns}
+            emptyMessage="No albums found"
+            
+            sort={sort}
+            onSortChange={setSort}
+            
+            pagination={{
+                page: pagination.page,
+                totalPages: pagination.totalPages,
+                hasNextPage: pagination.hasNextPage,
+                hasPrevPage: pagination.hasPrevPage,
+            }}
+            onNextPage={nextPage}
+            onPrevPage={prevPage}
+            onGoToPage={goToPage}
+            
+            isLoading={isLoading}
+            onRefresh={refresh}
+        >
+            {rawEntityIds?.map(rawEntityId => (
+                <LastfmAlbumsTableRow
+                    key={rawEntityId}
+                    entityId={rawEntityId}
+                    onArtistFilter={handleArtistFilter}
+                />
+            ))}
+        </EntityTable>
+    );
+};

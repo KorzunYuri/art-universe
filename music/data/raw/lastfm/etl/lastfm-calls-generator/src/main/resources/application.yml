@@ -1,0 +1,70 @@
+spring:
+  application:
+    name: lastfm-calls-generator
+  config:
+    import:
+      - classpath:commons-context.yml
+      - optional:classpath:commons-context-${spring.profiles.active}.yml
+      - classpath:commons-observability.yml
+      - optional:classpath:commons-observability-${spring.profiles.active}.yml
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://${MURAW_LASTFM_DB_HOST:localhost}:${MURAW_LASTFM_DB_PORT:5432}/${MURAW_LASTFM_DB_NAME:music_universe}?currentSchema=${MURAW_LASTFM_DB_SCHEMA:mu_raw_lastfm}
+    username: ${MURAW_LASTFM_DB_USER_NAME}
+    password: '${MURAW_LASTFM_DB_PASSWORD}'
+    hikari:
+      pool-name: LastfmCallsGeneratorHikariPool
+      maximum-pool-size: 8
+      minimum-idle: 2
+  jpa:
+    database: postgresql
+    properties:
+      hibernate:
+        order_by:
+          default_null_ordering: last
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        show-sql: false
+        jdbc:
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
+        javax.persistence.validation.mode: none
+    hibernate:
+      ddl-auto: none
+
+server:
+  # Non-web app - only needs actuator endpoints
+  port: ${MURAW_LASTFM_CALLS_GENERATOR_ACTUATOR_INTERNAL_PORT}
+
+lastfm:
+  client:
+    calls:
+      generate:
+        fixedDelaySecs: 60
+    methods:
+      album:
+        getInfo:
+          dueDurationDays: 28
+      artist:
+        getInfo:
+          dueDurationDays: 7
+        getSimilar:
+          dueDurationDays: 28
+        topTags:
+          dueDurationDays: 7
+        topAlbums:
+          dueDurationDays: 28
+        topTracks:
+          dueDurationDays: 28
+      tag:
+        topTags:
+          recordsLimit: 2000 # it is known that Lastfm API offset breaks after 2000th record for this method
+          dueDurationDays: 7
+        topArtists:
+          dueDurationDays: 7
+        topTracks:
+          dueDurationDays: 7
+          usageToPageRatio: 50000 # for each N usages of the tag, ONE 50-items api call will be generated
+      track:
+        getInfo:
+          dueDurationDays: 56

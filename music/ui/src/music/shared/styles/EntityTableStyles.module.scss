@@ -1,0 +1,36 @@
+.header {
+  display: flex;
+  background-color: #f1f5f9;
+  font-weight: bold;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.row {
+  display: flex;
+  border-bottom: 1px solid #e2e8f0;
+  
+  &:hover {
+    background-color: #f8fafc;
+  }
+  
+  &.activeRow {
+    background-color: #e6f7ff;
+  }
+}
+
+.cell {
+  padding: 4px 12px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  
+  &:first-child {
+    padding-left: 16px;
+  }
+  
+  &:last-child {
+    padding-right: 16px;
+  }
+}

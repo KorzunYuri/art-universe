@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
+
+    <changeSet id="0013-0010-readonly_schema$initial" author="system">
+        <sqlFile path="../changesets/0013-readonly-schema/0013-0010-readonly_schema$initial.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0013-0020-readonly_views$initial" author="system">
+        <sqlFile path="../changesets/0013-readonly-schema/0013-0020-readonly_views$initial.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0013-0030-readonly_permissions$initial" author="system">
+        <sqlFile path="../changesets/0013-readonly-schema/0013-0030-readonly_permissions$initial.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+</databaseChangeLog>

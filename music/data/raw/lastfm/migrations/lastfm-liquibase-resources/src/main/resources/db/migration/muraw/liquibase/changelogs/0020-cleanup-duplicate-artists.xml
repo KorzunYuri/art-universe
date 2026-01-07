@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
+
+    <changeSet id="0020_0010_cleanup_duplicate_artists" author="system">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0020-cleanup-duplicate-artists/0020-0010-cleanup_duplicate_artists.sql"/>
+    </changeSet>
+
+</databaseChangeLog>

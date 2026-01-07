@@ -1,0 +1,39 @@
+.muLabel {
+  display: inline-flex;
+  align-items: center;
+  height: 2.25rem;
+  padding: 0 0.5rem;
+  border: 1px solid lightgray;
+  border-radius: 0.25rem;
+
+  font: inherit;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.muInput {
+  display: block;
+  width: 100%;
+  height: 2.25rem;
+  padding: 0 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+  font: inherit;
+  background-color: #fff;
+  
+  &:focus {
+    outline: none;
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  }
+  
+  &:disabled {
+    background-color: #e9ecef;
+    opacity: 1;
+  }
+  
+  &::placeholder {
+    color: #6c757d;
+    opacity: 1;
+  }
+}

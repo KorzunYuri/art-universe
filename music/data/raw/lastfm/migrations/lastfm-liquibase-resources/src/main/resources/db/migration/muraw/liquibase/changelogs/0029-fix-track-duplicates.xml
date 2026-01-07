@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="0029-0010-add-track-deduplication-indexes" author="amazon-q">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0029-fix-track-duplicates/0029-0010-track-deduplication-indexes$initial.sql"/>
+    </changeSet>
+
+    <changeSet id="0029-0020-identify-track-duplicates" author="amazon-q">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0029-fix-track-duplicates/0029-0020-identify-track-duplicates.sql"
+                 splitStatements="false"/>
+    </changeSet>
+
+    <changeSet id="0029-0030-backup-duplicate-relationships" author="amazon-q">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0029-fix-track-duplicates/0029-0030-backup-duplicate-relationships.sql"/>
+    </changeSet>
+
+    <changeSet id="0029-0040-delete-duplicate-relationships" author="amazon-q">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0029-fix-track-duplicates/0029-0040-delete-duplicate-relationships.sql"/>
+    </changeSet>
+
+    <changeSet id="0029-0050-delete-duplicate-tracks" author="amazon-q">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0029-fix-track-duplicates/0029-0050-delete-duplicate-tracks.sql"/>
+    </changeSet>
+
+    <changeSet id="0029-0060-normalize-track-urls" author="amazon-q">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0029-fix-track-duplicates/0029-0060-normalize-track-urls.sql"/>
+    </changeSet>
+
+    <changeSet id="0029-0070-log-migration-results" author="amazon-q">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0029-fix-track-duplicates/0029-0070-log-migration-results.sql"
+                 splitStatements="false"/>
+    </changeSet>
+
+</databaseChangeLog>

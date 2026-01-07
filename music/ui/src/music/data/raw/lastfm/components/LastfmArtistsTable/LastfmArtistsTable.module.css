@@ -1,0 +1,110 @@
+.container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.searchForm {
+    margin-bottom: 1rem;
+}
+
+.searchRow {
+    display: flex;
+    margin-bottom: 0.5rem;
+    gap: 0.5rem;
+}
+
+.searchField {
+    display: flex;
+    align-items: center;
+}
+
+.searchField input, .searchField select {
+    width: 100%;
+}
+
+.searchActions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.loading {
+    display: inline-block;
+    text-align: center;
+    padding: 0.6em 1.2em;
+    margin-left: auto;
+}
+
+.tableContainer {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+/* Column widths */
+.nameField {
+    flex: 12;
+}
+
+.mbidField {
+    flex: 3;
+}
+
+.statusField {
+    flex: 4;
+}
+
+.bindingField {
+    flex: 8;
+}
+
+.countField {
+    flex: 3;
+}
+
+/* Table cell styles */
+.name {
+    flex: 12;
+    text-align: left;
+}
+
+.mbid {
+    flex: 3;
+}
+
+.status {
+    flex: 4;
+    display: flex;
+    justify-content: center;
+}
+
+.masterBinding {
+    flex: 8;
+    display: flex;
+    text-align: left;
+}
+
+.quizBinding {
+    flex: 3;
+    display: flex;
+    justify-content: center;
+}
+
+.count {
+    flex: 3;
+    text-align: right;
+}
+
+.searchButton {
+    /*  override EntityTable.actionButton styles  */
+}

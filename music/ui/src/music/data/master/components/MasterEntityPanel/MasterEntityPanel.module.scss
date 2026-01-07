@@ -1,0 +1,26 @@
+.entityPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.entitiesList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-height: 32px;
+  padding: 4px;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  background-color: #f8f9fa;
+}
+
+.emptyPanel {
+  padding: 8px 12px;
+  color: #6c757d;
+  font-style: italic;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  background-color: #f8f9fa;
+  text-align: center;
+}

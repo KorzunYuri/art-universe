@@ -1,0 +1,1 @@
+CREATE INDEX entity_relation_I_entity ON entity_relation(entity_type, entity_id);

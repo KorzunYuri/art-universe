@@ -1,0 +1,1 @@
+CREATE INDEX api_call_I_due_dttm ON api_call (due_dttm);

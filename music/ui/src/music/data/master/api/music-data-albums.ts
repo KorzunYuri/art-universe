@@ -1,0 +1,17 @@
+import type {BaseMasterEntityDto} from "@/music/data/master/api/music-data-commons.ts";
+import {AlbumImpl} from "@/music/shared/types/entities.ts";
+import type {BasePageSearchParams} from "@/music/shared/types/page.ts";
+
+export interface AlbumDto extends BaseMasterEntityDto {
+    primaryArtistId: number;
+}
+
+export interface AlbumPageSearchParams extends BasePageSearchParams {}
+
+export function createAlbumFromDto(dto: AlbumDto) {
+    return new AlbumImpl(
+        dto.id,
+        dto.name,
+        dto.primaryArtistId
+    )
+}

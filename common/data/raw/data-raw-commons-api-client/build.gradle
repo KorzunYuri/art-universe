@@ -1,0 +1,8 @@
+plugins {
+    id 'art-universe.java-library'
+}
+
+dependencies {
+    api project(':common:data:raw:data-raw-commons-jpa')
+    api 'org.springframework:spring-web' // for HTTP client
+}

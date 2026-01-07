@@ -1,0 +1,1 @@
+CREATE INDEX api_call_I_type ON api_call (type);

@@ -1,0 +1,9 @@
+plugins {
+    id 'art-universe.java-library'
+}
+
+dependencies {
+    api project(':common:commons-jpa')
+    
+    testImplementation 'org.junit.jupiter:junit-jupiter-api'
+}

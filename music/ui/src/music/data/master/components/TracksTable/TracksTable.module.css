@@ -1,0 +1,19 @@
+/* Column styles */
+.name {
+    flex: 0 0 30%;
+    text-align: left;
+    display: block;
+}
+
+.primaryArtist {
+    flex: 1;
+    text-align: left;
+    min-width: 150px;
+    display: block;
+}
+
+.actions {
+    flex: 0 0 15%;
+    text-align: center;
+    display: block;
+}

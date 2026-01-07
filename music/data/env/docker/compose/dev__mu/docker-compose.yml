@@ -1,0 +1,71 @@
+# dev env
+
+version: '3.8'
+
+services:
+
+# Monitoring
+  prometheus:
+    container_name: dev__mu__prometheus
+    image: prom/prometheus:latest
+    restart: unless-stopped
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    ports:
+      - "${PROMETHEUS_PORT}:9090"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  grafana:
+    container_name: dev__mu__grafana
+    build:
+      dockerfile: ./grafana/grafana.dockerfile
+      context: .
+    restart: unless-stopped
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning/dashboards:/tmp/dashboard-templates
+      - ./grafana/provisioning/datasources:/tmp/datasource-templates
+      - ./grafana/grafana-provision.sh:/tmp/grafana-provision.sh
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - PROMETHEUS_DATASOURCE_UID=prometheus_dev
+    entrypoint: /tmp/grafana-provision.sh
+    ports:
+      - "${GRAFANA_PORT}:3000"
+    depends_on:
+      - prometheus
+
+  # Distributed Tracing
+  zipkin:
+    container_name: dev__mu__zipkin
+    image: openzipkin/zipkin:3.4
+    restart: unless-stopped
+    ports:
+      - "${ZIPKIN_EXTERNAL_PORT}:9411"
+    environment:
+      - STORAGE_TYPE=mem
+      - JAVA_OPTS=-Xms128m -Xmx256m
+    depends_on:
+      - prometheus
+
+networks:
+  default:
+    name: dev__mu-observability-network
+
+volumes:
+  prometheus-data:
+    name: dev__mu__prometheus-data
+  grafana-data:
+    name: dev__mu__grafana-data

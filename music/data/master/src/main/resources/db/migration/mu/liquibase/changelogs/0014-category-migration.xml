@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
+
+    <changeSet id="0014-0010-dimension-categories$create" author="amazon-q">
+        <sqlFile path="../changesets/0014-category-migration/0014-0010-dimension-categories$create.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0014-0020-category-category$create" author="amazon-q">
+        <sqlFile path="../changesets/0014-category-migration/0014-0020-category-category$create.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0014-0030-migrate-hierarchy$data" author="amazon-q">
+        <sqlFile path="../changesets/0014-category-migration/0014-0030-migrate-hierarchy$data.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0014-0035-drop-dependent-objects$drop" author="amazon-q">
+        <sqlFile path="../changesets/0014-category-migration/0014-0035-drop-dependent-objects$drop.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0014-0040-cleanup-old-structure$drop" author="amazon-q">
+        <sqlFile path="../changesets/0014-category-migration/0014-0040-cleanup-old-structure$drop.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0014-0050-fix-category-category-indexes$rename" author="amazon-q">
+        <sqlFile path="../changesets/0014-category-migration/0014-0050-fix-category-category-indexes$rename.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0014-0060-category_hierarchy_view$restore" author="amazon-q">
+        <sqlFile path="../changesets/0014-category-migration/0014-0060-category_hierarchy_view$restore.sql" relativeToChangelogFile="true"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
+    <changeSet id="0014-0070-readonly_category_views$restore" author="amazon-q">
+        <sqlFile path="../changesets/0014-category-migration/0014-0070-readonly_category_views$restore.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+</databaseChangeLog>

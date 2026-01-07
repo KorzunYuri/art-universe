@@ -1,0 +1,11 @@
+plugins {
+    id 'art-universe.java-library'
+}
+
+dependencies {
+    api project(':common:test:commons-test')
+    api project(':common:commons-web')
+
+    api 'org.springframework:spring-context'
+    api 'org.springframework:spring-test'
+}

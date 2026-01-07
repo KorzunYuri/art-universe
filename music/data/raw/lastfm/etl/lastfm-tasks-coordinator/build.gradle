@@ -1,0 +1,34 @@
+plugins {
+    id 'art-universe.java-library'
+}
+
+archivesBaseName = 'lastfm-etl-tasks-coordinator'
+
+dependencies {
+    api 'jakarta.annotation:jakarta.annotation-api'
+    api 'org.springframework.boot:spring-boot-autoconfigure'
+    api 'org.springframework:spring-context'
+
+    implementation 'org.slf4j:slf4j-api'
+
+    api project(':music:data:raw:lastfm:lastfm-models')
+    api project(':common:commons-jpa')
+
+    // Optional dependencies for database coordination provider
+    // These are compileOnly - consuming modules using database provider must include them
+    compileOnly project(':music:data:raw:lastfm:lastfm-repositories')
+    compileOnly 'org.springframework.boot:spring-boot-starter-data-jpa'
+    compileOnly 'org.springframework:spring-tx'
+
+    // Test dependencies
+    testImplementation project(':common:commons-jpa')
+    testImplementation project(':common:test:commons-test')
+    testImplementation project(':music:data:raw:lastfm:lastfm-models')
+    testImplementation project(':music:data:raw:lastfm:lastfm-repositories')
+    testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.assertj:assertj-core'
+    testImplementation 'org.mockito:mockito-core'
+    testImplementation 'org.mockito:mockito-junit-jupiter'
+    testImplementation 'org.springframework:spring-tx'
+}

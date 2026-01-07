@@ -1,0 +1,126 @@
+.wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    justify-content: space-between; // Распределяем элементы по краям
+}
+
+.bindingName {
+    flex: 1;
+    min-width: 0; // Allow text truncation
+    
+    &.boundState {
+        display: inline-flex;
+        align-items: center;
+        height: 2.25rem; // Match .muLabel height (36px)
+        padding: 0 0.75rem; // Slightly more padding for visual balance
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+        border-radius: 0.25rem;
+        color: #155724;
+        font-weight: 500;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        flex-shrink: 1; // Позволяем сжиматься при необходимости
+    }
+    
+    &.matchedState {
+        background-color: #e8f5e8;
+        border-color: #28a745;
+        font-weight: 500;
+    }
+}
+
+.bindingButton {
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: white;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    min-width: 60px;
+    max-width: 60px;        // Фиксированная ширина для всех кнопок
+    height: 2.25rem;        // Точно как у .muLabel (36px)
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;         // Не сжиматься
+    
+    &:hover:not(:disabled) {
+        background-color: #f8f9fa;
+    }
+    
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    
+    &.createButton {
+        background-color: transparent;
+        color: #6c757d;
+        border-color: #ccc;
+
+        &:hover:not(:disabled) {
+            background-color: rgba(108, 117, 125, 0.1);
+        }
+    }
+    
+    &.linkButton {
+        background-color: #fff3cd;
+        color: #856404;
+        border-color: #ffeeba;
+        
+        &:hover:not(:disabled) {
+            background-color: #ffeaa7;
+            border-color: #ffdd57;
+        }
+    }
+    
+    &.unbindButton {
+        background-color: #f5d6d6;
+        color: #721c24;
+        border-color: #f1aeb5;
+        
+        &:hover:not(:disabled) {
+            background-color: #e38080;
+            border-color: #dc6c6c;
+        }
+    }
+}
+
+.hidden {
+    display: none;
+}
+
+// Styles for loading, error and empty states
+.loadingState, .errorState, .emptyState {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 2.25rem;
+    width: 100%;
+    border-radius: 4px;
+    font-size: 12px;
+    padding: 0 12px;
+}
+
+.loadingState {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    color: #6c757d;
+}
+
+.errorState {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+.emptyState {
+    background-color: #e9ecef;
+    border: 1px solid #dee2e6;
+    color: #495057;
+}

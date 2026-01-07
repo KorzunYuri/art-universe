@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
+
+    <changeSet id="0007-0010-tablename-prefix-function" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0007-pipeline-changes/0007-0010-p_quiz_gen_tracks_get_tablename_prefix.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
+    <changeSet id="0007-0020-approved-filter-v2" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0007-pipeline-changes/0007-0020-p_quiz_gen_tracks_step_approved_filter_v2.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
+    <changeSet id="0007-0030-track-recency-penalty-v3" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0007-pipeline-changes/0007-0030-p_quiz_gen_tracks_step_track_recency_penalty_v3.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
+    <changeSet id="0007-0040-artist-recency-penalty-v3" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0007-pipeline-changes/0007-0040-p_quiz_gen_tracks_step_artist_recency_penalty_v3.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
+    <changeSet id="0007-0060-blacklist-filter-v4" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0007-pipeline-changes/0007-0060-p_quiz_gen_tracks_step_categories_blacklist_filter_v4.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
+    <changeSet id="0007-0090-artist-diversity-v3" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0007-pipeline-changes/0007-0090-p_quiz_gen_tracks_step_artist_diversity_v3.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
+    <changeSet id="0007-0100-final-selection-v3" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0007-pipeline-changes/0007-0100-p_quiz_gen_tracks_step_final_selection_v3.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
+    <changeSet id="0007-0120-whitelist-filter-v7" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0007-pipeline-changes/0007-0120-p_quiz_gen_tracks_step_categories_whitelist_filter_v7.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
+    <changeSet id="0007-0130-final-categories-balancer" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0007-pipeline-changes/0007-0130-p_quiz_gen_tracks_step_final_categories_balancer.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
+    <changeSet id="0007-0140-p_quiz_gen_tracks_pipeline$remove" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0007-pipeline-changes/0007-0140-p_quiz_gen_tracks_pipeline$remove.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
+</databaseChangeLog>

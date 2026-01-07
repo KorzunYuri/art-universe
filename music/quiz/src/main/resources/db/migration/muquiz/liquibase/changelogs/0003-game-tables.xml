@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
+
+    <changeSet id="0003-0010-game-tables" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0003-game/0003-0010-game$initial.sql"/>
+    </changeSet>
+
+    <changeSet id="0003-0030-generation-tables" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0003-game/0003-0020-generation$initial.sql"/>
+    </changeSet>
+
+    <changeSet id="0003-0040-generation_track-tables" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0003-game/0003-0030-generation_track$initial.sql"/>
+    </changeSet>
+
+</databaseChangeLog>

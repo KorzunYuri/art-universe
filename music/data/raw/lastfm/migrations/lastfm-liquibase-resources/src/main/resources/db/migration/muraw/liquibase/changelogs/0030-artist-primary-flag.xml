@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="0030-0010-add-artist-primary-flag" author="amazon-q">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0030-artist-primary-flag/0030-0010-add-artist-primary-flag.sql"/>
+    </changeSet>
+
+    <changeSet id="0030-0020-mark-primary-artists_by_name" author="amazon-q">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0030-artist-primary-flag/0030-0020-mark-primary-artists_by_name.sql"/>
+    </changeSet>
+
+    <changeSet id="0030-0021-mark-primary-artists_by_mbid" author="amazon-q">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0030-artist-primary-flag/0030-0021-mark-primary-artists_by_mbid.sql"/>
+    </changeSet>
+
+    <changeSet id="0030-0025-log-primary-artist-stats" author="amazon-q">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0030-artist-primary-flag/0030-0025-log-primary-artist-stats.sql"
+                 splitStatements="false"/>
+    </changeSet>
+
+    <changeSet id="0030-0030-create-primary-artist-index" author="amazon-q">
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0030-artist-primary-flag/0030-0030-create-primary-artist-index.sql"/>
+    </changeSet>
+
+</databaseChangeLog>

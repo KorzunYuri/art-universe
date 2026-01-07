@@ -1,0 +1,25 @@
+spring:
+  docker:
+    compose:
+      enabled: true
+      file: ${PROJECT_ROOT}/music/shared/docker/compose/dev__mu-data/docker-compose.yml
+      lifecycle-management: start-and-stop
+#  jpa:
+#    properties:
+#      hibernate:
+#        show-sql: true
+#        generate_statistics: true
+
+#logging:
+#  level:
+#    liquibase: DEBUG
+#    org:
+#      hibernate:
+#        SQL: DEBUG
+#        type:
+#          descriptor:
+#            sql:
+#              BasicBinder: TRACE
+#        orm:
+#          jdbc:
+#            bind: TRACE

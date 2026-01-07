@@ -1,0 +1,106 @@
+.container {
+    padding: 20px;
+}
+
+.searchBar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.searchButton,
+.refreshButton {
+    padding: 8px 16px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.searchButton:hover,
+.refreshButton:hover {
+    background: #0056b3;
+}
+
+.searchButton:disabled,
+.refreshButton:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+}
+
+.loading {
+    text-align: center;
+    padding: 20px;
+    font-style: italic;
+    color: #666;
+}
+
+.table {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.emptyState {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+    font-style: italic;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.paginationButton {
+    padding: 8px 16px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.paginationButton:hover {
+    background: #0056b3;
+}
+
+.paginationButton:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+}
+
+.pageInfo {
+    font-weight: 500;
+}
+
+/* Column widths */
+.artist {
+    width: 200px;
+}
+
+.name {
+    width: 300px;
+}
+
+.mbid {
+    width: 120px;
+}
+
+.status {
+    width: 120px;
+}
+
+.masterBinding {
+    width: 200px;
+}
+
+.count {
+    width: 100px;
+}

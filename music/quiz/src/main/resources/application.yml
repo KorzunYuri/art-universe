@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: music-universe-quiz-service
+  config:
+    import:
+      - classpath:commons-context.yml
+      - optional:classpath:commons-context-${spring.profiles.active}.yml
+      - classpath:commons-observability.yml
+      - optional:classpath:commons-observability-${spring.profiles.active}.yml
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://${MU_DATA_DB_HOST:localhost}:${MU_DATA_DB_PORT:5432}/music_universe?currentSchema=mu_quiz
+    username: mu_quiz_dm
+    password: '${MU_QUIZ_DB_PASSWORD_DM}'
+    hikari:
+      pool-name: MuQuizMetaHikariPool
+      maximum-pool-size: 8
+      minimum-idle: 2
+  liquibase:
+    default-schema: mu_quiz
+    change-log: classpath:db/migration/muquiz/liquibase/db.changelog.xml
+  jpa:
+    database: postgresql
+    properties:
+      hibernate:
+        order_by:
+          default_null_ordering: last
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        show-sql: false
+        jdbc:
+          batch_size: 10
+        order_inserts: true
+        order_updates: true
+    hibernate:
+      ddl-auto: none
+  docker:
+    compose:
+      enabled: false
+
+server:
+#  address: 0.0.0.0
+  port: ${MU_QUIZ_APP_INTERNAL_PORT:8080}
+  allowed-origins: ${MU_QUIZ_APP_CORS_ALLOWED_ORIGINS}
+

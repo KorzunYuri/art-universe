@@ -1,0 +1,9 @@
+plugins {
+    id 'art-universe.java-base'
+    id 'java-library'
+}
+
+tasks.named('jar') {
+    enabled = true
+    archiveClassifier = ''
+}

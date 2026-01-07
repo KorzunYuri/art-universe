@@ -1,0 +1,1 @@
+DROP INDEX IF EXISTS attribute_history_I_entity;

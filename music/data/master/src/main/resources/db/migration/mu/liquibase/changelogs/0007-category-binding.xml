@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
+
+    <include file="../changesets/0007-category-binding/0007-0010-artist-category$initial.sql" relativeToChangelogFile="true"/>
+    <include file="../changesets/0007-category-binding/0007-0020-artist-category-binding$initial.sql" relativeToChangelogFile="true"/>
+    <include file="../changesets/0007-category-binding/0007-0100-category$add_unique_constraint.sql" relativeToChangelogFile="true"/>
+
+</databaseChangeLog>

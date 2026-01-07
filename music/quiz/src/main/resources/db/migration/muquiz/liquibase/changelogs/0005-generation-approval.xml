@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
+
+    <changeSet id="0005-0010-generation-add-approved-field" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0005-generation-approval/0005-0010-generation-add-approved-field.sql"/>
+    </changeSet>
+
+    <changeSet id="0005-0020-game-remove-generation-id" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0005-generation-approval/0005-0020-game-remove-generation-id.sql"/>
+    </changeSet>
+
+    <changeSet id="0005-0030-recency-penalty-fix" author="amazon-q">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0005-generation-approval/0005-0030-p_quiz_gen_tracks_step_recency_penalty_fix.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
+</databaseChangeLog>
