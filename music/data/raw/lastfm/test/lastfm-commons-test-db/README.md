@@ -1,6 +1,6 @@
 # LastFM Commons Test DB
 
-Database integration test support for LastFM modules using the [JPA Repository Testing Pattern](../../../../../../docs/kb/patterns/backend/testing/jpa-repository-tests.md) with LastFM-specific schema and Liquibase migrations.
+Database integration test support for LastFM modules using the [Database Testing Patterns](../../../../../../docs/kb/patterns/backend/testing/testing-with-persistence-layer.md) with LastFM-specific schema and Liquibase migrations.
 
 If you need to create and save entities while keeping DB in consistent state in your tests, use [lastfm-commons-test-db-helper](../lastfm-commons-test-db-helper/README.md) extension.
 
@@ -14,16 +14,26 @@ If you need to create and save entities while keeping DB in consistent state in 
 - Liquibase: Configured in [application-test.yml](src/main/resources/application-test.yml) - Applies full LastFM schema from [lastfm-liquibase-resources](../../migrations/lastfm-liquibase-resources/README.md)
 
 
-### How to Use
+## Base Test Classes
 
-Extend [LastfmJpaTest](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/common/archetypes/LastfmJpaTest.java) for repository tests:
+### LastfmJpaTest - JPA Slice Tests (@DataJpaTest)
+
+Use for repository and JPA-related tests that only need persistence layer.
+Non-JPA bean must to be imported via `@Import` annotation.
+
+[LastfmJpaTest.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/common/archetypes/LastfmJpaTest.java)
 
 ```java
-@Tag("integration")
+@Import(
+    LastfmApiCallServiceImpl.class
+)
 class LastfmApiCallRepositoryTest extends LastfmJpaTest {
 
     @Autowired
-    private LastfmApiCallRepository repository;
+    private LastfmApiCallRepository repository; // loaded by DataJpaTest slice
+    
+    @Autowired
+    private LastfmApiCallServiceImpl service; // requres manual importing
 
     @Test
     void saveAll_shouldSaveApiCalls_whenValidDataProvided() {
@@ -32,11 +42,38 @@ class LastfmApiCallRepositoryTest extends LastfmJpaTest {
 }
 ```
 
-If you need to inject a component living out of the persistence layer, use @Import annotation on your test class.
+If you need to inject a component living outside the persistence layer, use `@Import` annotation on your test class.
 
+
+### LastfmContextTestWithDb - Full Context Tests (@SpringBootTest)
+
+Use for tests requiring full Spring application context with database.
+
+[LastfmContextTestWithDb.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/common/archetypes/LastfmContextTestWithDb.java)
+
+```java
+class LastfmApiCallGeneratorsRegistryTest extends LastfmContextTestWithDb {
+
+    @Test
+    void shouldReturnCorrectGeneratorForEachCallType() {
+        // Validates that registry returns Spring proxies with AOP
+        BaseLastfmApiCallGenerator generator =
+            LastfmApiCallGeneratorsRegistry.get(LastfmApiCallType.TAG_TOP_TAGS);
+
+        assertTrue(AopUtils.isAopProxy(generator));
+    }
+}
+```
+
+
+## Configuration Details
+
+The module provides [LastfmPostgresTestContainer.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/common/archetypes/LastfmPostgresTestContainer.java) meta-annotation that encapsulates TestContainer configuration.
+
+This meta-annotation is used by both `LastfmJpaTest` and `LastfmContextTestWithDb` base classes. 
 
 ## Related Documentation
 
-- [JPA Repository Testing Pattern](../../../../../../docs/kb/patterns/backend/testing/testing-with-persistence-layer.md) - Generic pattern documentation
+- [Database Testing Patterns](../../../../../../docs/kb/patterns/backend/testing/testing-with-persistence-layer.md) - Generic pattern documentation
 - [LastFM Modules Overview](../../README.md)
 - [Project Modules Index](../../../../../../docs/MODULES.md)

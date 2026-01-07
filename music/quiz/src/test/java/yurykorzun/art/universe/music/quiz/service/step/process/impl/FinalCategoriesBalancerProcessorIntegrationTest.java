@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.Commit;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.common.persistence.util.DatabaseUtils;
-import yurykorzun.art.universe.music.quiz.common.archetypes.JpaOnlyTest;
+import yurykorzun.art.universe.music.quiz.common.archetypes.BaseQuizJpaTest;
 import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
 import yurykorzun.art.universe.music.quiz.entity.Step;
 import yurykorzun.art.universe.music.quiz.entity.StepRun;
@@ -20,7 +20,6 @@ import yurykorzun.art.universe.music.quiz.entity.StepType;
 import yurykorzun.art.universe.music.quiz.service.step.process.StepProcessorRegistry;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -31,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
     ObjectMapper.class,
     FinalCategoriesBalancerProcessor.class
 })
-class FinalCategoriesBalancerProcessorIntegrationTest extends JpaOnlyTest {
+class FinalCategoriesBalancerProcessorIntegrationTest extends BaseQuizJpaTest {
 
     @PersistenceContext
     private EntityManager entityManager;

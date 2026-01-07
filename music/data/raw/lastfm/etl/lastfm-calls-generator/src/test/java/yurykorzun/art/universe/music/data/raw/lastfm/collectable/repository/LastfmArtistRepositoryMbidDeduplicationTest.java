@@ -1,11 +1,9 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.LastfmJpaTestHelper;
 
 import java.util.List;
@@ -18,18 +16,10 @@ class LastfmArtistRepositoryMbidDeduplicationTest extends LastfmJpaTestHelper {
     @Autowired
     private LastfmArtistRepository artistRepository;
 
-    @Autowired
-    private DbConsistencyHelper dbHelper;
-
-    @BeforeEach
-    void setUp() {
-        dbHelper.cleanup();
-    }
-
     @Test
     void findAllToGetInfoFor_shouldDeduplicateByMbid_whenDuplicatesExist() {
         // Given: Create artists with same MBID but different metrics
-        LastfmArtist artist1 = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist artist1 = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("Artist Name 1")
             .mbid("same-mbid-123")
             .approvalStatus(ApprovalStatus.PENDING)
@@ -37,7 +27,7 @@ class LastfmArtistRepositoryMbidDeduplicationTest extends LastfmJpaTestHelper {
             .playCount(null)
         );
 
-        LastfmArtist artist2 = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist artist2 = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("Artist Name 2")
             .mbid("same-mbid-123")
             .approvalStatus(ApprovalStatus.APPROVED)
@@ -45,7 +35,7 @@ class LastfmArtistRepositoryMbidDeduplicationTest extends LastfmJpaTestHelper {
             .playCount(null)       // Missing - needs getInfo
         );
 
-        LastfmArtist artist3 = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist artist3 = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("Artist Name 3")
             .mbid("same-mbid-123")
             .approvalStatus(ApprovalStatus.APPROVED)
@@ -54,7 +44,7 @@ class LastfmArtistRepositoryMbidDeduplicationTest extends LastfmJpaTestHelper {
         );
 
         // Different MBID artist for control
-        LastfmArtist artist4 = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist artist4 = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("Different Artist")
             .mbid("different-mbid-456")
             .approvalStatus(ApprovalStatus.APPROVED)
@@ -87,7 +77,7 @@ class LastfmArtistRepositoryMbidDeduplicationTest extends LastfmJpaTestHelper {
     @Test
     void findAllToGetInfoFor_shouldHandleNullMbid_withoutDuplication() {
         // Given: Create artists with null MBID
-        LastfmArtist artist1 = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist artist1 = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("Artist 1")
             .mbid(null)
             .approvalStatus(ApprovalStatus.APPROVED)
@@ -95,7 +85,7 @@ class LastfmArtistRepositoryMbidDeduplicationTest extends LastfmJpaTestHelper {
             .playCount(null)
         );
 
-        LastfmArtist artist2 = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist artist2 = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("Artist 2")
             .mbid(null)
             .approvalStatus(ApprovalStatus.APPROVED)
@@ -115,7 +105,7 @@ class LastfmArtistRepositoryMbidDeduplicationTest extends LastfmJpaTestHelper {
     @Test
     void findAllToGetInfoFor_shouldPreferApprovedStatus_overHigherListenersCount() {
         // Given
-        LastfmArtist pendingWithHighListeners = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist pendingWithHighListeners = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("Pending Artist")
             .mbid("test-mbid")
             .approvalStatus(ApprovalStatus.PENDING)
@@ -123,7 +113,7 @@ class LastfmArtistRepositoryMbidDeduplicationTest extends LastfmJpaTestHelper {
             .playCount(null)
         );
 
-        LastfmArtist approvedWithLowListeners = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist approvedWithLowListeners = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("Approved Artist")
             .mbid("test-mbid")
             .approvalStatus(ApprovalStatus.APPROVED)
@@ -143,7 +133,7 @@ class LastfmArtistRepositoryMbidDeduplicationTest extends LastfmJpaTestHelper {
     @Test
     void findAllToGetInfoFor_shouldPreferHigherListenersCount_whenSameApprovalStatus() {
         // Given
-        LastfmArtist artistLowListeners = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist artistLowListeners = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("Low Listeners")
             .mbid("test-mbid")
             .approvalStatus(ApprovalStatus.APPROVED)
@@ -151,7 +141,7 @@ class LastfmArtistRepositoryMbidDeduplicationTest extends LastfmJpaTestHelper {
             .playCount(null)
         );
 
-        LastfmArtist artistHighListeners = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist artistHighListeners = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("High Listeners")
             .mbid("test-mbid")
             .approvalStatus(ApprovalStatus.APPROVED)
@@ -172,7 +162,7 @@ class LastfmArtistRepositoryMbidDeduplicationTest extends LastfmJpaTestHelper {
     void findAllToGetInfoFor_shouldPreferLowerId_whenAllMetricsEqual() {
         // Given: Create artists with same MBID and same metrics, but different IDs
         // We need to ensure the first created artist has a lower ID
-        LastfmArtist firstArtist = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist firstArtist = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("First Artist")
             .mbid("test-mbid")
             .approvalStatus(ApprovalStatus.APPROVED)
@@ -180,7 +170,7 @@ class LastfmArtistRepositoryMbidDeduplicationTest extends LastfmJpaTestHelper {
             .playCount(null)
         );
 
-        LastfmArtist secondArtist = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist secondArtist = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("Second Artist")
             .mbid("test-mbid")
             .approvalStatus(ApprovalStatus.APPROVED)
@@ -200,14 +190,14 @@ class LastfmArtistRepositoryMbidDeduplicationTest extends LastfmJpaTestHelper {
     @Test
     void findAllToGetInfoFor_shouldHandleNullListenersCount() {
         // Given
-        LastfmArtist artistWithNullListeners = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist artistWithNullListeners = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("Null Listeners")
             .mbid("test-mbid")
             .approvalStatus(ApprovalStatus.APPROVED)
             .listenersCount(null)
         );
 
-        LastfmArtist artistWithListeners = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist artistWithListeners = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("With Listeners")
             .mbid("test-mbid")
             .approvalStatus(ApprovalStatus.APPROVED)

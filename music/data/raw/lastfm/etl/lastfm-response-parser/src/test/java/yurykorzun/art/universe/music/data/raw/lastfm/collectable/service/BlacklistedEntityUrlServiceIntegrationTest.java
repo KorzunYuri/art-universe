@@ -1,23 +1,18 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.service;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.BlacklistedEntityUrlRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.LastfmJpaTestHelper;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Tag("integration")
 @Import({
     BlacklistedEntityUrlService.class,
-    DbConsistencyHelper.class
 })
 class BlacklistedEntityUrlServiceIntegrationTest extends LastfmJpaTestHelper {
 
@@ -25,15 +20,7 @@ class BlacklistedEntityUrlServiceIntegrationTest extends LastfmJpaTestHelper {
     private BlacklistedEntityUrlRepository blacklistRepository;
 
     @Autowired
-    private DbConsistencyHelper dbHelper;
-
-    @Autowired
     private BlacklistedEntityUrlService blacklistService;
-
-    @BeforeEach
-    void setUp() {
-        dbHelper.cleanup();
-    }
 
     @Test
     void shouldAddSingleUrlToBlacklist() {

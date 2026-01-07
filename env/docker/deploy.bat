@@ -112,15 +112,14 @@ if "%DEPLOY_ERROR%"=="0" (
     echo Services available at:
     
     REM Output services info line by line to avoid dash interpretation
-    echo   - LastFM REST API: http://localhost:!MURAW_LASTFM_REST_API_EXTERNAL_PORT! (actuator: !MURAW_LASTFM_REST_API_ACTUATOR_EXTERNAL_PORT!)
-    echo   - LastFM ETL REST API: http://localhost:!MURAW_LASTFM_ETL_REST_API_EXTERNAL_PORT! (actuator: !MURAW_LASTFM_ETL_REST_API_ACTUATOR_EXTERNAL_PORT!)
+    echo   - LastFM REST API: http://localhost:!MURAW_LASTFM_REST_API_EXTERNAL_PORT!
+    echo   - LastFM ETL REST API: http://localhost:!MURAW_LASTFM_ETL_REST_API_EXTERNAL_PORT!
     echo   - LastFM Calls Generator: actuator http://localhost:!MURAW_LASTFM_CALLS_GENERATOR_ACTUATOR_EXTERNAL_PORT!
     echo   - LastFM Calls Performer: actuator http://localhost:!MURAW_LASTFM_CALLS_PERFORMER_ACTUATOR_EXTERNAL_PORT!
     echo   - LastFM Response Parser: actuator http://localhost:!MURAW_LASTFM_RESPONSE_PARSER_ACTUATOR_EXTERNAL_PORT!
-    echo   - Music Data: http://localhost:!MU_DATA_APP_EXTERNAL_PORT! (actuator: !MU_DATA_ACTUATOR_EXTERNAL_PORT!)
-    echo   - Music Quiz: http://localhost:!MU_QUIZ_APP_EXTERNAL_PORT! (actuator: !MU_QUIZ_ACTUATOR_EXTERNAL_PORT!)
+    echo   - Music Data: http://localhost:!MU_DATA_APP_EXTERNAL_PORT!
+    echo   - Music Quiz: http://localhost:!MU_QUIZ_APP_EXTERNAL_PORT!
     echo   - UI: http://localhost:!MU_UI_EXTERNAL_PORT!
-    echo   - Adminer: http://localhost:!DB_ADMINER_PORT!
     echo   - Prometheus: http://localhost:!PROMETHEUS_PORT!
     echo   - Grafana: http://localhost:!GRAFANA_PORT!
     echo.

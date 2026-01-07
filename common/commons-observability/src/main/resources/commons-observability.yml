@@ -1,0 +1,37 @@
+management:
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: health, prometheus
+  endpoint:
+    prometheus:
+      access: read_only
+  jmx:
+    enabled: false
+
+  # Distributed Tracing Configuration
+  tracing:
+    sampling:
+      probability: 0.1  # 10% sampling for production
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_BASE_URL}/api/v2/spans
+
+  # Metrics Configuration
+  metrics:
+    tags:
+      application: ${spring.application.name}
+      environment: prod
+    # Histogram metrics disabled to reduce Prometheus memory usage and time series explosion
+    # distribution:
+    #   percentiles-histogram:
+    #     http.server.requests: true
+    #     spring.data.repository.invocations: true
+
+# Logging configuration
+logging:
+  level:
+    # Suppress B3 propagation warnings for requests without trace context
+    io.micrometer.tracing.otel.propagation.B3PropagatorExtractorMultipleHeaders: ERROR
+    io.micrometer.tracing.otel.propagation.B3Propagator: ERROR

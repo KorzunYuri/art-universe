@@ -1,6 +1,5 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.common.service;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -30,7 +29,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.L
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.LastfmDataSnapshotService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.attribute.LastfmAttributeSnapshotService;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.LastfmJpaTestHelper;
 
@@ -65,7 +63,6 @@ import static yurykorzun.art.universe.music.data.raw.lastfm.common.utils.Asserti
  * </ul>
  * </p>
  */
-@Tag("integration")
 @Import({
     LastfmArtistGetInfoApiCallGenerator.class,
     LastfmArtistTopAlbumsApiCallGenerator.class,
@@ -88,8 +85,6 @@ public class LastfmArtistApiCallGeneratorIntegrationTest extends LastfmJpaTestHe
 
     @Autowired
     private ApplicationContext ctx;
-    @Autowired
-    protected DbConsistencyHelper consistencyHelper;
 
     /**
      * Test parameters set contains:

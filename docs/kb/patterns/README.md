@@ -102,16 +102,18 @@ When you identify a reusable pattern:
 
 ### When to Use Which Category
 
-| Task | Category | Example Pattern |
-|------|----------|-----------------|
-| Create JPA entity | Backend > [Entities](backend/entities/overview.md) | [BaseEntity](backend/entities/base-entity.md), [Coded Enums](backend/entities/coded-enums.md) |
-| Create REST API endpoint | Backend > [API](backend/api/overview.md) | [REST Conventions](backend/api/conventions.md), [Lookup Pattern](backend/api/lookup.md) |
-| Create database migration | Backend > [Database](backend/database/overview.md) | [Liquibase](backend/database/liquibase.md) |
-| Track attribute history | Backend > [Database](backend/database/overview.md) | [SCD2 Attribute History](backend/database/scd2-attribute-history.md) |
-| Test JPA repositories | Backend > [Testing](backend/testing/overview.md) | [Testing with Persistence Layer](backend/testing/testing-with-persistence-layer.md) |
-| Test REST controllers | Backend > [Testing](backend/testing/overview.md) | [Testing Controllers](backend/testing/testing-controllers.md) |
-| Configure environments | Backend > Configuration | [Environment Profiles](backend/configuration/environment-profiles.md) |
-| Manage entity state | Backend > Core | [State Machine](backend/state-machine.md) |
+| Task                       | Category | Example Pattern |
+|----------------------------|----------|-----------------|
+| Create JPA entity          | Backend > [Entities](backend/entities/overview.md) | [BaseEntity](backend/entities/base-entity.md), [Coded Enums](backend/entities/coded-enums.md) |
+| Create REST API endpoint   | Backend > [API](backend/api/overview.md) | [REST Conventions](backend/api/conventions.md), [Lookup Pattern](backend/api/lookup.md) |
+| Create database migration  | Backend > [Database](backend/database/overview.md) | [Liquibase](backend/database/liquibase.md) |
+| Track attribute history    | Backend > [Database](backend/database/overview.md) | [SCD2 Attribute History](backend/database/scd2-attribute-history.md) |
+| Test JPA repositories      | Backend > [Testing](backend/testing/overview.md) | [Testing with Persistence Layer](backend/testing/testing-with-persistence-layer.md) |
+| Test REST controllers      | Backend > [Testing](backend/testing/overview.md) | [Testing Controllers](backend/testing/testing-controllers.md) |
+| Configure environments     | Backend > Configuration | [Environment Profiles](backend/configuration/environment-profiles.md) |
+| Share config from library  | Backend > Configuration | [Spring Config Import](backend/configuration/spring-config-import.md) |
+| Manage entity state        | Backend > Core | [State Machine](backend/state-machine.md) |
+| Create plugin architecture | Backend > Core | [Strategy Registry](backend/strategy-registry.md) |
 | Organize project structure | Backend > Core | [Project Structure](backend/project-structure.md) |
 
 ---

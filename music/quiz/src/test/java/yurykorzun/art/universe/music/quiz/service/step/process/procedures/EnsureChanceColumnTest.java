@@ -2,7 +2,7 @@ package yurykorzun.art.universe.music.quiz.service.step.process.procedures;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import yurykorzun.art.universe.music.quiz.common.archetypes.JpaOnlyTest;
+import yurykorzun.art.universe.music.quiz.common.archetypes.BaseQuizJpaTest;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -10,7 +10,7 @@ import jakarta.persistence.PersistenceContext;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("integration")
-class EnsureChanceColumnTest extends JpaOnlyTest {
+class EnsureChanceColumnTest extends BaseQuizJpaTest {
 
     @PersistenceContext
     private EntityManager entityManager;

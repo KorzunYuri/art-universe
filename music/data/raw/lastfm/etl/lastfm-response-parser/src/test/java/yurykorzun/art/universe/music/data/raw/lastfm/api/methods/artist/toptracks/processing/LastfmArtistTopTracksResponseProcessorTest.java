@@ -4,9 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -26,7 +24,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.Blackli
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl.LastfmArtistServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl.LastfmTrackServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.relationship.impl.LastfmArtistTrackServiceImpl;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.BaseLastfmApiResponseProcessorTest;
 
 import java.io.IOException;
@@ -35,7 +32,6 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Tag("integration")
 @Import({
     // processing
     LastfmArtistTopTracksResponseProcessor.class,
@@ -47,9 +43,6 @@ import static org.junit.jupiter.api.Assertions.*;
     LastfmArtistTrackServiceImpl.class,
 })
 class LastfmArtistTopTracksResponseProcessorTest extends BaseLastfmApiResponseProcessorTest {
-
-    @Autowired
-    private DbConsistencyHelper consistencyHelper;
 
     @Autowired
     private LastfmArtistTopTracksResponseProcessor processor;
@@ -73,24 +66,16 @@ class LastfmArtistTopTracksResponseProcessorTest extends BaseLastfmApiResponsePr
     private String responseJsonString;
     private ArtistTopTracksDtoRoot dtoRoot;
 
-    
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
     public void setUp() throws IOException {
-        consistencyHelper.cleanup();
-        
         // Load test data once for all tests
         responseJsonString = LastfmApiClientResourceUtil.getApiClientResponse(TEST_RESPONSE_KEY);
         dtoRoot = parseResponse(responseJsonString);
         
         // Set threshold to 0 to process all tracks by default
 
-    }
-
-    @AfterEach
-    public void cleanDatabase() {
-        consistencyHelper.cleanup();
     }
 
     /**

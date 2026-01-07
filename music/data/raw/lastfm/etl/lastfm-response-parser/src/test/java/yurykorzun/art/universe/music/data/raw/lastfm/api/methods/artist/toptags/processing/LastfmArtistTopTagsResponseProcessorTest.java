@@ -3,9 +3,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.toptags
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -26,7 +24,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.Blackli
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl.LastfmArtistServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl.LastfmTagServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.relationship.impl.LastfmArtistTagServiceImpl;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.BaseLastfmApiResponseProcessorTest;
 
 import java.io.IOException;
@@ -34,7 +31,6 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Tag("integration")
 @Import({
     // processing
     LastfmArtistTopTagsResponseProcessor.class,
@@ -46,9 +42,6 @@ import static org.junit.jupiter.api.Assertions.*;
     LastfmArtistTagServiceImpl.class,
 })
 class LastfmArtistTopTagsResponseProcessorTest extends BaseLastfmApiResponseProcessorTest {
-
-    @Autowired
-    private DbConsistencyHelper consistencyHelper;
 
     @Autowired
     private LastfmArtistTopTagsResponseProcessor processor;
@@ -77,19 +70,12 @@ class LastfmArtistTopTagsResponseProcessorTest extends BaseLastfmApiResponseProc
 
     @BeforeEach
     public void setUp() throws IOException {
-        consistencyHelper.cleanup();
-
         // Load test data once for all tests
         responseJsonString = LastfmApiClientResourceUtil.getApiClientResponse(TEST_RESPONSE_KEY);
         dtoRoot = parseResponse(responseJsonString);
 
         // Set threshold to 0 to process all tags by default
         ReflectionTestUtils.setField(processor, "tagUsageCountThreshold", DEFAULT_THRESHOLD);
-    }
-
-    @AfterEach
-    public void cleanDatabase() {
-        consistencyHelper.cleanup();
     }
 
     /**

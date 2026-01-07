@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.Commit;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.common.persistence.util.DatabaseUtils;
-import yurykorzun.art.universe.music.quiz.common.archetypes.JpaOnlyTest;
+import yurykorzun.art.universe.music.quiz.common.archetypes.BaseQuizJpaTest;
 import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
 import yurykorzun.art.universe.music.quiz.entity.Step;
 import yurykorzun.art.universe.music.quiz.entity.StepRun;
@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
     ObjectMapper.class,
     BlacklistFilterProcessor.class
 })
-class BlacklistFilterProcessorIntegrationTest extends JpaOnlyTest {
+class BlacklistFilterProcessorIntegrationTest extends BaseQuizJpaTest {
 
     @PersistenceContext
     private EntityManager entityManager;

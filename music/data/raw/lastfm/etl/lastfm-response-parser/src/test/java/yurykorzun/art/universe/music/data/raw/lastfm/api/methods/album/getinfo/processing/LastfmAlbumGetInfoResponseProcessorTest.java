@@ -2,9 +2,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.album.getinfo.
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -34,7 +32,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl.La
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.relationship.impl.LastfmAlbumTagServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.relationship.impl.LastfmAlbumTrackServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.relationship.impl.LastfmArtistTrackServiceImpl;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.BaseLastfmApiResponseProcessorTest;
 
 import java.io.IOException;
@@ -43,7 +40,6 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Tag("integration")
 @Import({
     // processing
     LastfmAlbumGetInfoResponseProcessor.class,
@@ -61,9 +57,6 @@ import static org.junit.jupiter.api.Assertions.*;
     LastfmArtistTrackServiceImpl.class,
 })
 class LastfmAlbumGetInfoResponseProcessorTest extends BaseLastfmApiResponseProcessorTest {
-
-    @Autowired
-    private DbConsistencyHelper consistencyHelper;
 
     @Autowired
     private LastfmAlbumGetInfoResponseProcessor processor;
@@ -100,16 +93,9 @@ class LastfmAlbumGetInfoResponseProcessorTest extends BaseLastfmApiResponseProce
 
     @BeforeEach
     public void setUp() throws IOException {
-        consistencyHelper.cleanup();
-
         // Load test data once for all tests
         responseJsonString = LastfmApiClientResourceUtil.getApiClientResponse(TEST_RESPONSE_KEY);
         dtoRoot = parseResponse(responseJsonString);
-    }
-
-    @AfterEach
-    public void cleanDatabase() {
-        consistencyHelper.cleanup();
     }
 
     /**

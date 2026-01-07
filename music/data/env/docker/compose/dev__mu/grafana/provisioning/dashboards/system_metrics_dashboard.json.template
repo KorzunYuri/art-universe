@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": ${SERVICE_ID},
+  "id": null,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -127,14 +127,14 @@
       "id": 2,
       "options": {
         "legend": {
-          "calcs": [],
-          "displayMode": "list",
+          "calcs": ["mean", "lastNotNull", "max"],
+          "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
         },
         "tooltip": {
-          "mode": "single",
-          "sort": "none"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "targets": [
@@ -144,8 +144,8 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "jvm_memory_used_bytes{job=\"${SERVICE_JOB}\",area=\"heap\"}",
-          "legendFormat": "{{id}} Used",
+          "expr": "jvm_memory_used_bytes{job=~\"$job\",area=\"heap\"}",
+          "legendFormat": "{{job}} - {{id}} Used",
           "range": true,
           "refId": "A"
         },
@@ -155,8 +155,8 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "jvm_memory_max_bytes{job=\"${SERVICE_JOB}\",area=\"heap\"}",
-          "legendFormat": "{{id}} Max",
+          "expr": "jvm_memory_max_bytes{job=~\"$job\",area=\"heap\"}",
+          "legendFormat": "{{job}} - {{id}} Max",
           "range": true,
           "refId": "B"
         }
@@ -227,14 +227,14 @@
       "id": 12,
       "options": {
         "legend": {
-          "calcs": [],
-          "displayMode": "list",
+          "calcs": ["mean", "lastNotNull", "max"],
+          "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
         },
         "tooltip": {
-          "mode": "single",
-          "sort": "none"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "targets": [
@@ -244,8 +244,8 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "jvm_threads_live_threads{job=\"${SERVICE_JOB}\"}",
-          "legendFormat": "Live Threads",
+          "expr": "jvm_threads_live_threads{job=~\"$job\"}",
+          "legendFormat": "{{job}} - Live Threads",
           "range": true,
           "refId": "A"
         },
@@ -255,8 +255,8 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "jvm_threads_daemon_threads{job=\"${SERVICE_JOB}\"}",
-          "legendFormat": "Daemon Threads",
+          "expr": "jvm_threads_daemon_threads{job=~\"$job\"}",
+          "legendFormat": "{{job}} - Daemon Threads",
           "range": true,
           "refId": "B"
         },
@@ -266,8 +266,8 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "jvm_threads_peak_threads{job=\"${SERVICE_JOB}\"}",
-          "legendFormat": "Peak Threads",
+          "expr": "jvm_threads_peak_threads{job=~\"$job\"}",
+          "legendFormat": "{{job}} - Peak Threads",
           "range": true,
           "refId": "C"
         }
@@ -336,8 +336,8 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "((disk_total_bytes{job=\"${SERVICE_JOB}\"} - disk_free_bytes{job=\"${SERVICE_JOB}\"}) / disk_total_bytes{job=\"${SERVICE_JOB}\"}) * 100",
-          "legendFormat": "Disk Usage %",
+          "expr": "((disk_total_bytes{job=~\"$job\"} - disk_free_bytes{job=~\"$job\"}) / disk_total_bytes{job=~\"$job\"}) * 100",
+          "legendFormat": "{{job}} - Disk Usage %",
           "range": true,
           "refId": "A"
         }
@@ -406,8 +406,8 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "(sum(jvm_memory_used_bytes{job=\"${SERVICE_JOB}\",area=\"heap\"}) / sum(jvm_memory_max_bytes{job=\"${SERVICE_JOB}\",area=\"heap\"})) * 100",
-          "legendFormat": "Heap Usage %",
+          "expr": "(sum by (job) (jvm_memory_used_bytes{job=~\"$job\",area=\"heap\"}) / sum by (job) (jvm_memory_max_bytes{job=~\"$job\",area=\"heap\"})) * 100",
+          "legendFormat": "{{job}} - Heap Usage %",
           "range": true,
           "refId": "A"
         }
@@ -491,14 +491,14 @@
       "id": 5,
       "options": {
         "legend": {
-          "calcs": [],
-          "displayMode": "list",
+          "calcs": ["mean", "lastNotNull", "max"],
+          "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
         },
         "tooltip": {
-          "mode": "single",
-          "sort": "none"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "targets": [
@@ -508,8 +508,8 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "rate(jvm_gc_pause_seconds_sum{job=\"${SERVICE_JOB}\"}[5m])",
-          "legendFormat": "{{gc}} GC Time",
+          "expr": "rate(jvm_gc_pause_seconds_sum{job=~\"$job\"}[5m])",
+          "legendFormat": "{{job}} - {{gc}} GC Time",
           "range": true,
           "refId": "A"
         }
@@ -580,14 +580,14 @@
       "id": 6,
       "options": {
         "legend": {
-          "calcs": [],
-          "displayMode": "list",
+          "calcs": ["mean", "lastNotNull", "max"],
+          "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
         },
         "tooltip": {
-          "mode": "single",
-          "sort": "none"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "targets": [
@@ -597,8 +597,8 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "rate(jvm_gc_pause_seconds_count{job=\"${SERVICE_JOB}\"}[5m])",
-          "legendFormat": "{{gc}} GC Count",
+          "expr": "rate(jvm_gc_pause_seconds_count{job=~\"$job\"}[5m])",
+          "legendFormat": "{{job}} - {{gc}} GC Count",
           "range": true,
           "refId": "A"
         }
@@ -692,14 +692,14 @@
       "id": 8,
       "options": {
         "legend": {
-          "calcs": [],
-          "displayMode": "list",
+          "calcs": ["mean", "lastNotNull", "max"],
+          "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
         },
         "tooltip": {
-          "mode": "single",
-          "sort": "none"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "targets": [
@@ -709,8 +709,8 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "process_cpu_usage{job=\"${SERVICE_JOB}\"}",
-          "legendFormat": "Process CPU Usage",
+          "expr": "process_cpu_usage{job=~\"$job\"}",
+          "legendFormat": "{{job}} - Process CPU Usage",
           "range": true,
           "refId": "A"
         },
@@ -720,8 +720,8 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "system_cpu_usage{job=\"${SERVICE_JOB}\"}",
-          "legendFormat": "System CPU Usage",
+          "expr": "system_cpu_usage{job=~\"$job\"}",
+          "legendFormat": "{{job}} - System CPU Usage",
           "range": true,
           "refId": "B"
         }
@@ -792,14 +792,14 @@
       "id": 9,
       "options": {
         "legend": {
-          "calcs": [],
-          "displayMode": "list",
+          "calcs": ["mean", "lastNotNull", "max"],
+          "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
         },
         "tooltip": {
-          "mode": "single",
-          "sort": "none"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "targets": [
@@ -809,8 +809,8 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "system_load_average_1m{job=\"${SERVICE_JOB}\"}",
-          "legendFormat": "Load Average 1m",
+          "expr": "system_load_average_1m{job=~\"$job\"}",
+          "legendFormat": "{{job}} - Load Average 1m",
           "range": true,
           "refId": "A"
         },
@@ -820,8 +820,8 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "system_cpu_count{job=\"${SERVICE_JOB}\"}",
-          "legendFormat": "CPU Count",
+          "expr": "system_cpu_count{job=~\"$job\"}",
+          "legendFormat": "{{job}} - CPU Count",
           "range": true,
           "refId": "B"
         }
@@ -905,14 +905,14 @@
       "id": 14,
       "options": {
         "legend": {
-          "calcs": [],
-          "displayMode": "list",
+          "calcs": ["mean", "lastNotNull", "max"],
+          "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
         },
         "tooltip": {
-          "mode": "single",
-          "sort": "none"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "targets": [
@@ -922,8 +922,8 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "hikaricp_connections_active{job=\"${SERVICE_JOB}\"}",
-          "legendFormat": "Active Connections",
+          "expr": "hikaricp_connections_active{job=~\"$job\"}",
+          "legendFormat": "{{job}} - Active Connections",
           "range": true,
           "refId": "A"
         },
@@ -933,8 +933,8 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "hikaricp_connections_idle{job=\"${SERVICE_JOB}\"}",
-          "legendFormat": "Idle Connections",
+          "expr": "hikaricp_connections_idle{job=~\"$job\"}",
+          "legendFormat": "{{job}} - Idle Connections",
           "range": true,
           "refId": "B"
         },
@@ -944,8 +944,8 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "hikaricp_connections_max{job=\"${SERVICE_JOB}\"}",
-          "legendFormat": "Max Connections",
+          "expr": "hikaricp_connections_max{job=~\"$job\"}",
+          "legendFormat": "{{job}} - Max Connections",
           "range": true,
           "refId": "C"
         }
@@ -1016,14 +1016,14 @@
       "id": 15,
       "options": {
         "legend": {
-          "calcs": [],
-          "displayMode": "list",
+          "calcs": ["mean", "lastNotNull", "max"],
+          "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
         },
         "tooltip": {
-          "mode": "single",
-          "sort": "none"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "targets": [
@@ -1033,8 +1033,8 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "rate(hikaricp_connections_acquire_seconds_sum{job=\"${SERVICE_JOB}\"}[5m]) / rate(hikaricp_connections_acquire_seconds_count{job=\"${SERVICE_JOB}\"}[5m])",
-          "legendFormat": "Avg Acquire Time",
+          "expr": "rate(hikaricp_connections_acquire_seconds_sum{job=~\"$job\"}[5m]) / rate(hikaricp_connections_acquire_seconds_count{job=~\"$job\"}[5m])",
+          "legendFormat": "{{job}} - Avg Acquire Time",
           "range": true,
           "refId": "A"
         },
@@ -1044,8 +1044,8 @@
             "uid": "$PROMETHEUS_DATASOURCE_UID"
           },
           "editorMode": "code",
-          "expr": "hikaricp_connections_acquire_seconds_max{job=\"${SERVICE_JOB}\"}",
-          "legendFormat": "Max Acquire Time",
+          "expr": "hikaricp_connections_acquire_seconds_max{job=~\"$job\"}",
+          "legendFormat": "{{job}} - Max Acquire Time",
           "range": true,
           "refId": "B"
         }
@@ -1054,12 +1054,44 @@
       "type": "timeseries"
     }
   ],
-  "refresh": "5s",
+  "refresh": "30s",
   "schemaVersion": 38,
   "style": "dark",
-  "tags": [],
+  "tags": ["system", "jvm", "spring-boot"],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "$PROMETHEUS_DATASOURCE_UID"
+        },
+        "definition": "label_values(jvm_memory_used_bytes,job)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Application",
+        "multi": true,
+        "name": "job",
+        "options": [],
+        "query": {
+          "query": "label_values(jvm_memory_used_bytes,job)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
   },
   "time": {
     "from": "now-1h",
@@ -1067,8 +1099,8 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "${SERVICE_TITLE}",
-  "uid": "${SERVICE_UID}",
-  "version": 2,
+  "title": "System Metrics",
+  "uid": "system-metrics",
+  "version": 1,
   "weekStart": ""
 }

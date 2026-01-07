@@ -1,8 +1,12 @@
 spring:
   application:
     name: lastfm-calls-performer
-  profiles:
-    include: common
+  config:
+    import:
+      - classpath:commons-context.yml
+      - optional:classpath:commons-context-${spring.profiles.active}.yml
+      - classpath:commons-observability.yml
+      - optional:classpath:commons-observability-${spring.profiles.active}.yml
   datasource:
     driverClassName: org.postgresql.Driver
     url: jdbc:postgresql://${MURAW_LASTFM_DB_HOST:localhost}:${MURAW_LASTFM_DB_PORT:5432}/${MURAW_LASTFM_DB_NAME:music_universe}?currentSchema=${MURAW_LASTFM_DB_SCHEMA:mu_raw_lastfm}
@@ -10,7 +14,7 @@ spring:
     password: '${MURAW_LASTFM_DB_PASSWORD}'
     hikari:
       pool-name: LastfmCallsPerformerHikariPool
-      maximum-pool-size: 4
+      maximum-pool-size: 8
       minimum-idle: 2
   jpa:
     database: postgresql
@@ -29,11 +33,8 @@ spring:
       ddl-auto: none
 
 server:
-  # dummy port to not occupy 8080 on dev
+  # Non-web app - only needs actuator endpoints
   port: ${MURAW_LASTFM_CALLS_PERFORMER_ACTUATOR_INTERNAL_PORT}
-management:
-  server:
-    port: ${MURAW_LASTFM_CALLS_PERFORMER_ACTUATOR_INTERNAL_PORT}
 
 lastfm:
   client:

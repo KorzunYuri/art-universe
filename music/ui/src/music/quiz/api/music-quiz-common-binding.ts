@@ -1,6 +1,7 @@
-import axios from 'axios';
 import { MusicQuizConfig } from '../config/musicquizconfig';
 import type { MusicQuizSupportedEntityType } from '../types/music-quiz-entity';
+
+const quizApi = MusicQuizConfig.api;
 
 /**
  * DTO for quiz binding response
@@ -21,7 +22,7 @@ const entityToEndpoint: Record<MusicQuizSupportedEntityType, string> = {
 
 /**
  * Binds a master entity to quiz module
- * 
+ *
  * @param entityType The type of entity (artist or track)
  * @param masterId The master entity ID to bind
  * @returns Quiz binding information
@@ -31,16 +32,16 @@ export async function bindMasterEntityToQuiz<T extends MusicQuizSupportedEntityT
     masterId: number
 ): Promise<QuizBindingDto> {
     const endpoint = entityToEndpoint[entityType];
-    const response = await axios.post<QuizBindingDto>(
-        `${MusicQuizConfig.baseApiUrl}/${endpoint}/${masterId}/bind`
+    const response = await quizApi.post<QuizBindingDto>(
+        `/${endpoint}/${masterId}/bind`
     );
-    
+
     return response.data;
 }
 
 /**
  * Unbinds a master entity from quiz module
- * 
+ *
  * @param entityType The type of entity (artist or track)
  * @param masterId The master entity ID to unbind
  * @returns Quiz binding information
@@ -50,16 +51,16 @@ export async function unbindMasterEntityFromQuiz<T extends MusicQuizSupportedEnt
     masterId: number
 ): Promise<QuizBindingDto> {
     const endpoint = entityToEndpoint[entityType];
-    const response = await axios.delete<QuizBindingDto>(
-        `${MusicQuizConfig.baseApiUrl}/${endpoint}/${masterId}/bind`
+    const response = await quizApi.delete<QuizBindingDto>(
+        `/${endpoint}/${masterId}/bind`
     );
-    
+
     return response.data;
 }
 
 /**
  * Gets quiz binding status for a single master entity
- * 
+ *
  * @param entityType The type of entity (artist or track)
  * @param masterId The master entity ID to check
  * @returns Quiz binding information
@@ -69,16 +70,16 @@ export async function getQuizBinding<T extends MusicQuizSupportedEntityType>(
     masterId: number
 ): Promise<QuizBindingDto> {
     const endpoint = entityToEndpoint[entityType];
-    const response = await axios.get<QuizBindingDto>(
-        `${MusicQuizConfig.baseApiUrl}/${endpoint}/${masterId}/binding`
+    const response = await quizApi.get<QuizBindingDto>(
+        `/${endpoint}/${masterId}/binding`
     );
-    
+
     return response.data;
 }
 
 /**
  * Gets quiz binding statuses for multiple master entities
- * 
+ *
  * @param entityType The type of entity (artist or track)
  * @param masterIds List of master entity IDs to check
  * @returns List of quiz binding information
@@ -88,10 +89,10 @@ export async function getQuizBindings<T extends MusicQuizSupportedEntityType>(
     masterIds: number[]
 ): Promise<QuizBindingDto[]> {
     const endpoint = entityToEndpoint[entityType];
-    const response = await axios.post<QuizBindingDto[]>(
-        `${MusicQuizConfig.baseApiUrl}/${endpoint}/bindings`,
+    const response = await quizApi.post<QuizBindingDto[]>(
+        `/${endpoint}/bindings`,
         masterIds
     );
-    
+
     return response.data;
 }

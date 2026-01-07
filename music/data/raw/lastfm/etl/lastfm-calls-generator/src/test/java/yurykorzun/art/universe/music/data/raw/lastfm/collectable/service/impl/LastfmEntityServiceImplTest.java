@@ -1,6 +1,5 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -14,7 +13,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTa
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.attribute.LastfmDataSnapshot;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.TestLastfmTagRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.LastfmJpaTestHelper;
 
 import java.time.Duration;
@@ -28,18 +26,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants.HIBERNATE_BATCH_SIZE;
 
-@Tag("integration")
 @Import({
     LastfmApiCallEntityServiceImpl.class,
-    DbConsistencyHelper.class,
 })
 class LastfmEntityServiceImplTest extends LastfmJpaTestHelper {
 
     @Autowired
     private LastfmApiCallEntityServiceImpl service;
-
-    @Autowired
-    private DbConsistencyHelper consistencyHelper;
 
     @Autowired
     private LastfmApiCallRepository apiCallRepository;

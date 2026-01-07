@@ -1,8 +1,6 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.relationship;
 
 import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -13,7 +11,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTa
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.relationship.LastfmArtistTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.relationship.TestLastfmArtistTagRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.relationship.impl.LastfmArtistTagServiceImpl;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.EntityCreationHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.LastfmJpaTestHelper;
 
@@ -28,7 +25,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @Import({
     LastfmArtistTagServiceImpl.class,
 })
-@Tag("integration")
 @DirtiesContext
 class EntityRelationTransactionalityTest extends LastfmJpaTestHelper {
 
@@ -41,21 +37,13 @@ class EntityRelationTransactionalityTest extends LastfmJpaTestHelper {
     @Autowired
     private EntityManager entityManager;
 
-    @Autowired
-    private DbConsistencyHelper dbHelper;
-
-    @BeforeEach
-    void setUp() {
-        dbHelper.cleanup();
-    }
-
     @Test
     void upsertAll_shouldThrowException_whenDataIntegrityViolated() {
         // Given - create valid entity
-        LastfmArtistTag validEntity = dbHelper.createArtistTagForPersistence();
+        LastfmArtistTag validEntity = consistencyHelper.createArtistTagForPersistence();
         
         // Create invalid entity with non-existent IDs but valid structure
-        LastfmApiCall apiCall = dbHelper.createAndSaveApiCall();
+        LastfmApiCall apiCall = consistencyHelper.createAndSaveApiCall();
         
         // Create entities with valid structure but non-existent IDs
         LastfmArtist fakeArtist = EntityCreationHelper.createArtist(builder -> 
@@ -78,9 +66,9 @@ class EntityRelationTransactionalityTest extends LastfmJpaTestHelper {
     void upsertAll_shouldBeTransactional() {
         // Given
         List<LastfmArtistTag> batch = List.of(
-            dbHelper.createArtistTagForPersistence(),
-            dbHelper.createArtistTagForPersistence(),
-            dbHelper.createArtistTagForPersistence()
+            consistencyHelper.createArtistTagForPersistence(),
+            consistencyHelper.createArtistTagForPersistence(),
+            consistencyHelper.createArtistTagForPersistence()
         );
 
         // When

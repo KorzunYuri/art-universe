@@ -5,14 +5,13 @@ plugins {
 archivesBaseName = 'lastfm-etl-calls-performer'
 
 dependencies {
+    implementation project(':common:commons-observability')
     implementation project(':common:data:raw:data-raw-commons-api-client')
     implementation project(':music:data:raw:lastfm:lastfm-repositories')
     implementation project(':music:data:raw:lastfm:etl:lastfm-tasks-coordinator')
 
-    // web and metrics
+    // web for actuator endpoints
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    implementation 'io.micrometer:micrometer-registry-prometheus'
 
     implementation 'org.springframework.retry:spring-retry'
     implementation 'com.google.guava:guava:33.4.0-jre'

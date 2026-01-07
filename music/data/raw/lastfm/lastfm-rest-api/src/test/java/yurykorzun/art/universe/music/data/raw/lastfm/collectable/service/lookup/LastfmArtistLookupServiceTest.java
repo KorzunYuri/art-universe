@@ -7,48 +7,42 @@ import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.LastfmJpaTestHelper;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @Import({
     LastfmArtistLookupService.class,
-    DbConsistencyHelper.class
 })
 class LastfmArtistLookupServiceTest extends LastfmJpaTestHelper {
 
     @Autowired
     private LastfmArtistLookupService lookupService;
 
-    @Autowired
-    private DbConsistencyHelper dbHelper;
-
     @Test
     void lookup_shouldPrioritizeByApprovalStatus_whenMultipleArtistsMatch() {
-        // Given
-        dbHelper.cleanup();
-        
+
         // Create artists with different approval statuses but similar names
-        LastfmArtist pendingArtist = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist pendingArtist = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("Test Artist 1")
             .approvalStatus(ApprovalStatus.PENDING));
         
-        LastfmArtist approvedArtist = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist approvedArtist = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("Test Artist 2")
             .approvalStatus(ApprovalStatus.APPROVED));
         
-        LastfmArtist preApprovedArtist = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist preApprovedArtist = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("Test Artist 3")
             .approvalStatus(ApprovalStatus.PRE_APPROVED));
         
-        LastfmArtist declinedArtist = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist declinedArtist = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("Test Artist 4")
             .approvalStatus(ApprovalStatus.DECLINED));
 
-        dbHelper.flush();
+        consistencyHelper.flush();
 
         // When
         LookupRequestDTO request = LookupRequestDTO.builder()
@@ -72,18 +66,18 @@ class LastfmArtistLookupServiceTest extends LastfmJpaTestHelper {
     @Test
     void lookup_shouldPrioritizeExactMatch_whenSearchTermMatchesExactly() {
         // Given
-        dbHelper.cleanup();
+        consistencyHelper.cleanup();
         
         // Create artists where one matches exactly
-        LastfmArtist exactMatch = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist exactMatch = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("Beatles")
             .approvalStatus(ApprovalStatus.PENDING));
         
-        LastfmArtist partialMatch = dbHelper.createAndSaveArtist(builder -> builder
+        LastfmArtist partialMatch = consistencyHelper.createAndSaveArtist(builder -> builder
             .name("Beatles Revival")
             .approvalStatus(ApprovalStatus.APPROVED)); // Higher approval status but not exact match
 
-        dbHelper.flush();
+        consistencyHelper.flush();
 
         // When
         LookupRequestDTO request = LookupRequestDTO.builder()

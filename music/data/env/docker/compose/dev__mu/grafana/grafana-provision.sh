@@ -55,71 +55,34 @@ else
     echo "WARNING: lastfm_database_metrics_dashboard.json.template not found"
 fi
 
-# Generate service-specific dashboards from universal template
-if [ -f "/tmp/dashboard-templates/service_system_metrics_dashboard.json.template" ]; then
-    # Music Data
-    export SERVICE_ID=5
-    export SERVICE_JOB="music-data"
-    export SERVICE_TITLE="Music Data System Metrics"
-    export SERVICE_UID="music-data-system-metrics"
-    envsubst < /tmp/dashboard-templates/service_system_metrics_dashboard.json.template > /etc/grafana/provisioning/dashboards/music_data_system_metrics_dashboard.json
-    echo "Music Data system metrics dashboard generated successfully"
-    
-    # Music Quiz
-    export SERVICE_ID=6
-    export SERVICE_JOB="music-quiz"
-    export SERVICE_TITLE="Music Quiz System Metrics"
-    export SERVICE_UID="music-quiz-system-metrics"
-    envsubst < /tmp/dashboard-templates/service_system_metrics_dashboard.json.template > /etc/grafana/provisioning/dashboards/music_quiz_system_metrics_dashboard.json
-    echo "Music Quiz system metrics dashboard generated successfully"
-    
-    # LastFM REST API
-    export SERVICE_ID=7
-    export SERVICE_JOB="lastfm-rest-api"
-    export SERVICE_TITLE="LastFM REST API System Metrics"
-    export SERVICE_UID="lastfm-rest-api-system-metrics"
-    envsubst < /tmp/dashboard-templates/service_system_metrics_dashboard.json.template > /etc/grafana/provisioning/dashboards/lastfm_rest_api_system_metrics_dashboard.json
-    echo "LastFM REST API system metrics dashboard generated successfully"
-    
-    # LastFM ETL REST API
-    export SERVICE_ID=8
-    export SERVICE_JOB="lastfm-etl-rest-api"
-    export SERVICE_TITLE="LastFM ETL REST API System Metrics"
-    export SERVICE_UID="lastfm-etl-rest-api-system-metrics"
-    envsubst < /tmp/dashboard-templates/service_system_metrics_dashboard.json.template > /etc/grafana/provisioning/dashboards/lastfm_etl_rest_api_system_metrics_dashboard.json
-    echo "LastFM ETL REST API system metrics dashboard generated successfully"
-    
-    # LastFM Calls Generator
-    export SERVICE_ID=9
-    export SERVICE_JOB="lastfm-calls-generator"
-    export SERVICE_TITLE="LastFM Calls Generator System Metrics"
-    export SERVICE_UID="lastfm-calls-generator-system-metrics"
-    envsubst < /tmp/dashboard-templates/service_system_metrics_dashboard.json.template > /etc/grafana/provisioning/dashboards/lastfm_calls_generator_system_metrics_dashboard.json
-    echo "LastFM Calls Generator system metrics dashboard generated successfully"
-    
-    # LastFM Calls Performer
-    export SERVICE_ID=10
-    export SERVICE_JOB="lastfm-calls-performer"
-    export SERVICE_TITLE="LastFM Calls Performer System Metrics"
-    export SERVICE_UID="lastfm-calls-performer-system-metrics"
-    envsubst < /tmp/dashboard-templates/service_system_metrics_dashboard.json.template > /etc/grafana/provisioning/dashboards/lastfm_calls_performer_system_metrics_dashboard.json
-    echo "LastFM Calls Performer system metrics dashboard generated successfully"
-    
-    # LastFM Response Parser
-    export SERVICE_ID=11
-    export SERVICE_JOB="lastfm-response-parser"
-    export SERVICE_TITLE="LastFM Response Parser System Metrics"
-    export SERVICE_UID="lastfm-response-parser-system-metrics"
-    envsubst < /tmp/dashboard-templates/service_system_metrics_dashboard.json.template > /etc/grafana/provisioning/dashboards/lastfm_response_parser_system_metrics_dashboard.json
-    echo "LastFM Response Parser system metrics dashboard generated successfully"
+# Generate consolidated system metrics dashboard with application selector
+if [ -f "/tmp/dashboard-templates/system_metrics_dashboard.json.template" ]; then
+    envsubst '$PROMETHEUS_DATASOURCE_UID' < /tmp/dashboard-templates/system_metrics_dashboard.json.template > /etc/grafana/provisioning/dashboards/system_metrics_dashboard.json
+    echo "System metrics dashboard generated successfully"
 else
-    echo "WARNING: service_system_metrics_dashboard.json.template not found"
+    echo "WARNING: system_metrics_dashboard.json.template not found"
+fi
+
+# Generate repository performance dashboard
+if [ -f "/tmp/dashboard-templates/repository_performance_dashboard.json.template" ]; then
+    envsubst '$PROMETHEUS_DATASOURCE_UID' < /tmp/dashboard-templates/repository_performance_dashboard.json.template > /etc/grafana/provisioning/dashboards/repository_performance_dashboard.json
+    echo "Repository performance dashboard generated successfully"
+else
+    echo "WARNING: repository_performance_dashboard.json.template not found"
+fi
+
+# Generate REST API performance dashboard
+if [ -f "/tmp/dashboard-templates/rest_api_performance_dashboard.json.template" ]; then
+    envsubst '$PROMETHEUS_DATASOURCE_UID' < /tmp/dashboard-templates/rest_api_performance_dashboard.json.template > /etc/grafana/provisioning/dashboards/rest_api_performance_dashboard.json
+    echo "REST API performance dashboard generated successfully"
+else
+    echo "WARNING: rest_api_performance_dashboard.json.template not found"
 fi
 
 # Generate datasource from template
 echo "Generating datasource configuration..."
 if [ -f "/tmp/datasource-templates/datasource.yml.template" ]; then
-    envsubst < /tmp/datasource-templates/datasource.yml.template > /etc/grafana/provisioning/datasources/datasource.yml
+    envsubst '$PROMETHEUS_DATASOURCE_UID' < /tmp/datasource-templates/datasource.yml.template > /etc/grafana/provisioning/datasources/datasource.yml
     echo "Datasource configuration generated successfully"
 else
     echo "ERROR: datasource.yml.template not found"

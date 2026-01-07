@@ -1,6 +1,5 @@
 import type {MasterEntityType, RawEntity, ArtistRelatedRawEntity} from "@/music/shared/types/entities.ts";
 import {MusicDataConfig} from "@/music/data/master/config/musicdataconfig.ts";
-import axios from "axios";
 import {entityToEndpoint} from "@/music/data/master/api/music-data-commons.ts";
 import {
     LookupRequestSourceParams,
@@ -13,6 +12,8 @@ import type {
     MasterArtistRelatedLookupRequest
 } from "@/music/data/master/types/music-data-lookup-types.ts";
 
+const masterDataApi = MusicDataConfig.api;
+
 /**
  * Direct lookup function for master entities using typed requests
  * This is the function that should be used in lookup configurations
@@ -22,9 +23,9 @@ export async function lookupMasterEntities<K extends MasterEntityType>(
     request: K extends 'album' | 'track' ? MasterArtistRelatedLookupRequest : BasicMasterLookupRequest
 ): Promise<LookupEntity[]> {
     const endpoint = entityToEndpoint[entityType];
-    const url = `${MusicDataConfig.baseApiUrl}/${endpoint}/lookup`;
-    
-    const response = await axios.get<LookupEntity[]>(url, { params: request });
+    const url = `/${endpoint}/lookup`;
+
+    const response = await masterDataApi.get<LookupEntity[]>(url, { params: request });
     return response.data;
 }
 
@@ -58,13 +59,13 @@ export async function batchLookupMasterEntitiesWithParams<K extends MasterEntity
     limit: number = 10
 ): Promise<BatchLookupResponseDTO> {
     const endpoint = entityToEndpoint[entityType];
-    const url = `${MusicDataConfig.baseApiUrl}/${endpoint}/lookup/batch`;
+    const url = `/${endpoint}/lookup/batch`;
     const request = {
         searchRequests: sourceParams.map(toLookupRequest),
         limit
     };
 
-    const response = await axios.post<BatchLookupResponseDTO>(url, request);
+    const response = await masterDataApi.post<BatchLookupResponseDTO>(url, request);
     return response.data;
 }
 

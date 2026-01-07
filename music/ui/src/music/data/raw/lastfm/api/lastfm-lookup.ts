@@ -1,19 +1,20 @@
-import axios from 'axios';
 import { LastfmConfig } from '@/music/data/raw/lastfm/config/lastfmconfig.ts';
 import type { LookupEntity, BaseLookupRequest } from '@/music/shared/types/lookup.ts';
 
+const lastfmReadApi = LastfmConfig.readApi;
+
 /**
  * Generic LastFM lookup function
- * 
+ *
  * @param endpoint API endpoint (e.g., 'artists', 'tags')
  * @param request Lookup request with search string and optional limit
  * @returns Array of lookup results
  */
 async function lookupLastfmEntities(endpoint: string, request: BaseLookupRequest): Promise<LookupEntity[]> {
     console.log(`🔍 Looking up LastFM ${endpoint} for: "${request.search}"`);
-    
-    const response = await axios.get<LookupEntity[]>(
-        `${LastfmConfig.baseApiUrl}/${endpoint}/lookup`,
+
+    const response = await lastfmReadApi.get<LookupEntity[]>(
+        `/${endpoint}/lookup`,
         {
             params: {
                 search: request.search,
@@ -21,7 +22,7 @@ async function lookupLastfmEntities(endpoint: string, request: BaseLookupRequest
             }
         }
     );
-    
+
     return response.data;
 }
 

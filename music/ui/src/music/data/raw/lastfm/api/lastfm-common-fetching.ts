@@ -7,13 +7,14 @@ import type {
     LastfmSupportedEntityTypeMap
 } from "@/music/data/raw/lastfm/types/lastfm-entity.ts";
 import type {BasePageSearchParams, Page} from "@/music/shared/types/page.ts";
-import axios from "axios";
 import {LastfmConfig} from "@/music/data/raw/lastfm/config/lastfmconfig.ts";
 import {
     type LastfmEntityDtoMap,
     lastfmEntityMappers,
     lastfmEntityTypeToEndpoint
 } from "@/music/data/raw/lastfm/api/lastfm-common.ts";
+
+const lastfmReadApi = LastfmConfig.readApi;
 
 export interface BaseLastfmPageSearchParams extends BasePageSearchParams {
     approvalStatuses?: number[];
@@ -32,8 +33,8 @@ export async function fetchLastfmEntities<T extends LastfmSupportedEntityType>(
 ): Promise<Page<LastfmSupportedEntityTypeMap[T]>> {
 
     const endpoint = lastfmEntityTypeToEndpoint[entityType];
-    const response = await axios.get<Page<LastfmEntityDtoMap[T]>>(
-        `${LastfmConfig.baseApiUrl}/${endpoint}`,
+    const response = await lastfmReadApi.get<Page<LastfmEntityDtoMap[T]>>(
+        `/${endpoint}`,
         {
             params: {
                 ...params,
@@ -54,8 +55,8 @@ export async function fetchLastfmEntity<T extends LastfmSupportedEntityType>(
 ): Promise<LastfmSupportedEntityTypeMap[T]> {
 
     const endpoint = lastfmEntityTypeToEndpoint[entityType];
-    const response = await axios.get<LastfmEntityDtoMap[T]>(
-        `${LastfmConfig.baseApiUrl}/${endpoint}/${id}`
+    const response = await lastfmReadApi.get<LastfmEntityDtoMap[T]>(
+        `/${endpoint}/${id}`
     );
 
     return lastfmEntityMappers[entityType](response.data);

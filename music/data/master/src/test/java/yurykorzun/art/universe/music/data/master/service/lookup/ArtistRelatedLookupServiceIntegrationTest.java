@@ -2,7 +2,6 @@ package yurykorzun.art.universe.music.data.master.service.lookup;
 
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -24,7 +23,6 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@Tag("integration")
 class ArtistRelatedLookupServiceIntegrationTest extends BaseMasterDataJpaTest {
 
     @Autowired

@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import yurykorzun.art.universe.music.quiz.common.archetypes.JpaOnlyTest;
+import yurykorzun.art.universe.music.quiz.common.archetypes.BaseQuizJpaTest;
 import yurykorzun.art.universe.music.quiz.dto.GenerationDto;
 import yurykorzun.art.universe.music.quiz.dto.GenerationTrackDto;
 import yurykorzun.art.universe.music.quiz.entity.*;
@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("integration")
 @Import({GenerationServiceImpl.class})
-class GenerationServiceIntegrationTest extends JpaOnlyTest {
+class GenerationServiceIntegrationTest extends BaseQuizJpaTest {
 
     @Autowired
     private GenerationService generationService;

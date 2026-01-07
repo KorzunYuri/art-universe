@@ -1,10 +1,13 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.tag.toptags.processing;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.config.MappingConfig;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.dto.PageInfo;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiResponseProcessor;
@@ -40,10 +43,11 @@ public class LastfmTagTopTagsResponseProcessor extends LastfmApiResponseProcesso
     protected LastfmTagTopTagsResponseProcessor(
         LastfmTagService tagService,
         EntityFactory<LastfmTag, TagTopTagsTagDto> tagFactory,
-        LastfmApiDtoProcessingService dtoProcessingService
+        LastfmApiDtoProcessingService dtoProcessingService,
+        @Qualifier(MappingConfig.LASTFM_API_RESPONSE_OBJECT_MAPPER_BEAN_NAME) ObjectMapper objectMapper
     )
     {
-        super(TagTopTagsDtoRoot.class);
+        super(TagTopTagsDtoRoot.class, objectMapper);
 
         this.tagService = tagService;
         this.tagFactory = tagFactory;

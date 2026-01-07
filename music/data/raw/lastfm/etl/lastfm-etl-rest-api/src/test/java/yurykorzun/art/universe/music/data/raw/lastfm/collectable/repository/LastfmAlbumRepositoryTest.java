@@ -1,34 +1,22 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository;
 
 import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmAlbum;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmArtist;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.LastfmJpaTestHelper;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Tag("integration")
 class LastfmAlbumRepositoryTest extends LastfmJpaTestHelper {
 
     @Autowired
     private LastfmAlbumRepository albumRepository;
 
     @Autowired
-    private DbConsistencyHelper consistencyHelper;
-
-    @Autowired
     private EntityManager entityManager;
-
-    @AfterEach
-    void tearDown() {
-        albumRepository.deleteAll();
-    }
 
     @Test
     void updateAlbumStatusByArtistId_shouldUpdatePendingAlbumsOnly() {

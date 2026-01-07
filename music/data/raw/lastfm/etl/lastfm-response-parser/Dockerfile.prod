@@ -49,7 +49,7 @@ COPY --from=build /app/music/data/raw/lastfm/etl/lastfm-response-parser/build/do
 COPY --from=build /app/music/data/raw/lastfm/etl/lastfm-response-parser/build/docker-layers/snapshot-dependencies/ ./snapshot-dependencies/
 COPY --from=build /app/music/data/raw/lastfm/etl/lastfm-response-parser/build/docker-layers/application/ ./application/
 
-EXPOSE 8090
+EXPOSE 8080
 
 # Run the application with proper classpath (thin JAR needs dependencies)
 ENTRYPOINT ["java", \

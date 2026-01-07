@@ -88,7 +88,6 @@ To not block the caller, the updates are done asynchronously:
 Apart from [ETL environment variables](../README.md#common-environment-variables), this module requires:
 
 - `MURAW_LASTFM_ETL_REST_API_INTERNAL_PORT` - Application HTTP port
-- `MURAW_LASTFM_ETL_REST_API_ACTUATOR_INTERNAL_PORT` - Actuator port
 - `MURAW_LASTFM_ETL_REST_API_CORS_ALLOWED_ORIGINS` - CORS allowed origins
 - `MU_DATA_APP_HOST` - Music Data Master host
 - `MU_DATA_APP_PORT` - Music Data Master port

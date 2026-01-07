@@ -7,6 +7,7 @@ archivesBaseName = 'music-data-master'
 
 dependencies {
     implementation project(':common:commons-web')
+    implementation project(':common:commons-observability')
 
     implementation 'org.springframework.boot:spring-boot-docker-compose'
 

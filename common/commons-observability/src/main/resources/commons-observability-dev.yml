@@ -1,0 +1,27 @@
+management:
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: "*"
+    jmx:
+      exposure:
+        include: "*"
+  jmx:
+    enabled: true
+
+  # Development Tracing Configuration
+  tracing:
+    sampling:
+      probability: 1.0  # 100% sampling for development
+
+  # Development Metrics Configuration
+  metrics:
+    tags:
+      environment: dev
+
+# Development Logging Configuration
+logging:
+  level:
+    io.micrometer.tracing: DEBUG
+    io.opentelemetry: DEBUG

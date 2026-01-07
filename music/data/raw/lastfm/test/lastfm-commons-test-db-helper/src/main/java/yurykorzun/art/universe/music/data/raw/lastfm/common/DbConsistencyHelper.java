@@ -31,6 +31,7 @@ import static yurykorzun.art.universe.music.data.raw.lastfm.common.utils.TestStr
 public class DbConsistencyHelper {
 
     private final TestLastfmDataSnapshotRepository snapshotRepository;
+    private final TestLastfmAttributeSnapshotRepository attributeSnapshotRepository;
     private final TestLastfmApiCallRepository apiCallRepository;
     private final TestLastfmApiResponseRepository apiResponseRepository;
     private final TestLastfmTagRepository tagRepository;
@@ -52,6 +53,7 @@ public class DbConsistencyHelper {
 
     public DbConsistencyHelper(
         TestLastfmDataSnapshotRepository snapshotRepository,
+        TestLastfmAttributeSnapshotRepository attributeSnapshotRepository,
         TestLastfmApiCallRepository apiCallRepository,
         TestLastfmApiResponseRepository apiResponseRepository,
         TestLastfmArtistRepository artistRepository,
@@ -69,6 +71,7 @@ public class DbConsistencyHelper {
         EntityManager entityManager
     ) {
         this.snapshotRepository = snapshotRepository;
+        this.attributeSnapshotRepository = attributeSnapshotRepository;
         this.apiCallRepository = apiCallRepository;
         this.apiResponseRepository = apiResponseRepository;
 
@@ -98,6 +101,9 @@ public class DbConsistencyHelper {
         tagRepository.deleteAll();
         apiResponseRepository.deleteAll();
         apiCallRepository.deleteAll();
+
+        // Delete child records BEFORE parent records to avoid FK constraint violations
+        attributeSnapshotRepository.deleteAll();
         snapshotRepository.deleteAll();
 
         artistsRelationRepository.deleteAll();

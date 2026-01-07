@@ -12,10 +12,11 @@ This directory contains reusable implementation patterns (SOPs) for backend deve
 Cross-cutting patterns used across multiple layers.
 
 **Files**:
-- [state-machine.md](state-machine.md) - State machine pattern for entity lifecycle management (**COMPLETE**)
-- [project-structure.md](project-structure.md) - Standard project structure (**COMPLETE**)
+- [state-machine.md](state-machine.md) - State machine pattern for entity lifecycle management
+- [strategy-registry.md](strategy-registry.md) - Strategy Registry pattern with Spring AOP proxy support
+- [project-structure.md](project-structure.md) - Standard project structure
 
-**Use when**: Managing entity state transitions, coordinating operations across modules
+**Use when**: Managing entity state transitions, implementing plugin architectures, coordinating operations across modules
 
 ---
 
@@ -70,9 +71,10 @@ Patterns for testing backend code.
 Patterns for Spring Boot configuration and environment management.
 
 **Files**:
-- [environment-profiles.md](configuration/environment-profiles.md) - Environment profiles configuration (**COMPLETE**)
+- [environment-profiles.md](configuration/environment-profiles.md) - Environment profiles configuration
+- [spring-config-import.md](configuration/spring-config-import.md) - Sharing configuration from library modules
 
-**Use when**: Configuring Spring Boot applications, managing environments
+**Use when**: Configuring Spring Boot applications, managing environments, sharing configuration
 
 ---
 
@@ -112,6 +114,5 @@ Each detailed pattern file includes:
 
 ## See Also
 
-- [**Frontend Patterns**](../frontend/README.md) - Frontend patterns
 - [**Guides**](../../guides/README.md) - Project-wide guides
 - [**Patterns Index**](../README.md) - All patterns overview

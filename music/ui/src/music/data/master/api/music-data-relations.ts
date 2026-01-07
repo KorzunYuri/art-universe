@@ -1,7 +1,8 @@
-import axios from 'axios';
 import { MusicDataConfig } from '../config/musicdataconfig.ts';
 import type {DataSource} from "@/music/data/raw/shared/types/data-sources.ts";
 import type {MasterEntityType} from "@/music/shared/types/entities.ts";
+
+const masterDataApi = MusicDataConfig.api;
 
 /**
  * DTO for relation binding status response
@@ -73,11 +74,11 @@ export async function bindExternalRelation(
     targetExternalEntityId: number
 ): Promise<RelationBindingDTO | null> {
     console.log(`🔗 Binding external relation: ${sourceEntityType}:${sourceExternalEntityId} -> ${targetEntityType}:${targetExternalEntityId}`);
-    
-    const response = await axios.post<RelationBindingDTO>(
-        `${MusicDataConfig.baseApiUrl}/relations/bind/${dataSource}/${sourceEntityType}/${sourceExternalEntityId}/${targetEntityType}/${targetExternalEntityId}`
+
+    const response = await masterDataApi.post<RelationBindingDTO>(
+        `/relations/bind/${dataSource}/${sourceEntityType}/${sourceExternalEntityId}/${targetEntityType}/${targetExternalEntityId}`
     );
-    
+
     return response.data;
 }
 
@@ -99,11 +100,11 @@ export async function unbindExternalRelation(
     targetExternalEntityId: number
 ): Promise<boolean> {
     console.log(`🔓 Unbinding external relation: ${sourceEntityType}:${sourceExternalEntityId} -> ${targetEntityType}:${targetExternalEntityId}`);
-    
-    const response = await axios.delete<boolean>(
-        `${MusicDataConfig.baseApiUrl}/relations/unbind/${dataSource}/${sourceEntityType}/${sourceExternalEntityId}/${targetEntityType}/${targetExternalEntityId}`
+
+    const response = await masterDataApi.delete<boolean>(
+        `/relations/unbind/${dataSource}/${sourceEntityType}/${sourceExternalEntityId}/${targetEntityType}/${targetExternalEntityId}`
     );
-    
+
     return response.data;
 }
 
@@ -125,16 +126,16 @@ export async function findBoundExternalRelations(
     targetExternalEntityIds: number[]
 ): Promise<RelationBindingStatusDTO> {
     console.log(`🔍 Finding bound external relations for ${targetExternalEntityIds.length} target entities`);
-    
-    const response = await axios.get<RelationBindingStatusDTO>(
-        `${MusicDataConfig.baseApiUrl}/relations/bound/${dataSource}/${sourceEntityType}/${sourceExternalEntityId}/${targetEntityType}`,
+
+    const response = await masterDataApi.get<RelationBindingStatusDTO>(
+        `/relations/bound/${dataSource}/${sourceEntityType}/${sourceExternalEntityId}/${targetEntityType}`,
         {
             params: {
                 ids: targetExternalEntityIds.join(',')
             }
         }
     );
-    
+
     return response.data;
 }
 
@@ -152,10 +153,10 @@ export async function getRelatedEntities(
     targetEntityType: MasterEntityType
 ): Promise<EntityDTO[]> {
     console.log(`🔍 Getting ${targetEntityType}s related to ${sourceEntityType} ${sourceEntityId}`);
-    
-    const response = await axios.get<EntityDTO[]>(
-        `${MusicDataConfig.baseApiUrl}/relations/${sourceEntityType}/${sourceEntityId}/${targetEntityType}`
+
+    const response = await masterDataApi.get<EntityDTO[]>(
+        `/relations/${sourceEntityType}/${sourceEntityId}/${targetEntityType}`
     );
-    
+
     return response.data;
 }

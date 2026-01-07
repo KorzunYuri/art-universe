@@ -10,7 +10,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.attribut
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.attribute.LastfmAttributeHistoryRecord;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.attribute.LastfmAttributeTypeSynchronizer;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.LastfmJpaTestHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.config.TaskCoordinationTestAutoConfiguration;
 
@@ -35,17 +34,13 @@ class LastfmAttributeHistoryProcessorTest extends LastfmJpaTestHelper {
     
     @Autowired
     private JdbcTemplate jdbcTemplate;
-    
-    @Autowired
-    private DbConsistencyHelper dbHelper;
 
     @Autowired
     private EntityManager entityManager;
 
     @BeforeEach
     void setUp() {
-        dbHelper.cleanup();
-        // Очищаем staging таблицы
+        // cleanup staging tables
         jdbcTemplate.execute("TRUNCATE TABLE mu_raw_lastfm_staging.stg_attribute_history_a");
         jdbcTemplate.execute("TRUNCATE TABLE mu_raw_lastfm_staging.stg_attribute_history_b");
     }
@@ -53,8 +48,8 @@ class LastfmAttributeHistoryProcessorTest extends LastfmJpaTestHelper {
     @Test
     void shouldInsertIntoCurrentStagingTable() {
         // Given
-        var apiCall = dbHelper.createAndSaveApiCall();
-        var artist = dbHelper.createAndSaveArtist();
+        var apiCall = consistencyHelper.createAndSaveApiCall();
+        var artist = consistencyHelper.createAndSaveArtist();
         
         var record = LastfmAttributeHistoryRecord.builder()
             .apiCallId(apiCall.getId())
@@ -86,8 +81,8 @@ class LastfmAttributeHistoryProcessorTest extends LastfmJpaTestHelper {
     @Test
     void shouldProcessStagingRecordsAndMergeToMainTable() {
         // Given - создаем существующую запись в основной таблице
-        var apiCall1 = dbHelper.createAndSaveApiCall();
-        var artist = dbHelper.createAndSaveArtist();
+        var apiCall1 = consistencyHelper.createAndSaveApiCall();
+        var artist = consistencyHelper.createAndSaveArtist();
         entityManager.flush();
         
         var existingRecord = LastfmAttributeHistoryRecord.builder()
@@ -113,7 +108,7 @@ class LastfmAttributeHistoryProcessorTest extends LastfmJpaTestHelper {
         );
 
         // Given - add new record with changed value
-        var apiCall2 = dbHelper.createAndSaveApiCall();
+        var apiCall2 = consistencyHelper.createAndSaveApiCall();
         var newRecord = LastfmAttributeHistoryRecord.builder()
             .apiCallId(apiCall2.getId())
             .entityType(LastfmEntityType.ARTIST)
@@ -170,8 +165,8 @@ class LastfmAttributeHistoryProcessorTest extends LastfmJpaTestHelper {
     @Test
     void shouldNotProcessUnchangedValues() {
         // Given
-        var apiCall1 = dbHelper.createAndSaveApiCall();
-        var artist = dbHelper.createAndSaveArtist();
+        var apiCall1 = consistencyHelper.createAndSaveApiCall();
+        var artist = consistencyHelper.createAndSaveArtist();
         entityManager.flush();
         
         jdbcTemplate.update("""
@@ -188,7 +183,7 @@ class LastfmAttributeHistoryProcessorTest extends LastfmJpaTestHelper {
         );
 
         // Given - добавляем в staging запись с тем же значением
-        var apiCall2 = dbHelper.createAndSaveApiCall();
+        var apiCall2 = consistencyHelper.createAndSaveApiCall();
         String currentTable = processor.getCurrentStagingTable();
         jdbcTemplate.update("""
             INSERT INTO %s 
@@ -224,9 +219,9 @@ class LastfmAttributeHistoryProcessorTest extends LastfmJpaTestHelper {
     @Test
     void shouldDeduplicateRecordsInStagingTable() {
         // Given
-        var apiCall1 = dbHelper.createAndSaveApiCall();
-        var apiCall2 = dbHelper.createAndSaveApiCall();
-        var artist = dbHelper.createAndSaveArtist();
+        var apiCall1 = consistencyHelper.createAndSaveApiCall();
+        var apiCall2 = consistencyHelper.createAndSaveApiCall();
+        var artist = consistencyHelper.createAndSaveArtist();
         entityManager.flush();
         
         var record1 = LastfmAttributeHistoryRecord.builder()

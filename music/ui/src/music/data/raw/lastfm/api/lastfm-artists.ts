@@ -3,8 +3,9 @@ import {LastfmArtist} from "@/music/data/raw/lastfm/types";
 import type {Artist} from "@/music/shared/types/entities.ts";
 import type {ApprovalStatusType} from "@/music/data/raw/lastfm/constants/approvalStatus.ts";
 import type {BaseLastfmPageSearchParams} from "@/music/data/raw/lastfm/api/lastfm-common-fetching.ts";
-import axios from 'axios';
 import { LastfmConfig } from '@/music/data/raw/lastfm/config/lastfmconfig.ts';
+
+const lastfmWriteApi = LastfmConfig.writeApi;
 
 
 export interface LastfmArtistDto extends BaseEntity {
@@ -41,8 +42,8 @@ export interface LastfmArtistsPageSearchParams extends BaseLastfmPageSearchParam
  * Triggers forced search for an artist
  */
 export async function searchArtist(searchString: string): Promise<void> {
-    await axios.post(
-        `${LastfmConfig.writeApiUrl}/artists/search`,
+    await lastfmWriteApi.post(
+        `/artists/search`,
         { searchString }
     );
 }

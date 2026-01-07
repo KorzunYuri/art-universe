@@ -11,36 +11,36 @@ scrape_configs:
   - job_name: 'music-data'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: ['host.docker.internal:7092']
+      - targets: ['host.docker.internal:7082']
 
   - job_name: 'music-quiz'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: ['host.docker.internal:7093']
+      - targets: ['host.docker.internal:7083']
 
   # LastFM web services
   - job_name: 'lastfm-rest-api'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: ['host.docker.internal:7094']
+      - targets: ['host.docker.internal:7084']
 
   - job_name: 'lastfm-etl-rest-api'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: ['host.docker.internal:7095']
+      - targets: ['host.docker.internal:7085']
 
-  # LastFM ETL services
+  # LastFM ETL services (non-web apps)
   - job_name: 'lastfm-calls-generator'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: ['host.docker.internal:7096']
+      - targets: ['host.docker.internal:7086']
 
   - job_name: 'lastfm-calls-performer'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: ['host.docker.internal:7097']
+      - targets: ['host.docker.internal:7087']
 
   - job_name: 'lastfm-response-parser'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: ['host.docker.internal:7098']
+      - targets: ['host.docker.internal:7088']

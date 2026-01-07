@@ -1,9 +1,7 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository;
 
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -17,9 +15,8 @@ import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.LastfmJpa
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Tag("integration")
 @Import({
         DbConsistencyHelper.class,
 })
@@ -27,12 +24,6 @@ class LastfmTrackRepositoryTest extends LastfmJpaTestHelper {
 
     @Autowired
     private LastfmTrackRepository trackRepository;
-
-    @Autowired
-    private DbConsistencyHelper consistencyHelper;
-
-    @Autowired
-    private EntityManager entityManager;
 
     private LastfmArtist artist;
     private List<LastfmTrack> testTracks;

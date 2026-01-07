@@ -1,13 +1,16 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getsimilar.processing;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.config.MappingConfig;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getsimilar.dto.ArtistGetSimilarArtistDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getsimilar.dto.ArtistGetSimilarDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingResult;
@@ -43,8 +46,6 @@ public class LastfmArtistGetSimilarResponseProcessor extends LastfmApiResponsePr
     private final LastfmAttributeHistoryService attributeHistoryService;
     private final DtoQualityService dtoQualityService;
 
-    // TODO provide default value to injected values
-    // TODO implement on-the-fly value management
     @Value("${lastfm.client.methods.artist.getSimilar.artistMatchThreshold}")
     private float artistMatchThreshold;
 
@@ -64,9 +65,10 @@ public class LastfmArtistGetSimilarResponseProcessor extends LastfmApiResponsePr
         EntityFactory<LastfmArtist, ArtistGetSimilarArtistDto> artistFactory,
         LastfmArtistsRelationService artistsRelationService,
         LastfmAttributeHistoryService attributeHistoryService,
-        DtoQualityService dtoQualityService
+        DtoQualityService dtoQualityService,
+        @Qualifier(MappingConfig.LASTFM_API_RESPONSE_OBJECT_MAPPER_BEAN_NAME) ObjectMapper objectMapper
     ) {
-        super(ArtistGetSimilarDtoRoot.class);
+        super(ArtistGetSimilarDtoRoot.class, objectMapper);
 
         this.artistService = artistService;
         this.dtoProcessingService = dtoProcessingService;

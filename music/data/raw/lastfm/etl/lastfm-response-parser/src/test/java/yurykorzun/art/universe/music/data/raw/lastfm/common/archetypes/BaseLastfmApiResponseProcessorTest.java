@@ -2,6 +2,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes;
 
 import org.springframework.context.annotation.Import;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.config.LastfmThresholdConfig;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.config.MappingConfig;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.service.DtoQualityService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.attribute.LastfmAttributeTypeSynchronizer;
@@ -27,6 +28,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.config.TaskCoordinationTest
         LastfmAttributeHistoryProcessor.class,
         // other mandatory beans & configs
         TaskCoordinationTestAutoConfiguration.class,
+        MappingConfig.class
 })
 public abstract class BaseLastfmApiResponseProcessorTest extends LastfmJpaTestHelper {
 }

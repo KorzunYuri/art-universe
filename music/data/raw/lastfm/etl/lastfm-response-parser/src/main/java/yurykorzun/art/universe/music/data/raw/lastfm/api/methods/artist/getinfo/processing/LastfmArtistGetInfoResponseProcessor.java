@@ -1,11 +1,14 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getinfo.processing;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
+import yurykorzun.art.universe.music.data.raw.lastfm.api.config.MappingConfig;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getinfo.dto.ArtistGetInfoArtistDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getinfo.dto.ArtistGetInfoArtistTagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.getinfo.dto.ArtistGetInfoDtoRoot;
@@ -57,9 +60,10 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
         EntityFactory<LastfmArtist, ArtistGetInfoSimilarArtistDto> similarArtistFactory,
         EntityFactory<LastfmTag, ArtistGetInfoArtistTagDto> tagFactory,
         LastfmApiDtoProcessingService dtoProcessingService,
-        DtoQualityService dtoQualityService
+        DtoQualityService dtoQualityService,
+        @Qualifier(MappingConfig.LASTFM_API_RESPONSE_OBJECT_MAPPER_BEAN_NAME) ObjectMapper objectMapper
     ) {
-        super(ArtistGetInfoDtoRoot.class);
+        super(ArtistGetInfoDtoRoot.class, objectMapper);
 
         this.artistService = artistService;
         this.artistsRelationService = artistsRelationService;

@@ -3,9 +3,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.api.methods.artist.topalbu
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -28,7 +26,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.Blackli
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl.LastfmAlbumServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.impl.LastfmArtistServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.relationship.impl.LastfmArtistAlbumServiceImpl;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.BaseLastfmApiResponseProcessorTest;
 
 import java.io.IOException;
@@ -37,7 +34,6 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Tag("integration")
 @Import({
     // processing
     LastfmArtistTopAlbumsResponseProcessor.class,
@@ -48,8 +44,6 @@ import static org.junit.jupiter.api.Assertions.*;
     LastfmArtistAlbumServiceImpl.class,
 })
 class LastfmArtistTopAlbumsResponseProcessorTest extends BaseLastfmApiResponseProcessorTest {
-    @Autowired
-    private DbConsistencyHelper consistencyHelper;
 
     @Autowired
     private LastfmArtistTopAlbumsResponseProcessor processor;
@@ -78,19 +72,12 @@ class LastfmArtistTopAlbumsResponseProcessorTest extends BaseLastfmApiResponsePr
 
     @BeforeEach
     public void setUp() throws IOException {
-        consistencyHelper.cleanup();
-        
         // Load test data once for all tests
         responseJsonString = LastfmApiClientResourceUtil.getApiClientResponse(TEST_RESPONSE_KEY);
         dtoRoot = parseResponse(responseJsonString);
         
         // Set threshold to 0 to process all albums by default
         ReflectionTestUtils.setField(processor, "albumPlayCountThreshold", DEFAULT_THRESHOLD);
-    }
-
-    @AfterEach
-    public void cleanDatabase() {
-        consistencyHelper.cleanup();
     }
 
     /**

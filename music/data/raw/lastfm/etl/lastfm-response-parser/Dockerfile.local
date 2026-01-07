@@ -10,7 +10,7 @@ COPY build/docker-layers/spring-boot-loader/ ./spring-boot-loader/
 COPY build/docker-layers/snapshot-dependencies/ ./snapshot-dependencies/
 COPY build/docker-layers/application/ ./application/
 
-EXPOSE 8090
+EXPOSE 8080
 
 # Run the application with proper classpath (thin JAR needs dependencies)
 ENTRYPOINT ["java", \

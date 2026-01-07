@@ -1,0 +1,28 @@
+management:
+  endpoints:
+    enabled-by-default: false
+    web:
+      exposure:
+        include: none
+
+  tracing:
+    enabled: false
+
+  metrics:
+    enable:
+      all: false
+
+  observations:
+    enabled: false
+
+  jmx:
+    enabled: false
+
+  zipkin:
+    tracing:
+      endpoint: localhost:9411/api/v2/spans
+
+# just in case - don't even initialize Zipkin
+spring:
+  zipkin:
+    enabled: false

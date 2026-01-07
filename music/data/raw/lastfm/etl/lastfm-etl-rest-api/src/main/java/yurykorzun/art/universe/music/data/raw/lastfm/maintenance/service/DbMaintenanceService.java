@@ -1,7 +1,9 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.maintenance.service;
 
+import io.micrometer.observation.annotation.Observed;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ public class DbMaintenanceService {
     private final TaskCoordinator dbMaintenanceCoordinator;
     private final JdbcTemplate jdbc;
     private final MusicDataIntegrationService musicDataIntegrationService;
+    private final DbMaintenanceService self;
 
     @Value("${lastfm.threshold.artist.listenersCount}")
     private int artistThreshold;
@@ -31,10 +34,12 @@ public class DbMaintenanceService {
     public DbMaintenanceService(
             TaskCoordinator taskCoordinator,
             JdbcTemplate jdbc,
-            MusicDataIntegrationService musicDataIntegrationService) {
+            MusicDataIntegrationService musicDataIntegrationService,
+            @Lazy DbMaintenanceService self) {
         this.dbMaintenanceCoordinator = taskCoordinator;
         this.jdbc = jdbc;
         this.musicDataIntegrationService = musicDataIntegrationService;
+        this.self = self;
     }
 
     @Scheduled(cron = "${lastfm.scheduling.maintenance.cron}")
@@ -49,22 +54,26 @@ public class DbMaintenanceService {
         }
     }
 
+    @Observed(name = "music.data.raw.lastfm.maintenance.process",
+              contextualName = "lastfm-maintenance-process")
     private void executeMaintenanceTasks() {
         // Execute cleanup for each entity type and collect cleanup run IDs
-        Long artistCleanupRunId = cleanupEntity(LastfmEntityType.ARTIST, artistThreshold);
-        Long albumCleanupRunId = cleanupEntity(LastfmEntityType.ALBUM, albumThreshold);
-        Long trackCleanupRunId = cleanupEntity(LastfmEntityType.TRACK, trackThreshold);
-        Long tagCleanupRunId = cleanupEntity(LastfmEntityType.TAG, tagThreshold);
+        Long artistCleanupRunId = self.cleanupEntity(LastfmEntityType.ARTIST, artistThreshold);
+        Long albumCleanupRunId = self.cleanupEntity(LastfmEntityType.ALBUM, albumThreshold);
+        Long trackCleanupRunId = self.cleanupEntity(LastfmEntityType.TRACK, trackThreshold);
+        Long tagCleanupRunId = self.cleanupEntity(LastfmEntityType.TAG, tagThreshold);
 
         // Unbind deleted entities from music-data
-        unbindDeletedEntitiesFromCleanupRun(artistCleanupRunId);
-        unbindDeletedEntitiesFromCleanupRun(albumCleanupRunId);
-        unbindDeletedEntitiesFromCleanupRun(trackCleanupRunId);
-        unbindDeletedEntitiesFromCleanupRun(tagCleanupRunId);
+        self.unbindDeletedEntitiesFromCleanupRun(artistCleanupRunId);
+        self.unbindDeletedEntitiesFromCleanupRun(albumCleanupRunId);
+        self.unbindDeletedEntitiesFromCleanupRun(trackCleanupRunId);
+        self.unbindDeletedEntitiesFromCleanupRun(tagCleanupRunId);
 
-        performDatabaseOptimization();
+        self.performDatabaseOptimization();
     }
 
+    @Observed(name = "music.data.raw.lastfm.maintenance.db.optimization",
+              contextualName = "lastfm-maintenance-db-optimization")
     private void performDatabaseOptimization() {
         log.info("Executing VACUUM FULL");
         long vacuumStart = System.currentTimeMillis();
@@ -83,9 +92,12 @@ public class DbMaintenanceService {
         //     jdbc.queryForObject("SELECT current_database()", String.class));
     }
 
+    @Observed(name = "music.data.raw.lastfm.maintenance.entity.cleanup",
+              contextualName = "lastfm-maintenance-entity-cleanup",
+              lowCardinalityKeyValues = {"entity_type", "#{#entityType.getName()}"})
     private Long cleanupEntity(LastfmEntityType entityType, int popularityAttrThreshold) {
         log.info("Starting cleanup for entity type {} with threshold {}", entityType, popularityAttrThreshold);
-        
+
         List<Map<String, Object>> results = jdbc.queryForList(
             "SELECT * FROM mtnc_cleanup_entity(?, ?, ?)",
             entityType.getCode(), popularityAttrThreshold, false
@@ -97,10 +109,10 @@ public class DbMaintenanceService {
         }
 
         // Extract cleanup run ID from the first result
-        Long cleanupRunId = (Long) results.get(0).get("cleanup_run_id");
-        
+        Long cleanupRunId = (Long) results.getFirst().get("cleanup_run_id");
+
         log.info("Completed cleanup for entity type {} with run ID {}", entityType, cleanupRunId);
-        
+
         // Log cleanup summary
         results.forEach(row -> {
             String message = (String) row.get("message");
@@ -110,6 +122,8 @@ public class DbMaintenanceService {
         return cleanupRunId;
     }
 
+    @Observed(name = "music.data.raw.lastfm.maintenance.entities.unbind",
+              contextualName = "lastfm-maintenance-entity-unbind")
     private void unbindDeletedEntitiesFromCleanupRun(Long cleanupRunId) {
         if (cleanupRunId == null) {
             return;

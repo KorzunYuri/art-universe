@@ -1,42 +1,30 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import yurykorzun.art.universe.common.data.raw.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.LastfmTag;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.LastfmJpaTestHelper;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Import({ DbConsistencyHelper.class })
 class LastfmTagRepositoryTest extends LastfmJpaTestHelper {
 
     @Autowired
     private LastfmTagRepository tagRepository;
 
-    @Autowired
-    private DbConsistencyHelper dbHelper;
-
-    @BeforeEach
-    void setUp() {
-        dbHelper.cleanup();
-    }
-
     @Test
     void findTags_shouldReturnTagsMatchingSearchCriteria() {
         // Given
-        LastfmTag tagRock = dbHelper.createAndSaveTag(builder -> builder.name("rock"));
-        LastfmTag tagPop = dbHelper.createAndSaveTag(builder -> builder.name("pop"));
-        LastfmTag tagJazz = dbHelper.createAndSaveTag(builder -> builder.name("jazz"));
+        LastfmTag tagRock = consistencyHelper.createAndSaveTag(builder -> builder.name("rock"));
+        LastfmTag tagPop = consistencyHelper.createAndSaveTag(builder -> builder.name("pop"));
+        LastfmTag tagJazz = consistencyHelper.createAndSaveTag(builder -> builder.name("jazz"));
         
         // When - search for "o" should match "rock" and "pop"
         Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "name"));
@@ -54,15 +42,15 @@ class LastfmTagRepositoryTest extends LastfmJpaTestHelper {
     @Test
     void findTags_shouldFilterByApprovalStatus() {
         // Given
-        LastfmTag tagPending = dbHelper.createAndSaveTag(builder -> builder
+        LastfmTag tagPending = consistencyHelper.createAndSaveTag(builder -> builder
             .name("pending")
             .approvalStatus(ApprovalStatus.PENDING));
         
-        LastfmTag tagApproved = dbHelper.createAndSaveTag(builder -> builder
+        LastfmTag tagApproved = consistencyHelper.createAndSaveTag(builder -> builder
             .name("approved")
             .approvalStatus(ApprovalStatus.APPROVED));
         
-        LastfmTag tagDeclined = dbHelper.createAndSaveTag(builder -> builder
+        LastfmTag tagDeclined = consistencyHelper.createAndSaveTag(builder -> builder
             .name("declined")
             .approvalStatus(ApprovalStatus.DECLINED));
         
@@ -79,9 +67,9 @@ class LastfmTagRepositoryTest extends LastfmJpaTestHelper {
     @Test
     void findTags_shouldSortBySpecifiedField() {
         // Given
-        LastfmTag tag1 = dbHelper.createAndSaveTag(builder -> builder.name("zebra"));
-        LastfmTag tag2 = dbHelper.createAndSaveTag(builder -> builder.name("apple"));
-        LastfmTag tag3 = dbHelper.createAndSaveTag(builder -> builder.name("banana"));
+        LastfmTag tag1 = consistencyHelper.createAndSaveTag(builder -> builder.name("zebra"));
+        LastfmTag tag2 = consistencyHelper.createAndSaveTag(builder -> builder.name("apple"));
+        LastfmTag tag3 = consistencyHelper.createAndSaveTag(builder -> builder.name("banana"));
         
         // When - sort by name ascending
         Pageable pageableAsc = PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "name"));
@@ -109,9 +97,9 @@ class LastfmTagRepositoryTest extends LastfmJpaTestHelper {
     @Test
     void findAllByNameIn_shouldReturnMatchingTags() {
         // Given
-        LastfmTag tag1 = dbHelper.createAndSaveTag(builder -> builder.name("rock"));
-        LastfmTag tag2 = dbHelper.createAndSaveTag(builder -> builder.name("pop"));
-        LastfmTag tag3 = dbHelper.createAndSaveTag(builder -> builder.name("jazz"));
+        LastfmTag tag1 = consistencyHelper.createAndSaveTag(builder -> builder.name("rock"));
+        LastfmTag tag2 = consistencyHelper.createAndSaveTag(builder -> builder.name("pop"));
+        LastfmTag tag3 = consistencyHelper.createAndSaveTag(builder -> builder.name("jazz"));
         
         // When
         List<LastfmTag> result = tagRepository.findAllByNameIn(List.of("rock", "jazz"));
@@ -127,11 +115,11 @@ class LastfmTagRepositoryTest extends LastfmJpaTestHelper {
     @Test
     void findTags_shouldFilterByMinUsageCount() {
         // Given
-        LastfmTag tagLowUsage = dbHelper.createAndSaveTag(builder -> builder
+        LastfmTag tagLowUsage = consistencyHelper.createAndSaveTag(builder -> builder
             .name("low-usage")
             .usageCount(50));
         
-        LastfmTag tagHighUsage = dbHelper.createAndSaveTag(builder -> builder
+        LastfmTag tagHighUsage = consistencyHelper.createAndSaveTag(builder -> builder
             .name("high-usage")
             .usageCount(150));
         
@@ -148,11 +136,11 @@ class LastfmTagRepositoryTest extends LastfmJpaTestHelper {
     @Test
     void findTags_shouldFilterByMinUsageUsersCount() {
         // Given
-        LastfmTag tagLowUsers = dbHelper.createAndSaveTag(builder -> builder
+        LastfmTag tagLowUsers = consistencyHelper.createAndSaveTag(builder -> builder
             .name("low-users")
             .usageUsersCount(25));
         
-        LastfmTag tagHighUsers = dbHelper.createAndSaveTag(builder -> builder
+        LastfmTag tagHighUsers = consistencyHelper.createAndSaveTag(builder -> builder
             .name("high-users")
             .usageUsersCount(75));
         
@@ -169,31 +157,31 @@ class LastfmTagRepositoryTest extends LastfmJpaTestHelper {
     @Test
     void findTags_shouldFilterByAllParameters() {
         // Given
-        LastfmTag tagMatching = dbHelper.createAndSaveTag(builder -> builder
+        LastfmTag tagMatching = consistencyHelper.createAndSaveTag(builder -> builder
             .name("rock-music")
             .approvalStatus(ApprovalStatus.APPROVED)
             .usageCount(200)
             .usageUsersCount(100));
         
-        LastfmTag tagNotMatching1 = dbHelper.createAndSaveTag(builder -> builder
+        LastfmTag tagNotMatching1 = consistencyHelper.createAndSaveTag(builder -> builder
             .name("pop-music")  // doesn't match search
             .approvalStatus(ApprovalStatus.APPROVED)
             .usageCount(200)
             .usageUsersCount(100));
         
-        LastfmTag tagNotMatching2 = dbHelper.createAndSaveTag(builder -> builder
+        LastfmTag tagNotMatching2 = consistencyHelper.createAndSaveTag(builder -> builder
             .name("rock-alternative")
             .approvalStatus(ApprovalStatus.PENDING)  // doesn't match approval status
             .usageCount(200)
             .usageUsersCount(100));
         
-        LastfmTag tagNotMatching3 = dbHelper.createAndSaveTag(builder -> builder
+        LastfmTag tagNotMatching3 = consistencyHelper.createAndSaveTag(builder -> builder
             .name("rock-classic")
             .approvalStatus(ApprovalStatus.APPROVED)
             .usageCount(50)  // doesn't match minUsageCount
             .usageUsersCount(100));
         
-        LastfmTag tagNotMatching4 = dbHelper.createAndSaveTag(builder -> builder
+        LastfmTag tagNotMatching4 = consistencyHelper.createAndSaveTag(builder -> builder
             .name("rock-indie")
             .approvalStatus(ApprovalStatus.APPROVED)
             .usageCount(200)
@@ -217,12 +205,12 @@ class LastfmTagRepositoryTest extends LastfmJpaTestHelper {
     @Test
     void findTags_shouldHandleNullUsageValues() {
         // Given
-        LastfmTag tagWithNulls = dbHelper.createAndSaveTag(builder -> builder
+        LastfmTag tagWithNulls = consistencyHelper.createAndSaveTag(builder -> builder
             .name("null-values")
             .usageCount(null)
             .usageUsersCount(null));
         
-        LastfmTag tagWithValues = dbHelper.createAndSaveTag(builder -> builder
+        LastfmTag tagWithValues = consistencyHelper.createAndSaveTag(builder -> builder
             .name("with-values")
             .usageCount(100)
             .usageUsersCount(50));

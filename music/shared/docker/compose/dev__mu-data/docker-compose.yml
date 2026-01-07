@@ -29,13 +29,6 @@ services:
       timeout: 5s
       retries: 5
 
-  db-adminer:
-    container_name: dev__mu-data__db-adminer
-    image: adminer
-    restart: unless-stopped
-    ports:
-      - "${DB_ADMINER_PORT}:8080"
-
 networks:
   default:
     name: dev__mu-shared-network

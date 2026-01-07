@@ -1,6 +1,5 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.client.repository;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import yurykorzun.art.universe.common.data.raw.api.client.entity.ApiResponseStatus;
@@ -8,18 +7,14 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApi
 import yurykorzun.art.universe.music.data.raw.lastfm.api.client.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.utils.LastfmApiClientResourceUtil;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.LastfmJpaTestHelper;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.DbConsistencyHelper;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@Tag("integration")
 class LastfmApiResponseRepositoryTest extends LastfmJpaTestHelper {
 
     @Autowired
     private LastfmApiResponseRepository apiResponseRepository;
-
-    @Autowired
-    private DbConsistencyHelper consistencyHelper;
 
     private static final String sampleResponse = LastfmApiClientResourceUtil.getApiClientResponse("artist.getInfo");
 
