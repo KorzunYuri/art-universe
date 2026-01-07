@@ -1,4 +1,5 @@
-# dev env
+# root-level services for dev environment.
+# domain-specific stacks (e.g. for master data, quiz, lastfm) are stored separately in domain-level directories
 
 version: '3.8'
 
@@ -25,14 +26,14 @@ services:
   grafana:
     container_name: dev__mu__grafana
     build:
-      dockerfile: ./grafana/grafana.dockerfile
+      dockerfile: ../common/grafana/grafana.dockerfile
       context: .
     restart: unless-stopped
     volumes:
       - grafana-data:/var/lib/grafana
-      - ./grafana/provisioning/dashboards:/tmp/dashboard-templates
-      - ./grafana/provisioning/datasources:/tmp/datasource-templates
-      - ./grafana/grafana-provision.sh:/tmp/grafana-provision.sh
+      - ../common/grafana/provisioning/dashboards:/tmp/dashboard-templates
+      - ../common/grafana/provisioning/datasources:/tmp/datasource-templates
+      - ../common/grafana/grafana-provision.sh:/tmp/grafana-provision.sh
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
@@ -40,7 +41,7 @@ services:
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
       - GF_AUTH_DISABLE_LOGIN_FORM=true
-      - PROMETHEUS_DATASOURCE_UID=prometheus_dev
+      - PROMETHEUS_DATASOURCE_UID=${PROMETHEUS_DATASOURCE_UID}
     entrypoint: /tmp/grafana-provision.sh
     ports:
       - "${GRAFANA_PORT}:3000"
@@ -62,7 +63,7 @@ services:
 
 networks:
   default:
-    name: dev__mu-observability-network
+    name: dev__network
 
 volumes:
   prometheus-data:

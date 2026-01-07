@@ -406,6 +406,14 @@ services:
     depends_on:
       lastfm-rest-api:
         condition: service_healthy
+      lastfm-etl-rest-api:
+        condition: service_healthy
+      lastfm-calls-generator:
+        condition: service_healthy
+      lastfm-calls-performer:
+        condition: service_healthy
+      lastfm-response-parser:
+        condition: service_healthy
       music-data:
         condition: service_healthy
       music-quiz:
@@ -425,13 +433,13 @@ services:
     container_name: local__mu__grafana
     build:
       dockerfile: grafana.dockerfile
-      context: ../../../music/data/env/docker/compose/dev__mu/grafana
+      context: ../common/grafana
     restart: unless-stopped
     volumes:
       - local__mu__grafana-data:/var/lib/grafana
-      - ../../../music/data/env/docker/compose/dev__mu/grafana/provisioning/dashboards:/tmp/dashboard-templates
-      - ../../../music/data/env/docker/compose/dev__mu/grafana/provisioning/datasources:/tmp/datasource-templates
-      - ../../../music/data/env/docker/compose/dev__mu/grafana/grafana-provision.sh:/tmp/grafana-provision.sh:ro
+      - ../common/grafana/provisioning/dashboards:/tmp/dashboard-templates
+      - ../common/grafana/provisioning/datasources:/tmp/datasource-templates
+      - ../common/grafana/grafana-provision.sh:/tmp/grafana-provision.sh:ro
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
@@ -467,8 +475,6 @@ services:
       - STORAGE_TYPE=mem
       - STORAGE_SPAN_RETENTION_PERIOD=28800
       - JAVA_OPTS=-Xms128m -Xmx256m
-    depends_on:
-      - prometheus
     deploy:
       resources:
         limits:

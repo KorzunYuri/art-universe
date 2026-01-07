@@ -32,7 +32,7 @@ services:
 
 networks:
   default:
-    name: dev__network
+    name: dev__mu-data-raw-lastfm__network
 
 volumes:
   db-postgres-data:

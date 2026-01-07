@@ -31,7 +31,7 @@ services:
 
 networks:
   default:
-    name: dev__mu-shared-network
+    name: dev__mu-shared__network
 
 volumes:
   db-postgres-data:
