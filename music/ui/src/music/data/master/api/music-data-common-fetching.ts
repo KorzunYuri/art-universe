@@ -1,4 +1,3 @@
-import axios from "axios";
 import {MusicDataConfig} from "@/music/data/master/config/musicdataconfig.ts";
 import type {Page} from "@/music/shared/types/page.ts";
 import type {MasterEntityMap, MasterEntityType} from "@/music/shared/types/entities.ts";
@@ -16,6 +15,8 @@ import {createCategoryFromWithParentsDto} from "@/music/data/master/api/music-da
 import type {ArtistWithCategoriesDto} from "@/music/data/master/api/music-data-artists.ts";
 import type {CategoryWithParentsDto} from "@/music/data/master/api/music-data-categories.ts";
 
+const masterDataApi = MusicDataConfig.api;
+
 
 export type MasterEntityPageSearchParamsMap = {
     artist:     ArtistPageSearchParams,
@@ -29,8 +30,8 @@ export async function fetchMasterEntities<T extends MasterEntityType>(
     params: MasterEntityPageSearchParamsMap[T]
 ): Promise<Page<MasterEntityMap[T]>> {
     const endpoint = entityToEndpoint[entityType];
-    const response = await axios.get<Page<MasterEntityDtoMap[T]>>(
-        `${MusicDataConfig.baseApiUrl}/${endpoint}`,
+    const response = await masterDataApi.get<Page<MasterEntityDtoMap[T]>>(
+        `/${endpoint}`,
         {
             params
         }
@@ -47,8 +48,8 @@ export async function fetchMasterEntity<T extends MasterEntityType>(
     entityId: number
 ): Promise<MasterEntityMap[T]> {
     const endpoint = entityToEndpoint[entityType];
-    const response = await axios.get<MasterEntityDtoMap[T]>(
-        `${MusicDataConfig.baseApiUrl}/${endpoint}/${entityId}`
+    const response = await masterDataApi.get<MasterEntityDtoMap[T]>(
+        `/${endpoint}/${entityId}`
     );
 
     return masterEntityFromDtoMappers[entityType](response.data);
@@ -62,9 +63,9 @@ export async function fetchMasterEntitiesWithRelations<T extends MasterEntityTyp
         entityType === 'category'   ?   'categories/with-parents' :
         entityType === 'artist'     ?   'artists/with-categories' :
                                         entityToEndpoint[entityType];
-    
-    const response = await axios.get<Page<any>>(
-        `${MusicDataConfig.baseApiUrl}/${endpoint}`,
+
+    const response = await masterDataApi.get<Page<any>>(
+        `/${endpoint}`,
         { params }
     );
 
@@ -72,16 +73,16 @@ export async function fetchMasterEntitiesWithRelations<T extends MasterEntityTyp
     if (entityType === 'category') {
         return {
             ...response.data,
-            content: response.data.content.map((dto: CategoryWithParentsDto) => 
+            content: response.data.content.map((dto: CategoryWithParentsDto) =>
                 createCategoryFromWithParentsDto(dto)
             )
         } as Page<MasterEntityMap[T]>;
     }
-    
+
     if (entityType === 'artist') {
         return {
             ...response.data,
-            content: response.data.content.map((dto: ArtistWithCategoriesDto) => 
+            content: response.data.content.map((dto: ArtistWithCategoriesDto) =>
                 createArtistWithCategoriesFromDto(dto)
             )
         } as Page<MasterEntityMap[T]>;

@@ -1,9 +1,10 @@
 import { LastfmConfig } from "@/music/data/raw/lastfm/config/lastfmconfig.ts";
-import axios from 'axios';
 import { LastfmTag } from "@/music/data/raw/lastfm/types";
 import type { Category } from "@/music/shared/types/entities.ts";
 import type {ApprovalStatusType} from "@/music/data/raw/lastfm/constants/approvalStatus.ts";
 import type {BaseLastfmPageSearchParams} from "@/music/data/raw/lastfm/api/lastfm-common-fetching.ts";
+
+const lastfmReadApi = LastfmConfig.readApi;
 
 export interface LastfmTagDto {
     id: number;
@@ -67,8 +68,8 @@ export async function fetchEntityTags(
     entityId: number,
     params?: EntityTagSearchParams
 ): Promise<EntityTagDto[]> {
-    const response = await axios.get<EntityTagDto[]>(
-        `${LastfmConfig.baseApiUrl}/tags/entity/${entityType}/${entityId}`,
+    const response = await lastfmReadApi.get<EntityTagDto[]>(
+        `/tags/entity/${entityType}/${entityId}`,
         {
             params: {
                 minUsageCount: params?.minUsageCount,

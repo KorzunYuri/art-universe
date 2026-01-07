@@ -1,4 +1,3 @@
-import axios from 'axios';
 import {LastfmConfig} from '@/music/data/raw/lastfm/config/lastfmconfig.ts';
 
 import type {ApprovalStatusType} from "@/music/data/raw/lastfm/constants/approvalStatus.ts";
@@ -11,6 +10,8 @@ import type {
     LastfmSupportedEntityType,
     LastfmSupportedEntityTypeMap
 } from "@/music/data/raw/lastfm/types/lastfm-entity.ts";
+
+const lastfmWriteApi = LastfmConfig.writeApi;
 
 
 export const lastfmEntityTypeToEndpoint: Record<LastfmSupportedEntityType, string> = {
@@ -52,8 +53,8 @@ export async function updateApprovalStatus(
 
     const endpoint = lastfmEntityTypeToEndpoint[entityType];
     try {
-        await axios.patch(
-            `${LastfmConfig.writeApiUrl}/${endpoint}/${entityId}/approval`,
+        await lastfmWriteApi.patch(
+            `/${endpoint}/${entityId}/approval`,
             {
                 approvalStatus: newStatus,
             }

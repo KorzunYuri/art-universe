@@ -13,8 +13,9 @@ import {
     type ArtistRelatedRawEntity, type MasterEntityMap
 } from "@/music/shared/types/entities.ts";
 import {entityToEndpoint} from "@/music/data/master/api/music-data-commons.ts";
-import axios from "axios";
 import {MusicDataConfig} from "@/music/data/master/config/musicdataconfig.ts";
+
+const masterDataClient = MusicDataConfig.api;
 
 /**
  * Structures for binding (bindToNew, bindToExisting) and 'fetch bound entities' methods
@@ -130,8 +131,8 @@ export async function fetchBoundMasterEntities<K extends MasterEntityType>(
     externalIds: number[]
 ): Promise<BoundEntityInfo<K>[]> {
     const endpoint = entityToEndpoint[entityType];
-    const url = `${MusicDataConfig.baseApiUrl}/${endpoint}/bound/${dataSource}`;
-    const response = await axios.get<EntityBindingResponseMap[K][]>(
+    const url = `/${endpoint}/bound/${dataSource}`;
+    const response = await masterDataClient.get<EntityBindingResponseMap[K][]>(
         url,
         {
             params: {
@@ -155,8 +156,8 @@ export async function bindRawEntityToExistingMaster<K extends MasterEntityType>(
     entity: RawEntity<K>
 ): Promise<BoundEntityInfo<K>> {
     const endpoint = entityToEndpoint[entity.getEntityType()];
-    const response = await axios.post<EntityBindingResponseMap[K]>(
-        `${MusicDataConfig.baseApiUrl}/${endpoint}/bind/existing/${entity.getDataSource()}/${entity.id}`,
+    const response = await masterDataClient.post<EntityBindingResponseMap[K]>(
+        `/${endpoint}/bind/existing/${entity.getDataSource()}/${entity.id}`,
         toBindToExistingRequest(masterId, entity)
     );
 
@@ -175,8 +176,8 @@ export async function bindRawEntityToNewMaster<K extends MasterEntityType>(
     entity: RawEntity<K>
 ): Promise<BoundEntityInfo<K>> {
     const endpoint = entityToEndpoint[entity.getEntityType()];
-    const response = await axios.post<EntityBindingResponseMap[K]>(
-        `${MusicDataConfig.baseApiUrl}/${endpoint}/bind/new/${entity.getDataSource()}/${entity.id}`,
+    const response = await masterDataClient.post<EntityBindingResponseMap[K]>(
+        `/${endpoint}/bind/new/${entity.getDataSource()}/${entity.id}`,
         toCreateAndBindRequest(entityName, entity)
     );
 
@@ -265,8 +266,8 @@ export async function unbindRawEntity(
     externalId: number
 ): Promise<boolean> {
     const endpoint = entityToEndpoint[entityType];
-    const response = await axios.delete<boolean>(
-        `${MusicDataConfig.baseApiUrl}/${endpoint}/unbind/${dataSource}/${externalId}`
+    const response = await masterDataClient.delete<boolean>(
+        `/${endpoint}/unbind/${dataSource}/${externalId}`
     );
 
     return response.data;

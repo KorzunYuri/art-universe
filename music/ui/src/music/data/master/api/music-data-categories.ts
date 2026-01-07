@@ -1,8 +1,9 @@
-import axios from 'axios';
 import { MusicDataConfig } from '../config/musicdataconfig.ts';
 import type {BasePageSearchParams} from '@/music/shared/types/page.ts';
 import {type Category, CategoryImpl} from '@/music/shared/types/entities.ts';
 import type {BaseMasterEntityDto} from "@/music/data/master/api/music-data-commons.ts";
+
+const masterDataApi = MusicDataConfig.api;
 
 export interface CategoryDto extends BaseMasterEntityDto {}
 
@@ -60,11 +61,11 @@ export function createCategoryFromWithParentsDto(dto: CategoryWithParentsDto): C
  * @returns The created category if successful, null otherwise
  */
 export async function createCategory(category: CategoryCreateRequest): Promise<Category | null> {
-    const response = await axios.post<CategoryDto>(
-        `${MusicDataConfig.baseApiUrl}/categories`,
+    const response = await masterDataApi.post<CategoryDto>(
+        `/categories`,
         category
     );
-    
+
     return createCategoryFromDto(response.data);
 }
 
@@ -75,11 +76,11 @@ export async function createCategory(category: CategoryCreateRequest): Promise<C
  * @returns The saved category if successful, null otherwise
  */
 export async function saveCategory(category: CategorySaveRequest): Promise<Category | null> {
-    const response = await axios.post<CategoryDto>(
-        `${MusicDataConfig.baseApiUrl}/categories`,
+    const response = await masterDataApi.post<CategoryDto>(
+        `/categories`,
         category
     );
-    
+
     return createCategoryFromDto(response.data);
 }
 
@@ -90,11 +91,11 @@ export async function saveCategory(category: CategorySaveRequest): Promise<Categ
  * @returns The saved category with parents if successful, null otherwise
  */
 export async function saveCategoryWithParents(category: CategorySaveWithParentsRequest): Promise<CategoryWithParentsDto | null> {
-    const response = await axios.post<CategoryWithParentsDto>(
-        `${MusicDataConfig.baseApiUrl}/categories/with-parents`,
+    const response = await masterDataApi.post<CategoryWithParentsDto>(
+        `/categories/with-parents`,
         category
     );
-    
+
     return response.data;
 }
 
@@ -105,10 +106,10 @@ export async function saveCategoryWithParents(category: CategorySaveWithParentsR
  * @returns The category with its parents if successful, null otherwise
  */
 export async function fetchCategoryWithParents(categoryId: number): Promise<CategoryWithParentsDto | null> {
-    const response = await axios.get<CategoryWithParentsDto>(
-        `${MusicDataConfig.baseApiUrl}/categories/${categoryId}/with-parents`
+    const response = await masterDataApi.get<CategoryWithParentsDto>(
+        `/categories/${categoryId}/with-parents`
     );
-    
+
     return response.data;
 }
 
@@ -119,11 +120,11 @@ export async function fetchCategoryWithParents(categoryId: number): Promise<Cate
  * @returns List of categories with their parents
  */
 export async function fetchCategoriesWithParents(query?: string): Promise<CategoryWithParentsDto[]> {
-    const response = await axios.get<CategoryWithParentsDto[]>(
-        `${MusicDataConfig.baseApiUrl}/categories/with-parents`,
+    const response = await masterDataApi.get<CategoryWithParentsDto[]>(
+        `/categories/with-parents`,
         { params: query ? { query } : {} }
     );
-    
+
     return response.data;
 }
 
@@ -133,8 +134,8 @@ export async function fetchCategoriesWithParents(query?: string): Promise<Catego
  * @param relation Relation to create
  */
 export async function createCategoryRelation(relation: CategoryRelation): Promise<void> {
-    await axios.post(
-        `${MusicDataConfig.baseApiUrl}/categories/relations`,
+    await masterDataApi.post(
+        `/categories/relations`,
         relation
     );
 }
@@ -145,8 +146,8 @@ export async function createCategoryRelation(relation: CategoryRelation): Promis
  * @param relation Relation to delete
  */
 export async function deleteCategoryRelation(relation: CategoryRelation): Promise<void> {
-    await axios.delete(
-        `${MusicDataConfig.baseApiUrl}/categories/relations`,
+    await masterDataApi.delete(
+        `/categories/relations`,
         { data: relation }
     );
 }
@@ -158,10 +159,10 @@ export async function deleteCategoryRelation(relation: CategoryRelation): Promis
  * @returns True if successful, false otherwise
  */
 export async function deleteCategory(categoryId: number): Promise<boolean> {
-    const response = await axios.delete<boolean>(
-        `${MusicDataConfig.baseApiUrl}/categories/${categoryId}`
+    const response = await masterDataApi.delete<boolean>(
+        `/categories/${categoryId}`
     );
-    
+
     return response.data;
 }
 
@@ -190,9 +191,9 @@ export interface CategoryDagDto {
  * @returns Category DAG with nodes and edges
  */
 export async function fetchCategoryDag(): Promise<CategoryDagDto> {
-    const response = await axios.get<CategoryDagDto>(
-        `${MusicDataConfig.baseApiUrl}/categories/dag`
+    const response = await masterDataApi.get<CategoryDagDto>(
+        `/categories/dag`
     );
-    
+
     return response.data;
 }
