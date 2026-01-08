@@ -2,8 +2,8 @@ version: '3.8'
 
 services:
   # Databases
-  postgres-lastfm:
-    container_name: local__lastfm__db-postgres
+  postgres-lastfm-master:
+    container_name: local__lastfm__db-postgres-master
     restart: unless-stopped
     shm_size: 128mb
     stop_grace_period: 1m
@@ -17,9 +17,9 @@ services:
     volumes:
       - local__lastfm__db-postgres-data:/var/lib/postgresql/data
       - ../../../music/data/raw/lastfm/env/docker/compose/dev__music-data-raw-lastfm/initdb/templates:/docker-entrypoint-initdb.d
-    command: bash -c "envsubst < /docker-entrypoint-initdb.d/init.sql.template > /docker-entrypoint-initdb.d/init.sql && exec docker-entrypoint.sh postgres"
+    command: bash -c "envsubst < /docker-entrypoint-initdb.d/init.sql.template > /docker-entrypoint-initdb.d/01-init.sql && chmod +x /docker-entrypoint-initdb.d/02-configure-replication.sh && exec docker-entrypoint.sh postgres -c wal_level=replica -c max_wal_senders=3 -c max_replication_slots=3"
     ports:
-      - "${MURAW_LASTFM_DB_PORT}:5432"
+      - "${MURAW_LASTFM_DB_MASTER_EXTERNAL_PORT}:5432"
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 10s
@@ -35,6 +35,48 @@ services:
         reservations:
           memory: 128M
           cpus: '0.2'
+
+  postgres-lastfm-replica:
+    container_name: local__lastfm__db-postgres-replica
+    restart: unless-stopped
+    shm_size: 128mb
+    stop_grace_period: 1m
+    stop_signal: SIGINT
+    build:
+      dockerfile: postgres.dockerfile
+      context: ../../../music/shared/docker/compose/common
+    env_file:
+      - ./music-data-raw-lastfm.env
+      - ./music-data-raw-lastfm.secrets.env
+    environment:
+      - POSTGRES_MASTER_HOST=postgres-lastfm-master
+      - POSTGRES_MASTER_PORT=5432
+      - POSTGRES_REPLICATION_USER=replicator
+      - POSTGRES_REPLICATION_PASSWORD=${MURAW_LASTFM_DB_REPLICATION_PASSWORD}
+    volumes:
+      - local__lastfm__db-postgres-replica-data:/var/lib/postgresql/data
+      - ../../../music/data/raw/lastfm/env/docker/compose/dev__music-data-raw-lastfm/initdb/replica-setup.sh:/docker-entrypoint-initdb.d/replica-setup.sh
+    command: bash -c "chmod +x /docker-entrypoint-initdb.d/replica-setup.sh && exec docker-entrypoint.sh postgres"
+    ports:
+      - "${MURAW_LASTFM_DB_REPLICA_EXTERNAL_PORT}:5432"
+    depends_on:
+      postgres-lastfm-master:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mu__network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.3'
+        reservations:
+          memory: 64M
+          cpus: '0.1'
 
   postgres-music-data:
     container_name: local__mu-music-data__db-postgres
@@ -55,7 +97,7 @@ services:
       - ../../../music/shared/docker/compose/common/initdb/templates:/docker-entrypoint-initdb.d
     command: bash -c "envsubst < /docker-entrypoint-initdb.d/init.sql.template > /docker-entrypoint-initdb.d/init.sql && exec docker-entrypoint.sh postgres"
     ports:
-      - "${MU_DATA_DB_PORT}:5432"
+      - "${MU_DATA_DB_EXTERNAL_PORT}:5432"
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 10s
@@ -83,7 +125,7 @@ services:
       - ./music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.secrets.env
     depends_on:
-      postgres-lastfm:
+      postgres-lastfm-master:
         condition: service_healthy
     networks:
       - mu__network
@@ -107,7 +149,9 @@ services:
     volumes:
       - local__lastfm-rest-api__app-logs:/app/logs
     depends_on:
-      postgres-lastfm:
+      postgres-lastfm-master:
+        condition: service_healthy
+      postgres-lastfm-replica:
         condition: service_healthy
       lastfm-liquibase-service:
         condition: service_completed_successfully
@@ -147,7 +191,7 @@ services:
     volumes:
       - local__lastfm-etl-rest-api__app-logs:/app/logs
     depends_on:
-      postgres-lastfm:
+      postgres-lastfm-master:
         condition: service_healthy
       lastfm-liquibase-service:
         condition: service_completed_successfully
@@ -189,7 +233,7 @@ services:
     volumes:
       - local__lastfm-calls-generator__app-logs:/app/logs
     depends_on:
-      postgres-lastfm:
+      postgres-lastfm-master:
         condition: service_healthy
       lastfm-liquibase-service:
         condition: service_completed_successfully
@@ -223,7 +267,7 @@ services:
     volumes:
       - local__lastfm-calls-performer__app-logs:/app/logs
     depends_on:
-      postgres-lastfm:
+      postgres-lastfm-master:
         condition: service_healthy
       lastfm-liquibase-service:
         condition: service_completed_successfully
@@ -257,7 +301,7 @@ services:
     volumes:
       - local__lastfm-response-parser__app-logs:/app/logs
     depends_on:
-      postgres-lastfm:
+      postgres-lastfm-master:
         condition: service_healthy
       lastfm-liquibase-service:
         condition: service_completed_successfully
@@ -493,6 +537,8 @@ networks:
 volumes:
   local__lastfm__db-postgres-data:
     name: local__lastfm__db-postgres-data
+  local__lastfm__db-postgres-replica-data:
+    name: local__lastfm__db-postgres-replica-data
   local__mu-data__db-postgres-data:
     name: local__mu-data__db-postgres-data
   local__lastfm-rest-api__app-logs:

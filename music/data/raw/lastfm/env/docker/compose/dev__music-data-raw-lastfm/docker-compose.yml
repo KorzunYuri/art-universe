@@ -4,26 +4,60 @@ version: '3.8'
 
 services:
 
-  postgres:
-    container_name: dev__music-data-raw-lastfm__db-postgres
+  postgres-master:
+    container_name: dev__music-data-raw-lastfm__db-postgres-master
     restart: unless-stopped
     shm_size: 128mb
     stop_grace_period: 1m
     stop_signal: SIGINT
     build:
       dockerfile: postgres.dockerfile
-      context: .
+      context: ../../../../../../shared/docker/compose/common
     env_file:
       - ${PROJECT_ROOT}/env/docker/common/music-data-raw-lastfm.env
       - ${PROJECT_ROOT}/env/docker/local/music-data-raw-lastfm.env
       - ${PROJECT_ROOT}/env/docker/local/music-data-raw-lastfm.secrets.env
-      - ${PROJECT_ROOT}/music/data/raw/lastfm/env/dev.override.env
+      - .env
     volumes:
       - db-postgres-data:/var/lib/postgresql/data
       - ./initdb/templates:/docker-entrypoint-initdb.d
-    command: bash -c "envsubst < /docker-entrypoint-initdb.d/init.sql.template > /docker-entrypoint-initdb.d/init.sql && exec docker-entrypoint.sh postgres"
+    command: bash -c "envsubst < /docker-entrypoint-initdb.d/init.sql.template > /docker-entrypoint-initdb.d/01-init.sql && chmod +x /docker-entrypoint-initdb.d/02-configure-replication.sh && exec docker-entrypoint.sh postgres -c wal_level=replica -c max_wal_senders=3 -c max_replication_slots=3"
     ports:
-      - "${MURAW_LASTFM_DB_PORT}:5432"
+      - "${MURAW_LASTFM_DB_MASTER_EXTERNAL_PORT}:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-replica:
+    container_name: dev__music-data-raw-lastfm__db-postgres-replica
+    restart: unless-stopped
+    shm_size: 128mb
+    stop_grace_period: 1m
+    stop_signal: SIGINT
+    build:
+      dockerfile: postgres.dockerfile
+      context: ../../../../../../shared/docker/compose/common
+    env_file:
+      - ${PROJECT_ROOT}/env/docker/common/music-data-raw-lastfm.env
+      - ${PROJECT_ROOT}/env/docker/local/music-data-raw-lastfm.env
+      - ${PROJECT_ROOT}/env/docker/local/music-data-raw-lastfm.secrets.env
+      - .env
+    environment:
+      - POSTGRES_MASTER_HOST=postgres-master
+      - POSTGRES_MASTER_PORT=5432
+      - POSTGRES_REPLICATION_USER=replicator
+      - POSTGRES_REPLICATION_PASSWORD=${MURAW_LASTFM_DB_REPLICATION_PASSWORD}
+    volumes:
+      - db-postgres-replica-data:/var/lib/postgresql/data
+      - ./initdb/replica-setup.sh:/docker-entrypoint-initdb.d/replica-setup.sh
+    command: bash -c "chmod +x /docker-entrypoint-initdb.d/replica-setup.sh && exec docker-entrypoint.sh postgres"
+    ports:
+      - "${MURAW_LASTFM_DB_REPLICA_EXTERNAL_PORT}:5432"
+    depends_on:
+      postgres-master:
+        condition: service_healthy
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 10s
@@ -37,3 +71,5 @@ networks:
 volumes:
   db-postgres-data:
     name: dev__mu-data-raw-lastfm__db-postgres-data
+  db-postgres-replica-data:
+    name: dev__mu-data-raw-lastfm__db-postgres-replica-data
