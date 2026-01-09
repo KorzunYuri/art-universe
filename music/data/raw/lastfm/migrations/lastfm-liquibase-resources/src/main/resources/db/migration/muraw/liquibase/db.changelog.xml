@@ -40,4 +40,5 @@
     <include file="changelogs/0033-attribute-history-cleanup.xml" relativeToChangelogFile="true"/>
     <include file="changelogs/0034-attribute-history-staging.xml" relativeToChangelogFile="true"/>
     <include file="changelogs/0035-coordination-state.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0036-dictionary-synchronizer-deprecation.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
