@@ -7,12 +7,9 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import yurykorzun.art.universe.common.persistence.entity.BaseEntity;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.attribute.LastfmAttributeTypeSynchronizer;
 
 /**
- * Entity for synchronization of {@link LastfmAttribute} with database via
- * {@link LastfmAttributeTypeSynchronizer}.
- * Must NOT be changed via application!
+ * Entity representing LastFM attributes in the database.
  */
 @Entity(name = "attribute")
 @Data

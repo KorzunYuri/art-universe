@@ -54,6 +54,9 @@ music-data-master:
     batch-size: 1000
 
 lastfm:
+  dictionary:
+    sync:
+      enabled: true
   scheduling:
     maintenance:
       cron: "0 0 8 * * *"

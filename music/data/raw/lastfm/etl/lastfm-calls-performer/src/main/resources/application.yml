@@ -37,6 +37,9 @@ server:
   port: ${MURAW_LASTFM_CALLS_PERFORMER_ACTUATOR_INTERNAL_PORT}
 
 lastfm:
+  dictionary:
+    sync:
+      enabled: true
   client:
     baseUrl: "http://ws.audioscrobbler.com/2.0/"
     apikey: ${MURAW_LASTFM_API_KEY}

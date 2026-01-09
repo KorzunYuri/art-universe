@@ -101,7 +101,6 @@ public class ApiResponse extends BaseEntity {
 
 **Beans Provided**:
 - [CodedRegistry.java](src/main/java/yurykorzun/art/universe/common/CodedRegistry.java) - Singleton coded enum registry
-- [CodedRegistrySynchronizer.java](src/main/java/yurykorzun/art/universe/common/persistence/CodedRegistrySynchronizer.java) - Synchronizes coded enums with database
 - [CodedAutoregistrator.java](src/main/java/yurykorzun/art/universe/common/CodedAutoregistrator.java) - Auto-registers coded enums at startup
 
 **Activation**: Automatically loaded when commons-jpa is on classpath
