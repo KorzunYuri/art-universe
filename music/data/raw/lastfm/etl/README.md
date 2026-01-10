@@ -192,6 +192,19 @@ All ETL modules share these database configuration variables:
 - `MURAW_LASTFM_DB_SCHEMA` - Corresponding schema name
 - `MURAW_LASTFM_DB_WRITER_USERNAME` - Lastfm editor user name
 - `MURAW_LASTFM_DB_WRITER_PASSWORD` - Lastfm editor user password
+- `ZIPKIN_BASE_URL` - Zipkin URL
+
+### Development Environment Setup
+
+When running ETL modules in dev mode (IntelliJ), environment variables are loaded in this order:
+1. `env/docker/common/music-data-raw-lastfm.env` - Lastfm constants
+2. `env/docker/dev/common.env` - Dev common settings
+3. `env/docker/dev/music-data-raw-lastfm.env` - Dev env variables
+4. `env/docker/dev/music-data-raw-lastfm.secrets.env` - Dev secrets (Git-ignored)
+
+**Prerequisites**:
+- Dev stack must be running: `docker-compose -f env/docker/dev/docker-compose.yml up -d`
+- See [DEVELOPMENT.md](../../../../../docs/DEVELOPMENT.md) for complete dev workflow
 
 ### Module-Specific Configuration
 

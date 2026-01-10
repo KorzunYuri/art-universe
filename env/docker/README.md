@@ -7,12 +7,13 @@ This directory contains cross-platform scripts for Docker deployment AND the **c
 ## Quick Start
 
 ```bash
-# Deploy full stack locally (Docker Compose)
+# Deploy full stack locally for testing (Docker Compose)
 ./gradlew build -x test
 ./env/docker/deploy.sh local
 
-# Run individual service in dev mode (non-Docker)
-./scripts/run-module-dev.sh music:data:master
+# Start dev infrastructure (database + observability)
+cd env/docker/dev
+docker-compose up -d
 ```
 
 ## Scripts
@@ -76,46 +77,46 @@ Historical/organizational reasons - the directory was initially for Docker Compo
 
 ### File Purposes
 
-| Directory | Purpose | Used By | Example Variables |
-|-----------|---------|---------|-------------------|
-| **common/** | Domain/group-specific config shared across ALL modes | Dev, Local, Prod | `MURAW_LASTFM_DB_SCHEMA=mu_raw_lastfm` |
-| **local/** | Docker Compose local deployment settings | Local (Docker), Dev (as base) | `MU_DATA_APP_EXTERNAL_PORT=9082` |
-| **prod/** | Docker Compose production deployment settings | Prod (Docker) | `MU_DATA_APP_EXTERNAL_PORT=8082` |
-| **dev/** | Development monitoring settings | Dev (non-Docker) | `PROMETHEUS_PORT=7090` |
-| **Module dev.override.env** | Module-specific overrides for dev mode | Dev (non-Docker) | `MU_DATA_APP_EXTERNAL_PORT=7082` |
+| Directory | Purpose | Used By |
+|-----------|---------|---------|
+| **common/** | Domain/group-specific config shared across ALL modes | Dev, Local, Prod |
+| **dev/** | Development environment (databases in Docker, apps on host) | Dev (IntelliJ) |
+| **local/** | Docker Compose local deployment settings | Local (Docker) |
+| **prod/** | Docker Compose production deployment settings | Prod (Docker) |
 
 ### How Each Mode Uses These Files
 
-**Dev Mode (Individual services via IDE or script):**
-- Loads: `common/*.env` → `local/*.env` → `local/*.secrets.env` → module `dev.override.env`
-- Services run on host (not containerized)
+**Dev Mode**
+- Infrastructure (database + observability) runs in Docker
+- Services run on host via IDE
 - Uses ports 7xxx
 - See [DEVELOPMENT.md](../../docs/DEVELOPMENT.md) for details
 
-**Local Mode (Docker Compose):**
-- Loads: `common/*.env` → `local/*.env` → `local/*.secrets.env`
-- All services containerized
+**Local Mode**:
+- All services containerized (watch `env/docker/local/docker-compose.yml`)
+- Services connect via container names (e.g., `postgres-lastfm-master`)
 - Uses ports 9xxx
-- Uses Docker Compose with `local/docker-compose.yml`
+- `deploy.bat local` or `deploy.sh local` for deployment
+- Project is built, then artifacts are copied to Docker images
 
-**Production Mode (Docker Compose):**
-- Loads: `common/*.env` → `prod/*.env` → `prod/*.secrets.env`
-- All services containerized, external databases
+**Production Mode**:
+- Databases on Windows host, services in Docker
+- Services connect to databases via `host.docker.internal`
 - Uses ports 8xxx
-- Uses Docker Compose with `prod/docker-compose.yml`
+- `deploy.bat prod` or `deploy.sh prod` for deployment
+- Each module is built individually as a part of Docker image build 
 
 ### Configuration Principles
 
-1. **Separation of Concerns**: Services don't see each other's configs (separate .env files)
+1. **Separation of Concerns**: Each domain has its own .env files
 2. **Environment Parity**: Same config structure across all modes
-3. **Layering**: Common → Environment-specific → Module-specific (later overrides earlier)
+3. **Layering**: Common → Environment-specific (later overrides earlier)
 4. **Security**: Secrets in `.secrets.env` files (git-ignored)
+5. **No Duplication**: Common constants defined once in `common/*.env`
 
 ## Services and Ports
 
-After successful deployment, services will be available at configured ports.
-
-See **[SERVICES.md](../../docs/SERVICES.md)** for complete service listing with all ports (main and actuator).
+See **[SERVICES.md](../../docs/SERVICES.md)** for complete service listing.
 
 ## Troubleshooting
 
@@ -124,6 +125,12 @@ If the build fails, check:
 - Java 21 is installed and available
 - Docker is running
 - No port conflicts with existing services
+
+### Dev Environment Issues
+If applications can't connect to databases:
+1. Verify `docker-dev` stack is running: `docker-compose -f env/docker/dev/docker-compose.yml ps`
+2. Check database ports are exposed
+3. Verify IntelliJ run configurations load correct env files (see above)
 
 ### Permission Issues (Linux/macOS)
 Make scripts executable:
@@ -143,3 +150,8 @@ java -Djarmode=layered -jar build/libs/mu-data-*.jar list
 # Monitor image sizes
 docker images | grep mu-
 ```
+
+## Related Documentation
+
+- [DEVELOPMENT.md](../../docs/DEVELOPMENT.md) - Development workflow and IntelliJ setup
+- [SERVICES.md](../../docs/SERVICES.md) - Complete service listing with ports

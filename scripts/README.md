@@ -6,6 +6,8 @@ This directory contains utility scripts for the Art Universe project.
 
 Cross-platform scripts for running individual modules locally with proper environment variable loading.
 
+> **Note**: For development, **IntelliJ IDEA run configurations are preferred** (see [DEVELOPMENT.md](../docs/DEVELOPMENT.md)). These scripts are provided for edge cases or non-IntelliJ workflows.
+
 ### Usage
 
 ```bash
@@ -34,102 +36,86 @@ See **[MODULES.md](../docs/MODULES.md)** for complete list of modules (some of t
 
 The script loads environment variables in the following order (later values override earlier ones):
 
-1. **Project root** (REQUIRED): `.project-root.env` - Contains PROJECT_ROOT variable
-2. **Common configuration** (optional): `env/docker/common/*.env` - ALL `.env` files in common directory (domain/group-specific shared config)
-3. **Local environment** (optional): `env/docker/local/[module-name].env` - Local Docker configuration
-4. **Local secrets** (optional): `env/docker/local/[module-name].secrets.env` - Secrets (git-ignored)
-5. **Development overrides** (optional): `[module-path]/dev.override.env` - Module-specific dev settings
+1. **Common configuration**: `env/docker/common/*.env` - Domain/group-specific shared config (DB names, schemas)
+3. **Dev common**: `env/docker/dev/common.env` - Dev common settings
+4. **Dev overrides**: `env/docker/dev/[module-name].env` - Dev-specific variables (localhost hosts, external ports)
+2. **Local secrets**: `env/docker/dev/[module-name].secrets.env` - Secrets (git-ignored)
 
-> **Important**: The `.project-root.env` file is **required**. If missing, the script will fail with an error. Run `./scripts/set-project-root.sh` or `scripts\set-project-root.bat` to create it.
-
-> **Note**: All files in `env/docker/common/` are loaded (e.g., `music-data-raw-lastfm.env`). These contain domain/group-specific variables that are shared across multiple modules.
+> **Note**: The loading order matches IntelliJ run configurations. See [env/docker/README.md](../env/docker/README.md) for complete details.
 
 ### Configuration Files Mapping
 
 The script automatically derives the module name from the module path and looks for corresponding configuration files.
 
 **File Patterns**:
-- `.project-root.env` (project root) - REQUIRED
-- `env/docker/common/*.env` (all .env files in common directory) - Loaded for all modules
-- `env/docker/local/<module-name>.env` - Module-specific local config
+- `env/docker/common/*.env` - Loaded for all modules (constants)
 - `env/docker/local/<module-name>.secrets.env` - Module-specific secrets
-- `<module-directory>/dev.override.env` - Module-specific dev overrides
+- `env/docker/dev/common.env` - Dev common settings
+- `env/docker/dev/<module-name>.env` - Module-specific dev overrides
 
 **Examples**:
 
 **Module: `music:data:master`** → Module name: `music-data`
-- Project root: `.project-root.env`
-- Common: ALL files in `env/docker/common/` (e.g., `music-data-raw-lastfm.env`)
-- Local: `env/docker/local/music-data.env`
-- Secrets: `env/docker/local/music-data.secrets.env`
-- Override: `music/data/master/dev.override.env`
+1. Common: ALL files in `env/docker/common/`
+2. Secrets: `env/docker/local/music-data.secrets.env`
+3. Dev common: `env/docker/dev/common.env`
+4. Dev overrides: `env/docker/dev/music-data.env`
 
 **Module: `music:data:raw:lastfm:lastfm-rest-api`** → Module name: `lastfm-rest-api`
-- Project root: `.project-root.env`
-- Common: ALL files in `env/docker/common/` (includes `music-data-raw-lastfm.env` with LastFM DB config)
-- Local: `env/docker/local/lastfm-rest-api.env`
-- Secrets: `env/docker/local/lastfm-rest-api.secrets.env`
-- Override: `music/data/raw/lastfm/lastfm-rest-api/dev.override.env`
+1. Common: `env/docker/common/music-data-raw-lastfm.env` (DB config)
+2. Secrets: `env/docker/local/music-data-raw-lastfm.secrets.env`
+3. Dev common: `env/docker/dev/common.env`
+4. Dev overrides: `env/docker/dev/music-data-raw-lastfm.env`
 
-### Development Override Files
+### Prerequisites
 
-Each module can have a `dev.override.env` file in its directory that overrides Docker configuration for local development.
+Before running modules in dev mode:
 
-**Location Pattern**: `<module-directory>/dev.override.env`
+1. **Start dev stack** (databases + observability in Docker):
+   ```bash
+   cd env/docker/dev
+   docker-compose up -d
+   ```
+   Or use IntelliJ run configuration: `docker-dev`
 
-These files typically configure:
-- Database connections to localhost instead of Docker containers
-- Different port numbers to avoid conflicts
-- Development-specific settings
+2. **Run migrations** (first time or after schema changes):
+   ```bash
+   cd music/data/raw/lastfm/migrations/lastfm-liquibase-service
+   ./gradlew bootRun
+   ```
+   Or use IntelliJ run configuration: `LiquibaseMigrationService - DEV`
+
+The dev stack provides:
+- LastFM Master Database: `localhost:7799`
+- LastFM Replica Database: `localhost:7798`
+- MU Data Database: `localhost:7789`
+- Prometheus: `localhost:7090`
+- Grafana: `localhost:7000`
+- Zipkin: `localhost:7411`
 
 ### Features
 
 - **Cross-platform compatibility**: Works on Windows, macOS, Linux, WSL, and Git Bash
-- **Automatic environment loading**: Loads configuration files in the correct order
+- **Automatic environment loading**: Loads configuration files in the correct order matching IntelliJ
 - **Error handling**: Provides clear feedback about missing configuration files
 - **Spring profile activation**: Automatically sets `spring.profiles.active=dev`
-- **PROJECT_ROOT support**: Sets the PROJECT_ROOT environment variable for modules that need it
-- **Fixed Windows compatibility**: Proper argument handling and Gradle command formation
 
 ### Requirements
 
 - Must be run from the project root directory (where `gradlew` is located)
-- `.project-root.env` file must exist (create with `./scripts/set-project-root.sh` or `scripts\set-project-root.bat`)
+- Dev stack must be running (databases in Docker)
 - Module must have a valid Gradle configuration with `bootRun` task
-- At least one configuration file should exist (common, local, secrets, or override)
+- At least one configuration file should exist (common, secrets, or dev)
 
-### Troubleshooting
+## set-project-root.sh / set-project-root.bat
 
-#### "Script must be run from the project root!"
-Make sure you're running the script from the directory containing `gradlew`.
+**DEPRECATED**: The PROJECT_ROOT environment variable is no longer required for modules. This script is kept for backward compatibility but is not actively used.
 
-#### "Error: .project-root.env file not found!"
-The script requires the `.project-root.env` file to be present in the project root.
+Environment configurations now use relative paths from `env/docker/` or are automatically resolved by Gradle.
 
-**Solution:**
-```bash
-# Unix/Linux/macOS/WSL/Git Bash
-./scripts/set-project-root.sh
+## Related Documentation
 
-# Windows Command Prompt
-scripts\set-project-root.bat
-```
-
-See [PROJECT_ROOT_SETUP.md](PROJECT_ROOT_SETUP.md) for more details.
-
-#### "No common/local .env file found"
-This is a warning, not an error. The script will continue with available files. Only `.project-root.env` is required.
-
-#### Module not found
-Check that the module path is correct using:
-```bash
-./gradlew projects
-```
-
-#### Port conflicts
-If you get port binding errors, make sure no other services are running on the same ports, or modify the port configuration in the `.env` files.
-
-#### Windows-specific issues
-- Ensure you're using `scripts\run-module-dev.bat` (not `.sh`) in Command Prompt
-- The script automatically handles argument parsing and Gradle command formation
-- If you see Gradle task errors, verify the module path matches the Gradle module structure (use `./gradlew projects` to list all modules)
+- [DEVELOPMENT.md](../docs/DEVELOPMENT.md) - Complete development guide with IntelliJ setup
+- [env/docker/README.md](../env/docker/README.md) - Environment configuration structure and loading order
+- [SERVICES.md](../docs/SERVICES.md) - Service ports and configurations
+- [MODULES.md](../docs/MODULES.md) - Module listing and build commands

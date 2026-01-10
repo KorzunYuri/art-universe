@@ -49,6 +49,34 @@ This module follows these project-wide patterns:
 
 
 
+## Configuration
+
+### Environment Variables
+
+The module requires these environment variables:
+
+- `MU_DATA_DB_HOST` - PostgreSQL database host
+- `MU_DATA_DB_PORT` - PostgreSQL database port
+- `MU_DATA_DB_NAME` - Database name
+- `MU_DATA_DB_SCHEMA` - Schema name
+- `MU_DATA_DB_USERNAME` - Database username
+- `MU_DATA_DB_PASSWORD` - Database password
+- `MU_DATA_APP_INTERNAL_PORT` - Application HTTP port
+- `MU_DATA_APP_CORS_ALLOWED_ORIGINS` - CORS allowed origins
+- `ZIPKIN_BASE_URL` - Zipkin URL
+
+### Development Environment Setup
+
+When running in dev mode (IntelliJ), environment variables are loaded in this order:
+
+2. `env/docker/dev/common.env` - Dev common settings
+3. `env/docker/dev/music-data.env` - Dev env variables
+1. `env/docker/dev/music-data.secrets.env` - Passwords (git-ignored)
+
+**Prerequisites**:
+- Dev stack must be running: `docker-compose -f env/docker/dev/docker-compose.yml up -d`
+- See [DEVELOPMENT.md](../../../docs/DEVELOPMENT.md) for complete dev workflow
+
 ## Build & Deployment
 
 **See**: [Gradle Commands Guide](../../../docs/kb/guides/gradle-commands.md) for standard build/test commands
@@ -59,10 +87,10 @@ This module follows these project-wide patterns:
 ## Related Documentation
 
 ### Patterns This Module Uses
-- [Backend Patterns](../../../docs/kb/patterns/backend/README.md) - TBD
+- [Backend Patterns](../../../docs/kb/patterns/backend/overview.md) - Patterns used in the module
 
 ### Other Modules
-- **[LastFM REST API](../../../docs/kb/modules/lastfm-rest-api/README.md)**: Provides external entity data for binding
+- **[LastFM REST API](../../../music/data/raw/lastfm/lastfm-rest-api/README.md)**: Provides external entity data for binding
 - **[LastFM ETL Pipeline](../../../docs/MODULES.md)**: Provides external relation data
 - **[Music Quiz](../../../docs/MODULES.md)**: Consumes master data and relations for quiz generation
 - **[Music UI](../../../docs/MODULES.md)**: Management interface for binding operations
@@ -72,6 +100,6 @@ This module follows these project-wide patterns:
 ### Other Docs
 - [Architecture Overview](../../../docs/kb/guides/README.md) - System architecture and design
 - [Project Modules Index](../../../docs/MODULES.md) - Complete modules index
-- [Development Workflow](../../../docs/kb/guides/development-workflow.md) - Git workflow, code review, testing
+- [Develoment Guide](../../../docs/DEVELOPMENT.md) - Complete modules index
+- [Docker Deployment Guide](../../../env/docker/README.md)
 - [Gradle Commands](../../../docs/kb/guides/gradle-commands.md) - Build and test commands
-- [Deployment Guide](../../../docs/kb/guides/deployment.md) - Environment setup and deployment

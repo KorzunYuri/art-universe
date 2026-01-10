@@ -1,10 +1,14 @@
 # PROJECT_ROOT Environment Variable Setup
 
+> **DEPRECATED**: The PROJECT_ROOT environment variable is no longer required for modules. This documentation is kept for backward compatibility but the scripts are not actively used.
+>
+> **Current approach**: Environment configurations now use relative paths from `env/docker/` or are automatically resolved by Gradle and Spring Boot. See [DEVELOPMENT.md](../docs/DEVELOPMENT.md) for current development setup.
+
 This document describes how to set up the `PROJECT_ROOT` environment variable for IntelliJ IDEA run configurations and other development tools.
 
 ## Overview
 
-Some modules (like `music-data-raw-lastfm`) require the `PROJECT_ROOT` environment variable to be set to locate configuration files and resources. This is especially important when running individual modules from IntelliJ IDEA.
+Some modules (like `music-data-raw-lastfm`) previously required the `PROJECT_ROOT` environment variable to be set to locate configuration files and resources. **This is no longer necessary** - the current configuration system uses relative paths and automatic resolution.
 
 ## Scripts Location
 

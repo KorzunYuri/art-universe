@@ -6,9 +6,9 @@ The Art Universe project supports three different ways to run services, each sui
 
 | Mode | Description | Uses Docker?| Config Source| When to Use |
 |------|-------------|-------------|--------------|-------------|
-| **Dev (IDE/Script)** | Individual services via IDE or `run-module-dev.sh` | DB only| `env/docker/common/`, `env/docker/local/`, `dev.override.env` | Working on a single service, fast iteration, debugging      |
-| **Local (Docker)** | Full stack via Docker Compose | Yes (all containerized) | `env/docker/common/`, `env/docker/local/`| Integration testing, full stack development                 |
-| **Production (Docker)** | Production deployment via Docker Compose | Yes (external DB)     | `env/docker/common/`, `env/docker/prod/`| Actual deployment                                           |
+| **Dev (IntelliJ)** | Databases in Docker, applications in IntelliJ | DB only| `env/docker/dev/docker-compose.yml` + IntelliJ env files | Working on services, fast iteration, debugging      |
+| **Local (Docker)** | Full stack via Docker Compose | Yes (all containerized) | `env/docker/local/docker-compose.yml`| Integration testing, full stack development                 |
+| **Production (Docker)** | Production deployment via Docker Compose | Yes (external DB)     | `env/docker/prod/docker-compose.yml`| Actual deployment                                           |
 
 ### Why Dev Mode Uses `env/docker/` Files
 
@@ -22,36 +22,35 @@ The `env/docker/` directory is the **central configuration hub** for ALL environ
 
 All service ports are documented in **[SERVICES.md](SERVICES.md)** - the single source of truth for service configurations.
 
-## Individual Module Development (Dev Mode)
+## Development Mode
 
-Run individual services in dev mode (non-Docker) for fast iteration and debugging.
+Run services in dev mode with databases and observability tools in Docker, applications in IntelliJ for fast iteration and debugging.
 
-### Running via IDE
+### Prerequisites
 
-Configure your IDE run configuration to load the environment files:
+1. **Docker running** - Dev stack requires Docker for databases
+2. **Java 21** - For running Spring Boot applications
+3. **Node.js** (optional) - For UI development
 
-1. `.project-root.env` See [PROJECT_ROOT_SETUP](../scripts/PROJECT_ROOT_SETUP.md) for details
-2. `env/docker/common/*.env` (depends on the module)
-3. `env/docker/local/{module-name}.env`
-4. `env/docker/local/{module-name}.secrets.env`
-5. `{module-path}/dev.override.env`
+### Starting Development Environment
 
-> **See**: [Environment Configuration](../env/docker/README.md) for complete details on environment file loading and structure.
+#### Step 1: Start Docker Stack
 
-### Running via Script
-
+Start the dev stack (databases + observability):
 ```bash
-./scripts/run-module-dev.sh <module-path>
-
-# Examples:
-./scripts/run-module-dev.sh music:data:master
-./scripts/run-module-dev.sh music:quiz
-./scripts/run-module-dev.sh music:data:raw:lastfm:lastfm-rest-api
+cd env/docker/dev
+docker-compose up -d
 ```
 
-**Prerequisites:**
-- `.project-root.env` must exist (create with `./scripts/set-project-root.sh` or `scripts\set-project-root.bat`)
-- See **[MODULES.md](kb/guides/gradle-commands)** for complete list of module paths
+#### Step 2: Run Applications in IntelliJ
+
+Each run configuration loads environment files in a specific order (later files override earlier):
+```
+1. (if relevant) env/docker/common/{domain/app}.env - Constants (DB name, schema, usernames)
+3. env/docker/dev/common.env                        - Dev variables shared across the stack
+4. env/docker/dev/{domain/app}.env                  - App/domain specific variables
+2. env/docker/dev/{domain/app}.secrets.env          - App/domain specific secrets
+```
 
 ## Docker Deployment (Local & Production Modes)
 
@@ -91,26 +90,31 @@ For complete development patterns, see **[patterns reference](kb/patterns/README
 ## Database Configuration
 
 ### PostgreSQL Setup
-- **Dev & Local(test)**: Containers via Docker Compose
-- **Production**: External host databases
+- **Deployment**:
+  - **Dev**: Containers via `env/docker/dev/docker-compose.yml`
+  - **Local**: Containers via `env/docker/local/docker-compose.yml`
+  - **Production**: External host databases
 - **Schemas**: `mu_raw_lastfm`, `mu`, `mu_quiz`
 - **Migration**: Liquibase with XML changelogs
 
 ### Connection Patterns
 - HikariCP connection pooling
 - Schema-specific users with appropriate permissions
-- Automatic schema creation and user setup
+- Automatic schema creation and user setup (Dev & Local)
+- Streaming replication configured via docker-compose (Dev & Local)
 
 ## IDE Setup
 
 ### IntelliJ IDEA
-1. Set PROJECT_ROOT environment variable: `./scripts/set-project-root.sh`
-2. Import as Gradle project
-3. Configure Java 21 SDK
-4. Enable annotation processing for Lombok
+1. Import as Gradle project
+2. Configure Java 21 SDK
+3. Enable annotation processing for Lombok
+4. Run configurations are pre-configured in `intellij.configurations.xml`
+5. Use `docker-dev` to start databases, then run individual services
 
-### VS Code
-1. Install Java Extension Pack
-2. Install Gradle for Java extension
-3. Configure Java 21 in settings
-4. Install React/TypeScript extensions for UI module
+## Related Documentation
+
+- [Environment Configuration](../env/docker/README.md) - Complete env file structure and loading order
+- [Services](SERVICES.md) - Service ports and configurations
+- [Modules](kb/guides/gradle-commands) - Module listing and build commands
+- [Patterns](kb/patterns/README.md) - Development patterns and best practices

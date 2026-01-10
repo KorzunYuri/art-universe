@@ -82,13 +82,26 @@ Configuration and error handling (`common/`):
 - `MURAW_LASTFM_DB_READER_PASSWORD` - Lastfm data reader password
 - `MURAW_LASTFM_REST_API_INTERNAL_PORT` - Application HTTP port
 - `MURAW_LASTFM_REST_API_CORS_ALLOWED_ORIGINS` - CORS allowed origins
+- `ZIPKIN_BASE_URL` - Zipkin URL
+
+### Development Environment Setup
+
+When running in dev mode (IntelliJ), environment variables are loaded in this order:
+1. `env/docker/common/music-data-raw-lastfm.env` - Lastfm constants
+2. `env/docker/dev/common.env` - Dev common settings
+3. `env/docker/dev/music-data-raw-lastfm.env` - Dev env variables
+4. `env/docker/dev/music-data-raw-lastfm.secrets.env` - Dev secrets (Git-ignored)
+
+**Prerequisites**:
+- Dev stack must be running: `docker-compose -f env/docker/dev/docker-compose.yml up -d`
+- See [DEVELOPMENT.md](../../../../docs/DEVELOPMENT.md) for complete dev workflow
 
 ### Deployment Notes
 
-The module reads from a PostgreSQL read replica configured via streaming replication. 
+The module reads from a PostgreSQL read replica configured via streaming replication.
 Write operations are performed by the [ETL pipeline](etl/README.md) and [ETL REST API](etl/lastfm-etl-rest-api/README.md) on the master database.
 
-**Replication Lag Handling**: There is potential synchronization lag between write operations (master) and read operations (replica). 
+**Replication Lag Handling**: There is potential synchronization lag between write operations (master) and read operations (replica).
 The UI layer handles this through optimistic updates - changes are reflected immediately in the UI cache without waiting for replication, ensuring users see their modifications instantly.
 
 
