@@ -325,12 +325,7 @@ Understanding module types helps determine workflow:
 
 ### Running Modules Locally
 
-**Individual module (dev mode)**:
-```bash
-./scripts/run-module-dev.sh <module-path>
-# Or on Windows:
-scripts\run-module-dev.bat <module-path>
-```
+**Individual module (dev mode)**: watch [Development Guide](../../DEVELOPMENT.md) for reference
 
 **Full environment (Docker)**:
 ```bash
