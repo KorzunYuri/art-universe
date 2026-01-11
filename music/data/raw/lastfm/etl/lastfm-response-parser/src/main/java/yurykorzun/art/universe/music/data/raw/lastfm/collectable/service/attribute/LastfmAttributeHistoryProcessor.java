@@ -14,6 +14,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.maintenance.service.TaskCoo
 public class LastfmAttributeHistoryProcessor {
 
     public static final String TASK_NAME_ATTRIBUTE_HISTORY_PROCESSING = "attribute-history-processing";
+    private static final int BATCH_SIZE = 5000;
 
     private final LastfmAttributeHistoryProcessor self;
     private final TaskCoordinator coordinator;
@@ -49,15 +50,57 @@ public class LastfmAttributeHistoryProcessor {
         }, TASK_NAME_ATTRIBUTE_HISTORY_PROCESSING);
     }
 
-    @Transactional
     public void processStagingRecords(String tableName) {
-        Long count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM " + tableName, Long.class);
-        if (count == null || count == 0) {
+        Long totalCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM " + tableName, Long.class);
+        if (totalCount == null || totalCount == 0) {
             log.debug("No records to process in {}", tableName);
             return;
         }
 
-        log.debug("Processing {} records from {}", count, tableName);
+        log.info("Processing {} records from {} in batches of {}", totalCount, tableName, BATCH_SIZE);
+
+        int totalExpired = 0;
+        int totalInserted = 0;
+        int batchNumber = 0;
+        long offset = 0;
+
+        while (offset < totalCount) {
+            batchNumber++;
+            final long currentOffset = offset;
+
+            log.info("Processing batch {} (offset: {}, size: {})", batchNumber, offset, BATCH_SIZE);
+
+            // Process batch in a separate transaction
+            BatchResult result = self.processBatch(tableName, currentOffset, BATCH_SIZE);
+
+            totalExpired += result.expired();
+            totalInserted += result.inserted();
+
+            log.info("Batch {} completed: {} expired, {} inserted (cumulative: {}/{})",
+                    batchNumber, result.expired(), result.inserted(), totalExpired, totalInserted);
+
+            offset += BATCH_SIZE;
+        }
+
+        log.info("All batches completed: processed {} staging records in {} batches: {} expired, {} inserted",
+                totalCount, batchNumber, totalExpired, totalInserted);
+
+        // Truncate staging table after all batches are processed
+        jdbcTemplate.execute("TRUNCATE TABLE " + tableName);
+        log.info("Truncated staging table: {}", tableName);
+    }
+
+    @Transactional
+    public BatchResult processBatch(String tableName, long offset, int batchSize) {
+        // Create a temporary table with batch IDs for this transaction
+        String createTempTableSql = String.format("""
+            CREATE TEMP TABLE IF NOT EXISTS batch_ids AS
+            SELECT id FROM %s
+            ORDER BY id
+            LIMIT %d OFFSET %d
+            """, tableName, batchSize, offset);
+
+        jdbcTemplate.execute(createTempTableSql);
 
         // Expire old records and insert new ones in one transaction
         String sql = String.format("""
@@ -76,7 +119,8 @@ public class LastfmAttributeHistoryProcessor {
                 WHERE   ah.valid_till = '9999-12-31'
                     AND EXISTS (
                         SELECT 1 FROM %s s
-                        WHERE   s.entity_type   = ah.entity_type
+                        WHERE   s.id IN (SELECT id FROM batch_ids)
+                            AND s.entity_type   = ah.entity_type
                             AND s.entity_id     = ah.entity_id
                             AND s.attribute_id  = ah.attribute_id
                             AND COALESCE(s.scope_entity_type, -1)   = COALESCE(ah.scope_entity_type, -1)
@@ -89,6 +133,7 @@ public class LastfmAttributeHistoryProcessor {
                     ,   ev.existing_id
                 FROM
                     %s s
+                INNER JOIN batch_ids b ON s.id = b.id
                 LEFT JOIN
                     existing_values ev
                         ON      s.entity_type = ev.entity_type
@@ -124,13 +169,23 @@ public class LastfmAttributeHistoryProcessor {
                 (SELECT COUNT(*) FROM inserted_count) as inserted
             """, tableName, tableName);
 
-        jdbcTemplate.query(sql, rs -> {
-            int expired = rs.getInt("expired");
-            int inserted = rs.getInt("inserted");
-            log.info("Processed {} staging records: {} expired, {} inserted", count, expired, inserted);
+        BatchResult result = jdbcTemplate.query(sql, rs -> {
+            if (rs.next()) {
+                return new BatchResult(rs.getInt("expired"), rs.getInt("inserted"));
+            }
+            return new BatchResult(0, 0);
         });
 
-        jdbcTemplate.execute("TRUNCATE TABLE " + tableName);
+        // Drop temp table
+        jdbcTemplate.execute("DROP TABLE IF EXISTS batch_ids");
+
+        return result != null ? result : new BatchResult(0, 0);
+    }
+
+    /**
+     * Record to hold batch processing results
+     */
+    private record BatchResult(int expired, int inserted) {
     }
 
 }
