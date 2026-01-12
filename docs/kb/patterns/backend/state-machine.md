@@ -29,21 +29,14 @@ States: `CREATED` → `PENDING` → `PROCESSING` → `SUCCESSFUL`/`FAILED`/`DUE_
 
 Valid transitions defined in inner Transition enum with EnumMap for O(1) lookup.
 
-### Approach 2: Coded Enum with Provider Pattern
+### Approach 2: Coded Enum as a State Machine
 
-For distributed state management persisted to database but accessed through provider abstraction.
+For state management.
 
 **Key components**:
 - Coded enum defines states (e.g., `NORMAL`, `REQUESTED`, `RUNNING`)
-- Provider interface abstracts state management (database or in-memory)
+- Provider interface abstracts state management
 - State transitions managed through provider implementations
-- Database provider uses transactions for thread-safety
-
-**Example**: [CoordinationStatus.java](../../../music/data/raw/lastfm/lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/coordination/entity/CoordinationStatus.java) with [CoordinationStateProvider.java](../../../music/data/raw/lastfm/etl/lastfm-tasks-coordinator/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/maintenance/coordination/CoordinationStateProvider.java)
-
-States: `NORMAL` → `REQUESTED` → `RUNNING` → `NORMAL`
-
-State transitions coordinated across multiple application instances via database.
 
 
 ## Key Principles

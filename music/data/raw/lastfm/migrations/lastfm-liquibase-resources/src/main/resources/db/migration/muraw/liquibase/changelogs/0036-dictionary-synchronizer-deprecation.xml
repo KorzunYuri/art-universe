@@ -19,13 +19,6 @@
         />
     </changeSet>
 
-    <changeSet id="0036_0030_sync-dictionary-coordination-status.sql" author="yurykorzun">
-        <sqlFile path="../changesets/0036-read-replica-introduction/0036_0030_sync-dictionary-coordination-status.sql"
-                 relativeToChangelogFile="true"
-                 splitStatements="false"
-        />
-    </changeSet>
-
     <changeSet id="0036_0040_sync-dictionary-data-type.sql" author="yurykorzun">
         <sqlFile path="../changesets/0036-read-replica-introduction/0036_0040_sync-dictionary-data-type.sql"
                  relativeToChangelogFile="true"

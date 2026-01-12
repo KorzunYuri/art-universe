@@ -25,7 +25,6 @@ The LastFM ETL pipeline is a **three-stage continuous data collection system** t
 
 ### Supporting Modules
 
-- [Tasks Coordinator](lastfm-tasks-coordinator/README.md) | Coordinate DB tasks during maintenance
 - [ETL REST API](lastfm-etl-rest-api/README.md) - REST API for manual ETL control and entity editing (e.g. approval)
 
 
@@ -113,21 +112,6 @@ Watch [Calls Generator config](lastfm-calls-generator/src/main/resources/applica
 
 ETL maintains history of collected attributes via [LastfmAttributeHistoryRecord.java](../lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/entity/attribute/LastfmAttributeHistoryRecord.java).
 The value of attribute can be either number or string.
-
-### Stop During Maintenance
-
-All ETL modules use the **Tasks Coordinator** to prevent conflicts with maintenance operations:
-
-```java
-// In each ETL module
-taskCoordinator.executeIfAllowed(() -> {
-    // DB operations here
-}, "unique-task-key");
-```
-
-**Benefits**:
-- Prevents tasks from running during database maintenance
-- Avoids concurrent execution of same task
 
 ## Data Flow Example
 

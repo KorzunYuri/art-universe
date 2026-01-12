@@ -48,13 +48,12 @@ This document is the **single source of truth** for list of modules.
 | [`:music:data:raw:lastfm:etl:lastfm-calls-generator`](../music/data/raw/lastfm/etl/lastfm-calls-generator/README.md) | Service | Generates API calls for data collection |
 | [`:music:data:raw:lastfm:etl:lastfm-calls-performer`](../music/data/raw/lastfm/etl/lastfm-calls-performer/README.md) | Service | Executes API calls against LastFM API |
 | [`:music:data:raw:lastfm:etl:lastfm-response-parser`](../music/data/raw/lastfm/etl/lastfm-response-parser/README.md) | Service | Parses and processes API responses |
-| [`:music:data:raw:lastfm:migrations:lastfm-liquibase-service`](../music/data/raw/lastfm/migrations/lastfm-liquibase-service/README.md) | Service | Database migration runner |
 
 #### Infrastructure Modules
 
 | Module | Type | Purpose |
 |--------|------|---------|
-| [`:music:data:raw:lastfm:etl:lastfm-tasks-coordinator`](../music/data/raw/lastfm/etl/lastfm-tasks-coordinator/README.md) | Library | Distributed task coordination with database-backed state |
+| [`:music:data:raw:lastfm:migrations:lastfm-liquibase-service`](../music/data/raw/lastfm/migrations/lastfm-liquibase-service/README.md) | Service | Database migration runner |
 | [`:music:data:raw:lastfm:migrations:lastfm-liquibase-resources`](../music/data/raw/lastfm/migrations/lastfm-liquibase-resources/README.md) | Library | Liquibase changelog definitions (SQL) |
 
 #### Test Modules
