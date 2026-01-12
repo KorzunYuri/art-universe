@@ -59,7 +59,6 @@ To not block the caller, the updates are done asynchronously:
 **Tasks**:
 - Remove data that don't meet quality thresholds
 - (planned) Cleanup stale API call records
-- Coordinate with ETL pipeline via [lastfm-tasks-coordinator](../lastfm-tasks-coordinator/README.md)
 
 **Cron**: Daily at 8:00 AM
 
