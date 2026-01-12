@@ -17,4 +17,5 @@
     <include file="db/migration/muquiz/liquibase/changelogs/0009-pipeline-changes.xml"/>
     <include file="db/migration/muquiz/liquibase/changelogs/0010-pipeline-metadata.xml"/>
     <include file="db/migration/muquiz/liquibase/changelogs/0011-update-procedures.xml"/>
+    <include file="/db/migration/muquiz/liquibase/changelogs/0012-dictionary-synchronizer-deprecation.xml"/>
 </databaseChangeLog>

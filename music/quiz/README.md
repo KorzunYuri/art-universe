@@ -59,6 +59,34 @@ This module follows these project-wide patterns:
 - [API Conventions](../../docs/kb/patterns/backend/api/conventions.md) - RESTful endpoint structure
 
 
+## Configuration
+
+### Environment Variables
+
+The module requires these environment variables:
+
+- `MU_DATA_DB_HOST` - PostgreSQL database host
+- `MU_DATA_DB_PORT` - PostgreSQL database port
+- `MU_DATA_DB_NAME` - Database name
+- `MU_DATA_DB_SCHEMA` - Schema name
+- `MU_DATA_DB_USERNAME` - Database username
+- `MU_DATA_DB_PASSWORD` - Database password
+- `MU_QUIZ_APP_INTERNAL_PORT` - Application HTTP port
+- `MU_QUIZ_APP_CORS_ALLOWED_ORIGINS` - CORS allowed origins
+- `ZIPKIN_BASE_URL` - Zipkin URL
+
+### Development Environment Setup
+
+When running in dev mode (IntelliJ), environment variables are loaded in this order:
+
+1. `env/docker/dev/common.env` - Dev common settings
+2. `env/docker/dev/music-quiz.env` - Dev env variables
+3. `env/docker/local/music-quiz.secrets.env` - Dev secrets (git-ignored)
+
+**Prerequisites**:
+- Dev stack must be running: `docker-compose -f env/docker/dev/docker-compose.yml up -d`
+- See [DEVELOPMENT.md](../../docs/DEVELOPMENT.md) for complete dev workflow
+
 ## Build & Deployment
 
 See: [Gradle Commands Guide](../../docs/kb/guides/gradle-commands.md) for standard build/test commands

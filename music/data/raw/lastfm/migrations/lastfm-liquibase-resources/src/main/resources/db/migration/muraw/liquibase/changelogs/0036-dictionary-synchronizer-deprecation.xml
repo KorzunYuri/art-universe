@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="0036_0010_sync-dictionary-entity-types.sql" author="yurykorzun">
+        <sqlFile path="../changesets/0036-read-replica-introduction/0036_0010_sync-dictionary-entity-types.sql"
+                 relativeToChangelogFile="true"
+                 splitStatements="false"
+        />
+    </changeSet>
+
+    <changeSet id="0036_0020_sync-dictionary-entity-relation-type.sql" author="yurykorzun">
+        <sqlFile path="../changesets/0036-read-replica-introduction/0036_0020_sync-dictionary-entity-relation-type.sql"
+                 relativeToChangelogFile="true"
+                 splitStatements="false"
+        />
+    </changeSet>
+
+    <changeSet id="0036_0030_sync-dictionary-coordination-status.sql" author="yurykorzun">
+        <sqlFile path="../changesets/0036-read-replica-introduction/0036_0030_sync-dictionary-coordination-status.sql"
+                 relativeToChangelogFile="true"
+                 splitStatements="false"
+        />
+    </changeSet>
+
+    <changeSet id="0036_0040_sync-dictionary-data-type.sql" author="yurykorzun">
+        <sqlFile path="../changesets/0036-read-replica-introduction/0036_0040_sync-dictionary-data-type.sql"
+                 relativeToChangelogFile="true"
+                 splitStatements="false"
+        />
+    </changeSet>
+
+    <changeSet id="0036_0050_sync-dictionary-api-call-type.sql" author="yurykorzun">
+        <sqlFile path="../changesets/0036-read-replica-introduction/0036_0050_sync-dictionary-api-call-type.sql"
+                 relativeToChangelogFile="true"
+                 splitStatements="false"
+        />
+    </changeSet>
+
+    <changeSet id="0036_0060_sync-dictionary-api-call-status.sql" author="yurykorzun">
+        <sqlFile path="../changesets/0036-read-replica-introduction/0036_0060_sync-dictionary-api-call-status.sql"
+                 relativeToChangelogFile="true"
+                 splitStatements="false"
+        />
+    </changeSet>
+
+    <changeSet id="0036_0070_sync-dictionary-api-response-status.sql" author="yurykorzun">
+        <sqlFile path="../changesets/0036-read-replica-introduction/0036_0070_sync-dictionary-api-response-status.sql"
+                 relativeToChangelogFile="true"
+                 splitStatements="false"
+        />
+    </changeSet>
+
+    <changeSet id="0036_0080_sync-dictionary-approval-status.sql" author="yurykorzun">
+        <sqlFile path="../changesets/0036-read-replica-introduction/0036_0080_sync-dictionary-approval-status.sql"
+                 relativeToChangelogFile="true"
+                 splitStatements="false"
+        />
+    </changeSet>
+
+    <changeSet id="0036_0090_sync-dictionary-attribute-types.sql" author="yurykorzun">
+        <sqlFile path="../changesets/0036-read-replica-introduction/0036_0090_sync-dictionary-attribute-types.sql"
+                 relativeToChangelogFile="true"
+                 splitStatements="false"
+        />
+    </changeSet>
+
+    <changeSet id="0036_0100_sync-lastfm-attributes.sql" author="yurykorzun">
+        <sqlFile path="../changesets/0036-read-replica-introduction/0036_0100_sync-lastfm-attributes.sql"
+                 relativeToChangelogFile="true"
+                 splitStatements="false"
+        />
+    </changeSet>
+
+</databaseChangeLog>

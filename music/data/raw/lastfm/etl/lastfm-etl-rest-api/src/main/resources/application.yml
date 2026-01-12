@@ -9,9 +9,10 @@ spring:
       - optional:classpath:commons-observability-${spring.profiles.active}.yml
   datasource:
     driverClassName: org.postgresql.Driver
-    url: jdbc:postgresql://${MURAW_LASTFM_DB_HOST}:${MURAW_LASTFM_DB_PORT}/${MURAW_LASTFM_DB_NAME}?currentSchema=${MURAW_LASTFM_DB_SCHEMA}
-    username: ${MURAW_LASTFM_DB_USER_NAME}
-    password: '${MURAW_LASTFM_DB_PASSWORD}'
+    # Use master for write operations with DM user (falls back to default host for compatibility)
+    url: jdbc:postgresql://${MURAW_LASTFM_DB_MASTER_HOST}:${MURAW_LASTFM_DB_MASTER_PORT}/${MURAW_LASTFM_DB_NAME}?currentSchema=${MURAW_LASTFM_DB_SCHEMA}
+    username: ${MURAW_LASTFM_DB_WRITER_USERNAME}
+    password: '${MURAW_LASTFM_DB_WRITER_PASSWORD}'
     hikari:
       pool-name: LastfmEtlRestApiHikariPool
       maximum-pool-size: 8
@@ -54,6 +55,9 @@ music-data-master:
     batch-size: 1000
 
 lastfm:
+  dictionary:
+    sync:
+      enabled: true
   scheduling:
     maintenance:
       cron: "0 0 8 * * *"

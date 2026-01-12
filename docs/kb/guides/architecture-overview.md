@@ -171,9 +171,7 @@ Curated data powers various applications:
 
 ## Deployment and Environments
 
-### Cross-Platform Scripts
-
-#### Running the Project with Docker Compose
+### Running the Project with Docker Compose
 
 Located in `env/docker/`:
 
@@ -182,15 +180,6 @@ Located in `env/docker/`:
 - `cleanup.sh/.bat <local|prod|all>` - Cleanup containers and images
 
 See [Docker Deployment Reference](../../../env/docker/README.md) for the details.
-
-#### Running a Single Module in Dev Mode
-
-Located in `scripts/`:
-
-- `run-module-dev.sh/.bat <module-path>` - Run individual modules for development
-
-See [Scripts Reference](../../../scripts/README.md) for the details.
-
 
 ### Monitoring and Observability
 

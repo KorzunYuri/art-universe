@@ -5,7 +5,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.api.config.LastfmThresholdC
 import yurykorzun.art.universe.music.data.raw.lastfm.api.config.MappingConfig;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.processing.LastfmApiDtoProcessingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.api.methods.common.service.DtoQualityService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.repository.attribute.LastfmAttributeTypeSynchronizer;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.BlacklistedEntityUrlService;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.attribute.LastfmAttributeHistoryProcessor;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.attribute.LastfmAttributeHistoryServiceImpl;
@@ -24,7 +23,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.config.TaskCoordinationTest
         LastfmThresholdConfig.class,
         // Attributes infrastructure
         LastfmAttributeHistoryServiceImpl.class,
-        LastfmAttributeTypeSynchronizer.class,
         LastfmAttributeHistoryProcessor.class,
         // other mandatory beans & configs
         TaskCoordinationTestAutoConfiguration.class,

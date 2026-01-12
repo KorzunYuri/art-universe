@@ -16,4 +16,7 @@ dependencies {
     implementation 'org.antlr:antlr4-runtime'
     
     runtimeOnly 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.testcontainers:junit-jupiter'
 }

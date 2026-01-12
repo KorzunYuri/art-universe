@@ -65,5 +65,4 @@ The project currently focuses on music data and quiz applications - generating s
 - **[Gradle commands reference](docs/kb/guides/gradle-commands.md)** - Complete modules list
 - **[Development Guide](docs/DEVELOPMENT.md)** - Complete development workflow
 - **[Docker Deployment Scripts](env/docker/README.md)** - Deployment guide (Docker)
-- **[Development Scripts](scripts/README.md)** - Individual module tools
 

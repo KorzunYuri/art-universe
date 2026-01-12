@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
+
+    <changeSet id="0012_0010_sync-step-type.sql" author="yurykorzun">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0012-dictionary-data/0012_0010_sync-dictionary-step-type.sql"
+                 splitStatements="false"
+        />
+    </changeSet>
+
+    <changeSet id="0012_0020_sync-step-position.sql" author="yurykorzun">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0012-dictionary-data/0012_0020_sync-dictionary-step-position.sql"
+                 splitStatements="false"
+        />
+    </changeSet>
+
+    <changeSet id="0012_0030_sync-generation-status.sql" author="yurykorzun">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0012-dictionary-data/0012_0030_sync-dictionary-generation-status.sql"
+                 splitStatements="false"
+        />
+    </changeSet>
+
+    <changeSet id="0012_0040_sync-execution-status.sql" author="yurykorzun">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0012-dictionary-data/0012_0040_sync-dictionary-execution-status.sql"
+                 splitStatements="false"
+        />
+    </changeSet>
+
+    <changeSet id="0012_0050_sync-dictionary-generation-step-type.sql" author="yurykorzun">
+        <sqlFile path="db/migration/muquiz/liquibase/changesets/0012-dictionary-data/0012_0050_sync-dictionary-generation-step-type.sql"
+                 splitStatements="false"
+        />
+    </changeSet>
+
+</databaseChangeLog>

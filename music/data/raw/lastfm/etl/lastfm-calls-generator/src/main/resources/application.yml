@@ -9,9 +9,10 @@ spring:
       - optional:classpath:commons-observability-${spring.profiles.active}.yml
   datasource:
     driverClassName: org.postgresql.Driver
-    url: jdbc:postgresql://${MURAW_LASTFM_DB_HOST:localhost}:${MURAW_LASTFM_DB_PORT:5432}/${MURAW_LASTFM_DB_NAME:music_universe}?currentSchema=${MURAW_LASTFM_DB_SCHEMA:mu_raw_lastfm}
-    username: ${MURAW_LASTFM_DB_USER_NAME}
-    password: '${MURAW_LASTFM_DB_PASSWORD}'
+    # Use master for write operations with DM user (falls back to default host for compatibility)
+    url: jdbc:postgresql://${MURAW_LASTFM_DB_MASTER_HOST}:${MURAW_LASTFM_DB_MASTER_PORT}/${MURAW_LASTFM_DB_NAME}?currentSchema=${MURAW_LASTFM_DB_SCHEMA}
+    username: ${MURAW_LASTFM_DB_WRITER_USERNAME}
+    password: '${MURAW_LASTFM_DB_WRITER_PASSWORD}'
     hikari:
       pool-name: LastfmCallsGeneratorHikariPool
       maximum-pool-size: 8
@@ -37,6 +38,9 @@ server:
   port: ${MURAW_LASTFM_CALLS_GENERATOR_ACTUATOR_INTERNAL_PORT}
 
 lastfm:
+  dictionary:
+    sync:
+      enabled: true
   client:
     calls:
       generate:

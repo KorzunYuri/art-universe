@@ -4,6 +4,7 @@ The LastFM REST API module provides read-only HTTP access to raw LastFM data col
 
 It serves as the primary data access layer for querying LastFM entities (artists, albums, tracks, tags) with search and lookup operations.
 
+It is configured to read data from replica.
 
 ## Key Components
 
@@ -73,20 +74,35 @@ Configuration and error handling (`common/`):
 
 ### Environment Variables
 
-- `MURAW_LASTFM_DB_HOST` - PostgreSQL database host
-- `MURAW_LASTFM_DB_PORT` - PostgreSQL database port
+- `MURAW_LASTFM_DB_REPLICA_HOST` - PostgreSQL replica host
+- `MURAW_LASTFM_DB_REPLICA_PORT` - PostgreSQL replica port
 - `MURAW_LASTFM_DB_NAME` - Database name
 - `MURAW_LASTFM_DB_SCHEMA` - Database schema
-- `MURAW_LASTFM_DB_USER_NAME` - Database username
-- `MURAW_LASTFM_DB_PASSWORD` - Database password
+- `MURAW_LASTFM_DB_READER_USERNAME` - Lastfm data reader username
+- `MURAW_LASTFM_DB_READER_PASSWORD` - Lastfm data reader password
 - `MURAW_LASTFM_REST_API_INTERNAL_PORT` - Application HTTP port
 - `MURAW_LASTFM_REST_API_CORS_ALLOWED_ORIGINS` - CORS allowed origins
+- `ZIPKIN_BASE_URL` - Zipkin URL
+
+### Development Environment Setup
+
+When running in dev mode (IntelliJ), environment variables are loaded in this order:
+1. `env/docker/common/music-data-raw-lastfm.env` - Lastfm constants
+2. `env/docker/dev/common.env` - Dev common settings
+3. `env/docker/dev/music-data-raw-lastfm.env` - Dev env variables
+4. `env/docker/dev/music-data-raw-lastfm.secrets.env` - Dev secrets (Git-ignored)
+
+**Prerequisites**:
+- Dev stack must be running: `docker-compose -f env/docker/dev/docker-compose.yml up -d`
+- See [DEVELOPMENT.md](../../../../docs/DEVELOPMENT.md) for complete dev workflow
 
 ### Deployment Notes
 
-The module currently shares the same database instance as [ETL pipeline](etl/README.md) and [ETL REST API](etl/lastfm-etl-rest-api/README.md).
+The module reads from a PostgreSQL read replica configured via streaming replication.
+Write operations are performed by the [ETL pipeline](etl/README.md) and [ETL REST API](etl/lastfm-etl-rest-api/README.md) on the master database.
 
-**Planned**: In production, reads will be redirected to a read replica with physical replication. This introduces potential synchronization lag between write operations (via ETL REST API) and read operations (via this module), which must be handled in the UI layer.
+**Replication Lag Handling**: There is potential synchronization lag between write operations (master) and read operations (replica).
+The UI layer handles this through optimistic updates - changes are reflected immediately in the UI cache without waiting for replication, ensuring users see their modifications instantly.
 
 
 ## Build & Deployment

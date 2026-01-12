@@ -1,0 +1,174 @@
+# Dev environment - databases run in Docker, applications run in IntelliJ
+# The stack takes env variables from local env and overrides some ot them (mostly ports)
+version: '3.8'
+
+services:
+  # LastFM Databases
+  postgres-lastfm-master:
+    container_name: dev__music-data-raw-lastfm__db-postgres-master
+    restart: unless-stopped
+    shm_size: 128mb
+    stop_grace_period: 1m
+    stop_signal: SIGINT
+    build:
+      dockerfile: postgres.dockerfile
+      context: ../../../music/shared/docker/compose/common
+    env_file:
+      - ../common/music-data-raw-lastfm.env
+      - ./music-data-raw-lastfm.env
+      - ./music-data-raw-lastfm.secrets.env
+    volumes:
+      - db-postgres-lastfm-master-data:/var/lib/postgresql/data
+      - ../common/db/mu-raw-lastfm/initdb/templates:/docker-entrypoint-initdb.d
+    command: bash -c "envsubst < /docker-entrypoint-initdb.d/init.sql.template > /docker-entrypoint-initdb.d/01-init.sql && chmod +x /docker-entrypoint-initdb.d/02-configure-replication.sh && exec docker-entrypoint.sh postgres -c wal_level=replica -c max_wal_senders=3 -c max_replication_slots=3"
+    ports:
+      - "${MURAW_LASTFM_DB_MASTER_EXTERNAL_PORT}:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dev__network
+
+  postgres-lastfm-replica:
+    container_name: dev__music-data-raw-lastfm__db-postgres-replica
+    restart: unless-stopped
+    shm_size: 128mb
+    stop_grace_period: 1m
+    stop_signal: SIGINT
+    build:
+      dockerfile: postgres.dockerfile
+      context: ../../../music/shared/docker/compose/common
+    env_file:
+      - ../common/music-data-raw-lastfm.env
+      - ./music-data-raw-lastfm.env
+      - ./music-data-raw-lastfm.secrets.env
+    environment:
+      - POSTGRES_MASTER_HOST=postgres-lastfm-master
+      - POSTGRES_MASTER_PORT=5432
+      - POSTGRES_REPLICATION_USER=replicator
+      - POSTGRES_REPLICATION_PASSWORD=${MURAW_LASTFM_DB_REPLICATION_PASSWORD}
+    volumes:
+      - db-postgres-lastfm-replica-data:/var/lib/postgresql/data
+      - ../common/db/mu-raw-lastfm/initdb/replica-setup.sh:/docker-entrypoint-initdb.d/replica-setup.sh
+    command: bash -c "chmod +x /docker-entrypoint-initdb.d/replica-setup.sh && exec docker-entrypoint.sh postgres"
+    ports:
+      - "${MURAW_LASTFM_DB_REPLICA_EXTERNAL_PORT}:5432"
+    depends_on:
+      postgres-lastfm-master:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dev__network
+
+  # MU Data Database
+  postgres-mu-data:
+    container_name: dev__mu-data__db-postgres
+    restart: unless-stopped
+    shm_size: 128mb
+    stop_grace_period: 1m
+    stop_signal: SIGINT
+    build:
+      dockerfile: postgres.dockerfile
+      context: ../../../music/shared/docker/compose/common
+    env_file:
+      - ./music-data.secrets.env
+      - ./music-quiz.secrets.env
+      - ./music-data.env
+      - ./music-quiz.env
+    volumes:
+      - db-postgres-mu-data:/var/lib/postgresql/data
+      - ../common/db/mu/initdb/templates:/docker-entrypoint-initdb.d
+    command: bash -c "envsubst < /docker-entrypoint-initdb.d/init.sql.template > /docker-entrypoint-initdb.d/init.sql && exec docker-entrypoint.sh postgres"
+    ports:
+      - "${MU_DATA_DB_PORT}:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dev__network
+
+  # Monitoring
+  prometheus:
+    container_name: dev__mu__prometheus
+    image: prom/prometheus:latest
+    restart: unless-stopped
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    ports:
+      - "${PROMETHEUS_PORT}:9090"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - dev__network
+
+  grafana:
+    container_name: dev__mu__grafana
+    build:
+      dockerfile: grafana.dockerfile
+      context: ../common/grafana
+    restart: unless-stopped
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ../common/grafana/provisioning/dashboards:/tmp/dashboard-templates
+      - ../common/grafana/provisioning/datasources:/tmp/datasource-templates
+      - ../common/grafana/grafana-provision.sh:/tmp/grafana-provision.sh
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - PROMETHEUS_DATASOURCE_UID=${PROMETHEUS_DATASOURCE_UID}
+    entrypoint: /tmp/grafana-provision.sh
+    ports:
+      - "${GRAFANA_PORT}:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - dev__network
+
+  # Distributed Tracing
+  zipkin:
+    container_name: dev__mu__zipkin
+    image: openzipkin/zipkin:3.4
+    restart: unless-stopped
+    ports:
+      - "${ZIPKIN_EXTERNAL_PORT}:9411"
+    environment:
+      - STORAGE_TYPE=mem
+      - JAVA_OPTS=-Xms128m -Xmx256m
+    depends_on:
+      - prometheus
+    networks:
+      - dev__network
+
+networks:
+  dev__network:
+    name: dev__network
+
+volumes:
+  db-postgres-lastfm-master-data:
+    name: dev__mu-data-raw-lastfm__db-postgres-data
+  db-postgres-lastfm-replica-data:
+    name: dev__mu-data-raw-lastfm__db-postgres-replica-data
+  db-postgres-mu-data:
+    name: dev__mu-data__db-postgres-data
+  prometheus-data:
+    name: dev__mu__prometheus-data
+  grafana-data:
+    name: dev__mu__grafana-data

@@ -7,9 +7,6 @@
 > **Note**: All Gradle commands must be executed from the project root directory.
 
 ```bash
-# Run module in development mode
-./scripts/run-module-dev.sh <module-path>
-
 # Build specific module
 ./gradlew :<module-path>:build
 
@@ -25,7 +22,6 @@
 
 **Example:**
 ```bash
-./scripts/run-module-dev.sh music:data:master
 ./gradlew :music:data:master:build
 ./gradlew :music:data:master:test
 ```

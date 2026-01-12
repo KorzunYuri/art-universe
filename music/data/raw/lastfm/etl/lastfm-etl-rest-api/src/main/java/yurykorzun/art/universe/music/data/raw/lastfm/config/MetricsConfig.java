@@ -25,7 +25,6 @@ import lombok.extern.slf4j.Slf4j;
 import yurykorzun.art.universe.music.data.raw.lastfm.maintenance.service.TaskCoordinator;
 
 @Configuration
-@DependsOn("codedRegistrySynchronizer")
 @Slf4j
 public class MetricsConfig {
 

@@ -9,9 +9,10 @@ spring:
       - optional:classpath:commons-observability-${spring.profiles.active}.yml
   datasource:
     driverClassName: org.postgresql.Driver
-    url: jdbc:postgresql://${MURAW_LASTFM_DB_HOST}:${MURAW_LASTFM_DB_PORT}/${MURAW_LASTFM_DB_NAME}?currentSchema=${MURAW_LASTFM_DB_SCHEMA}
-    username: ${MURAW_LASTFM_DB_USER_NAME}
-    password: '${MURAW_LASTFM_DB_PASSWORD}'
+    # Use replica for read operations with read-only user (falls back to master for compatibility)
+    url: jdbc:postgresql://${MURAW_LASTFM_DB_REPLICA_HOST}:${MURAW_LASTFM_DB_REPLICA_PORT}/${MURAW_LASTFM_DB_NAME}?currentSchema=${MURAW_LASTFM_DB_SCHEMA}
+    username: ${MURAW_LASTFM_DB_READER_USERNAME}
+    password: '${MURAW_LASTFM_DB_READER_PASSWORD}'
     hikari:
       pool-name: MuRawLastFmHikariPool
       maximum-pool-size: 8

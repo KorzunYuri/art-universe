@@ -34,12 +34,12 @@ The main purpose is to centralize migration process and make the startup easier 
 
 To run the app correctly, the following variables must be set:
 
-- `MURAW_LASTFM_DB_HOST` - PostgreSQL host
-- `MURAW_LASTFM_DB_PORT` - PostgreSQL port
+- `MURAW_LASTFM_DB_MASTER_HOST` - PostgreSQL host
+- `MURAW_LASTFM_DB_MASTER_PORT` - PostgreSQL port
 - `MURAW_LASTFM_DB_NAME` - Database name
 - `MURAW_LASTFM_DB_SCHEMA` - Schema name
-- `MURAW_LASTFM_DB_USER_NAME` - Database user
-- `MURAW_LASTFM_DB_PASSWORD` - Database password
+- `MURAW_LASTFM_DB_WRITER_USERNAME` - Database user
+- `MURAW_LASTFM_DB_WRITER_PASSWORD` - Database password
 - `MURAW_LASTFM_DB_MIGRATIONS_PATH` - Path to migrations
 
 **Note**: User must have CREATE TABLE, ALTER TABLE, DROP TABLE permissions.
