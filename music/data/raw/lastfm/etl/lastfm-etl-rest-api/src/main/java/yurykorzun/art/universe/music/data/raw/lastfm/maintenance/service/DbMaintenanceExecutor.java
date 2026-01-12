@@ -78,12 +78,6 @@ public class DbMaintenanceExecutor {
 
     private void observeDatabaseOptimization() {
         observabilityService.observe(
-            "music.data.raw.lastfm.maintenance.db.vacuum",
-            this::performVacuum,
-            o -> o
-                .contextualName("lastfm-maintenance-db-vacuum")
-        );
-        observabilityService.observe(
             "music.data.raw.lastfm.maintenance.db.analyze",
             this::performAnalyze,
             o -> o
@@ -147,14 +141,6 @@ public class DbMaintenanceExecutor {
         }
 
         log.info("Completed unbind process for cleanup run {}", cleanupRunId);
-    }
-
-    private void performVacuum() {
-        log.info("Executing VACUUM");
-        long vacuumStart = System.currentTimeMillis();
-        jdbc.execute("VACUUM");
-        long vacuumDuration = System.currentTimeMillis() - vacuumStart;
-        log.info("VACUUM completed in {} ms", vacuumDuration);
     }
 
     private void performAnalyze() {
