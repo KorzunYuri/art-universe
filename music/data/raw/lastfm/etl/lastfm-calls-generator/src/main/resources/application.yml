@@ -38,9 +38,12 @@ server:
   port: ${MURAW_LASTFM_CALLS_GENERATOR_ACTUATOR_INTERNAL_PORT}
 
 lastfm:
-  dictionary:
-    sync:
-      enabled: true
+  calls:
+    generate:
+      scheduling:
+        pool:
+          size: 2
+          awaitTerminationSeconds: 300
   client:
     calls:
       generate:

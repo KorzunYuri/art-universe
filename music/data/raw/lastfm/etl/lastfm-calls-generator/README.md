@@ -49,7 +49,6 @@ Benefits or EntityScopedApiCallGenerator:
 
 - scheduler is invoked (fixed delay between executions)
 - LastfmApiCallGenerationScheduler.generateApiCalls() is invoked
-- TaskCoordinator.executeIfAllowed() is called to avoid running when DB is in active maintenance state
 - for each registered generator G bound to method M generator.createApiCalls() is called. Generator then:
   - queries stale entities / expired API calls, filtering out blacklisted entities
   - for each entity E creates LastfmApiCall object with reference to entity E, method M and request parameters P depending on method
