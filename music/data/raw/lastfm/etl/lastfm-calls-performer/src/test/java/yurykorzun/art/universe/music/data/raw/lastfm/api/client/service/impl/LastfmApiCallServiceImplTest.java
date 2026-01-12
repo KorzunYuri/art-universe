@@ -64,14 +64,14 @@ class LastfmApiCallServiceImplTest {
     }
 
     @Test
-    void triggerApiCalls_shouldProcessAllUnexpiredCalls_whenCalled() {
+    void executeApiCalls_shouldProcessAllUnexpiredCalls_whenCalled() {
         // given
         LastfmApiCall apiCall = createApiCall();
         when(apiCallRepository.findAllUnprocessedUnexpired()).thenReturn(List.of(apiCall));
         doNothing().when(service).makeApiCall(any(LastfmApiCall.class));
 
         // when
-        service.triggerApiCalls();
+        service.executeApiCalls();
 
         // then
         verify(service).makeApiCall(apiCall);

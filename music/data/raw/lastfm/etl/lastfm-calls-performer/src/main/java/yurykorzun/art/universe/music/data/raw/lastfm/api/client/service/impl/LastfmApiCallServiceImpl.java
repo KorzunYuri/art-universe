@@ -1,7 +1,6 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.api.client.service.impl;
 
 import com.google.common.util.concurrent.RateLimiter;
-import io.micrometer.observation.annotation.Observed;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
@@ -47,7 +46,7 @@ public class LastfmApiCallServiceImpl implements LastfmApiCallService {
     }
 
     @Override
-    public void triggerApiCalls() {
+    public void executeApiCalls() {
         //   TODO design complex priority logic to fit LastFm API calls rate limit
         Collection<LastfmApiCall> apiCalls = apiCallRepository.findAllUnprocessedUnexpired();
         apiCalls.forEach(apiCall -> {
