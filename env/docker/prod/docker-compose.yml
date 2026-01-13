@@ -121,6 +121,12 @@ services:
     depends_on:
       lastfm-liquibase-service:
         condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${MURAW_LASTFM_CALLS_GENERATOR_ACTUATOR_INTERNAL_PORT}/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 600s
     deploy:
       resources:
         limits:
@@ -155,6 +161,14 @@ services:
     depends_on:
       lastfm-liquibase-service:
         condition: service_completed_successfully
+      lastfm-calls-generator:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${MURAW_LASTFM_CALLS_PERFORMER_ACTUATOR_INTERNAL_PORT}/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 600s
     deploy:
       resources:
         limits:
@@ -189,6 +203,14 @@ services:
     depends_on:
       lastfm-liquibase-service:
         condition: service_completed_successfully
+      lastfm-calls-performer:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${MURAW_LASTFM_RESPONSE_PARSER_ACTUATOR_INTERNAL_PORT}/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 600s
     deploy:
       resources:
         limits:
