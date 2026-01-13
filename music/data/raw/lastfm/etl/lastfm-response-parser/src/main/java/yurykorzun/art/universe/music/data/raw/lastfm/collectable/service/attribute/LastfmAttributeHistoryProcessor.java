@@ -90,9 +90,12 @@ public class LastfmAttributeHistoryProcessor {
 
     @Transactional
     public BatchResult processBatch(String tableName, long offset, int batchSize) {
-        // Create a temporary table with batch IDs for this transaction
+        // Drop and recreate temporary table to ensure fresh batch IDs for this transaction
+        // Note: temp tables are session-scoped, so IF NOT EXISTS could reuse stale data
+        jdbcTemplate.execute("DROP TABLE IF EXISTS batch_ids");
+
         String createTempTableSql = String.format("""
-            CREATE TEMP TABLE IF NOT EXISTS batch_ids AS
+            CREATE TEMP TABLE batch_ids AS
             SELECT id FROM %s
             ORDER BY id
             LIMIT %d OFFSET %d
@@ -145,7 +148,7 @@ public class LastfmAttributeHistoryProcessor {
             ),
             expired_count AS (
                 UPDATE mu_raw_lastfm.attribute_history
-                SET     valid_till = (SELECT (valid_from - INTERVAL '1 day')::date FROM changed_records cr WHERE cr.existing_id = mu_raw_lastfm.attribute_history.id)
+                SET     valid_till = (SELECT (cr.valid_from - INTERVAL '1 day')::date FROM changed_records cr WHERE cr.existing_id = mu_raw_lastfm.attribute_history.id)
                 WHERE id IN (SELECT existing_id FROM changed_records WHERE existing_id IS NOT NULL)
                 RETURNING 1
             ),
