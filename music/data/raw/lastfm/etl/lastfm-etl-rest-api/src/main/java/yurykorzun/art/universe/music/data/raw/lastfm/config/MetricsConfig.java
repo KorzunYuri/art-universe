@@ -1,40 +1,34 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.config;
 
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.annotation.Timed;
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.MeterRegistry;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.event.EventListener;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import jakarta.annotation.PostConstruct;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.io.IOException;
-
-import lombok.extern.slf4j.Slf4j;
-import yurykorzun.art.universe.music.data.raw.lastfm.maintenance.service.TaskCoordinator;
 
 @Configuration
 @Slf4j
 public class MetricsConfig {
 
-    private static final String TASK_NAME_METRICS_UPDATE_ENTITY_COUNT = "metrics-update-entity-count";
-
     private final MeterRegistry registry;
     private final JdbcTemplate jdbcTemplate;
     private final ResourceLoader resourceLoader;
-
-    private final TaskCoordinator coordinator;
 
     // Metrics cache
     private final Map<String, AtomicInteger> entityCountsCache = new HashMap<>();
@@ -42,21 +36,18 @@ public class MetricsConfig {
     private final Map<String, AtomicInteger> apiResponseCountsCache = new HashMap<>();
     private final Map<String, AtomicInteger> tableSizesCache = new HashMap<>();
 
-    @Autowired
     public MetricsConfig(
             MeterRegistry registry,
             JdbcTemplate jdbcTemplate,
-            ResourceLoader resourceLoader,
-            TaskCoordinator coordinator
+            ResourceLoader resourceLoader
     ) {
         this.registry = registry;
         this.jdbcTemplate = jdbcTemplate;
         this.resourceLoader = resourceLoader;
-        this.coordinator = coordinator;
     }
 
-    @PostConstruct
-    public void init() {
+    @EventListener(ApplicationReadyEvent.class)
+    public void initMetrics() {
         log.info("Initializing custom metrics");
         
         // Register metrics
@@ -179,138 +170,127 @@ public class MetricsConfig {
             fixedRateString = "${metrics.update.entity-counts.interval:60000}"
     )
     public void updateEntityCountMetrics() {
-        coordinator.executeIfAllowed(
-                () -> {
-                    log.debug("Updating entity count metrics");
-                    try {
-                        String sql = loadSqlFromFile("entity_counts.sql");
-                        List<Map<String, Object>> results = jdbcTemplate.queryForList(sql);
+        log.debug("Updating entity count metrics");
+        try {
+            String sql = loadSqlFromFile("entity_counts.sql");
+            List<Map<String, Object>> results = jdbcTemplate.queryForList(sql);
 
-                        for (Map<String, Object> row : results) {
-                            String entityType = (String) row.get("entity_type");
-                            Number count = (Number) row.get("count");
+            for (Map<String, Object> row : results) {
+                String entityType = (String) row.get("entity_type");
+                Number count = (Number) row.get("count");
 
-                            AtomicInteger atomicCount = entityCountsCache.get(entityType);
-                            if (atomicCount != null) {
-                                atomicCount.set(count.intValue());
-                            }
-                        }
-                    } catch (Exception e) {
-                        log.error("Error updating entity count metrics", e);
-                    }
-                },
-                TASK_NAME_METRICS_UPDATE_ENTITY_COUNT
-        );
+                AtomicInteger atomicCount = entityCountsCache.get(entityType);
+                if (atomicCount != null) {
+                    atomicCount.set(count.intValue());
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error updating entity count metrics", e);
+        }
     }
-    
+
     @Timed(value = "music.data.raw.lastfm.metrics.update", extraTags = {"category", "api_calls"})
     @Scheduled(
-            fixedRateString = "${metrics.update.api-call-counts.interval:60000}"
+        fixedRateString = "${metrics.update.api-call-counts.interval:60000}"
     )
     public void updateApiCallCountMetrics() {
-        coordinator.executeIfAllowed(() -> {
-            log.debug("Updating API call count metrics");
-            try {
-                String sql = loadSqlFromFile("api_call_counts.sql");
-                List<Map<String, Object>> results = jdbcTemplate.queryForList(sql);
-                
-                for (Map<String, Object> row : results) {
-                    String apiCallType = (String) row.get("api_call_type");
-                    String status = (String) row.get("status");
-                    Number count = (Number) row.get("count");
-                    String key = apiCallType + ":" + status;
-                    
-                    AtomicInteger atomicCount = apiCallCountsCache.get(key);
-                    if (atomicCount != null) {
-                        atomicCount.set(count.intValue());
-                    }
+        log.debug("Updating API call count metrics");
+        try {
+            String sql = loadSqlFromFile("api_call_counts.sql");
+            List<Map<String, Object>> results = jdbcTemplate.queryForList(sql);
+
+            for (Map<String, Object> row : results) {
+                String apiCallType = (String) row.get("api_call_type");
+                String status = (String) row.get("status");
+                Number count = (Number) row.get("count");
+                String key = apiCallType + ":" + status;
+
+                AtomicInteger atomicCount = apiCallCountsCache.get(key);
+                if (atomicCount != null) {
+                    atomicCount.set(count.intValue());
                 }
-            } catch (Exception e) {
-                log.error("Error updating API call count metrics", e);
             }
-        }, "metrics-update-api-call-counts");
+        } catch (Exception e) {
+            log.error("Error updating API call count metrics", e);
+        }
     }
-    
+
     @Timed(value = "music.data.raw.lastfm.metrics.update", extraTags = {"category", "api_responses"})
     @Scheduled(
-            fixedRateString = "${metrics.update.api-response-counts.interval:60000}"
+        fixedRateString = "${metrics.update.api-response-counts.interval:60000}"
     )
     public void updateApiResponseCountMetrics() {
-        coordinator.executeIfAllowed(() -> {
-            log.debug("Updating API response count metrics");
-            try {
-                String sql = loadSqlFromFile("api_response_counts.sql");
-                List<Map<String, Object>> results = jdbcTemplate.queryForList(sql);
-                
-                for (Map<String, Object> row : results) {
-                    String apiCallType = (String) row.get("api_call_type");
-                    String status = (String) row.get("status");
-                    Number count = (Number) row.get("count");
-                    String key = apiCallType + ":" + status;
-                    
-                    AtomicInteger atomicCount = apiResponseCountsCache.get(key);
-                    if (atomicCount != null) {
-                        atomicCount.set(count.intValue());
-                    }
+        log.debug("Updating API response count metrics");
+        try {
+            String sql = loadSqlFromFile("api_response_counts.sql");
+            List<Map<String, Object>> results = jdbcTemplate.queryForList(sql);
+
+            for (Map<String, Object> row : results) {
+                String apiCallType = (String) row.get("api_call_type");
+                String status = (String) row.get("status");
+                Number count = (Number) row.get("count");
+                String key = apiCallType + ":" + status;
+
+                AtomicInteger atomicCount = apiResponseCountsCache.get(key);
+                if (atomicCount != null) {
+                    atomicCount.set(count.intValue());
                 }
-            } catch (Exception e) {
-                log.error("Error updating API response count metrics", e);
             }
-        }, "metrics-update-api-response-counts");
+        } catch (Exception e) {
+            log.error("Error updating API response count metrics", e);
+        }
     }
-    
+
     @Timed(value = "music.data.raw.lastfm.metrics.update", extraTags = {"category", "table_sizes"})
     @Scheduled(
-            fixedRateString = "${metrics.update.table-sizes.interval:300000}"
+        fixedRateString = "${metrics.update.table-sizes.interval:300000}"
     )
     public void updateTableSizeMetrics() {
-        coordinator.executeIfAllowed(() -> {
-            log.debug("Updating table size metrics");
-            try {
-                String sql = loadSqlFromFile("table_sizes.sql");
-                List<Map<String, Object>> results = jdbcTemplate.queryForList(sql);
-                
-                for (Map<String, Object> row : results) {
-                    String tableCategory = (String) row.get("table_category");
-                    String tableName = (String) row.get("table_name");
-                    Number sizeBytes = (Number) row.get("size_bytes");
-                    String metricType = (String) row.get("metric_type");
-                    
-                    if ("schema".equals(metricType)) {
-                        // Schema total size
-                        AtomicInteger atomicSize = tableSizesCache.get("schema_total");
-                        if (atomicSize != null) {
-                            atomicSize.set(sizeBytes.intValue());
-                        }
-                    } else if ("category".equals(metricType)) {
-                        // Category totals
-                        String key = "category:" + tableCategory;
-                        AtomicInteger atomicSize = tableSizesCache.get(key);
-                        if (atomicSize != null) {
-                            atomicSize.set(sizeBytes.intValue());
-                        }
-                    } else if ("table".equals(metricType) && tableName != null) {
-                        // Individual table sizes - register dynamically if not exists
-                        String key = "table:" + tableCategory + ":" + tableName;
-                        AtomicInteger atomicSize = tableSizesCache.get(key);
-                        if (atomicSize == null) {
-                            atomicSize = new AtomicInteger(0);
-                            tableSizesCache.put(key, atomicSize);
-                            
-                            // Register new gauge for this table
-                            Gauge.builder("lastfm.database.table_size_bytes", atomicSize::get)
-                                .tag("category", tableCategory)
-                                .tag("table", tableName)
-                                .description("Size of table " + tableName + " in bytes")
-                                .register(registry);
-                        }
+        log.debug("Updating table size metrics");
+        try {
+            String sql = loadSqlFromFile("table_sizes.sql");
+            List<Map<String, Object>> results = jdbcTemplate.queryForList(sql);
+
+            for (Map<String, Object> row : results) {
+                String tableCategory = (String) row.get("table_category");
+                String tableName = (String) row.get("table_name");
+                Number sizeBytes = (Number) row.get("size_bytes");
+                String metricType = (String) row.get("metric_type");
+
+                if ("schema".equals(metricType)) {
+                    // Schema total size
+                    AtomicInteger atomicSize = tableSizesCache.get("schema_total");
+                    if (atomicSize != null) {
                         atomicSize.set(sizeBytes.intValue());
                     }
+                } else if ("category".equals(metricType)) {
+                    // Category totals
+                    String key = "category:" + tableCategory;
+                    AtomicInteger atomicSize = tableSizesCache.get(key);
+                    if (atomicSize != null) {
+                        atomicSize.set(sizeBytes.intValue());
+                    }
+                } else if ("table".equals(metricType) && tableName != null) {
+                    // Individual table sizes - register dynamically if not exists
+                    String key = "table:" + tableCategory + ":" + tableName;
+                    AtomicInteger atomicSize = tableSizesCache.get(key);
+                    if (atomicSize == null) {
+                        atomicSize = new AtomicInteger(0);
+                        tableSizesCache.put(key, atomicSize);
+
+                        // Register new gauge for this table
+                        Gauge.builder("lastfm.database.table_size_bytes", atomicSize::get)
+                            .tag("category", tableCategory)
+                            .tag("table", tableName)
+                            .description("Size of table " + tableName + " in bytes")
+                            .register(registry);
+                    }
+                    atomicSize.set(sizeBytes.intValue());
                 }
-            } catch (Exception e) {
-                log.error("Error updating table size metrics", e);
             }
-        }, "metrics-update-table-sizes");
+        } catch (Exception e) {
+            log.error("Error updating table size metrics", e);
+        }
     }
 
     private String loadSqlFromFile(String filename) throws IOException {

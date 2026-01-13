@@ -55,9 +55,12 @@ music-data-master:
     batch-size: 1000
 
 lastfm:
-  dictionary:
-    sync:
-      enabled: true
+  etl:
+    rest-api:
+      scheduling:
+        pool:
+          size: 2
+          awaitTerminationSeconds: 900
   scheduling:
     maintenance:
       cron: "0 0 8 * * *"

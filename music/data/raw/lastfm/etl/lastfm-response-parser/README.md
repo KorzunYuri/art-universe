@@ -52,7 +52,6 @@ Having Processors Registry gives us the following benefits:
 
 - scheduler is invoked (fixed delay: 1 second between executions)
 - LastfmApiResponseProcessingScheduler.processResponses() is invoked
-- TaskCoordinator.executeIfAllowed() is called to avoid running when DB is in active maintenance state
 - for each pending response R with status `PENDING`:
   - JSON is deserialized to DTO type T based on API method
   - Registry routes DTO to appropriate processor P

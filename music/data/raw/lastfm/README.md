@@ -8,7 +8,6 @@ This directory contains documentation for LastFM raw data collection and ETL pip
 
 - [LastFM Models](lastfm-models/README.md) - JPA entities and DTOs for LastFM data
 - [LastFM Repositories](lastfm-repositories/README.md) - JPA repositories for LastFM entities
-- [Tasks Coordinator](etl/lastfm-tasks-coordinator/README.md) - Coordinate DB tasks during maintenance
 
 ### DB Schema migration modules
 

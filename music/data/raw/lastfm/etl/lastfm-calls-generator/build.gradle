@@ -7,7 +7,6 @@ archivesBaseName = 'lastfm-etl-calls-generator'
 dependencies {
     implementation project(':common:commons-observability')
     implementation project(':music:data:raw:lastfm:lastfm-repositories')
-    implementation project(':music:data:raw:lastfm:etl:lastfm-tasks-coordinator')
 
     // web for actuator endpoints
     implementation 'org.springframework.boot:spring-boot-starter-web'

@@ -96,7 +96,6 @@ class DbMaintenanceExecutorTest {
             LastfmEntityType.TAG.getCode(), 1000, false);
 
         // Verify database optimization was called
-        verify(jdbcTemplate).execute("VACUUM FULL");
         verify(jdbcTemplate).execute("ANALYZE");
     }
 

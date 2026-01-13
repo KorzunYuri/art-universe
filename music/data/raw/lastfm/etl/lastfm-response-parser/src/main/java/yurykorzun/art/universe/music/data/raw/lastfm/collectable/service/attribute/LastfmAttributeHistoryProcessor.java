@@ -2,54 +2,43 @@ package yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.attrib
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import yurykorzun.art.universe.music.data.raw.lastfm.maintenance.service.TaskCoordinator;
 
 @Component
 @Slf4j
 public class LastfmAttributeHistoryProcessor {
 
-    public static final String TASK_NAME_ATTRIBUTE_HISTORY_PROCESSING = "attribute-history-processing";
-
-    private final LastfmAttributeHistoryProcessor self;
-    private final TaskCoordinator coordinator;
     private final JdbcTemplate jdbcTemplate;
     @Getter
     private volatile String currentStagingTable = "mu_raw_lastfm_staging.stg_attribute_history_a";
 
-    public LastfmAttributeHistoryProcessor(
-            TaskCoordinator coordinator,
-            JdbcTemplate jdbcTemplate,
-            @Lazy LastfmAttributeHistoryProcessor self
-    ) {
-        this.coordinator = coordinator;
+    public LastfmAttributeHistoryProcessor(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-        this.self = self;
     }
 
-    @Scheduled(fixedDelayString = "${lastfm.scheduling.attribute-history.fixedDelaySecs:30}", timeUnit = java.util.concurrent.TimeUnit.SECONDS)
-    public void triggerAttributeHistoryProcessing() {
-        coordinator.executeIfAllowed(() -> {
-            log.info("start attribute history processing");
-            
-            // switch tables
-            String processingTable = currentStagingTable;
-            currentStagingTable = processingTable.equals("mu_raw_lastfm_staging.stg_attribute_history_a") 
-                ? "mu_raw_lastfm_staging.stg_attribute_history_b" 
-                : "mu_raw_lastfm_staging.stg_attribute_history_a";
-                
-            log.debug("Switched to writing to {}, processing {}", currentStagingTable, processingTable);
-            
-            self.processStagingRecords(processingTable);
-            log.info("finished attribute history processing");
-        }, TASK_NAME_ATTRIBUTE_HISTORY_PROCESSING);
-    }
-
+    @Scheduled(
+        fixedDelayString = "${lastfm.scheduling.attribute-history.fixedDelaySecs}",
+        timeUnit = java.util.concurrent.TimeUnit.SECONDS
+    )
     @Transactional
+    public void triggerAttributeHistoryProcessing() {
+        log.info("start attribute history processing");
+
+        // switch tables
+        String processingTable = currentStagingTable;
+        currentStagingTable = processingTable.equals("mu_raw_lastfm_staging.stg_attribute_history_a")
+            ? "mu_raw_lastfm_staging.stg_attribute_history_b"
+            : "mu_raw_lastfm_staging.stg_attribute_history_a";
+
+        log.debug("Switched to writing to {}, processing {}", currentStagingTable, processingTable);
+
+        processStagingRecords(processingTable);
+        log.info("finished attribute history processing");
+    }
+
     public void processStagingRecords(String tableName) {
         Long count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM " + tableName, Long.class);
         if (count == null || count == 0) {

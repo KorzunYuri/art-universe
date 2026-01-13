@@ -10,7 +10,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.attribut
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.attribute.LastfmAttributeHistoryRecord;
 import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.LastfmJpaTestHelper;
-import yurykorzun.art.universe.music.data.raw.lastfm.config.TaskCoordinationTestAutoConfiguration;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -20,7 +19,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @Import({
     LastfmAttributeHistoryProcessor.class,
     LastfmAttributeHistoryServiceImpl.class,
-    TaskCoordinationTestAutoConfiguration.class,
 })
 class LastfmAttributeHistoryProcessorTest extends LastfmJpaTestHelper {
 
@@ -272,7 +270,7 @@ class LastfmAttributeHistoryProcessorTest extends LastfmJpaTestHelper {
         // Given
         String initialTable = processor.getCurrentStagingTable();
         
-        // When - вызываем processStagingRecords напрямую, чтобы избежать TaskCoordinator
+        // When
         processor.processStagingRecords(initialTable);
         
         // Manually switch tables to simulate the behavior
@@ -280,7 +278,7 @@ class LastfmAttributeHistoryProcessorTest extends LastfmJpaTestHelper {
             ? "mu_raw_lastfm_staging.attribute_history_staging_b" 
             : "mu_raw_lastfm_staging.attribute_history_staging_a";
             
-        // Then - проверяем что таблицы разные
+        // Then - check that tables are different
         assertNotEquals(initialTable, expectedNewTable);
         assertTrue(expectedNewTable.contains("staging_a") || expectedNewTable.contains("staging_b"));
     }

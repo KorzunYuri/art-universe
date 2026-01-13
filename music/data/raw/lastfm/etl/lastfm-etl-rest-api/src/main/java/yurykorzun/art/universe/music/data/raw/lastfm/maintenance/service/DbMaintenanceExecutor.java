@@ -78,29 +78,11 @@ public class DbMaintenanceExecutor {
 
     private void observeDatabaseOptimization() {
         observabilityService.observe(
-            "music.data.raw.lastfm.maintenance.db.optimization",
-            this::performDatabaseOptimization,
+            "music.data.raw.lastfm.maintenance.db.analyze",
+            this::performAnalyze,
             o -> o
-                .contextualName("lastfm-maintenance-db-optimization")
+                .contextualName("lastfm-maintenance-db-analyze")
         );
-    }
-
-    private void performDatabaseOptimization() {
-        log.info("Executing VACUUM FULL");
-        long vacuumStart = System.currentTimeMillis();
-        jdbc.execute("VACUUM FULL");
-        long vacuumDuration = System.currentTimeMillis() - vacuumStart;
-        log.info("VACUUM FULL completed in {} ms", vacuumDuration);
-
-        log.info("Executing ANALYZE");
-        long analyzeStart = System.currentTimeMillis();
-        jdbc.execute("ANALYZE");
-        long analyzeDuration = System.currentTimeMillis() - analyzeStart;
-        log.info("ANALYZE completed in {} ms", analyzeDuration);
-
-        // cannot reindex - ownership required
-        // jdbc.execute("REINDEX DATABASE " +
-        //     jdbc.queryForObject("SELECT current_database()", String.class));
     }
 
     private Long cleanupEntity(LastfmEntityType entityType, int popularityAttrThreshold) {
@@ -161,4 +143,11 @@ public class DbMaintenanceExecutor {
         log.info("Completed unbind process for cleanup run {}", cleanupRunId);
     }
 
+    private void performAnalyze() {
+        log.info("Executing ANALYZE");
+        long analyzeStart = System.currentTimeMillis();
+        jdbc.execute("ANALYZE");
+        long analyzeDuration = System.currentTimeMillis() - analyzeStart;
+        log.info("ANALYZE completed in {} ms", analyzeDuration);
+    }
 }

@@ -22,10 +22,6 @@ COPY music/data/raw/lastfm/lastfm-models/src/ music/data/raw/lastfm/lastfm-model
 COPY music/data/raw/lastfm/lastfm-repositories/build.gradle music/data/raw/lastfm/lastfm-repositories/
 COPY music/data/raw/lastfm/lastfm-repositories/src/ music/data/raw/lastfm/lastfm-repositories/src/
 
-# Copy lastfm-tasks-coordinator module
-COPY music/data/raw/lastfm/etl/lastfm-tasks-coordinator/build.gradle music/data/raw/lastfm/etl/lastfm-tasks-coordinator/
-COPY music/data/raw/lastfm/etl/lastfm-tasks-coordinator/src/ music/data/raw/lastfm/etl/lastfm-tasks-coordinator/src/
-
 # Copy current module
 COPY music/data/raw/lastfm/etl/lastfm-calls-performer/build.gradle music/data/raw/lastfm/etl/lastfm-calls-performer/
 COPY music/data/raw/lastfm/etl/lastfm-calls-performer/src/ music/data/raw/lastfm/etl/lastfm-calls-performer/src/
