@@ -7,6 +7,8 @@ spring:
       - optional:classpath:commons-context-${spring.profiles.active}.yml
       - classpath:commons-observability.yml
       - optional:classpath:commons-observability-${spring.profiles.active}.yml
+  lifecycle:
+    timeout-per-shutdown-phase: 300s
   datasource:
     driverClassName: org.postgresql.Driver
     # Use master for write operations with DM user (falls back to default host for compatibility)
