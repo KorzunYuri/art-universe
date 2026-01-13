@@ -1,9 +1,7 @@
 package yurykorzun.art.universe.common;
 
-
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-
 
 public class CodedRegistry {
 

@@ -1,5 +1,7 @@
 package yurykorzun.art.universe.common;
 
+import yurykorzun.art.universe.common.domain.converter.CodedConverter;
+
 /**
  * <p>Interface  for enums persistence.</p>
  *

@@ -2,10 +2,10 @@ package yurykorzun.art.universe.music.data.master.service;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import yurykorzun.art.universe.common.dto.lookup.BaseBatchLookupRequestDTO;
-import yurykorzun.art.universe.common.dto.lookup.BatchLookupResponseDTO;
-import yurykorzun.art.universe.common.dto.lookup.LookupRequestDTO;
-import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
+import yurykorzun.art.universe.common.domain.dto.lookup.BaseBatchLookupRequestDTO;
+import yurykorzun.art.universe.common.domain.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.common.domain.dto.lookup.LookupRequestDTO;
+import yurykorzun.art.universe.common.domain.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.*;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;

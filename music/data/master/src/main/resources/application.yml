@@ -1,6 +1,6 @@
 spring:
   application:
-    name: music-universe-data-service
+    name: music-data-master-rest-api
   config:
     import:
       - classpath:commons-context.yml

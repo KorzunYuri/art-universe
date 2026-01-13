@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import yurykorzun.art.universe.common.persistence.entity.BaseEntity;
+import yurykorzun.art.universe.common.domain.entity.BaseEntity;
 
 /**
  * Entity representing a track in a generation with details

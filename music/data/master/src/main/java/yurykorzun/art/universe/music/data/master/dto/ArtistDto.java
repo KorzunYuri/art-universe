@@ -4,7 +4,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import yurykorzun.art.universe.common.dto.BaseEntityDto;
+import yurykorzun.art.universe.common.domain.dto.BaseEntityDto;
 
 @Data
 @SuperBuilder

@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
-import yurykorzun.art.universe.common.persistence.entity.BaseEntity;
+import yurykorzun.art.universe.common.domain.entity.BaseEntity;
 
 /**
  * Entity representing a track approved for quiz participation

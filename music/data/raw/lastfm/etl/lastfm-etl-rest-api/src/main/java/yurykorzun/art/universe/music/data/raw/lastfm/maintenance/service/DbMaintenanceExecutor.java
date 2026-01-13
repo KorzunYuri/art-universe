@@ -7,7 +7,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.common.CodedRegistry;
 import yurykorzun.art.universe.common.observability.util.ObservabilityService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.LastfmEntityType;
 
 import java.util.List;
 import java.util.Map;

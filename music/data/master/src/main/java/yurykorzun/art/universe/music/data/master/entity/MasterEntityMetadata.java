@@ -1,7 +1,7 @@
 package yurykorzun.art.universe.music.data.master.entity;
 
 import lombok.Getter;
-import yurykorzun.art.universe.common.persistence.entity.BaseEntityMetadata;
+import yurykorzun.art.universe.common.domain.entity.BaseEntityMetadata;
 
 /**
  * Metadata for a master entity, containing information about table names and field names.

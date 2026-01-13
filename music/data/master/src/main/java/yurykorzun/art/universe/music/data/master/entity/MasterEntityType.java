@@ -2,9 +2,8 @@ package yurykorzun.art.universe.music.data.master.entity;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import yurykorzun.art.universe.common.Coded;
 import yurykorzun.art.universe.common.CodedRegistry;
-import yurykorzun.art.universe.common.persistence.entity.EntityType;
+import yurykorzun.art.universe.common.domain.entity.EntityType;
 
 import java.util.Arrays;
 

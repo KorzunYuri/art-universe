@@ -2,7 +2,7 @@ package yurykorzun.art.universe.music.quiz.service.step.process.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
-import yurykorzun.art.universe.common.persistence.util.DatabaseUtils;
+import yurykorzun.art.universe.common.persistence.DatabaseUtils;
 import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
 import yurykorzun.art.universe.music.quiz.dto.step.config.CategoryWeight;
 import yurykorzun.art.universe.music.quiz.dto.step.config.WhitelistFilterStepConfig;

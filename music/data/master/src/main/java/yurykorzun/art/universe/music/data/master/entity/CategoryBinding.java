@@ -3,7 +3,7 @@ package yurykorzun.art.universe.music.data.master.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import yurykorzun.art.universe.common.persistence.entity.BaseEntity;
+import yurykorzun.art.universe.common.domain.entity.BaseEntity;
 
 @Entity(name = "category_binding")
 @SuperBuilder

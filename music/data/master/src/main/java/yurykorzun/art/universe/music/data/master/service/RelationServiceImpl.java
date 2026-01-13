@@ -12,11 +12,11 @@ import yurykorzun.art.universe.music.data.master.dto.relation.TargetEntityBindin
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
-import yurykorzun.art.universe.music.data.master.relation.RelationBindingEntity;
-import yurykorzun.art.universe.music.data.master.relation.RelationEntity;
-import yurykorzun.art.universe.music.data.master.relation.RelationRegistry;
+import yurykorzun.art.universe.music.data.master.entity.relation.RelationBindingEntity;
+import yurykorzun.art.universe.music.data.master.entity.relation.RelationEntity;
+import yurykorzun.art.universe.music.data.master.entity.relation.RelationRegistry;
 import yurykorzun.art.universe.music.data.master.entity.MasterEntityMetadata;
-import yurykorzun.art.universe.music.data.master.relation.RelationMetadata;
+import yurykorzun.art.universe.music.data.master.entity.relation.RelationMetadata;
 
 import java.util.ArrayList;
 import java.util.Collections;

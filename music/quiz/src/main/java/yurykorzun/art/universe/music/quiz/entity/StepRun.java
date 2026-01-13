@@ -5,7 +5,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import yurykorzun.art.universe.common.persistence.entity.BaseEntity;
+import yurykorzun.art.universe.common.domain.entity.BaseEntity;
 
 import java.time.Instant;
 

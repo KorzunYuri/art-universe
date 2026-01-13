@@ -1,6 +1,8 @@
 package yurykorzun.art.universe.common.dto.lookup;
 
 import org.junit.jupiter.api.Test;
+import yurykorzun.art.universe.common.domain.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.common.domain.dto.lookup.LookupResultDTO;
 
 import java.util.HashMap;
 import java.util.List;
