@@ -12,10 +12,10 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 @Profile("!test")
 public class SchedulingConfig {
 
-    @Value("${lastfm.response.parser.scheduling.pool.size}")
+    @Value("${lastfm.scheduling.pool.size}")
     private Integer taskSchedulerPoolSize;
 
-    @Value("${lastfm.response.parser.scheduling.pool.awaitTerminationSeconds}")
+    @Value("${lastfm.scheduling.pool.await-termination-secs}")
     private Integer taskAwaitTerminationSeconds;
 
     @Bean(destroyMethod = "shutdown")

@@ -19,7 +19,7 @@ public class LastfmTrackGetInfoApiCallGenerator extends LastfmTrackApiCallGenera
 
     private final LastfmTrackService trackService;
 
-    @Value("${lastfm.client.methods.track.getInfo.dueDurationDays}")
+    @Value("${lastfm.tasks.calls-generate.due-duration-days.track-get-info}")
     private int dueDurationDays;
 
     @Value("${lastfm.threshold.track.listenersCount:1000}")

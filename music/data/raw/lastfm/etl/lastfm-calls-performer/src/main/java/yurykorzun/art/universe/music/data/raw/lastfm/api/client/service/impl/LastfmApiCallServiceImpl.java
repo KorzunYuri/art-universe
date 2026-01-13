@@ -35,7 +35,7 @@ public class LastfmApiCallServiceImpl implements LastfmApiCallService {
             LastfmApiResponseService responseService,
             LastfmApiClient apiClient,
             @Lazy LastfmApiCallServiceImpl self,
-            @Value("${lastfm.client.calls.callsPerSec}") double apiClientCallsPerSec
+            @Value("${lastfm.tasks.calls-perform.calls-per-sec}") double apiClientCallsPerSec
     ) {
         this.apiCallRepository = apiCallRepository;
         this.responseService = responseService;
@@ -94,10 +94,10 @@ public class LastfmApiCallServiceImpl implements LastfmApiCallService {
 
     @Retryable(
             retryFor = {Exception.class},
-            maxAttemptsExpression = "${lastfm.client.calls.retry.max-attempts}",
+            maxAttemptsExpression = "${lastfm.tasks.calls-perform.retry.max-attempts}",
             backoff = @Backoff(
-                    delayExpression = "${lastfm.client.calls.retry.initial-delay-ms}",
-                    multiplierExpression = "${lastfm.client.calls.retry.multiplier}"
+                    delayExpression = "${lastfm.tasks.calls-perform.retry.initial-delay-ms}",
+                    multiplierExpression = "${lastfm.tasks.calls-perform.retry.multiplier}"
             )
     )
     protected String makeApiCallWithRetry(LastfmApiCall call) {

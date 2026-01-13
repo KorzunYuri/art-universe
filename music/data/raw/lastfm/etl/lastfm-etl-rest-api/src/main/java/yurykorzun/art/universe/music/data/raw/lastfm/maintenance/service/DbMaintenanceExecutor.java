@@ -20,13 +20,13 @@ public class DbMaintenanceExecutor {
     private final MusicDataIntegrationService musicDataIntegrationService;
     private final ObservabilityService observabilityService;
 
-    @Value("${lastfm.threshold.artist.listenersCount}")
+    @Value("${lastfm.tasks.maintenance.db.thresholds.artist.listeners-count}")
     private int artistThreshold;
-    @Value("${lastfm.threshold.album.playCount}")
+    @Value("${lastfm.tasks.maintenance.db.thresholds.album.play-count}")
     private int albumThreshold;
-    @Value("${lastfm.threshold.track.playCount}")
+    @Value("${lastfm.tasks.maintenance.db.thresholds.track.play-count}")
     private int trackThreshold;
-    @Value("${lastfm.threshold.tag.usageCount}")
+    @Value("${lastfm.tasks.maintenance.db.thresholds.tag.usage-count}")
     private int tagThreshold;
 
     public DbMaintenanceExecutor(

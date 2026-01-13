@@ -29,7 +29,7 @@ public class LastfmAttributeHistoryProcessor {
     }
 
     @Scheduled(
-        fixedDelayString = "${lastfm.scheduling.attribute-history.fixedDelaySecs}",
+        fixedDelayString = "${lastfm.scheduling.attribute-history.fixed-delay-secs}",
         timeUnit = java.util.concurrent.TimeUnit.SECONDS
     )
     @Transactional

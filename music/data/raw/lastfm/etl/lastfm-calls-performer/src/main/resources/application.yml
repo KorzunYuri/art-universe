@@ -40,18 +40,18 @@ server:
   port: ${MURAW_LASTFM_CALLS_PERFORMER_ACTUATOR_INTERNAL_PORT}
 
 lastfm:
-  calls:
-    performer:
-      scheduling:
-        pool:
-          size: 2
-          awaitTerminationSeconds: 300
-  client:
-    baseUrl: "http://ws.audioscrobbler.com/2.0/"
-    apikey: ${MURAW_LASTFM_API_KEY}
-    calls:
-      fixedDelaySecs: 1
-      callsPerSec: 1.0
+  api:
+    base-url: "http://ws.audioscrobbler.com/2.0/"
+    key: ${MURAW_LASTFM_API_KEY}
+  scheduling:
+    pool:
+      size: 2
+      await-termination-secs: 300
+    calls-perform:
+      fixed-delay-secs: 1
+  tasks:
+    calls-perform:
+      calls-per-sec: 1.0
       retry:
         max-attempts: 3
         initial-delay-ms: 500

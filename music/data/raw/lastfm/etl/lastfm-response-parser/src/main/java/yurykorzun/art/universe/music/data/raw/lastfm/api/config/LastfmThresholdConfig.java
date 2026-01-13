@@ -5,7 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConfigurationProperties(prefix = "lastfm.threshold")
+@ConfigurationProperties(prefix = "lastfm.tasks.response-parse.thresholds")
 @Data
 public class LastfmThresholdConfig {
 

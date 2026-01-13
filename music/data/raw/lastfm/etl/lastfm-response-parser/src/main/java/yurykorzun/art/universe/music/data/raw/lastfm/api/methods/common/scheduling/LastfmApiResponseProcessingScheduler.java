@@ -19,7 +19,7 @@ public class LastfmApiResponseProcessingScheduler {
     }
 
     @Scheduled(
-        fixedDelayString = "${lastfm.scheduling.parsing.fixedDelaySecs}",
+        fixedDelayString = "${lastfm.scheduling.response-parse.fixed-delay-secs}",
         timeUnit = TimeUnit.SECONDS
     )
     public void triggerResponsesProcessing() {

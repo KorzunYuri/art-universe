@@ -167,7 +167,7 @@ public class MetricsConfig {
     
     @Timed(value = "music.data.raw.lastfm.metrics.update", extraTags = {"category", "entities"})
     @Scheduled(
-            fixedRateString = "${metrics.update.entity-counts.interval:60000}"
+            fixedRateString = "${lastfm.metrics.update.entity-counts.interval:60000}"
     )
     public void updateEntityCountMetrics() {
         log.debug("Updating entity count metrics");
@@ -191,7 +191,7 @@ public class MetricsConfig {
 
     @Timed(value = "music.data.raw.lastfm.metrics.update", extraTags = {"category", "api_calls"})
     @Scheduled(
-        fixedRateString = "${metrics.update.api-call-counts.interval:60000}"
+        fixedRateString = "${lastfm.metrics.update.api-call-counts.interval:60000}"
     )
     public void updateApiCallCountMetrics() {
         log.debug("Updating API call count metrics");
@@ -217,7 +217,7 @@ public class MetricsConfig {
 
     @Timed(value = "music.data.raw.lastfm.metrics.update", extraTags = {"category", "api_responses"})
     @Scheduled(
-        fixedRateString = "${metrics.update.api-response-counts.interval:60000}"
+        fixedRateString = "${lastfm.metrics.update.api-response-counts.interval:60000}"
     )
     public void updateApiResponseCountMetrics() {
         log.debug("Updating API response count metrics");
@@ -243,7 +243,7 @@ public class MetricsConfig {
 
     @Timed(value = "music.data.raw.lastfm.metrics.update", extraTags = {"category", "table_sizes"})
     @Scheduled(
-        fixedRateString = "${metrics.update.table-sizes.interval:300000}"
+        fixedRateString = "${lastfm.metrics.update.table-sizes.interval:300000}"
     )
     public void updateTableSizeMetrics() {
         log.debug("Updating table size metrics");

@@ -29,9 +29,9 @@ public class LastfmTagTopTagsApiCallGenerator extends BaseLastfmApiCallGenerator
     private final LastfmDataSnapshotService snapshotService;
     private final LastfmAttributeSnapshotService attributeSnapshotService;
 
-    @Value("${lastfm.client.methods.tag.topTags.recordsLimit}")
+    @Value("${lastfm.tasks.calls-generate.records-limit.tag-top-tags}")
     private int recordsLimit;
-    @Value("${lastfm.client.methods.tag.topTags.dueDurationDays}")
+    @Value("${lastfm.tasks.calls-generate.due-duration-days.tag-top-tags}")
     private int dueDurationDays;
 
     public LastfmTagTopTagsApiCallGenerator(

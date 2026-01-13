@@ -17,7 +17,7 @@ import java.util.Map;
 @Slf4j
 public class LastfmArtistTopTracksApiCallGenerator extends LastfmArtistApiCallGenerator {
 
-    @Value("${lastfm.client.methods.artist.topTracks.dueDurationDays}")
+    @Value("${lastfm.tasks.calls-generate.due-duration-days.artist-top-tracks}")
     private int dueDurationDays;
 
     public LastfmArtistTopTracksApiCallGenerator(

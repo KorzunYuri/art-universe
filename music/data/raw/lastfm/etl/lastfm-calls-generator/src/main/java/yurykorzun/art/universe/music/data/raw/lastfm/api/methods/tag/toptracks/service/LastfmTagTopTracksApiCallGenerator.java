@@ -28,10 +28,10 @@ public class LastfmTagTopTracksApiCallGenerator extends LastfmTagApiCallGenerato
 
     private final LastfmAttributeSnapshotService attributeSnapshotService;
 
-    @Value("${lastfm.client.methods.tag.topTracks.dueDurationDays}")
+    @Value("${lastfm.tasks.calls-generate.due-duration-days.tag-top-tracks}")
     private int dueDurationDays;
 
-    @Value("${lastfm.client.methods.tag.topTracks.usageToPageRatio}")
+    @Value("${lastfm.tasks.calls-generate.usage-to-page-ratio.tag-top-tracks}")
     private int usageToPageRatio;
 
     public LastfmTagTopTracksApiCallGenerator(

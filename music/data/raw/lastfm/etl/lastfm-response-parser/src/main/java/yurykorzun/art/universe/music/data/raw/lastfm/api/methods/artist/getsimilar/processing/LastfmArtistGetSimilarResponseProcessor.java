@@ -46,7 +46,7 @@ public class LastfmArtistGetSimilarResponseProcessor extends LastfmApiResponsePr
     private final LastfmAttributeHistoryService attributeHistoryService;
     private final DtoQualityService dtoQualityService;
 
-    @Value("${lastfm.client.methods.artist.getSimilar.artistMatchThreshold}")
+    @Value("${lastfm.tasks.response-parse.methods.artist.get-similar.artist-match-threshold}")
     private float artistMatchThreshold;
 
     private static final List<EntityAttributeHandler<LastfmArtist, ?, ArtistGetSimilarArtistDto>> artistAttrHandlers;

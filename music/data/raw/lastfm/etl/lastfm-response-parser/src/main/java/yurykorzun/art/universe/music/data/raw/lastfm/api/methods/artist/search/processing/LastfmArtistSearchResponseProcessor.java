@@ -37,7 +37,7 @@ public class LastfmArtistSearchResponseProcessor extends LastfmApiResponseProces
     private final LastfmArtistService artistService;
     private final EntityFactory<LastfmArtist, ArtistSearchArtistDto> artistFactory;
 
-    @Value("${lastfm.client.methods.artist.search.artistSimilarityThreshold}")
+    @Value("${lastfm.tasks.response-parse.methods.artist.search.artist-similarity-threshold}")
     private double artistSimilarityThreshold;
 
     private static final List<EntityAttributeHandler<LastfmArtist, ?, ArtistSearchArtistDto>> artistAttrHandlers;

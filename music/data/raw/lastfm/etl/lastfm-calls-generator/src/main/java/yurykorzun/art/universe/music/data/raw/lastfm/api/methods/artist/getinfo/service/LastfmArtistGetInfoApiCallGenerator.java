@@ -19,7 +19,7 @@ public class LastfmArtistGetInfoApiCallGenerator extends LastfmArtistApiCallGene
 
     private final LastfmArtistService artistService;
 
-    @Value("${lastfm.client.methods.artist.getInfo.dueDurationDays}")
+    @Value("${lastfm.tasks.calls-generate.due-duration-days.artist-get-info}")
     private int dueDurationDays;
 
     public LastfmArtistGetInfoApiCallGenerator(

@@ -17,15 +17,13 @@ import java.util.List;
 @Slf4j
 public class MusicDataIntegrationService {
 
-    @Value("${music-data-master.unbind.batch-size}")
     private final int masterDataUnbindBatchSize;
-    
     private final RestClient restClient;
 
     public MusicDataIntegrationService(
         RestClient.Builder restClientBuilder,
-        @Value("${music-data-master.base-url}") String musicDataBaseUrl,
-        @Value("${music-data-master.unbind.batch-size}") int masterDataUnbindBatchSize
+        @Value("${master.base-url}") String musicDataBaseUrl,
+        @Value("${lastfm.tasks.maintenance.db.unbind.batch-size}") int masterDataUnbindBatchSize
     ) {
         if (masterDataUnbindBatchSize < 10) {
             throw new IllegalArgumentException(String.format("Too small batch size %d, expected at least %d", masterDataUnbindBatchSize, 10));

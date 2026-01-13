@@ -18,7 +18,7 @@ public class LastfmApiCallExecutionScheduler {
     }
 
     @Scheduled(
-        fixedDelayString  = "${lastfm.client.calls.fixedDelaySecs}",
+        fixedDelayString  = "${lastfm.scheduling.calls-perform.fixed-delay-secs}",
         timeUnit = TimeUnit.SECONDS
     )
     public void triggerApiCallsExecution() {

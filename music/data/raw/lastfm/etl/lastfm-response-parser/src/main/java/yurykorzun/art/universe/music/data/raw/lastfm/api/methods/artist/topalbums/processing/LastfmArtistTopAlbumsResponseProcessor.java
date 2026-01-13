@@ -46,7 +46,7 @@ public class LastfmArtistTopAlbumsResponseProcessor extends LastfmApiResponsePro
     private final LastfmApiDtoProcessingService dtoProcessingService;
     private final DtoQualityService dtoQualityService;
 
-    @Value("${lastfm.client.methods.artist.topAlbums.albumPlayCountThreshold:10000}")
+    @Value("${lastfm.tasks.response-parse.methods.artist.top-albums.album-play-count-threshold}")
     private long albumPlayCountThreshold;
 
     // Artist attribute handlers

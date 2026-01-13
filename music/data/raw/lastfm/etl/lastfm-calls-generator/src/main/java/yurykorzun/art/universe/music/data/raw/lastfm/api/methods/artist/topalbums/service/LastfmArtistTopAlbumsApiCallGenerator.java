@@ -13,7 +13,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.collectable.service.LastfmD
 @Slf4j
 public class LastfmArtistTopAlbumsApiCallGenerator extends LastfmArtistApiCallGenerator {
 
-    @Value("${lastfm.client.methods.artist.topAlbums.dueDurationDays}")
+    @Value("${lastfm.tasks.calls-generate.due-duration-days.artist-top-albums}")
     private int dueDurationDays;
 
     protected LastfmArtistTopAlbumsApiCallGenerator(
