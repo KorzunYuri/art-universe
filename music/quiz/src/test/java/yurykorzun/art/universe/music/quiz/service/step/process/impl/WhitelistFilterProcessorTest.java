@@ -8,15 +8,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import yurykorzun.art.universe.common.persistence.util.DatabaseUtils;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.config.CommonTestConfig;
+import yurykorzun.art.universe.common.persistence.DatabaseUtils;
+import yurykorzun.art.universe.common.config.CommonTestConfig;
 import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
 import yurykorzun.art.universe.music.quiz.dto.step.stats.WhitelistFilterStats;
 import yurykorzun.art.universe.music.quiz.entity.Step;
 import yurykorzun.art.universe.music.quiz.entity.StepRun;
 import yurykorzun.art.universe.music.quiz.entity.StepType;
 import yurykorzun.art.universe.music.quiz.service.step.process.StepProcessorRegistry;
-import yurykorzun.art.universe.music.quiz.service.step.process.impl.WhitelistFilterProcessor;
 
 import java.util.List;
 

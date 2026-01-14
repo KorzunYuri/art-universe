@@ -2,11 +2,11 @@ package yurykorzun.art.universe.music.data.master.service.lookup;
 
 import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
-import yurykorzun.art.universe.common.dto.lookup.LookupResultDTO;
-import yurykorzun.art.universe.common.service.lookup.SqlQueryBuilder;
+import yurykorzun.art.universe.common.domain.dto.lookup.LookupResultDTO;
+import yurykorzun.art.universe.common.domain.service.lookup.SqlQueryBuilder;
 import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedBatchLookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupRequestDTO;
-import yurykorzun.art.universe.common.dto.lookup.BatchLookupResponseDTO;
+import yurykorzun.art.universe.common.domain.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.music.data.master.entity.MasterEntityMetadata;
 import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 

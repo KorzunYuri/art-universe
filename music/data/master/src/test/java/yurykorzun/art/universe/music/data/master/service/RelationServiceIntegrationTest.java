@@ -18,7 +18,7 @@ import yurykorzun.art.universe.music.data.master.entity.CategoryBinding;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
-import yurykorzun.art.universe.music.data.master.relation.RelationRegistry;
+import yurykorzun.art.universe.music.data.master.entity.relation.RelationRegistry;
 
 import java.util.Arrays;
 import java.util.Collections;

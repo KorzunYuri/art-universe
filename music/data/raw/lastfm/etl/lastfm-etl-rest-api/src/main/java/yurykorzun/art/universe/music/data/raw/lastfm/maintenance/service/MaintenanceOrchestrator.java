@@ -35,7 +35,7 @@ public class MaintenanceOrchestrator {
      * Scheduled maintenance trigger via cron.
      * Delegates to requestMaintenance() for actual execution.
      */
-    @Scheduled(cron = "${lastfm.scheduling.maintenance.cron}")
+    @Scheduled(cron = "${lastfm.scheduling.maintenance.db.cron}")
     public void scheduledMaintenance() {
         log.info("scheduled maintenance triggered");
         requestMaintenance();

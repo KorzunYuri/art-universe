@@ -4,7 +4,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import yurykorzun.art.universe.common.dto.lookup.BatchLookupRequestDTO;
+import yurykorzun.art.universe.common.domain.dto.lookup.BatchLookupRequestDTO;
 
 @Data
 @SuperBuilder

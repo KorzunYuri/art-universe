@@ -5,7 +5,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import yurykorzun.art.universe.music.data.master.common.archetypes.BaseMasterDataJpaTest;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
-import yurykorzun.art.universe.music.data.master.entity.*;
+import yurykorzun.art.universe.music.data.master.entity.Album;
+import yurykorzun.art.universe.music.data.master.entity.AlbumBinding;
+import yurykorzun.art.universe.music.data.master.entity.Artist;
+import yurykorzun.art.universe.music.data.master.entity.DataSource;
 
 import java.util.Arrays;
 import java.util.List;

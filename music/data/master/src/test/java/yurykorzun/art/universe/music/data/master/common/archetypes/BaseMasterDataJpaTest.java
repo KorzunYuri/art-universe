@@ -7,7 +7,7 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import yurykorzun.art.universe.common.test.db.PostgresDynamicPropertyConfigurer;
 import yurykorzun.art.universe.common.test.db.PostgresTestContainer;
-import yurykorzun.art.universe.music.data.raw.lastfm.common.archetypes.BaseTest;
+import yurykorzun.art.universe.common.archetypes.BaseTest;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)

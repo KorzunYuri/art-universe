@@ -52,7 +52,7 @@ Benefits or EntityScopedApiCallGenerator:
 - for each registered generator G bound to method M generator.createApiCalls() is called. Generator then:
   - queries stale entities / expired API calls, filtering out blacklisted entities
   - for each entity E creates LastfmApiCall object with reference to entity E, method M and request parameters P depending on method
-- `lastfm.client.calls.generate.fixedDelaySecs` seconds passes until invoking scheduler again
+- `lastfm.scheduling.calls-generate.fixed-delay-secs` seconds passes until invoking scheduler again
 
 
 ## Development Guides

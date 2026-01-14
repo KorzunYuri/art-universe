@@ -40,34 +40,32 @@ server:
   port: ${MURAW_LASTFM_RESPONSE_PARSER_ACTUATOR_INTERNAL_PORT}
 
 lastfm:
-  response:
-    parser:
-      scheduling:
-        pool:
-          size: 4
-          awaitTerminationSeconds: 300
   scheduling:
+    pool:
+      size: 4
+      await-termination-secs: 300
+    response-parse:
+      fixed-delay-secs: 1
     attribute-history:
-      fixedDelaySecs: 1
-    parsing:
-      fixedDelaySecs: 1
-  threshold:
-    artist:
-      listenersCount: 1000
-    album:
-      playCount: 10000
-    track:
-      playCount: 1000
-    tag:
-      usageCount: 1000
-  client:
-    methods:
-      artist:
-        getSimilar:
-          artistMatchThreshold: 0.2
-        topTags:
-          tagUsageCountThreshold: 10
-        topAlbums:
-          albumPlayCountThreshold: 10000
-        search:
-          artistSimilarityThreshold: 0.5
+      fixed-delay-secs: 1
+  tasks:
+    response-parse:
+      thresholds:
+        artist:
+          listeners-count: 1000
+        album:
+          play-count: 10000
+        track:
+          play-count: 1000
+        tag:
+          usage-count: 1000
+      methods:
+        artist:
+          get-similar:
+            artist-match-threshold: 0.2
+          top-tags:
+            tag-usage-count-threshold: 10
+          top-albums:
+            album-play-count-threshold: 10000
+          search:
+            artist-similarity-threshold: 0.5

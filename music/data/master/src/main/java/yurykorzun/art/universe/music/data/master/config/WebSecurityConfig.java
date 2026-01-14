@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import yurykorzun.art.universe.common.config.CommonWebConfig;
+import yurykorzun.art.universe.common.web.config.CommonWebConfig;
 
 @Configuration
 @Import(CommonWebConfig.class)

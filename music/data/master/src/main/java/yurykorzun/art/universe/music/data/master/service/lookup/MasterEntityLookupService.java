@@ -1,7 +1,7 @@
 package yurykorzun.art.universe.music.data.master.service.lookup;
 
 import jakarta.persistence.EntityManager;
-import yurykorzun.art.universe.common.service.lookup.BaseLookupService;
+import yurykorzun.art.universe.common.domain.service.lookup.BaseLookupService;
 import yurykorzun.art.universe.music.data.master.entity.MasterEntityMetadata;
 import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 

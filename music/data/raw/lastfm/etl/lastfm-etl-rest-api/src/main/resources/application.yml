@@ -39,40 +39,39 @@ server:
   port: ${MURAW_LASTFM_ETL_REST_API_INTERNAL_PORT:8080}
   allowed-origins: ${MURAW_LASTFM_ETL_REST_API_CORS_ALLOWED_ORIGINS}
 
-metrics:
-  update:
-    # Low impact queries - simple COUNT queries with existing indexes
-    entity-counts:
-      interval: 15000
-    api-call-counts:
-      interval: 15000
-    api-response-counts:
-      interval: 15000
-    # Medium impact queries
-    table-sizes:
-      interval: 300000
-
-music-data-master:
+master:
   base-url: ${MU_DATA_APP_HOST:localhost}:${MU_DATA_APP_PORT:8080}
-  unbind:
-    batch-size: 1000
-
 lastfm:
-  etl:
-    rest-api:
-      scheduling:
-        pool:
-          size: 2
-          awaitTerminationSeconds: 900
   scheduling:
+    pool:
+      size: 2
+      await-termination-secs: 900
     maintenance:
-      cron: "0 0 8 * * *"
-  threshold:
-    artist:
-      listenersCount: 1000
-    album:
-      playCount: 10000
-    track:
-      playCount: 1000
-    tag:
-      usageCount: 1000
+      db:
+        cron: "0 0 8 * * *"
+  tasks:
+    maintenance:
+      db:
+        unbind:
+          batch-size: 1000
+        thresholds:
+          artist:
+            listeners-count: 1000
+          album:
+            play-count: 10000
+          track:
+            play-count: 1000
+          tag:
+            usage-count: 1000
+  metrics:
+    update:
+      # Low impact queries - simple COUNT queries with existing indexes
+      entity-counts:
+        interval: 15000
+      api-call-counts:
+        interval: 15000
+      api-response-counts:
+        interval: 15000
+      # Medium impact queries
+      table-sizes:
+        interval: 300000

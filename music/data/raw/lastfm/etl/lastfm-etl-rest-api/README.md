@@ -94,18 +94,18 @@ Apart from [ETL environment variables](../README.md#common-environment-variables
 ### Application Properties
 
 ```yaml
-# Approval thresholds per entity type
-lastfm.threshold.{artist|album|track|tag}.{metricName}: <number>
+# Approval thresholds per entity type (used by maintenance task)
+lastfm.tasks.maintenance.db.thresholds.{artist|album|track|tag}.{metric-name}: <number>
 
 # Scheduled tasks
-lastfm.scheduling.{taskName}.cron: "<cron-expression>"
+lastfm.scheduling.maintenance.db.cron: "<cron-expression>"
 
 # Metrics update intervals (milliseconds)
-metrics.update.{metricType}.interval: <milliseconds>
+lastfm.metrics.update.{metric-type}.interval: <milliseconds>
 
 # Master Data integration (for unbinding deleted entities)
-music-data-master.base-url: ${MU_DATA_APP_HOST}:${MU_DATA_APP_PORT}
-music-data-master.unbind.batch-size: <number>
+master.base-url: ${MU_DATA_APP_HOST}:${MU_DATA_APP_PORT}
+lastfm.tasks.maintenance.db.unbind.batch-size: <number>
 ```
 
 

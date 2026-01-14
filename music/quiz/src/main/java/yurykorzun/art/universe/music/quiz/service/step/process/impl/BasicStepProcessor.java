@@ -3,7 +3,7 @@ package yurykorzun.art.universe.music.quiz.service.step.process.impl;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.Setter;
-import yurykorzun.art.universe.common.persistence.util.DatabaseUtils;
+import yurykorzun.art.universe.common.persistence.DatabaseUtils;
 import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
 import yurykorzun.art.universe.music.quiz.dto.step.stats.BasicStepStats;
 import yurykorzun.art.universe.music.quiz.dto.step.stats.StepRunStats;

@@ -1,0 +1,215 @@
+package yurykorzun.art.universe.music.data.raw.lastfm.task.call.generate;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
+import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCallType;
+import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmArtist;
+import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmTrack;
+import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.domain.repository.LastfmArtistRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.domain.repository.LastfmTrackRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.test.archetypes.LastfmJpaTestHelper;
+
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+@Import({
+    LastfmApiCallEntityServiceImpl.class,
+})
+class LastfmApiCallEntityServiceImplBlacklistTest extends LastfmJpaTestHelper {
+
+    @Autowired
+    private LastfmApiCallEntityService entityService;
+
+    @Autowired
+    private LastfmArtistRepository artistRepository;
+
+    @Autowired
+    private LastfmTrackRepository trackRepository;
+
+    @Test
+    void findAllUnprocessed_shouldExcludeBlacklistedArtists() {
+        // Given
+        LastfmArtist artist1 = consistencyHelper.createAndSaveArtist(builder -> builder
+            .name("Artist 1")
+            .url("https://www.last.fm/music/Artist+1"));
+        
+        LastfmArtist artist2 = consistencyHelper.createAndSaveArtist(builder -> builder
+            .name("Artist 2")
+            .url("https://www.last.fm/music/Artist+2"));
+        
+        LastfmArtist artist3 = consistencyHelper.createAndSaveArtist(builder -> builder
+            .name("Artist 3")
+            .url("https://www.last.fm/music/Artist+3"));
+
+        // Blacklist artist2
+        consistencyHelper.addToBlacklist(LastfmEntityType.ARTIST, artist2.getUrl());
+
+        // make sure changes have been applied
+        consistencyHelper.flush();
+
+        List<LastfmArtist> artists = artistRepository.findAll();
+
+        // When
+        List<LastfmArtist> unprocessedArtists = entityService.findAllUnprocessed(
+            LastfmEntityType.ARTIST,
+            LastfmApiCallType.ARTIST_GET_INFO,
+            LastfmApiCallEntityQueryConfig.builder()
+                .approvedEntitiesOnly(false)  // Include PENDING entities
+                .build()
+        );
+
+        // Then
+        assertThat(unprocessedArtists)
+            .hasSize(2)
+            .extracting(LastfmArtist::getName)
+            .containsExactlyInAnyOrder("Artist 1", "Artist 3");
+    }
+
+    @Test
+    void findAllUnprocessed_shouldExcludeBlacklistedTracks() {
+        // Given
+        LastfmTrack track1 = consistencyHelper.createAndSaveTrack(builder -> builder
+            .name("Track 1")
+            .url("https://www.last.fm/music/Artist/_/Track+1"));
+        
+        LastfmTrack track2 = consistencyHelper.createAndSaveTrack(builder -> builder
+            .name("Track 2")
+            .url("https://www.last.fm/music/Artist/_/Track+2"));
+        
+        LastfmTrack track3 = consistencyHelper.createAndSaveTrack(builder -> builder
+            .name("Track 3")
+            .url("https://www.last.fm/music/Artist/_/Track+3"));
+
+        // Blacklist track2
+        consistencyHelper.addToBlacklist(LastfmEntityType.TRACK, track2.getUrl());
+
+        // make sure changes have been applied
+        consistencyHelper.flush();
+
+        // When
+        List<LastfmTrack> unprocessedTracks = entityService.findAllUnprocessed(
+            LastfmEntityType.TRACK, 
+            LastfmApiCallType.TRACK_GET_INFO,
+            LastfmApiCallEntityQueryConfig.builder()
+                .approvedEntitiesOnly(false)  // Include PENDING entities
+                .build()
+        );
+
+        // Then
+        assertThat(unprocessedTracks)
+            .hasSize(2)
+            .extracting(LastfmTrack::getName)
+            .containsExactlyInAnyOrder("Track 1", "Track 3");
+    }
+
+    @Test
+    void findAllUnprocessed_shouldNotExcludeEntitiesWithDifferentEntityType() {
+        // Given
+        LastfmArtist artist = consistencyHelper.createAndSaveArtist(builder -> builder
+            .name("Test Artist")
+            .url("https://www.last.fm/music/Test+Artist"));
+        
+        LastfmTrack track = consistencyHelper.createAndSaveTrack(builder -> builder
+            .name("Test Track")
+            .url("https://www.last.fm/music/Test+Artist"));
+
+        // Blacklist the URL for TRACK entity type only
+        consistencyHelper.addToBlacklist(LastfmEntityType.TRACK, "https://www.last.fm/music/Test+Artist");
+
+        // make sure changes have been applied
+        consistencyHelper.flush();
+
+        // When - search for artists with the same URL
+        List<LastfmArtist> unprocessedArtists = entityService.findAllUnprocessed(
+            LastfmEntityType.ARTIST, 
+            LastfmApiCallType.ARTIST_GET_INFO,
+            LastfmApiCallEntityQueryConfig.builder()
+                .approvedEntitiesOnly(false)  // Include PENDING entities
+                .build()
+        );
+
+        // Then - artist should not be excluded (different entity type)
+        assertThat(unprocessedArtists)
+            .hasSize(1)
+            .extracting(LastfmArtist::getName)
+            .containsExactly("Test Artist");
+
+        // When - search for tracks
+        List<LastfmTrack> unprocessedTracks = entityService.findAllUnprocessed(
+            LastfmEntityType.TRACK, 
+            LastfmApiCallType.TRACK_GET_INFO,
+            LastfmApiCallEntityQueryConfig.builder()
+                .approvedEntitiesOnly(false)  // Include PENDING entities
+                .build()
+        );
+
+        // Then - track should be excluded
+        assertThat(unprocessedTracks).isEmpty();
+    }
+
+    @Test
+    void findAllUnprocessed_shouldReturnAllWhenNoBlacklist() {
+        // Given
+        LastfmArtist artist1 = consistencyHelper.createAndSaveArtist(builder -> builder
+            .name("Artist 1")
+            .url("https://www.last.fm/music/Artist+1"));
+        
+        LastfmArtist artist2 = consistencyHelper.createAndSaveArtist(builder -> builder
+            .name("Artist 2")
+            .url("https://www.last.fm/music/Artist+2"));
+
+        // make sure changes have been applied
+        consistencyHelper.flush();
+
+        // When - no blacklist entries
+        List<LastfmArtist> unprocessedArtists = entityService.findAllUnprocessed(
+            LastfmEntityType.ARTIST, 
+            LastfmApiCallType.ARTIST_GET_INFO,
+            LastfmApiCallEntityQueryConfig.builder()
+                .approvedEntitiesOnly(false)  // Include PENDING entities
+                .build()
+        );
+
+        // Then
+        assertThat(unprocessedArtists)
+            .hasSize(2)
+            .extracting(LastfmArtist::getName)
+            .containsExactlyInAnyOrder("Artist 1", "Artist 2");
+    }
+
+    @Test
+    void findAllUnprocessed_shouldHandleNullUrls() {
+        // Given
+        LastfmArtist artistWithUrl = consistencyHelper.createAndSaveArtist(builder -> builder
+            .name("Artist With URL")
+            .url("https://www.last.fm/music/Artist+With+URL"));
+        
+        LastfmArtist artistWithNullUrl = consistencyHelper.createAndSaveArtist(builder -> builder
+            .name("Artist With Null URL")
+            .url(null));
+
+        // Blacklist the first artist
+        consistencyHelper.addToBlacklist(LastfmEntityType.ARTIST, artistWithUrl.getUrl());
+
+        // make sure changes have been applied
+        consistencyHelper.flush();
+
+        // When
+        List<LastfmArtist> unprocessedArtists = entityService.findAllUnprocessed(
+            LastfmEntityType.ARTIST, 
+            LastfmApiCallType.ARTIST_GET_INFO,
+            LastfmApiCallEntityQueryConfig.builder()
+                .approvedEntitiesOnly(false)  // Include PENDING entities
+                .build()
+        );
+
+        // Then - only artist with null URL should be returned
+        assertThat(unprocessedArtists)
+            .hasSize(1)
+            .extracting(LastfmArtist::getName)
+            .containsExactly("Artist With Null URL");
+    }
+}

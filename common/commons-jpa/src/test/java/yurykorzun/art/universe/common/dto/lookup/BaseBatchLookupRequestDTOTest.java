@@ -6,6 +6,8 @@ import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import yurykorzun.art.universe.common.domain.dto.lookup.BaseBatchLookupRequestDTO;
+import yurykorzun.art.universe.common.domain.dto.lookup.LookupRequestDTO;
 
 import java.util.Arrays;
 import java.util.Collections;

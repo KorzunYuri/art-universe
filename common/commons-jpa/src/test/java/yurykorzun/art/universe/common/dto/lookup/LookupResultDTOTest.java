@@ -1,6 +1,7 @@
 package yurykorzun.art.universe.common.dto.lookup;
 
 import org.junit.jupiter.api.Test;
+import yurykorzun.art.universe.common.domain.dto.lookup.LookupResultDTO;
 
 import static org.junit.jupiter.api.Assertions.*;
 

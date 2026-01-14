@@ -7,7 +7,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.common.CodedRegistry;
 import yurykorzun.art.universe.common.observability.util.ObservabilityService;
-import yurykorzun.art.universe.music.data.raw.lastfm.collectable.entity.common.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.LastfmEntityType;
 
 import java.util.List;
 import java.util.Map;
@@ -20,13 +20,13 @@ public class DbMaintenanceExecutor {
     private final MusicDataIntegrationService musicDataIntegrationService;
     private final ObservabilityService observabilityService;
 
-    @Value("${lastfm.threshold.artist.listenersCount}")
+    @Value("${lastfm.tasks.maintenance.db.thresholds.artist.listeners-count}")
     private int artistThreshold;
-    @Value("${lastfm.threshold.album.playCount}")
+    @Value("${lastfm.tasks.maintenance.db.thresholds.album.play-count}")
     private int albumThreshold;
-    @Value("${lastfm.threshold.track.playCount}")
+    @Value("${lastfm.tasks.maintenance.db.thresholds.track.play-count}")
     private int trackThreshold;
-    @Value("${lastfm.threshold.tag.usageCount}")
+    @Value("${lastfm.tasks.maintenance.db.thresholds.tag.usage-count}")
     private int tagThreshold;
 
     public DbMaintenanceExecutor(
