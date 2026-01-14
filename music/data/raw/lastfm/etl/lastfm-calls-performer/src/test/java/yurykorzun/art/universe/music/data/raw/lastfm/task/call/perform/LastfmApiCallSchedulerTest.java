@@ -15,30 +15,30 @@ import static org.mockito.Mockito.verify;
 class LastfmApiCallSchedulerTest {
 
     @Mock
-    private LastfmApiCallExecutor lastfmApiCallExecutor;
+    private LastfmCallsOrchestrator orchestrator;
 
     private LastfmApiCallExecutionScheduler scheduler;
 
     @BeforeEach
     void setUp() {
-        scheduler = new LastfmApiCallExecutionScheduler(lastfmApiCallExecutor);
+        scheduler = new LastfmApiCallExecutionScheduler(orchestrator);
     }
 
     @Test
-    void triggerApiCalls_shouldCallService() {
+    void triggerApiCalls_shouldCallOrchestrator() {
         // when
         scheduler.triggerApiCallsExecution();
 
         // then
-        verify(lastfmApiCallExecutor).executeApiCalls();
+        verify(orchestrator).orchestrateApiCalls();
     }
 
     @Test
-    void triggerApiCalls_shouldThrow_whenServiceThrows() {
+    void triggerApiCalls_shouldThrow_whenOrchestratorThrows() {
         // Given
         final var expectedMessage = "test";
         doThrow(new IllegalArgumentException(expectedMessage))
-            .when(lastfmApiCallExecutor).executeApiCalls();
+            .when(orchestrator).orchestrateApiCalls();
 
         // When
         IllegalArgumentException actualException = assertThrows(

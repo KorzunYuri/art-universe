@@ -1,8 +1,6 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.task.call.perform;
 
-import com.google.common.util.concurrent.RateLimiter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -16,8 +14,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.LastfmApiCallSe
 import yurykorzun.art.universe.music.data.raw.lastfm.integration.LastfmApiClient;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.LastfmApiResponseService;
 
-import java.util.Collection;
-
 @Service
 @Slf4j
 public class LastfmApiCallExecutorImpl implements LastfmApiCallExecutor {
@@ -27,46 +23,21 @@ public class LastfmApiCallExecutorImpl implements LastfmApiCallExecutor {
     private final LastfmApiClient apiClient;
     private final LastfmApiCallExecutorImpl self;
 
-    private final RateLimiter rateLimiter;
-
     public LastfmApiCallExecutorImpl(
         LastfmApiCallService apiCallService,
         LastfmApiResponseService apiResponseService,
         LastfmApiClient apiClient,
-        @Lazy LastfmApiCallExecutorImpl self,
-        @Value("${lastfm.tasks.calls-perform.calls-per-sec}") double apiClientCallsPerSec
+        @Lazy LastfmApiCallExecutorImpl self
     ) {
         this.apiCallService = apiCallService;
         this.apiResponseService = apiResponseService;
         this.apiClient = apiClient;
         this.self = self;
-
-        this.rateLimiter = RateLimiter.create(apiClientCallsPerSec);
     }
 
     @Override
-    public void executeApiCalls() {
-        //   TODO design complex priority logic to fit LastFm API calls rate limit
-        Collection<LastfmApiCall> apiCalls = apiCallService.findAllUnprocessedUnexpired();
-        apiCalls.forEach(apiCall -> {
-            log.info("initiating API call {} of type {} for entity {}: {}",
-                apiCall.getId(),
-                apiCall.getType(),
-                apiCall.getEntityType(),
-                apiCall.getEntityId()
-            );
-            rateLimiter.acquire();
-            try {
-                self.performApiCall(apiCall);
-                log.info("API call has been performed");
-            } catch (Exception ex) {
-                log.error("Failed to process API call {}: {}", apiCall.getId(), ex.getMessage(), ex);
-            }
-        });
-    }
-
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void performApiCall(LastfmApiCall call) {
+    public void execute(LastfmApiCall call) {
         apiCallService.updateApiCallStatus(call, ApiCallStatus.PROCESSING);
 
         try {

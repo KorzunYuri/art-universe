@@ -16,10 +16,9 @@ import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.LastfmApiRespon
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -42,8 +41,7 @@ class LastfmApiCallExecutorImplTest {
                 apiCallService,
                 apiResponseService,
                 apiClient,
-                null,   // self
-                5.0 // limiter constant
+                null   // self
             );
 
         // self-inject a spy
@@ -52,7 +50,7 @@ class LastfmApiCallExecutorImplTest {
     }
 
     private static final Instant dueDttm = Instant.now().plus(Duration.ofDays(1));
-    
+
     private LastfmApiCall createApiCall() {
         return LastfmApiCall.builder()
                 .id(1L)
@@ -64,61 +62,89 @@ class LastfmApiCallExecutorImplTest {
     }
 
     @Test
-    void executeApiCalls_shouldProcessAllUnexpiredCalls_whenCalled() {
-        // given
-        LastfmApiCall apiCall = createApiCall();
-        when(apiCallService.findAllUnprocessedUnexpired()).thenReturn(List.of(apiCall));
-        doNothing().when(executor).performApiCall(any(LastfmApiCall.class));
-
-        // when
-        executor.executeApiCalls();
-
-        // then
-        verify(executor).performApiCall(apiCall);
-    }
-
-    @Test
-    void makeApiCall_shouldUpdateStatusToProcessing_whenStarted() {
+    void execute_shouldUpdateStatusToProcessing_whenStarted() {
         // given
         LastfmApiCall apiCall = createApiCall();
         when(apiClient.makeApiCall(apiCall)).thenReturn("{}");
         when(apiResponseService.createResponse(any())).thenReturn(1L);
 
         // when
-        executor.performApiCall(apiCall);
+        executor.execute(apiCall);
 
         // then
-        verify(apiCallService, times(2)).updateApiCallStatus(eq(apiCall), any(ApiCallStatus.class));
         verify(apiCallService).updateApiCallStatus(apiCall, ApiCallStatus.PROCESSING);
-        verify(apiCallService).updateApiCallStatus(apiCall, ApiCallStatus.SUCCESSFUL);
     }
 
     @Test
-    void makeApiCall_shouldUpdateStatusToSuccessful_whenCompleted() {
+    void execute_shouldUpdateStatusToSuccessful_whenCompleted() {
         // given
         LastfmApiCall apiCall = createApiCall();
         when(apiClient.makeApiCall(apiCall)).thenReturn("{}");
         when(apiResponseService.createResponse(any())).thenReturn(1L);
 
         // when
-        executor.performApiCall(apiCall);
+        executor.execute(apiCall);
 
         // then
-        assertEquals(ApiCallStatus.SUCCESSFUL, apiCall.getStatus());
+        verify(apiCallService).updateApiCallStatus(apiCall, ApiCallStatus.SUCCESSFUL);
         verify(apiResponseService).createResponse(any());
     }
 
     @Test
-    void makeApiCall_shouldUpdateStatusToFailed_whenExceptionThrown() {
+    void execute_shouldUpdateStatusToFailed_whenExceptionThrown() {
         // given
         LastfmApiCall apiCall = createApiCall();
         when(apiClient.makeApiCall(apiCall)).thenThrow(new RuntimeException("API error"));
 
         // when
-        executor.performApiCall(apiCall);
+        executor.execute(apiCall);
 
         // then
-        assertEquals(ApiCallStatus.FAILED, apiCall.getStatus());
+        verify(apiCallService).updateApiCallStatus(apiCall, ApiCallStatus.PROCESSING);
+        verify(apiCallService).updateApiCallStatus(apiCall, ApiCallStatus.FAILED);
         verify(apiResponseService, never()).createResponse(any());
+    }
+
+    @Test
+    void execute_shouldCallApiClientAndResponseService_whenSuccessful() {
+        // given
+        LastfmApiCall apiCall = createApiCall();
+        String responseBody = "{\"result\": \"success\"}";
+        when(apiClient.makeApiCall(apiCall)).thenReturn(responseBody);
+        when(apiResponseService.createResponse(any())).thenReturn(1L);
+
+        // when
+        executor.execute(apiCall);
+
+        // then
+        verify(apiClient).makeApiCall(apiCall);
+        verify(apiResponseService).createResponse(any());
+    }
+
+    @Test
+    void execute_shouldUpdateStatusExactlyTwice_whenSuccessful() {
+        // given
+        LastfmApiCall apiCall = createApiCall();
+        when(apiClient.makeApiCall(apiCall)).thenReturn("{}");
+        when(apiResponseService.createResponse(any())).thenReturn(1L);
+
+        // when
+        executor.execute(apiCall);
+
+        // then
+        verify(apiCallService, times(2)).updateApiCallStatus(eq(apiCall), any(ApiCallStatus.class));
+    }
+
+    @Test
+    void execute_shouldUpdateStatusExactlyTwice_whenFailed() {
+        // given
+        LastfmApiCall apiCall = createApiCall();
+        when(apiClient.makeApiCall(apiCall)).thenThrow(new RuntimeException("API error"));
+
+        // when
+        executor.execute(apiCall);
+
+        // then
+        verify(apiCallService, times(2)).updateApiCallStatus(eq(apiCall), any(ApiCallStatus.class));
     }
 }

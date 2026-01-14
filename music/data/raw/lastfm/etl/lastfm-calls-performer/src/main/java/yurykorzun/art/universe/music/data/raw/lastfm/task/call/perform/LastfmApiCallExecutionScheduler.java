@@ -10,10 +10,10 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class LastfmApiCallExecutionScheduler {
 
-    private final LastfmApiCallExecutor lastfmApiCallExecutor;
+    private final LastfmCallsOrchestrator orchestrator;
 
-    public LastfmApiCallExecutionScheduler(LastfmApiCallExecutor lastfmApiCallExecutor) {
-        this.lastfmApiCallExecutor = lastfmApiCallExecutor;
+    public LastfmApiCallExecutionScheduler(LastfmCallsOrchestrator orchestrator) {
+        this.orchestrator = orchestrator;
     }
 
     @Scheduled(
@@ -22,7 +22,7 @@ public class LastfmApiCallExecutionScheduler {
     )
     public void triggerApiCallsExecution() {
         log.info("start API calls performing");
-        lastfmApiCallExecutor.executeApiCalls();
+        orchestrator.orchestrateApiCalls();
         log.info("finished API calls performing");
     }
 
