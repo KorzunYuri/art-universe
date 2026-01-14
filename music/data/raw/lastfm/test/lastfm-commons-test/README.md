@@ -6,10 +6,10 @@ The module provides general test utilities, fixtures, and base test classes spec
 
 ### Util Classes
 
-- [AssertionUtils.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/common/utils/AssertionUtils.java) - contains helper methods for assertions
+- [AssertionUtils.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/test/utils/AssertionUtils.java) - contains helper methods for assertions
   - methods for verifying invocations captured by org.mockito.ArgumentCaptor
-- [TestStringUtils.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/common/utils/TestStringUtils.java) - helper methods related to Strings
-- [TimeTestUtils.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/common/utils/TimeTestUtils.java) - helper methods related to time
+- [TestStringUtils.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/test/utils/TestStringUtils.java) - helper methods related to Strings
+- [TimeTestUtils.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/test/utils/TimeTestUtils.java) - helper methods related to time
 
 ### Exposed Modules & Dependencies
 

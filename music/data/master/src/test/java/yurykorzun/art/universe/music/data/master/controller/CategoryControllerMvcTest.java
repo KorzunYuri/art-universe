@@ -24,7 +24,7 @@ import yurykorzun.art.universe.music.data.master.dto.CategoryRelationDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.service.BindingService;
 import yurykorzun.art.universe.music.data.master.service.CategoryService;
-import yurykorzun.art.universe.music.data.master.common.archetypes.BaseMasterDataMvcTest;
+import yurykorzun.art.universe.music.data.master.test.archetypes.BaseMasterDataMvcTest;
 
 import java.util.Arrays;
 import java.util.Collections;

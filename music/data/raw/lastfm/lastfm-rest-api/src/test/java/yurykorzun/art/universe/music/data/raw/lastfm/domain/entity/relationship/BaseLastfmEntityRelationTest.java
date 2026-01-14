@@ -1,7 +1,7 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.relationship;
 
 import org.junit.jupiter.api.Test;
-import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.entity.EntityCreationHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.test.common.entity.EntityCreationHelper;
 
 import java.util.List;
 

@@ -49,7 +49,7 @@ Do NOT use for:
 
 ### Step 1: Create Registry Component
 
-See: [LastfmApiCallGeneratorsRegistry](../../../../../music/data/raw/lastfm/etl/lastfm-calls-generator/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/api/client/service/LastfmApiCallGeneratorsRegistry.java)
+See: [LastfmApiCallGeneratorsRegistry](../../../../../music/data/raw/lastfm/etl/lastfm-calls-generator/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/etl/service/LastfmApiCallGeneratorsRegistry.java)
 
 **Key elements**:
 - `@Component` annotation
@@ -61,13 +61,13 @@ See: [LastfmApiCallGeneratorsRegistry](../../../../../music/data/raw/lastfm/etl/
 
 ### Step 2: Update Base Strategy Class
 
-See: [BaseLastfmApiCallGenerator](../../../../../music/data/raw/lastfm/etl/lastfm-calls-generator/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/api/client/service/BaseLastfmApiCallGenerator.java)
+See: [BaseLastfmApiCallGenerator](../../../../music/data/raw/lastfm/etl/lastfm-calls-generator/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/task/call/generate/BaseLastfmApiCallGenerator.java)
 
 **Key change**: Constructor registers `this.getClass()` instead of `this`
 
 ### Step 3: Use Registry for Dispatch
 
-See: [LastfmApiCallGenerationScheduler](../../../../../music/data/raw/lastfm/etl/lastfm-calls-generator/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/api/client/scheduling/LastfmApiCallGenerationScheduler.java)
+See: [LastfmApiCallGenerationScheduler](../../../../music/data/raw/lastfm/etl/lastfm-calls-generator/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/task/call/generate/LastfmApiCallGenerationScheduler.java)
 
 Consumer code unchanged - `getRegistry()` returns map of Spring proxies, AOP intercepts method calls.
 
@@ -75,23 +75,23 @@ Consumer code unchanged - `getRegistry()` returns map of Spring proxies, AOP int
 
 ### API Call Generators Registry
 
-- **Registry**: [LastfmApiCallGeneratorsRegistry](../../../../../music/data/raw/lastfm/etl/lastfm-calls-generator/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/api/client/service/LastfmApiCallGeneratorsRegistry.java)
-- **Base**: [BaseLastfmApiCallGenerator](../../../../../music/data/raw/lastfm/etl/lastfm-calls-generator/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/api/client/service/BaseLastfmApiCallGenerator.java)
+- **Registry**: [LastfmApiCallGeneratorsRegistry](../../../../music/data/raw/lastfm/etl/lastfm-calls-generator/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/task/call/generate/LastfmApiCallGeneratorsRegistry.java)
+- **Base**: [BaseLastfmApiCallGenerator](../../../../music/data/raw/lastfm/etl/lastfm-calls-generator/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/task/call/generate/BaseLastfmApiCallGenerator.java)
 - **Implementations**: 17 generators (LastfmTagTopTagsApiCallGenerator, LastfmArtistGetInfoApiCallGenerator, EntityScopedApiCallGenerator + 14 subclasses)
-- **Consumer**: [LastfmApiCallGenerationScheduler](../../../../../music/data/raw/lastfm/etl/lastfm-calls-generator/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/api/client/scheduling/LastfmApiCallGenerationScheduler.java)
-- **AOP**: [ApiCallGeneratorObservabilityAspect](../../../../../music/data/raw/lastfm/etl/lastfm-calls-generator/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/api/client/aspects/ApiCallGeneratorObservabilityAspect.java) measures `createApiCalls()` timing
+- **Consumer**: [LastfmApiCallGenerationScheduler](../../../../music/data/raw/lastfm/etl/lastfm-calls-generator/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/task/call/generate/LastfmApiCallGenerationScheduler.java)
+- **AOP**: [ApiCallGeneratorObservabilityAspect](../../../../music/data/raw/lastfm/etl/lastfm-calls-generator/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/task/call/generate/aspect/ApiCallGeneratorObservabilityAspect.java) measures `createApiCalls()` timing
 
 ### API Response Processors Registry
 
-- **Registry**: [LastfmApiResponseProcessorsRegistry](../../../../../music/data/raw/lastfm/etl/lastfm-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/api/methods/common/processing/LastfmApiResponseProcessorsRegistry.java)
-- **Base**: [LastfmApiResponseProcessor](../../../../../music/data/raw/lastfm/etl/lastfm-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/api/methods/common/processing/LastfmApiResponseProcessor.java)
+- **Registry**: [LastfmApiResponseProcessorsRegistry](../../../../music/data/raw/lastfm/etl/lastfm-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/task/response/process/LastfmApiResponseProcessorsRegistry.java)
+- **Base**: [LastfmApiResponseProcessor](../../../../music/data/raw/lastfm/etl/lastfm-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/task/response/process/LastfmApiResponseProcessor.java)
 - **Implementations**: 12 processors (LastfmAlbumGetInfoResponseProcessor, LastfmArtistGetInfoResponseProcessor, LastfmTrackGetInfoResponseProcessor, etc.)
-- **Consumer**: [LastfmApiResponseServiceImpl](../../../../../music/data/raw/lastfm/etl/lastfm-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/api/client/service/impl/LastfmApiResponseServiceImpl.java)
-- **AOP**: [ApiResponseProcessorObservabilityAspect](../../../../../music/data/raw/lastfm/etl/lastfm-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/api/client/aspects/ApiResponseProcessorObservabilityAspect.java) measures `process()` timing
+- **Consumer**: [LastfmApiResponseServiceImpl](../../../../music/data/raw/lastfm/etl/lastfm-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/etl/service/impl/LastfmApiResponseServiceImpl.java)
+- **AOP**: [ApiResponseProcessorObservabilityAspect](../../../../music/data/raw/lastfm/etl/lastfm-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/task/response/process/aspect/ApiResponseProcessorObservabilityAspect.java) measures `process()` timing
 
 ### Coded Enum Registry (Different Pattern)
 
-[CodedRegistry](../../../../../common/commons-jpa/src/main/java/yurykorzun/art/universe/common/CodedRegistry.java) stores enum values (not Spring beans), needs no ApplicationContext or proxy support. See [Coded Enum Pattern](entities/coded-enums.md).
+[CodedRegistry](../../../../common/commons-jpa/src/main/java/yurykorzun/art/universe/common/CodedRegistry.java) stores enum values (not Spring beans), needs no ApplicationContext or proxy support. See [Coded Enum Pattern](entities/coded-enums.md).
 
 ## Testing
 

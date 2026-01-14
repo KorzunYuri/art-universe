@@ -7,7 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.repository.LastfmTagRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.entity.EntityCreationHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.test.common.entity.EntityCreationHelper;
 
 import java.util.*;
 import java.util.function.Consumer;

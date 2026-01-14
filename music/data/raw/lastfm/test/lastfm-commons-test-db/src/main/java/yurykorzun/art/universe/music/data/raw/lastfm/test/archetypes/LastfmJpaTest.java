@@ -5,7 +5,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import yurykorzun.art.universe.common.archetypes.BaseTest;
+import yurykorzun.art.universe.common.test.archetypes.BaseTest;
 import yurykorzun.art.universe.common.test.db.PostgresDynamicPropertyConfigurer;
 import yurykorzun.art.universe.music.data.raw.lastfm.test.db.LastfmPostgresTestContainer;
 

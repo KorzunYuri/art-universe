@@ -2,7 +2,7 @@ package yurykorzun.art.universe.music.data.master.repository;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import yurykorzun.art.universe.music.data.master.common.archetypes.BaseMasterDataJpaTest;
+import yurykorzun.art.universe.music.data.master.test.archetypes.BaseMasterDataJpaTest;
 import yurykorzun.art.universe.music.data.master.entity.Artist;
 import yurykorzun.art.universe.music.data.master.entity.Track;
 

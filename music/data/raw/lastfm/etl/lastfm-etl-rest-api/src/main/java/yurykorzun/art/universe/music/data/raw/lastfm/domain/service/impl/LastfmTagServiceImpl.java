@@ -3,7 +3,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.domain.service.impl;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import yurykorzun.art.universe.common.CodedRegistry;
-import yurykorzun.art.universe.common.data.raw.domain.entity.ApprovalStatus;
+import yurykorzun.art.universe.data.raw.common.domain.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.dto.LastfmTagResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.repository.LastfmTagRepository;

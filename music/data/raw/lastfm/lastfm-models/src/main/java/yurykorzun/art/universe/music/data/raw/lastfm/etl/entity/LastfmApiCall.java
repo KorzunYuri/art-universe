@@ -5,8 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.experimental.SuperBuilder;
-import yurykorzun.art.universe.common.data.raw.etl.entity.ApiCall;
-import yurykorzun.art.universe.common.data.raw.etl.entity.ApiCallTypeConverter;
+import yurykorzun.art.universe.data.raw.common.etl.entity.ApiCall;
+import yurykorzun.art.universe.data.raw.common.etl.entity.ApiCallTypeConverter;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 

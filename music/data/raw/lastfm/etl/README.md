@@ -7,14 +7,14 @@ This directory contains the LastFM ETL pipeline modules that collect, process, a
 The LastFM ETL pipeline is a **three-stage continuous data collection system** that collects data from LastFM public API and keeps them up-to-date.
 
 **Stage 1: [Calls Generator](lastfm-calls-generator/README.md)** → Identifies stale data and creates API call tasks
-- For each [supported method](#supported-api-methods):
+- For each [supported method](#supported-lastfm-public-api-methods):
   - Queries database for entities with stale data (based on last API calls performed for method)
-  - Creates [API call tasks](../lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/api/client/entity/LastfmApiCall.java) with `PENDING` [status](../../../../../common/data/raw/data-raw-commons-jpa/src/main/java/yurykorzun/art/universe/common/data/raw/api/client/entity/ApiCallStatus.java)
+  - Creates [API call tasks](../lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/etl/entity/LastfmApiCall.java) with `PENDING` [status](../../../../../common/data/raw/data-raw-commons-jpa/src/main/java/yurykorzun/art/universe/data/raw/common/etl/entity/ApiCallStatus.java)
 
 **Stage 2: [Calls Performer](lastfm-calls-performer/README.md)** → Executes API calls and stores raw responses
-- Picks up `PENDING` [API call tasks](../lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/api/client/entity/LastfmApiCall.java)
+- Picks up `PENDING` [API call tasks](../lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/etl/entity/LastfmApiCall.java)
 - Makes HTTP requests to LastFM API with rate limiting
-- [Stores](../lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/api/client/entity/LastfmApiResponse.java) raw JSON responses in database with `PENDING` [status](../../../../../common/data/raw/data-raw-commons-jpa/src/main/java/yurykorzun/art/universe/common/data/raw/api/client/entity/ApiResponseStatus.java)
+- [Stores](../lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/etl/entity/LastfmApiResponse.java) raw JSON responses in database with `PENDING` [status](../../../../../common/data/raw/data-raw-commons-jpa/src/main/java/yurykorzun/art/universe/data/raw/common/etl/entity/ApiResponseStatus.java)
 - Updates API call status to `COMPLETED` or `FAILED`
 
 **Stage 3: [Response Parser](lastfm-response-parser/README.md)** → Parses responses and updates entities
@@ -78,7 +78,7 @@ All methods accept pagination parameters. Most methods' output is limited to one
 ### Scope Entity
 
 Most methods of Lastfm public API are executed in relation to a specific entity, e.g. `artist.getTopTracks` expects artist to be provided.
-That is why [API calls](../lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/api/client/entity/LastfmApiCall.java) has optional fields `entityType` and `entityId`.
+That is why [API calls](../lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/etl/entity/LastfmApiCall.java) has optional fields `entityType` and `entityId`.
 
 ### Entities Blacklist
 
@@ -87,13 +87,13 @@ The threshold is applied when entity has been parsed and the attribute to compar
 
 ### Snapshots
 
-[LastfmDataSnapshot.java](../lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/entity/attribute/LastfmDataSnapshot.java) unites API calls generated in a single iteration for the same entity or, in case of `tag.topTags`, parameters.
+[LastfmDataSnapshot.java](../lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/etl/entity/LastfmDataSnapshot.java) unites API calls generated in a single iteration for the same entity or, in case of `tag.topTags`, parameters.
 
 **Why we need this**: for some methods we produce a couple of API calls per entity. Examples:
 - we request N pages from method M for entity E - this will end up with N API calls 
 - we request top-2000 tags from method `tag.topTags`, which result in 40 API calls
 
-In the same way, [LastfmAttributeSnapshot.java](../lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/entity/attribute/LastfmAttributeSnapshot.java) unites attributes extracted from a series of API call belonging to the same snapshot.
+In the same way, [LastfmAttributeSnapshot.java](../lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/etl/entity/LastfmAttributeSnapshot.java) unites attributes extracted from a series of API call belonging to the same snapshot.
 
 ### Data Staleness Model
 
@@ -110,7 +110,7 @@ Watch [Calls Generator config](lastfm-calls-generator/src/main/resources/applica
 
 ### SCD2 Attribute History
 
-ETL maintains history of collected attributes via [LastfmAttributeHistoryRecord.java](../lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/entity/attribute/LastfmAttributeHistoryRecord.java).
+ETL maintains history of collected attributes via [LastfmAttributeHistoryRecord.java](../lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/entity/attribute/LastfmAttributeHistoryRecord.java).
 The value of attribute can be either number or string.
 
 ## Data Flow Example

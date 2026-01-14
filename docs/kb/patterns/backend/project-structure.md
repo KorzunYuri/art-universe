@@ -130,7 +130,7 @@ Main class:
 music/data/raw/lastfm/etl/lastfm-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/responseparser/LastfmResponseParserApplication.java
 
 Services:
-music/data/raw/lastfm/etl/lastfm-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/service/attribute/LastfmAttributeHistoryService.java
+music/data/raw/lastfm/etl/lastfm-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/service/attribute/LastfmAttributeHistoryService.java
 ```
 
 ---

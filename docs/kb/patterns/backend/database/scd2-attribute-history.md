@@ -81,7 +81,7 @@ Use staging tables with double-buffering to avoid locking the main table during 
 
 Write incoming attribute values to the staging table, automatically deduplicating to keep only the latest value.
 
-**Example**: [Lastfm Service](../../../../../music/data/raw/lastfm/etl/lastfm-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/service/attribute/LastfmAttributeHistoryServiceImpl.java)
+**Example**: [Lastfm Service](../../../../../music/data/raw/lastfm/etl/lastfm-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/service/attribute/LastfmAttributeHistoryServiceImpl.java)
 
 **Key Points**:
 - `ON CONFLICT ... DO UPDATE` ensures only the latest value is kept in staging
@@ -92,7 +92,7 @@ Write incoming attribute values to the staging table, automatically deduplicatin
 
 Process staging records by expiring changed values and inserting new ones in a single transaction.
 
-**Example**: [LastfmAttributeHistoryProcessor](../../../../../music/data/raw/lastfm/etl/lastfm-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/service/attribute/LastfmAttributeHistoryProcessor.java)
+**Example**: [LastfmAttributeHistoryProcessor](../../../../../music/data/raw/lastfm/etl/lastfm-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/service/attribute/LastfmAttributeHistoryProcessor.java)
 
 **Key Points**:
 - `IS DISTINCT FROM` handles NULL comparisons correctly (NULL != NULL is false, but NULL IS DISTINCT FROM NULL is false)
@@ -104,7 +104,7 @@ Process staging records by expiring changed values and inserting new ones in a s
 
 Map the table to a JPA entity with proper defaults for SCD2 columns.
 
-**Example**: [LastfmAttributeHistoryRecord](../../../../../music/data/raw/lastfm/lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/entity/attribute/LastfmAttributeHistoryRecord.java)
+**Example**: [LastfmAttributeHistoryRecord](../../../../../music/data/raw/lastfm/lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/entity/attribute/LastfmAttributeHistoryRecord.java)
 
 **Key Points**:
 - Use `LocalDate` (not `Instant`) for SCD2 date columns
@@ -116,7 +116,7 @@ Map the table to a JPA entity with proper defaults for SCD2 columns.
 
 Process staging records periodically, switching between staging tables for continuous operation.
 
-**Example**: [LastfmAttributeHistoryProcessor](../../../../../music/data/raw/lastfm/etl/lastfm-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/service/attribute/LastfmAttributeHistoryProcessor.java)
+**Example**: [LastfmAttributeHistoryProcessor](../../../../../music/data/raw/lastfm/etl/lastfm-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/service/attribute/LastfmAttributeHistoryProcessor.java)
 
 **Key Points**:
 - Double-buffering allows continuous writes while processing
@@ -148,7 +148,7 @@ Process staging records periodically, switching between staging tables for conti
 ## Testing
 
 Watch existing test classes for examples:
-- [LastfmAttributeHistoryProcessorTest](../../../../../music/data/raw/lastfm/etl/lastfm-response-parser/src/test/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/service/attribute/LastfmAttributeHistoryProcessorTest.java)
+- [LastfmAttributeHistoryProcessorTest](../../../../../music/data/raw/lastfm/etl/lastfm-response-parser/src/test/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/service/attribute/LastfmAttributeHistoryProcessorTest.java)
 
 - **Key test scenarios**:
 1. Inserting new records (first-time attributes)

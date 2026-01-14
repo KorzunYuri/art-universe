@@ -4,7 +4,7 @@ import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.entity.EntityCreationHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.test.common.entity.EntityCreationHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.*;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.relationship.*;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmDataSnapshot;

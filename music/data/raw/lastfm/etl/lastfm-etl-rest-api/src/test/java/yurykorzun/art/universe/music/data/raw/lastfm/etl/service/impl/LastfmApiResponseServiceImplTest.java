@@ -12,8 +12,8 @@ import yurykorzun.art.universe.music.data.raw.lastfm.etl.dto.LastfmApiResponseCr
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.dto.LastfmApiResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.repository.LastfmApiResponseRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.entity.EntityCreationHelper;
-import yurykorzun.art.universe.common.config.CommonTestConfig;
+import yurykorzun.art.universe.music.data.raw.lastfm.test.common.entity.EntityCreationHelper;
+import yurykorzun.art.universe.common.test.config.CommonTestConfig;
 
 import java.util.Optional;
 import java.util.function.Supplier;

@@ -15,7 +15,7 @@ import yurykorzun.art.universe.music.data.master.dto.relation.TargetEntityBindin
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.service.RelationService;
-import yurykorzun.art.universe.music.data.master.common.archetypes.BaseMasterDataMvcTest;
+import yurykorzun.art.universe.music.data.master.test.archetypes.BaseMasterDataMvcTest;
 
 import java.util.Arrays;
 import java.util.List;

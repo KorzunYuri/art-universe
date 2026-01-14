@@ -1,7 +1,7 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.task.response.process;
 
-import yurykorzun.art.universe.common.data.raw.etl.entity.ApiCallType;
-import yurykorzun.art.universe.common.data.raw.etl.entity.ApiResponse;
+import yurykorzun.art.universe.data.raw.common.etl.entity.ApiCallType;
+import yurykorzun.art.universe.data.raw.common.etl.entity.ApiResponse;
 
 import java.io.IOException;
 

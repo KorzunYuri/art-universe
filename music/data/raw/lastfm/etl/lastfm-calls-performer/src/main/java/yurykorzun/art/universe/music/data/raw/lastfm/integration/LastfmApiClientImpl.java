@@ -4,7 +4,7 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
-import yurykorzun.art.universe.common.data.raw.integration.BaseHttpApiClient;
+import yurykorzun.art.universe.data.raw.common.integration.BaseHttpApiClient;
 
 import java.util.Collections;
 import java.util.HashMap;

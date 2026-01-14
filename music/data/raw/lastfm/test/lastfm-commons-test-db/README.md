@@ -21,7 +21,7 @@ If you need to create and save entities while keeping DB in consistent state in 
 Use for repository and JPA-related tests that only need persistence layer.
 Non-JPA bean must to be imported via `@Import` annotation.
 
-[LastfmJpaTest.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/common/archetypes/LastfmJpaTest.java)
+[LastfmJpaTest.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/test/archetypes/LastfmJpaTest.java)
 
 ```java
 @Import(
@@ -49,7 +49,7 @@ If you need to inject a component living outside the persistence layer, use `@Im
 
 Use for tests requiring full Spring application context with database.
 
-[LastfmContextTestWithDb.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/common/archetypes/LastfmContextTestWithDb.java)
+[LastfmContextTestWithDb.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/test/archetypes/LastfmContextTestWithDb.java)
 
 ```java
 class LastfmApiCallGeneratorsRegistryTest extends LastfmContextTestWithDb {
@@ -68,7 +68,7 @@ class LastfmApiCallGeneratorsRegistryTest extends LastfmContextTestWithDb {
 
 ## Configuration Details
 
-The module provides [LastfmPostgresTestContainer.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/common/archetypes/LastfmPostgresTestContainer.java) meta-annotation that encapsulates TestContainer configuration.
+The module provides [LastfmPostgresTestContainer.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/test/db/LastfmPostgresTestContainer.java) meta-annotation that encapsulates TestContainer configuration.
 
 This meta-annotation is used by both `LastfmJpaTest` and `LastfmContextTestWithDb` base classes. 
 

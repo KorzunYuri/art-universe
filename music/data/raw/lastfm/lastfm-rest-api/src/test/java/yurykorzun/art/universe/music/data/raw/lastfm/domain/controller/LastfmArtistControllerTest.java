@@ -6,7 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
-import yurykorzun.art.universe.common.data.raw.domain.entity.ApprovalStatus;
+import yurykorzun.art.universe.data.raw.common.domain.entity.ApprovalStatus;
 import yurykorzun.art.universe.common.domain.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.common.domain.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCall;
@@ -15,7 +15,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.domain.dto.LastfmArtistResp
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.lookup.LastfmArtistLookupService;
-import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.entity.EntityCreationHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.test.common.entity.EntityCreationHelper;
 
 import java.util.HashSet;
 import java.util.List;

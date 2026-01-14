@@ -8,15 +8,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import yurykorzun.art.universe.common.data.raw.etl.entity.ApiCallStatus;
-import yurykorzun.art.universe.common.data.raw.etl.entity.ApiResponseStatus;
+import yurykorzun.art.universe.data.raw.common.etl.entity.ApiCallStatus;
+import yurykorzun.art.universe.data.raw.common.etl.entity.ApiResponseStatus;
 import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
-import yurykorzun.art.universe.music.data.raw.lastfm.etl.controller.LastfmApiResponseController;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.dto.LastfmApiResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.LastfmApiResponseService;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.LastfmEntityType;
-import yurykorzun.art.universe.common.config.CommonTestConfig;
+import yurykorzun.art.universe.common.test.config.CommonTestConfig;
 
 import java.time.Instant;
 import java.util.Map;

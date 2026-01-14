@@ -13,7 +13,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import yurykorzun.art.universe.common.domain.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.common.domain.dto.lookup.LookupResultDTO;
-import yurykorzun.art.universe.music.data.master.common.archetypes.BaseMasterDataMvcTest;
+import yurykorzun.art.universe.music.data.master.test.archetypes.BaseMasterDataMvcTest;
 import yurykorzun.art.universe.music.data.master.dto.ArtistDto;
 import yurykorzun.art.universe.music.data.master.dto.ArtistSaveRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.ArtistWithCategoriesDto;

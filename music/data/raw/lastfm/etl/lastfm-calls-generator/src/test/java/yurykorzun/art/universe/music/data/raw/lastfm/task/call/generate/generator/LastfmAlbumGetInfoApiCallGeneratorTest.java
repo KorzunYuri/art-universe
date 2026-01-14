@@ -10,7 +10,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.LastfmApiCallSe
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmAlbum;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.LastfmAlbumService;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.LastfmDataSnapshotService;
-import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.entity.EntityCreationHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.test.common.entity.EntityCreationHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.call.generate.LastfmApiCallEntityService;
 
 import java.util.List;

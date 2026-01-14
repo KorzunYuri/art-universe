@@ -24,13 +24,13 @@ Special case is testing, when we usually need only the basic OOTB methods to cre
 
 ### Collectable Entity Repositories
 
-**Location**: [collectable/repository/](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/repository)
+**Location**: [domain/repository/](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/repository)
 
 **Naming pattern**: `BaseLastfm[Entity]Repository`, entity being Artist|Album|Track|Tag
 
 ### Relationship Repositories
 
-**Location**: [collectable/repository/relationship/](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/repository/relationship)
+**Location**: [domain/repository/relationship/](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/repository/relationship)
 
 **Naming patterns**: 
 - for different entities: `BaseLastfm[ScopeEntity][ChildEntity]Repository`. 
@@ -40,14 +40,15 @@ Special case is testing, when we usually need only the basic OOTB methods to cre
 
 ### API Pipeline Repositories
 
-**Location**: [api/client/repository/](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/api/client/repository)
+**Location**: [etl/repository/](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/etl/repository)
+
 **Repositories**: 
 - `BaseLastfmApiCallRepository` - for API call tasks
 - `BaseLastfmApiResponseRepository` - for API responses containing raw JSON data
 
 ### Attribute History Repositories
 
-**Location**: [collectable/repository/attribute/](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/repository/attribute)
+**Location**: [domain/repository/attribute/](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/repository/attribute)
 
 - `BaseLastfmDataSnapshotRepository` - "Root" data snapshots
 - `BaseLastfmAttributeSnapshotRepository` - Attribute-related sub-snapshots
@@ -60,6 +61,6 @@ Special case is testing, when we usually need only the basic OOTB methods to cre
 
 ## Related Documentation
 
-- [LastFM Models](../../../../../docs/kb/modules/lastfm/lastfm-models/README.md) - Entity definitions for these repositories
+- [LastFM Models](../lastfm-models/README.md) - Entity definitions for these repositories
 - [LastFM Modules Overview](../README.md) - Overview of all LastFM modules
 - [Project Modules Index](../../../../../docs/MODULES.md) - Return to main modules index

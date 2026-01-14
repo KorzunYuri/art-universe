@@ -9,7 +9,7 @@ import org.springframework.data.domain.*;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import yurykorzun.art.universe.common.data.raw.domain.entity.ApprovalStatus;
+import yurykorzun.art.universe.data.raw.common.domain.entity.ApprovalStatus;
 import yurykorzun.art.universe.common.domain.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.common.domain.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.dto.ArtistSearchParams;
@@ -17,7 +17,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.domain.dto.LastfmArtistResp
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.lookup.LastfmArtistLookupService;
-import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.entity.EntityCreationHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.test.common.entity.EntityCreationHelper;
 import yurykorzun.art.universe.common.test.archetypes.BaseMvcTest;
 
 import java.util.Arrays;

@@ -3,7 +3,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.etl.repository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import yurykorzun.art.universe.common.data.raw.etl.entity.ApiCallStatus;
+import yurykorzun.art.universe.data.raw.common.etl.entity.ApiCallStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 

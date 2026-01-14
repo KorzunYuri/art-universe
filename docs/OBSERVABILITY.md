@@ -52,8 +52,9 @@ These are traced automatically by Spring Boot without explicit annotations:
 
 - **@Observed** Annotated Methods
 - **AOP-Based** Aspects, e.g.:
-  - [ApiCallGeneratorObservabilityAspect.java](../music/data/raw/lastfm/etl/lastfm-calls-generator/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/api/client/aspects/ApiCallGeneratorObservabilityAspect.java)
-  - [ApiResponseProcessorObservabilityAspect.java](../music/data/raw/lastfm/etl/lastfm-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/api/client/aspects/ApiResponseProcessorObservabilityAspect.java)
+  - [ApiCallGeneratorObservabilityAspect.java](../music/data/raw/lastfm/etl/lastfm-calls-generator/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/task/call/generate/aspect/ApiCallGeneratorObservabilityAspect.java)
+  - [ApiCallPerformerObservabilityAspect.java](../music/data/raw/lastfm/etl/lastfm-calls-performer/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/task/call/perform/aspect/ApiCallPerformerObservabilityAspect.java)
+  - [ApiResponseProcessorObservabilityAspect.java](../music/data/raw/lastfm/etl/lastfm-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/task/response/process/aspect/ApiResponseProcessorObservabilityAspect.java)
 
 List of observed/timed methods by module:
 

@@ -8,7 +8,7 @@ The module provides JPA utilities, base entities, and common persistence pattern
 
 **Purpose**: Abstract base class for all JPA entities in the project
 
-**Components**: [BaseEntity.java](src/main/java/yurykorzun/art/universe/common/persistence/entity/BaseEntity.java)
+**Components**: [BaseEntity.java](src/main/java/yurykorzun/art/universe/common/domain/entity/BaseEntity.java)
 
 **Features**:
 - `id` (Long) - Primary key with auto-generation
@@ -26,7 +26,7 @@ The module provides JPA utilities, base entities, and common persistence pattern
 **Components**:
 - [Coded.java](src/main/java/yurykorzun/art/universe/common/Coded.java) interface - Marker for coded enums
 - [CodedRegistry.java](src/main/java/yurykorzun/art/universe/common/CodedRegistry.java) - Central registry for coded enum instances
-- [CodedConverter.java](src/main/java/yurykorzun/art/universe/common/CodedConverter.java) - JPA converter for coded enums
+- [CodedConverter.java](src/main/java/yurykorzun/art/universe/common/persistence/converter/CodedConverter.java) - JPA converter for coded enums
 - [CodedAutoregistrator.java](src/main/java/yurykorzun/art/universe/common/CodedAutoregistrator.java) - Automatic registration using reflection
 - [TransitionAware.java](src/main/java/yurykorzun/art/universe/common/TransitionAware.java) - Support for state transitions
 
@@ -42,11 +42,11 @@ The module provides JPA utilities, base entities, and common persistence pattern
 **Location**: `service/lookup/`, `dto/lookup/`
 
 **Components**:
-- [BaseLookupService.java](src/main/java/yurykorzun/art/universe/common/service/lookup/BaseLookupService.java) - Abstract base for entity lookup by code
-- [SqlQueryBuilder.java](src/main/java/yurykorzun/art/universe/common/service/lookup/SqlQueryBuilder.java) - SQL query builder for complex lookups
-- DTOs: [LookupRequestDTO.java](src/main/java/yurykorzun/art/universe/common/dto/lookup/LookupRequestDTO.java), [LookupResultDTO.java](src/main/java/yurykorzun/art/universe/common/dto/lookup/LookupResultDTO.java), [BatchLookupRequestDTO.java](src/main/java/yurykorzun/art/universe/common/dto/lookup/BatchLookupRequestDTO.java), [BatchLookupResponseDTO.java](src/main/java/yurykorzun/art/universe/common/dto/lookup/BatchLookupResponseDTO.java)
+- [BaseLookupService.java](src/main/java/yurykorzun/art/universe/common/domain/service/lookup/BaseLookupService.java) - Abstract base for entity lookup by code
+- [SqlQueryBuilder.java](src/main/java/yurykorzun/art/universe/common/domain/service/lookup/SqlQueryBuilder.java) - SQL query builder for complex lookups
+- DTOs: [LookupRequestDTO.java](src/main/java/yurykorzun/art/universe/common/domain/dto/lookup/LookupRequestDTO.java), [LookupResultDTO.java](src/main/java/yurykorzun/art/universe/common/dto/lookup/LookupResultDTO.java), [BatchLookupRequestDTO.java](src/main/java/yurykorzun/art/universe/common/dto/lookup/BatchLookupRequestDTO.java), [BatchLookupResponseDTO.java](src/main/java/yurykorzun/art/universe/common/dto/lookup/BatchLookupResponseDTO.java)
 
-[BaseLookupService.java](src/main/java/yurykorzun/art/universe/common/service/lookup/BaseLookupService.java) defines the lookup algorithm with customization points:
+[BaseLookupService.java](src/main/java/yurykorzun/art/universe/common/domain/service/lookup/BaseLookupService.java) defines the lookup algorithm with customization points:
 - `isValidSearchRequest()` - Request validation
 - `buildQuery()` - SQL query construction
 - `mapResultsToDto()` - Result formatting
@@ -62,8 +62,8 @@ Subclasses override these methods to customize behavior.
 **Location**: `persistence/util/`
 
 **Components**:
-- [DatabaseUtils.java](src/main/java/yurykorzun/art/universe/common/persistence/util/DatabaseUtils.java) - Common database operations
-- [DbObjectMetadata.java](src/main/java/yurykorzun/art/universe/common/persistence/util/DbObjectMetadata.java) - Database object metadata extraction
+- [DatabaseUtils.java](src/main/java/yurykorzun/art/universe/common/persistence/DatabaseUtils.java) - Common database operations
+- [DbObjectMetadata.java](src/main/java/yurykorzun/art/universe/common/persistence/DbObjectMetadata.java) - Database object metadata extraction
 
 ### JPA Converters
 
@@ -91,7 +91,7 @@ public class ApiResponse extends BaseEntity {
 
 **Purpose**: base class for all DTOs used together with entities
 
-- [BaseEntityDto.java](src/main/java/yurykorzun/art/universe/common/dto/BaseEntityDto.java) - Base DTO matching BaseEntity structure
+- [BaseEntityDto.java](src/main/java/yurykorzun/art/universe/common/domain/dto/BaseEntityDto.java) - Base DTO matching BaseEntity structure
 
 ### Auto-Configuration 
 

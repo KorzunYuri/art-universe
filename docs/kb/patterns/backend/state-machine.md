@@ -23,7 +23,7 @@ For entity status fields stored in database. Combines [Coded Enum pattern](entit
 - `isValidTransition(target)` validates transitions using transition map
 - Stored as INTEGER in database via coded enum converter
 
-**Example**: [ApiCallStatus.java](../../../common/data/raw/data-raw-commons-jpa/src/main/java/yurykorzun/art/universe/common/data/raw/api/client/entity/ApiCallStatus.java)
+**Example**: [ApiCallStatus.java](../../../common/data/raw/data-raw-commons-jpa/src/main/java/yurykorzun/art/universe/common/data/raw/etl/entity/ApiCallStatus.java)
 
 States: `CREATED` → `PENDING` → `PROCESSING` → `SUCCESSFUL`/`FAILED`/`DUE_TO_RETRY`
 

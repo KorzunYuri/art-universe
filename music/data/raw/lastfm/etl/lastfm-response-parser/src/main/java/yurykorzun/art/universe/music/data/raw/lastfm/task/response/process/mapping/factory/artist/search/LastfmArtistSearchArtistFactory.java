@@ -1,7 +1,7 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.mapping.factory.artist.search;
 
 import org.springframework.stereotype.Component;
-import yurykorzun.art.universe.common.data.raw.domain.entity.ApprovalStatus;
+import yurykorzun.art.universe.data.raw.common.domain.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.mapping.factory.artist.LastfmArtistEntityFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.integration.dto.artist.search.ArtistSearchArtistDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmArtist;

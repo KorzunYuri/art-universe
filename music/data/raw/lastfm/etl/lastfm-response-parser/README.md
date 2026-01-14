@@ -3,14 +3,14 @@
 The LastFM Response Parser is **Stage 3** (final stage) of the [Lastfm ETL pipeline](../README.md).
 
 What it does:
-- parses [raw JSON responses](../../lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/api/client/entity/LastfmApiResponse.java) created by the [Lastfm Calls Performer](../lastfm-calls-performer/README.md)
+- parses [raw JSON responses](../../lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/etl/entity/LastfmApiResponse.java) created by the [Lastfm Calls Performer](../lastfm-calls-performer/README.md)
 - extracts entity data (artists, albums, tracks, tags) and persists to database
 - tracks attribute history, validates quality thresholds, and creates entity relationships
 
 
 ## Supported API Methods
 
-For list of supported Lastfm public API methods, see [ETL Supported Methods](../README.md#supported-api-methods)
+For list of supported Lastfm public API methods, see [ETL Supported Methods](../README.md#supported-lastfm-public-api-methods)
 
 
 ## Implementation Details
@@ -23,16 +23,15 @@ Key concepts are described on ETL pipeline level:
 - [Entities Blacklist](../README.md#entities-blacklist)
 - [Snapshots](../README.md#snapshots)
 - [SCD2 Attribute History](../README.md#scd2-attribute-history)
-- [Stop During Maintenance](../README.md#stop-during-maintenance)
 
 ### Key Components
 
-- [LastfmApiResponseProcessingScheduler.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/api/methods/common/scheduling/LastfmApiResponseProcessingScheduler.java) - Triggers response parsing every 1 second
-- [LastfmApiResponseProcessorsRegistry.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/api/methods/common/processing/LastfmApiResponseProcessorsRegistry.java) - Maps DTO classes to processor instances
-- [LastfmApiResponseProcessor.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/api/methods/common/processing/LastfmApiResponseProcessor.java) - Abstract base for all processors
-- [LastfmApiDtoProcessingService.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/api/methods/common/processing/LastfmApiDtoProcessingService.java) - Orchestrates DTO-to-entity mapping and saving
-- [AbstractEntityRelationService.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/service/relationship/AbstractEntityRelationService.java) - Reflection-based UPSERT SQL generation for relationships
-- [LastfmAttributeHistoryProcessor.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/service/attribute/LastfmAttributeHistoryProcessor.java) - Moves staging data to main attribute history table
+- [LastfmApiResponseProcessingScheduler.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/task/response/process/LastfmApiResponseProcessingScheduler.java) - Triggers response parsing every 1 second
+- [LastfmApiResponseProcessorsRegistry.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/task/response/process/LastfmApiResponseProcessorsRegistry.java) - Maps DTO classes to processor instances
+- [LastfmApiResponseProcessor.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/task/response/process/LastfmApiResponseProcessor.java) - Abstract base for all processors
+- [LastfmApiDtoProcessingOrchestrator.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/task/response/process/LastfmApiDtoProcessingOrchestrator.java) - Orchestrates DTO-to-entity mapping and saving
+- [AbstractEntityRelationService.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/service/relationship/AbstractEntityRelationService.java) - Reflection-based UPSERT SQL generation for relationships
+- [LastfmAttributeHistoryProcessor.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/task/response/process/processor/LastfmAttributeHistoryProcessor.java) - Moves staging data to main attribute history table
 
 Having Processors Registry gives us the following benefits:
 - Type Safety: Compile-time validation of processor-DTO mappings
@@ -46,7 +45,6 @@ Having Processors Registry gives us the following benefits:
 - Attribute history tracking uses double-buffered staging tables (`stg_attribute_history_a/b`) to prevent writer/processor conflicts
 - Quality validation automatically approves/blacklists entities based on configurable thresholds (listeners, plays, usage counts)
 - Relationship services use reflection to generate PostgreSQL UPSERT statements from JPA annotations
-- Response parsing [does not run during DB maintenance](../README.md#stop-during-maintenance)
 
 ### Response Processing Lifecycle
 
@@ -86,15 +84,15 @@ Apart from [ETL environment variables](../README.md#common-environment-variables
 
 This module follows these project-wide patterns:
 
-- [State Machine](../../../../../docs/kb/patterns/backend/state-machine.md) - `ApiResponseStatus` manages response parsing lifecycle with state transitions
-- [Entity Binding - Backend](../../../../../docs/kb/metafeatures/entity-binding/backend.md) - Responses bound to entities via `apiCall.entityType` and `apiCall.entityId`
-- [Coded Enums](../../../../../docs/kb/patterns/backend/entities/coded-enums.md) - `LastfmAttribute` enum with integer codes
-- [Base Entity](../../../../../docs/kb/patterns/backend/entities/base-entity.md) - All entities extend base classes
-- [Environment Profiles](../../../../../docs/kb/patterns/backend/configuration/environment-profiles.md) - dev, local, prod profiles
+- [State Machine](../../../../../../docs/kb/patterns/backend/state-machine.md) - `ApiResponseStatus` manages response parsing lifecycle with state transitions
+- [Entity Binding - Backend](../../../../../../docs/kb/features/binding-raw-entities-to-master.md) - Responses bound to entities via `apiCall.entityType` and `apiCall.entityId`
+- [Coded Enums](../../../../../../docs/kb/patterns/backend/entities/coded-enums.md) - `LastfmAttribute` enum with integer codes
+- [Base Entity](../../../../../../docs/kb/patterns/backend/entities/base-entity.md) - All entities extend base classes
+- [Environment Profiles](../../../../../../docs/kb/patterns/backend/configuration/environment-profiles.md) - dev, local, prod profiles
 
 
 ## Related Modules
 
-- [LastFM Models](../../lastfm-models/README.md) - JPA entities and DTOs. Contains [LastfmApiResponse](../../lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/api/client/entity/LastfmApiResponse.java)
+- [LastFM Models](../../lastfm-models/README.md) - JPA entities and DTOs. Contains [LastfmApiResponse](../../lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/etl/entity/LastfmApiResponse.java)
 - [LastFM ETL Pipeline](../README.md) - Parent ETL pipeline overview
 - [LastFM Modules Overview](../../README.md) - All LastFM modules

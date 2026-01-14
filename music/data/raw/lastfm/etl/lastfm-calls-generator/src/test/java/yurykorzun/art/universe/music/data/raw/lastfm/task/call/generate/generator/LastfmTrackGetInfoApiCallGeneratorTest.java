@@ -7,7 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import yurykorzun.art.universe.common.data.raw.domain.entity.ApprovalStatus;
+import yurykorzun.art.universe.data.raw.common.domain.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.integration.LastfmApiConstants;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.dto.LastfmApiCallCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCall;
@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static yurykorzun.art.universe.music.data.raw.lastfm.test.domain.entity.EntityCreationHelper.createArtist;
+import static yurykorzun.art.universe.music.data.raw.lastfm.test.common.entity.EntityCreationHelper.createArtist;
 
 @ExtendWith(MockitoExtension.class)
 class LastfmTrackGetInfoApiCallGeneratorTest {

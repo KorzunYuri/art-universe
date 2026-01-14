@@ -9,37 +9,38 @@ It complements the read-only LastFM REST API by allowing write operations for ap
 
 ### Controllers
 
-**Collectable Controllers** (`collectable/controller/`):
-- [LastfmArtistController.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/controller/LastfmArtistController.java) - Artist approval status and search requests
-- [LastfmAlbumController.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/controller/LastfmAlbumController.java) - Album approval status management
-- [LastfmTrackController.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/controller/LastfmTrackController.java) - Track approval status management
-- [LastfmTagController.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/controller/LastfmTagController.java) - Tag approval status management
+**Domain Controllers** (`domain/controller/`):
+- [LastfmArtistController.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/controller/LastfmArtistController.java) - Artist approval status and search requests
+- [LastfmAlbumController.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/controller/LastfmAlbumController.java) - Album approval status management
+- [LastfmTrackController.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/controller/LastfmTrackController.java) - Track approval status management
+- [LastfmTagController.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/controller/LastfmTagController.java) - Tag approval status management
 
 **Maintenance Controllers** (`maintenance/controller/`):
 - [MaintenanceController.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/maintenance/controller/MaintenanceController.java) - Database maintenance operations
 
-**API Client Controllers** (`api/client/controller/`):
-- [LastfmApiResponseController.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/api/client/controller/LastfmApiResponseController.java) - API response management
+**API Client Controllers** (`etl/controller/`):
+- [LastfmApiResponseController.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/etl/controller/LastfmApiResponseController.java) - API response management
 
 **General Controllers**:
 - [HealthController.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/controller/HealthController.java) - Health check endpoint
 
 ### Services
 
-**Collectable Services** (`collectable/service/`):
-- [LastfmArtistService.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/service/LastfmArtistService.java) - Artist approval status updates
-- [LastfmAlbumService.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/service/LastfmAlbumService.java) - Album approval status updates
-- [LastfmTrackService.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/service/LastfmTrackService.java) - Track approval status updates
-- [LastfmTagService.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/service/LastfmTagService.java) - Tag approval status updates
-- [LastfmArtistSearchRequestService.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/service/LastfmArtistSearchRequestService.java) - Artist search request management
-- [EntityStatusEventHandler.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/service/EntityStatusEventHandler.java) - Handles entity status change events
+**Domain Services** (`domain/service/`):
+- [LastfmArtistService.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/service/LastfmArtistService.java) - Artist approval status updates
+- [LastfmAlbumService.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/service/LastfmAlbumService.java) - Album approval status updates
+- [LastfmTrackService.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/service/LastfmTrackService.java) - Track approval status updates
+- [LastfmTagService.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/service/LastfmTagService.java) - Tag approval status updates
+- [LastfmArtistSearchRequestService.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/service/LastfmArtistSearchRequestService.java) - Artist search request management
+- [EntityStatusEventHandler.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/event/EntityStatusEventHandler.java) - Handles entity status change events
 
 **Maintenance Services** (`maintenance/service/`):
-- [DbMaintenanceService.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/maintenance/service/DbMaintenanceService.java) - Scheduled database cleanup and optimization
+- [MaintenanceOrchestrator.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/maintenance/service/DbMaintenanceExecutor.java) - Orchestrates maintenance (scheduled)
+- [DbMaintenanceService.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/maintenance/service/DbMaintenanceExecutor.java) - Performs database cleanup and optimization
 - [MusicDataIntegrationService.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/maintenance/service/MusicDataIntegrationService.java) - Unbinds Lastfm entities from Master entities when Lastfm entities are removed by maintenance job
 
-**API Client Services** (`api/client/service/`):
-- [LastfmApiResponseService.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/api/client/service/LastfmApiResponseService.java) - Displaying raw JSON data received from Lastfm API
+**API Client Services** (`etl/service/`):
+- [LastfmApiResponseService.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/etl/service/LastfmApiResponseService.java) - Displaying raw JSON data received from Lastfm API
 
 
 ## Special Features
@@ -51,8 +52,8 @@ When status of an Artist or Album is changed to `DECLINED` or `IGNORED`, this st
 - Tracks for Album
 
 To not block the caller, the updates are done asynchronously:
-- [EntityStatusChangedEvent.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/event/EntityStatusChangedEvent.java) is fired
-- [EntityStatusEventHandler.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/service/EntityStatusEventHandler.java) catches the event and updates child entities using per-entity-type queries
+- [EntityStatusChangedEvent.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/event/EntityStatusChangedEvent.java) is fired
+- [EntityStatusEventHandler.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/event/EntityStatusEventHandler.java) catches the event and updates child entities using per-entity-type queries
 
 ### Database Maintenance
 
@@ -62,7 +63,7 @@ To not block the caller, the updates are done asynchronously:
 
 **Cron**: Daily at 8:00 AM
 
-**Service**: [DbMaintenanceService.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/maintenance/service/DbMaintenanceService.java)
+**Service**: [DbMaintenanceService.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/maintenance/service/DbMaintenanceExecutor.java)
 
 
 ## API Endpoints

@@ -4,7 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
-import yurykorzun.art.universe.music.data.master.common.archetypes.BaseMasterDataJpaTest;
+import yurykorzun.art.universe.music.data.master.test.archetypes.BaseMasterDataJpaTest;
 import yurykorzun.art.universe.music.data.master.dto.CategoryDagDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategoryDagNodeDTO;
 import yurykorzun.art.universe.music.data.master.entity.*;

@@ -97,12 +97,12 @@ See: [Docker Deployment Guide](../../env/docker/README.md) for deployment proced
 ## Related Documentation
 
 ### Other Modules
-- [Music Data Master](../../docs/kb/modules/mu-data-master/README.md): Provides master artist/track data via views
-- [Music UI](../../docs/kb/modules/mu-ui/README.md): Frontend for quiz management
+- [Music Data Master](../data/master/README.md): Provides master artist/track data via views
+- [Music UI](../ui/README.md): Frontend for quiz management
 - [Commons Web](../../common/commons-web/README.md): Web utilities and CORS configuration
 - [Commons JPA](../../common/commons-jpa/README.md): BaseEntity and JPA utilities
 
 ### Project Guides
 - [Architecture Overview](../../docs/kb/guides/architecture-overview.md)
-- [Development Workflow](../../docs/kb/guides/development-workflow.md)
+- [Development Workflow](../../docs/DEVELOPMENT.md)
 - [Gradle Commands](../../docs/kb/guides/gradle-commands.md)

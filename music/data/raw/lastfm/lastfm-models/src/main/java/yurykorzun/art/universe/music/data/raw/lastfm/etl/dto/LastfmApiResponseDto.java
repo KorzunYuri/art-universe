@@ -1,7 +1,7 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.etl.dto;
 
-import yurykorzun.art.universe.common.data.raw.etl.entity.ApiCallStatus;
-import yurykorzun.art.universe.common.data.raw.etl.entity.ApiResponseStatus;
+import yurykorzun.art.universe.data.raw.common.etl.entity.ApiCallStatus;
+import yurykorzun.art.universe.data.raw.common.etl.entity.ApiResponseStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiResponse;

@@ -3,32 +3,31 @@
 The LastFM Calls Performer is the second stage of the [Lastfm ETL pipeline](../README.md).
 
 What it does:
-- retrieves pending [API call tasks](../../lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/api/client/entity/LastfmApiCall.java) created by the [Lastfm Calls Generator](../lastfm-calls-generator/README.md).
+- retrieves pending [API call tasks](../../lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/etl/entity/LastfmApiCall.java) created by the [Lastfm Calls Generator](../lastfm-calls-generator/README.md).
 - executes them with rate limiting and retry logic
-- stores [raw JSON responses](../../lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/api/client/entity/LastfmApiResponse.java) for processing by the [Lastfm Response Parser](../../../../../../docs/kb/modules/lastfm-response-parser/README.md).
+- stores [raw JSON responses](../../lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/etl/entity/LastfmApiResponse.java) for processing by the [Lastfm Response Parser](../lastfm-response-parser/README.md).
 
 
 ## Supported API Methods
 
-For list of supported Lastfm public API methods, see [ETL Supported Methods](../README.md#supported-api-methods)
+For list of supported Lastfm public API methods, see [ETL Supported Methods](../README.md#supported-lastfm-public-api-methods)
 
 
 ## Implementation Details
 
 ### Key Components
 
-- [LastfmApiCallScheduler.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/api/client/scheduling/LastfmApiCallScheduler.java) - Schedules execution iterations
-- [LastfmApiCallServiceImpl.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/api/client/service/impl/LastfmApiCallServiceImpl.java)- Orchestrates rate limiting, transaction management
-- [LastfmApiClientImpl.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/api/client/service/impl/LastfmApiClientImpl.java) - Executes HTTP requests using Spring RestClient
-- [LastfmApiResponseServiceImpl.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/api/client/service/impl/LastfmApiResponseServiceImpl.java) - Validates JSON responses and creates database records
+- [LastfmApiCallExecutionScheduler.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/task/call/perform/LastfmApiCallExecutionScheduler.java) - Schedules execution iterations
+- [LastfmCallsOrchestrator.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/task/call/perform/LastfmCallsOrchestrator.java)- Orchestrates api calls batch execution with rate limiting
+- [LastfmApiCallExecutorImpl.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/task/call/perform/LastfmApiCallExecutorImpl.java) - Executes HTTP requests using Spring RestClient
+- [LastfmApiCallServiceImpl.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/etl/service/impl/LastfmApiCallServiceImpl.java) - Handles api call state
+- [LastfmApiResponseServiceImpl.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/etl/service/impl/LastfmApiResponseServiceImpl.java) - Validates JSON responses and creates database records
 
 ### Details and Patterns
 
 - API call to Lastfm API are executed with strict rate limiting and exponential backoff
-- [LastfmApiCallServiceImpl.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/api/client/service/impl/LastfmApiCallServiceImpl.java) uses self-injection pattern for transactional status updates
+- `LastfmApiCallExecutorImpl.java` uses self-injection pattern for retries management
 - Complex CTE-based query with windows functions `LastfmApiCallRepository.findUnexpiredPendingApiCallsByDataSnapshotId()` guarantees fair distribution across call types
-- API calls [are not performed during DB mintenance](../README.md#stop-during-maintenance)
-
 
 ## Build & Deployment
 
@@ -49,12 +48,12 @@ Apart from [ETL environment variable](../README.md#common-environment-variables)
 
 This module follows these project-wide patterns:
 
-- [State Machine](../../../../../docs/kb/patterns/backend/state-machine.md) - `ApiCallStatus` and `ApiResponseStatus` manage execution and response lifecycle
+- [State Machine](../../../../../../docs/kb/patterns/backend/state-machine.md) - `ApiCallStatus` and `ApiResponseStatus` manage execution and response lifecycle
 
 
 ## Related Modules
 
 - [API Client](../../../../../../common/data/raw/data-raw-commons-api-client/README.md): HTTP client utilities
-- [LastFM Models](../../lastfm-models/README.md) - JPA entities and DTOs. Contains [LastfmApiCall](../../lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/api/client/entity/LastfmApiCall.java) and [LastfmApiResponse](../../lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/api/client/entity/LastfmApiResponse.java)
+- [LastFM Models](../../lastfm-models/README.md) - JPA entities and DTOs. Contains [LastfmApiCall](../../lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/etl/entity/LastfmApiCall.java) and [LastfmApiResponse](../../lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/etl/entity/LastfmApiResponse.java)
 - [LastFM ETL Pipeline](../README.md) - Parent ETL pipeline overview
 - [LastFM Modules Overview](../../README.md) - All LastFM modules

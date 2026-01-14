@@ -3,7 +3,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.etl.service.impl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import yurykorzun.art.universe.common.data.raw.etl.entity.ApiCallStatus;
+import yurykorzun.art.universe.data.raw.common.etl.entity.ApiCallStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.dto.LastfmApiCallCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCallType;

@@ -10,46 +10,43 @@ It is configured to read data from replica.
 
 ### Controllers
 
-**Collectable Controllers** (`collectable/controller/`):
-- [LastfmArtistController.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/controller/LastfmArtistController.java) - Artist search and lookup
-- [LastfmAlbumController.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/controller/LastfmAlbumController.java) - Album search and lookup
-- [LastfmTrackController.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/controller/LastfmTrackController.java) - Track search and lookup
-- [LastfmTagController.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/controller/LastfmTagController.java) - Tag search and entity-tag relationships
+**Domain Controllers** (`domain/controller/`):
+- [LastfmArtistController.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/controller/LastfmArtistController.java) - Artist search and lookup
+- [LastfmAlbumController.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/controller/LastfmAlbumController.java) - Album search and lookup
+- [LastfmTrackController.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/controller/LastfmTrackController.java) - Track search and lookup
+- [LastfmTagController.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/controller/LastfmTagController.java) - Tag search and entity-tag relationships
 
 **General Controllers**:
-- [HealthController.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/common/controller/HealthController.java) - Health check endpoint
+- [HealthController.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/controller/HealthController.java) - Health check endpoint
 
 ### Services
 
-**Collectable Services** (`collectable/service/`):
-- [LastfmArtistService.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/service/LastfmArtistService.java) - Artist retrieval and searching
-- [LastfmAlbumService.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/service/LastfmAlbumService.java) - Album retrieval and searching
-- [LastfmTrackService.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/service/LastfmTrackService.java) - Track retrieval and searching
-- [LastfmTagService.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/service/LastfmTagService.java) - Tag retrieval and searching
+**Domain Services** (`domain/service/`):
+- [LastfmArtistService.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/service/LastfmArtistService.java) - Artist retrieval and searching
+- [LastfmAlbumService.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/service/LastfmAlbumService.java) - Album retrieval and searching
+- [LastfmTrackService.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/service/LastfmTrackService.java) - Track retrieval and searching
+- [LastfmTagService.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/service/LastfmTagService.java) - Tag retrieval and searching
 
 **Lookup Services**:
-- [LastfmEntityLookupService.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/service/LastfmEntityLookupService.java) - Generic entity lookup by code
-- [LastfmArtistLookupService.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/service/LastfmArtistLookupService.java) - Artist-specific lookup
-- [LastfmTagLookupService.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/service/LastfmTagLookupService.java) - Tag-specific lookup
+- [LastfmEntityLookupService.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/service/lookup/LastfmEntityLookupService.java) - Generic entity lookup by code
+- [LastfmArtistLookupService.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/service/lookup/LastfmArtistLookupService.java) - Artist-specific lookup
+- [LastfmTagLookupService.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/service/lookup/LastfmTagLookupService.java) - Tag-specific lookup
 
 ### Repositories
 
-Module extends JPA repositories defined in [lastfm-repositories](lastfm-repositories/README.md) modules.
+Module extends JPA repositories defined in [lastfm-repositories](../lastfm-repositories/README.md) modules.
 
 ### DTOs
 
-Data transfer objects for API requests and responses (`collectable/dto/`):
+Data transfer objects for API requests and responses (`domain/dto/`):
 - Search parameters: `ArtistSearchParams`, `AlbumSearchParams`, `TrackSearchParams`, `TagSearchParams`
 - Entity relationships: `EntityTagDto`, `EntityTagSearchParams`
 
 ### Common Components
 
 Configuration and error handling (`common/`):
-- [TransactionConfig.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/common/config/TransactionConfig.java) - Read-only transaction configuration
-- [WebConfig.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/common/config/WebConfig.java) - CORS and web MVC configuration
-- [GlobalExceptionHandler.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/common/exception/GlobalExceptionHandler.java) - Centralized exception handling
-- [MaintenanceException.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/common/exception/MaintenanceException.java) - Thrown when ETL maintenance is in progress
-
+- [TransactionConfig.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/config/TransactionConfig.java) - Read-only transaction configuration
+- [WebConfig.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/config/WebConfig.java) - CORS and web MVC configuration
 
 ## API Endpoints
 
@@ -94,12 +91,12 @@ When running in dev mode (IntelliJ), environment variables are loaded in this or
 
 **Prerequisites**:
 - Dev stack must be running: `docker-compose -f env/docker/dev/docker-compose.yml up -d`
-- See [DEVELOPMENT.md](../../../../docs/DEVELOPMENT.md) for complete dev workflow
+- See [DEVELOPMENT.md](../../../../../docs/DEVELOPMENT.md) for complete dev workflow
 
 ### Deployment Notes
 
 The module reads from a PostgreSQL read replica configured via streaming replication.
-Write operations are performed by the [ETL pipeline](etl/README.md) and [ETL REST API](etl/lastfm-etl-rest-api/README.md) on the master database.
+Write operations are performed by the [ETL pipeline](../etl/README.md) and [ETL REST API](../etl/lastfm-etl-rest-api/README.md) on the master database.
 
 **Replication Lag Handling**: There is potential synchronization lag between write operations (master) and read operations (replica).
 The UI layer handles this through optimistic updates - changes are reflected immediately in the UI cache without waiting for replication, ensuring users see their modifications instantly.
@@ -107,16 +104,16 @@ The UI layer handles this through optimistic updates - changes are reflected imm
 
 ## Build & Deployment
 
-**See**: [Gradle Commands Guide](../../../../docs/kb/guides/gradle-commands.md) for standard build/test commands
+**See**: [Gradle Commands Guide](../../../../../docs/kb/guides/gradle-commands.md) for standard build/test commands
 
-**See**: [Docker Deployment Guide](../../../../env/docker/README.md) for deployment procedures
+**See**: [Docker Deployment Guide](../../../../../env/docker/README.md) for deployment procedures
 
 
 ## Testing
 
 The module includes comprehensive test coverage:
 
-- **Controller Tests**: Unit tests and MVC tests following [Controller Testing Pattern](../../../../docs/kb/patterns/backend/testing/testing-controllers.md)
+- **Controller Tests**: Unit tests and MVC tests following [Controller Testing Pattern](../../../../../docs/kb/patterns/backend/testing/testing-controllers.md)
 - **Service Tests**: Business logic tests for search and lookup operations
 - **Repository Tests**: JPA repository tests
 - **DTO Tests**: Parameter validation tests
@@ -127,13 +124,13 @@ The module includes comprehensive test coverage:
 
 This module follows these project-wide patterns:
 
-- [Controller Testing Pattern](../../../../docs/kb/patterns/backend/testing/testing-controllers.md) - Unit tests and MVC tests for all controllers
-- [API Conventions](../../../../docs/kb/patterns/backend/api/conventions.md) - RESTful API design and DTO usage
-- [Base Entity](../../../../docs/kb/patterns/backend/entities/base-entity.md) - All entities extend base classes
+- [Controller Testing Pattern](../../../../../docs/kb/patterns/backend/testing/testing-controllers.md) - Unit tests and MVC tests for all controllers
+- [API Conventions](../../../../../docs/kb/patterns/backend/api/conventions.md) - RESTful API design and DTO usage
+- [Base Entity](../../../../../docs/kb/patterns/backend/entities/base-entity.md) - All entities extend base classes
 
 
 ## Related Documentation
 
 - [LastFM Modules Overview](README.md) - Overview of all LastFM modules
-- [LastFM ETL Pipeline](etl/README.md) - ETL pipeline that populates the data
-- [Project Modules Index](../../../../docs/MODULES.md) - Return to main modules index
+- [LastFM ETL Pipeline](../etl/README.md) - ETL pipeline that populates the data
+- [Project Modules Index](../../../../../docs/MODULES.md) - Return to main modules index

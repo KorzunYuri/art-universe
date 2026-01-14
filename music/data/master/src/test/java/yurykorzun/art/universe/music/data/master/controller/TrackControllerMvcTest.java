@@ -12,7 +12,7 @@ import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProj
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.service.BindingService;
 import yurykorzun.art.universe.music.data.master.service.TrackService;
-import yurykorzun.art.universe.music.data.master.common.archetypes.BaseMasterDataMvcTest;
+import yurykorzun.art.universe.music.data.master.test.archetypes.BaseMasterDataMvcTest;
 
 import java.util.Arrays;
 import java.util.Collections;

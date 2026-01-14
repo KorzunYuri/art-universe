@@ -5,8 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.experimental.SuperBuilder;
-import yurykorzun.art.universe.common.data.raw.etl.entity.ApiResponse;
-import yurykorzun.art.universe.common.domain.converter.GzipBase64StringConverter;
+import yurykorzun.art.universe.data.raw.common.etl.entity.ApiResponse;
+import yurykorzun.art.universe.common.persistence.converter.GzipBase64StringConverter;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 
 import java.util.Objects;

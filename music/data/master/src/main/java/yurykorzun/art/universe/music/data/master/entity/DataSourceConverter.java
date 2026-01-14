@@ -1,7 +1,7 @@
 package yurykorzun.art.universe.music.data.master.entity;
 
 import jakarta.persistence.Converter;
-import yurykorzun.art.universe.common.domain.converter.CodedConverter;
+import yurykorzun.art.universe.common.persistence.converter.CodedConverter;
 
 /**
  * JPA converter for DataSource enum

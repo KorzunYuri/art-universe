@@ -19,10 +19,10 @@ The repositories don't replace the ones used in consuming modules, they are used
 
 **Purpose**: helps to create test entities while avoiding foreign keys hell.
 
-**Class**: [DbConsistencyHelper.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/common/DbConsistencyHelper.java)
+**Class**: [DbConsistencyHelper.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/test/persistence/DbConsistencyHelper.java)
 
 DbConsistencyHelper provides methods for creating and persisting an entity in one call. 
-It utilizes [EntityCreationHelper.java](../lastfm-commons-test-jpa/src/yurykorzun/art/universe/music/data/raw/lastfm/common/EntityCreationHelper.java) for entity creation and adds save step.
+It utilizes [EntityCreationHelper.java](../lastfm-commons-test-jpa/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/test/domain/entity/EntityCreationHelper.java) for entity creation and adds save step.
 
 There are two types of methods:
 - createAndSave{Entity} - create and save an entity
@@ -36,22 +36,22 @@ Creation methods usually have two types of signatures:
 
 ### Base Test Class
 
-**Purpose**: providing a base test class with persistence layer and [Consistency Helper](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/common/DbConsistencyHelper.java) OOTB.
+**Purpose**: providing a base test class with persistence layer and [Consistency Helper](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/test/persistence/DbConsistencyHelper.java) OOTB.
 
-**Class**: [LastfmJpaTestHelper.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/common/archetypes/LastfmJpaTestHelper.java)
+**Class**: [LastfmJpaTestHelper.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/test/archetypes/LastfmJpaTestHelper.java)
 
 Features:
-- extends [LastfmJpaTest.java](../lastfm-commons-test-db/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/common/archetypes/LastfmJpaTest.java) from [lastfm-commons-test-db](../lastfm-commons-test-db/README.md) module,
+- extends [LastfmJpaTest.java](../lastfm-commons-test-db/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/test/archetypes/LastfmJpaTest.java) from [lastfm-commons-test-db](../lastfm-commons-test-db/README.md) module,
 so Spring context limited to persistence layer with containerized database is loaded when the test starts
-- adds [DbConsistencyHelper.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/common/DbConsistencyHelper.java) and test repositories to the context
-- autowires [DbConsistencyHelper.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/common/DbConsistencyHelper.java) for usage in extending classes
+- adds [DbConsistencyHelper.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/test/persistence/DbConsistencyHelper.java) and test repositories to the context
+- autowires [DbConsistencyHelper.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/test/persistence/DbConsistencyHelper.java) for usage in extending classes
 
 #### How to use
 
-- extend test class from [LastfmJpaTestHelper.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/common/archetypes/LastfmJpaTestHelper.java)
-- inject [DbConsistencyHelper.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/common/DbConsistencyHelper.java)
+- extend test class from [LastfmJpaTestHelper.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/test/archetypes/LastfmJpaTestHelper.java)
+- inject [DbConsistencyHelper.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/test/persistence/DbConsistencyHelper.java)
 - add DbConsistencyHelper#cleanup call to @BeforeEach or @AfterEach
-- use [DbConsistencyHelper.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/common/DbConsistencyHelper.java) to create entities for tests when needed
+- use [DbConsistencyHelper.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/test/persistence/DbConsistencyHelper.java) to create entities for tests when needed
 
 #### Example
 

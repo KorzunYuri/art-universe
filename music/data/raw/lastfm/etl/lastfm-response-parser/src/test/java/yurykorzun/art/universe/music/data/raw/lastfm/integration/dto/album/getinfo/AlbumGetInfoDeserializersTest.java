@@ -2,7 +2,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.integration.dto.album.geti
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import yurykorzun.art.universe.common.config.CommonTestConfig;
+import yurykorzun.art.universe.common.test.config.CommonTestConfig;
 
 import java.io.IOException;
 import java.nio.file.Files;

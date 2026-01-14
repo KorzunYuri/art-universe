@@ -1,7 +1,7 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.domain.dto;
 
 import org.junit.jupiter.api.Test;
-import yurykorzun.art.universe.common.data.raw.domain.entity.ApprovalStatus;
+import yurykorzun.art.universe.data.raw.common.domain.entity.ApprovalStatus;
 
 import java.util.HashSet;
 import java.util.Set;

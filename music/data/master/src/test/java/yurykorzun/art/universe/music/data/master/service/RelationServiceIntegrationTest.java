@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
-import yurykorzun.art.universe.music.data.master.common.archetypes.BaseMasterDataJpaTest;
+import yurykorzun.art.universe.music.data.master.test.archetypes.BaseMasterDataJpaTest;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelatedEntityDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingStatusDTO;

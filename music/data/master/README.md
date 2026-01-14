@@ -39,13 +39,13 @@ For the full list of endpoints see [API Reference](docs/api.md)
 
 This module follows these project-wide patterns:
 
-| Pattern                                                                                 | Usage in Module |
-|-----------------------------------------------------------------------------------------|-----------------|
-| [REST API Conventions](../../../docs/kb/patterns/backend/api/conventions.md)            | Standard HTTP methods, response codes, pagination for all endpoints |
-| [Search vs Lookup](../../../docs/kb/patterns/backend/api/search-and-lookup.md)          | Two retrieval patterns: full search (paginated) and minimal lookup (dropdowns) |
-| [Coded Enums](../../../docs/kb/patterns/backend/entities/coded-enums.md)                | ApprovalStatus, DataSource, EntityType with JPA converters |
-| [Testing With Persistence Layer](../../../docs/kb/patterns/backend/testing/testing)     | TestContainers PostgreSQL for integration tests |
-| [Controllers Testing](../../../docs/kb/patterns/backend/testing/testing-controllers.md) | MockMvc for controller tests |
+| Pattern                                                                                                       | Usage in Module |
+|---------------------------------------------------------------------------------------------------------------|-----------------|
+| [REST API Conventions](../../../docs/kb/patterns/backend/api/conventions.md)                                  | Standard HTTP methods, response codes, pagination for all endpoints |
+| [Lookup](../../../docs/kb/patterns/backend/api/lookup.md)                                                     | Two retrieval patterns: full search (paginated) and minimal lookup (dropdowns) |
+| [Coded Enums](../../../docs/kb/patterns/backend/entities/coded-enums.md)                                      | ApprovalStatus, DataSource, EntityType with JPA converters |
+| [Testing With Persistence Layer](../../../docs/kb/patterns/backend/testing/testing-with-persistence-layer.md) | TestContainers PostgreSQL for integration tests |
+| [Controllers Testing](../../../docs/kb/patterns/backend/testing/testing-controllers.md)                       | MockMvc for controller tests |
 
 
 

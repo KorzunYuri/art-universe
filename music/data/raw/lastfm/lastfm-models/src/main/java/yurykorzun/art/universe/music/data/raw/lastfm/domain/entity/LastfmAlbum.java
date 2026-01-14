@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.antlr.v4.runtime.misc.NotNull;
-import yurykorzun.art.universe.common.domain.converter.GzipBase64StringConverter;
+import yurykorzun.art.universe.common.persistence.converter.GzipBase64StringConverter;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.BaseLastfmEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;

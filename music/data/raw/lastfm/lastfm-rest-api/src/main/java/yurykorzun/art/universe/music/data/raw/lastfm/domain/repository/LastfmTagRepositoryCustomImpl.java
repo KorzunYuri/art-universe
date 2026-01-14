@@ -10,7 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
-import yurykorzun.art.universe.common.data.raw.domain.entity.ApprovalStatus;
+import yurykorzun.art.universe.data.raw.common.domain.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.dto.EntityTagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmAlbum;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmArtist;

@@ -3,7 +3,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.domain.service.lookup;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import yurykorzun.art.universe.common.data.raw.domain.entity.ApprovalStatus;
+import yurykorzun.art.universe.data.raw.common.domain.entity.ApprovalStatus;
 import yurykorzun.art.universe.common.domain.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.common.domain.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmArtist;

@@ -11,7 +11,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import yurykorzun.art.universe.common.CodedRegistry;
-import yurykorzun.art.universe.common.data.raw.domain.entity.ApprovalStatus;
+import yurykorzun.art.universe.data.raw.common.domain.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.dto.EntityTagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.dto.EntityTagSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.dto.LastfmTagResponseDto;
@@ -19,7 +19,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.domain.dto.TagSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.repository.LastfmTagRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.entity.EntityCreationHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.test.common.entity.EntityCreationHelper;
 
 import java.util.*;
 import java.util.function.Consumer;

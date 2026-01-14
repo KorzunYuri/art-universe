@@ -5,7 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import yurykorzun.art.universe.common.CodedRegistry;
-import yurykorzun.art.universe.common.data.raw.domain.entity.ApprovalStatus;
+import yurykorzun.art.universe.data.raw.common.domain.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.dto.EntityTagDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.dto.EntityTagSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.dto.LastfmTagResponseDto;

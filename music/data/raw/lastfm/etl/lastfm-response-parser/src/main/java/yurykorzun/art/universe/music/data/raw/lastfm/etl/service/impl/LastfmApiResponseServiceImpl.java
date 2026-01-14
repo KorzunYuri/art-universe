@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import yurykorzun.art.universe.common.data.raw.etl.entity.ApiResponseStatus;
+import yurykorzun.art.universe.data.raw.common.etl.entity.ApiResponseStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.repository.LastfmApiResponseRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.LastfmApiResponseService;

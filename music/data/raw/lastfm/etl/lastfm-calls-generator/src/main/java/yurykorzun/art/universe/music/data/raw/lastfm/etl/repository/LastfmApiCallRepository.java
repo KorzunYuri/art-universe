@@ -2,7 +2,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.etl.repository;
 
 import lombok.NonNull;
 import org.springframework.stereotype.Repository;
-import yurykorzun.art.universe.common.data.raw.etl.entity.ApiCallType;
+import yurykorzun.art.universe.data.raw.common.etl.entity.ApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCall;
 
 import java.time.Instant;

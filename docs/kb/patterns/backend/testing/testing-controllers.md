@@ -18,7 +18,7 @@ For each REST controller, we maintain **two types of tests** to ensure comprehen
 - Test controller methods directly (no HTTP requests)
 - Use standard JUnit assertions (`assertEquals`, `assertNotNull`, etc.)
 
-**Example**: [LastfmArtistControllerTest.java](../../../../../music/data/raw/lastfm/etl/lastfm-etl-rest-api/src/test/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/controller/LastfmArtistControllerTest.java)
+**Example**: [LastfmArtistControllerTest.java](../../../../../music/data/raw/lastfm/etl/lastfm-etl-rest-api/src/test/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/controller/LastfmArtistControllerTest.java)
 
 ## MVC Tests
 
@@ -54,7 +54,7 @@ mockMvc.perform(patch("/api/v1/artists/{id}/approval", artistId)
 - Ensures DTOs match API contract
 - Type-safe (uses actual DTO classes)
 
-**Example**: [LastfmArtistControllerMvcTest.java](../../../../../music/data/raw/lastfm/etl/lastfm-etl-rest-api/src/test/java/yurykorzun/art/universe/music/data/raw/lastfm/collectable/controller/LastfmArtistControllerMvcTest.java)
+**Example**: [LastfmArtistControllerMvcTest.java](../../../../../music/data/raw/lastfm/etl/lastfm-etl-rest-api/src/test/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/controller/LastfmArtistControllerMvcTest.java)
 
 ## When to Use Each Test Type
 

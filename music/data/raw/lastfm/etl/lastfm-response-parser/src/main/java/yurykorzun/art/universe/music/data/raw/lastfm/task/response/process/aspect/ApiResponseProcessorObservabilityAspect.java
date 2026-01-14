@@ -7,7 +7,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
-import yurykorzun.art.universe.common.data.raw.etl.entity.ApiResponse;
+import yurykorzun.art.universe.data.raw.common.etl.entity.ApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.BaseApiResponseProcessor;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiResponse;
 

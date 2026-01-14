@@ -2,7 +2,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.etl.entity;
 
 import lombok.Getter;
 import yurykorzun.art.universe.common.CodedRegistry;
-import yurykorzun.art.universe.common.data.raw.etl.entity.ApiCallType;
+import yurykorzun.art.universe.data.raw.common.etl.entity.ApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmAlbum;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmTag;

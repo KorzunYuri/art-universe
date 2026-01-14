@@ -9,7 +9,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import yurykorzun.art.universe.common.persistence.DatabaseUtils;
-import yurykorzun.art.universe.common.config.CommonTestConfig;
+import yurykorzun.art.universe.common.test.config.CommonTestConfig;
 import yurykorzun.art.universe.music.quiz.dto.step.StepRunResult;
 import yurykorzun.art.universe.music.quiz.dto.step.stats.BlacklistFilterStats;
 import yurykorzun.art.universe.music.quiz.entity.Step;

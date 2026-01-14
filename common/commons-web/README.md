@@ -34,11 +34,3 @@ The module provides common web/REST utilities and standardized exception handlin
 **Class**: `config/CommonWebConfig.java`
 
 **How to use**: Add @Import annotation with `CommonWebConfig.java` to Spring @Configuration class.
-
-## Documentation
-
-**For detailed exception handling patterns**: See [exception-handling.md](./docs/exception-handling.md)
-
-**For web configuration details**: See [configuration.md](./docs/configuration.md)
-
-**For module-specific extension examples**: See [extending-handler.md](./docs/extending-handler.md)

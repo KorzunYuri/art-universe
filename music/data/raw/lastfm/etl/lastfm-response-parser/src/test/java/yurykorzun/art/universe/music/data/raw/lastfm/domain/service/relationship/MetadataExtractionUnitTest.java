@@ -13,7 +13,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.relationship.
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.relationship.impl.LastfmArtistAlbumServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.relationship.impl.LastfmArtistTagServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.relationship.impl.LastfmArtistsRelationServiceImpl;
-import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.entity.EntityCreationHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.test.common.entity.EntityCreationHelper;
 
 import static org.junit.jupiter.api.Assertions.*;
 

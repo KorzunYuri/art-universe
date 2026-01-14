@@ -1,6 +1,6 @@
 package yurykorzun.art.universe.common;
 
-import yurykorzun.art.universe.common.domain.converter.CodedConverter;
+import yurykorzun.art.universe.common.persistence.converter.CodedConverter;
 
 /**
  * <p>Interface  for enums persistence.</p>

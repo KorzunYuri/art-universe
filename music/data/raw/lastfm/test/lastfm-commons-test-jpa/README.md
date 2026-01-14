@@ -8,7 +8,7 @@ The module provides JPA-specific test utilities and base classes for testing Las
 
 **Purpose**: Create various entities for test purposes without persisting them.
 
-**Class**: [EntityCreationHelper.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/common/EntityCreationHelper.java).
+**Class**: [EntityCreationHelper.java](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/test/common/entity/EntityCreationHelper.java).
 
 Helper contains two types of methods for creating entities:
 - use case specific (e.g. creating an entity with an API call of a specific type as its source)
@@ -25,5 +25,5 @@ For consistent entities persistence use [lastfm-commons-test-db-helper](../lastf
 ## Related Documentation
 
 - [LastFM Modules Overview](../../README.md)
-- [LastFM Repositories](../../../../../../docs/kb/modules/lastfm/lastfm-repositories/README.md)
+- [LastFM Repositories](../../lastfm-repositories/README.md)
 - [Project Modules Index](../../../../../../docs/MODULES.md)

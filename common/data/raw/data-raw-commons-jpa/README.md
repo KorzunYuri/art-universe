@@ -6,7 +6,7 @@ The module extends [:common:commons-jpa](../../../../common/commons-jpa/README.m
 
 ### API Call Tracking Entities
 
-**Location**: `api/client/entity/`
+**Location**: `etl/entity/`
 
 | Entity | Purpose |
 |--------|---------|
@@ -65,7 +65,7 @@ The module extends [:common:commons-jpa](../../../../common/commons-jpa/README.m
 
 ### DTOs
 
-**Location**: `api/client/dto/`
+**Location**: `etl/dto/`
 
 | DTO | Purpose |
 |-----|---------|

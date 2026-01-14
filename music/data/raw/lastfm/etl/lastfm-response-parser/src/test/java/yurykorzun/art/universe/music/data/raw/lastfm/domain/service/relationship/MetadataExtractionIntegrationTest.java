@@ -14,7 +14,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.repository.rela
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.relationship.impl.LastfmArtistAlbumServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.relationship.impl.LastfmArtistTagServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.relationship.impl.LastfmArtistsRelationServiceImpl;
-import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.entity.EntityCreationHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.test.common.entity.EntityCreationHelper;
 import yurykorzun.art.universe.music.data.raw.lastfm.test.archetypes.LastfmJpaTestHelper;
 
 import java.util.List;

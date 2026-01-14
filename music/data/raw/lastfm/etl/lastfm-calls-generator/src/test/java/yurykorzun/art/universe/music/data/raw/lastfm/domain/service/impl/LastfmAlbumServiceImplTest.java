@@ -12,7 +12,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static yurykorzun.art.universe.music.data.raw.lastfm.test.domain.entity.EntityCreationHelper.createAlbum;
+import static yurykorzun.art.universe.music.data.raw.lastfm.test.common.entity.EntityCreationHelper.createAlbum;
 
 @ExtendWith(MockitoExtension.class)
 class LastfmAlbumServiceImplTest {

@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.jdbc.Sql;
-import yurykorzun.art.universe.music.data.master.common.archetypes.BaseMasterDataJpaTest;
+import yurykorzun.art.universe.music.data.master.test.archetypes.BaseMasterDataJpaTest;
 import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindResponseDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
