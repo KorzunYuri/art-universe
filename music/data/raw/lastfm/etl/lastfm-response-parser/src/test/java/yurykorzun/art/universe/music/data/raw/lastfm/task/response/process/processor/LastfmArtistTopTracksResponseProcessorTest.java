@@ -18,7 +18,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.Lastfm
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.relationship.LastfmArtistTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.repository.LastfmArtistRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.repository.LastfmTrackRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.repository.attribute.TestLastfmAttributeHistoryRecordRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.repository.relationship.TestLastfmArtistTrackRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.BlacklistedEntityUrlService;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.impl.LastfmArtistServiceImpl;
@@ -53,9 +52,6 @@ class LastfmArtistTopTracksResponseProcessorTest extends BaseLastfmApiResponsePr
 
     @Autowired
     private LastfmArtistRepository artistRepository;
-
-    @Autowired
-    private TestLastfmAttributeHistoryRecordRepository attributeHistoryRepository;
 
     @Autowired
     private BlacklistedEntityUrlService blacklistService;
@@ -110,7 +106,6 @@ class LastfmArtistTopTracksResponseProcessorTest extends BaseLastfmApiResponsePr
         
         // Record initial state
         long initialTrackCount = trackRepository.count();
-        long initialAttributeCount = attributeHistoryRepository.count();
         long initialArtistTrackCount = artistTrackRepository.count();
         
         // when
@@ -174,7 +169,6 @@ class LastfmArtistTopTracksResponseProcessorTest extends BaseLastfmApiResponsePr
         // Record state after first processing
         long trackCountAfterFirstProcessing = trackRepository.count();
         long artistCountAfterFirstProcessing = artistRepository.count();
-        long attributeCountAfterFirstProcessing = attributeHistoryRepository.count();
         long relationCountAfterFirstProcessing = artistTrackRepository.count();
         
         // when - process the same response again
@@ -185,8 +179,6 @@ class LastfmArtistTopTracksResponseProcessorTest extends BaseLastfmApiResponsePr
             "Track count should remain the same after second processing");
         assertEquals(artistCountAfterFirstProcessing, artistRepository.count(),
             "Artist count should remain the same after second processing");
-        assertEquals(attributeCountAfterFirstProcessing, attributeHistoryRepository.count(),
-            "Attribute count should remain the same after second processing");
         assertEquals(relationCountAfterFirstProcessing, artistTrackRepository.count(),
             "Relation count should remain the same after second processing");
     }

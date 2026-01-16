@@ -283,7 +283,8 @@ class DbMaintenanceExecutorIntegrationTest extends LastfmJpaTestHelper {
 
         assertTrue(messages.stream().anyMatch(msg -> msg.contains("entities to remove")));
         assertTrue(messages.stream().anyMatch(msg -> msg.contains("recorded") && msg.contains("entities for unbinding")));
-        assertTrue(messages.stream().anyMatch(msg -> msg.contains("cleanup attribute_history started")));
+        assertTrue(messages.stream().anyMatch(msg -> msg.contains("cleanup attribute_history_current started")));
+        assertTrue(messages.stream().anyMatch(msg -> msg.contains("cleanup attribute_history_archive started")));
         assertTrue(messages.stream().anyMatch(msg -> msg.contains("cleanup api_call started")));
         assertTrue(messages.stream().anyMatch(msg -> msg.contains("cleanup root table started")));
 

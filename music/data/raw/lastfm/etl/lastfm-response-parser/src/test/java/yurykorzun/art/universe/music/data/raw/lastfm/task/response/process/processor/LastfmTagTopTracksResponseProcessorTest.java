@@ -21,7 +21,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.relationship.
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.repository.LastfmArtistRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.repository.LastfmTagRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.repository.LastfmTrackRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.repository.attribute.TestLastfmAttributeHistoryRecordRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.repository.relationship.TestLastfmArtistTrackRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.BlacklistedEntityUrlService;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.impl.LastfmArtistServiceImpl;
@@ -60,9 +59,6 @@ class LastfmTagTopTracksResponseProcessorTest extends BaseLastfmApiResponseProce
 
     @Autowired
     private LastfmTagRepository tagRepository;
-
-    @Autowired
-    private TestLastfmAttributeHistoryRecordRepository attributeHistoryRepository;
 
     @Autowired
     private TestLastfmArtistTrackRepository artistTrackRepository;
@@ -112,7 +108,6 @@ class LastfmTagTopTracksResponseProcessorTest extends BaseLastfmApiResponseProce
         // Record initial state
         long initialTrackCount = trackRepository.count();
         long initialArtistCount = artistRepository.count();
-        long initialAttributeCount = attributeHistoryRepository.count();
         long initialArtistTrackCount = artistTrackRepository.count();
         
         // when
@@ -128,10 +123,6 @@ class LastfmTagTopTracksResponseProcessorTest extends BaseLastfmApiResponseProce
         int expectedArtistsCount = 27;
         assertEquals(initialArtistCount + expectedArtistsCount, artistRepository.count(), 
             "New artists should be created");
-        
-        // Verify attribute history records were created
-        assertFalse(attributeHistoryRepository.count() > initialAttributeCount,
-            "New attribute history records should not be created");
         
         // Verify artist-track relations were created
         assertEquals(initialArtistTrackCount + expectedTracksCount, artistTrackRepository.count(), 
@@ -212,7 +203,6 @@ class LastfmTagTopTracksResponseProcessorTest extends BaseLastfmApiResponseProce
         // Record state after first processing
         long trackCountAfterFirstProcessing = trackRepository.count();
         long artistCountAfterFirstProcessing = artistRepository.count();
-        long attributeCountAfterFirstProcessing = attributeHistoryRepository.count();
         long relationCountAfterFirstProcessing = artistTrackRepository.count();
         
         // when - process the same response again
@@ -223,8 +213,6 @@ class LastfmTagTopTracksResponseProcessorTest extends BaseLastfmApiResponseProce
             "Track count should remain the same after second processing");
         assertEquals(artistCountAfterFirstProcessing, artistRepository.count(),
             "Artist count should remain the same after second processing");
-        assertEquals(attributeCountAfterFirstProcessing, attributeHistoryRepository.count(),
-            "Attribute count should remain the same after second processing");
         assertEquals(relationCountAfterFirstProcessing, artistTrackRepository.count(),
             "Relation count should remain the same after second processing");
     }
@@ -508,7 +496,6 @@ class LastfmTagTopTracksResponseProcessorTest extends BaseLastfmApiResponseProce
         assertTrue(artistRepository.count() > initialArtistCount, "Artists should be created");
         assertTrue(trackRepository.count() > initialTrackCount, "Tracks should be created");
         assertTrue(artistTrackRepository.count() > 0, "Artist-track relationships should be created");
-        assertFalse(attributeHistoryRepository.count() > 0, "Attribute history records should not be created");
     }
 
     @Test

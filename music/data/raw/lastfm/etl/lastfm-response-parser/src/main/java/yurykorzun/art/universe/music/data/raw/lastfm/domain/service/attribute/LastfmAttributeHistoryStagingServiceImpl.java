@@ -3,7 +3,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.domain.service.attribute;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.attribute.LastfmAttributeHistoryRecord;
+import yurykorzun.art.universe.music.data.raw.lastfm.etl.dto.LastfmAttributeHistoryCandidate;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.processor.LastfmAttributeHistoryProcessor;
 
 import java.sql.Date;
@@ -11,12 +11,12 @@ import java.sql.Timestamp;
 import java.util.List;
 
 @Service
-public class LastfmAttributeHistoryServiceImpl implements LastfmAttributeHistoryService {
+public class LastfmAttributeHistoryStagingServiceImpl implements LastfmAttributeHistoryStagingService {
 
     private final JdbcTemplate jdbcTemplate;
     private final LastfmAttributeHistoryProcessor processor;
 
-    public LastfmAttributeHistoryServiceImpl(
+    public LastfmAttributeHistoryStagingServiceImpl(
             JdbcTemplate jdbcTemplate,
             LastfmAttributeHistoryProcessor processor) {
         this.jdbcTemplate = jdbcTemplate;
@@ -25,7 +25,7 @@ public class LastfmAttributeHistoryServiceImpl implements LastfmAttributeHistory
 
     @Override
     @Transactional
-    public void upsertCandidateValues(List<LastfmAttributeHistoryRecord> candidates) {
+    public void upsertCandidateValues(List<LastfmAttributeHistoryCandidate> candidates) {
         if (candidates.isEmpty()) {
             return;
         }
@@ -47,16 +47,16 @@ public class LastfmAttributeHistoryServiceImpl implements LastfmAttributeHistory
             """.formatted(currentTable);
             
         jdbcTemplate.batchUpdate(sql, candidates, candidates.size(), (ps, record) -> {
-            ps.setLong(1, record.getApiCallId());
-            ps.setInt(2, record.getEntityType().getCode());
-            ps.setLong(3, record.getEntityId());
-            ps.setInt(4, record.getAttribute().getCode());
-            ps.setObject(5, record.getScopeEntityType() != null ? record.getScopeEntityType().getCode() : null);
-            ps.setObject(6, record.getScopeEntityId());
-            ps.setString(7, record.getStringValue());
-            ps.setObject(8, record.getNumericValue());
-            ps.setTimestamp(9, Timestamp.from(record.getCollectionTs()));
-            ps.setDate(10, Date.valueOf(record.getValidFrom()));
+            ps.setLong(1, record.apiCallId());
+            ps.setInt(2, record.entityType().getCode());
+            ps.setLong(3, record.entityId());
+            ps.setInt(4, record.attribute().getCode());
+            ps.setObject(5, record.scopeEntityType() != null ? record.scopeEntityType().getCode() : null);
+            ps.setObject(6, record.scopeEntityId());
+            ps.setString(7, record.stringValue());
+            ps.setObject(8, record.numericValue());
+            ps.setTimestamp(9, Timestamp.from(record.collectionTs()));
+            ps.setDate(10, Date.valueOf(record.validFrom()));
         });
     }
 }

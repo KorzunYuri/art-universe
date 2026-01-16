@@ -24,12 +24,12 @@ import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.servi
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.attribute.LastfmAttribute;
-import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.attribute.LastfmAttributeHistoryRecord;
+import yurykorzun.art.universe.music.data.raw.lastfm.etl.dto.LastfmAttributeHistoryCandidate;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.relationship.LastfmArtistTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.LastfmTagService;
-import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.attribute.LastfmAttributeHistoryService;
+import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.attribute.LastfmAttributeHistoryStagingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.relationship.LastfmArtistTagService;
 
 import java.io.IOException;
@@ -43,7 +43,7 @@ public class LastfmArtistTopTagsResponseProcessor extends LastfmApiResponseProce
     private final LastfmTagService tagService;
     private final LastfmArtistService artistService;
     private final LastfmArtistTagService artistTagService;
-    private final LastfmAttributeHistoryService attributeHistoryService;
+    private final LastfmAttributeHistoryStagingService attributeHistoryService;
     private final LastfmApiDtoProcessingOrchestrator dtoProcessingService;
     private final DtoQualityService dtoQualityService;
     private final EntityFactory<LastfmTag, ArtistTopTagsTagDto> tagEntityFactory;
@@ -65,7 +65,7 @@ public class LastfmArtistTopTagsResponseProcessor extends LastfmApiResponseProce
         LastfmTagService tagService,
         LastfmArtistService artistService,
         LastfmArtistTagService artistTagService,
-        LastfmAttributeHistoryService attributeHistoryService,
+        LastfmAttributeHistoryStagingService attributeHistoryService,
         EntityFactory<LastfmTag, ArtistTopTagsTagDto> tagEntityFactory,
         LastfmApiDtoProcessingOrchestrator dtoProcessingService,
         DtoQualityService dtoQualityService,
@@ -163,16 +163,16 @@ public class LastfmArtistTopTagsResponseProcessor extends LastfmApiResponseProce
         artistTagService.upsertAll(relations);
         log.info("saved {} artist-tag relations", relations.size());
 
-        List<LastfmAttributeHistoryRecord> records = relations.stream()
-            .map(relation -> LastfmAttributeHistoryRecord.builder()
-                .apiCallId(sourceApiCall.getId())
-                .scopeEntityType(LastfmEntityType.ARTIST)
-                .scopeEntityId(relation.getArtist().getId())
-                .entityType(LastfmEntityType.TAG)
-                .entityId(relation.getTag().getId())
-                .attribute(LastfmAttribute.USAGE_COUNT)
-                .numericValue(Long.valueOf(relation.getUsageCount()))
-                .build())
+        List<LastfmAttributeHistoryCandidate> records = relations.stream()
+            .map(relation -> LastfmAttributeHistoryCandidate.ofScopedNumeric(
+                sourceApiCall.getId(),
+                LastfmEntityType.TAG,
+                relation.getTag().getId(),
+                LastfmAttribute.USAGE_COUNT,
+                LastfmEntityType.ARTIST,
+                relation.getArtist().getId(),
+                Long.valueOf(relation.getUsageCount())
+            ))
             .toList();
         attributeHistoryService.upsertCandidateValues(records);
     }

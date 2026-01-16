@@ -14,13 +14,10 @@ import yurykorzun.art.universe.music.data.raw.lastfm.integration.dto.artist.topa
 import yurykorzun.art.universe.music.data.raw.lastfm.test.utils.LastfmApiClientResourceUtil;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmAlbum;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmArtist;
-import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.attribute.LastfmAttribute;
-import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.attribute.LastfmAttributeHistoryRecord;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.relationship.LastfmArtistAlbum;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.repository.LastfmAlbumRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.repository.LastfmArtistRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.repository.attribute.TestLastfmAttributeHistoryRecordRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.repository.relationship.TestLastfmArtistAlbumRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.BlacklistedEntityUrlService;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.impl.LastfmAlbumServiceImpl;
@@ -53,9 +50,6 @@ class LastfmArtistTopAlbumsResponseProcessorTest extends BaseLastfmApiResponsePr
 
     @Autowired
     private LastfmArtistRepository artistRepository;
-
-    @Autowired
-    private TestLastfmAttributeHistoryRecordRepository attributeHistoryRepository;
 
     @Autowired
     private BlacklistedEntityUrlService blacklistService;
@@ -111,7 +105,6 @@ class LastfmArtistTopAlbumsResponseProcessorTest extends BaseLastfmApiResponsePr
 
         // Record initial state
         long initialAlbumCount = albumRepository.count();
-        long initialAttributeCount = attributeHistoryRepository.count();
         long initialArtistAlbumCount = artistAlbumRepository.count();
 
         // when
@@ -159,7 +152,6 @@ class LastfmArtistTopAlbumsResponseProcessorTest extends BaseLastfmApiResponsePr
 
         // Record state after first processing
         long albumCountAfterFirstProcessing = albumRepository.count();
-        long attributeCountAfterFirstProcessing = attributeHistoryRepository.count();
         long relationCountAfterFirstProcessing = artistAlbumRepository.count();
 
         // when - process the same response again
@@ -168,8 +160,6 @@ class LastfmArtistTopAlbumsResponseProcessorTest extends BaseLastfmApiResponsePr
         // then - counts should remain the same
         assertEquals(albumCountAfterFirstProcessing, albumRepository.count(),
             "Album count should remain the same after second processing");
-        assertEquals(attributeCountAfterFirstProcessing, attributeHistoryRepository.count(),
-            "Attribute count should remain the same after second processing");
         assertEquals(relationCountAfterFirstProcessing, artistAlbumRepository.count(),
             "Relation count should remain the same after second processing");
     }
@@ -204,22 +194,6 @@ class LastfmArtistTopAlbumsResponseProcessorTest extends BaseLastfmApiResponsePr
         // Verify only albums above threshold were processed
         assertEquals(initialAlbumCount + expectedAlbumsCount, albumRepository.count(),
             "Only albums above threshold should be created");
-
-        // Verify all created albums have play count above threshold
-        List<LastfmAlbum> savedAlbums = albumRepository.findAll();
-        for (LastfmAlbum album : savedAlbums) {
-            // Verify play count attribute using the test helper
-            List<Long> playCountValues = attributeHistoryRepository.findAttributeValuesForEntity(
-                LastfmAttribute.PLAY_COUNT, album.getType(), album.getId())
-                .stream()
-                .map(LastfmAttributeHistoryRecord::getNumericValue)
-                .toList();
-                
-            if (!playCountValues.isEmpty()) {
-                assertTrue(playCountValues.get(0) >= threshold,
-                    "Album play count should be above threshold");
-            }
-        }
     }
 
     @Test

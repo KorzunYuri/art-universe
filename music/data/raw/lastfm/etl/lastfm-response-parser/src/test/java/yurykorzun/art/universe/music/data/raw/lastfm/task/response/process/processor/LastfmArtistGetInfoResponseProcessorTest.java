@@ -7,11 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import yurykorzun.art.universe.data.raw.common.domain.entity.ApprovalStatus;
-import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCallType;
-import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiResponse;
-import yurykorzun.art.universe.music.data.raw.lastfm.integration.dto.artist.getinfo.ArtistGetInfoArtistDto;
-import yurykorzun.art.universe.music.data.raw.lastfm.integration.dto.artist.getinfo.ArtistGetInfoDtoRoot;
-import yurykorzun.art.universe.music.data.raw.lastfm.test.utils.LastfmApiClientResourceUtil;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.LastfmEntityRelationType;
@@ -19,19 +14,23 @@ import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.Lastfm
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.relationship.LastfmArtistTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.relationship.LastfmArtistsRelation;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.repository.LastfmTagRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.repository.TestLastfmArtistRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.repository.attribute.TestLastfmAttributeHistoryRecordRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.repository.relationship.TestLastfmArtistTagRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.repository.relationship.TestLastfmArtistsRelationRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.BlacklistedEntityUrlService;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.impl.LastfmArtistServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.impl.LastfmTagServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.relationship.impl.LastfmArtistTagServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.relationship.impl.LastfmArtistsRelationServiceImpl;
-import yurykorzun.art.universe.music.data.raw.lastfm.test.archetypes.BaseLastfmApiResponseProcessorTest;
+import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCallType;
+import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiResponse;
+import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.BlacklistedEntityUrlService;
+import yurykorzun.art.universe.music.data.raw.lastfm.integration.dto.artist.getinfo.ArtistGetInfoArtistDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.integration.dto.artist.getinfo.ArtistGetInfoDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.mapping.factory.artist.getinfo.LastfmArtistGetInfoArtistFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.mapping.factory.artist.getinfo.LastfmArtistGetInfoSimilarArtistFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.mapping.factory.artist.getinfo.LastfmArtistGetInfoTagFactory;
+import yurykorzun.art.universe.music.data.raw.lastfm.test.archetypes.BaseLastfmApiResponseProcessorTest;
+import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.repository.TestLastfmArtistRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.repository.relationship.TestLastfmArtistTagRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.repository.relationship.TestLastfmArtistsRelationRepository;
+import yurykorzun.art.universe.music.data.raw.lastfm.test.utils.LastfmApiClientResourceUtil;
 
 import java.io.IOException;
 import java.util.List;
@@ -68,9 +67,6 @@ class LastfmArtistGetInfoResponseProcessorTest extends BaseLastfmApiResponseProc
 
     @Autowired
     private TestLastfmArtistsRelationRepository artistsRelationRepository;
-
-    @Autowired
-    private TestLastfmAttributeHistoryRecordRepository attributeHistoryRepository;
 
     @Autowired
     private BlacklistedEntityUrlService blacklistService;
@@ -182,8 +178,7 @@ class LastfmArtistGetInfoResponseProcessorTest extends BaseLastfmApiResponseProc
         // Record initial state
         long initialTagCount = tagRepository.count();
         long initialArtistTagCount = artistTagRepository.count();
-        long initialAttributeCount = attributeHistoryRepository.count();
-        
+
         // when
         processor.processResponse(apiResponse);
         
@@ -228,8 +223,7 @@ class LastfmArtistGetInfoResponseProcessorTest extends BaseLastfmApiResponseProc
         long tagCount = tagRepository.count();
         long artistTagCount = artistTagRepository.count();
         long artistRelationCount = artistsRelationRepository.count();
-        long attributeCount = attributeHistoryRepository.count();
-        
+
         // Process again
         processor.processResponse(apiResponse);
         
@@ -243,8 +237,6 @@ class LastfmArtistGetInfoResponseProcessorTest extends BaseLastfmApiResponseProc
             "Artist-tag relation count should remain the same after second processing");
         assertEquals(artistRelationCount, artistsRelationRepository.count(), 
             "Artist-artist relation count should remain the same after second processing");
-        assertEquals(attributeCount, attributeHistoryRepository.count(),
-            "Attribute history record count should remain the same after second processing");
     }
 
     @Test

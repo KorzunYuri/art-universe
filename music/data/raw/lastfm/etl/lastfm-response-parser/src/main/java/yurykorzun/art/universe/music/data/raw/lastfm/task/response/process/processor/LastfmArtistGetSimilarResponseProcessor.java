@@ -22,12 +22,12 @@ import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.Lastf
 import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.service.DtoQualityService;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.attribute.LastfmAttribute;
-import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.attribute.LastfmAttributeHistoryRecord;
+import yurykorzun.art.universe.music.data.raw.lastfm.etl.dto.LastfmAttributeHistoryCandidate;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.LastfmEntityRelationType;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.relationship.LastfmArtistsRelation;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.LastfmArtistService;
-import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.attribute.LastfmAttributeHistoryService;
+import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.attribute.LastfmAttributeHistoryStagingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.relationship.LastfmArtistsRelationService;
 
 import java.io.IOException;
@@ -43,7 +43,7 @@ public class LastfmArtistGetSimilarResponseProcessor extends LastfmApiResponsePr
     private final LastfmApiDtoProcessingOrchestrator dtoProcessingService;
     private final EntityFactory<LastfmArtist, ArtistGetSimilarArtistDto> artistFactory;
     private final LastfmArtistsRelationService artistsRelationService;
-    private final LastfmAttributeHistoryService attributeHistoryService;
+    private final LastfmAttributeHistoryStagingService attributeHistoryService;
     private final DtoQualityService dtoQualityService;
 
     @Value("${lastfm.tasks.response-parse.methods.artist.get-similar.artist-match-threshold}")
@@ -64,7 +64,7 @@ public class LastfmArtistGetSimilarResponseProcessor extends LastfmApiResponsePr
         LastfmApiDtoProcessingOrchestrator dtoProcessingService,
         EntityFactory<LastfmArtist, ArtistGetSimilarArtistDto> artistFactory,
         LastfmArtistsRelationService artistsRelationService,
-        LastfmAttributeHistoryService attributeHistoryService,
+        LastfmAttributeHistoryStagingService attributeHistoryService,
         DtoQualityService dtoQualityService,
         @Qualifier(MappingConfig.LASTFM_API_RESPONSE_OBJECT_MAPPER_BEAN_NAME) ObjectMapper objectMapper
     ) {
@@ -132,16 +132,16 @@ public class LastfmArtistGetSimilarResponseProcessor extends LastfmApiResponsePr
         artistsRelationService.upsertAll(relations);
         log.info("saved {} artist-artist relations", relations.size());
 
-        List<LastfmAttributeHistoryRecord> records = relations.stream()
-            .map(relation -> LastfmAttributeHistoryRecord.builder()
-                .apiCallId(sourceApiCall.getId())
-                .scopeEntityType(LastfmEntityType.ARTIST)
-                .scopeEntityId(relation.getSourceArtist().getId())
-                .entityType(LastfmEntityType.ARTIST)
-                .entityId(relation.getTargetArtist().getId())
-                .attribute(LastfmAttribute.MATCH_COEFF)
-                .numericValue((long) relation.getMatchScore().multiply(new BigDecimal(100)).intValue())
-                .build())
+        List<LastfmAttributeHistoryCandidate> records = relations.stream()
+            .map(relation -> LastfmAttributeHistoryCandidate.ofScopedNumeric(
+                sourceApiCall.getId(),
+                LastfmEntityType.ARTIST,
+                relation.getTargetArtist().getId(),
+                LastfmAttribute.MATCH_COEFF,
+                LastfmEntityType.ARTIST,
+                relation.getSourceArtist().getId(),
+                (long) relation.getMatchScore().multiply(new BigDecimal(100)).intValue()
+            ))
             .toList();
         attributeHistoryService.upsertCandidateValues(records);
         log.info("saved {} artist-artist attribute records", records.size());

@@ -22,7 +22,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.domain.repository.LastfmAlb
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.repository.LastfmArtistRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.repository.LastfmTagRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.repository.LastfmTrackRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.repository.attribute.TestLastfmAttributeHistoryRecordRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.repository.relationship.TestLastfmAlbumTrackRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.repository.relationship.TestLastfmArtistTrackRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.repository.relationship.TestLastfmTrackTagRepository;
@@ -79,9 +78,6 @@ class LastfmTrackGetInfoResponseProcessorTest extends BaseLastfmApiResponseProce
 
     @Autowired
     private LastfmTagRepository tagRepository;
-
-    @Autowired
-    private TestLastfmAttributeHistoryRecordRepository attributeHistoryRepository;
 
     @Autowired
     private TestLastfmAlbumTrackRepository albumTrackRepository;

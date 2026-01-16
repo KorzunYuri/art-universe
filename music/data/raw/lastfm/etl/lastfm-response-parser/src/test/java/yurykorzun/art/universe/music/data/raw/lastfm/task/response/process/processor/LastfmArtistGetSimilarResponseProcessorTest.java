@@ -17,7 +17,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.Lastfm
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.relationship.LastfmArtistsRelation;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.repository.LastfmArtistRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.repository.attribute.TestLastfmAttributeHistoryRecordRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.repository.relationship.TestLastfmArtistsRelationRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.BlacklistedEntityUrlService;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.impl.LastfmArtistServiceImpl;
@@ -48,9 +47,6 @@ class LastfmArtistGetSimilarResponseProcessorTest extends BaseLastfmApiResponseP
 
     @Autowired
     private LastfmArtistRepository artistRepository;
-
-    @Autowired
-    private TestLastfmAttributeHistoryRecordRepository attributeHistoryRepository;
 
     @Autowired
     private TestLastfmArtistsRelationRepository artistsRelationRepository;
@@ -211,7 +207,6 @@ class LastfmArtistGetSimilarResponseProcessorTest extends BaseLastfmApiResponseP
         // Record counts after first processing
         long artistCount = artistRepository.count();
         long relationCount = artistsRelationRepository.count();
-        long attributeCount = attributeHistoryRepository.count();
 
         // Process again
         processor.processResponse(apiResponse);
@@ -222,8 +217,6 @@ class LastfmArtistGetSimilarResponseProcessorTest extends BaseLastfmApiResponseP
             "Artist count should remain the same after second processing");
         assertEquals(relationCount, artistsRelationRepository.count(),
             "Artist-artist relation count should remain the same after second processing");
-        assertEquals(attributeCount, attributeHistoryRepository.count(),
-            "Attribute history record count should remain the same after second processing");
     }
 
     @Test
