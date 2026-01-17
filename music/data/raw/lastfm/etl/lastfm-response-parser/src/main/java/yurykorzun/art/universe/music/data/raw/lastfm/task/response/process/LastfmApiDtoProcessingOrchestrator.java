@@ -12,7 +12,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.mappi
 import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.mapping.attributes.EntityAttributeHandler;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.dto.LastfmAttributeHistoryCandidate;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.BaseLastfmEntity;
-import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.attribute.LastfmAttributeHistoryStagingService;
+import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.LastfmAttributeHistoryStagingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.UniquenessSupport;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.service.EntityService;
 

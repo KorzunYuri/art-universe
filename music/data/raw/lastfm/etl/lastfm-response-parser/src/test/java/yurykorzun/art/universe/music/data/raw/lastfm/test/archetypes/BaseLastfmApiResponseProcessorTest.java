@@ -7,7 +7,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.Lastf
 import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.service.DtoQualityService;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.BlacklistedEntityUrlService;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.processor.LastfmAttributeHistoryProcessor;
-import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.attribute.LastfmAttributeHistoryStagingServiceImpl;
+import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.impl.LastfmAttributeHistoryStagingServiceImpl;
 
 /**
  * Base test class for LastFM API response processor tests.

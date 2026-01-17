@@ -1,21 +1,31 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.task.response.process;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.attribute.LastfmAttribute;
+import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.BaseLastfmEntity;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.LastfmEntityType;
-import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.attribute.LastfmAttributeHistoryStagingService;
-import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.attribute.LastfmAttributeHistoryStagingServiceImpl;
+import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.LastfmAttributeHistoryStagingService;
+import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.impl.LastfmAttributeHistoryStagingServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.dto.LastfmAttributeHistoryCandidate;
-import yurykorzun.art.universe.music.data.raw.lastfm.test.archetypes.LastfmJpaTestHelper;
+import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.processor.LastfmAttributeHistoryProcessor;
+import yurykorzun.art.universe.music.data.raw.lastfm.test.archetypes.LastfmJpaTestHelper;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -670,141 +680,136 @@ class LastfmAttributeHistoryProcessorTest extends LastfmJpaTestHelper {
         assertEquals(2, archivedCount, "Should have 2 archived records");
     }
 
-    @Test
-    void shouldTakeLatestRecordWhenMultipleStagingRecordsForSameEntityAttribute() {
-        // Given - manually insert multiple staging records for the same entity/attribute
-        // with different valid_from dates to simulate race condition or edge case
-        String currentTable = processor.getCurrentStagingTable();
+    record AttributeRecordMetadata(
+        LastfmApiCall apiCall,
+        @Nullable BaseLastfmEntity scopeEntity,
+        BaseLastfmEntity entity,
+        LastfmAttributeHistoryCandidate record
+    ) {}
 
-        var apiCall1 = consistencyHelper.createAndSaveApiCall();
-        var apiCall2 = consistencyHelper.createAndSaveApiCall();
-        var apiCall3 = consistencyHelper.createAndSaveApiCall();
+    AttributeRecordMetadata createExistingRecord(LocalDate validFrom) {
+        var apiCall = consistencyHelper.createAndSaveApiCall();
         var artist = consistencyHelper.createAndSaveArtist();
         entityManager.flush();
 
-        // Insert 3 records for the same entity/attribute with different dates
-        // Oldest record
-        jdbcTemplate.update("""
-            INSERT INTO %s
-            (api_call_id, entity_type, entity_id, attribute_id, numeric_value, valid_from, collection_ts)
-            VALUES (?, ?, ?, ?, ?, ?, NOW() - INTERVAL '2 hours')
-            """.formatted(currentTable),
-            apiCall1.getId(),
-            LastfmEntityType.ARTIST.getCode(),
+        var record = new LastfmAttributeHistoryCandidate(
+            apiCall.getId(),
+            artist.getType(),
             artist.getId(),
-            LastfmAttribute.LISTENERS_COUNT.getCode(),
-            1000L, // oldest value
-            LocalDate.now().minusDays(2)
+            LastfmAttribute.LISTENERS_COUNT,
+            null,
+            null,
+            Instant.now(),
+            null,
+            500L,
+            validFrom
         );
 
-        // Middle record
+        // Insert existing record in current table
         jdbcTemplate.update("""
-            INSERT INTO %s
-            (api_call_id, entity_type, entity_id, attribute_id, numeric_value, valid_from, collection_ts)
-            VALUES (?, ?, ?, ?, ?, ?, NOW() - INTERVAL '1 hour')
-            """.formatted(currentTable),
-            apiCall2.getId(),
-            LastfmEntityType.ARTIST.getCode(),
-            artist.getId(),
-            LastfmAttribute.LISTENERS_COUNT.getCode(),
-            2000L, // middle value
-            LocalDate.now().minusDays(1)
+            INSERT INTO mu_raw_lastfm.attribute_history_current
+            (id, api_call_id, entity_type, entity_id, attribute_id, numeric_value, valid_from, collection_ts)
+            VALUES (nextval('mu_raw_lastfm.attribute_history_seq'), ?, ?, ?, ?, ?, ?, NOW())
+            """,
+            record.apiCallId(),
+            record.entityType().getCode(),
+            record.entityId(),
+            record.attribute().getCode(),
+            record.numericValue(),
+            record.validFrom()
         );
 
-        // Latest record (should be selected)
+        // Insert previous record in archive table
         jdbcTemplate.update("""
-            INSERT INTO %s
-            (api_call_id, entity_type, entity_id, attribute_id, numeric_value, valid_from, collection_ts)
-            VALUES (?, ?, ?, ?, ?, ?, NOW())
-            """.formatted(currentTable),
-            apiCall3.getId(),
-            LastfmEntityType.ARTIST.getCode(),
-            artist.getId(),
-            LastfmAttribute.LISTENERS_COUNT.getCode(),
-            3000L, // latest value - should be used
-            LocalDate.now()
+            INSERT INTO mu_raw_lastfm.attribute_history_archive
+            (id, api_call_id, entity_type, entity_id, attribute_id, numeric_value, valid_from, valid_till, collection_ts)
+            VALUES (nextval('mu_raw_lastfm.attribute_history_seq'), ?, ?, ?, ?, ?, ?, ?, NOW())
+            """,
+            record.apiCallId(),
+            record.entityType().getCode(),
+            record.entityId(),
+            record.attribute().getCode(),
+            record.numericValue(),
+            record.validFrom().minusDays(2),
+            record.validFrom().minusDays(1)
         );
 
-        // Verify we have 3 records in staging
-        Integer stagingCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM " + currentTable, Integer.class);
-        assertEquals(3, stagingCount, "Should have 3 staging records before processing");
-
-        // When
-        var result = processor.processBatch(currentTable, 0, 10);
-
-        // Then - should only insert 1 record (the latest one, deduplicated)
-        assertEquals(0, result.archived(), "Should archive 0 records (no existing values)");
-        assertEquals(1, result.inserted(), "Should insert only 1 record (deduplicated from 3)");
-
-        // Verify the inserted value is the latest one
-        Long currentValue = jdbcTemplate.queryForObject("""
-            SELECT numeric_value FROM mu_raw_lastfm.attribute_history_current
-            WHERE entity_id = ? AND attribute_id = ?
-            """, Long.class, artist.getId(), LastfmAttribute.LISTENERS_COUNT.getCode());
-        assertEquals(3000L, currentValue, "Should have the latest value (3000L)");
-
-        // Verify only 1 record in current table for this entity/attribute
-        Integer currentCount = jdbcTemplate.queryForObject("""
-            SELECT COUNT(*) FROM mu_raw_lastfm.attribute_history_current
-            WHERE entity_id = ? AND attribute_id = ?
-            """, Integer.class, artist.getId(), LastfmAttribute.LISTENERS_COUNT.getCode());
-        assertEquals(1, currentCount, "Should have exactly 1 current record");
+        return new AttributeRecordMetadata(
+            apiCall,
+            null,
+            artist,
+            record
+        );
     }
 
-    @Test
-    void shouldTakeLatestByCollectionTsWhenValidFromIsSame() {
-        // Given - multiple staging records with same valid_from but different collection_ts
-        String currentTable = processor.getCurrentStagingTable();
+    @Nested
+    @DisplayName("Duplicate records handling")
+    class DuplicateRecordsHandlingTest {
 
-        var apiCall1 = consistencyHelper.createAndSaveApiCall();
-        var apiCall2 = consistencyHelper.createAndSaveApiCall();
-        var artist = consistencyHelper.createAndSaveArtist();
-        entityManager.flush();
+        private static final LocalDate BASE_VALID_FROM = LocalDate.now().minusDays(1);
 
-        // Earlier collection timestamp
-        jdbcTemplate.update("""
+        private static Stream<Arguments> newRecordValidFromValues() {
+            return Stream.of(
+                Arguments.of(BASE_VALID_FROM),
+                Arguments.of(BASE_VALID_FROM.minusDays(2))
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("newRecordValidFromValues")
+        void shouldSkipStagingRecordWithIrrelevantValidFrom(LocalDate newRecordValidFrom) {
+            // Given - existing record in current table with specific valid_from
+            AttributeRecordMetadata recordMetadata = createExistingRecord(newRecordValidFrom);
+            var existingRecord = recordMetadata.record;
+            var apiCall1 = recordMetadata.apiCall;
+            var entity = recordMetadata.entity;
+            var attribute = existingRecord.attribute();
+
+            // Insert staging record with SAME valid_from but different value
+            String currentTable = processor.getCurrentStagingTable();
+            var apiCall2 = consistencyHelper.createAndSaveApiCall();
+            entityManager.flush();
+            // Insert duplicate record in staging table
+            jdbcTemplate.update("""
             INSERT INTO %s
-            (api_call_id, entity_type, entity_id, attribute_id, numeric_value, valid_from, collection_ts)
-            VALUES (?, ?, ?, ?, ?, ?, NOW() - INTERVAL '1 hour')
+            (id, api_call_id, entity_type, entity_id, attribute_id, numeric_value, valid_from, collection_ts)
+            VALUES (nextval('mu_raw_lastfm.attribute_history_seq'), ?, ?, ?, ?, ?, ?, NOW())
             """.formatted(currentTable),
-            apiCall1.getId(),
-            LastfmEntityType.ARTIST.getCode(),
-            artist.getId(),
-            LastfmAttribute.LISTENERS_COUNT.getCode(),
-            1000L,
-            LocalDate.now() // same valid_from
-        );
+                apiCall2.getId(),
+                existingRecord.entityType().getCode(),
+                existingRecord.entityId(),
+                existingRecord.attribute().getCode(),
+                1000L, // different value
+                existingRecord.validFrom()
+            );
 
-        // Later collection timestamp (should be selected)
-        jdbcTemplate.update("""
-            INSERT INTO %s
-            (api_call_id, entity_type, entity_id, attribute_id, numeric_value, valid_from, collection_ts)
-            VALUES (?, ?, ?, ?, ?, ?, NOW())
-            """.formatted(currentTable),
-            apiCall2.getId(),
-            LastfmEntityType.ARTIST.getCode(),
-            artist.getId(),
-            LastfmAttribute.LISTENERS_COUNT.getCode(),
-            2000L, // this should be used
-            LocalDate.now() // same valid_from
-        );
+            // When
+            var result = processor.processBatch(currentTable, 0, 10);
 
-        // When
-        var result = processor.processBatch(currentTable, 0, 10);
+            // Then - should skip the staging record (not archive, not insert)
+            assertEquals(0, result.archived(), "Should not archive (staging is not newer)");
+            assertEquals(0, result.inserted(), "Should not insert (staging is not newer)");
 
-        // Then - should insert only 1 record with the latest collection timestamp
-        assertEquals(1, result.inserted(), "Should insert only 1 record");
-
-        Long currentValue = jdbcTemplate.queryForObject("""
+            // Verify original value is unchanged in current table
+            Long currentValue = jdbcTemplate.queryForObject("""
             SELECT numeric_value FROM mu_raw_lastfm.attribute_history_current
             WHERE entity_id = ? AND attribute_id = ?
-            """, Long.class, artist.getId(), LastfmAttribute.LISTENERS_COUNT.getCode());
-        assertEquals(2000L, currentValue, "Should have the value from latest collection_ts (2000L)");
+            """, Long.class, entity.getId(), attribute.getCode());
+            assertEquals(existingRecord.numericValue(), currentValue, "Original value should be unchanged");
 
-        Long currentApiCallId = jdbcTemplate.queryForObject("""
+            // Verify original api_call_id is unchanged
+            Long currentApiCallId = jdbcTemplate.queryForObject("""
             SELECT api_call_id FROM mu_raw_lastfm.attribute_history_current
             WHERE entity_id = ? AND attribute_id = ?
-            """, Long.class, artist.getId(), LastfmAttribute.LISTENERS_COUNT.getCode());
-        assertEquals(apiCall2.getId(), currentApiCallId, "Should have api_call_id from latest collection_ts");
+            """, Long.class, entity.getId(), attribute.getCode());
+            assertEquals(apiCall1.getId(), currentApiCallId, "Original api_call_id should be unchanged");
+
+            // Verify no records in archive
+            Integer archivedCount = jdbcTemplate.queryForObject("""
+            SELECT COUNT(*) FROM mu_raw_lastfm.attribute_history_archive
+            WHERE entity_id = ? AND attribute_id = ?
+            """, Integer.class, entity.getId(), attribute.getCode());
+            assertEquals(1, archivedCount, "Should have no new archived records");
+        }
     }
 }

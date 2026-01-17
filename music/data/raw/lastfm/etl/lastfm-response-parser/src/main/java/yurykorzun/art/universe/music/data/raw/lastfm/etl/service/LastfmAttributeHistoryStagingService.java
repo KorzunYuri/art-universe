@@ -1,4 +1,4 @@
-package yurykorzun.art.universe.music.data.raw.lastfm.domain.service.attribute;
+package yurykorzun.art.universe.music.data.raw.lastfm.etl.service;
 
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.dto.LastfmAttributeHistoryCandidate;
 

@@ -1,9 +1,10 @@
-package yurykorzun.art.universe.music.data.raw.lastfm.domain.service.attribute;
+package yurykorzun.art.universe.music.data.raw.lastfm.etl.service.impl;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.dto.LastfmAttributeHistoryCandidate;
+import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.LastfmAttributeHistoryStagingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.processor.LastfmAttributeHistoryProcessor;
 
 import java.sql.Date;

@@ -26,6 +26,10 @@ import org.springframework.transaction.annotation.Transactional;
  *   <li>No partial index maintenance for valid_till filter</li>
  *   <li>Archive table is append-only (no updates)</li>
  * </ol>
+ * <p>
+ * Staging records are only processed if they are strictly newer than existing current values
+ * (staging.valid_from &gt; current.valid_from). Records with equal or older valid_from dates
+ * are silently skipped and removed during batch truncation.
  */
 @Component
 @Slf4j
@@ -170,11 +174,13 @@ public class LastfmAttributeHistoryProcessor {
                     AND COALESCE(c.scope_entity_id, -1) = COALESCE(s.scope_entity_id, -1)
             ),
             changed_records AS (
-                -- Identify records that have changed values
+                -- Identify records that have changed values AND are strictly newer
+                -- Skip staging records with valid_from <= current valid_from (already processed or outdated)
                 SELECT *
                 FROM existing_values
-                WHERE string_value IS DISTINCT FROM new_string_value
-                   OR numeric_value IS DISTINCT FROM new_numeric_value
+                WHERE new_valid_from > valid_from  -- Only process if staging is strictly newer
+                  AND (string_value IS DISTINCT FROM new_string_value
+                       OR numeric_value IS DISTINCT FROM new_numeric_value)
             ),
             archived AS (
                 -- Move changed records to archive with calculated valid_till
