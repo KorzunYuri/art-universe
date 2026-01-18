@@ -55,7 +55,7 @@ Both entities' status flows are managed by [State Machines](../../../../../docs/
 
 Entities tracking changes to entity attributes over time:
 
-- [LastfmAttributeHistoryRecord](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/entity/attribute/LastfmAttributeHistoryRecord.java) - Historical attribute value (listener counts, play counts)
+- [LastfmAttributeHistoryCandidate](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/etl/dto/LastfmAttributeHistoryCandidate.java) - Historical attribute value (listener counts, play counts)
 - [LastfmAttributeSnapshot](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/etl/entity/LastfmAttributeSnapshot.java) - Snapshot of all attributes at a point in time
 - [LastfmDataSnapshot](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/etl/entity/LastfmDataSnapshot.java) - Complete data snapshot
 

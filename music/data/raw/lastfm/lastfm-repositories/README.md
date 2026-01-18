@@ -45,14 +45,8 @@ Special case is testing, when we usually need only the basic OOTB methods to cre
 **Repositories**: 
 - `BaseLastfmApiCallRepository` - for API call tasks
 - `BaseLastfmApiResponseRepository` - for API responses containing raw JSON data
-
-### Attribute History Repositories
-
-**Location**: [domain/repository/attribute/](src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/repository/attribute)
-
 - `BaseLastfmDataSnapshotRepository` - "Root" data snapshots
 - `BaseLastfmAttributeSnapshotRepository` - Attribute-related sub-snapshots
-- `BaseLastfmAttributeHistoryRecordRepository` - Attribute changes tracking
 
 ### Supporting Repositories
 

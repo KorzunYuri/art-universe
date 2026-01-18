@@ -110,7 +110,7 @@ Watch [Calls Generator config](lastfm-calls-generator/src/main/resources/applica
 
 ### SCD2 Attribute History
 
-ETL maintains history of collected attributes via [LastfmAttributeHistoryRecord.java](../lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/entity/attribute/LastfmAttributeHistoryRecord.java).
+ETL maintains history of collected attributes via [LastfmAttributeHistoryCandidate.java](../lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/etl/dto/LastfmAttributeHistoryCandidate.java).
 The value of attribute can be either number or string.
 
 ## Data Flow Example
