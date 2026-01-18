@@ -45,9 +45,9 @@ lastfm:
       size: 4
       await-termination-secs: 300
     response-parse:
-      fixed-delay-secs: 1
+      fixed-delay-secs: 5
     attribute-history:
-      fixed-delay-secs: 1
+      fixed-delay-secs: 30
   tasks:
     response-parse:
       thresholds:

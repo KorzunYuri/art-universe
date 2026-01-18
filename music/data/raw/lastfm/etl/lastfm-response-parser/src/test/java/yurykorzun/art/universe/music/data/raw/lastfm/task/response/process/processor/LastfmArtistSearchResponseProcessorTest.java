@@ -16,7 +16,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.integration.dto.artist.sear
 import yurykorzun.art.universe.music.data.raw.lastfm.test.utils.LastfmApiClientResourceUtil;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.repository.LastfmArtistRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.repository.attribute.TestLastfmAttributeHistoryRecordRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.impl.LastfmArtistServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.test.archetypes.BaseLastfmApiResponseProcessorTest;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.utils.StringUtils;
@@ -43,9 +42,6 @@ class LastfmArtistSearchResponseProcessorTest extends BaseLastfmApiResponseProce
 
     @Autowired
     private LastfmArtistRepository artistRepository;
-
-    @Autowired
-    private TestLastfmAttributeHistoryRecordRepository attributeHistoryRepository;
 
     @Autowired
     private EntityManager entityManager;
@@ -102,8 +98,7 @@ class LastfmArtistSearchResponseProcessorTest extends BaseLastfmApiResponseProce
         
         // Record initial state
         long initialArtistCount = artistRepository.count();
-        long initialAttributeCount = attributeHistoryRepository.count();
-        
+
         // Calculate expected attribute count
         // Each artist has 1 attributes (LISTENERS_COUNT) from artistAttrHandlers. URL & MBID have been excluded from history
         int expectedAttributesPerArtist = 1;
@@ -153,8 +148,7 @@ class LastfmArtistSearchResponseProcessorTest extends BaseLastfmApiResponseProce
         
         // Record initial state
         long initialArtistCount = artistRepository.count();
-        long initialAttributeCount = attributeHistoryRepository.count();
-        
+
         // Calculate expected counts
         long expectedArtistsCount = dtoRoot.getRootObject().getMatches().getArtists().stream()
             .filter(artist -> StringUtils.getSimilarity(artist.getName(), SEARCH_STRING) > threshold)
@@ -189,8 +183,7 @@ class LastfmArtistSearchResponseProcessorTest extends BaseLastfmApiResponseProce
         
         // Record initial state
         long initialArtistCount = artistRepository.count();
-        long initialAttributeCount = attributeHistoryRepository.count();
-        
+
         // when
         processor.processResponse(apiResponse);
         
@@ -198,10 +191,6 @@ class LastfmArtistSearchResponseProcessorTest extends BaseLastfmApiResponseProce
         // Verify no new artists were created
         assertEquals(initialArtistCount, artistRepository.count(), 
             "No new artists should be created when threshold is too high");
-        
-        // Verify no new attribute records were created
-        assertEquals(initialAttributeCount, attributeHistoryRepository.count(), 
-            "No new attribute records should be created when threshold is too high");
     }
     
     @Test
@@ -218,8 +207,7 @@ class LastfmArtistSearchResponseProcessorTest extends BaseLastfmApiResponseProce
         
         // Record counts after first processing
         long artistCount = artistRepository.count();
-        long attributeCount = attributeHistoryRepository.count();
-        
+
         // Process again
         processor.processResponse(apiResponse);
         
@@ -227,8 +215,6 @@ class LastfmArtistSearchResponseProcessorTest extends BaseLastfmApiResponseProce
         // Verify counts remain the same
         assertEquals(artistCount, artistRepository.count(), 
             "Artist count should remain the same after second processing");
-        assertEquals(attributeCount, attributeHistoryRepository.count(),
-            "Attribute history record count should remain the same after second processing");
     }
     
     @Test

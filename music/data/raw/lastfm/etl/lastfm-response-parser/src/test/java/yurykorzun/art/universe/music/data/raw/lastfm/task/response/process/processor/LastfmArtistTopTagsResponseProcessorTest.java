@@ -18,7 +18,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.Lastfm
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.relationship.LastfmArtistTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.repository.LastfmArtistRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.repository.LastfmTagRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.repository.attribute.TestLastfmAttributeHistoryRecordRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.repository.relationship.BaseLastfmArtistTagRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.BlacklistedEntityUrlService;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.impl.LastfmArtistServiceImpl;
@@ -52,9 +51,6 @@ class LastfmArtistTopTagsResponseProcessorTest extends BaseLastfmApiResponseProc
 
     @Autowired
     private LastfmArtistRepository artistRepository;
-
-    @Autowired
-    private TestLastfmAttributeHistoryRecordRepository attributeHistoryRepository;
 
     @Autowired
     private BlacklistedEntityUrlService blacklistService;
@@ -110,7 +106,6 @@ class LastfmArtistTopTagsResponseProcessorTest extends BaseLastfmApiResponseProc
 
         // Record initial state
         long initialTagCount = tagRepository.count();
-        long initialAttributeCount = attributeHistoryRepository.count();
         long initialArtistTagCount = artistTagRepository.count();
 
         // when
@@ -213,7 +208,6 @@ class LastfmArtistTopTagsResponseProcessorTest extends BaseLastfmApiResponseProc
 
         // Record state after first processing
         long tagCountAfterFirstProcessing = tagRepository.count();
-        long attributeCountAfterFirstProcessing = attributeHistoryRepository.count();
         long relationCountAfterFirstProcessing = artistTagRepository.count();
 
         // when - process the same response again
@@ -222,8 +216,6 @@ class LastfmArtistTopTagsResponseProcessorTest extends BaseLastfmApiResponseProc
         // then - counts should remain the same
         assertEquals(tagCountAfterFirstProcessing, tagRepository.count(),
             "Tag count should remain the same after second processing");
-        assertEquals(attributeCountAfterFirstProcessing, attributeHistoryRepository.count(),
-            "Attribute count should remain the same after second processing");
         assertEquals(relationCountAfterFirstProcessing, artistTagRepository.count(),
             "Relation count should remain the same after second processing");
     }
@@ -378,16 +370,7 @@ class LastfmArtistTopTagsResponseProcessorTest extends BaseLastfmApiResponseProc
         // Verify no tags or relationships were created
         long finalTagCount = tagRepository.count();
         long finalArtistTagCount = artistTagRepository.count();
-        long finalAttributeCount = attributeHistoryRepository.count();
-        
-        System.out.println("Debug info for all tags blacklisted test:");
-        System.out.println("- Total tags in response: " + tags.size());
-        System.out.println("- Quality tags (>=10): " + qualityTags.size());
-        System.out.println("- Blacklisted tags: " + qualityTags.stream().map(t -> t.getName()).toList());
-        System.out.println("- Final tag count: " + finalTagCount);
-        System.out.println("- Final artist-tag count: " + finalArtistTagCount);
-        System.out.println("- Final attribute count: " + finalAttributeCount);
-        
+
         assertEquals(1, artistRepository.count(), "Only source artist should exist");
         assertEquals(0, finalTagCount, "No tags should be created");
         assertEquals(0, finalArtistTagCount, "No artist-tag relationships should be created");

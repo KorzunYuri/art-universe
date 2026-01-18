@@ -8,6 +8,29 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Processor for attribute history staging records.
+ * <p>
+ * Uses a hot/cold table split for optimal performance:
+ * <ul>
+ *   <li>attribute_history_current: Hot table for current values (no valid_till column)</li>
+ *   <li>attribute_history_archive: Cold table for historical values (append-only)</li>
+ * </ul>
+ * <p>
+ * The key optimization is that instead of UPDATE operations (which require updating
+ * all 8 indexes on the original table), we use explicit DELETE + INSERT which is
+ * more efficient because:
+ * <ol>
+ *   <li>Joins start from the small batch and go outward to the current table</li>
+ *   <li>The current table is much smaller (only current values)</li>
+ *   <li>No partial index maintenance for valid_till filter</li>
+ *   <li>Archive table is append-only (no updates)</li>
+ * </ol>
+ * <p>
+ * Staging records are only processed if they are strictly newer than existing current values
+ * (staging.valid_from &gt; current.valid_from). Records with equal or older valid_from dates
+ * are silently skipped and removed during batch truncation.
+ */
 @Component
 @Slf4j
 public class LastfmAttributeHistoryProcessor {
@@ -57,7 +80,7 @@ public class LastfmAttributeHistoryProcessor {
 
         log.info("Processing {} records from {} in batches of {}", totalCount, tableName, BATCH_SIZE);
 
-        int totalExpired = 0;
+        int totalArchived = 0;
         int totalInserted = 0;
         int batchNumber = 0;
         long offset = 0;
@@ -71,17 +94,17 @@ public class LastfmAttributeHistoryProcessor {
             // Process batch in a separate transaction
             BatchResult result = self.processBatch(tableName, currentOffset, BATCH_SIZE);
 
-            totalExpired += result.expired();
+            totalArchived += result.archived();
             totalInserted += result.inserted();
 
-            log.info("Batch {} completed: {} expired, {} inserted (cumulative: {}/{})",
-                    batchNumber, result.expired(), result.inserted(), totalExpired, totalInserted);
+            log.info("Batch {} completed: {} archived, {} inserted (cumulative: {}/{})",
+                    batchNumber, result.archived(), result.inserted(), totalArchived, totalInserted);
 
             offset += BATCH_SIZE;
         }
 
-        log.info("All batches completed: processed {} staging records in {} batches: {} expired, {} inserted",
-                totalCount, batchNumber, totalExpired, totalInserted);
+        log.info("All batches completed: processed {} staging records in {} batches: {} archived, {} inserted",
+                totalCount, batchNumber, totalArchived, totalInserted);
 
         // Truncate staging table after all batches are processed
         jdbcTemplate.execute("TRUNCATE TABLE " + tableName);
@@ -91,7 +114,6 @@ public class LastfmAttributeHistoryProcessor {
     @Transactional
     public BatchResult processBatch(String tableName, long offset, int batchSize) {
         // Drop and recreate temporary table to ensure fresh batch IDs for this transaction
-        // Note: temp tables are session-scoped, so IF NOT EXISTS could reuse stale data
         jdbcTemplate.execute("DROP TABLE IF EXISTS batch_ids");
 
         String createTempTableSql = String.format("""
@@ -103,76 +125,135 @@ public class LastfmAttributeHistoryProcessor {
 
         jdbcTemplate.execute(createTempTableSql);
 
-        // Expire old records and insert new ones in one transaction
+        // Add index and analyze for better query planning
+        jdbcTemplate.execute("CREATE INDEX ON batch_ids (id)");
+        jdbcTemplate.execute("ANALYZE batch_ids");
+
+        // Process records using optimized hot/cold table split:
+        // 1. Join from staging (small) to current table (medium) - efficient join direction
+        // 2. Archive changed records: DELETE from current + INSERT into archive
+        // 3. Insert new/changed values into current table
+        //
+        // IMPORTANT: CTE execution order is guaranteed by data dependencies:
+        // archived -> deleted -> records_to_insert -> inserted
+        // This ensures DELETE completes before INSERT to avoid unique constraint violations.
+        //
+        // Note: Staging table has unique constraint, so duplicates can't exist within a batch.
         String sql = String.format("""
-            WITH existing_values AS (
+            WITH batch_staging AS (
+                -- Get staging records for this batch
+                SELECT s.*
+                FROM %s s
+                INNER JOIN batch_ids b ON s.id = b.id
+            ),
+            existing_values AS (
+                -- Find existing current values for staging records
+                -- Join direction: staging (small) -> current (larger) for efficiency
                 SELECT
-                        ah.entity_type
-                    ,   ah.entity_id
-                    ,   ah.attribute_id
-                    ,   ah.scope_entity_type
-                    ,   ah.scope_entity_id
-                    ,   ah.string_value
-                    ,   ah.numeric_value
-                    ,   ah.id as existing_id
-                FROM
-                    mu_raw_lastfm.attribute_history ah
-                WHERE   ah.valid_till = '9999-12-31'
-                    AND EXISTS (
-                        SELECT 1 FROM %s s
-                        WHERE   s.id IN (SELECT id FROM batch_ids)
-                            AND s.entity_type   = ah.entity_type
-                            AND s.entity_id     = ah.entity_id
-                            AND s.attribute_id  = ah.attribute_id
-                            AND COALESCE(s.scope_entity_type, -1)   = COALESCE(ah.scope_entity_type, -1)
-                            AND COALESCE(s.scope_entity_id, -1)     = COALESCE(ah.scope_entity_id, -1)
-                  )
+                    c.id as current_id,
+                    c.entity_type,
+                    c.entity_id,
+                    c.attribute_id,
+                    c.scope_entity_type,
+                    c.scope_entity_id,
+                    c.string_value,
+                    c.numeric_value,
+                    c.collection_ts,
+                    c.api_call_id,
+                    c.valid_from,
+                    s.id as staging_id,
+                    s.string_value as new_string_value,
+                    s.numeric_value as new_numeric_value,
+                    s.valid_from as new_valid_from
+                FROM batch_staging s
+                INNER JOIN mu_raw_lastfm.attribute_history_current c
+                    ON  c.entity_type = s.entity_type
+                    AND c.entity_id = s.entity_id
+                    AND c.attribute_id = s.attribute_id
+                    AND COALESCE(c.scope_entity_type, -1) = COALESCE(s.scope_entity_type, -1)
+                    AND COALESCE(c.scope_entity_id, -1) = COALESCE(s.scope_entity_id, -1)
             ),
             changed_records AS (
-                SELECT
-                        s.*
-                    ,   ev.existing_id
-                FROM
-                    %s s
-                INNER JOIN batch_ids b ON s.id = b.id
-                LEFT JOIN
-                    existing_values ev
-                        ON      s.entity_type = ev.entity_type
-                            AND s.entity_id = ev.entity_id
-                            AND s.attribute_id = ev.attribute_id
-                            AND COALESCE(s.scope_entity_type, -1) = COALESCE(ev.scope_entity_type, -1)
-                            AND COALESCE(s.scope_entity_id, -1) = COALESCE(ev.scope_entity_id, -1)
-                WHERE   ev.existing_id  IS NULL
-                    OR ev.string_value  IS DISTINCT FROM s.string_value
-                    OR ev.numeric_value IS DISTINCT FROM s.numeric_value
+                -- Identify records that have changed values AND are strictly newer
+                -- Skip staging records with valid_from <= current valid_from (already processed or outdated)
+                SELECT *
+                FROM existing_values
+                WHERE new_valid_from > valid_from  -- Only process if staging is strictly newer
+                  AND (string_value IS DISTINCT FROM new_string_value
+                       OR numeric_value IS DISTINCT FROM new_numeric_value)
             ),
-            expired_count AS (
-                UPDATE mu_raw_lastfm.attribute_history
-                SET     valid_till = (SELECT (cr.valid_from - INTERVAL '1 day')::date FROM changed_records cr WHERE cr.existing_id = mu_raw_lastfm.attribute_history.id)
-                WHERE id IN (SELECT existing_id FROM changed_records WHERE existing_id IS NOT NULL)
-                RETURNING 1
-            ),
-            inserted_count AS (
-                INSERT INTO mu_raw_lastfm.attribute_history (
-                    id, api_call_id, entity_type, entity_id, attribute_id,
+            archived AS (
+                -- Move changed records to archive with calculated valid_till
+                INSERT INTO mu_raw_lastfm.attribute_history_archive (
+                    id, entity_type, entity_id, attribute_id,
                     scope_entity_type, scope_entity_id,
                     string_value, numeric_value,
-                    collection_ts, valid_from, valid_till)
-                SELECT nextval('mu_raw_lastfm.attribute_history_seq'), api_call_id, entity_type, entity_id, attribute_id,
-                       scope_entity_type, scope_entity_id,
-                       string_value, numeric_value,
-                       collection_ts, valid_from, '9999-12-31'::date
+                    collection_ts, api_call_id,
+                    valid_from, valid_till
+                )
+                SELECT
+                    current_id,
+                    entity_type,
+                    entity_id,
+                    attribute_id,
+                    scope_entity_type,
+                    scope_entity_id,
+                    string_value,
+                    numeric_value,
+                    collection_ts,
+                    api_call_id,
+                    valid_from,
+                    (new_valid_from - INTERVAL '1 day')::date as valid_till
                 FROM changed_records
-                RETURNING 1
+                RETURNING id
+            ),
+            deleted AS (
+                -- Delete archived records from current table
+                -- This CTE depends on 'archived', ensuring archive INSERT happens first
+                DELETE FROM mu_raw_lastfm.attribute_history_current
+                WHERE id IN (SELECT id FROM archived)
+                RETURNING id
+            ),
+            records_to_insert AS (
+                -- Records to insert: new records + changed records (after deletion)
+                -- References 'deleted' to ensure DELETE completes before INSERT
+                SELECT s.*
+                FROM batch_staging s
+                LEFT JOIN existing_values ev ON ev.staging_id = s.id
+                WHERE ev.current_id IS NULL  -- New record (no existing value)
+                   OR ev.current_id IN (SELECT id FROM deleted)  -- Changed record (was deleted)
+            ),
+            inserted AS (
+                -- Insert new/updated values into current table
+                INSERT INTO mu_raw_lastfm.attribute_history_current (
+                    id, entity_type, entity_id, attribute_id,
+                    scope_entity_type, scope_entity_id,
+                    string_value, numeric_value,
+                    collection_ts, api_call_id, valid_from
+                )
+                SELECT
+                    nextval('mu_raw_lastfm.attribute_history_seq'),
+                    entity_type,
+                    entity_id,
+                    attribute_id,
+                    scope_entity_type,
+                    scope_entity_id,
+                    string_value,
+                    numeric_value,
+                    collection_ts,
+                    api_call_id,
+                    valid_from
+                FROM records_to_insert
+                RETURNING id
             )
             SELECT
-                (SELECT COUNT(*) FROM expired_count) as expired,
-                (SELECT COUNT(*) FROM inserted_count) as inserted
-            """, tableName, tableName);
+                (SELECT COUNT(*) FROM archived) as archived,
+                (SELECT COUNT(*) FROM inserted) as inserted
+            """, tableName);
 
         BatchResult result = jdbcTemplate.query(sql, rs -> {
             if (rs.next()) {
-                return new BatchResult(rs.getInt("expired"), rs.getInt("inserted"));
+                return new BatchResult(rs.getInt("archived"), rs.getInt("inserted"));
             }
             return new BatchResult(0, 0);
         });
@@ -184,9 +265,12 @@ public class LastfmAttributeHistoryProcessor {
     }
 
     /**
-     * Record to hold batch processing results
+     * Record to hold batch processing results.
+     *
+     * @param archived Number of records moved to archive (expired)
+     * @param inserted Number of records inserted into current table
      */
-    public record BatchResult(int expired, int inserted) {
+    public record BatchResult(int archived, int inserted) {
     }
 
 }

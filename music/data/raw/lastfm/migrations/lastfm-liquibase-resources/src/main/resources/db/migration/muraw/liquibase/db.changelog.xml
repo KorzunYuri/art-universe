@@ -41,4 +41,5 @@
     <include file="changelogs/0034-attribute-history-staging.xml" relativeToChangelogFile="true"/>
     <!-- <include file="changelogs/0035-coordination-state.xml" relativeToChangelogFile="true"/> Cancelled and rolled back -->
     <include file="changelogs/0036-dictionary-synchronizer-deprecation.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0037-attribute-history-optimization.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

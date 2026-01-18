@@ -29,23 +29,22 @@ Do NOT use when:
 
 ## Key Concept
 
-SCD2 (Slowly Changing Dimension Type 2) maintains a complete history of attribute values by adding temporal validity columns (`valid_from`, `valid_till`) to each record. Current records have `valid_till = '9999-12-31'`, while historical records have `valid_till` set to the day before the change occurred.
+SCD2 (Slowly Changing Dimension Type 2) maintains a complete history of attribute values by adding temporal validity columns (`valid_from`, `valid_till`) to each record.
+Current records have `valid_till = '9999-12-31'`, while historical records have `valid_till` set to the day before the change occurred.
 
-**Why Art Universe does it this way**: External API data changes frequently (daily for some attributes), and we need to:
-1. Track changes for trend analysis and quiz difficulty calibration
-2. Audit data quality issues from upstream sources
-3. Support future analytics features without re-collecting historical data
-4. Maintain referential integrity with specific API calls that collected the data
+Current approach is to have two tables: 
+- current records - `valid_from` defines the date the record became actual
+- archive records - `valid_from` and `valid_till` define the period when the record was actual
 
 ---
 
 ## Implementation Steps
 
-### Step 1: Create the Base Table with SCD2 Columns
+### Step 1: Create Base Tables with SCD2 Columns
 
-Create a table with the standard SCD2 temporal columns plus your domain-specific attributes.
+Create target tables with the standard SCD2 temporal columns plus domain-specific attributes.
 
-**Example**: [Lastfm Migration](../../../../../music/data/raw/lastfm/migrations/lastfm-liquibase-resources/src/main/resources/db/migration/muraw/liquibase/changesets/0003-entity-tables/0003_0030_attribute_history$initial.sql)
+**Example**: [Lastfm Migrations](../../../../../music/data/raw/lastfm/migrations/lastfm-liquibase-resources/src/main/resources/db/migration/muraw/liquibase/changesets/0037-attribute-history-optimization/)
 
 **Key Points**:
 - `valid_from` and `valid_till` are DATE columns (not TIMESTAMP) for efficient range queries
@@ -59,14 +58,14 @@ Create a table with the standard SCD2 temporal columns plus your domain-specific
 
 Ensure no duplicate records exist for the same entity/attribute/validity period.
 
-**Example**: [Lastfm Migration](../../../../../music/data/raw/lastfm/migrations/lastfm-liquibase-resources/src/main/resources/db/migration/muraw/liquibase/changesets/0006-attribute-snapshots/0006-0050_attribute_history$add_value_uniquity_constraint.sql)
+**Example**: [Lastfm Migration](../../../../../music/data/raw/lastfm/migrations/lastfm-liquibase-resources/src/main/resources/db/migration/muraw/liquibase/changesets/0037-attribute-history-optimization/)
 
 **Key Points**:
 - Use `COALESCE` to include NULL values in unique constraints
 - This prevents inserting duplicate records for the same date
 - Constraint on `valid_from` (not `valid_till`) because that's when the new value becomes active
 
-### Step 3: Create Staging Tables for Batch Processing
+### Step 3: Create Hot/Cold Staging Tables for Batch Processing
 
 Use staging tables with double-buffering to avoid locking the main table during batch inserts.
 
@@ -77,40 +76,40 @@ Use staging tables with double-buffering to avoid locking the main table during 
 - Unique constraint enables `ON CONFLICT ... DO UPDATE` for deduplication
 - Staging tables are truncated after each processing cycle
 
-### Step 4: Implement Staging Upsert with Deduplication
+### Step 4: Create a JPA entity or DTO representing a history candidate
 
-Write incoming attribute values to the staging table, automatically deduplicating to keep only the latest value.
+**Example**: [LastfmAttributeHistoryCandidate](../../../../../music/data/raw/lastfm/lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/etl/dto/LastfmAttributeHistoryCandidate.java)
 
-**Example**: [Lastfm Service](../../../../../music/data/raw/lastfm/etl/lastfm-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/service/attribute/LastfmAttributeHistoryServiceImpl.java)
+**Key Points**:
+- Use `LocalDate` (not `Instant`) for SCD2 date columns
+- Set default `validFrom = LocalDate.now()` for new records
+- Make `validFrom` immutable after creation
+
+### Step 5: Implement Staging Insert or Upsert
+
+Write incoming attribute values to the staging table. Choose from deduplication options:
+- deduplicate on insert to a staging table to keep only the latest value.
+- deduplicate on merge to the target table: take only the latest staging record
+
+**Example with staging deduplication**: [Lastfm Staging Service](../../../../../music/data/raw/lastfm/etl/lastfm-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/etl/service/LastfmAttributeHistoryStagingService.java)
 
 **Key Points**:
 - `ON CONFLICT ... DO UPDATE` ensures only the latest value is kept in staging
 - Reduces staging table size and processing time
 - `COALESCE` in conflict clause matches the unique constraint definition
 
-### Step 5: Implement SCD2 Merge Logic
+### Step 6: Implement SCD2 Merge Logic
 
 Process staging records by expiring changed values and inserting new ones in a single transaction.
 
-**Example**: [LastfmAttributeHistoryProcessor](../../../../../music/data/raw/lastfm/etl/lastfm-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/service/attribute/LastfmAttributeHistoryProcessor.java)
+**Example**: [LastfmAttributeHistoryProcessor](../../../../../music/data/raw/lastfm/etl/lastfm-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/task/response/process/processor/LastfmAttributeHistoryProcessor.java)
 
 **Key Points**:
 - `IS DISTINCT FROM` handles NULL comparisons correctly (NULL != NULL is false, but NULL IS DISTINCT FROM NULL is false)
 - `valid_till = valid_from - 1 day` ensures no gaps in date ranges
 - Only process records where values actually changed (skips unchanged values)
+- Skips records with `valid_from` equal or older than the recent record in the target table
 - Entire operation in one transaction ensures consistency
-
-### Step 6: Create JPA Entity
-
-Map the table to a JPA entity with proper defaults for SCD2 columns.
-
-**Example**: [LastfmAttributeHistoryRecord](../../../../../music/data/raw/lastfm/lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/entity/attribute/LastfmAttributeHistoryRecord.java)
-
-**Key Points**:
-- Use `LocalDate` (not `Instant`) for SCD2 date columns
-- Set default `validTill = "9999-12-31"` for new records
-- Set default `validFrom = LocalDate.now()` for new records
-- Make `validTill` settable but `validFrom` immutable after creation
 
 ### Step 7: Implement Scheduled Processing with Table Switching
 
@@ -148,7 +147,7 @@ Process staging records periodically, switching between staging tables for conti
 ## Testing
 
 Watch existing test classes for examples:
-- [LastfmAttributeHistoryProcessorTest](../../../../../music/data/raw/lastfm/etl/lastfm-response-parser/src/test/java/yurykorzun/art/universe/music/data/raw/lastfm/domain/service/attribute/LastfmAttributeHistoryProcessorTest.java)
+- [LastfmAttributeHistoryProcessorTest](../../../../../music/data/raw/lastfm/etl/lastfm-response-parser/src/test/java/yurykorzun/art/universe/music/data/raw/lastfm/task/response/process/LastfmAttributeHistoryProcessorTest.java)
 
 - **Key test scenarios**:
 1. Inserting new records (first-time attributes)
@@ -157,7 +156,6 @@ Watch existing test classes for examples:
 4. Deduplication within staging tables
 5. Table switching for double-buffering
 6. NULL value handling in scope columns
-7. Querying historical values at specific dates
 
 
 ## Related Patterns

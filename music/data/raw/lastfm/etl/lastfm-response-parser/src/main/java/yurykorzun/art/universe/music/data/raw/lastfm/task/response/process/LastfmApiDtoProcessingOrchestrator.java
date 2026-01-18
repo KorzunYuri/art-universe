@@ -10,9 +10,9 @@ import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.mappi
 import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.mapping.EntityMappingStage;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.mapping.attributes.AttributeHistoryBuilder;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.mapping.attributes.EntityAttributeHandler;
-import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.attribute.LastfmAttributeHistoryRecord;
+import yurykorzun.art.universe.music.data.raw.lastfm.etl.dto.LastfmAttributeHistoryCandidate;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.BaseLastfmEntity;
-import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.attribute.LastfmAttributeHistoryService;
+import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.LastfmAttributeHistoryStagingService;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.UniquenessSupport;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.service.EntityService;
 
@@ -26,9 +26,9 @@ import java.util.stream.Collectors;
 @Slf4j
 public class LastfmApiDtoProcessingOrchestrator {
 
-    private final LastfmAttributeHistoryService attributeHistoryService;
+    private final LastfmAttributeHistoryStagingService attributeHistoryService;
 
-    public LastfmApiDtoProcessingOrchestrator(LastfmAttributeHistoryService attributeHistoryService) {
+    public LastfmApiDtoProcessingOrchestrator(LastfmAttributeHistoryStagingService attributeHistoryService) {
         this.attributeHistoryService = attributeHistoryService;
     }
 
@@ -202,7 +202,7 @@ public class LastfmApiDtoProcessingOrchestrator {
         List<EntityAttributeHandler<E, ?, D>> attrHandlers,
         LastfmApiCall sourceApiCall
     ) {
-        List<LastfmAttributeHistoryRecord> attrRecords = AttributeHistoryBuilder.buildAttributeHistoryRecords(
+        List<LastfmAttributeHistoryCandidate> attrRecords = AttributeHistoryBuilder.buildAttributeHistoryRecords(
             mappings, attrHandlers, sourceApiCall
         );
         attributeHistoryService.upsertCandidateValues(attrRecords);

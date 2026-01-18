@@ -18,7 +18,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.Lastfm
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.relationship.LastfmArtistTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.repository.LastfmArtistRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.repository.LastfmTagRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.repository.attribute.TestLastfmAttributeHistoryRecordRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.repository.relationship.TestLastfmArtistTagRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.BlacklistedEntityUrlService;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.impl.LastfmArtistServiceImpl;
@@ -52,9 +51,6 @@ class LastfmTagTopArtistsResponseProcessorTest extends BaseLastfmApiResponseProc
 
     @Autowired
     private LastfmTagRepository tagRepository;
-
-    @Autowired
-    private TestLastfmAttributeHistoryRecordRepository attributeHistoryRepository;
 
     @Autowired
     private BlacklistedEntityUrlService blacklistService;
@@ -103,7 +99,6 @@ class LastfmTagTopArtistsResponseProcessorTest extends BaseLastfmApiResponseProc
         
         // Record initial state
         long initialArtistCount = artistRepository.count();
-        long initialAttributeCount = attributeHistoryRepository.count();
         long initialArtistTagCount = artistTagRepository.count();
         
         // when
@@ -114,10 +109,6 @@ class LastfmTagTopArtistsResponseProcessorTest extends BaseLastfmApiResponseProc
         int expectedArtistsCount = dtoRoot.getTopArtists().getArtists().size();
         assertEquals(initialArtistCount + expectedArtistsCount, artistRepository.count(), 
             "New artists should be created");
-        
-        // Verify attribute history records were created
-        assertFalse(attributeHistoryRepository.count() > initialAttributeCount,
-            "New attribute history records should not be created");
         
         // Verify artist-tag relations were created
         assertEquals(initialArtistTagCount + expectedArtistsCount, artistTagRepository.count(), 
@@ -165,7 +156,6 @@ class LastfmTagTopArtistsResponseProcessorTest extends BaseLastfmApiResponseProc
         
         // Record state after first processing
         long artistCountAfterFirstProcessing = artistRepository.count();
-        long attributeCountAfterFirstProcessing = attributeHistoryRepository.count();
         long relationCountAfterFirstProcessing = artistTagRepository.count();
         
         // when - process the same response again
@@ -174,8 +164,6 @@ class LastfmTagTopArtistsResponseProcessorTest extends BaseLastfmApiResponseProc
         // then - counts should remain the same
         assertEquals(artistCountAfterFirstProcessing, artistRepository.count(),
             "Artist count should remain the same after second processing");
-        assertEquals(attributeCountAfterFirstProcessing, attributeHistoryRepository.count(),
-            "Attribute count should remain the same after second processing");
         assertEquals(relationCountAfterFirstProcessing, artistTagRepository.count(),
             "Relation count should remain the same after second processing");
     }
@@ -276,7 +264,6 @@ class LastfmTagTopArtistsResponseProcessorTest extends BaseLastfmApiResponseProc
 
         // Verify relationships were created
         assertTrue(artistTagRepository.count() > 0, "Artist-tag relationships should be created");
-        assertFalse(attributeHistoryRepository.count() > 0, "Attribute history records should not be created");
     }
 
     @Test
@@ -322,6 +309,5 @@ class LastfmTagTopArtistsResponseProcessorTest extends BaseLastfmApiResponseProc
         // Verify artists were created
         assertTrue(artistRepository.count() > initialArtistCount, "Artists should be created");
         assertTrue(artistTagRepository.count() > 0, "Artist-tag relationships should be created");
-        assertFalse(attributeHistoryRepository.count() > 0, "Attribute history records should not be created");
     }
 }

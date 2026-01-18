@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <!-- Phase 1: Create new tables -->
+    <changeSet id="0037-0010-create-attribute-history-current" author="claude">
+        <comment>Create attribute_history_current table for hot data (current values)</comment>
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0037-attribute-history-optimization/0037-0010-create-attribute-history-current.sql"/>
+    </changeSet>
+
+    <changeSet id="0037-0020-create-attribute-history-archive" author="claude">
+        <comment>Create attribute_history_archive table for cold data (historical values)</comment>
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0037-attribute-history-optimization/0037-0020-create-attribute-history-archive.sql"/>
+    </changeSet>
+
+    <!-- Phase 2: Rename old table and create view -->
+    <changeSet id="0037-0030-rename-attribute-history-to-legacy" author="claude">
+        <comment>Rename attribute_history to attribute_history_legacy</comment>
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0037-attribute-history-optimization/0037-0030-rename-attribute-history-to-legacy.sql"/>
+    </changeSet>
+
+    <changeSet id="0037-0040-create-attribute-history-common-sequence" author="yurykorzun">
+        <comment>Create attribute_history_archive table for cold data (historical values)</comment>
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0037-attribute-history-optimization/0037-0040-create-attribute-history-common-sequence.sql"/>
+    </changeSet>
+
+
+    <changeSet id="0037-0040-create-attribute-history-view" author="claude">
+        <comment>Create attribute_history view combining current and archive tables</comment>
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0037-attribute-history-optimization/0037-0050-create-attribute-history-view.sql"/>
+    </changeSet>
+
+    <!-- Phase 3: Migrate data -->
+    <changeSet id="0037-0050-populate-attribute-history-current" author="claude">
+        <comment>Populate attribute_history_current with current values from legacy table</comment>
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0037-attribute-history-optimization/0037-0060-populate-attribute-history-current.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
+    <changeSet id="0037-0060-populate-attribute-history-archive" author="claude">
+        <comment>Populate attribute_history_archive with historical values from legacy table</comment>
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0037-attribute-history-optimization/0037-0070-populate-attribute-history-archive.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
+    <changeSet id="0037-0080-mtnc_cleanup_entity-update" author="yurykorzun">
+        <comment>Populate attribute_history_archive with historical values from legacy table</comment>
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0037-attribute-history-optimization/0037-0080-mtnc_cleanup_entity-update.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
+    <changeSet id="0037-0090-drop-attribute-history-legacy" author="claude">
+        <comment>Verify data migration and drop legacy table</comment>
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0037-attribute-history-optimization/0037-0090-drop-attribute-history-legacy.sql"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
+    </changeSet>
+
+</databaseChangeLog>

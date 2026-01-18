@@ -14,7 +14,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.integration.dto.tag.toptags
 import yurykorzun.art.universe.music.data.raw.lastfm.test.utils.LastfmApiClientResourceUtil;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.repository.LastfmTagRepository;
-import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.repository.attribute.TestLastfmAttributeHistoryRecordRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.impl.LastfmTagServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.test.archetypes.BaseLastfmApiResponseProcessorTest;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.mapping.factory.tag.toptags.LastfmTagTopTagsTagFactory;
@@ -38,9 +37,6 @@ class LastfmTagTopTagsResponseProcessorTest extends BaseLastfmApiResponseProcess
 
     @Autowired
     private LastfmTagRepository tagRepository;
-
-    @Autowired
-    private TestLastfmAttributeHistoryRecordRepository attributeHistoryRepository;
 
     private static final String TEST_RESPONSE_KEY = "tag.getTopTags";
     private String responseJsonString;
@@ -81,8 +77,7 @@ class LastfmTagTopTagsResponseProcessorTest extends BaseLastfmApiResponseProcess
         
         // Record initial state
         long initialTagCount = tagRepository.count();
-        long initialAttributeCount = attributeHistoryRepository.count();
-        
+
         // when
         processor.processResponse(apiResponse);
         
@@ -116,8 +111,7 @@ class LastfmTagTopTagsResponseProcessorTest extends BaseLastfmApiResponseProcess
         
         // Record initial state
         long initialTagCount = tagRepository.count();
-        long initialAttributeCount = attributeHistoryRepository.count();
-        
+
         // when
         processor.processResponse(apiResponse);
         
@@ -146,16 +140,13 @@ class LastfmTagTopTagsResponseProcessorTest extends BaseLastfmApiResponseProcess
         
         // Record state after first processing
         long tagCountAfterFirstProcessing = tagRepository.count();
-        long attributeCountAfterFirstProcessing = attributeHistoryRepository.count();
-        
+
         // when - process the same response again
         processor.processResponse(apiResponse);
         
         // then - counts should remain the same
         assertEquals(tagCountAfterFirstProcessing, tagRepository.count(),
             "Tag count should remain the same after second processing");
-        assertEquals(attributeCountAfterFirstProcessing, attributeHistoryRepository.count(),
-            "Attribute count should remain the same after second processing");
     }
 
     @Test
@@ -173,16 +164,13 @@ class LastfmTagTopTagsResponseProcessorTest extends BaseLastfmApiResponseProcess
         
         // Record initial state
         long initialTagCount = tagRepository.count();
-        long initialAttributeCount = attributeHistoryRepository.count();
-        
+
         // when
         processor.processResponse(apiResponse);
         
         // then - no new entities should be created
         assertEquals(initialTagCount, tagRepository.count(),
             "No new tags should be created for empty response");
-        assertEquals(initialAttributeCount, attributeHistoryRepository.count(),
-            "No new attribute records should be created for empty response");
     }
     
     @Test
