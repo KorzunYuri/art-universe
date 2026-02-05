@@ -1,0 +1,38 @@
+---
+# Internal ClusterIP service
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: art-universe-monitoring
+  labels:
+    app: grafana
+    app.kubernetes.io/name: grafana
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3000
+      targetPort: 3000
+      name: http
+  selector:
+    app: grafana
+
+---
+# External NodePort service for local access
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana-external
+  namespace: art-universe-monitoring
+  labels:
+    app: grafana
+    app.kubernetes.io/name: grafana-external
+spec:
+  type: NodePort
+  ports:
+    - port: 3000
+      targetPort: 3000
+      nodePort: 30000
+      name: http
+  selector:
+    app: grafana

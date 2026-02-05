@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lastfm-rest-api
+  namespace: mu-lastfm
+  labels:
+    app: lastfm-rest-api
+    app.kubernetes.io/name: lastfm-rest-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lastfm-rest-api
+  template:
+    metadata:
+      labels:
+        app: lastfm-rest-api
+        app.kubernetes.io/name: lastfm-rest-api
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8080"
+    spec:
+      initContainers:
+        - name: wait-for-migrations
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for liquibase migration job to complete..."
+              # Check if database has tables (migrations completed)
+              until nc -z postgres-lastfm-master.mu-data.svc.cluster.local 5432; do
+                echo "Waiting for database..."
+                sleep 2
+              done
+              echo "Database ready, proceeding..."
+              # Give a bit more time for migrations
+              sleep 10
+      containers:
+        - name: app
+          image: mu-lastfm-rest-api:local
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+              name: http
+          env:
+            - name: JAVA_OPTS
+              value: "-Xms256m -Xmx768m -XX:MaxMetaspaceSize=192m"
+            - name: MURAW_LASTFM_REST_API_CORS_ALLOWED_ORIGINS
+              value: "http://localhost,http://localhost:80"
+            - name: MURAW_LASTFM_DB_READER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: lastfm-db-credentials
+                  key: MURAW_LASTFM_DB_READER_PASSWORD
+          envFrom:
+            - configMapRef:
+                name: lastfm-common-config
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "1Gi"
+              cpu: "300m"
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 30  # 5 minutes max startup
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            periodSeconds: 5
+            failureThreshold: 3

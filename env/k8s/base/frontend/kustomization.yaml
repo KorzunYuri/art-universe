@@ -1,0 +1,17 @@
+# Art Universe - Frontend Namespace Resources
+# UI and NGINX Ingress
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: mu-frontend
+
+resources:
+  - music-ui/deployment.yaml
+  - music-ui/service.yaml
+  - external-services.yaml
+  - ingress.yaml
+
+commonLabels:
+  app.kubernetes.io/part-of: art-universe
+  app.kubernetes.io/component: frontend

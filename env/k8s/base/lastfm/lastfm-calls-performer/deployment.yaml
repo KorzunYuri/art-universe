@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lastfm-calls-performer
+  namespace: mu-lastfm
+  labels:
+    app: lastfm-calls-performer
+    app.kubernetes.io/name: lastfm-calls-performer
+spec:
+  replicas: 1
+  # Not scalable - use Recreate strategy
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: lastfm-calls-performer
+  template:
+    metadata:
+      labels:
+        app: lastfm-calls-performer
+        app.kubernetes.io/name: lastfm-calls-performer
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8080"
+    spec:
+      initContainers:
+        - name: wait-for-generator
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for calls-generator..."
+              until nc -z lastfm-calls-generator.mu-lastfm.svc.cluster.local 8080; do
+                sleep 2
+              done
+              echo "calls-generator ready!"
+              sleep 5
+      containers:
+        - name: app
+          image: mu-lastfm-calls-performer:local
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+              name: actuator
+          env:
+            - name: JAVA_OPTS
+              value: "-Xms256m -Xmx768m -XX:MaxMetaspaceSize=192m"
+            - name: MURAW_LASTFM_DB_WRITER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: lastfm-db-credentials
+                  key: MURAW_LASTFM_DB_WRITER_PASSWORD
+            - name: MURAW_LASTFM_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: lastfm-api-key
+                  key: MURAW_LASTFM_API_KEY
+          envFrom:
+            - configMapRef:
+                name: lastfm-common-config
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "50m"
+            limits:
+              memory: "1Gi"
+              cpu: "200m"
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            periodSeconds: 5
+            failureThreshold: 3

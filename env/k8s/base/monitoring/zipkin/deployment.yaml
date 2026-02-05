@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zipkin
+  namespace: art-universe-monitoring
+  labels:
+    app: zipkin
+    app.kubernetes.io/name: zipkin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zipkin
+  template:
+    metadata:
+      labels:
+        app: zipkin
+        app.kubernetes.io/name: zipkin
+    spec:
+      containers:
+        - name: zipkin
+          image: openzipkin/zipkin:3.4
+          ports:
+            - containerPort: 9411
+              name: http
+          env:
+            - name: STORAGE_TYPE
+              value: "mem"
+            - name: STORAGE_SPAN_RETENTION_PERIOD
+              value: "28800"  # 8 hours
+            - name: JAVA_OPTS
+              value: "-Xms128m -Xmx256m"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "300m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 9411
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 9411
+            initialDelaySeconds: 5
+            periodSeconds: 5

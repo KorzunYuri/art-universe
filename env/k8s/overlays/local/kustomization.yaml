@@ -1,0 +1,22 @@
+# Art Universe - Local Environment Overlay
+# Targets Docker Desktop's built-in Kubernetes cluster
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+
+# Local environment specific patches will be added here
+# patches:
+#   - path: patches/image-pull-policy.yaml
+
+# Secrets (gitignored, must be created manually)
+# secretGenerator:
+#   - name: lastfm-db-credentials
+#     namespace: mu-data
+#     files:
+#       - secrets/lastfm-db-credentials.env
+
+commonLabels:
+  environment: local

@@ -1,0 +1,21 @@
+# Art Universe - Base Kustomization
+# This file references all namespace-specific kustomizations
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - namespaces.yaml
+  # Phase 2: Database layer
+  - data
+  # Phase 4: LastFM ETL pipeline
+  - lastfm
+  # Phase 5: Core applications
+  - apps
+  # Phase 6: Frontend and Ingress
+  - frontend
+  # Phase 7: Monitoring stack
+  - monitoring
+
+commonLabels:
+  app.kubernetes.io/managed-by: kustomize

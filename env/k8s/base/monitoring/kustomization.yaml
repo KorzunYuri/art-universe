@@ -1,0 +1,26 @@
+# Art Universe - Monitoring Namespace Resources
+# Prometheus, Grafana, and Zipkin
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: art-universe-monitoring
+
+resources:
+  # RBAC for Prometheus service discovery
+  - rbac.yaml
+  # Prometheus
+  - prometheus/statefulset.yaml
+  - prometheus/service.yaml
+  - prometheus/configmap.yaml
+  # Grafana
+  - grafana/deployment.yaml
+  - grafana/service.yaml
+  - grafana/configmap.yaml
+  # Zipkin
+  - zipkin/deployment.yaml
+  - zipkin/service.yaml
+
+commonLabels:
+  app.kubernetes.io/part-of: art-universe
+  app.kubernetes.io/component: monitoring

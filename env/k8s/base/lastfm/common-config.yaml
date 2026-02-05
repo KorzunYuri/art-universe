@@ -1,0 +1,33 @@
+# Common configuration for all LastFM services
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lastfm-common-config
+  namespace: mu-lastfm
+  labels:
+    app.kubernetes.io/component: lastfm-config
+data:
+  # Database configuration
+  MURAW_LASTFM_DB_NAME: "music_universe"
+  MURAW_LASTFM_DB_SCHEMA: "mu_raw_lastfm"
+  MURAW_LASTFM_DB_WRITER_USERNAME: "mu_raw_lastfm_dm"
+  MURAW_LASTFM_DB_READER_USERNAME: "mu_raw_lastfm_reader"
+  MURAW_LASTFM_DB_MASTER_HOST: "postgres-lastfm-master.mu-data.svc.cluster.local"
+  MURAW_LASTFM_DB_MASTER_PORT: "5432"
+  MURAW_LASTFM_DB_REPLICA_HOST: "postgres-lastfm-replica.mu-data.svc.cluster.local"
+  MURAW_LASTFM_DB_REPLICA_PORT: "5432"
+
+  # Spring profile
+  SPRING_PROFILES_ACTIVE: "local"
+
+  # Cross-namespace service dependencies
+  MU_DATA_APP_HOST: "music-data.mu-apps.svc.cluster.local"
+  MU_DATA_APP_PORT: "8080"
+
+  # Zipkin tracing
+  ZIPKIN_BASE_URL: "http://zipkin.art-universe-monitoring.svc.cluster.local:9411"
+
+  # ETL Services internal ports (actuator endpoints)
+  MURAW_LASTFM_CALLS_GENERATOR_ACTUATOR_INTERNAL_PORT: "8080"
+  MURAW_LASTFM_CALLS_PERFORMER_ACTUATOR_INTERNAL_PORT: "8080"
+  MURAW_LASTFM_RESPONSE_PARSER_ACTUATOR_INTERNAL_PORT: "8080"

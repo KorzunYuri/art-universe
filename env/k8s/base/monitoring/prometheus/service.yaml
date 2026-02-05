@@ -1,0 +1,38 @@
+---
+# Internal ClusterIP service
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+  namespace: art-universe-monitoring
+  labels:
+    app: prometheus
+    app.kubernetes.io/name: prometheus
+spec:
+  type: ClusterIP
+  ports:
+    - port: 9090
+      targetPort: 9090
+      name: http
+  selector:
+    app: prometheus
+
+---
+# External NodePort service for local access
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus-external
+  namespace: art-universe-monitoring
+  labels:
+    app: prometheus
+    app.kubernetes.io/name: prometheus-external
+spec:
+  type: NodePort
+  ports:
+    - port: 9090
+      targetPort: 9090
+      nodePort: 30090
+      name: http
+  selector:
+    app: prometheus

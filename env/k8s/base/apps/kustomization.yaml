@@ -1,0 +1,17 @@
+# Art Universe - Apps Namespace Resources
+# Core application services
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: mu-apps
+
+resources:
+  - music-data/deployment.yaml
+  - music-data/service.yaml
+  - music-quiz/deployment.yaml
+  - music-quiz/service.yaml
+
+commonLabels:
+  app.kubernetes.io/part-of: art-universe
+  app.kubernetes.io/component: applications

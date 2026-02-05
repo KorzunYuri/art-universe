@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: lastfm-response-parser
+  namespace: mu-lastfm
+  labels:
+    app: lastfm-response-parser
+spec:
+  selector:
+    app: lastfm-response-parser
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+      name: actuator

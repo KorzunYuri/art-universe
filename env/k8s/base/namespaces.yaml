@@ -1,0 +1,43 @@
+# Art Universe Kubernetes Namespaces
+# Namespace prefix: mu- (except monitoring which stays art-universe-monitoring)
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mu-data
+  labels:
+    app.kubernetes.io/part-of: art-universe
+    app.kubernetes.io/component: data
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mu-lastfm
+  labels:
+    app.kubernetes.io/part-of: art-universe
+    app.kubernetes.io/component: lastfm-etl
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mu-apps
+  labels:
+    app.kubernetes.io/part-of: art-universe
+    app.kubernetes.io/component: applications
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mu-frontend
+  labels:
+    app.kubernetes.io/part-of: art-universe
+    app.kubernetes.io/component: frontend
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: art-universe-monitoring
+  labels:
+    app.kubernetes.io/part-of: art-universe
+    app.kubernetes.io/component: monitoring
