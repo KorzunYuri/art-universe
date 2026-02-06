@@ -34,7 +34,7 @@ spec:
               sleep 5
       containers:
         - name: liquibase
-          image: mu-lastfm-liquibase:local
+          image: mu-lastfm-liquibase:latest
           imagePullPolicy: Never
           env:
             # Database connection

@@ -114,7 +114,7 @@ Write-Host "`nBuilding Docker images..." -ForegroundColor Yellow
 foreach ($service in $services) {
     $servicePath = Join-Path $ProjectRoot $service.Path
     $dockerfile = if ($service.Dockerfile) { $service.Dockerfile } else { "Dockerfile.local" }
-    $imageName = "$($service.Image):local"
+    $imageName = "$($service.Image):latest"
 
     Write-Host "`nBuilding $imageName..." -ForegroundColor Yellow
     Write-Host "  Context: $servicePath" -ForegroundColor Gray

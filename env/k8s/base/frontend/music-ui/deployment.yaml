@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: nginx
-          image: mu-music-ui:local
+          image: mu-music-ui:latest
           imagePullPolicy: Never
           ports:
             - containerPort: 80

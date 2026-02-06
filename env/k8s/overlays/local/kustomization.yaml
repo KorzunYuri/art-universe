@@ -20,4 +20,5 @@ resources:
 #       - secrets/lastfm-db-credentials.env
 
 commonLabels:
+  app.kubernetes.io/managed-by: kustomize
   environment: local

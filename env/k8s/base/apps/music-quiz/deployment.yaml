@@ -36,7 +36,7 @@ spec:
               sleep 5
       containers:
         - name: app
-          image: mu-music-quiz:local
+          image: mu-music-quiz:latest
           imagePullPolicy: Never
           ports:
             - containerPort: 8080

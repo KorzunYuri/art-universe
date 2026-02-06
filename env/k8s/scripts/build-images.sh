@@ -101,7 +101,7 @@ echo -e "\n\033[33mBuilding Docker images...\033[0m"
 for service_def in "${SERVICES[@]}"; do
     IFS=':' read -r svc_path image_name dockerfile <<< "$service_def"
     service_path="$PROJECT_ROOT/$svc_path"
-    full_image_name="$image_name:local"
+    full_image_name="$image_name:latest"
 
     echo -e "\n\033[33mBuilding $full_image_name...\033[0m"
     echo -e "  \033[90mContext: $service_path\033[0m"

@@ -53,3 +53,6 @@ bin/
 !env/docker/local/*.env
 !env/docker/prod/*.env
 **/*.secrets.env
+
+### Kubernetes ###
+**/k8s/**/secrets/secrets.yaml

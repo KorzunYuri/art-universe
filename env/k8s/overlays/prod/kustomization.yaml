@@ -1,0 +1,107 @@
+# Art Universe - Production Environment Overlay
+# Connects to external databases (no containerized PostgreSQL)
+# Default: databases on Windows host, K8s cluster in Docker Desktop
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  # Base resources (selectively — skip data/ which has PostgreSQL StatefulSets)
+  # Note: namespaces.yaml is applied by deploy-prod scripts before this overlay
+  - ../../base/lastfm
+  - ../../base/apps
+  - ../../base/frontend
+  - ../../base/monitoring
+  # Database migration job (runs against external DB, no StatefulSets)
+  - ../../base/data/migrations
+  # External database connectivity (ExternalName services)
+  - external-databases.yaml
+  # LoadBalancer services for external access (Docker prod ports)
+  - external-services.yaml
+
+# Secrets (gitignored, must be created manually from secrets.yaml.template)
+# See secrets/README.md for setup instructions
+
+patches:
+  # --- LastFM common config: spring profile + replica port ---
+  - patch: |
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: lastfm-common-config
+        namespace: mu-lastfm
+      data:
+        SPRING_PROFILES_ACTIVE: "prod"
+        MURAW_LASTFM_DB_REPLICA_PORT: "5433"
+
+  # --- music-data: spring profile + CORS ---
+  - patch: |
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: music-data
+        namespace: mu-apps
+      spec:
+        template:
+          spec:
+            containers:
+              - name: music-data
+                env:
+                  - name: SPRING_PROFILES_ACTIVE
+                    value: "prod"
+                  - name: MU_DATA_APP_CORS_ALLOWED_ORIGINS
+                    value: "http://localhost:3000"
+
+  # --- music-quiz: spring profile + CORS ---
+  - patch: |
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: music-quiz
+        namespace: mu-apps
+      spec:
+        template:
+          spec:
+            containers:
+              - name: music-quiz
+                env:
+                  - name: SPRING_PROFILES_ACTIVE
+                    value: "prod"
+                  - name: MU_QUIZ_APP_CORS_ALLOWED_ORIGINS
+                    value: "http://localhost:3000"
+
+  # --- lastfm-rest-api: CORS ---
+  - patch: |
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: lastfm-rest-api
+        namespace: mu-lastfm
+      spec:
+        template:
+          spec:
+            containers:
+              - name: lastfm-rest-api
+                env:
+                  - name: MURAW_LASTFM_REST_API_CORS_ALLOWED_ORIGINS
+                    value: "http://localhost:3000"
+
+  # --- lastfm-etl-rest-api: CORS ---
+  - patch: |
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: lastfm-etl-rest-api
+        namespace: mu-lastfm
+      spec:
+        template:
+          spec:
+            containers:
+              - name: lastfm-etl-rest-api
+                env:
+                  - name: MURAW_LASTFM_ETL_REST_API_CORS_ALLOWED_ORIGINS
+                    value: "http://localhost:3000"
+
+commonLabels:
+  app.kubernetes.io/managed-by: kustomize
+  environment: prod

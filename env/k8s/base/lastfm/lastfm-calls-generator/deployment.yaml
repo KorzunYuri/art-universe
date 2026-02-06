@@ -39,7 +39,7 @@ spec:
               sleep 10
       containers:
         - name: app
-          image: mu-lastfm-calls-generator:local
+          image: mu-lastfm-calls-generator:latest
           imagePullPolicy: Never
           ports:
             - containerPort: 8080

@@ -39,7 +39,7 @@ spec:
               sleep 10
       containers:
         - name: app
-          image: mu-lastfm-rest-api:local
+          image: mu-lastfm-rest-api:latest
           imagePullPolicy: Never
           ports:
             - containerPort: 8080

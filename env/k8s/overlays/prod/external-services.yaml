@@ -1,0 +1,88 @@
+# External LoadBalancer services for production
+# These expose services on the same ports as Docker Compose prod
+# Note: Docker Desktop's built-in LoadBalancer makes these accessible on localhost
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: music-ui-prod
+  namespace: mu-frontend
+  labels:
+    app: music-ui
+spec:
+  type: LoadBalancer
+  selector:
+    app: music-ui
+  ports:
+    - port: 3000
+      targetPort: 80
+      protocol: TCP
+      name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lastfm-rest-api-prod
+  namespace: mu-lastfm
+  labels:
+    app: lastfm-rest-api
+spec:
+  type: LoadBalancer
+  selector:
+    app: lastfm-rest-api
+  ports:
+    - port: 8084
+      targetPort: 8080
+      protocol: TCP
+      name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lastfm-etl-rest-api-prod
+  namespace: mu-lastfm
+  labels:
+    app: lastfm-etl-rest-api
+spec:
+  type: LoadBalancer
+  selector:
+    app: lastfm-etl-rest-api
+  ports:
+    - port: 8085
+      targetPort: 8080
+      protocol: TCP
+      name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: music-data-prod
+  namespace: mu-apps
+  labels:
+    app: music-data
+spec:
+  type: LoadBalancer
+  selector:
+    app: music-data
+  ports:
+    - port: 8082
+      targetPort: 8080
+      protocol: TCP
+      name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: music-quiz-prod
+  namespace: mu-apps
+  labels:
+    app: music-quiz
+spec:
+  type: LoadBalancer
+  selector:
+    app: music-quiz
+  ports:
+    - port: 8083
+      targetPort: 8080
+      protocol: TCP
+      name: http
