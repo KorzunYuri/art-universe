@@ -64,6 +64,16 @@ kubectl apply -f overlays\local\secrets\secrets.yaml
 
 **Or manually:**
 ```bash
+# Create ConfigMaps from shared init scripts (required before first deploy)
+kubectl apply -f base/namespaces.yaml
+kubectl create configmap postgres-lastfm-master-init -n mu-data \
+    --from-file="01-init.sh=../../docker/common/db/mu-raw-lastfm/initdb/01-init.sh" \
+    --dry-run=client -o yaml | kubectl apply -f -
+kubectl create configmap postgres-music-data-init -n mu-data \
+    --from-file="01-init.sh=../../docker/common/db/mu/initdb/01-init.sh" \
+    --dry-run=client -o yaml | kubectl apply -f -
+
+# Apply manifests
 kubectl apply -k overlays/local
 ```
 
@@ -81,12 +91,29 @@ kubectl apply -k overlays/local
 
 | Service | URL |
 |---------|-----|
-| Music UI | http://localhost/ |
-| LastFM API | http://localhost/api/lastfm/ |
-| Music Data API | http://localhost/api/music/ |
-| Music Quiz API | http://localhost/api/quiz/ |
+| Music UI | http://localhost:4000 |
+| Music Data API | http://localhost:9082 |
+| Music Quiz API | http://localhost:9083 |
+| LastFM REST API | http://localhost:9084 |
+| LastFM ETL REST API | http://localhost:9085 |
 | Grafana | http://localhost:30000 |
 | Prometheus | http://localhost:30090 |
+
+## Teardown
+
+Remove all deployed resources:
+```powershell
+kubectl delete -k overlays\local
+```
+
+To also remove persistent data (database volumes) and namespaces:
+```powershell
+# Delete PVCs (this destroys all database data)
+kubectl delete pvc --all -n mu-data
+
+# Delete namespaces (removes any remaining resources)
+kubectl delete namespace mu-data mu-lastfm mu-apps mu-frontend art-universe-monitoring
+```
 
 ## Useful Commands
 
@@ -105,10 +132,21 @@ kubectl describe pod -n mu-data postgres-lastfm-master-0
 
 # Port-forward for debugging
 kubectl port-forward -n mu-apps svc/music-data 8082:8080
-
-# Delete all resources
-kubectl delete -k overlays\local
 ```
+
+## Architecture Notes
+
+### Shared Database Init Scripts
+
+Database initialization scripts are centralized at `env/docker/common/db/` and shared by
+both Docker Compose and Kubernetes deployments:
+
+- `env/docker/common/db/mu-raw-lastfm/initdb/01-init.sh` - LastFM database init
+- `env/docker/common/db/mu/initdb/01-init.sh` - Music Data database init
+
+For Docker Compose, these are mounted directly into `/docker-entrypoint-initdb.d/`.
+For Kubernetes, the deploy scripts create ConfigMaps from these files, which are then
+mounted into the PostgreSQL pods.
 
 ## Directory Structure
 
@@ -131,7 +169,8 @@ env/k8s/
 └── overlays/
     └── local/
         ├── kustomization.yaml
-        └── secrets/          # Environment secrets (gitignored)
+        ├── external-services.yaml  # LoadBalancer services for local access
+        └── secrets/                # Environment secrets (gitignored)
 ```
 
 ## Troubleshooting

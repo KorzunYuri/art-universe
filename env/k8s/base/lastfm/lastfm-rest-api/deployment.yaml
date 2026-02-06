@@ -48,7 +48,7 @@ spec:
             - name: JAVA_OPTS
               value: "-Xms256m -Xmx768m -XX:MaxMetaspaceSize=192m"
             - name: MURAW_LASTFM_REST_API_CORS_ALLOWED_ORIGINS
-              value: "http://localhost,http://localhost:80"
+              value: "http://localhost:4000,http://localhost,http://localhost:80"
             - name: MURAW_LASTFM_DB_READER_PASSWORD
               valueFrom:
                 secretKeyRef:

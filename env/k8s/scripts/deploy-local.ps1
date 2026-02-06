@@ -37,6 +37,17 @@ if (-not $SkipIngressCheck) {
     }
 }
 
+# Create database init ConfigMaps from shared scripts (used by both Docker and K8s)
+$ProjectRoot = Resolve-Path "$K8sDir\..\.."
+Write-Host "`nCreating database init ConfigMaps from shared scripts..." -ForegroundColor Yellow
+kubectl create configmap postgres-lastfm-master-init -n mu-data `
+    --from-file="01-init.sh=$ProjectRoot\env\docker\common\db\mu-raw-lastfm\initdb\01-init.sh" `
+    --dry-run=client -o yaml | kubectl apply -f -
+kubectl create configmap postgres-music-data-init -n mu-data `
+    --from-file="01-init.sh=$ProjectRoot\env\docker\common\db\mu\initdb\01-init.sh" `
+    --dry-run=client -o yaml | kubectl apply -f -
+Write-Host "ConfigMaps created." -ForegroundColor Green
+
 # Apply Kustomize overlay
 Write-Host "`nApplying Kubernetes manifests..." -ForegroundColor Yellow
 kubectl apply -k "$K8sDir\overlays\local"
@@ -92,6 +103,10 @@ kubectl get pods -n mu-frontend --no-headers 2>$null | ForEach-Object { Write-Ho
 kubectl get pods -n art-universe-monitoring --no-headers 2>$null | ForEach-Object { Write-Host "  [monitoring] $_" }
 
 Write-Host "`nAccess Points:" -ForegroundColor Yellow
-Write-Host "  - UI:         http://localhost/" -ForegroundColor Green
-Write-Host "  - Grafana:    http://localhost:30000" -ForegroundColor Green
-Write-Host "  - Prometheus: http://localhost:30090" -ForegroundColor Green
+Write-Host "  - UI:                  http://localhost:4000" -ForegroundColor Green
+Write-Host "  - Music Data API:      http://localhost:9082" -ForegroundColor Green
+Write-Host "  - Music Quiz API:      http://localhost:9083" -ForegroundColor Green
+Write-Host "  - LastFM REST API:     http://localhost:9084" -ForegroundColor Green
+Write-Host "  - LastFM ETL REST API: http://localhost:9085" -ForegroundColor Green
+Write-Host "  - Grafana:             http://localhost:30000" -ForegroundColor Green
+Write-Host "  - Prometheus:          http://localhost:30090" -ForegroundColor Green

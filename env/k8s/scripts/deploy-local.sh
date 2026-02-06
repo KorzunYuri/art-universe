@@ -49,6 +49,17 @@ if [ "$SKIP_INGRESS_CHECK" = false ]; then
     fi
 fi
 
+# Create database init ConfigMaps from shared scripts (used by both Docker and K8s)
+PROJECT_ROOT="$(cd "$K8S_DIR/../.." && pwd)"
+echo -e "\n\033[33mCreating database init ConfigMaps from shared scripts...\033[0m"
+kubectl create configmap postgres-lastfm-master-init -n mu-data \
+    --from-file="01-init.sh=$PROJECT_ROOT/env/docker/common/db/mu-raw-lastfm/initdb/01-init.sh" \
+    --dry-run=client -o yaml | kubectl apply -f -
+kubectl create configmap postgres-music-data-init -n mu-data \
+    --from-file="01-init.sh=$PROJECT_ROOT/env/docker/common/db/mu/initdb/01-init.sh" \
+    --dry-run=client -o yaml | kubectl apply -f -
+echo -e "\033[32mConfigMaps created.\033[0m"
+
 # Apply Kustomize overlay
 echo -e "\n\033[33mApplying Kubernetes manifests...\033[0m"
 kubectl apply -k "$K8S_DIR/overlays/local"
@@ -105,6 +116,10 @@ kubectl get pods -n mu-frontend --no-headers 2>/dev/null | while read line; do e
 kubectl get pods -n art-universe-monitoring --no-headers 2>/dev/null | while read line; do echo "  [monitoring] $line"; done
 
 echo -e "\n\033[33mAccess Points:\033[0m"
-echo -e "  \033[32m- UI:         http://localhost/\033[0m"
-echo -e "  \033[32m- Grafana:    http://localhost:30000\033[0m"
-echo -e "  \033[32m- Prometheus: http://localhost:30090\033[0m"
+echo -e "  \033[32m- UI:                  http://localhost:4000\033[0m"
+echo -e "  \033[32m- Music Data API:      http://localhost:9082\033[0m"
+echo -e "  \033[32m- Music Quiz API:      http://localhost:9083\033[0m"
+echo -e "  \033[32m- LastFM REST API:     http://localhost:9084\033[0m"
+echo -e "  \033[32m- LastFM ETL REST API: http://localhost:9085\033[0m"
+echo -e "  \033[32m- Grafana:             http://localhost:30000\033[0m"
+echo -e "  \033[32m- Prometheus:          http://localhost:30090\033[0m"

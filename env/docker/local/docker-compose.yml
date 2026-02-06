@@ -4,20 +4,18 @@ services:
   # Databases
   postgres-lastfm-master:
     container_name: local__lastfm__db-postgres-master
+    image: postgres:14
     restart: unless-stopped
     shm_size: 128mb
     stop_grace_period: 1m
     stop_signal: SIGINT
-    build:
-      dockerfile: postgres.dockerfile
-      context: ../../../music/shared/docker/compose/common
     env_file:
       - ./music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.secrets.env
     volumes:
       - local__lastfm__db-postgres-data:/var/lib/postgresql/data
-      - ../common/db/mu-raw-lastfm/initdb/templates:/docker-entrypoint-initdb.d
-    command: bash -c "envsubst < /docker-entrypoint-initdb.d/init.sql.template > /docker-entrypoint-initdb.d/01-init.sql && chmod +x /docker-entrypoint-initdb.d/02-configure-replication.sh && exec docker-entrypoint.sh postgres -c wal_level=replica -c max_wal_senders=3 -c max_replication_slots=3"
+      - ../common/db/mu-raw-lastfm/initdb/01-init.sh:/docker-entrypoint-initdb.d/01-init.sh
+    command: ["postgres", "-c", "wal_level=replica", "-c", "max_wal_senders=3", "-c", "max_replication_slots=3"]
     ports:
       - "${MURAW_LASTFM_DB_MASTER_EXTERNAL_PORT}:5432"
     healthcheck:
@@ -38,13 +36,11 @@ services:
 
   postgres-lastfm-replica:
     container_name: local__lastfm__db-postgres-replica
+    image: postgres:14
     restart: unless-stopped
     shm_size: 128mb
     stop_grace_period: 1m
     stop_signal: SIGINT
-    build:
-      dockerfile: postgres.dockerfile
-      context: ../../../music/shared/docker/compose/common
     env_file:
       - ./music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.secrets.env
@@ -56,7 +52,6 @@ services:
     volumes:
       - local__lastfm__db-postgres-replica-data:/var/lib/postgresql/data
       - ../common/db/mu-raw-lastfm/initdb/replica-setup.sh:/docker-entrypoint-initdb.d/replica-setup.sh
-    command: bash -c "chmod +x /docker-entrypoint-initdb.d/replica-setup.sh && exec docker-entrypoint.sh postgres"
     ports:
       - "${MURAW_LASTFM_DB_REPLICA_EXTERNAL_PORT}:5432"
     depends_on:
@@ -80,13 +75,11 @@ services:
 
   postgres-music-data:
     container_name: local__mu-music-data__db-postgres
+    image: postgres:14
     restart: unless-stopped
     shm_size: 128mb
     stop_grace_period: 1m
     stop_signal: SIGINT
-    build:
-      dockerfile: postgres.dockerfile
-      context: ../../../music/shared/docker/compose/common
     env_file:
       - ./music-data.env
       - ./music-data.secrets.env
@@ -94,8 +87,7 @@ services:
       - ./music-quiz.secrets.env
     volumes:
       - local__mu-data__db-postgres-data:/var/lib/postgresql/data
-      - ../common/db/mu/initdb/templates:/docker-entrypoint-initdb.d
-    command: bash -c "envsubst < /docker-entrypoint-initdb.d/init.sql.template > /docker-entrypoint-initdb.d/init.sql && exec docker-entrypoint.sh postgres"
+      - ../common/db/mu/initdb/01-init.sh:/docker-entrypoint-initdb.d/01-init.sh
     ports:
       - "${MU_DATA_DB_EXTERNAL_PORT}:5432"
     healthcheck:

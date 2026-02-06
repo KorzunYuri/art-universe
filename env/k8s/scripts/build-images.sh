@@ -107,7 +107,21 @@ for service_def in "${SERVICES[@]}"; do
     echo -e "  \033[90mContext: $service_path\033[0m"
     echo -e "  \033[90mDockerfile: $dockerfile\033[0m"
 
-    if docker build -t "$full_image_name" -f "$service_path/$dockerfile" "$service_path"; then
+    # Special handling for music-ui: pass build args for K8s local deployment
+    build_args=""
+    if [ "$image_name" = "mu-music-ui" ]; then
+        build_args="--build-arg VITE_MURAW_LASTFM_READ_API_HOST=localhost \
+                    --build-arg VITE_MURAW_LASTFM_READ_API_EXTERNAL_PORT=9084 \
+                    --build-arg VITE_MURAW_LASTFM_WRITE_API_HOST=localhost \
+                    --build-arg VITE_MURAW_LASTFM_WRITE_API_EXTERNAL_PORT=9085 \
+                    --build-arg VITE_MU_DATA_APP_HOST=localhost \
+                    --build-arg VITE_MU_DATA_APP_EXTERNAL_PORT=9082 \
+                    --build-arg VITE_MU_QUIZ_APP_HOST=localhost \
+                    --build-arg VITE_MU_QUIZ_APP_EXTERNAL_PORT=9083"
+        echo -e "  \033[90mUsing K8s local build args for UI\033[0m"
+    fi
+
+    if docker build -t "$full_image_name" -f "$service_path/$dockerfile" $build_args "$service_path"; then
         successful+=("$full_image_name")
         echo -e "  \033[32mSuccess!\033[0m"
     else
