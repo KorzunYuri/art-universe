@@ -2,24 +2,19 @@
 
 This directory contains Kubernetes manifests for deploying Art Universe using Kustomize.
 
+Two overlays are available:
+- **Local**: Full stack with containerized PostgreSQL databases
+- **Prod**: Applications only, connecting to external databases
+
 ## Prerequisites
 
 1. **Docker Desktop** with Kubernetes enabled
 2. **kubectl** configured for Docker Desktop cluster
-3. **NGINX Ingress Controller** (install command below)
+3. **NGINX Ingress Controller** (installed automatically by deploy scripts)
 
-## Quick Start
+## Quick Start (Local)
 
-### 1. Install NGINX Ingress Controller
-
-```powershell
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.9.4/deploy/static/provider/cloud/deploy.yaml
-
-# Wait for controller to be ready
-kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s
-```
-
-### 2. Build Local Images
+### 1. Build Images
 
 **Windows (PowerShell):**
 ```powershell
@@ -32,7 +27,7 @@ chmod +x scripts/*.sh
 ./scripts/build-images.sh
 ```
 
-### 3. Create Namespaces and Secrets
+### 2. Create Namespaces and Secrets
 
 First, create the namespaces (secrets must be applied to existing namespaces):
 ```bash
@@ -50,7 +45,7 @@ Apply the secrets:
 kubectl apply -f overlays\local\secrets\secrets.yaml
 ```
 
-### 4. Deploy
+### 3. Deploy
 
 **Windows (PowerShell):**
 ```powershell
@@ -77,17 +72,70 @@ kubectl create configmap postgres-music-data-init -n mu-data \
 kubectl apply -k overlays/local
 ```
 
+## Quick Start (Prod)
+
+The prod overlay connects to external databases instead of running PostgreSQL in containers.
+
+### 1. Build Images
+
+Same as local (images are tagged `:latest` for both overlays):
+```powershell
+.\scripts\build-images.ps1
+```
+
+### 2. Create Secrets
+
+```powershell
+cp overlays\prod\secrets\secrets.yaml.template overlays\prod\secrets\secrets.yaml
+# Edit secrets.yaml with your production credentials
+```
+
+See `overlays/prod/secrets/README.md` for details.
+
+### 3. Deploy
+
+**Windows (PowerShell):**
+```powershell
+.\scripts\deploy-prod.ps1
+```
+
+**Linux/MacOS:**
+```bash
+./scripts/deploy-prod.sh
+```
+
+The deploy script will:
+1. Apply namespaces
+2. Create Grafana ConfigMaps from shared provisioning files
+3. Apply the prod Kustomize overlay
+4. Apply secrets (if `secrets.yaml` exists)
+5. Wait for migrations and applications
+
+### External Database Configuration
+
+By default, the prod overlay points to `host.docker.internal` (the Windows host from Docker Desktop K8s). To change the database host, edit `overlays/prod/external-databases.yaml`:
+
+```yaml
+spec:
+  type: ExternalName
+  externalName: host.docker.internal   # Change this to your DB host
+```
+
+For IP-based databases (no DNS name), see the comments in `external-databases.yaml` for the Service+Endpoints alternative.
+
 ## Namespace Structure
 
 | Namespace | Purpose |
 |-----------|---------|
-| `mu-data` | PostgreSQL databases and migration jobs |
+| `mu-data` | PostgreSQL databases (local) or ExternalName services (prod), migration jobs |
 | `mu-lastfm` | LastFM ETL pipeline services |
 | `mu-apps` | Core applications (music-data, music-quiz) |
 | `mu-frontend` | UI and NGINX Ingress |
 | `art-universe-monitoring` | Prometheus, Grafana, Zipkin |
 
-## Access Points (Local)
+## Access Points
+
+### Local
 
 | Service | URL |
 |---------|-----|
@@ -99,19 +147,34 @@ kubectl apply -k overlays/local
 | Grafana | http://localhost:30000 |
 | Prometheus | http://localhost:30090 |
 
+### Prod
+
+| Service | URL |
+|---------|-----|
+| Music UI | http://localhost:3000 |
+| Music Data API | http://localhost:8082 |
+| Music Quiz API | http://localhost:8083 |
+| LastFM REST API | http://localhost:8084 |
+| LastFM ETL REST API | http://localhost:8085 |
+| Grafana | http://localhost:30000 |
+| Prometheus | http://localhost:30090 |
+
 ## Teardown
 
-Remove all deployed resources:
+### Local
 ```powershell
 kubectl delete -k overlays\local
+
+# To also remove persistent data (database volumes) and namespaces:
+kubectl delete pvc --all -n mu-data
+kubectl delete namespace mu-data mu-lastfm mu-apps mu-frontend art-universe-monitoring
 ```
 
-To also remove persistent data (database volumes) and namespaces:
+### Prod
 ```powershell
-# Delete PVCs (this destroys all database data)
-kubectl delete pvc --all -n mu-data
+kubectl delete -k overlays\prod
 
-# Delete namespaces (removes any remaining resources)
+# To remove namespaces:
 kubectl delete namespace mu-data mu-lastfm mu-apps mu-frontend art-universe-monitoring
 ```
 
@@ -132,21 +195,29 @@ kubectl describe pod -n mu-data postgres-lastfm-master-0
 
 # Port-forward for debugging
 kubectl port-forward -n mu-apps svc/music-data 8082:8080
+
+# Render Kustomize output without applying
+kubectl kustomize overlays/local
+kubectl kustomize overlays/prod
 ```
 
 ## Architecture Notes
 
-### Shared Database Init Scripts
+### Local vs Prod Overlay
 
-Database initialization scripts are centralized at `env/docker/common/db/` and shared by
-both Docker Compose and Kubernetes deployments:
+- **Local** includes the full `base/` (with PostgreSQL StatefulSets in `data/`), plus LoadBalancer services on 9xxx/4000 ports
+- **Prod** selectively includes base sub-kustomizations (skipping `data/` StatefulSets), adds ExternalName services for database connectivity, and uses LoadBalancer services on 8xxx/3000 ports
 
-- `env/docker/common/db/mu-raw-lastfm/initdb/01-init.sh` - LastFM database init
-- `env/docker/common/db/mu/initdb/01-init.sh` - Music Data database init
+### Shared Resources
 
-For Docker Compose, these are mounted directly into `/docker-entrypoint-initdb.d/`.
-For Kubernetes, the deploy scripts create ConfigMaps from these files, which are then
-mounted into the PostgreSQL pods.
+Database init scripts, Grafana dashboards, and datasource configurations are centralized at `env/docker/common/` and shared by both Docker Compose and Kubernetes deployments:
+
+- **DB init scripts** (`env/docker/common/db/`) - Mounted directly in Docker Compose; created as ConfigMaps by deploy scripts for K8s (local overlay only)
+- **Grafana provisioning** (`env/docker/common/grafana/provisioning/`) - Mounted directly in Docker Compose; created as ConfigMaps by deploy scripts for K8s
+
+### Image Tags
+
+All images are tagged `:latest` in base manifests. The `build-images` scripts build and tag images accordingly. Both overlays use the same images.
 
 ## Directory Structure
 
@@ -157,20 +228,29 @@ env/k8s/
 │   ├── build-images.ps1      # Build Docker images (Windows)
 │   ├── build-images.sh       # Build Docker images (Linux/MacOS)
 │   ├── deploy-local.ps1      # Deploy to local K8s (Windows)
-│   └── deploy-local.sh       # Deploy to local K8s (Linux/MacOS)
+│   ├── deploy-local.sh       # Deploy to local K8s (Linux/MacOS)
+│   ├── deploy-prod.ps1       # Deploy to prod K8s (Windows)
+│   └── deploy-prod.sh        # Deploy to prod K8s (Linux/MacOS)
 ├── base/
 │   ├── kustomization.yaml    # Main base kustomization
 │   ├── namespaces.yaml       # Namespace definitions
-│   ├── data/                 # Database StatefulSets
+│   ├── data/                 # Database StatefulSets + migration jobs
 │   ├── lastfm/               # LastFM ETL services
 │   ├── apps/                 # Core applications
 │   ├── frontend/             # UI and Ingress
 │   └── monitoring/           # Prometheus, Grafana, Zipkin
 └── overlays/
-    └── local/
+    ├── local/
+    │   ├── kustomization.yaml
+    │   ├── external-services.yaml  # LoadBalancer services (9xxx/4000 ports)
+    │   └── secrets/                # Environment secrets (gitignored)
+    └── prod/
         ├── kustomization.yaml
-        ├── external-services.yaml  # LoadBalancer services for local access
-        └── secrets/                # Environment secrets (gitignored)
+        ├── external-databases.yaml   # ExternalName services for DB connectivity
+        ├── external-services.yaml    # LoadBalancer services (8xxx/3000 ports)
+        └── secrets/                  # Prod secrets (gitignored)
+            ├── secrets.yaml.template
+            └── README.md
 ```
 
 ## Troubleshooting
@@ -186,3 +266,6 @@ Verify service DNS: `kubectl exec -n mu-lastfm deployment/lastfm-rest-api -- nsl
 
 ### Image pull errors
 Ensure images are built locally and `imagePullPolicy: Never` is set.
+
+### ExternalName resolution (prod)
+Verify external DB connectivity: `kubectl exec -n mu-lastfm deployment/lastfm-rest-api -- nslookup host.docker.internal`

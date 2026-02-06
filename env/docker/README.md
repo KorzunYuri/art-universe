@@ -155,3 +155,4 @@ docker images | grep mu-
 
 - [DEVELOPMENT.md](../../docs/DEVELOPMENT.md) - Development workflow and IntelliJ setup
 - [SERVICES.md](../../docs/SERVICES.md) - Complete service listing with ports
+- [Kubernetes Deployment](../k8s/README.md) - Alternative deployment using Kustomize (local and prod overlays)

@@ -64,5 +64,6 @@ The project currently focuses on music data and quiz applications - generating s
 - **[Knowledge Base](docs/kb/README.md)** - LLM-oriented knowledge base
 - **[Gradle commands reference](docs/kb/guides/gradle-commands.md)** - Complete modules list
 - **[Development Guide](docs/DEVELOPMENT.md)** - Complete development workflow
-- **[Docker Deployment Scripts](env/docker/README.md)** - Deployment guide (Docker)
+- **[Docker Deployment Scripts](env/docker/README.md)** - Deployment guide (Docker Compose)
+- **[Kubernetes Deployment](env/k8s/README.md)** - Deployment guide (Kubernetes/Kustomize)
 

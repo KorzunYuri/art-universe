@@ -8,7 +8,9 @@ The Art Universe project supports three different ways to run services, each sui
 |------|-------------|-------------|--------------|-------------|
 | **Dev (IntelliJ)** | Databases in Docker, applications in IntelliJ | DB only| `env/docker/dev/docker-compose.yml` + IntelliJ env files | Working on services, fast iteration, debugging      |
 | **Local (Docker)** | Full stack via Docker Compose | Yes (all containerized) | `env/docker/local/docker-compose.yml`| Integration testing, full stack development                 |
+| **Local (K8s)** | Full stack via Kustomize | Yes (Docker Desktop K8s) | `env/k8s/overlays/local/` | Integration testing with Kubernetes |
 | **Production (Docker)** | Production deployment via Docker Compose | Yes (external DB)     | `env/docker/prod/docker-compose.yml`| Actual deployment                                           |
+| **Production (K8s)** | Production deployment via Kustomize | Yes (external DB) | `env/k8s/overlays/prod/` | Kubernetes deployment with external databases |
 
 ### Why Dev Mode Uses `env/docker/` Files
 
@@ -52,9 +54,13 @@ Each run configuration loads environment files in a specific order (later files 
 2. env/docker/dev/{domain/app}.secrets.env          - App/domain specific secrets
 ```
 
-## Docker Deployment (Local & Production Modes)
+## Docker Compose Deployment (Local & Production Modes)
 
 > **See**: [Docker Scripts](../env/docker/README.md) for complete deployment guide and troubleshooting.
+
+## Kubernetes Deployment (Local & Production Modes)
+
+> **See**: [Kubernetes Deployment](../env/k8s/README.md) for Kustomize-based deployment with local or external databases.
 
 ## Build and Testing
 
@@ -115,6 +121,7 @@ For complete development patterns, see **[patterns reference](kb/patterns/README
 ## Related Documentation
 
 - [Environment Configuration](../env/docker/README.md) - Complete env file structure and loading order
+- [Kubernetes Deployment](../env/k8s/README.md) - Kustomize-based deployment
 - [Services](SERVICES.md) - Service ports and configurations
 - [Modules](kb/guides/gradle-commands) - Module listing and build commands
 - [Patterns](kb/patterns/README.md) - Development patterns and best practices

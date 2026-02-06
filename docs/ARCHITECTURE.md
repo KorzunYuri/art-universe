@@ -96,5 +96,8 @@ See **[SERVICES.md](SERVICES.md)** for actuator port configurations.
 - **Kafka Integration**: Asynchronous message processing
 - **Structured Logging**: JSON logs with correlation IDs
 - **Centralized Logging**: ELK stack or similar for log aggregation
-- **Kubernetes Deployment**: Container orchestration
 - **Caching Layer**: Redis for frequently accessed data
+
+### Deployment Options
+- **Docker Compose**: Local and production modes. See [Docker Deployment](../env/docker/README.md).
+- **Kubernetes (Kustomize)**: Local (with containerized DBs) and prod (with external DBs) overlays. See [Kubernetes Deployment](../env/k8s/README.md).
