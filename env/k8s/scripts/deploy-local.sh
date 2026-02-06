@@ -60,6 +60,22 @@ kubectl create configmap postgres-music-data-init -n mu-data \
     --dry-run=client -o yaml | kubectl apply -f -
 echo -e "\033[32mConfigMaps created.\033[0m"
 
+# Create Grafana ConfigMaps from shared provisioning files
+DASHBOARDS_DIR="$PROJECT_ROOT/env/docker/common/grafana/provisioning/dashboards"
+echo -e "\n\033[33mCreating Grafana ConfigMaps from shared provisioning files...\033[0m"
+kubectl create configmap grafana-dashboards -n art-universe-monitoring \
+    --from-file="dashboard.yml=$DASHBOARDS_DIR/dashboard.yml" \
+    --from-file="lastfm_raw_data_dashboard.json=$DASHBOARDS_DIR/lastfm_raw_data_dashboard.json" \
+    --from-file="lastfm_database_metrics_dashboard.json=$DASHBOARDS_DIR/lastfm_database_metrics_dashboard.json" \
+    --from-file="system_metrics_dashboard.json=$DASHBOARDS_DIR/system_metrics_dashboard.json" \
+    --from-file="repository_performance_dashboard.json=$DASHBOARDS_DIR/repository_performance_dashboard.json" \
+    --from-file="rest_api_performance_dashboard.json=$DASHBOARDS_DIR/rest_api_performance_dashboard.json" \
+    --dry-run=client -o yaml | kubectl apply -f -
+kubectl create configmap grafana-datasources -n art-universe-monitoring \
+    --from-file="datasource.yml=$PROJECT_ROOT/env/docker/common/grafana/provisioning/datasources/datasource.yml" \
+    --dry-run=client -o yaml | kubectl apply -f -
+echo -e "\033[32mGrafana ConfigMaps created.\033[0m"
+
 # Apply Kustomize overlay
 echo -e "\n\033[33mApplying Kubernetes manifests...\033[0m"
 kubectl apply -k "$K8S_DIR/overlays/local"

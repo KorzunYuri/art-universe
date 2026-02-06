@@ -16,7 +16,8 @@ resources:
   # Grafana
   - grafana/deployment.yaml
   - grafana/service.yaml
-  - grafana/configmap.yaml
+  # ConfigMaps grafana-dashboards and grafana-datasources are created by
+  # the deploy scripts from shared provisioning files at env/docker/common/grafana/.
   # Zipkin
   - zipkin/deployment.yaml
   - zipkin/service.yaml

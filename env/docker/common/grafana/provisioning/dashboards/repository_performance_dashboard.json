@@ -32,13 +32,13 @@
       },
       "id": 1,
       "panels": [],
-      "title": "Request Latency",
+      "title": "Repository Performance Overview",
       "type": "row"
     },
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "$PROMETHEUS_DATASOURCE_UID"
+        "uid": "prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -85,48 +85,17 @@
               },
               {
                 "color": "yellow",
-                "value": 0.5
+                "value": 0.1
               },
               {
                 "color": "red",
-                "value": 1
+                "value": 0.5
               }
             ]
           },
           "unit": "s"
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byRegexp",
-              "options": ".*P95.*"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "yellow",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byRegexp",
-              "options": ".*P99.*"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "red",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
         "h": 12,
@@ -151,33 +120,22 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "$PROMETHEUS_DATASOURCE_UID"
+            "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum by (application, uri, method) (rate(http_server_requests_seconds_sum{application=~\"$service\", uri=~\"$uri\", method=~\"$http_method\"}[5m])) / sum by (application, uri, method) (rate(http_server_requests_seconds_count{application=~\"$service\", uri=~\"$uri\", method=~\"$http_method\"}[5m]))",
-          "legendFormat": "Avg - {{application}} {{method}} {{uri}}",
+          "expr": "sum by (application, repository, method) (rate(spring_data_repository_invocations_seconds_sum{application=~\"$service\", repository=~\"$repository\"}[5m])) / sum by (application, repository, method) (rate(spring_data_repository_invocations_seconds_count{application=~\"$service\", repository=~\"$repository\"}[5m]))",
+          "legendFormat": "{{application}} - {{repository}}.{{method}}",
           "range": true,
           "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$PROMETHEUS_DATASOURCE_UID"
-          },
-          "editorMode": "code",
-          "expr": "max by (application, uri, method) (http_server_requests_seconds_max{application=~\"$service\", uri=~\"$uri\", method=~\"$http_method\"})",
-          "legendFormat": "Max - {{application}} {{method}} {{uri}}",
-          "range": true,
-          "refId": "B"
         }
       ],
-      "title": "HTTP Request Average/Max Latency",
+      "title": "Repository Average Latency",
       "type": "timeseries"
     },
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "$PROMETHEUS_DATASOURCE_UID"
+        "uid": "prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -187,109 +145,7 @@
           "custom": {
             "axisCenteredZero": false,
             "axisColorMode": "text",
-            "axisLabel": "Latency (seconds)",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
-          "unit": "s"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 12,
-        "w": 12,
-        "x": 12,
-        "y": 1
-      },
-      "id": 3,
-      "options": {
-        "legend": {
-          "calcs": ["mean", "lastNotNull", "max"],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$PROMETHEUS_DATASOURCE_UID"
-          },
-          "editorMode": "code",
-          "expr": "sum by (application, uri, method) (rate(http_server_requests_seconds_sum{application=~\"$service\", uri=~\"$uri\", method=~\"$http_method\"}[1m])) / sum by (application, uri, method) (rate(http_server_requests_seconds_count{application=~\"$service\", uri=~\"$uri\", method=~\"$http_method\"}[1m]))",
-          "legendFormat": "{{application}} - {{method}} {{uri}}",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "HTTP Request Latency Over Time",
-      "type": "timeseries"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 9
-      },
-      "id": 4,
-      "panels": [],
-      "title": "Throughput & Errors",
-      "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "$PROMETHEUS_DATASOURCE_UID"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "Requests/sec",
+            "axisLabel": "Calls/sec",
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "line",
@@ -333,10 +189,10 @@
       "gridPos": {
         "h": 12,
         "w": 12,
-        "x": 0,
-        "y": 10
+        "x": 12,
+        "y": 1
       },
-      "id": 5,
+      "id": 3,
       "options": {
         "legend": {
           "calcs": ["mean", "lastNotNull", "max"],
@@ -353,22 +209,35 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "$PROMETHEUS_DATASOURCE_UID"
+            "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum by (application, uri, method) (\n  rate(http_server_requests_seconds_count{application=~\"$service\", uri=~\"$uri\", method=~\"$http_method\"}[5m])\n)",
-          "legendFormat": "{{application}} - {{method}} {{uri}}",
+          "expr": "sum(rate(spring_data_repository_invocations_seconds_count{application=~\"$service\", repository=~\"$repository\"}[5m])) by (application, repository, method)",
+          "legendFormat": "{{application}} - {{repository}}.{{method}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Requests Per Second (RPS)",
+      "title": "Repository Throughput",
       "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 13
+      },
+      "id": 4,
+      "panels": [],
+      "title": "Repository Errors & Distribution",
+      "type": "row"
     },
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "$PROMETHEUS_DATASOURCE_UID"
+        "uid": "prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -427,12 +296,12 @@
         "h": 12,
         "w": 12,
         "x": 12,
-        "y": 10
+        "y": 14
       },
-      "id": 6,
+      "id": 5,
       "options": {
         "legend": {
-          "calcs": ["sum", "lastNotNull", "max"],
+          "calcs": ["sum", "lastNotNull"],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
@@ -446,23 +315,112 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "$PROMETHEUS_DATASOURCE_UID"
+            "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum by (application, uri, method, status) (\n  rate(http_server_requests_seconds_count{application=~\"$service\", uri=~\"$uri\", method=~\"$http_method\", status=~\"[45].*\"}[5m])\n)",
-          "legendFormat": "{{application}} - {{method}} {{uri}} [{{status}}]",
+          "expr": "sum(rate(spring_data_repository_invocations_seconds_count{application=~\"$service\", repository=~\"$repository\", state!=\"SUCCESS\"}[5m])) by (application, repository, method, exception)",
+          "legendFormat": "{{application}} - {{repository}}.{{method}} ({{exception}})",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Error Rate per Endpoint",
+      "title": "Repository Errors",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "Latency (seconds)",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 0,
+        "y": 14
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "calcs": ["mean", "lastNotNull", "max"],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "sum by (application, repository, method) (rate(spring_data_repository_invocations_seconds_sum{application=~\"$service\", repository=~\"$repository\"}[1m])) / sum by (application, repository, method) (rate(spring_data_repository_invocations_seconds_count{application=~\"$service\", repository=~\"$repository\"}[1m]))",
+          "legendFormat": "{{application}} - {{repository}}.{{method}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "DB Query Latency Over Time",
       "type": "timeseries"
     }
   ],
   "refresh": "30s",
   "schemaVersion": 38,
   "style": "dark",
-  "tags": ["http", "api", "performance", "rest"],
+  "tags": ["database", "performance", "repository"],
   "templating": {
     "list": [
       {
@@ -473,9 +431,9 @@
         },
         "datasource": {
           "type": "prometheus",
-          "uid": "$PROMETHEUS_DATASOURCE_UID"
+          "uid": "prometheus"
         },
-        "definition": "label_values(http_server_requests_seconds_count, application)",
+        "definition": "label_values(spring_data_repository_invocations_seconds_count, application)",
         "hide": 0,
         "includeAll": true,
         "label": "Service",
@@ -483,7 +441,7 @@
         "name": "service",
         "options": [],
         "query": {
-          "query": "label_values(http_server_requests_seconds_count, application)",
+          "query": "label_values(spring_data_repository_invocations_seconds_count, application)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,
@@ -500,44 +458,17 @@
         },
         "datasource": {
           "type": "prometheus",
-          "uid": "$PROMETHEUS_DATASOURCE_UID"
+          "uid": "prometheus"
         },
-        "definition": "label_values(http_server_requests_seconds_count{application=~\"$service\"}, uri)",
+        "definition": "label_values(spring_data_repository_invocations_seconds_count{application=~\"$service\"}, repository)",
         "hide": 0,
         "includeAll": true,
-        "label": "URI",
+        "label": "Repository",
         "multi": true,
-        "name": "uri",
+        "name": "repository",
         "options": [],
         "query": {
-          "query": "label_values(http_server_requests_seconds_count{application=~\"$service\"}, uri)",
-          "refId": "PrometheusVariableQueryEditor-VariableQuery"
-        },
-        "refresh": 2,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 1,
-        "type": "query"
-      },
-      {
-        "current": {
-          "selected": true,
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "$PROMETHEUS_DATASOURCE_UID"
-        },
-        "definition": "label_values(http_server_requests_seconds_count{application=~\"$service\"}, method)",
-        "hide": 0,
-        "includeAll": true,
-        "label": "HTTP Method",
-        "multi": true,
-        "name": "http_method",
-        "options": [],
-        "query": {
-          "query": "label_values(http_server_requests_seconds_count{application=~\"$service\"}, method)",
+          "query": "label_values(spring_data_repository_invocations_seconds_count{application=~\"$service\"}, repository)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,
@@ -554,8 +485,8 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "REST API Performance",
-  "uid": "rest-api-performance",
+  "title": "Database / Repository Performance",
+  "uid": "repository-performance",
   "version": 1,
   "weekStart": ""
 }

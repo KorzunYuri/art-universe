@@ -38,7 +38,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "$PROMETHEUS_DATASOURCE_UID"
+        "uid": "prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -112,7 +112,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "$PROMETHEUS_DATASOURCE_UID"
+            "uid": "prometheus"
           },
           "editorMode": "code",
           "expr": "avg_over_time(increase(lastfm_entity_count[15m])[15m:1m])",
@@ -127,7 +127,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "$PROMETHEUS_DATASOURCE_UID"
+        "uid": "prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -174,7 +174,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "$PROMETHEUS_DATASOURCE_UID"
+            "uid": "prometheus"
           },
           "editorMode": "code",
           "expr": "lastfm_entity_count",
@@ -189,7 +189,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "$PROMETHEUS_DATASOURCE_UID"
+        "uid": "prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -236,7 +236,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "$PROMETHEUS_DATASOURCE_UID"
+            "uid": "prometheus"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -266,7 +266,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "$PROMETHEUS_DATASOURCE_UID"
+        "uid": "prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -344,7 +344,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "$PROMETHEUS_DATASOURCE_UID"
+            "uid": "prometheus"
           },
           "editorMode": "code",
           "expr": "avg_over_time(sum by (api_call_type) (delta(lastfm_api_call_count[5m]))[15m:1m])",
@@ -359,7 +359,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "$PROMETHEUS_DATASOURCE_UID"
+        "uid": "prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -434,7 +434,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "$PROMETHEUS_DATASOURCE_UID"
+            "uid": "prometheus"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -451,7 +451,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "$PROMETHEUS_DATASOURCE_UID"
+        "uid": "prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -529,7 +529,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "$PROMETHEUS_DATASOURCE_UID"
+            "uid": "prometheus"
           },
           "editorMode": "code",
           "expr": "avg_over_time(increase(lastfm_api_call_count{status=\"SUCCESSFUL\"}[5m])[15m:1m])",
@@ -544,7 +544,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "$PROMETHEUS_DATASOURCE_UID"
+        "uid": "prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -619,7 +619,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "$PROMETHEUS_DATASOURCE_UID"
+            "uid": "prometheus"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -649,7 +649,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "$PROMETHEUS_DATASOURCE_UID"
+        "uid": "prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -696,7 +696,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "$PROMETHEUS_DATASOURCE_UID"
+            "uid": "prometheus"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -713,7 +713,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "$PROMETHEUS_DATASOURCE_UID"
+        "uid": "prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -788,7 +788,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "$PROMETHEUS_DATASOURCE_UID"
+            "uid": "prometheus"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -805,7 +805,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "$PROMETHEUS_DATASOURCE_UID"
+        "uid": "prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -883,7 +883,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "$PROMETHEUS_DATASOURCE_UID"
+            "uid": "prometheus"
           },
           "editorMode": "code",
           "expr": "avg_over_time(increase(lastfm_api_response_count{status=\"COMPLETED\"}[5m])[15m:1m])",
@@ -898,7 +898,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "$PROMETHEUS_DATASOURCE_UID"
+        "uid": "prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -973,7 +973,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "$PROMETHEUS_DATASOURCE_UID"
+            "uid": "prometheus"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -1003,7 +1003,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "$PROMETHEUS_DATASOURCE_UID"
+        "uid": "prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -1077,7 +1077,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "$PROMETHEUS_DATASOURCE_UID"
+            "uid": "prometheus"
           },
           "editorMode": "code",
           "expr": "rate(music_data_raw_lastfm_api_call_generate_seconds_sum{status=\"success\"}[5m]) / rate(music_data_raw_lastfm_api_call_generate_seconds_count{status=\"success\"}[5m])",
@@ -1092,7 +1092,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "$PROMETHEUS_DATASOURCE_UID"
+        "uid": "prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -1166,7 +1166,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "$PROMETHEUS_DATASOURCE_UID"
+            "uid": "prometheus"
           },
           "editorMode": "code",
           "expr": "rate(music_data_raw_lastfm_api_call_perform_seconds_sum{status=\"success\"}[5m]) / rate(music_data_raw_lastfm_api_call_perform_seconds_count{status=\"success\"}[5m])",
@@ -1181,7 +1181,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "$PROMETHEUS_DATASOURCE_UID"
+        "uid": "prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -1255,7 +1255,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "$PROMETHEUS_DATASOURCE_UID"
+            "uid": "prometheus"
           },
           "editorMode": "code",
           "expr": "rate(music_data_raw_lastfm_api_response_process_seconds_sum{status=\"success\"}[5m]) / rate(music_data_raw_lastfm_api_response_process_seconds_count{status=\"success\"}[5m])",

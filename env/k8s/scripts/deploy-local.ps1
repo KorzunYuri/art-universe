@@ -48,6 +48,22 @@ kubectl create configmap postgres-music-data-init -n mu-data `
     --dry-run=client -o yaml | kubectl apply -f -
 Write-Host "ConfigMaps created." -ForegroundColor Green
 
+# Create Grafana ConfigMaps from shared provisioning files
+Write-Host "`nCreating Grafana ConfigMaps from shared provisioning files..." -ForegroundColor Yellow
+$dashboardsDir = "$ProjectRoot\env\docker\common\grafana\provisioning\dashboards"
+kubectl create configmap grafana-dashboards -n art-universe-monitoring `
+    --from-file="dashboard.yml=$dashboardsDir\dashboard.yml" `
+    --from-file="lastfm_raw_data_dashboard.json=$dashboardsDir\lastfm_raw_data_dashboard.json" `
+    --from-file="lastfm_database_metrics_dashboard.json=$dashboardsDir\lastfm_database_metrics_dashboard.json" `
+    --from-file="system_metrics_dashboard.json=$dashboardsDir\system_metrics_dashboard.json" `
+    --from-file="repository_performance_dashboard.json=$dashboardsDir\repository_performance_dashboard.json" `
+    --from-file="rest_api_performance_dashboard.json=$dashboardsDir\rest_api_performance_dashboard.json" `
+    --dry-run=client -o yaml | kubectl apply -f -
+kubectl create configmap grafana-datasources -n art-universe-monitoring `
+    --from-file="datasource.yml=$ProjectRoot\env\docker\common\grafana\provisioning\datasources\datasource.yml" `
+    --dry-run=client -o yaml | kubectl apply -f -
+Write-Host "Grafana ConfigMaps created." -ForegroundColor Green
+
 # Apply Kustomize overlay
 Write-Host "`nApplying Kubernetes manifests..." -ForegroundColor Yellow
 kubectl apply -k "$K8sDir\overlays\local"
