@@ -58,20 +58,7 @@ kubectl apply -f overlays\local\secrets\secrets.yaml
 ./scripts/deploy-local.sh
 ```
 
-**Or manually:**
-```bash
-# Create ConfigMaps from shared init scripts (required before first deploy)
-kubectl apply -f base/namespaces.yaml
-kubectl create configmap postgres-lastfm-master-init -n mu-data \
-    --from-file="01-init.sh=../../docker/common/db/mu-raw-lastfm/initdb/01-init.sh" \
-    --dry-run=client -o yaml | kubectl apply -f -
-kubectl create configmap postgres-music-data-init -n mu-data \
-    --from-file="01-init.sh=../../docker/common/db/mu/initdb/01-init.sh" \
-    --dry-run=client -o yaml | kubectl apply -f -
-
-# Apply manifests
-kubectl apply -k overlays/local
-```
+The deploy script handles namespace creation, ConfigMaps, secrets, and Kustomize overlay application. See `scripts/deploy-local.ps1` for details.
 
 ## Quick Start (Prod)
 
@@ -114,15 +101,7 @@ The deploy script will:
 
 ### External Database Configuration
 
-By default, the prod overlay points to `host.docker.internal` (the Windows host from Docker Desktop K8s). To change the database host, edit `overlays/prod/external-databases.yaml`:
-
-```yaml
-spec:
-  type: ExternalName
-  externalName: host.docker.internal   # Change this to your DB host
-```
-
-For IP-based databases (no DNS name), see the comments in `external-databases.yaml` for the Service+Endpoints alternative.
+By default, the prod overlay points to `host.docker.internal` (the Windows host from Docker Desktop K8s). To change the database host, edit `overlays/prod/external-databases.yaml`. For IP-based databases (no DNS name), see the comments in that file for the Service+Endpoints alternative.
 
 ## Namespace Structure
 
@@ -251,6 +230,57 @@ kubectl delete -k overlays\prod
 kubectl delete namespace mu-data mu-lastfm mu-apps mu-frontend art-universe-monitoring
 ```
 
+## Architecture
+
+### Cluster Components
+
+**mu-data** — Database layer. PostgreSQL master and replica for LastFM data run as StatefulSets (ordered startup, stable network identity, persistent storage via volumeClaimTemplates). A separate StatefulSet runs the music-data PostgreSQL instance. Liquibase migration Jobs run once on deploy to apply schema changes. In the prod overlay, StatefulSets are replaced by ExternalName services pointing to databases running outside the cluster.
+
+**mu-lastfm** — LastFM ETL pipeline. Five Deployments: `lastfm-rest-api` (read API), `lastfm-etl-rest-api` (write API), and three ETL workers (`lastfm-calls-generator`, `lastfm-calls-performer`, `lastfm-response-parser`). The ETL workers have HorizontalPodAutoscalers that scale based on CPU utilization (target 70%, scaling from 1 to 3-5 replicas). All services use init containers that wait for database readiness before starting.
+
+**mu-apps** — Core application services. `music-data` (curated data management) and `music-quiz` (quiz generation) run as Deployments. Both connect to databases in mu-data via cross-namespace DNS.
+
+**mu-frontend** — UI layer. `music-ui` serves the React app via NGINX. An Ingress resource routes external traffic.
+
+**art-universe-monitoring** — Observability stack. Prometheus runs as a StatefulSet (persistent metrics storage). Grafana runs as a Deployment with dashboards and datasources provisioned from shared ConfigMaps. Zipkin provides distributed tracing. All Spring Boot services expose `/actuator/prometheus` for scraping.
+
+### Internal Communication
+
+Services communicate across namespaces using Kubernetes DNS: `<service>.<namespace>.svc.cluster.local`. For example, applications in mu-apps reach the database via `postgres-music-data.mu-data.svc.cluster.local:5432`. External traffic enters through NGINX Ingress in the frontend namespace. Services within the same namespace use short names (e.g., `postgres-lastfm-master`).
+
+### Overlays
+
+- **Local** includes the full `base/` (with PostgreSQL StatefulSets), plus LoadBalancer services on 9xxx/4000 ports
+- **Local-Shared** extends Local with pre-provisioned `hostPath` PersistentVolumes pointing to Docker Compose named volume directories, enabling data sharing between environments
+- **Prod** selectively includes base sub-kustomizations (skipping `data/` StatefulSets), adds ExternalName services for database connectivity, and uses LoadBalancer services on 8xxx/3000 ports
+
+### Why Kustomize
+
+- Native to kubectl — no extra tooling required
+- Overlay model matches the existing local/dev/prod Docker Compose pattern
+- Keeps base manifests readable (no templating syntax), good for learning K8s concepts
+
+### Shared Resources
+
+Database init scripts, Grafana dashboards, and datasource configurations are centralized at `env/docker/common/` and shared by both Docker Compose and Kubernetes deployments:
+
+- **DB init scripts** (`env/docker/common/db/`) — Mounted directly in Docker Compose; created as ConfigMaps by deploy scripts for K8s (local overlays only)
+- **Grafana provisioning** (`env/docker/common/grafana/provisioning/`) — Mounted directly in Docker Compose; created as ConfigMaps by deploy scripts for K8s
+
+### Resource Limits
+
+| Service Type | CPU Request | CPU Limit | Memory Request | Memory Limit |
+|---|---|---|---|---|
+| REST APIs | 50m | 200m | 256Mi | 512Mi |
+| ETL Workers | 50-100m | 200-500m | 256-512Mi | 512Mi-1Gi |
+| PostgreSQL | 200m | 500m | 128Mi | 512Mi |
+| Prometheus | 200m | 500m | 512Mi | 1Gi |
+| Grafana | 50m | 200m | 96Mi | 192Mi |
+
+### Image Tags
+
+All images are tagged `:latest` in base manifests. The `build-images` scripts build and tag images accordingly. All overlays use the same images.
+
 ## Useful Commands
 
 ```powershell
@@ -269,68 +299,15 @@ kubectl describe pod -n mu-data postgres-lastfm-master-0
 # Port-forward for debugging
 kubectl port-forward -n mu-apps svc/music-data 8082:8080
 
+# Scale a deployment
+kubectl scale deployment lastfm-calls-performer -n mu-lastfm --replicas=3
+
+# Check HPA status
+kubectl get hpa -n mu-lastfm
+
 # Render Kustomize output without applying
 kubectl kustomize overlays/local
 kubectl kustomize overlays/prod
-```
-
-## Architecture Notes
-
-### Local vs Prod Overlay
-
-- **Local** includes the full `base/` (with PostgreSQL StatefulSets in `data/`), plus LoadBalancer services on 9xxx/4000 ports
-- **Local-Shared** extends Local with pre-provisioned `hostPath` PersistentVolumes pointing to Docker Compose named volume directories, enabling data sharing between environments
-- **Prod** selectively includes base sub-kustomizations (skipping `data/` StatefulSets), adds ExternalName services for database connectivity, and uses LoadBalancer services on 8xxx/3000 ports
-
-### Shared Resources
-
-Database init scripts, Grafana dashboards, and datasource configurations are centralized at `env/docker/common/` and shared by both Docker Compose and Kubernetes deployments:
-
-- **DB init scripts** (`env/docker/common/db/`) - Mounted directly in Docker Compose; created as ConfigMaps by deploy scripts for K8s (local overlay only)
-- **Grafana provisioning** (`env/docker/common/grafana/provisioning/`) - Mounted directly in Docker Compose; created as ConfigMaps by deploy scripts for K8s
-
-### Image Tags
-
-All images are tagged `:latest` in base manifests. The `build-images` scripts build and tag images accordingly. Both overlays use the same images.
-
-## Directory Structure
-
-```
-env/k8s/
-├── README.md                 # This file
-├── scripts/
-│   ├── build-images.ps1             # Build Docker images (Windows)
-│   ├── build-images.sh              # Build Docker images (Linux/MacOS)
-│   ├── deploy-local.ps1             # Deploy to local K8s (Windows)
-│   ├── deploy-local.sh              # Deploy to local K8s (Linux/MacOS)
-│   ├── deploy-local-shared.ps1      # Deploy with shared volumes (Windows)
-│   ├── deploy-local-shared.sh       # Deploy with shared volumes (Linux/MacOS)
-│   ├── deploy-prod.ps1              # Deploy to prod K8s (Windows)
-│   └── deploy-prod.sh               # Deploy to prod K8s (Linux/MacOS)
-├── base/
-│   ├── kustomization.yaml    # Main base kustomization
-│   ├── namespaces.yaml       # Namespace definitions
-│   ├── data/                 # Database StatefulSets + migration jobs
-│   ├── lastfm/               # LastFM ETL services
-│   ├── apps/                 # Core applications
-│   ├── frontend/             # UI and Ingress
-│   └── monitoring/           # Prometheus, Grafana, Zipkin
-└── overlays/
-    ├── local/
-    │   ├── kustomization.yaml
-    │   ├── external-services.yaml  # LoadBalancer services (9xxx/4000 ports)
-    │   └── secrets/                # Environment secrets (gitignored)
-    ├── local-shared/
-    │   ├── kustomization.yaml      # Overlay with shared Docker volumes
-    │   ├── external-services.yaml  # LoadBalancer services (9xxx/4000 ports)
-    │   └── shared-volumes.yaml     # hostPath PVs + Grafana PVC
-    └── prod/
-        ├── kustomization.yaml
-        ├── external-databases.yaml   # ExternalName services for DB connectivity
-        ├── external-services.yaml    # LoadBalancer services (8xxx/3000 ports)
-        └── secrets/                  # Prod secrets (gitignored)
-            ├── secrets.yaml.template
-            └── README.md
 ```
 
 ## Troubleshooting
