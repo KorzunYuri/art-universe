@@ -1,0 +1,37 @@
+# Art Universe - Local Shared Volumes Overlay
+# Reuses Docker Compose named volumes via hostPath PersistentVolumes.
+# IMPORTANT: Stop Docker Compose before deploying this overlay.
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  # Full base (including PostgreSQL StatefulSets)
+  - ../../base
+  # LoadBalancer services (9xxx/4000 ports, same as local overlay)
+  - external-services.yaml
+  # Shared volume PVs + Grafana PVC
+  - shared-volumes.yaml
+
+patches:
+  # Swap Grafana's emptyDir volume for the shared PVC
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: grafana
+      namespace: art-universe-monitoring
+    patch: |
+      - op: test
+        path: /spec/template/spec/volumes/2/name
+        value: data
+      - op: remove
+        path: /spec/template/spec/volumes/2/emptyDir
+      - op: add
+        path: /spec/template/spec/volumes/2/persistentVolumeClaim
+        value:
+          claimName: grafana-data
+
+commonLabels:
+  app.kubernetes.io/managed-by: kustomize
+  environment: local-shared

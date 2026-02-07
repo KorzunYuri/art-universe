@@ -2,8 +2,9 @@
 
 This directory contains Kubernetes manifests for deploying Art Universe using Kustomize.
 
-Two overlays are available:
-- **Local**: Full stack with containerized PostgreSQL databases
+Three overlays are available:
+- **Local**: Full stack with containerized PostgreSQL databases (fresh storage)
+- **Local-Shared**: Same as Local, but reuses Docker Compose data volumes via hostPath
 - **Prod**: Applications only, connecting to external databases
 
 ## Prerequisites
@@ -159,6 +160,66 @@ For IP-based databases (no DNS name), see the comments in `external-databases.ya
 | Grafana | http://localhost:30000 |
 | Prometheus | http://localhost:30090 |
 
+## Quick Start (Local with Shared Volumes)
+
+The `local-shared` overlay reuses Docker Compose named volumes in Kubernetes via `hostPath` PersistentVolumes. This lets you switch between Docker Compose and K8s without losing data.
+
+**Key constraint:** PostgreSQL requires exclusive access — stop Docker Compose before starting K8s (and vice versa).
+
+### 1. Build Images & Create Secrets
+
+Same as Local overlay (see above).
+
+### 2. Stop Docker Compose
+
+```powershell
+# From env/docker/local:
+docker compose down
+```
+
+### 3. Deploy
+
+**Windows (PowerShell):**
+```powershell
+.\scripts\deploy-local-shared.ps1
+```
+
+**Linux/MacOS:**
+```bash
+./scripts/deploy-local-shared.sh
+```
+
+The script will:
+1. Confirm Docker Compose is stopped
+2. Pre-apply shared PersistentVolumes (avoids race with dynamic provisioner)
+3. Create ConfigMaps and apply the `local-shared` Kustomize overlay
+4. Apply secrets from `overlays/local/secrets/` (shared with local overlay)
+5. Wait for databases, migrations, and applications
+
+### Switching Between Environments
+
+**Docker Compose → K8s:**
+```powershell
+cd env/docker/local && docker compose down
+cd ../../../env/k8s && .\scripts\deploy-local-shared.ps1
+```
+
+**K8s → Docker Compose:**
+```powershell
+cd env/k8s && kubectl delete -k overlays\local-shared
+cd ../docker/local && docker compose up -d
+```
+
+### Volume Mapping
+
+| Docker Compose Volume | K8s PersistentVolume |
+|---|---|
+| `local__lastfm__db-postgres-data` | `shared-lastfm-master-data` |
+| `local__lastfm__db-postgres-replica-data` | `shared-lastfm-replica-data` |
+| `local__mu-data__db-postgres-data` | `shared-music-data-db` |
+| `local__mu__prometheus-data` | `shared-prometheus-data` |
+| `local__mu__grafana-data` | `shared-grafana-data` |
+
 ## Teardown
 
 ### Local
@@ -167,6 +228,18 @@ kubectl delete -k overlays\local
 
 # To also remove persistent data (database volumes) and namespaces:
 kubectl delete pvc --all -n mu-data
+kubectl delete namespace mu-data mu-lastfm mu-apps mu-frontend art-universe-monitoring
+```
+
+### Local with Shared Volumes
+```powershell
+kubectl delete -k overlays\local-shared
+
+# PVs use Retain policy — data is preserved for Docker Compose.
+# To also remove PVs (data stays in Docker named volumes):
+kubectl delete pv shared-lastfm-master-data shared-lastfm-replica-data shared-music-data-db shared-prometheus-data shared-grafana-data
+
+# To remove namespaces:
 kubectl delete namespace mu-data mu-lastfm mu-apps mu-frontend art-universe-monitoring
 ```
 
@@ -206,6 +279,7 @@ kubectl kustomize overlays/prod
 ### Local vs Prod Overlay
 
 - **Local** includes the full `base/` (with PostgreSQL StatefulSets in `data/`), plus LoadBalancer services on 9xxx/4000 ports
+- **Local-Shared** extends Local with pre-provisioned `hostPath` PersistentVolumes pointing to Docker Compose named volume directories, enabling data sharing between environments
 - **Prod** selectively includes base sub-kustomizations (skipping `data/` StatefulSets), adds ExternalName services for database connectivity, and uses LoadBalancer services on 8xxx/3000 ports
 
 ### Shared Resources
@@ -225,12 +299,14 @@ All images are tagged `:latest` in base manifests. The `build-images` scripts bu
 env/k8s/
 ├── README.md                 # This file
 ├── scripts/
-│   ├── build-images.ps1      # Build Docker images (Windows)
-│   ├── build-images.sh       # Build Docker images (Linux/MacOS)
-│   ├── deploy-local.ps1      # Deploy to local K8s (Windows)
-│   ├── deploy-local.sh       # Deploy to local K8s (Linux/MacOS)
-│   ├── deploy-prod.ps1       # Deploy to prod K8s (Windows)
-│   └── deploy-prod.sh        # Deploy to prod K8s (Linux/MacOS)
+│   ├── build-images.ps1             # Build Docker images (Windows)
+│   ├── build-images.sh              # Build Docker images (Linux/MacOS)
+│   ├── deploy-local.ps1             # Deploy to local K8s (Windows)
+│   ├── deploy-local.sh              # Deploy to local K8s (Linux/MacOS)
+│   ├── deploy-local-shared.ps1      # Deploy with shared volumes (Windows)
+│   ├── deploy-local-shared.sh       # Deploy with shared volumes (Linux/MacOS)
+│   ├── deploy-prod.ps1              # Deploy to prod K8s (Windows)
+│   └── deploy-prod.sh               # Deploy to prod K8s (Linux/MacOS)
 ├── base/
 │   ├── kustomization.yaml    # Main base kustomization
 │   ├── namespaces.yaml       # Namespace definitions
@@ -244,6 +320,10 @@ env/k8s/
     │   ├── kustomization.yaml
     │   ├── external-services.yaml  # LoadBalancer services (9xxx/4000 ports)
     │   └── secrets/                # Environment secrets (gitignored)
+    ├── local-shared/
+    │   ├── kustomization.yaml      # Overlay with shared Docker volumes
+    │   ├── external-services.yaml  # LoadBalancer services (9xxx/4000 ports)
+    │   └── shared-volumes.yaml     # hostPath PVs + Grafana PVC
     └── prod/
         ├── kustomization.yaml
         ├── external-databases.yaml   # ExternalName services for DB connectivity

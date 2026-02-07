@@ -1,0 +1,123 @@
+# Shared Persistent Volumes - Docker Compose ↔ Kubernetes
+# Points hostPath PVs to Docker named volume directories in the WSL2 VM.
+# IMPORTANT: Stop Docker Compose before starting K8s (and vice versa).
+# PostgreSQL requires exclusive access to its data directory.
+
+# --- PostgreSQL: LastFM Master ---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: shared-lastfm-master-data
+  labels:
+    app: postgres-lastfm-master
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: hostpath
+  hostPath:
+    path: /var/lib/docker/volumes/local__lastfm__db-postgres-data/_data
+    type: DirectoryOrCreate
+  claimRef:
+    name: data-postgres-lastfm-master-0
+    namespace: mu-data
+---
+# --- PostgreSQL: LastFM Replica ---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: shared-lastfm-replica-data
+  labels:
+    app: postgres-lastfm-replica
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: hostpath
+  hostPath:
+    path: /var/lib/docker/volumes/local__lastfm__db-postgres-replica-data/_data
+    type: DirectoryOrCreate
+  claimRef:
+    name: data-postgres-lastfm-replica-0
+    namespace: mu-data
+---
+# --- PostgreSQL: Music Data ---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: shared-music-data-db
+  labels:
+    app: postgres-music-data
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: hostpath
+  hostPath:
+    path: /var/lib/docker/volumes/local__mu-data__db-postgres-data/_data
+    type: DirectoryOrCreate
+  claimRef:
+    name: data-postgres-music-data-0
+    namespace: mu-data
+---
+# --- Prometheus ---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: shared-prometheus-data
+  labels:
+    app: prometheus
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: hostpath
+  hostPath:
+    path: /var/lib/docker/volumes/local__mu__prometheus-data/_data
+    type: DirectoryOrCreate
+  claimRef:
+    name: data-prometheus-0
+    namespace: art-universe-monitoring
+---
+# --- Grafana ---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: shared-grafana-data
+  labels:
+    app: grafana
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: hostpath
+  hostPath:
+    path: /var/lib/docker/volumes/local__mu__grafana-data/_data
+    type: DirectoryOrCreate
+  claimRef:
+    name: grafana-data
+    namespace: art-universe-monitoring
+---
+# --- Grafana PVC (Deployment needs explicit PVC, unlike StatefulSets) ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-data
+  namespace: art-universe-monitoring
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: hostpath
+  resources:
+    requests:
+      storage: 1Gi
