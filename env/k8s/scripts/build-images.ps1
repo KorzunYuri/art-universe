@@ -1,7 +1,10 @@
-# Art Universe - Build Docker Images for K8s Local Deployment
-# Usage: .\build-images.ps1 [-SkipGradleBuild] [-SkipLayerExtraction]
+# Art Universe - Build Docker Images for K8s Deployment
+# Usage: .\build-images.ps1 [-Environment <local|prod>] [-SkipGradleBuild] [-SkipLayerExtraction]
+# Default: prod (UI uses code defaults: 8082-8085). Use -Environment local for 9082-9085.
 
 param(
+    [ValidateSet("local", "prod")]
+    [string]$Environment = "prod",
     [switch]$SkipGradleBuild,
     [switch]$SkipLayerExtraction
 )
@@ -9,7 +12,7 @@ param(
 $ErrorActionPreference = "Stop"
 $ProjectRoot = Resolve-Path "$PSScriptRoot\..\..\..\"
 
-Write-Host "Building Art Universe images for K8s local deployment..." -ForegroundColor Cyan
+Write-Host "Building Art Universe images for K8s $Environment deployment..." -ForegroundColor Cyan
 Write-Host "Project root: $ProjectRoot" -ForegroundColor Gray
 
 # Gradle modules that need bootJar and extractLayers
@@ -92,17 +95,19 @@ $services = @(
         Path = "music\ui"
         Image = "mu-music-ui"
         Dockerfile = "Dockerfile"
-        # UI build args for K8s local deployment (same ports as Docker Compose)
-        BuildArgs = @(
-            "--build-arg", "VITE_MURAW_LASTFM_READ_API_HOST=localhost",
-            "--build-arg", "VITE_MURAW_LASTFM_READ_API_EXTERNAL_PORT=9084",
-            "--build-arg", "VITE_MURAW_LASTFM_WRITE_API_HOST=localhost",
-            "--build-arg", "VITE_MURAW_LASTFM_WRITE_API_EXTERNAL_PORT=9085",
-            "--build-arg", "VITE_MU_DATA_APP_HOST=localhost",
-            "--build-arg", "VITE_MU_DATA_APP_EXTERNAL_PORT=9082",
-            "--build-arg", "VITE_MU_QUIZ_APP_HOST=localhost",
-            "--build-arg", "VITE_MU_QUIZ_APP_EXTERNAL_PORT=9083"
-        )
+        # UI build args: local overlay uses 9xxx ports; prod uses code defaults (8082-8085)
+        BuildArgs = if ($Environment -eq "local") {
+            @(
+                "--build-arg", "VITE_MURAW_LASTFM_READ_API_HOST=localhost",
+                "--build-arg", "VITE_MURAW_LASTFM_READ_API_EXTERNAL_PORT=9084",
+                "--build-arg", "VITE_MURAW_LASTFM_WRITE_API_HOST=localhost",
+                "--build-arg", "VITE_MURAW_LASTFM_WRITE_API_EXTERNAL_PORT=9085",
+                "--build-arg", "VITE_MU_DATA_APP_HOST=localhost",
+                "--build-arg", "VITE_MU_DATA_APP_EXTERNAL_PORT=9082",
+                "--build-arg", "VITE_MU_QUIZ_APP_HOST=localhost",
+                "--build-arg", "VITE_MU_QUIZ_APP_EXTERNAL_PORT=9083"
+            )
+        } else { @() }
     }
 )
 

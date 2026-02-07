@@ -45,7 +45,7 @@ patches:
         template:
           spec:
             containers:
-              - name: music-data
+              - name: app
                 env:
                   - name: SPRING_PROFILES_ACTIVE
                     value: "prod"
@@ -63,7 +63,7 @@ patches:
         template:
           spec:
             containers:
-              - name: music-quiz
+              - name: app
                 env:
                   - name: SPRING_PROFILES_ACTIVE
                     value: "prod"
@@ -81,7 +81,7 @@ patches:
         template:
           spec:
             containers:
-              - name: lastfm-rest-api
+              - name: app
                 env:
                   - name: MURAW_LASTFM_REST_API_CORS_ALLOWED_ORIGINS
                     value: "http://localhost:3000"
@@ -97,7 +97,7 @@ patches:
         template:
           spec:
             containers:
-              - name: lastfm-etl-rest-api
+              - name: app
                 env:
                   - name: MURAW_LASTFM_ETL_REST_API_CORS_ALLOWED_ORIGINS
                     value: "http://localhost:3000"
