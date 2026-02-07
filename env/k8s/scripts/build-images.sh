@@ -1,7 +1,6 @@
 #!/bin/bash
 # Art Universe - Build Docker Images for K8s Deployment
-# Usage: ./build-images.sh [--env <local|prod>] [--skip-gradle] [--skip-layers]
-# Default: prod (UI uses code defaults: 8082-8085). Use --env local for 9082-9085.
+# Usage: ./build-images.sh [--skip-gradle] [--skip-layers]
 
 set -e
 
@@ -10,24 +9,17 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 
 SKIP_GRADLE=false
 SKIP_LAYERS=false
-ENVIRONMENT="prod"
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
         --skip-gradle) SKIP_GRADLE=true; shift ;;
         --skip-layers) SKIP_LAYERS=true; shift ;;
-        --env) ENVIRONMENT="$2"; shift 2 ;;
         *) echo "Unknown option: $1"; exit 1 ;;
     esac
 done
 
-if [[ "$ENVIRONMENT" != "local" && "$ENVIRONMENT" != "prod" ]]; then
-    echo "Invalid environment: $ENVIRONMENT (must be 'local' or 'prod')"
-    exit 1
-fi
-
-echo -e "\033[36mBuilding Art Universe images for K8s $ENVIRONMENT deployment...\033[0m"
+echo -e "\033[36mBuilding Art Universe images for K8s deployment...\033[0m"
 echo -e "\033[90mProject root: $PROJECT_ROOT\033[0m"
 
 # Gradle modules that need bootJar and extractLayers
@@ -115,21 +107,7 @@ for service_def in "${SERVICES[@]}"; do
     echo -e "  \033[90mContext: $service_path\033[0m"
     echo -e "  \033[90mDockerfile: $dockerfile\033[0m"
 
-    # UI build args: local overlay uses 9xxx ports; prod uses code defaults (8082-8085)
-    build_args=""
-    if [ "$image_name" = "mu-music-ui" ] && [ "$ENVIRONMENT" = "local" ]; then
-        build_args="--build-arg VITE_MURAW_LASTFM_READ_API_HOST=localhost \
-                    --build-arg VITE_MURAW_LASTFM_READ_API_EXTERNAL_PORT=9084 \
-                    --build-arg VITE_MURAW_LASTFM_WRITE_API_HOST=localhost \
-                    --build-arg VITE_MURAW_LASTFM_WRITE_API_EXTERNAL_PORT=9085 \
-                    --build-arg VITE_MU_DATA_APP_HOST=localhost \
-                    --build-arg VITE_MU_DATA_APP_EXTERNAL_PORT=9082 \
-                    --build-arg VITE_MU_QUIZ_APP_HOST=localhost \
-                    --build-arg VITE_MU_QUIZ_APP_EXTERNAL_PORT=9083"
-        echo -e "  \033[90mUsing K8s local build args for UI\033[0m"
-    fi
-
-    if docker build -t "$full_image_name" -f "$service_path/$dockerfile" $build_args "$service_path"; then
+    if docker build -t "$full_image_name" -f "$service_path/$dockerfile" "$service_path"; then
         successful+=("$full_image_name")
         echo -e "  \033[32mSuccess!\033[0m"
     else

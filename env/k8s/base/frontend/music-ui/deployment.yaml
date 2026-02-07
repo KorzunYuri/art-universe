@@ -24,6 +24,23 @@ spec:
           ports:
             - containerPort: 80
               name: http
+          env:
+            - name: MURAW_LASTFM_READ_API_HOST
+              value: "localhost"
+            - name: MURAW_LASTFM_READ_API_EXTERNAL_PORT
+              value: "8084"
+            - name: MURAW_LASTFM_WRITE_API_HOST
+              value: "localhost"
+            - name: MURAW_LASTFM_WRITE_API_EXTERNAL_PORT
+              value: "8085"
+            - name: MU_DATA_APP_HOST
+              value: "localhost"
+            - name: MU_DATA_APP_EXTERNAL_PORT
+              value: "8082"
+            - name: MU_QUIZ_APP_HOST
+              value: "localhost"
+            - name: MU_QUIZ_APP_EXTERNAL_PORT
+              value: "8083"
           resources:
             requests:
               memory: "32Mi"

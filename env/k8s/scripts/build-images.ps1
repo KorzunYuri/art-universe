@@ -1,10 +1,7 @@
 # Art Universe - Build Docker Images for K8s Deployment
-# Usage: .\build-images.ps1 [-Environment <local|prod>] [-SkipGradleBuild] [-SkipLayerExtraction]
-# Default: prod (UI uses code defaults: 8082-8085). Use -Environment local for 9082-9085.
+# Usage: .\build-images.ps1 [-SkipGradleBuild] [-SkipLayerExtraction]
 
 param(
-    [ValidateSet("local", "prod")]
-    [string]$Environment = "prod",
     [switch]$SkipGradleBuild,
     [switch]$SkipLayerExtraction
 )
@@ -12,7 +9,7 @@ param(
 $ErrorActionPreference = "Stop"
 $ProjectRoot = Resolve-Path "$PSScriptRoot\..\..\..\"
 
-Write-Host "Building Art Universe images for K8s $Environment deployment..." -ForegroundColor Cyan
+Write-Host "Building Art Universe images for K8s deployment..." -ForegroundColor Cyan
 Write-Host "Project root: $ProjectRoot" -ForegroundColor Gray
 
 # Gradle modules that need bootJar and extractLayers
@@ -91,24 +88,7 @@ $services = @(
     @{ Path = "music\data\raw\lastfm\etl\lastfm-response-parser"; Image = "mu-lastfm-response-parser" },
     @{ Path = "music\data\master"; Image = "mu-music-data" },
     @{ Path = "music\quiz"; Image = "mu-music-quiz" },
-    @{
-        Path = "music\ui"
-        Image = "mu-music-ui"
-        Dockerfile = "Dockerfile"
-        # UI build args: local overlay uses 9xxx ports; prod uses code defaults (8082-8085)
-        BuildArgs = if ($Environment -eq "local") {
-            @(
-                "--build-arg", "VITE_MURAW_LASTFM_READ_API_HOST=localhost",
-                "--build-arg", "VITE_MURAW_LASTFM_READ_API_EXTERNAL_PORT=9084",
-                "--build-arg", "VITE_MURAW_LASTFM_WRITE_API_HOST=localhost",
-                "--build-arg", "VITE_MURAW_LASTFM_WRITE_API_EXTERNAL_PORT=9085",
-                "--build-arg", "VITE_MU_DATA_APP_HOST=localhost",
-                "--build-arg", "VITE_MU_DATA_APP_EXTERNAL_PORT=9082",
-                "--build-arg", "VITE_MU_QUIZ_APP_HOST=localhost",
-                "--build-arg", "VITE_MU_QUIZ_APP_EXTERNAL_PORT=9083"
-            )
-        } else { @() }
-    }
+    @{ Path = "music\ui"; Image = "mu-music-ui"; Dockerfile = "Dockerfile" }
 )
 
 $successful = @()
@@ -126,13 +106,7 @@ foreach ($service in $services) {
     Write-Host "  Dockerfile: $dockerfile" -ForegroundColor Gray
 
     try {
-        $buildArgs = @("-t", $imageName, "-f", "$servicePath\$dockerfile")
-        if ($service.BuildArgs) {
-            $buildArgs += $service.BuildArgs
-        }
-        $buildArgs += $servicePath
-
-        docker build @buildArgs
+        docker build -t $imageName -f "$servicePath\$dockerfile" $servicePath
         if ($LASTEXITCODE -ne 0) { throw "Docker build failed" }
         $successful += $imageName
         Write-Host "  Success!" -ForegroundColor Green

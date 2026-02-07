@@ -2,26 +2,6 @@
 FROM node:18-alpine as build
 WORKDIR /app
 
-# Define build arguments for API endpoints
-ARG VITE_MURAW_LASTFM_READ_API_HOST
-ARG VITE_MURAW_LASTFM_READ_API_EXTERNAL_PORT
-ARG VITE_MURAW_LASTFM_WRITE_API_HOST
-ARG VITE_MURAW_LASTFM_WRITE_API_EXTERNAL_PORT
-ARG VITE_MU_DATA_APP_HOST
-ARG VITE_MU_DATA_APP_EXTERNAL_PORT
-ARG VITE_MU_QUIZ_APP_HOST
-ARG VITE_MU_QUIZ_APP_EXTERNAL_PORT
-
-# Set environment variables from build args
-ENV VITE_MURAW_LASTFM_READ_API_HOST=$VITE_MURAW_LASTFM_READ_API_HOST
-ENV VITE_MURAW_LASTFM_READ_API_EXTERNAL_PORT=$VITE_MURAW_LASTFM_READ_API_EXTERNAL_PORT
-ENV VITE_MURAW_LASTFM_WRITE_API_HOST=$VITE_MURAW_LASTFM_WRITE_API_HOST
-ENV VITE_MURAW_LASTFM_WRITE_API_EXTERNAL_PORT=$VITE_MURAW_LASTFM_WRITE_API_EXTERNAL_PORT
-ENV VITE_MU_DATA_APP_HOST=$VITE_MU_DATA_APP_HOST
-ENV VITE_MU_DATA_APP_EXTERNAL_PORT=$VITE_MU_DATA_APP_EXTERNAL_PORT
-ENV VITE_MU_QUIZ_APP_HOST=$VITE_MU_QUIZ_APP_HOST
-ENV VITE_MU_QUIZ_APP_EXTERNAL_PORT=$VITE_MU_QUIZ_APP_EXTERNAL_PORT
-
 COPY package*.json ./
 RUN npm install --legacy-peer-deps
 COPY . .
@@ -33,5 +13,9 @@ FROM nginx:alpine
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Copy built files from build stage
 COPY --from=build /app/dist /usr/share/nginx/html
+# Copy runtime config template and entrypoint
+COPY config.js.template /usr/share/nginx/html/config.js.template
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+ENTRYPOINT ["/docker-entrypoint.sh"]
