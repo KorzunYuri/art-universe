@@ -1,21 +1,49 @@
 # Art Universe - Kubernetes Deployment
 
 This directory contains Kubernetes manifests for deploying Art Universe using Kustomize.
+The project is currently deployed to local k8s cluster in Docker desktop.
 
 Three overlays are available:
 - **Local**: Full stack with containerized PostgreSQL databases (fresh storage)
 - **Local-Shared**: Same as Local, but reuses Docker Compose data volumes via hostPath
 - **Prod**: Applications only, connecting to external databases
 
-## Prerequisites
+## Access Points
 
-1. **Docker Desktop** with Kubernetes enabled
-2. **kubectl** configured for Docker Desktop cluster
-3. **NGINX Ingress Controller** (installed automatically by deploy scripts)
+### Local
+
+| Service | URL |
+|---------|-----|
+| Music UI | http://localhost:4000 |
+| Music Data API | http://localhost:9082 |
+| Music Quiz API | http://localhost:9083 |
+| LastFM REST API | http://localhost:9084 |
+| LastFM ETL REST API | http://localhost:9085 |
+| Grafana | http://localhost:30000 |
+| Prometheus | http://localhost:30090 |
+
+### Prod
+
+| Service | URL |
+|---------|-----|
+| Music UI | http://localhost:3000 |
+| Music Data API | http://localhost:8082 |
+| Music Quiz API | http://localhost:8083 |
+| LastFM REST API | http://localhost:8084 |
+| LastFM ETL REST API | http://localhost:8085 |
+| Grafana | http://localhost:30000 |
+| Prometheus | http://localhost:30090 |
+
 
 ## Deployment
 
 All overlays share the same workflow: build images, create secrets, deploy.
+
+### Prerequisites
+
+1. **Docker Desktop** with Kubernetes enabled
+2. **kubectl** configured for Docker Desktop cluster
+3. **NGINX Ingress Controller** (installed automatically by deploy scripts)
 
 ### 1. Build Images
 
@@ -49,53 +77,17 @@ cp overlays\prod\secrets\secrets.yaml.template overlays\prod\secrets\secrets.yam
 
 Each overlay has its own deploy script that handles namespaces, ConfigMaps, secrets, and Kustomize application:
 
-| Overlay | PowerShell | Bash |
-|---------|-----------|------|
-| Local | `.\scripts\deploy-local.ps1` | `./scripts/deploy-local.sh` |
-| Local-Shared | `.\scripts\deploy-local-shared.ps1` | `./scripts/deploy-local-shared.sh` |
-| Prod | `.\scripts\deploy-prod.ps1` | `./scripts/deploy-prod.sh` |
+- [Local](./scripts/deploy-local.sh)
+- [Local-Shared](./scripts/deploy-local-shared.sh)
+- [Prod](./scripts/deploy-prod.sh)
 
 **Local-Shared note:** PostgreSQL requires exclusive access — stop Docker Compose before deploying (`docker compose down` in `env/docker/local/`).
 
 ### External Database Configuration (Prod)
 
-By default, the prod overlay points to `host.docker.internal` (the Windows host from Docker Desktop K8s). To change the database host, edit `overlays/prod/external-databases.yaml`. For IP-based databases (no DNS name), see the comments in that file for the Service+Endpoints alternative.
-
-## Namespace Structure
-
-| Namespace | Purpose |
-|-----------|---------|
-| `mu-data` | PostgreSQL databases (local) or ExternalName services (prod), migration jobs |
-| `mu-lastfm` | LastFM ETL pipeline services |
-| `mu-apps` | Core applications (music-data, music-quiz) |
-| `mu-frontend` | UI and NGINX Ingress |
-| `art-universe-monitoring` | Prometheus, Grafana, Zipkin |
-
-## Access Points
-
-### Local
-
-| Service | URL |
-|---------|-----|
-| Music UI | http://localhost:4000 |
-| Music Data API | http://localhost:9082 |
-| Music Quiz API | http://localhost:9083 |
-| LastFM REST API | http://localhost:9084 |
-| LastFM ETL REST API | http://localhost:9085 |
-| Grafana | http://localhost:30000 |
-| Prometheus | http://localhost:30090 |
-
-### Prod
-
-| Service | URL |
-|---------|-----|
-| Music UI | http://localhost:3000 |
-| Music Data API | http://localhost:8082 |
-| Music Quiz API | http://localhost:8083 |
-| LastFM REST API | http://localhost:8084 |
-| LastFM ETL REST API | http://localhost:8085 |
-| Grafana | http://localhost:30000 |
-| Prometheus | http://localhost:30090 |
+By default, the prod overlay points to `host.docker.internal` (the Windows host from Docker Desktop K8s). 
+To change the database host, edit `overlays/prod/external-databases.yaml`. 
+For IP-based databases (no DNS name), see the comments in that file for the Service+Endpoints alternative.
 
 ## Shared Volumes (Local-Shared)
 
@@ -143,17 +135,33 @@ kubectl delete pv shared-lastfm-master-data shared-lastfm-replica-data shared-mu
 
 ## Architecture
 
-### Cluster Components
+### Namespace Structure
 
-**mu-data** — Database layer. PostgreSQL master and replica for LastFM data run as StatefulSets (ordered startup, stable network identity, persistent storage via volumeClaimTemplates). A separate StatefulSet runs the music-data PostgreSQL instance. Liquibase migration Jobs run once on deploy to apply schema changes. In the prod overlay, StatefulSets are replaced by ExternalName services pointing to databases running outside the cluster.
+**mu-data** — Database layer.
+- PostgreSQL master and replica for LastFM data run as StatefulSets (ordered startup, stable network identity, persistent storage via volumeClaimTemplates).
+- a separate StatefulSet runs the music-data PostgreSQL instance.
+- Liquibase migration Jobs run once on deploy to apply schema changes.
+- In the prod overlay, StatefulSets are replaced by ExternalName services pointing to databases running outside the cluster.
 
-**mu-lastfm** — LastFM ETL pipeline. Five Deployments: `lastfm-rest-api` (read API), `lastfm-etl-rest-api` (write API), and three ETL workers (`lastfm-calls-generator`, `lastfm-calls-performer`, `lastfm-response-parser`). The ETL workers have HorizontalPodAutoscalers that scale based on CPU utilization (target 70%, scaling from 1 to 3-5 replicas). All services use init containers that wait for database readiness before starting.
+**mu-lastfm** — LastFM ETL pipeline.
+- `lastfm-rest-api` (read API)
+- `lastfm-etl-rest-api` (write API)
+- ETL workers (currently not scalable)
+    - `lastfm-calls-generator`
+    - `lastfm-calls-performer`
+    - `lastfm-response-parser`
 
-**mu-apps** — Core application services. `music-data` (curated data management) and `music-quiz` (quiz generation) run as Deployments. Both connect to databases in mu-data via cross-namespace DNS.
+**mu-apps** — Core application services running as Deployments. Both connect to databases in mu-data via cross-namespace DNS
+- `music-data` (curated data management)
+- `music-quiz` (quiz generation) .
 
-**mu-frontend** — UI layer. `music-ui` serves the React app via NGINX. An Ingress resource routes external traffic.
+**mu-frontend** — UI layer.
+- `music-ui` serves the React app via NGINX. An Ingress resource routes external traffic.
 
-**art-universe-monitoring** — Observability stack. Prometheus runs as a StatefulSet (persistent metrics storage). Grafana runs as a Deployment with dashboards and datasources provisioned from shared ConfigMaps. Zipkin provides distributed tracing. All Spring Boot services expose `/actuator/prometheus` for scraping.
+**art-universe-monitoring** — Observability stack.
+- Prometheus runs as a StatefulSet (persistent metrics storage).
+- Grafana runs as a Deployment with dashboards and datasources provisioned from shared ConfigMaps.
+- Zipkin provides distributed tracing.
 
 ### Internal Communication
 
@@ -191,6 +199,7 @@ Database init scripts, Grafana dashboards, and datasource configurations are cen
 ### Image Tags
 
 All images are tagged `:latest` in base manifests. Images are built via `./gradlew dockerBuildAll` (each module has a `dockerBuild` task). All overlays use the same images — environment differences are handled at runtime via env vars and Kustomize patches.
+
 
 ## Useful Commands
 
