@@ -3,6 +3,7 @@ plugins {
 }
 
 archivesBaseName = 'lastfm-etl-response-parser'
+ext.dockerImageName = 'mu-lastfm-response-parser'
 
 dependencies {
     implementation project(':common:commons-observability')

@@ -51,57 +51,20 @@ REM Stop and remove existing containers and images
 echo Step 1: Stopping and removing existing containers...
 docker compose -f "%COMPOSE_FILE%" down --remove-orphans
 
-REM Build the project only for local environment
-if "%ENVIRONMENT%"=="local" (
-    echo.
-    echo Step 2: Building project for local environment...
-    cd /d "%PROJECT_ROOT%"
-    call gradlew.bat clean build extractLayers -x test
+REM Build Docker images via Gradle
+echo.
+echo Step 2: Building Docker images via Gradle...
+cd /d "%PROJECT_ROOT%"
+call gradlew.bat dockerBuildAll -x test
 
-    if !errorlevel! neq 0 (
-        echo [ERROR] Build failed! Aborting deployment.
-        exit /b 1
-    )
-    
-) else (
-    echo.
-    echo Step 2: Skipping Gradle build for production environment (will build inside Docker)
+if !errorlevel! neq 0 (
+    echo [ERROR] Build failed! Aborting deployment.
+    exit /b 1
 )
 
-REM Start with rebuilding images
+REM Start services with pre-built images
 echo.
 echo Step 3: Starting %ENVIRONMENT% environment...
-echo Building services in batches to manage memory...
-echo.
-echo Batch 1: Core data services...
-docker compose -f "%COMPOSE_FILE%" build music-data lastfm-liquibase-service
-if !errorlevel! neq 0 (
-    echo [ERROR] Batch 1 build failed!
-    exit /b !errorlevel!
-)
-echo.
-echo Batch 2: ETL parser services...
-docker compose -f "%COMPOSE_FILE%" build lastfm-response-parser lastfm-calls-performer
-if !errorlevel! neq 0 (
-    echo [ERROR] Batch 2 build failed!
-    exit /b !errorlevel!
-)
-echo.
-echo Batch 3: ETL generator and API services...
-docker compose -f "%COMPOSE_FILE%" build lastfm-calls-generator lastfm-etl-rest-api
-if !errorlevel! neq 0 (
-    echo [ERROR] Batch 3 build failed!
-    exit /b !errorlevel!
-)
-echo.
-echo Batch 4: Application services...
-docker compose -f "%COMPOSE_FILE%" build lastfm-rest-api music-quiz music-universe-ui
-if !errorlevel! neq 0 (
-    echo [ERROR] Batch 4 build failed!
-    exit /b !errorlevel!
-)
-echo.
-echo Starting all services...
 docker compose -f "%COMPOSE_FILE%" up -d --force-recreate
 set "DEPLOY_ERROR=%ERRORLEVEL%"
 

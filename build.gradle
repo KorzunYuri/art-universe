@@ -10,6 +10,16 @@ ext {
     openapiVersion = '2.8.6'
 }
 
+gradle.projectsEvaluated {
+    tasks.register('dockerBuildAll') {
+        group = 'docker'
+        description = 'Build all Docker images'
+        dependsOn subprojects
+                .findAll { it.tasks.findByName('dockerBuild') != null }
+                .collect { "${it.path}:dockerBuild" }
+    }
+}
+
 allprojects {
     group = 'yurykorzun.art'
     version = '0.0.1-SNAPSHOT'

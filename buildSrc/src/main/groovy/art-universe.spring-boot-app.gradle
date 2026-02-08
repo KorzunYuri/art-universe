@@ -70,3 +70,22 @@ tasks.register('extractLayers') {
         }
     }
 }
+
+afterEvaluate {
+    if (project.hasProperty('dockerImageName')) {
+        tasks.register('dockerBuild', Exec) {
+            group = 'docker'
+            description = "Build Docker image ${project.dockerImageName}"
+            dependsOn tasks.named('extractLayers')
+
+            def imageName = "${project.dockerImageName}:latest"
+            def dockerContext = project.projectDir
+
+            commandLine 'docker', 'build', '-t', imageName, '-f', "${dockerContext}/Dockerfile", dockerContext.absolutePath
+
+            doFirst {
+                println "Building Docker image: ${imageName} from ${dockerContext}"
+            }
+        }
+    }
+}

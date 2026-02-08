@@ -109,9 +109,7 @@ services:
   # Migrations
   lastfm-liquibase-service:
     container_name: local__lastfm__liquibase
-    build:
-      dockerfile: Dockerfile.local
-      context: ../../../music/data/raw/lastfm/migrations/lastfm-liquibase-service
+    image: mu-lastfm-liquibase:latest
     env_file:
       - ../common/music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.env
@@ -126,9 +124,7 @@ services:
   lastfm-rest-api:
     container_name: local__lastfm-rest-api__app
     restart: unless-stopped
-    build:
-      dockerfile: Dockerfile.local
-      context: ../../../music/data/raw/lastfm/lastfm-rest-api
+    image: mu-lastfm-rest-api:latest
     environment:
       - JAVA_OPTS=-Xms256m -Xmx768m -XX:MaxMetaspaceSize=192m
     env_file:
@@ -168,9 +164,7 @@ services:
     container_name: local__lastfm-etl-rest-api__app
     restart: unless-stopped
     stop_grace_period: 1m
-    build:
-      dockerfile: Dockerfile.local
-      context: ../../../music/data/raw/lastfm/etl/lastfm-etl-rest-api
+    image: mu-lastfm-etl-rest-api:latest
     environment:
       - JAVA_OPTS=-Xms256m -Xmx768m -XX:MaxMetaspaceSize=192m
     env_file:
@@ -210,9 +204,7 @@ services:
     container_name: local__lastfm-calls-generator__app
     restart: unless-stopped
     stop_grace_period: 1m
-    build:
-      dockerfile: Dockerfile.local
-      context: ../../../music/data/raw/lastfm/etl/lastfm-calls-generator
+    image: mu-lastfm-calls-generator:latest
     environment:
       - JAVA_OPTS=-Xms256m -Xmx768m -XX:MaxMetaspaceSize=192m
     env_file:
@@ -250,9 +242,7 @@ services:
     container_name: local__lastfm-calls-performer__app
     restart: unless-stopped
     stop_grace_period: 1m
-    build:
-      dockerfile: Dockerfile.local
-      context: ../../../music/data/raw/lastfm/etl/lastfm-calls-performer
+    image: mu-lastfm-calls-performer:latest
     environment:
       - JAVA_OPTS=-Xms256m -Xmx768m -XX:MaxMetaspaceSize=192m
     env_file:
@@ -292,9 +282,7 @@ services:
     container_name: local__lastfm-response-parser__app
     restart: unless-stopped
     stop_grace_period: 1m
-    build:
-      dockerfile: Dockerfile.local
-      context: ../../../music/data/raw/lastfm/etl/lastfm-response-parser
+    image: mu-lastfm-response-parser:latest
     environment:
       - JAVA_OPTS=-Xms256m -Xmx1536m -XX:MaxMetaspaceSize=192m
     env_file:
@@ -333,9 +321,7 @@ services:
   music-data:
     container_name: local__mu-data__app
     restart: unless-stopped
-    build:
-      dockerfile: Dockerfile.local
-      context: ../../../music/data/master
+    image: mu-music-data:latest
     environment:
       - JAVA_OPTS=-Xms128m -Xmx384m -XX:MaxMetaspaceSize=96m
     env_file:
@@ -369,9 +355,7 @@ services:
   music-quiz:
     container_name: local__mu-quiz__app
     restart: unless-stopped
-    build:
-      dockerfile: Dockerfile.local
-      context: ../../../music/quiz
+    image: mu-music-quiz:latest
     environment:
       - JAVA_OPTS=-Xms128m -Xmx384m -XX:MaxMetaspaceSize=96m
     env_file:
@@ -406,9 +390,7 @@ services:
   music-universe-ui:
     container_name: local__mu-ui__app
     restart: unless-stopped
-    build:
-      context: ../../../music/ui
-      dockerfile: Dockerfile
+    image: mu-music-ui:latest
     env_file:
       - ./common.env
       - ./music-universe-ui.env

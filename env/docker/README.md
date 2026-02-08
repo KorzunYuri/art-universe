@@ -27,9 +27,8 @@ Features:
 ### Deploy
 Deploys the specified environment (local or production) with optimized build strategies:
 
-- **Local environment**: Pre-builds the project with Gradle, then uses `Dockerfile.local` for fast container builds
-- **Production environment**: Skips Gradle build and uses `Dockerfile.prod` with multi-stage build inside Docker
-- Both envs use docker layers caching with the help of Spring Boot layered jar
+- Both environments use pre-built Docker images (built via `./gradlew dockerBuildAll`)
+- Spring Boot services use layered JARs for optimal Docker layer caching
 
 **Usage:**
 ```bash
@@ -97,14 +96,14 @@ Historical/organizational reasons - the directory was initially for Docker Compo
 - Services connect via container names (e.g., `postgres-lastfm-master`)
 - Uses ports 9xxx
 - `deploy.bat local` or `deploy.sh local` for deployment
-- Project is built, then artifacts are copied to Docker images
+- Images are pre-built via `./gradlew dockerBuildAll`
 
 **Production Mode**:
 - Databases on Windows host, services in Docker
 - Services connect to databases via `host.docker.internal`
 - Uses ports 8xxx
 - `deploy.bat prod` or `deploy.sh prod` for deployment
-- Each module is built individually as a part of Docker image build 
+- Images are pre-built via `./gradlew dockerBuildAll`
 
 ### Configuration Principles
 

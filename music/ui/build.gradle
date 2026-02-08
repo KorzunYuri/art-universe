@@ -3,3 +3,4 @@ plugins {
 }
 
 archivesBaseName = 'music-ui'
+ext.dockerImageName = 'mu-music-ui'

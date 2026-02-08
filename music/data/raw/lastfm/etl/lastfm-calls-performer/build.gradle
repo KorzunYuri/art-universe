@@ -3,6 +3,7 @@ plugins {
 }
 
 archivesBaseName = 'lastfm-etl-calls-performer'
+ext.dockerImageName = 'mu-lastfm-calls-performer'
 
 dependencies {
     implementation project(':common:commons-observability')

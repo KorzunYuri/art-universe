@@ -4,6 +4,7 @@ plugins {
 }
 
 archivesBaseName = 'music-quiz'
+ext.dockerImageName = 'mu-music-quiz'
 
 dependencies {
     implementation project(':common:commons-web')
