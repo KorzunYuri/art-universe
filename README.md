@@ -7,8 +7,8 @@ The project currently focuses on music data and quiz applications - generating s
 ## Quick Start
 
 ```bash
-# Build and deploy local environment
-./gradlew build -x test
+# Build Docker images and deploy local environment
+./gradlew dockerBuildAll -x test
 ./env/docker/deploy.sh local
 ```
 

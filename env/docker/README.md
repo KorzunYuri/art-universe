@@ -7,9 +7,12 @@ This directory contains cross-platform scripts for Docker deployment AND the **c
 ## Quick Start
 
 ```bash
-# Deploy full stack locally for testing (Docker Compose)
-./gradlew build -x test
+# Build all Docker images and deploy locally (Docker Compose)
+./gradlew dockerBuildAll -x test
 ./env/docker/deploy.sh local
+
+# Or build a single module's image
+./gradlew :music:quiz:dockerBuild
 
 # Start dev infrastructure (database + observability)
 cd env/docker/dev
@@ -141,11 +144,8 @@ chmod +x env/docker/*.sh
 The scripts automatically handle WSL path conversion. If you encounter issues, ensure you're running from the project root directory.
 
 ### Docker Layer Caching
-For production builds, first build may take longer but subsequent builds should be faster due to layer caching. To verify layers:
+First build may take longer but subsequent builds should be faster due to Docker layer caching. Spring Boot services use layered JARs for optimal cache utilization.
 ```bash
-# Check if layered JAR is properly configured
-java -Djarmode=layered -jar build/libs/mu-data-*.jar list
-
 # Monitor image sizes
 docker images | grep mu-
 ```

@@ -60,6 +60,20 @@
 ./gradlew :music:data:master:integrationTest
 ```
 
+### Docker Images
+```bash
+# Build all Docker images
+./gradlew dockerBuildAll -x test
+
+# Build a single module's image
+./gradlew :music:quiz:dockerBuild
+
+# List available docker tasks
+./gradlew tasks --group=docker
+```
+
+Modules opt in to Docker image building by declaring `ext.dockerImageName` in their `build.gradle`. The `dockerBuild` task is automatically registered by the convention plugins (`spring-boot-app`, `react-ui`) or defined inline (liquibase service).
+
 ## See Also
 
 - [Project Modules Index.md](../../MODULES.md) - All services with ports and deployment info

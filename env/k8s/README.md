@@ -13,93 +13,51 @@ Three overlays are available:
 2. **kubectl** configured for Docker Desktop cluster
 3. **NGINX Ingress Controller** (installed automatically by deploy scripts)
 
-## Quick Start (Local)
+## Deployment
+
+All overlays share the same workflow: build images, create secrets, deploy.
 
 ### 1. Build Images
 
-**Windows (PowerShell):**
-```powershell
-.\scripts\build-images.ps1
-```
+All overlays use the same images, built via Gradle:
 
-**Linux/MacOS:**
 ```bash
-chmod +x scripts/*.sh
-./scripts/build-images.sh
+# From project root
+./gradlew dockerBuildAll -x test
+
+# Or build a single module
+./gradlew :music:quiz:dockerBuild
 ```
 
-### 2. Create Namespaces and Secrets
-
-First, create the namespaces (secrets must be applied to existing namespaces):
-```bash
-kubectl apply -f base/namespaces.yaml
-```
-
-Then copy the secrets template and fill in your values:
-```powershell
-cp overlays\local\secrets\secrets.yaml.template overlays\local\secrets\secrets.yaml
-# Edit secrets.yaml with your values (use same passwords as Docker Compose .secrets.env files)
-```
-
-Apply the secrets:
-```bash
-kubectl apply -f overlays\local\secrets\secrets.yaml
-```
-
-### 3. Deploy
-
-**Windows (PowerShell):**
-```powershell
-.\scripts\deploy-local.ps1
-```
-
-**Linux/MacOS:**
-```bash
-./scripts/deploy-local.sh
-```
-
-The deploy script handles namespace creation, ConfigMaps, secrets, and Kustomize overlay application. See `scripts/deploy-local.ps1` for details.
-
-## Quick Start (Prod)
-
-The prod overlay connects to external databases instead of running PostgreSQL in containers.
-
-### 1. Build Images
-
-Same as local (images are tagged `:latest` for both overlays):
-```powershell
-.\scripts\build-images.ps1
-```
+Convenience wrapper scripts are also available at `scripts/build-images.ps1` and `scripts/build-images.sh`.
 
 ### 2. Create Secrets
 
-```powershell
-cp overlays\prod\secrets\secrets.yaml.template overlays\prod\secrets\secrets.yaml
-# Edit secrets.yaml with your production credentials
-```
+Copy the secrets template for your overlay and fill in your values:
 
-See `overlays/prod/secrets/README.md` for details.
+```powershell
+# Local / Local-Shared (shared secrets)
+cp overlays\local\secrets\secrets.yaml.template overlays\local\secrets\secrets.yaml
+# Edit with your values (use same passwords as Docker Compose .secrets.env files)
+
+# Prod
+cp overlays\prod\secrets\secrets.yaml.template overlays\prod\secrets\secrets.yaml
+# Edit with your production credentials (see overlays/prod/secrets/README.md)
+```
 
 ### 3. Deploy
 
-**Windows (PowerShell):**
-```powershell
-.\scripts\deploy-prod.ps1
-```
+Each overlay has its own deploy script that handles namespaces, ConfigMaps, secrets, and Kustomize application:
 
-**Linux/MacOS:**
-```bash
-./scripts/deploy-prod.sh
-```
+| Overlay | PowerShell | Bash |
+|---------|-----------|------|
+| Local | `.\scripts\deploy-local.ps1` | `./scripts/deploy-local.sh` |
+| Local-Shared | `.\scripts\deploy-local-shared.ps1` | `./scripts/deploy-local-shared.sh` |
+| Prod | `.\scripts\deploy-prod.ps1` | `./scripts/deploy-prod.sh` |
 
-The deploy script will:
-1. Apply namespaces
-2. Create Grafana ConfigMaps from shared provisioning files
-3. Apply the prod Kustomize overlay
-4. Apply secrets (if `secrets.yaml` exists)
-5. Wait for migrations and applications
+**Local-Shared note:** PostgreSQL requires exclusive access — stop Docker Compose before deploying (`docker compose down` in `env/docker/local/`).
 
-### External Database Configuration
+### External Database Configuration (Prod)
 
 By default, the prod overlay points to `host.docker.internal` (the Windows host from Docker Desktop K8s). To change the database host, edit `overlays/prod/external-databases.yaml`. For IP-based databases (no DNS name), see the comments in that file for the Service+Endpoints alternative.
 
@@ -139,41 +97,9 @@ By default, the prod overlay points to `host.docker.internal` (the Windows host 
 | Grafana | http://localhost:30000 |
 | Prometheus | http://localhost:30090 |
 
-## Quick Start (Local with Shared Volumes)
+## Shared Volumes (Local-Shared)
 
 The `local-shared` overlay reuses Docker Compose named volumes in Kubernetes via `hostPath` PersistentVolumes. This lets you switch between Docker Compose and K8s without losing data.
-
-**Key constraint:** PostgreSQL requires exclusive access — stop Docker Compose before starting K8s (and vice versa).
-
-### 1. Build Images & Create Secrets
-
-Same as Local overlay (see above).
-
-### 2. Stop Docker Compose
-
-```powershell
-# From env/docker/local:
-docker compose down
-```
-
-### 3. Deploy
-
-**Windows (PowerShell):**
-```powershell
-.\scripts\deploy-local-shared.ps1
-```
-
-**Linux/MacOS:**
-```bash
-./scripts/deploy-local-shared.sh
-```
-
-The script will:
-1. Confirm Docker Compose is stopped
-2. Pre-apply shared PersistentVolumes (avoids race with dynamic provisioner)
-3. Create ConfigMaps and apply the `local-shared` Kustomize overlay
-4. Apply secrets from `overlays/local/secrets/` (shared with local overlay)
-5. Wait for databases, migrations, and applications
 
 ### Switching Between Environments
 
@@ -201,33 +127,18 @@ cd ../docker/local && docker compose up -d
 
 ## Teardown
 
-### Local
 ```powershell
-kubectl delete -k overlays\local
+# Remove resources for a specific overlay
+kubectl delete -k overlays\<local|local-shared|prod>
 
-# To also remove persistent data (database volumes) and namespaces:
+# To also remove namespaces:
+kubectl delete namespace mu-data mu-lastfm mu-apps mu-frontend art-universe-monitoring
+
+# Local only — remove persistent data (database volumes):
 kubectl delete pvc --all -n mu-data
-kubectl delete namespace mu-data mu-lastfm mu-apps mu-frontend art-universe-monitoring
-```
 
-### Local with Shared Volumes
-```powershell
-kubectl delete -k overlays\local-shared
-
-# PVs use Retain policy — data is preserved for Docker Compose.
-# To also remove PVs (data stays in Docker named volumes):
+# Local-Shared only — remove PVs (data stays in Docker named volumes):
 kubectl delete pv shared-lastfm-master-data shared-lastfm-replica-data shared-music-data-db shared-prometheus-data shared-grafana-data
-
-# To remove namespaces:
-kubectl delete namespace mu-data mu-lastfm mu-apps mu-frontend art-universe-monitoring
-```
-
-### Prod
-```powershell
-kubectl delete -k overlays\prod
-
-# To remove namespaces:
-kubectl delete namespace mu-data mu-lastfm mu-apps mu-frontend art-universe-monitoring
 ```
 
 ## Architecture
@@ -279,7 +190,7 @@ Database init scripts, Grafana dashboards, and datasource configurations are cen
 
 ### Image Tags
 
-All images are tagged `:latest` in base manifests. The `build-images` scripts build and tag images accordingly. All overlays use the same images.
+All images are tagged `:latest` in base manifests. Images are built via `./gradlew dockerBuildAll` (each module has a `dockerBuild` task). All overlays use the same images — environment differences are handled at runtime via env vars and Kustomize patches.
 
 ## Useful Commands
 
