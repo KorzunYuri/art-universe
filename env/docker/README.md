@@ -7,12 +7,14 @@ This directory contains cross-platform scripts for Docker deployment AND the **c
 ## Quick Start
 
 ```bash
-# Build all Docker images and deploy locally (Docker Compose)
-./gradlew dockerBuildAll -x test
+# Build images and deploy locally (via orchestrator)
+./scripts/deploy.sh docker local
+
+# Or call the Docker deploy script directly
 ./env/docker/deploy.sh local
 
-# Or build a single module's image
-./gradlew :music:quiz:dockerBuild
+# Skip image rebuild if images are already built
+./scripts/deploy.sh docker local --skip-build
 
 # Start dev infrastructure (database + observability)
 cd env/docker/dev
@@ -28,18 +30,14 @@ Features:
 - **Path Resolution**: Handles different path formats across platforms
 
 ### Deploy
-Deploys the specified environment (local or production) with optimized build strategies:
+Deploys the specified environment (local or production):
 
-- Both environments use pre-built Docker images (built via `./gradlew dockerBuildAll`)
+- Builds Docker images via `scripts/build-images.sh` (unless `--skip-build`)
 - Spring Boot services use layered JARs for optimal Docker layer caching
 
 **Usage:**
 ```bash
-# Unix/Linux/macOS/WSL/Git Bash
-./env/docker/deploy.sh <local|prod>
-
-# Windows Command Prompt
-env\docker\deploy.bat <local|prod>
+./env/docker/deploy.sh <local|prod> [--skip-build]
 ```
 
 ### Stop
@@ -47,11 +45,7 @@ Stops containers for the specified environment without removing them.
 
 **Usage:**
 ```bash
-# Unix/Linux/macOS/WSL/Git Bash
-./env/docker/stop.sh <local|prod>
-
-# Windows Command Prompt
-env\docker\stop.bat <local|prod>
+./env/docker/stop.sh <local|prod|all>
 ```
 
 ### Cleanup
@@ -59,11 +53,7 @@ Stops and removes containers, images, and networks for the specified environment
 
 **Usage:**
 ```bash
-# Unix/Linux/macOS/WSL/Git Bash
 ./env/docker/cleanup.sh <local|prod|all>
-
-# Windows Command Prompt
-env\docker\cleanup.bat <local|prod|all>
 ```
 
 
@@ -98,15 +88,15 @@ Historical/organizational reasons - the directory was initially for Docker Compo
 - All services containerized (watch `env/docker/local/docker-compose.yml`)
 - Services connect via container names (e.g., `postgres-lastfm-master`)
 - Uses ports 9xxx
-- `deploy.bat local` or `deploy.sh local` for deployment
-- Images are pre-built via `./gradlew dockerBuildAll`
+- `./scripts/deploy.sh docker local` or `./env/docker/deploy.sh local`
+- Images are built automatically (or skip with `--skip-build`)
 
 **Production Mode**:
 - Databases on Windows host, services in Docker
 - Services connect to databases via `host.docker.internal`
 - Uses ports 8xxx
-- `deploy.bat prod` or `deploy.sh prod` for deployment
-- Images are pre-built via `./gradlew dockerBuildAll`
+- `./scripts/deploy.sh docker prod` or `./env/docker/deploy.sh prod`
+- Images are built automatically (or skip with `--skip-build`)
 
 ### Configuration Principles
 

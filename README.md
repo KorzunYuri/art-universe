@@ -7,9 +7,14 @@ The project currently focuses on music data and quiz applications - generating s
 ## Quick Start
 
 ```bash
-# Build Docker images and deploy local environment
-./gradlew dockerBuildAll -x test
-./env/docker/deploy.sh local
+# Build images and deploy to Docker Compose (local)
+./scripts/deploy.sh docker local
+
+# Or deploy to Kubernetes (local)
+./scripts/deploy.sh k8s local
+
+# Skip image rebuild if images are already built
+./scripts/deploy.sh docker local --skip-build
 ```
 
 ## High-level Architecture

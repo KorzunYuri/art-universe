@@ -63,6 +63,9 @@ tasks.register('extractLayers') {
         def outputDir = layout.buildDirectory.dir("docker-layers").get().asFile
 
         println "Extracting layered JAR for project '${project.name}': $jarFile -> $outputDir"
+        if (outputDir.exists()) {
+            delete(outputDir)
+        }
         outputDir.mkdirs()
 
         exec {

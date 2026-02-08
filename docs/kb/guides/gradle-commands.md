@@ -62,7 +62,10 @@
 
 ### Docker Images
 ```bash
-# Build all Docker images
+# Build all Docker images (via convenience script)
+./scripts/build-images.sh
+
+# Build all Docker images (via Gradle directly)
 ./gradlew dockerBuildAll -x test
 
 # Build a single module's image

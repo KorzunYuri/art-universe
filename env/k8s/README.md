@@ -50,43 +50,55 @@ All overlays share the same workflow: build images, create secrets, deploy.
 All overlays use the same images, built via Gradle:
 
 ```bash
-# From project root
+# Build all images (via convenience script)
+./scripts/build-images.sh
+
+# Or via Gradle directly
 ./gradlew dockerBuildAll -x test
 
 # Or build a single module
 ./gradlew :music:quiz:dockerBuild
 ```
 
-Convenience wrapper scripts are also available at `scripts/build-images.ps1` and `scripts/build-images.sh`.
-
 ### 2. Create Secrets
 
 Copy the secrets template for your overlay and fill in your values:
 
-```powershell
+```bash
 # Local / Local-Shared (shared secrets)
-cp overlays\local\secrets\secrets.yaml.template overlays\local\secrets\secrets.yaml
+cp overlays/local/secrets/secrets.yaml.template overlays/local/secrets/secrets.yaml
 # Edit with your values (use same passwords as Docker Compose .secrets.env files)
 
 # Prod
-cp overlays\prod\secrets\secrets.yaml.template overlays\prod\secrets\secrets.yaml
+cp overlays/prod/secrets/secrets.yaml.template overlays/prod/secrets/secrets.yaml
 # Edit with your production credentials (see overlays/prod/secrets/README.md)
 ```
 
 ### 3. Deploy
 
-Each overlay has its own deploy script that handles namespaces, ConfigMaps, secrets, and Kustomize application:
+Use the orchestrator script or call overlay-specific scripts directly:
 
-- [Local](./scripts/deploy-local.sh)
-- [Local-Shared](./scripts/deploy-local-shared.sh)
-- [Prod](./scripts/deploy-prod.sh)
+```bash
+# Via orchestrator (builds images + deploys)
+./scripts/deploy.sh k8s <local|local-shared|prod>
+
+# Skip image building
+./scripts/deploy.sh k8s local --skip-build
+
+# Via overlay-specific scripts (no image building)
+./env/k8s/scripts/deploy-local.sh
+./env/k8s/scripts/deploy-local-shared.sh
+./env/k8s/scripts/deploy-prod.sh
+```
+
+Deploy scripts accept extra flags: `--skip-ingress-check`, `--timeout <seconds>`, `--force` (local-shared only).
 
 **Local-Shared note:** PostgreSQL requires exclusive access — stop Docker Compose before deploying (`docker compose down` in `env/docker/local/`).
 
 ### External Database Configuration (Prod)
 
-By default, the prod overlay points to `host.docker.internal` (the Windows host from Docker Desktop K8s). 
-To change the database host, edit `overlays/prod/external-databases.yaml`. 
+By default, the prod overlay points to `host.docker.internal` (the Windows host from Docker Desktop K8s).
+To change the database host, edit `overlays/prod/external-databases.yaml`.
 For IP-based databases (no DNS name), see the comments in that file for the Service+Endpoints alternative.
 
 ## Shared Volumes (Local-Shared)
@@ -96,15 +108,15 @@ The `local-shared` overlay reuses Docker Compose named volumes in Kubernetes via
 ### Switching Between Environments
 
 **Docker Compose → K8s:**
-```powershell
-cd env/docker/local && docker compose down
-cd ../../../env/k8s && .\scripts\deploy-local-shared.ps1
+```bash
+./scripts/stop.sh docker local
+./scripts/deploy.sh k8s local-shared --skip-build
 ```
 
 **K8s → Docker Compose:**
-```powershell
-cd env/k8s && kubectl delete -k overlays\local-shared
-cd ../docker/local && docker compose up -d
+```bash
+./scripts/stop.sh k8s local-shared
+./scripts/deploy.sh docker local --skip-build
 ```
 
 ### Volume Mapping
@@ -119,19 +131,30 @@ cd ../docker/local && docker compose up -d
 
 ## Teardown
 
-```powershell
-# Remove resources for a specific overlay
-kubectl delete -k overlays\<local|local-shared|prod>
+### Stop (remove resources, preserve namespaces and PVs)
 
-# To also remove namespaces:
-kubectl delete namespace mu-data mu-lastfm mu-apps mu-frontend art-universe-monitoring
+```bash
+# Via orchestrator
+./scripts/stop.sh k8s <local|local-shared|prod>
 
-# Local only — remove persistent data (database volumes):
-kubectl delete pvc --all -n mu-data
-
-# Local-Shared only — remove PVs (data stays in Docker named volumes):
-kubectl delete pv shared-lastfm-master-data shared-lastfm-replica-data shared-music-data-db shared-prometheus-data shared-grafana-data
+# Via K8s script directly
+./env/k8s/scripts/stop.sh <local|local-shared|prod>
 ```
+
+### Full Cleanup (remove resources + namespaces + PVs/PVCs)
+
+```bash
+# Via orchestrator
+./scripts/cleanup.sh k8s <local|local-shared|prod>
+
+# Via K8s script directly
+./env/k8s/scripts/cleanup.sh <local|local-shared|prod>
+```
+
+The cleanup script handles environment-specific cleanup:
+- **local**: Deletes PVCs and dynamically-provisioned PVs
+- **local-shared**: Deletes shared PVs (data stays in Docker named volumes)
+- **prod**: No extra cleanup needed
 
 ## Architecture
 
@@ -198,7 +221,7 @@ Database init scripts, Grafana dashboards, and datasource configurations are cen
 
 ### Image Tags
 
-All images are tagged `:latest` in base manifests. Images are built via `./gradlew dockerBuildAll` (each module has a `dockerBuild` task). All overlays use the same images — environment differences are handled at runtime via env vars and Kustomize patches.
+All images are tagged `:latest` in base manifests. Images are built via `./scripts/build-images.sh` (wraps `./gradlew dockerBuildAll`). All overlays use the same images — environment differences are handled at runtime via env vars and Kustomize patches.
 
 
 ## Useful Commands

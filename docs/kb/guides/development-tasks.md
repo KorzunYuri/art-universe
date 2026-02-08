@@ -329,17 +329,13 @@ Understanding module types helps determine workflow:
 
 **Full environment (Docker)**:
 ```bash
-./env/docker/deploy.sh local
-# Or on Windows:
-env\docker\deploy.bat local
+./scripts/deploy.sh docker local
 ```
 
 ### Stopping Services
 
 ```bash
-./env/docker/stop.sh all
-# Or on Windows:
-env\docker\stop.bat all
+./scripts/stop.sh docker all
 ```
 
 ---
