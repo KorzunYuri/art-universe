@@ -3,6 +3,7 @@ plugins {
 }
 
 archivesBaseName = 'lastfm-rest-api'
+ext.dockerImageName = 'mu-lastfm-rest-api'
 
 dependencies {
     implementation project(':common:commons-web')

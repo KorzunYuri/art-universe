@@ -1,8 +1,9 @@
 import axios from 'axios';
 import { setupTracingInterceptor } from '@/music/shared/services/tracingInterceptor';
+import { appConfig } from '@/music/shared/config/appConfig';
 
-const readApiUrl = `http://${import.meta.env.VITE_MURAW_LASTFM_READ_API_HOST || 'localhost'}:${import.meta.env.VITE_MURAW_LASTFM_READ_API_EXTERNAL_PORT || '8084'}/api/v1`;
-const writeApiUrl = `http://${import.meta.env.VITE_MURAW_LASTFM_WRITE_API_HOST || 'localhost'}:${import.meta.env.VITE_MURAW_LASTFM_WRITE_API_EXTERNAL_PORT || '8085'}/api/v1`;
+const readApiUrl = `http://${appConfig.lastfmReadApiHost}:${appConfig.lastfmReadApiPort}/api/v1`;
+const writeApiUrl = `http://${appConfig.lastfmWriteApiHost}:${appConfig.lastfmWriteApiPort}/api/v1`;
 
 // Create axios instance for LastFM Read API with tracing
 const readApi = axios.create({

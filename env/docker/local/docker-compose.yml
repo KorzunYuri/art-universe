@@ -4,20 +4,18 @@ services:
   # Databases
   postgres-lastfm-master:
     container_name: local__lastfm__db-postgres-master
+    image: postgres:14
     restart: unless-stopped
     shm_size: 128mb
     stop_grace_period: 1m
     stop_signal: SIGINT
-    build:
-      dockerfile: postgres.dockerfile
-      context: ../../../music/shared/docker/compose/common
     env_file:
       - ./music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.secrets.env
     volumes:
       - local__lastfm__db-postgres-data:/var/lib/postgresql/data
-      - ../common/db/mu-raw-lastfm/initdb/templates:/docker-entrypoint-initdb.d
-    command: bash -c "envsubst < /docker-entrypoint-initdb.d/init.sql.template > /docker-entrypoint-initdb.d/01-init.sql && chmod +x /docker-entrypoint-initdb.d/02-configure-replication.sh && exec docker-entrypoint.sh postgres -c wal_level=replica -c max_wal_senders=3 -c max_replication_slots=3"
+      - ../common/db/mu-raw-lastfm/initdb/01-init.sh:/docker-entrypoint-initdb.d/01-init.sh
+    command: ["postgres", "-c", "wal_level=replica", "-c", "max_wal_senders=3", "-c", "max_replication_slots=3"]
     ports:
       - "${MURAW_LASTFM_DB_MASTER_EXTERNAL_PORT}:5432"
     healthcheck:
@@ -38,13 +36,11 @@ services:
 
   postgres-lastfm-replica:
     container_name: local__lastfm__db-postgres-replica
+    image: postgres:14
     restart: unless-stopped
     shm_size: 128mb
     stop_grace_period: 1m
     stop_signal: SIGINT
-    build:
-      dockerfile: postgres.dockerfile
-      context: ../../../music/shared/docker/compose/common
     env_file:
       - ./music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.secrets.env
@@ -56,7 +52,6 @@ services:
     volumes:
       - local__lastfm__db-postgres-replica-data:/var/lib/postgresql/data
       - ../common/db/mu-raw-lastfm/initdb/replica-setup.sh:/docker-entrypoint-initdb.d/replica-setup.sh
-    command: bash -c "chmod +x /docker-entrypoint-initdb.d/replica-setup.sh && exec docker-entrypoint.sh postgres"
     ports:
       - "${MURAW_LASTFM_DB_REPLICA_EXTERNAL_PORT}:5432"
     depends_on:
@@ -80,13 +75,11 @@ services:
 
   postgres-music-data:
     container_name: local__mu-music-data__db-postgres
+    image: postgres:14
     restart: unless-stopped
     shm_size: 128mb
     stop_grace_period: 1m
     stop_signal: SIGINT
-    build:
-      dockerfile: postgres.dockerfile
-      context: ../../../music/shared/docker/compose/common
     env_file:
       - ./music-data.env
       - ./music-data.secrets.env
@@ -94,8 +87,7 @@ services:
       - ./music-quiz.secrets.env
     volumes:
       - local__mu-data__db-postgres-data:/var/lib/postgresql/data
-      - ../common/db/mu/initdb/templates:/docker-entrypoint-initdb.d
-    command: bash -c "envsubst < /docker-entrypoint-initdb.d/init.sql.template > /docker-entrypoint-initdb.d/init.sql && exec docker-entrypoint.sh postgres"
+      - ../common/db/mu/initdb/01-init.sh:/docker-entrypoint-initdb.d/01-init.sh
     ports:
       - "${MU_DATA_DB_EXTERNAL_PORT}:5432"
     healthcheck:
@@ -117,9 +109,7 @@ services:
   # Migrations
   lastfm-liquibase-service:
     container_name: local__lastfm__liquibase
-    build:
-      dockerfile: Dockerfile.local
-      context: ../../../music/data/raw/lastfm/migrations/lastfm-liquibase-service
+    image: mu-lastfm-liquibase:latest
     env_file:
       - ../common/music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.env
@@ -134,9 +124,7 @@ services:
   lastfm-rest-api:
     container_name: local__lastfm-rest-api__app
     restart: unless-stopped
-    build:
-      dockerfile: Dockerfile.local
-      context: ../../../music/data/raw/lastfm/lastfm-rest-api
+    image: mu-lastfm-rest-api:latest
     environment:
       - JAVA_OPTS=-Xms256m -Xmx768m -XX:MaxMetaspaceSize=192m
     env_file:
@@ -176,9 +164,7 @@ services:
     container_name: local__lastfm-etl-rest-api__app
     restart: unless-stopped
     stop_grace_period: 1m
-    build:
-      dockerfile: Dockerfile.local
-      context: ../../../music/data/raw/lastfm/etl/lastfm-etl-rest-api
+    image: mu-lastfm-etl-rest-api:latest
     environment:
       - JAVA_OPTS=-Xms256m -Xmx768m -XX:MaxMetaspaceSize=192m
     env_file:
@@ -218,9 +204,7 @@ services:
     container_name: local__lastfm-calls-generator__app
     restart: unless-stopped
     stop_grace_period: 1m
-    build:
-      dockerfile: Dockerfile.local
-      context: ../../../music/data/raw/lastfm/etl/lastfm-calls-generator
+    image: mu-lastfm-calls-generator:latest
     environment:
       - JAVA_OPTS=-Xms256m -Xmx768m -XX:MaxMetaspaceSize=192m
     env_file:
@@ -258,9 +242,7 @@ services:
     container_name: local__lastfm-calls-performer__app
     restart: unless-stopped
     stop_grace_period: 1m
-    build:
-      dockerfile: Dockerfile.local
-      context: ../../../music/data/raw/lastfm/etl/lastfm-calls-performer
+    image: mu-lastfm-calls-performer:latest
     environment:
       - JAVA_OPTS=-Xms256m -Xmx768m -XX:MaxMetaspaceSize=192m
     env_file:
@@ -300,9 +282,7 @@ services:
     container_name: local__lastfm-response-parser__app
     restart: unless-stopped
     stop_grace_period: 1m
-    build:
-      dockerfile: Dockerfile.local
-      context: ../../../music/data/raw/lastfm/etl/lastfm-response-parser
+    image: mu-lastfm-response-parser:latest
     environment:
       - JAVA_OPTS=-Xms256m -Xmx1536m -XX:MaxMetaspaceSize=192m
     env_file:
@@ -341,9 +321,7 @@ services:
   music-data:
     container_name: local__mu-data__app
     restart: unless-stopped
-    build:
-      dockerfile: Dockerfile.local
-      context: ../../../music/data/master
+    image: mu-music-data:latest
     environment:
       - JAVA_OPTS=-Xms128m -Xmx384m -XX:MaxMetaspaceSize=96m
     env_file:
@@ -377,9 +355,7 @@ services:
   music-quiz:
     container_name: local__mu-quiz__app
     restart: unless-stopped
-    build:
-      dockerfile: Dockerfile.local
-      context: ../../../music/quiz
+    image: mu-music-quiz:latest
     environment:
       - JAVA_OPTS=-Xms128m -Xmx384m -XX:MaxMetaspaceSize=96m
     env_file:
@@ -414,18 +390,7 @@ services:
   music-universe-ui:
     container_name: local__mu-ui__app
     restart: unless-stopped
-    build:
-      context: ../../../music/ui
-      dockerfile: Dockerfile
-      args:
-        - VITE_MURAW_LASTFM_READ_API_HOST=${MURAW_LASTFM_REST_API_HOST}
-        - VITE_MURAW_LASTFM_READ_API_EXTERNAL_PORT=${MURAW_LASTFM_REST_API_EXTERNAL_PORT}
-        - VITE_MURAW_LASTFM_WRITE_API_HOST=${MURAW_LASTFM_ETL_REST_API_HOST}
-        - VITE_MURAW_LASTFM_WRITE_API_EXTERNAL_PORT=${MURAW_LASTFM_ETL_REST_API_EXTERNAL_PORT}
-        - VITE_MU_DATA_APP_HOST=${MU_DATA_APP_HOST}
-        - VITE_MU_DATA_APP_EXTERNAL_PORT=${MU_DATA_APP_EXTERNAL_PORT}
-        - VITE_MU_QUIZ_APP_HOST=${MU_QUIZ_APP_HOST}
-        - VITE_MU_QUIZ_APP_EXTERNAL_PORT=${MU_QUIZ_APP_EXTERNAL_PORT}
+    image: mu-music-ui:latest
     env_file:
       - ./common.env
       - ./music-universe-ui.env
@@ -497,15 +462,12 @@ services:
 
   grafana:
     container_name: local__mu__grafana
-    build:
-      dockerfile: grafana.dockerfile
-      context: ../common/grafana
+    image: grafana/grafana:10.0.13
     restart: unless-stopped
     volumes:
       - local__mu__grafana-data:/var/lib/grafana
-      - ../common/grafana/provisioning/dashboards:/tmp/dashboard-templates
-      - ../common/grafana/provisioning/datasources:/tmp/datasource-templates
-      - ../common/grafana/grafana-provision.sh:/tmp/grafana-provision.sh:ro
+      - ../common/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ../common/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
@@ -513,8 +475,6 @@ services:
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
       - GF_AUTH_DISABLE_LOGIN_FORM=true
-      - PROMETHEUS_DATASOURCE_UID=${PROMETHEUS_DATASOURCE_UID}
-    entrypoint: /tmp/grafana-provision.sh
     ports:
       - "${GRAFANA_PORT}:3000"
     depends_on:

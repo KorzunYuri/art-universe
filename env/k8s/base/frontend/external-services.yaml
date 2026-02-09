@@ -1,0 +1,66 @@
+# ExternalName services to reference services in other namespaces
+# Required for Ingress to route to cross-namespace backends
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lastfm-rest-api
+  namespace: mu-frontend
+  labels:
+    app.kubernetes.io/name: lastfm-rest-api-external
+spec:
+  type: ExternalName
+  externalName: lastfm-rest-api.mu-lastfm.svc.cluster.local
+  ports:
+    - port: 8080
+      targetPort: 8080
+      name: http
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lastfm-etl-rest-api
+  namespace: mu-frontend
+  labels:
+    app.kubernetes.io/name: lastfm-etl-rest-api-external
+spec:
+  type: ExternalName
+  externalName: lastfm-etl-rest-api.mu-lastfm.svc.cluster.local
+  ports:
+    - port: 8080
+      targetPort: 8080
+      name: http
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: music-data
+  namespace: mu-frontend
+  labels:
+    app.kubernetes.io/name: music-data-external
+spec:
+  type: ExternalName
+  externalName: music-data.mu-apps.svc.cluster.local
+  ports:
+    - port: 8080
+      targetPort: 8080
+      name: http
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: music-quiz
+  namespace: mu-frontend
+  labels:
+    app.kubernetes.io/name: music-quiz-external
+spec:
+  type: ExternalName
+  externalName: music-quiz.mu-apps.svc.cluster.local
+  ports:
+    - port: 8080
+      targetPort: 8080
+      name: http

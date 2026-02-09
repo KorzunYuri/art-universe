@@ -1,0 +1,58 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: art-universe-ingress
+  namespace: mu-frontend
+  labels:
+    app.kubernetes.io/name: art-universe-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    # Increase timeouts for API calls
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: localhost
+      http:
+        paths:
+          # LastFM ETL API - must come before LastFM Read API (more specific path)
+          - path: /api/lastfm/etl(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: lastfm-etl-rest-api
+                port:
+                  number: 8080
+          # LastFM Read API
+          - path: /api/lastfm(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: lastfm-rest-api
+                port:
+                  number: 8080
+          # Music Data API
+          - path: /api/music(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: music-data
+                port:
+                  number: 8080
+          # Music Quiz API
+          - path: /api/quiz(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: music-quiz
+                port:
+                  number: 8080
+          # UI - default route (must be last)
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: music-ui
+                port:
+                  number: 80

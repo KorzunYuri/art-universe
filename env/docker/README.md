@@ -7,9 +7,14 @@ This directory contains cross-platform scripts for Docker deployment AND the **c
 ## Quick Start
 
 ```bash
-# Deploy full stack locally for testing (Docker Compose)
-./gradlew build -x test
+# Build images and deploy locally (via orchestrator)
+./scripts/deploy.sh docker local
+
+# Or call the Docker deploy script directly
 ./env/docker/deploy.sh local
+
+# Skip image rebuild if images are already built
+./scripts/deploy.sh docker local --skip-build
 
 # Start dev infrastructure (database + observability)
 cd env/docker/dev
@@ -25,19 +30,14 @@ Features:
 - **Path Resolution**: Handles different path formats across platforms
 
 ### Deploy
-Deploys the specified environment (local or production) with optimized build strategies:
+Deploys the specified environment (local or production):
 
-- **Local environment**: Pre-builds the project with Gradle, then uses `Dockerfile.local` for fast container builds
-- **Production environment**: Skips Gradle build and uses `Dockerfile.prod` with multi-stage build inside Docker
-- Both envs use docker layers caching with the help of Spring Boot layered jar
+- Builds Docker images via `scripts/build-images.sh` (unless `--skip-build`)
+- Spring Boot services use layered JARs for optimal Docker layer caching
 
 **Usage:**
 ```bash
-# Unix/Linux/macOS/WSL/Git Bash
-./env/docker/deploy.sh <local|prod>
-
-# Windows Command Prompt
-env\docker\deploy.bat <local|prod>
+./env/docker/deploy.sh <local|prod> [--skip-build]
 ```
 
 ### Stop
@@ -45,11 +45,7 @@ Stops containers for the specified environment without removing them.
 
 **Usage:**
 ```bash
-# Unix/Linux/macOS/WSL/Git Bash
-./env/docker/stop.sh <local|prod>
-
-# Windows Command Prompt
-env\docker\stop.bat <local|prod>
+./env/docker/stop.sh <local|prod|all>
 ```
 
 ### Cleanup
@@ -57,11 +53,7 @@ Stops and removes containers, images, and networks for the specified environment
 
 **Usage:**
 ```bash
-# Unix/Linux/macOS/WSL/Git Bash
 ./env/docker/cleanup.sh <local|prod|all>
-
-# Windows Command Prompt
-env\docker\cleanup.bat <local|prod|all>
 ```
 
 
@@ -96,15 +88,15 @@ Historical/organizational reasons - the directory was initially for Docker Compo
 - All services containerized (watch `env/docker/local/docker-compose.yml`)
 - Services connect via container names (e.g., `postgres-lastfm-master`)
 - Uses ports 9xxx
-- `deploy.bat local` or `deploy.sh local` for deployment
-- Project is built, then artifacts are copied to Docker images
+- `./scripts/deploy.sh docker local` or `./env/docker/deploy.sh local`
+- Images are built automatically (or skip with `--skip-build`)
 
 **Production Mode**:
 - Databases on Windows host, services in Docker
 - Services connect to databases via `host.docker.internal`
 - Uses ports 8xxx
-- `deploy.bat prod` or `deploy.sh prod` for deployment
-- Each module is built individually as a part of Docker image build 
+- `./scripts/deploy.sh docker prod` or `./env/docker/deploy.sh prod`
+- Images are built automatically (or skip with `--skip-build`)
 
 ### Configuration Principles
 
@@ -142,11 +134,8 @@ chmod +x env/docker/*.sh
 The scripts automatically handle WSL path conversion. If you encounter issues, ensure you're running from the project root directory.
 
 ### Docker Layer Caching
-For production builds, first build may take longer but subsequent builds should be faster due to layer caching. To verify layers:
+First build may take longer but subsequent builds should be faster due to Docker layer caching. Spring Boot services use layered JARs for optimal cache utilization.
 ```bash
-# Check if layered JAR is properly configured
-java -Djarmode=layered -jar build/libs/mu-data-*.jar list
-
 # Monitor image sizes
 docker images | grep mu-
 ```
@@ -155,3 +144,4 @@ docker images | grep mu-
 
 - [DEVELOPMENT.md](../../docs/DEVELOPMENT.md) - Development workflow and IntelliJ setup
 - [SERVICES.md](../../docs/SERVICES.md) - Complete service listing with ports
+- [Kubernetes Deployment](../k8s/README.md) - Alternative deployment using Kustomize (local and prod overlays)

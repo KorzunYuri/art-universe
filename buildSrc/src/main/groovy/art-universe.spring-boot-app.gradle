@@ -63,10 +63,32 @@ tasks.register('extractLayers') {
         def outputDir = layout.buildDirectory.dir("docker-layers").get().asFile
 
         println "Extracting layered JAR for project '${project.name}': $jarFile -> $outputDir"
+        if (outputDir.exists()) {
+            delete(outputDir)
+        }
         outputDir.mkdirs()
 
         exec {
             commandLine 'java', "-Djarmode=tools", '-jar', jarFile, 'extract', '--layers', '--destination', outputDir
+        }
+    }
+}
+
+afterEvaluate {
+    if (project.hasProperty('dockerImageName')) {
+        tasks.register('dockerBuild', Exec) {
+            group = 'docker'
+            description = "Build Docker image ${project.dockerImageName}"
+            dependsOn tasks.named('extractLayers')
+
+            def imageName = "${project.dockerImageName}:latest"
+            def dockerContext = project.projectDir
+
+            commandLine 'docker', 'build', '-t', imageName, '-f', "${dockerContext}/Dockerfile", dockerContext.absolutePath
+
+            doFirst {
+                println "Building Docker image: ${imageName} from ${dockerContext}"
+            }
         }
     }
 }

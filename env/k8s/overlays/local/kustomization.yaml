@@ -1,0 +1,36 @@
+# Art Universe - Local Environment Overlay
+# Targets Docker Desktop's built-in Kubernetes cluster
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+  - external-services.yaml
+
+patches:
+  # Override music-ui API ports for local environment (9xxx)
+  - patch: |
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: music-ui
+        namespace: mu-frontend
+      spec:
+        template:
+          spec:
+            containers:
+              - name: nginx
+                env:
+                  - name: MURAW_LASTFM_READ_API_EXTERNAL_PORT
+                    value: "9084"
+                  - name: MURAW_LASTFM_WRITE_API_EXTERNAL_PORT
+                    value: "9085"
+                  - name: MU_DATA_APP_EXTERNAL_PORT
+                    value: "9082"
+                  - name: MU_QUIZ_APP_EXTERNAL_PORT
+                    value: "9083"
+
+commonLabels:
+  app.kubernetes.io/managed-by: kustomize
+  environment: local

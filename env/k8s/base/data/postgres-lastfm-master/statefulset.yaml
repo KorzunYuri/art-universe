@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres-lastfm-master
+  namespace: mu-data
+  labels:
+    app: postgres-lastfm-master
+    app.kubernetes.io/name: postgres-lastfm-master
+spec:
+  serviceName: postgres-lastfm-master
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-lastfm-master
+  template:
+    metadata:
+      labels:
+        app: postgres-lastfm-master
+        app.kubernetes.io/name: postgres-lastfm-master
+    spec:
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: postgres
+          image: postgres:14
+          ports:
+            - containerPort: 5432
+              name: postgres
+          args:
+            - "-c"
+            - "wal_level=replica"
+            - "-c"
+            - "max_wal_senders=3"
+            - "-c"
+            - "max_replication_slots=3"
+          env:
+            - name: POSTGRES_DB
+              value: "postgres"
+            - name: POSTGRES_USER
+              value: "postgres"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: lastfm-db-credentials
+                  key: POSTGRES_PASSWORD
+            - name: MURAW_LASTFM_DB_WRITER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: lastfm-db-credentials
+                  key: MURAW_LASTFM_DB_WRITER_PASSWORD
+            - name: MURAW_LASTFM_DB_READER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: lastfm-db-credentials
+                  key: MURAW_LASTFM_DB_READER_PASSWORD
+            - name: MURAW_LASTFM_DB_REPLICATION_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: lastfm-db-credentials
+                  key: MURAW_LASTFM_DB_REPLICATION_PASSWORD
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+            - name: init-scripts
+              mountPath: /docker-entrypoint-initdb.d
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "200m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - postgres
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - postgres
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 3
+      volumes:
+        - name: init-scripts
+          configMap:
+            name: postgres-lastfm-master-init
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi

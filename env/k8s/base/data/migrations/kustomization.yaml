@@ -1,0 +1,13 @@
+# Art Universe - Database Migration Jobs
+# Separated into its own kustomization so the prod overlay can include
+# migrations without the PostgreSQL StatefulSets from the parent data/.
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - lastfm-liquibase-job.yaml
+
+commonLabels:
+  app.kubernetes.io/part-of: art-universe
+  app.kubernetes.io/component: data

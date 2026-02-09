@@ -1,0 +1,64 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: lastfm-liquibase-migration
+  namespace: mu-data
+  labels:
+    app: lastfm-liquibase
+    app.kubernetes.io/name: lastfm-liquibase
+    app.kubernetes.io/component: migration
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 3600  # Clean up after 1 hour
+  template:
+    metadata:
+      labels:
+        app: lastfm-liquibase
+        app.kubernetes.io/name: lastfm-liquibase
+    spec:
+      restartPolicy: Never
+      initContainers:
+        - name: wait-for-db
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for postgres-lastfm-master to be ready..."
+              until nc -z postgres-lastfm-master.mu-data.svc.cluster.local 5432; do
+                echo "Database not ready, waiting..."
+                sleep 2
+              done
+              echo "Database is ready!"
+              # Additional wait for postgres to fully initialize
+              sleep 5
+      containers:
+        - name: liquibase
+          image: mu-lastfm-liquibase:latest
+          imagePullPolicy: Never
+          env:
+            # Database connection
+            - name: MURAW_LASTFM_DB_MASTER_HOST
+              value: "postgres-lastfm-master.mu-data.svc.cluster.local"
+            - name: MURAW_LASTFM_DB_MASTER_PORT
+              value: "5432"
+            - name: MURAW_LASTFM_DB_NAME
+              value: "music_universe"
+            - name: MURAW_LASTFM_DB_SCHEMA
+              value: "mu_raw_lastfm"
+            - name: MURAW_LASTFM_DB_WRITER_USERNAME
+              value: "mu_raw_lastfm_dm"
+            - name: MURAW_LASTFM_DB_WRITER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: lastfm-db-credentials
+                  key: MURAW_LASTFM_DB_WRITER_PASSWORD
+            - name: MURAW_LASTFM_DB_MIGRATIONS_PATH
+              value: "db/migration/muraw/liquibase/db.changelog.xml"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"

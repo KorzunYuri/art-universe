@@ -1,0 +1,75 @@
+# External Database Services for Production
+#
+# These ExternalName services alias the same DNS names used by local PostgreSQL
+# StatefulSets, so all application configs, init containers, and migration jobs
+# work without modification.
+#
+# Default: host.docker.internal (Windows host from Docker Desktop K8s)
+#
+# To adapt for different database placements, change the externalName fields:
+#   - Remote server:  externalName: db.example.com
+#   - Same network:   externalName: 192.168.1.100  (requires Service+Endpoints, see below)
+#
+# For IP-based databases (no DNS name), replace ExternalName with:
+#   apiVersion: v1
+#   kind: Service
+#   metadata:
+#     name: postgres-lastfm-master
+#     namespace: mu-data
+#   spec:
+#     ports:
+#       - port: 5432
+#         targetPort: 5432
+#   ---
+#   apiVersion: v1
+#   kind: Endpoints
+#   metadata:
+#     name: postgres-lastfm-master
+#     namespace: mu-data
+#   subsets:
+#     - addresses:
+#         - ip: 192.168.1.100
+#       ports:
+#         - port: 5432
+
+---
+# LastFM Master Database (write operations + migrations)
+# Default port: 5432 (configured in base manifests)
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-lastfm-master
+  namespace: mu-data
+  labels:
+    app: postgres-lastfm-master
+spec:
+  type: ExternalName
+  externalName: host.docker.internal
+
+---
+# LastFM Replica Database (read operations)
+# Port override: 5433 (set via ConfigMap patch in kustomization.yaml)
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-lastfm-replica
+  namespace: mu-data
+  labels:
+    app: postgres-lastfm-replica
+spec:
+  type: ExternalName
+  externalName: host.docker.internal
+
+---
+# Music Data Database (music-data and music-quiz services)
+# Default port: 5432 (configured in base manifests)
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-music-data
+  namespace: mu-data
+  labels:
+    app: postgres-music-data
+spec:
+  type: ExternalName
+  externalName: host.docker.internal

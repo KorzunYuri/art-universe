@@ -2,10 +2,12 @@
 
 This document is the **single source of truth** for all services, their ports, and deployment configurations.
 
-The project is currently deployable to a local machine only:
-- **Local**: Docker deployment (9xxx ports for main services, 4000 for UI)
-- **Production**: Docker deployment (8xxx ports for main services, 3000 for UI)
+The project supports multiple deployment modes:
 - **Development**: Individual module development (7xxx ports for main services, 5173 for UI)
+- **Local (Docker Compose)**: Full stack via Docker Compose (9xxx ports for main services, 4000 for UI)
+- **Local (Kubernetes)**: Full stack via Kustomize (9xxx ports for main services, 4000 for UI)
+- **Production (Docker Compose)**: Docker Compose deployment (8xxx ports for main services, 3000 for UI)
+- **Production (Kubernetes)**: Kustomize with external DBs (8xxx ports for main services, 3000 for UI)
 
 ## All Services
 
@@ -40,17 +42,30 @@ Services run on host machine from IDE or using `./scripts/run-module-dev.sh <mod
 - Uses `dev.override.env` for development overrides
 - Not all services need to run simultaneously
 
-### Local
+### Local (Docker Compose)
 Full Docker Compose deployment for local integration testing and development.
 
 - PostgreSQL databases are running in containers
 
-### Production
+### Local (Kubernetes)
+Full Kustomize deployment with containerized databases. Same ports as Docker Compose local.
+
+- PostgreSQL StatefulSets in the cluster
+- See [Kubernetes Deployment](../env/k8s/README.md) for details
+
+### Production (Docker Compose)
 Production Docker Compose deployment configuration.
 
-- uses external database
+- Uses external database
 - Optimized builds with multi-stage Dockerfiles
 - Reduced port exposure (actuator ports typically not exposed)
+
+### Production (Kubernetes)
+Kustomize deployment connecting to external databases.
+
+- ExternalName services for database connectivity (configurable host)
+- Same application images as local K8s overlay
+- See [Kubernetes Deployment](../env/k8s/README.md) for details
 
 ## API Endpoints
 
@@ -81,4 +96,5 @@ Available endpoints:
 - [Modules reference](MODULES.md) - Complete module reference and build commands
 - [Development reference](DEVELOPMENT.md) - Development workflow and environment setup
 - [Architecture reference](ARCHITECTURE.md) - System architecture and design patterns
-- [Docker Deployment reference](../env/docker/README.md) - Docker deployment scripts
+- [Docker Deployment reference](../env/docker/README.md) - Docker Compose deployment scripts
+- [Kubernetes Deployment reference](../env/k8s/README.md) - Kubernetes/Kustomize deployment

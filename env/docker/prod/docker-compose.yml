@@ -4,9 +4,7 @@ services:
   # Migrations
   lastfm-liquibase-service:
     container_name: prod__lastfm__liquibase
-    build:
-      context: ../../../
-      dockerfile: music/data/raw/lastfm/migrations/lastfm-liquibase-service/Dockerfile.prod
+    image: mu-lastfm-liquibase:latest
     env_file:
       - ../common/music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.env
@@ -20,9 +18,7 @@ services:
   lastfm-rest-api:
     container_name: prod__lastfm-rest-api__app
     restart: unless-stopped
-    build:
-      context: ../../../
-      dockerfile: music/data/raw/lastfm/lastfm-rest-api/Dockerfile.prod
+    image: mu-lastfm-rest-api:latest
     environment:
       - JAVA_OPTS=-Xms256m -Xmx768m -XX:MaxMetaspaceSize=192m
     env_file:
@@ -60,9 +56,7 @@ services:
     container_name: prod__lastfm-etl-rest-api__app
     restart: unless-stopped
     stop_grace_period: 1m
-    build:
-      context: ../../../
-      dockerfile: music/data/raw/lastfm/etl/lastfm-etl-rest-api/Dockerfile.prod
+    image: mu-lastfm-etl-rest-api:latest
     environment:
       - JAVA_OPTS=-Xms256m -Xmx768m -XX:MaxMetaspaceSize=192m
     env_file:
@@ -102,9 +96,7 @@ services:
     container_name: prod__lastfm-calls-generator__app
     restart: unless-stopped
     stop_grace_period: 1m
-    build:
-      context: ../../../
-      dockerfile: music/data/raw/lastfm/etl/lastfm-calls-generator/Dockerfile.prod
+    image: mu-lastfm-calls-generator:latest
     environment:
       - JAVA_OPTS=-Xms256m -Xmx768m -XX:MaxMetaspaceSize=192m
     env_file:
@@ -142,9 +134,7 @@ services:
     container_name: prod__lastfm-calls-performer__app
     restart: unless-stopped
     stop_grace_period: 1m
-    build:
-      context: ../../../
-      dockerfile: music/data/raw/lastfm/etl/lastfm-calls-performer/Dockerfile.prod
+    image: mu-lastfm-calls-performer:latest
     environment:
       - JAVA_OPTS=-Xms256m -Xmx768m -XX:MaxMetaspaceSize=192m
     env_file:
@@ -184,9 +174,7 @@ services:
     container_name: prod__lastfm-response-parser__app
     restart: unless-stopped
     stop_grace_period: 1m
-    build:
-      context: ../../../
-      dockerfile: music/data/raw/lastfm/etl/lastfm-response-parser/Dockerfile.prod
+    image: mu-lastfm-response-parser:latest
     environment:
       - JAVA_OPTS=-Xms256m -Xmx1536m -XX:MaxMetaspaceSize=192m
     env_file:
@@ -225,9 +213,7 @@ services:
   music-data:
     container_name: prod__mu-data__app
     restart: unless-stopped
-    build:
-      context: ../../../
-      dockerfile: music/data/master/Dockerfile.prod
+    image: mu-music-data:latest
     environment:
       - JAVA_OPTS=-Xms128m -Xmx384m -XX:MaxMetaspaceSize=96m
     env_file:
@@ -260,9 +246,7 @@ services:
   music-quiz:
     container_name: prod__mu-quiz__app
     restart: unless-stopped
-    build:
-      context: ../../../
-      dockerfile: music/quiz/Dockerfile.prod
+    image: mu-music-quiz:latest
     environment:
       - JAVA_OPTS=-Xms128m -Xmx384m -XX:MaxMetaspaceSize=96m
     env_file:
@@ -299,18 +283,7 @@ services:
   music-universe-ui:
     container_name: prod__mu-ui__app
     restart: unless-stopped
-    build:
-      context: ../../../music/ui
-      dockerfile: Dockerfile
-      args:
-        - VITE_MURAW_LASTFM_READ_API_HOST=${MURAW_LASTFM_REST_API_HOST}
-        - VITE_MURAW_LASTFM_READ_API_EXTERNAL_PORT=${MURAW_LASTFM_REST_API_EXTERNAL_PORT}
-        - VITE_MURAW_LASTFM_WRITE_API_HOST=${MURAW_LASTFM_ETL_REST_API_HOST}
-        - VITE_MURAW_LASTFM_WRITE_API_EXTERNAL_PORT=${MURAW_LASTFM_ETL_REST_API_EXTERNAL_PORT}
-        - VITE_MU_DATA_APP_HOST=${MU_DATA_APP_HOST}
-        - VITE_MU_DATA_APP_EXTERNAL_PORT=${MU_DATA_APP_EXTERNAL_PORT}
-        - VITE_MU_QUIZ_APP_HOST=${MU_QUIZ_APP_HOST}
-        - VITE_MU_QUIZ_APP_EXTERNAL_PORT=${MU_QUIZ_APP_EXTERNAL_PORT}
+    image: mu-music-ui:latest
     env_file:
       - ./common.env
       - ./music-universe-ui.env
@@ -382,15 +355,12 @@ services:
 
   grafana:
     container_name: prod__mu__grafana
-    build:
-      dockerfile: grafana.dockerfile
-      context: ../common/grafana
+    image: grafana/grafana:10.0.13
     restart: unless-stopped
     volumes:
       - prod__mu__grafana-data:/var/lib/grafana
-      - ../common/grafana/provisioning/dashboards:/tmp/dashboard-templates
-      - ../common/grafana/provisioning/datasources:/tmp/datasource-templates
-      - ../common/grafana/grafana-provision.sh:/tmp/grafana-provision.sh:ro
+      - ../common/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ../common/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
@@ -398,8 +368,6 @@ services:
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
       - GF_AUTH_DISABLE_LOGIN_FORM=true
-      - PROMETHEUS_DATASOURCE_UID=${PROMETHEUS_DATASOURCE_UID}
-    entrypoint: /tmp/grafana-provision.sh
     ports:
       - "${GRAFANA_PORT}:3000"
     depends_on:

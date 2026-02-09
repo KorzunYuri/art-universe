@@ -42,5 +42,4 @@
 # CI/CD
 **/.github/
 
-# Exclude everything except what we need for prod build
-# We'll explicitly COPY what we need in Dockerfile.prod
+# Exclude everything except what we need for Docker build

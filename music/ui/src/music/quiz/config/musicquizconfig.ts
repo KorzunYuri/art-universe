@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { setupTracingInterceptor } from '@/music/shared/services/tracingInterceptor';
+import { appConfig } from '@/music/shared/config/appConfig';
 
-const baseApiUrl = `http://${import.meta.env.VITE_MU_QUIZ_APP_HOST || 'localhost'}:${import.meta.env.VITE_MU_QUIZ_APP_EXTERNAL_PORT || '8083'}/api/v1`;
+const baseApiUrl = `http://${appConfig.musicQuizHost}:${appConfig.musicQuizPort}/api/v1`;
 
 // Create axios instance for Music Quiz API with tracing
 const api = axios.create({

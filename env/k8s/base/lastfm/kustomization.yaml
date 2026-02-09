@@ -1,0 +1,27 @@
+# Art Universe - LastFM Namespace Resources
+# LastFM ETL pipeline services
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: mu-lastfm
+
+resources:
+  # Common configuration
+  - common-config.yaml
+  # REST APIs
+  - lastfm-rest-api/deployment.yaml
+  - lastfm-rest-api/service.yaml
+  - lastfm-etl-rest-api/deployment.yaml
+  - lastfm-etl-rest-api/service.yaml
+  # ETL Pipeline (non-scalable, single replica)
+  - lastfm-calls-generator/deployment.yaml
+  - lastfm-calls-generator/service.yaml
+  - lastfm-calls-performer/deployment.yaml
+  - lastfm-calls-performer/service.yaml
+  - lastfm-response-parser/deployment.yaml
+  - lastfm-response-parser/service.yaml
+
+commonLabels:
+  app.kubernetes.io/part-of: art-universe
+  app.kubernetes.io/component: lastfm-etl

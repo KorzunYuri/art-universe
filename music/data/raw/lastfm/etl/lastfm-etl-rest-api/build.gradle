@@ -3,6 +3,7 @@ plugins {
 }
 
 archivesBaseName = 'lastfm-etl-rest-api'
+ext.dockerImageName = 'mu-lastfm-etl-rest-api'
 
 dependencies {
     implementation project(':common:commons-observability')

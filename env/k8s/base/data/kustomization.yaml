@@ -1,0 +1,27 @@
+# Art Universe - Data Namespace Resources
+# PostgreSQL databases and migration jobs
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: mu-data
+
+resources:
+  # PostgreSQL StatefulSets
+  - postgres-lastfm-master/statefulset.yaml
+  - postgres-lastfm-master/service.yaml
+  - postgres-lastfm-replica/statefulset.yaml
+  - postgres-lastfm-replica/service.yaml
+  - postgres-lastfm-replica/configmap.yaml
+  - postgres-music-data/statefulset.yaml
+  - postgres-music-data/service.yaml
+  # Migration Jobs
+  - migrations/lastfm-liquibase-job.yaml
+
+# Note: ConfigMaps postgres-lastfm-master-init and postgres-music-data-init are
+# created by the deploy scripts from shared init scripts at env/docker/common/db/.
+# This allows both Docker Compose and K8s to use the same source files.
+
+commonLabels:
+  app.kubernetes.io/part-of: art-universe
+  app.kubernetes.io/component: data
