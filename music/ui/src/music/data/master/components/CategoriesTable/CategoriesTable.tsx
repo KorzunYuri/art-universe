@@ -1,29 +1,24 @@
-// hooks
-import { useState } from 'react';
-import { useMasterEntityTable } from "@/music/data/master/hooks/useMasterEntityTable.ts";
+import { useState, useMemo, useCallback } from 'react';
+import type { ColumnDef } from '@tanstack/react-table';
+import { useMasterEntityTable } from '@/music/data/master/hooks/useMasterEntityTable';
 import { useNotifications } from '@/music/shared/hooks';
-// components
-import { EntityTable, type EntityTableColumn } from "@/music/shared/components/EntityTable/EntityTable.tsx";
-import { CategoriesTableRow } from "@/music/data/master/components/CategoriesTableRow";
-// api
-import { createCategory } from '@/music/data/master/api/music-data-categories.ts';
-// styles
+import { DataTable } from '@/music/shared/components/DataTable';
+import { stringToSortingState, sortingStateToString } from '@/music/shared/components/DataTable/sortUtils';
+import type { Category } from '@/music/shared/types/entities';
+import { NameCell } from './cells/NameCell';
+import { ParentsCell } from './cells/ParentsCell';
+import { AddParentCell } from './cells/AddParentCell';
+import { ActionsCell } from './cells/ActionsCell';
+import { createCategory } from '@/music/data/master/api/music-data-categories';
 import styles from './CategoriesTable.module.css';
-
-const columns: EntityTableColumn[] = [
-    { key: 'name', label: 'Name', sortable: true, className: styles.name },
-    { key: 'parents', label: 'Parents', className: styles.parents },
-    { key: 'addParent', label: 'Add Parent', className: styles.addParent },
-    { key: 'actions', label: 'Actions', className: styles.actions },
-];
 
 export const CategoriesTable = () => {
     const { showNotification } = useNotifications();
     const [newCategoryName, setNewCategoryName] = useState('');
     const [isCreating, setIsCreating] = useState(false);
-    
+
     const {
-        entityIds,
+        entities,
         pagination,
         search,
         sort,
@@ -33,27 +28,64 @@ export const CategoriesTable = () => {
         nextPage,
         prevPage,
         goToPage,
-        refresh
-    } = useMasterEntityTable("category");
+        refresh,
+    } = useMasterEntityTable('category');
 
     const handleCreateCategory = async () => {
         if (!newCategoryName.trim() || isCreating) return;
-
         setIsCreating(true);
         try {
             const created = await createCategory({ name: newCategoryName.trim() });
             if (created) {
-                console.log('✅ Category created successfully:', created.id);
                 setNewCategoryName('');
                 refresh();
             }
         } catch (error: any) {
-            console.error('❌ Error creating category:', error);
             showNotification('error', error?.response?.data?.message || error?.message || 'Failed to create category');
         } finally {
             setIsCreating(false);
         }
     };
+
+    const columns = useMemo<ColumnDef<Category, any>[]>(() => [
+        {
+            accessorKey: 'name',
+            header: 'Name',
+            enableSorting: true,
+            meta: { headerClassName: styles.name, cellClassName: styles.name },
+            cell: ({ row }) => <NameCell category={row.original} onSaved={refresh} />,
+        },
+        {
+            id: 'parents',
+            header: 'Parents',
+            enableSorting: false,
+            meta: { headerClassName: styles.parents, cellClassName: styles.parents },
+            cell: ({ row }) => <ParentsCell category={row.original} onChanged={refresh} />,
+        },
+        {
+            id: 'addParent',
+            header: 'Add Parent',
+            enableSorting: false,
+            meta: { headerClassName: styles.addParent, cellClassName: styles.addParent },
+            cell: ({ row }) => <AddParentCell categoryId={row.original.id} onAdded={refresh} />,
+        },
+        {
+            id: 'actions',
+            header: 'Actions',
+            enableSorting: false,
+            meta: { headerClassName: styles.actions, cellClassName: styles.actions },
+            cell: ({ row }) => <ActionsCell category={row.original} onDeleted={refresh} />,
+        },
+    ], [refresh]);
+
+    const sorting = useMemo(() => stringToSortingState(sort), [sort]);
+    const handleSortingChange = useCallback(
+        (updater: any) => {
+            const next = typeof updater === 'function' ? updater(sorting) : updater;
+            setSort(sortingStateToString(next));
+        },
+        [sorting, setSort],
+    );
 
     return (
         <div>
@@ -74,40 +106,25 @@ export const CategoriesTable = () => {
                     {isCreating ? '...' : 'Create'}
                 </button>
             </div>
-            
-            <EntityTable
+
+            <DataTable<Category>
+                columns={columns}
+                data={entities ?? []}
                 search={search}
                 onSearchChange={setSearch}
                 onSearchSubmit={refresh}
                 searchPlaceholder="Search category name..."
-
-                columns={columns}
-                emptyMessage="No categories found"
-
-                sort={sort}
-                onSortChange={setSort}
-
-                pagination={{
-                    page: pagination.page,
-                    totalPages: pagination.totalPages,
-                    hasNextPage: pagination.hasNextPage,
-                    hasPrevPage: pagination.hasPrevPage,
-                }}
+                sorting={sorting}
+                onSortingChange={handleSortingChange}
+                pagination={pagination}
                 onNextPage={nextPage}
                 onPrevPage={prevPage}
                 onGoToPage={goToPage}
-
                 isLoading={isLoading}
                 onRefresh={refresh}
-            >
-            {entityIds?.map(entityId => (
-                <CategoriesTableRow
-                    key={entityId}
-                    entityId={entityId}
-                    onDeleted={refresh}
-                />
-            ))}
-        </EntityTable>
+                getRowId={(row) => String(row.id)}
+                emptyMessage="No categories found"
+            />
         </div>
     );
 };

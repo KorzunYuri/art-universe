@@ -1,5 +1,9 @@
 import { useRoutes } from 'react-router-dom'
 import { NavigationCard } from './shared/components'
+import { QueryProvider } from './shared/providers/QueryProvider'
+import { AuthProvider } from './shared/providers/AuthProvider'
+import { NotificationProvider } from './shared/providers/NotificationProvider'
+import { NotificationContainer } from './shared/components/NotificationContainer'
 import LastfmApp from './data/raw/lastfm/LastfmApp.tsx'
 import MasterDataApp from './data/master/MasterDataApp.tsx'
 import MusicQuizApp from './quiz/MusicQuizApp.tsx'
@@ -31,5 +35,14 @@ export default function MusicUniverseApp() {
         },
     ]
 
-    return useRoutes(routes)
+    return (
+        <QueryProvider>
+            <AuthProvider>
+                <NotificationProvider>
+                    {useRoutes(routes)}
+                    <NotificationContainer />
+                </NotificationProvider>
+            </AuthProvider>
+        </QueryProvider>
+    )
 }

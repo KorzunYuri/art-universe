@@ -9,10 +9,14 @@ import {
 import type {ArtistPageSearchParams} from "@/music/data/master/api/music-data-artists.ts";
 import {createArtistWithCategoriesFromDto} from "@/music/data/master/api/music-data-artists.ts";
 import type {AlbumPageSearchParams} from "@/music/data/master/api/music-data-albums.ts";
+import {createAlbumWithCategoriesFromDto} from "@/music/data/master/api/music-data-albums.ts";
 import type {TrackPageSearchParams} from "@/music/data/master/api/music-data-tracks.ts";
+import {createTrackWithCategoriesFromDto} from "@/music/data/master/api/music-data-tracks.ts";
 import type {CategoryPageSearchParams} from "@/music/data/master/api/music-data-categories.ts";
 import {createCategoryFromWithParentsDto} from "@/music/data/master/api/music-data-categories.ts";
 import type {ArtistWithCategoriesDto} from "@/music/data/master/api/music-data-artists.ts";
+import type {AlbumWithCategoriesDto} from "@/music/data/master/api/music-data-albums.ts";
+import type {TrackWithCategoriesDto} from "@/music/data/master/api/music-data-tracks.ts";
 import type {CategoryWithParentsDto} from "@/music/data/master/api/music-data-categories.ts";
 
 const masterDataApi = MusicDataConfig.api;
@@ -62,6 +66,8 @@ export async function fetchMasterEntitiesWithRelations<T extends MasterEntityTyp
     const endpoint =
         entityType === 'category'   ?   'categories/with-parents' :
         entityType === 'artist'     ?   'artists/with-categories' :
+        entityType === 'album'      ?   'albums/with-categories' :
+        entityType === 'track'      ?   'tracks/with-categories' :
                                         entityToEndpoint[entityType];
 
     const response = await masterDataApi.get<Page<any>>(
@@ -84,6 +90,24 @@ export async function fetchMasterEntitiesWithRelations<T extends MasterEntityTyp
             ...response.data,
             content: response.data.content.map((dto: ArtistWithCategoriesDto) =>
                 createArtistWithCategoriesFromDto(dto)
+            )
+        } as Page<MasterEntityMap[T]>;
+    }
+
+    if (entityType === 'album') {
+        return {
+            ...response.data,
+            content: response.data.content.map((dto: AlbumWithCategoriesDto) =>
+                createAlbumWithCategoriesFromDto(dto)
+            )
+        } as Page<MasterEntityMap[T]>;
+    }
+
+    if (entityType === 'track') {
+        return {
+            ...response.data,
+            content: response.data.content.map((dto: TrackWithCategoriesDto) =>
+                createTrackWithCategoriesFromDto(dto)
             )
         } as Page<MasterEntityMap[T]>;
     }

@@ -1,0 +1,26 @@
+.container {
+    padding: 20px;
+}
+
+.container h2 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.section {
+    margin-bottom: 24px;
+}
+
+.sectionTitle {
+    margin: 0 0 8px 0;
+    font-size: 1rem;
+    color: #334155;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 4px;
+}
+
+.description {
+    margin: 0 0 12px 0;
+    font-size: 0.9rem;
+    color: #64748b;
+}

@@ -1,0 +1,1 @@
+export { LastfmAlbumDetail } from './LastfmAlbumDetail';

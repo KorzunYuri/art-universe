@@ -1,22 +1,15 @@
-// hooks
-import { useLastfmEntityTable } from "@/music/data/raw/lastfm/hooks/useLastfmEntityTable.tsx";
-import { useApprovalStatusFilter } from "@/music/data/raw/shared/hooks";
-import { useUsageCountFilter, useUsageUsersCountFilter } from "@/music/data/raw/lastfm/hooks/useLastfmFilters.tsx";
-// components
-import { EntityTable, type EntityTableColumn } from "@/music/shared/components/EntityTable/EntityTable.tsx";
-import { LastfmTagsTableRow } from "@/music/data/raw/lastfm/components";
-// types
-import type { AdditionalSearchConfig } from "@/music/shared/components/EntityTable/types.ts";
-// styles
-import tagStyles from "./LastfmTagsTable.module.css";
-
-const columns: EntityTableColumn[] = [
-    { key: 'name', label: 'Tag Name', sortable: true, className: tagStyles.name },
-    { key: 'status', label: 'Approval', className: tagStyles.status },
-    { key: 'masterBinding', label: 'Master', className: tagStyles.masterBinding },
-    { key: 'usageCount', label: 'Usage', sortable: true, className: tagStyles.count },
-    { key: 'usageUsersCount', label: 'Users', sortable: true, className: tagStyles.count },
-];
+import { useMemo, useCallback } from 'react';
+import type { ColumnDef } from '@tanstack/react-table';
+import { useLastfmEntityTable } from '@/music/data/raw/lastfm/hooks/useLastfmEntityTable';
+import { useApprovalStatusFilter } from '@/music/data/raw/shared/hooks';
+import { useUsageCountFilter, useUsageUsersCountFilter } from '@/music/data/raw/lastfm/hooks/useLastfmFilters';
+import { DataTable } from '@/music/shared/components/DataTable';
+import { stringToSortingState, sortingStateToString } from '@/music/shared/components/DataTable/sortUtils';
+import { ExternalLink, ReadonlyAttr } from '@/music/shared/components';
+import { LastfmApprovalCell, LastfmBindingCell } from '@/music/data/raw/lastfm/components/cells';
+import type { LastfmTag } from '@/music/data/raw/lastfm/types/lastfm-tag';
+import type { AdditionalSearchConfig } from '@/music/shared/components/EntityTable/types';
+import styles from './LastfmTagsTable.module.css';
 
 interface LastfmTagsTableProps {
     initialSearch?: string;
@@ -24,7 +17,7 @@ interface LastfmTagsTableProps {
 
 export const LastfmTagsTable = ({ initialSearch = '' }: LastfmTagsTableProps) => {
     const {
-        rawEntityIds,
+        rawEntities,
         pagination,
         search,
         sort,
@@ -36,68 +29,103 @@ export const LastfmTagsTable = ({ initialSearch = '' }: LastfmTagsTableProps) =>
         goToPage,
         updateParams,
         refresh,
-        handleSearchSubmit: submitSearch
-    } = useLastfmEntityTable("category", { search: initialSearch });
+        handleSearchSubmit: submitSearch,
+    } = useLastfmEntityTable('category', { search: initialSearch });
 
     // Filter hooks
     const { approvalStatuses, approvalStatusField } = useApprovalStatusFilter();
     const { minUsageCount, minUsageCountField } = useUsageCountFilter();
     const { minUsageUsersCount, minUsageUsersCountField } = useUsageUsersCountFilter();
 
-    const handleSearchSubmit = () => {
+    const handleSearchSubmit = useCallback(() => {
         submitSearch();
         updateParams({
             approvalStatuses: approvalStatuses.length > 0 ? approvalStatuses : undefined,
             minUsageCount: minUsageCount || undefined,
-            minUsageUsersCount: minUsageUsersCount || undefined
+            minUsageUsersCount: minUsageUsersCount || undefined,
         });
-    };
+    }, [submitSearch, updateParams, approvalStatuses, minUsageCount, minUsageUsersCount]);
+
+    const columns = useMemo<ColumnDef<LastfmTag, any>[]>(() => [
+        {
+            accessorKey: 'name',
+            header: 'Tag Name',
+            enableSorting: true,
+            meta: { headerClassName: styles.name, cellClassName: styles.name },
+            cell: ({ row }) => {
+                const tag = row.original;
+                return tag.url ? <ExternalLink href={tag.url} label={tag.name} /> : <span>{tag.name}</span>;
+            },
+        },
+        {
+            id: 'status',
+            header: 'Approval',
+            enableSorting: false,
+            meta: { headerClassName: styles.status, cellClassName: styles.status },
+            cell: ({ row }) => (
+                <LastfmApprovalCell entityType="category" entityId={row.original.id} />
+            ),
+        },
+        {
+            id: 'masterBinding',
+            header: 'Master',
+            enableSorting: false,
+            meta: { headerClassName: styles.masterBinding, cellClassName: styles.masterBinding },
+            cell: ({ row }) => (
+                <LastfmBindingCell entityType="category" entityId={row.original.id} />
+            ),
+        },
+        {
+            accessorKey: 'usageCount',
+            header: 'Usage',
+            enableSorting: true,
+            meta: { headerClassName: styles.count, cellClassName: styles.count },
+            cell: ({ row }) => <ReadonlyAttr value={row.original.usageCount} />,
+        },
+        {
+            accessorKey: 'usageUsersCount',
+            header: 'Users',
+            enableSorting: true,
+            meta: { headerClassName: styles.count, cellClassName: styles.count },
+            cell: ({ row }) => <ReadonlyAttr value={row.original.usageUsersCount} />,
+        },
+    ], []);
+
+    const sorting = useMemo(() => stringToSortingState(sort), [sort]);
+    const handleSortingChange = useCallback(
+        (updater: any) => {
+            const next = typeof updater === 'function' ? updater(sorting) : updater;
+            setSort(sortingStateToString(next));
+        },
+        [sorting, setSort],
+    );
 
     const additionalSearchConfig: AdditionalSearchConfig = {
-        title: "Advanced Filters",
+        title: 'Advanced Filters',
         collapsible: true,
         defaultCollapsed: true,
-        fields: [
-            minUsageCountField,
-            minUsageUsersCountField,
-            approvalStatusField
-        ]
+        fields: [minUsageCountField, minUsageUsersCountField, approvalStatusField],
     };
 
     return (
-        <EntityTable
+        <DataTable<LastfmTag>
+            columns={columns}
+            data={rawEntities ?? []}
             search={search}
             onSearchChange={setSearch}
             onSearchSubmit={handleSearchSubmit}
             searchPlaceholder="Search tag name..."
-            
             additionalSearch={additionalSearchConfig}
-            
-            columns={columns}
-            emptyMessage="No tags found"
-            
-            sort={sort}
-            onSortChange={setSort}
-            
-            pagination={{
-                page: pagination.page,
-                totalPages: pagination.totalPages,
-                hasNextPage: pagination.hasNextPage,
-                hasPrevPage: pagination.hasPrevPage,
-            }}
+            sorting={sorting}
+            onSortingChange={handleSortingChange}
+            pagination={pagination}
             onNextPage={nextPage}
             onPrevPage={prevPage}
             onGoToPage={goToPage}
-            
             isLoading={isLoading}
             onRefresh={refresh}
-        >
-            {rawEntityIds?.map(rawEntityId => (
-                <LastfmTagsTableRow
-                    key={rawEntityId}
-                    entityId={rawEntityId}
-                />
-            ))}
-        </EntityTable>
+            getRowId={(row) => String(row.id)}
+            emptyMessage="No tags found"
+        />
     );
 };

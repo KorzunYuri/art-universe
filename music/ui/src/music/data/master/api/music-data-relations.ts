@@ -49,6 +49,18 @@ export interface EntityDTO {
 }
 
 /**
+ * DTO for related entity with relation type information
+ */
+export interface RelatedEntityDTO {
+    id: number;
+    name: string;
+    entityType: string;
+    relationId: number;
+    relationTypeId: number | null;
+    relationTypeName: string | null;
+}
+
+/**
  * Pair of IDs representing a relation
  */
 export interface RelationPair {
@@ -141,21 +153,52 @@ export async function findBoundExternalRelations(
 
 /**
  * Gets related entities for a given entity
- * 
+ *
  * @param sourceEntityType Source entity type (e.g., 'ARTIST')
  * @param sourceEntityId Source entity ID
  * @param targetEntityType Target entity type (e.g., 'CATEGORY')
- * @returns List of related entities
+ * @param relationTypeId Optional filter by relation type
+ * @returns List of related entities with relation type information
  */
 export async function getRelatedEntities(
     sourceEntityType: MasterEntityType,
     sourceEntityId: number,
-    targetEntityType: MasterEntityType
-): Promise<EntityDTO[]> {
-    console.log(`🔍 Getting ${targetEntityType}s related to ${sourceEntityType} ${sourceEntityId}`);
+    targetEntityType: MasterEntityType,
+    relationTypeId?: number
+): Promise<RelatedEntityDTO[]> {
+    const response = await masterDataApi.get<RelatedEntityDTO[]>(
+        `/relations/${sourceEntityType}/${sourceEntityId}/${targetEntityType}`,
+        { params: relationTypeId != null ? { relationTypeId } : undefined }
+    );
 
-    const response = await masterDataApi.get<EntityDTO[]>(
-        `/relations/${sourceEntityType}/${sourceEntityId}/${targetEntityType}`
+    return response.data;
+}
+
+/**
+ * Creates an internal relation between two master entities
+ */
+export async function createInternalRelation(
+    sourceEntityType: MasterEntityType,
+    sourceEntityId: number,
+    targetEntityType: MasterEntityType,
+    targetEntityId: number,
+    relationTypeId?: number
+): Promise<number> {
+    const response = await masterDataApi.post<number>(
+        `/relations/internal/${sourceEntityType}/${sourceEntityId}/${targetEntityType}/${targetEntityId}`,
+        null,
+        { params: relationTypeId != null ? { relationTypeId } : undefined }
+    );
+
+    return response.data;
+}
+
+/**
+ * Deletes an internal relation by ID
+ */
+export async function deleteInternalRelation(relationId: number): Promise<boolean> {
+    const response = await masterDataApi.delete<boolean>(
+        `/relations/internal/${relationId}`
     );
 
     return response.data;

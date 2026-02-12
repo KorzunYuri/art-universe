@@ -31,6 +31,16 @@
         border-color: #28a745;
         font-weight: 500;
     }
+
+    &.boundLink {
+        text-decoration: none;
+        cursor: pointer;
+
+        &:hover {
+            background-color: #c3e6cb;
+            text-decoration: underline;
+        }
+    }
 }
 
 .bindingButton {

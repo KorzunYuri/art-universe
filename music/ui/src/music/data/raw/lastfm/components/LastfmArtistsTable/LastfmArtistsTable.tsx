@@ -1,40 +1,30 @@
-// hooks
-import { useLastfmEntityTable } from "@/music/data/raw/lastfm/hooks/useLastfmEntityTable.tsx";
-import { useApprovalStatusFilter } from "@/music/data/raw/shared/hooks";
-import { usePlayCountFilter, useListenersCountFilter, useTagFilter } from "@/music/data/raw/lastfm/hooks/useLastfmFilters.tsx";
-import { useSearchParams } from "react-router-dom";
-import { useState } from "react";
-// components
-import { EntityTable, type EntityTableColumn } from "@/music/shared/components/EntityTable/EntityTable.tsx";
-import { LastfmArtistsTableRow } from "@/music/data/raw/lastfm/components";
-// api
-import { searchArtist } from "@/music/data/raw/lastfm/api/lastfm-artists.ts";
-// hooks
-import { useNotifications } from "@/music/shared/hooks/useNotifications.ts";
-// types
-import type { AdditionalSearchConfig } from "@/music/shared/components/EntityTable/types.ts";
-// styles
-import artistStyles from "./LastfmArtistsTable.module.css";
-import entityTableStyles from "@/music/shared/components/EntityTable/EntityTable.module.scss";
-
-const columns: EntityTableColumn[] = [
-    { key: 'name', label: 'Artist name', sortable: true, className: artistStyles.name },
-    { key: 'mbid', label: 'MusicBrainz', className: artistStyles.mbid },
-    { key: 'status', label: 'Approval', className: artistStyles.status },
-    { key: 'masterBinding', label: 'Master', className: artistStyles.masterBinding },
-    { key: 'quizBinding', label: 'Quiz', className: artistStyles.quizBinding },
-    { key: 'playCount', label: 'Plays', sortable: true, className: artistStyles.count },
-    { key: 'listenersCount', label: 'Listeners', sortable: true, className: artistStyles.count },
-];
+import { useMemo, useCallback, useState } from 'react';
+import type { ColumnDef } from '@tanstack/react-table';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useLastfmEntityTable } from '@/music/data/raw/lastfm/hooks/useLastfmEntityTable';
+import { useApprovalStatusFilter } from '@/music/data/raw/shared/hooks';
+import { usePlayCountFilter, useListenersCountFilter, useTagFilter } from '@/music/data/raw/lastfm/hooks/useLastfmFilters';
+import { useNotifications } from '@/music/shared/hooks';
+import { DataTable } from '@/music/shared/components/DataTable';
+import { stringToSortingState, sortingStateToString } from '@/music/shared/components/DataTable/sortUtils';
+import { ExternalLink, ReadonlyAttr } from '@/music/shared/components';
+import { LastfmApprovalCell, LastfmBindingCell, LastfmQuizCell } from '@/music/data/raw/lastfm/components/cells';
+import { LastfmArtistFilterButton } from '@/music/data/raw/lastfm/components';
+import { LastfmConfig } from '@/music/data/raw/lastfm/config/lastfmconfig';
+import { searchArtist } from '@/music/data/raw/lastfm/api/lastfm-artists';
+import type { LastfmArtist } from '@/music/data/raw/lastfm/types/lastfm-artist';
+import type { AdditionalSearchConfig } from '@/music/shared/components/EntityTable/types';
+import styles from './LastfmArtistsTable.module.css';
 
 export const LastfmArtistsTable = () => {
     const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
     const initialSearch = searchParams.get('search') || '';
     const [isSearching, setIsSearching] = useState(false);
     const { showNotification } = useNotifications();
-    
+
     const {
-        rawEntityIds,
+        rawEntities,
         pagination,
         search,
         sort,
@@ -46,8 +36,8 @@ export const LastfmArtistsTable = () => {
         goToPage,
         handleSearchSubmit: submitSearch,
         updateParams,
-        refresh
-    } = useLastfmEntityTable("artist", { search: initialSearch });
+        refresh,
+    } = useLastfmEntityTable('artist', { search: initialSearch });
 
     // Filter hooks
     const { approvalStatuses, approvalStatusField } = useApprovalStatusFilter();
@@ -55,8 +45,7 @@ export const LastfmArtistsTable = () => {
     const { minListenersCount, minListenersCountField } = useListenersCountFilter();
     const { tagId, tagField } = useTagFilter();
 
-    // Handle search submit with additional parameters
-    const handleSearchSubmit = () => {
+    const handleSearchSubmit = useCallback(() => {
         submitSearch();
         updateParams({
             approvalStatuses: approvalStatuses.length > 0 ? approvalStatuses : undefined,
@@ -64,11 +53,10 @@ export const LastfmArtistsTable = () => {
             minListenersCount: minListenersCount || undefined,
             tagId: tagId || undefined,
         });
-    };
+    }, [submitSearch, updateParams, approvalStatuses, minPlayCount, minListenersCount, tagId]);
 
     const handleForcedSearch = async () => {
         if (!search.trim()) return;
-        
         setIsSearching(true);
         try {
             await searchArtist(search);
@@ -82,70 +70,130 @@ export const LastfmArtistsTable = () => {
         }
     };
 
+    const columns = useMemo<ColumnDef<LastfmArtist, any>[]>(() => [
+        {
+            accessorKey: 'name',
+            header: 'Artist name',
+            enableSorting: true,
+            meta: { headerClassName: styles.name, cellClassName: styles.name },
+            cell: ({ row }) => {
+                const artist = row.original;
+                return (
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <LastfmArtistFilterButton
+                            artistId={artist.id}
+                            artistName={artist.name}
+                            targetPage="tracks"
+                        />
+                        {artist.url && <ExternalLink href={artist.url} label={artist.name} />}
+                    </div>
+                );
+            },
+        },
+        {
+            id: 'mbid',
+            header: 'MusicBrainz',
+            enableSorting: false,
+            meta: { headerClassName: styles.mbid, cellClassName: styles.mbid },
+            cell: ({ row }) => {
+                const artist = row.original;
+                return artist.mbid ? (
+                    <ExternalLink href={`${LastfmConfig.mbBaseUrls.artist}${artist.mbid}`} label="MusicBrainz" />
+                ) : null;
+            },
+        },
+        {
+            id: 'status',
+            header: 'Approval',
+            enableSorting: false,
+            meta: { headerClassName: styles.status, cellClassName: styles.status },
+            cell: ({ row }) => (
+                <LastfmApprovalCell entityType="artist" entityId={row.original.id} />
+            ),
+        },
+        {
+            id: 'masterBinding',
+            header: 'Master',
+            enableSorting: false,
+            meta: { headerClassName: styles.masterBinding, cellClassName: styles.masterBinding },
+            cell: ({ row }) => (
+                <LastfmBindingCell entityType="artist" entityId={row.original.id} />
+            ),
+        },
+        {
+            id: 'quizBinding',
+            header: 'Quiz',
+            enableSorting: false,
+            meta: { headerClassName: styles.quizBinding, cellClassName: styles.quizBinding },
+            cell: ({ row }) => (
+                <LastfmQuizCell entityType="artist" entityId={row.original.id} />
+            ),
+        },
+        {
+            accessorKey: 'playCount',
+            header: 'Plays',
+            enableSorting: true,
+            meta: { headerClassName: styles.count, cellClassName: styles.count },
+            cell: ({ row }) => <ReadonlyAttr value={row.original.playCount} />,
+        },
+        {
+            accessorKey: 'listenersCount',
+            header: 'Listeners',
+            enableSorting: true,
+            meta: { headerClassName: styles.count, cellClassName: styles.count },
+            cell: ({ row }) => <ReadonlyAttr value={row.original.listenersCount} />,
+        },
+    ], []);
+
+    const sorting = useMemo(() => stringToSortingState(sort), [sort]);
+    const handleSortingChange = useCallback(
+        (updater: any) => {
+            const next = typeof updater === 'function' ? updater(sorting) : updater;
+            setSort(sortingStateToString(next));
+        },
+        [sorting, setSort],
+    );
+
     const additionalSearchConfig: AdditionalSearchConfig = {
-        title: "Advanced Filters",
+        title: 'Advanced Filters',
         collapsible: true,
         defaultCollapsed: true,
-        fields: [
-            minPlayCountField,
-            minListenersCountField,
-            tagField,
-            approvalStatusField
-        ]
+        fields: [minPlayCountField, minListenersCountField, tagField, approvalStatusField],
     };
 
+    const handleRowClick = useCallback((artist: LastfmArtist) => {
+        navigate(String(artist.id));
+    }, [navigate]);
+
     return (
-        <EntityTable
-            // Search functionality
+        <DataTable<LastfmArtist>
+            columns={columns}
+            data={rawEntities ?? []}
             search={search}
             onSearchChange={setSearch}
             onSearchSubmit={handleSearchSubmit}
             searchPlaceholder="Search artist name..."
-            
-            // Additional search fields
             additionalSearch={additionalSearchConfig}
-            
-            // Table structure
-            columns={columns}
-            emptyMessage="No artists found"
-            
-            // Sorting
-            sort={sort}
-            onSortChange={setSort}
-            
-            // Pagination
-            pagination={{
-                page: pagination.page,
-                totalPages: pagination.totalPages,
-                hasNextPage: pagination.hasNextPage,
-                hasPrevPage: pagination.hasPrevPage,
-            }}
+            sorting={sorting}
+            onSortingChange={handleSortingChange}
+            pagination={pagination}
             onNextPage={nextPage}
             onPrevPage={prevPage}
             onGoToPage={goToPage}
-            
-            // Loading state
             isLoading={isLoading}
-            
-            // Actions
             onRefresh={refresh}
+            getRowId={(row) => String(row.id)}
+            onRowClick={handleRowClick}
+            emptyMessage="No artists found"
             extraActions={
                 <button
                     onClick={handleForcedSearch}
                     disabled={!search.trim() || isSearching || isLoading}
-                    className={`${entityTableStyles.actionButton} ${artistStyles.searchButton}`}
+                    style={{ padding: '0.5rem 1rem', border: '1px solid #ccc', borderRadius: '4px', backgroundColor: '#fff', cursor: 'pointer', whiteSpace: 'nowrap' }}
                 >
                     {isSearching ? 'Searching...' : 'Force Search'}
                 </button>
             }
-        >
-            {/* Table rows */}
-            {rawEntityIds?.map(rawEntityId => (
-                <LastfmArtistsTableRow
-                    key={rawEntityId}
-                    entityId={rawEntityId}
-                />
-            ))}
-        </EntityTable>
+        />
     );
 };

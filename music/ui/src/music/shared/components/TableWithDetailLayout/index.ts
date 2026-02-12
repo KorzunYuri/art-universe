@@ -1,0 +1,1 @@
+export { TableWithDetailLayout } from './TableWithDetailLayout';

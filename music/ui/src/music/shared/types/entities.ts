@@ -58,9 +58,11 @@ export interface Artist extends MasterEntity<"artist"> {
 }
 export interface Album extends MasterEntity<"album"> {
     primaryArtistId: number;
+    categories?: Array<{ id: number; name: string }>;
 }
 export interface Track extends MasterEntity<"track"> {
     primaryArtistId: number;
+    categories?: Array<{ id: number; name: string }>;
 }
 export interface Category extends MasterEntity<"category"> {
     parents?: Array<{ id: number; name: string }>;
@@ -74,6 +76,8 @@ export class ArtistImpl extends BaseMasterEntity<"artist"> implements Artist {
     }
 }
 export class AlbumImpl extends BaseMasterEntity<"album"> implements Album {
+    categories?: Array<{ id: number; name: string }>;
+
     constructor(id: number, name: string, public primaryArtistId: number) {
         super(id, name);
         this.primaryArtistId = primaryArtistId;
@@ -83,6 +87,8 @@ export class AlbumImpl extends BaseMasterEntity<"album"> implements Album {
     }
 }
 export class TrackImpl extends BaseMasterEntity<"track"> implements Track {
+    categories?: Array<{ id: number; name: string }>;
+
     constructor(id: number, name: string, public primaryArtistId: number) {
         super(id, name);
         this.primaryArtistId = primaryArtistId;

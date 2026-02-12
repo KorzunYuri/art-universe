@@ -1,0 +1,111 @@
+import { useParams } from 'react-router-dom';
+import { useLastfmEntity } from '@/music/data/raw/lastfm/hooks/useLastfmEntity';
+import { useLastfmEntityApproval } from '@/music/data/raw/lastfm/hooks/useLastfmEntityApproval';
+import { ExternalLink } from '@/music/shared/components';
+import { ApprovalToggle, EntityBinding, EntityTagPanel } from '@/music/data/raw/lastfm/components';
+import { LastfmConfig } from '@/music/data/raw/lastfm/config/lastfmconfig';
+import { getMasterEntityUrl } from '@/music/data/master/utils/masterEntityUrl';
+import styles from '../LastfmDetailPage.module.scss';
+
+export const LastfmAlbumDetail = () => {
+    const { albumId } = useParams<{ albumId: string }>();
+    const id = Number(albumId);
+
+    const {
+        entity,
+        updateEntity,
+        invalidateEntity,
+        isLoading,
+        isError,
+        error,
+    } = useLastfmEntity('album', id);
+
+    const {
+        isApproving,
+        setApprovalStatus,
+        ensureIsValidForBinding,
+    } = useLastfmEntityApproval(entity, 'lastfm', updateEntity);
+
+    if (isLoading) {
+        return <div className={styles.loading}>Loading album...</div>;
+    }
+
+    if (isError || !entity) {
+        return (
+            <div className={styles.error}>
+                {error ? error.message : 'Album not found'}
+            </div>
+        );
+    }
+
+    return (
+        <div className={styles.detail}>
+            {/* Header: name + external links */}
+            <div className={styles.header}>
+                <h3 className={styles.entityName}>{entity.name}</h3>
+                {entity.artist && (
+                    <span className={styles.artistName}>by {entity.artist.name}</span>
+                )}
+                <div className={styles.externalLinks}>
+                    {entity.url && <ExternalLink href={entity.url} label="Last.fm" />}
+                    {entity.mbid && (
+                        <ExternalLink
+                            href={`${LastfmConfig.mbBaseUrls.album}${entity.mbid}`}
+                            label="MusicBrainz"
+                        />
+                    )}
+                </div>
+            </div>
+
+            {/* Attributes */}
+            <section className={styles.section}>
+                <h3 className={styles.sectionTitle}>Stats</h3>
+                <div className={styles.attrGrid}>
+                    <span className={styles.attrLabel}>Play count</span>
+                    <span className={styles.attrValue}>{entity.playCount?.toLocaleString() ?? '—'}</span>
+                    <span className={styles.attrLabel}>Listeners</span>
+                    <span className={styles.attrValue}>{entity.listenersCount?.toLocaleString() ?? '—'}</span>
+                </div>
+            </section>
+
+            {/* Approval */}
+            <section className={styles.section}>
+                <h3 className={styles.sectionTitle}>Approval</h3>
+                <div className={styles.controlRow}>
+                    <ApprovalToggle
+                        status={entity.approvalStatus}
+                        onChange={setApprovalStatus}
+                        disabled={isApproving}
+                    />
+                </div>
+            </section>
+
+            {/* Master Binding */}
+            <section className={styles.section}>
+                <h3 className={styles.sectionTitle}>Master Binding</h3>
+                <div className={styles.bindingWrapper}>
+                    <EntityBinding
+                        dataSource="lastfm"
+                        entityType="album"
+                        entityId={id}
+                        onBeforeBind={ensureIsValidForBinding}
+                        onAfterBind={invalidateEntity}
+                        onAfterUnbind={invalidateEntity}
+                        linkToMasterUrl={(masterId) => getMasterEntityUrl('album', masterId)}
+                    />
+                </div>
+            </section>
+
+            {/* Tags */}
+            <section className={styles.section}>
+                <h3 className={styles.sectionTitle}>Tags</h3>
+                <EntityTagPanel
+                    entityType="album"
+                    entityId={entity.id}
+                    entityApprovalStatus={entity.approvalStatus}
+                    tagPageBaseUrl="/music/data/raw/lastfm/tags/"
+                />
+            </section>
+        </div>
+    );
+};

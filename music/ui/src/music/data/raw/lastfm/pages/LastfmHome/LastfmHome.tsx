@@ -1,8 +1,10 @@
 import styles from './LastfmHome.module.css';
 import { NavigationCard } from "@/music/shared/components";
-import { MaintenanceButton } from "@/music/data/raw/lastfm/components/MaintenanceButton/MaintenanceButton.tsx";
+import { usePermissions } from "@/music/shared/hooks/usePermissions";
 
 export function LastfmHome() {
+    const permissions = usePermissions();
+
     return (
         <div className={styles.container}>
             <h2>Last.fm</h2>
@@ -10,7 +12,9 @@ export function LastfmHome() {
             <NavigationCard to="/music/data/raw/lastfm/artists"    label="Artists" />
             <NavigationCard to="/music/data/raw/lastfm/albums"     label="Albums" />
             <NavigationCard to="/music/data/raw/lastfm/tracks"     label="Tracks" />
-            <MaintenanceButton />
+            {permissions.isAdmin() && (
+                <NavigationCard to="/music/data/raw/lastfm/admin"  label="Administration" />
+            )}
         </div>
     )
 }

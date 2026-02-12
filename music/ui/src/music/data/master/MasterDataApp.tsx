@@ -4,10 +4,11 @@ import { Artists } from './pages/Artists'
 import { Albums } from './pages/Albums'
 import { Tracks } from './pages/Tracks'
 import { MusicDataHome } from './pages/MusicDataHome'
-import { QueryProvider } from "@/music/shared/providers/QueryProvider.tsx";
+import { ArtistDetail } from './pages/ArtistDetail'
+import { AlbumDetail } from './pages/AlbumDetail'
+import { TrackDetail } from './pages/TrackDetail'
+import { TableWithDetailLayout } from '@/music/shared/components/TableWithDetailLayout'
 import { registerMasterLookups } from "./services/registerMasterLookups.ts";
-import {NotificationProvider} from "@/music/shared/providers/NotificationProvider.tsx";
-import {NotificationContainer} from "@/music/shared/components/NotificationContainer";
 
 // Register master entity lookups on module load
 registerMasterLookups();
@@ -16,17 +17,28 @@ export default function MasterDataApp() {
     const routes = [
         { path: '/',            element: <MusicDataHome /> },
         { path: 'categories',   element: <Categories /> },
-        { path: 'artists',      element: <Artists /> },
-        { path: 'albums',       element: <Albums /> },
-        { path: 'tracks',       element: <Tracks /> },
+        {
+            path: 'artists',
+            element: <TableWithDetailLayout><Artists /></TableWithDetailLayout>,
+            children: [
+                { path: ':artistId', element: <ArtistDetail /> },
+            ],
+        },
+        {
+            path: 'albums',
+            element: <TableWithDetailLayout><Albums /></TableWithDetailLayout>,
+            children: [
+                { path: ':albumId', element: <AlbumDetail /> },
+            ],
+        },
+        {
+            path: 'tracks',
+            element: <TableWithDetailLayout><Tracks /></TableWithDetailLayout>,
+            children: [
+                { path: ':trackId', element: <TrackDetail /> },
+            ],
+        },
     ]
 
-    return (
-        <QueryProvider>
-            <NotificationProvider>
-                { useRoutes(routes) }
-                <NotificationContainer />
-            </NotificationProvider>
-        </QueryProvider>
-    )
+    return useRoutes(routes)
 }

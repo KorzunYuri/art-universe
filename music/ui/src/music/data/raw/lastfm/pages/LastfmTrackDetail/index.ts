@@ -1,0 +1,1 @@
+export { LastfmTrackDetail } from './LastfmTrackDetail';
