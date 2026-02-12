@@ -4,6 +4,7 @@ import yurykorzun.art.universe.music.data.master.dto.relation.RelatedEntityDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingStatusDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import jakarta.annotation.Nullable;
 import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 
 import java.util.List;
@@ -68,48 +69,54 @@ public interface RelationService {
     
     /**
      * Gets related entities for a given entity
-     * 
+     *
      * @param sourceEntityType Source entity type
      * @param sourceEntityId Source entity ID
      * @param targetEntityType Target entity type
+     * @param relationTypeId Optional relation type filter (null = all relations)
      * @return List of DTOs with related entity information
      */
     List<RelatedEntityDTO> getRelatedEntities(
         MasterEntityType sourceEntityType,
-        Long sourceEntityId, 
-        MasterEntityType targetEntityType
+        Long sourceEntityId,
+        MasterEntityType targetEntityType,
+        @Nullable Long relationTypeId
     );
-    
+
     /**
      * Creates an internal relation between two entities
-     * 
+     *
      * @param sourceEntityType Source entity type
      * @param sourceEntityId Source entity ID
      * @param targetEntityType Target entity type
      * @param targetEntityId Target entity ID
+     * @param relationTypeId Optional relation type ID (null = untyped relation)
      * @return ID of the created relation
      */
     Long createInternalRelation(
         MasterEntityType sourceEntityType,
         Long sourceEntityId,
         MasterEntityType targetEntityType,
-        Long targetEntityId
+        Long targetEntityId,
+        @Nullable Long relationTypeId
     );
-    
+
     /**
      * Deletes an internal relation by entity types and IDs
-     * 
+     *
      * @param sourceEntityType Source entity type
      * @param sourceEntityId Source entity ID
      * @param targetEntityType Target entity type
      * @param targetEntityId Target entity ID
+     * @param relationTypeId Optional relation type ID (null = untyped relation)
      * @return true if deletion was successful, false otherwise
      */
     boolean deleteInternalRelation(
         MasterEntityType sourceEntityType,
         Long sourceEntityId,
         MasterEntityType targetEntityType,
-        Long targetEntityId
+        Long targetEntityId,
+        @Nullable Long relationTypeId
     );
     
     /**

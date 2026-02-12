@@ -1,5 +1,6 @@
 package yurykorzun.art.universe.music.data.master.controller;
 
+import jakarta.annotation.Nullable;
 import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelatedEntityDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingDTO;
@@ -95,25 +96,28 @@ public class RelationController {
      * @param sourceEntityType Source entity type
      * @param sourceEntityId Source entity ID
      * @param targetEntityType Target entity type
+     * @param relationTypeId Optional relation type filter
      * @return List of DTOs with related entity information
      */
     @GetMapping("/{sourceEntityType}/{sourceEntityId}/{targetEntityType}")
     public List<RelatedEntityDTO> getRelatedEntities(
         @PathVariable MasterEntityType sourceEntityType,
         @PathVariable Long sourceEntityId,
-        @PathVariable MasterEntityType targetEntityType
+        @PathVariable MasterEntityType targetEntityType,
+        @Nullable @RequestParam(name = "relationTypeId", required = false) Long relationTypeId
     ) {
         return relationService.getRelatedEntities(
-            sourceEntityType, sourceEntityId, targetEntityType);
+            sourceEntityType, sourceEntityId, targetEntityType, relationTypeId);
     }
     
     /**
      * Creates an internal relation between two entities
-     * 
+     *
      * @param sourceEntityType Source entity type
      * @param sourceEntityId Source entity ID
      * @param targetEntityType Target entity type
      * @param targetEntityId Target entity ID
+     * @param relationTypeId Optional relation type ID
      * @return ID of the created relation
      */
     @PostMapping("/internal/{sourceEntityType}/{sourceEntityId}/{targetEntityType}/{targetEntityId}")
@@ -121,19 +125,21 @@ public class RelationController {
         @PathVariable MasterEntityType sourceEntityType,
         @PathVariable Long sourceEntityId,
         @PathVariable MasterEntityType targetEntityType,
-        @PathVariable Long targetEntityId
+        @PathVariable Long targetEntityId,
+        @Nullable @RequestParam(name = "relationTypeId", required = false) Long relationTypeId
     ) {
         return relationService.createInternalRelation(
-            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId);
+            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, relationTypeId);
     }
     
     /**
      * Deletes an internal relation by entity types and IDs
-     * 
+     *
      * @param sourceEntityType Source entity type
      * @param sourceEntityId Source entity ID
      * @param targetEntityType Target entity type
      * @param targetEntityId Target entity ID
+     * @param relationTypeId Optional relation type ID
      * @return true if deletion was successful, false otherwise
      */
     @DeleteMapping("/internal/{sourceEntityType}/{sourceEntityId}/{targetEntityType}/{targetEntityId}")
@@ -141,10 +147,11 @@ public class RelationController {
         @PathVariable MasterEntityType sourceEntityType,
         @PathVariable Long sourceEntityId,
         @PathVariable MasterEntityType targetEntityType,
-        @PathVariable Long targetEntityId
+        @PathVariable Long targetEntityId,
+        @Nullable @RequestParam(name = "relationTypeId", required = false) Long relationTypeId
     ) {
         return relationService.deleteInternalRelation(
-            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId);
+            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, relationTypeId);
     }
     
     /**

@@ -20,10 +20,7 @@ import yurykorzun.art.universe.music.data.master.test.archetypes.BaseMasterDataM
 import java.util.Arrays;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -262,7 +259,7 @@ class RelationControllerMvcTest extends BaseMasterDataMvcTest {
         );
 
         when(relationService.getRelatedEntities(
-            eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType)
+            eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), isNull()
         )).thenReturn(entities);
 
         String expectedJson = objectMapper.writeValueAsString(entities);
@@ -275,7 +272,7 @@ class RelationControllerMvcTest extends BaseMasterDataMvcTest {
             .andExpect(content().json(expectedJson));
 
         verify(relationService).getRelatedEntities(
-            eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType)
+            eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), isNull()
         );
     }
 
@@ -288,7 +285,7 @@ class RelationControllerMvcTest extends BaseMasterDataMvcTest {
         String errorMessage = "Test error";
 
         when(relationService.getRelatedEntities(
-            eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType)
+            eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), isNull()
         )).thenThrow(new RuntimeException(errorMessage));
 
         // When & Then
@@ -298,7 +295,7 @@ class RelationControllerMvcTest extends BaseMasterDataMvcTest {
             .andExpect(status().isInternalServerError());
 
         verify(relationService).getRelatedEntities(
-            eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType)
+            eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), isNull()
         );
     }
 
@@ -312,7 +309,7 @@ class RelationControllerMvcTest extends BaseMasterDataMvcTest {
         Long relationId = 789L;
 
         when(relationService.createInternalRelation(
-            eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId)
+            eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId), isNull()
         )).thenReturn(relationId);
 
         String expectedJson = objectMapper.writeValueAsString(relationId);
@@ -325,7 +322,7 @@ class RelationControllerMvcTest extends BaseMasterDataMvcTest {
             .andExpect(content().json(expectedJson));
 
         verify(relationService).createInternalRelation(
-            eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId)
+            eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId), isNull()
         );
     }
 
@@ -339,7 +336,7 @@ class RelationControllerMvcTest extends BaseMasterDataMvcTest {
         String errorMessage = "Test error";
 
         when(relationService.createInternalRelation(
-            eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId)
+            eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId), isNull()
         )).thenThrow(new RuntimeException(errorMessage));
 
         // When & Then
@@ -349,7 +346,7 @@ class RelationControllerMvcTest extends BaseMasterDataMvcTest {
             .andExpect(status().isInternalServerError());
 
         verify(relationService).createInternalRelation(
-            eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId)
+            eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId), isNull()
         );
     }
     
@@ -362,7 +359,7 @@ class RelationControllerMvcTest extends BaseMasterDataMvcTest {
         Long targetEntityId = 456L;
 
         when(relationService.deleteInternalRelation(
-            eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId)
+            eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId), isNull()
         )).thenReturn(true);
 
         String expectedJson = "true";
@@ -375,7 +372,7 @@ class RelationControllerMvcTest extends BaseMasterDataMvcTest {
             .andExpect(content().string(expectedJson));
 
         verify(relationService).deleteInternalRelation(
-            eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId)
+            eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId), isNull()
         );
     }
 
@@ -389,7 +386,7 @@ class RelationControllerMvcTest extends BaseMasterDataMvcTest {
         String errorMessage = "Test error";
 
         when(relationService.deleteInternalRelation(
-            eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId)
+            eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId), isNull()
         )).thenThrow(new RuntimeException(errorMessage));
 
         // When & Then
@@ -399,7 +396,7 @@ class RelationControllerMvcTest extends BaseMasterDataMvcTest {
             .andExpect(status().isInternalServerError());
 
         verify(relationService).deleteInternalRelation(
-            eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId)
+            eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId), isNull()
         );
     }
     

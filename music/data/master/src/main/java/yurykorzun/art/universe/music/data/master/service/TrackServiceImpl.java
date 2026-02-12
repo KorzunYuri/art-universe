@@ -97,7 +97,7 @@ public class TrackServiceImpl implements TrackService {
         // 4. Create relation between artist and track
         Long artistId = artistBinding.getMasterId();
         Long relationId = relationService.createInternalRelation(
-            MasterEntityType.ARTIST, artistId, MasterEntityType.TRACK, track.getId());
+            MasterEntityType.ARTIST, artistId, MasterEntityType.TRACK, track.getId(), null);
         
         // 5. Bind external relation and return result
         return bindExternalRelationAndGetResult(dataSource, externalId, request.getPrimaryArtistId());
@@ -154,7 +154,7 @@ public class TrackServiceImpl implements TrackService {
         
         // 6. Create relation between artist and track
         Long relationId = relationService.createInternalRelation(
-            MasterEntityType.ARTIST, artistId, MasterEntityType.TRACK, savedTrack.getId());
+            MasterEntityType.ARTIST, artistId, MasterEntityType.TRACK, savedTrack.getId(), null);
         
         // 7. Bind external relation and return result
         return bindExternalRelationAndGetResult(dataSource, externalId, request.getPrimaryArtistId());

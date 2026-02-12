@@ -15,4 +15,6 @@ import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 @AllArgsConstructor
 public class RelatedEntityDTO extends BaseEntityDto {
     private MasterEntityType entityType;
+    private Long relationTypeId;
+    private String relationTypeName;
 }

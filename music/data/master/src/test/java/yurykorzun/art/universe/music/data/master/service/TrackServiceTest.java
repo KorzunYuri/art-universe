@@ -24,6 +24,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -181,7 +182,7 @@ class TrackServiceTest {
         when(trackBindingRepository.save(any(TrackBinding.class))).thenReturn(trackBinding);
         when(relationService.createInternalRelation(
             eq(MasterEntityType.ARTIST), eq(artistBinding.getMasterId()),
-            eq(MasterEntityType.TRACK), eq(masterId)
+            eq(MasterEntityType.TRACK), eq(masterId), isNull()
         )).thenReturn(500L);
         when(relationService.bindExternalRelation(
             eq(dataSource), 
@@ -203,7 +204,7 @@ class TrackServiceTest {
         verify(trackBindingRepository).save(any(TrackBinding.class));
         verify(relationService).createInternalRelation(
             eq(MasterEntityType.ARTIST), eq(artistBinding.getMasterId()),
-            eq(MasterEntityType.TRACK), eq(masterId)
+            eq(MasterEntityType.TRACK), eq(masterId), isNull()
         );
         verify(relationService).bindExternalRelation(
             eq(dataSource), 
@@ -373,7 +374,7 @@ class TrackServiceTest {
         when(trackBindingRepository.save(any(TrackBinding.class))).thenReturn(trackBinding);
         when(relationService.createInternalRelation(
             eq(MasterEntityType.ARTIST), eq(artistBinding.getMasterId()),
-            eq(MasterEntityType.TRACK), eq(newTrack.getId())
+            eq(MasterEntityType.TRACK), eq(newTrack.getId()), isNull()
         )).thenReturn(500L);
         when(relationService.bindExternalRelation(
             eq(dataSource), 
@@ -396,7 +397,7 @@ class TrackServiceTest {
         verify(trackBindingRepository).save(any(TrackBinding.class));
         verify(relationService).createInternalRelation(
             eq(MasterEntityType.ARTIST), eq(artistBinding.getMasterId()),
-            eq(MasterEntityType.TRACK), eq(newTrack.getId())
+            eq(MasterEntityType.TRACK), eq(newTrack.getId()), isNull()
         );
         verify(relationService).bindExternalRelation(
             eq(dataSource), 

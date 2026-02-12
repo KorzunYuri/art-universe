@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
+
+    <changeSet id="0016-0010-relation_type$create" author="claude">
+        <sqlFile path="../changesets/0016-relation-types/0016-0010-relation_type$create.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0016-0020-relation_type_applicability$create" author="claude">
+        <sqlFile path="../changesets/0016-relation-types/0016-0020-relation_type_applicability$create.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0016-0030-artist_track$add_relation_type" author="claude">
+        <sqlFile path="../changesets/0016-relation-types/0016-0030-artist_track$add_relation_type.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0016-0040-artist_album$create" author="claude">
+        <sqlFile path="../changesets/0016-relation-types/0016-0040-artist_album$create.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0016-0050-album_track$create" author="claude">
+        <sqlFile path="../changesets/0016-relation-types/0016-0050-album_track$create.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0016-0060-artist_artist$create" author="claude">
+        <sqlFile path="../changesets/0016-relation-types/0016-0060-artist_artist$create.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0016-0070-album_album$create" author="claude">
+        <sqlFile path="../changesets/0016-relation-types/0016-0070-album_album$create.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0016-0080-track_track$create" author="claude">
+        <sqlFile path="../changesets/0016-relation-types/0016-0080-track_track$create.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0016-0090-cascade_triggers$create" author="claude">
+        <sqlFile path="../changesets/0016-relation-types/0016-0090-cascade_triggers$create.sql" relativeToChangelogFile="true"
+            splitStatements="false"
+            endDelimiter="$$"
+        />
+    </changeSet>
+
+    <changeSet id="0016-0100-readonly_views$update" author="claude">
+        <sqlFile path="../changesets/0016-relation-types/0016-0100-readonly_views$update.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0016-0110-relation_type_applicability$add_is_default" author="claude">
+        <sqlFile path="../changesets/0016-relation-types/0016-0110-relation_type_applicability$add_is_default.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0016-0120-readonly_views$merge_primary_artist" author="claude">
+        <sqlFile path="../changesets/0016-relation-types/0016-0120-readonly_views$merge_primary_artist.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+</databaseChangeLog>

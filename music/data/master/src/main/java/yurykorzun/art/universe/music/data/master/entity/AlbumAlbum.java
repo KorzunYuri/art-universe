@@ -6,38 +6,38 @@ import lombok.experimental.SuperBuilder;
 import yurykorzun.art.universe.common.domain.entity.BaseEntity;
 import yurykorzun.art.universe.music.data.master.entity.relation.RelationEntity;
 
-@Entity(name = "artist_track")
+@Entity(name = "album_album")
 @SuperBuilder
 @NoArgsConstructor
 @Getter
 @Setter
-public class ArtistTrack extends BaseEntity implements RelationEntity {
+public class AlbumAlbum extends BaseEntity implements RelationEntity {
 
     @Id
     @SequenceGenerator(
-        name = "artist_track_seq_gen",
-        sequenceName = "artist_track_seq",
+        name = "album_album_seq_gen",
+        sequenceName = "album_album_seq",
         allocationSize = 50
     )
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "artist_track_seq_gen")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "album_album_seq_gen")
     @Setter(AccessLevel.NONE)
     private Long id;
 
     @NonNull
-    @Column(name = "artist_id", nullable = false)
-    private Long artistId;
+    @Column(name = "source_album_id", nullable = false)
+    private Long sourceAlbumId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "artist_id", insertable = false, updatable = false)
-    private Artist artist;
+    @JoinColumn(name = "source_album_id", insertable = false, updatable = false)
+    private Album sourceAlbum;
 
     @NonNull
-    @Column(name = "track_id", nullable = false)
-    private Long trackId;
+    @Column(name = "target_album_id", nullable = false)
+    private Long targetAlbumId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "track_id", insertable = false, updatable = false)
-    private Track track;
+    @JoinColumn(name = "target_album_id", insertable = false, updatable = false)
+    private Album targetAlbum;
 
     @Column(name = "relation_type_id")
     private Long relationTypeId;
@@ -48,22 +48,22 @@ public class ArtistTrack extends BaseEntity implements RelationEntity {
 
     @Override
     public MasterEntityType getFirstEntityType() {
-        return MasterEntityType.ARTIST;
+        return MasterEntityType.ALBUM;
     }
-    
+
     @Override
     public MasterEntityType getSecondEntityType() {
-        return MasterEntityType.TRACK;
+        return MasterEntityType.ALBUM;
     }
-    
+
     @Override
     public Long getFirstEntityId() {
-        return artistId;
+        return sourceAlbumId;
     }
-    
+
     @Override
     public Long getSecondEntityId() {
-        return trackId;
+        return targetAlbumId;
     }
 
     @Override

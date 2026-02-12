@@ -1,0 +1,33 @@
+package yurykorzun.art.universe.music.data.master.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
+import yurykorzun.art.universe.music.data.master.entity.RelationTypeApplicability;
+
+import java.util.List;
+
+@Repository
+public interface RelationTypeApplicabilityRepository extends JpaRepository<RelationTypeApplicability, Long> {
+
+    List<RelationTypeApplicability> findByRelationTypeId(Long relationTypeId);
+
+    List<RelationTypeApplicability> findBySourceEntityTypeAndTargetEntityType(
+        MasterEntityType sourceEntityType, MasterEntityType targetEntityType);
+
+    boolean existsByRelationTypeIdAndSourceEntityTypeAndTargetEntityType(
+        Long relationTypeId, MasterEntityType sourceEntityType, MasterEntityType targetEntityType);
+
+    void deleteByRelationTypeIdAndSourceEntityTypeAndTargetEntityType(
+        Long relationTypeId, MasterEntityType sourceEntityType, MasterEntityType targetEntityType);
+
+    @Query("""
+        SELECT  rta
+        FROM    relation_type_applicability rta
+        WHERE   rta.sourceEntityType = ?1
+            AND rta.targetEntityType = ?2
+    """)
+    List<RelationTypeApplicability> findApplicableTypes(
+        MasterEntityType firstEntityType, MasterEntityType secondEntityType);
+}

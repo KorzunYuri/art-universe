@@ -19,5 +19,6 @@
     <include file="changelogs/0013-readonly-schema.xml" relativeToChangelogFile="true"/>
     <include file="changelogs/0014-category-migration.xml" relativeToChangelogFile="true"/>
     <include file="changelogs/0015-dictionary-synchronizer-deprecation.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0016-relation-types.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

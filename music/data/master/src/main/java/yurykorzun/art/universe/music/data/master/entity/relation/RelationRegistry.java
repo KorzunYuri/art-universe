@@ -2,15 +2,24 @@ package yurykorzun.art.universe.music.data.master.entity.relation;
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
+import yurykorzun.art.universe.music.data.master.entity.ArtistAlbum;
+import yurykorzun.art.universe.music.data.master.entity.ArtistAlbumBinding;
+import yurykorzun.art.universe.music.data.master.entity.ArtistArtist;
 import yurykorzun.art.universe.music.data.master.entity.ArtistCategory;
 import yurykorzun.art.universe.music.data.master.entity.ArtistCategoryBinding;
 import yurykorzun.art.universe.music.data.master.entity.ArtistTrack;
 import yurykorzun.art.universe.music.data.master.entity.ArtistTrackBinding;
+import yurykorzun.art.universe.music.data.master.entity.AlbumAlbum;
+import yurykorzun.art.universe.music.data.master.entity.AlbumTrack;
+import yurykorzun.art.universe.music.data.master.entity.AlbumTrackBinding;
 import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
+import yurykorzun.art.universe.music.data.master.entity.TrackTrack;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Registry for entity relations
@@ -20,6 +29,7 @@ public class RelationRegistry {
 
     private final Map<RelationKey, Class<? extends RelationEntity>> relationEntities = new HashMap<>();
     private final Map<RelationKey, Class<? extends RelationBindingEntity>> relationBindingEntities = new HashMap<>();
+    private final Set<RelationKey> typeSupportingRelations = new HashSet<>();
 
     @PostConstruct
     public void init() {
@@ -30,6 +40,19 @@ public class RelationRegistry {
         // Register ArtistTrack
         registerRelationEntity(ArtistTrack.class);
         registerRelationBindingEntity(ArtistTrackBinding.class);
+
+        // Register ArtistAlbum
+        registerRelationEntity(ArtistAlbum.class);
+        registerRelationBindingEntity(ArtistAlbumBinding.class);
+
+        // Register AlbumTrack
+        registerRelationEntity(AlbumTrack.class);
+        registerRelationBindingEntity(AlbumTrackBinding.class);
+
+        // Register same-entity relations
+        registerRelationEntity(ArtistArtist.class);
+        registerRelationEntity(AlbumAlbum.class);
+        registerRelationEntity(TrackTrack.class);
     }
     
     /**
@@ -42,6 +65,9 @@ public class RelationRegistry {
             RelationEntity instance = entityClass.getDeclaredConstructor().newInstance();
             RelationKey key = new RelationKey(instance.getFirstEntityType(), instance.getSecondEntityType());
             relationEntities.put(key, entityClass);
+            if (instance.supportsRelationTypes()) {
+                typeSupportingRelations.add(key);
+            }
         } catch (Exception e) {
             throw new RuntimeException("Failed to register relation entity: " + entityClass.getName(), e);
         }
@@ -173,10 +199,27 @@ public class RelationRegistry {
     
     /**
      * Returns all registered relation entity classes
-     * 
+     *
      * @return Collection of relation entity classes
      */
     public Collection<Class<? extends RelationEntity>> getAllRelationEntityClasses() {
         return relationEntities.values();
+    }
+
+    /**
+     * Checks if the relation between the given entity types supports relation types.
+     * Category relations return false; entity-entity relations return true.
+     *
+     * @param sourceEntityType Source entity type
+     * @param targetEntityType Target entity type
+     * @return true if the relation supports relation types
+     */
+    public boolean supportsRelationTypes(MasterEntityType sourceEntityType, MasterEntityType targetEntityType) {
+        RelationKey directKey = new RelationKey(sourceEntityType, targetEntityType);
+        if (typeSupportingRelations.contains(directKey)) {
+            return true;
+        }
+        RelationKey reverseKey = new RelationKey(targetEntityType, sourceEntityType);
+        return typeSupportingRelations.contains(reverseKey);
     }
 }
