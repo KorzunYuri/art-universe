@@ -1,19 +1,4 @@
-.detail {
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-}
-
-.loading,
-.error {
-    padding: 1rem;
-    font-style: italic;
-    color: #64748b;
-}
-
-.error {
-    color: #dc3545;
-}
+@use '../../../shared/styles/detailPage';
 
 .header {
     display: flex;
@@ -69,20 +54,6 @@
     &:hover:not(:disabled) {
         background-color: #c82333;
     }
-}
-
-.section {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.sectionTitle {
-    margin: 0;
-    font-size: 0.95rem;
-    color: #334155;
-    border-bottom: 1px solid #e2e8f0;
-    padding-bottom: 0.25rem;
 }
 
 .primaryArtist {

@@ -58,9 +58,11 @@ export const LastfmArtistDetail = () => {
             {/* Attributes */}
             <section className={styles.section}>
                 <h3 className={styles.sectionTitle}>Stats</h3>
-                <div className={styles.attrGrid}>
+                <div className={styles.attrRow}>
                     <span className={styles.attrLabel}>Play count</span>
                     <span className={styles.attrValue}>{entity.playCount?.toLocaleString() ?? '—'}</span>
+                </div>
+                <div className={styles.attrRow}>
                     <span className={styles.attrLabel}>Listeners</span>
                     <span className={styles.attrValue}>{entity.listenersCount?.toLocaleString() ?? '—'}</span>
                 </div>

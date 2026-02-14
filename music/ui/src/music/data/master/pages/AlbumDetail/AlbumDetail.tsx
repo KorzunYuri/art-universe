@@ -14,7 +14,7 @@ import {
     unbindAlbumFromCategory,
     type AlbumSaveRequest,
 } from '@/music/data/master/api/music-data-albums';
-import styles from './AlbumDetail.module.scss';
+import styles from '../MasterDetailPage.module.scss';
 
 export const AlbumDetail = () => {
     const { albumId } = useParams<{ albumId: string }>();

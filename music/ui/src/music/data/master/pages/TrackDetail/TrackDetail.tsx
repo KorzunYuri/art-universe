@@ -14,7 +14,7 @@ import {
     unbindTrackFromCategory,
     type TrackSaveRequest,
 } from '@/music/data/master/api/music-data-tracks';
-import styles from './TrackDetail.module.scss';
+import styles from '../MasterDetailPage.module.scss';
 
 export const TrackDetail = () => {
     const { trackId } = useParams<{ trackId: string }>();

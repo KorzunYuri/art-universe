@@ -13,7 +13,7 @@ import {
     unbindArtistFromCategory,
     type ArtistSaveRequest,
 } from '@/music/data/master/api/music-data-artists';
-import styles from './ArtistDetail.module.scss';
+import styles from '../MasterDetailPage.module.scss';
 
 export const ArtistDetail = () => {
     const { artistId } = useParams<{ artistId: string }>();
