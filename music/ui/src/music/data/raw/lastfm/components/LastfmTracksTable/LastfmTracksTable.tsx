@@ -1,6 +1,6 @@
 import { useMemo, useCallback } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import { useLastfmEntityTable } from '@/music/data/raw/lastfm/hooks/useLastfmEntityTable';
 import { useApprovalStatusFilter } from '@/music/data/raw/shared/hooks';
 import { usePlayCountFilter, useListenersCountFilter, useArtistFilter, useTagFilter } from '@/music/data/raw/lastfm/hooks/useLastfmFilters';
@@ -22,6 +22,7 @@ interface LastfmTracksTableProps {
 export const LastfmTracksTable = ({ artistId }: LastfmTracksTableProps) => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
+    const { trackId } = useParams<{ trackId: string }>();
     const urlArtistId = searchParams.get('artistId') ? parseInt(searchParams.get('artistId')!) : undefined;
     const effectiveArtistId = artistId || urlArtistId;
 
@@ -174,8 +175,12 @@ export const LastfmTracksTable = ({ artistId }: LastfmTracksTableProps) => {
     };
 
     const handleRowClick = useCallback((track: LastfmTrack) => {
-        navigate(String(track.id));
-    }, [navigate]);
+        if (trackId && Number(trackId) === track.id) {
+            navigate('.', { relative: 'path' });
+        } else {
+            navigate(String(track.id));
+        }
+    }, [navigate, trackId]);
 
     return (
         <DataTable<LastfmTrack>
@@ -196,6 +201,7 @@ export const LastfmTracksTable = ({ artistId }: LastfmTracksTableProps) => {
             onRefresh={refresh}
             getRowId={(row) => String(row.id)}
             onRowClick={handleRowClick}
+            activeRowId={trackId ? Number(trackId) : null}
             emptyMessage="No tracks found"
         />
     );

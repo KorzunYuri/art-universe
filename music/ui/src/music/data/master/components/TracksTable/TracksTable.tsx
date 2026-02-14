@@ -141,9 +141,13 @@ export const TracksTable = () => {
 
     const handleRowClick = useCallback(
         (track: Track) => {
-            navigate(String(track.id));
+            if (trackId && Number(trackId) === track.id) {
+                navigate('.', { relative: 'path' });
+            } else {
+                navigate(String(track.id));
+            }
         },
-        [navigate],
+        [navigate, trackId],
     );
 
     const createSection = (

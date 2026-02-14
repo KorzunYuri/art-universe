@@ -139,9 +139,13 @@ export const ArtistsTable = () => {
 
     const handleRowClick = useCallback(
         (artist: Artist) => {
-            navigate(String(artist.id));
+            if (artistId && Number(artistId) === artist.id) {
+                navigate('.', { relative: 'path' });
+            } else {
+                navigate(String(artist.id));
+            }
         },
-        [navigate],
+        [navigate, artistId],
     );
 
     const additionalSearchConfig: AdditionalSearchConfig = {

@@ -23,6 +23,10 @@
     animation: slideIn 0.2s ease;
 }
 
+.detailSection.closing {
+    animation: slideOut 0.2s ease forwards;
+}
+
 .withDetail .tableSection {
     flex: 1;
 }
@@ -35,6 +39,17 @@
     to {
         transform: translateX(0);
         opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
     }
 }
 

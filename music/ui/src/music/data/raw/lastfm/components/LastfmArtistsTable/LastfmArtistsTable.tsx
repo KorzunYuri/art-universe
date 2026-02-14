@@ -1,6 +1,6 @@
 import { useMemo, useCallback, useState } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import { useLastfmEntityTable } from '@/music/data/raw/lastfm/hooks/useLastfmEntityTable';
 import { useApprovalStatusFilter } from '@/music/data/raw/shared/hooks';
 import { usePlayCountFilter, useListenersCountFilter, useTagFilter } from '@/music/data/raw/lastfm/hooks/useLastfmFilters';
@@ -19,6 +19,7 @@ import styles from './LastfmArtistsTable.module.css';
 export const LastfmArtistsTable = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
+    const { artistId } = useParams<{ artistId: string }>();
     const initialSearch = searchParams.get('search') || '';
     const [isSearching, setIsSearching] = useState(false);
     const { showNotification } = useNotifications();
@@ -162,8 +163,12 @@ export const LastfmArtistsTable = () => {
     };
 
     const handleRowClick = useCallback((artist: LastfmArtist) => {
-        navigate(String(artist.id));
-    }, [navigate]);
+        if (artistId && Number(artistId) === artist.id) {
+            navigate('.', { relative: 'path' });
+        } else {
+            navigate(String(artist.id));
+        }
+    }, [navigate, artistId]);
 
     return (
         <DataTable<LastfmArtist>
@@ -184,6 +189,7 @@ export const LastfmArtistsTable = () => {
             onRefresh={refresh}
             getRowId={(row) => String(row.id)}
             onRowClick={handleRowClick}
+            activeRowId={artistId ? Number(artistId) : null}
             emptyMessage="No artists found"
             extraActions={
                 <button

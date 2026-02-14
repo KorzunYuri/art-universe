@@ -141,9 +141,13 @@ export const AlbumsTable = () => {
 
     const handleRowClick = useCallback(
         (album: Album) => {
-            navigate(String(album.id));
+            if (albumId && Number(albumId) === album.id) {
+                navigate('.', { relative: 'path' });
+            } else {
+                navigate(String(album.id));
+            }
         },
-        [navigate],
+        [navigate, albumId],
     );
 
     const createSection = (
