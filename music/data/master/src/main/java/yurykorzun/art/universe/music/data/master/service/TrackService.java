@@ -1,5 +1,10 @@
 package yurykorzun.art.universe.music.data.master.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import yurykorzun.art.universe.music.data.master.dto.TrackDto;
+import yurykorzun.art.universe.music.data.master.dto.TrackSaveRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.TrackWithCategoriesDto;
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityCreateAndBindRequestDTO;
@@ -12,6 +17,22 @@ import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import java.util.List;
 
 public interface TrackService {
+
+    Page<TrackDto> findTracks(String search, Long categoryId, Pageable pageable);
+
+    Page<TrackWithCategoriesDto> findTracksWithCategories(String search, Long categoryId, Pageable pageable);
+
+    TrackDto getTrack(Long id);
+
+    TrackWithCategoriesDto getTrackWithCategories(Long id);
+
+    TrackDto saveTrack(TrackSaveRequestDTO request);
+
+    boolean deleteTrack(Long id);
+
+    void bindToCategory(Long trackId, Long categoryId);
+
+    void unbindFromCategory(Long trackId, Long categoryId);
 
     List<BoundEntityProjection> findBoundTracks(DataSource dataSource, List<Long> externalIds);
     

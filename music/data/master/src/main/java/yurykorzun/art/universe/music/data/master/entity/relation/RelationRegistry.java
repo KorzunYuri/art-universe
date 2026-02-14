@@ -2,6 +2,8 @@ package yurykorzun.art.universe.music.data.master.entity.relation;
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
+import yurykorzun.art.universe.music.data.master.entity.AlbumCategory;
+import yurykorzun.art.universe.music.data.master.entity.AlbumCategoryBinding;
 import yurykorzun.art.universe.music.data.master.entity.ArtistAlbum;
 import yurykorzun.art.universe.music.data.master.entity.ArtistAlbumBinding;
 import yurykorzun.art.universe.music.data.master.entity.ArtistArtist;
@@ -13,6 +15,8 @@ import yurykorzun.art.universe.music.data.master.entity.AlbumAlbum;
 import yurykorzun.art.universe.music.data.master.entity.AlbumTrack;
 import yurykorzun.art.universe.music.data.master.entity.AlbumTrackBinding;
 import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
+import yurykorzun.art.universe.music.data.master.entity.TrackCategory;
+import yurykorzun.art.universe.music.data.master.entity.TrackCategoryBinding;
 import yurykorzun.art.universe.music.data.master.entity.TrackTrack;
 
 import java.util.Collection;
@@ -36,6 +40,14 @@ public class RelationRegistry {
         // Register ArtistCategory
         registerRelationEntity(ArtistCategory.class);
         registerRelationBindingEntity(ArtistCategoryBinding.class);
+
+        // Register AlbumCategory
+        registerRelationEntity(AlbumCategory.class);
+        registerRelationBindingEntity(AlbumCategoryBinding.class);
+
+        // Register TrackCategory
+        registerRelationEntity(TrackCategory.class);
+        registerRelationBindingEntity(TrackCategoryBinding.class);
         
         // Register ArtistTrack
         registerRelationEntity(ArtistTrack.class);

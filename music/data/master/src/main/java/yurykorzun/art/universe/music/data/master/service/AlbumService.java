@@ -1,5 +1,10 @@
 package yurykorzun.art.universe.music.data.master.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import yurykorzun.art.universe.music.data.master.dto.AlbumDto;
+import yurykorzun.art.universe.music.data.master.dto.AlbumSaveRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.AlbumWithCategoriesDto;
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
@@ -12,6 +17,22 @@ import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import java.util.List;
 
 public interface AlbumService {
+
+    Page<AlbumDto> findAlbums(String search, Long categoryId, Pageable pageable);
+
+    Page<AlbumWithCategoriesDto> findAlbumsWithCategories(String search, Long categoryId, Pageable pageable);
+
+    AlbumDto getAlbum(Long id);
+
+    AlbumWithCategoriesDto getAlbumWithCategories(Long id);
+
+    AlbumDto saveAlbum(AlbumSaveRequestDTO request);
+
+    boolean deleteAlbum(Long id);
+
+    void bindToCategory(Long albumId, Long categoryId);
+
+    void unbindFromCategory(Long albumId, Long categoryId);
 
     List<BoundEntityProjection> findBoundAlbums(DataSource dataSource, List<Long> externalIds);
     

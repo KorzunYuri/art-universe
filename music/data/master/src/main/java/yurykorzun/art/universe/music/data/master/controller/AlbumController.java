@@ -1,7 +1,12 @@
 package yurykorzun.art.universe.music.data.master.controller;
 
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
+import yurykorzun.art.universe.music.data.master.dto.AlbumDto;
+import yurykorzun.art.universe.music.data.master.dto.AlbumSaveRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.AlbumWithCategoriesDto;
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
@@ -13,6 +18,7 @@ import yurykorzun.art.universe.common.domain.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.common.domain.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
+import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.service.AlbumService;
 import yurykorzun.art.universe.music.data.master.service.BindingService;
 
@@ -28,6 +34,64 @@ public class AlbumController {
     public AlbumController(AlbumService albumService, BindingService bindingService) {
         this.albumService = albumService;
         this.bindingService = bindingService;
+    }
+
+    @GetMapping
+    public Page<AlbumDto> findAlbums(
+        @RequestParam(required = false) String search,
+        @RequestParam(required = false) Long categoryId,
+        Pageable pageable
+    ) {
+        return albumService.findAlbums(search, categoryId, pageable);
+    }
+
+    @GetMapping("/with-categories")
+    public Page<AlbumWithCategoriesDto> findAlbumsWithCategories(
+        @RequestParam(required = false) String search,
+        @RequestParam(required = false) Long categoryId,
+        Pageable pageable
+    ) {
+        return albumService.findAlbumsWithCategories(search, categoryId, pageable);
+    }
+
+    @GetMapping("/{id}")
+    public AlbumDto getAlbum(@PathVariable Long id) {
+        return albumService.getAlbum(id);
+    }
+
+    @GetMapping("/{id}/with-categories")
+    public AlbumWithCategoriesDto getAlbumWithCategories(@PathVariable Long id) {
+        return albumService.getAlbumWithCategories(id);
+    }
+
+    @PostMapping
+    public AlbumDto saveAlbum(@Valid @RequestBody AlbumSaveRequestDTO request) {
+        return albumService.saveAlbum(request);
+    }
+
+    @DeleteMapping("/{id}")
+    public boolean deleteAlbum(@PathVariable Long id) {
+        boolean deleted = albumService.deleteAlbum(id);
+        if (!deleted) {
+            throw new CustomEntityNotFoundException("Album", id);
+        }
+        return true;
+    }
+
+    @PostMapping("/{albumId}/categories/{categoryId}")
+    public void bindToCategory(
+        @PathVariable Long albumId,
+        @PathVariable Long categoryId
+    ) {
+        albumService.bindToCategory(albumId, categoryId);
+    }
+
+    @DeleteMapping("/{albumId}/categories/{categoryId}")
+    public void unbindFromCategory(
+        @PathVariable Long albumId,
+        @PathVariable Long categoryId
+    ) {
+        albumService.unbindFromCategory(albumId, categoryId);
     }
 
     @GetMapping("/bound/{dataSource}")

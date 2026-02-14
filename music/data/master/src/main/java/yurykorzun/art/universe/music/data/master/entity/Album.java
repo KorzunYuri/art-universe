@@ -5,6 +5,8 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import yurykorzun.art.universe.common.domain.entity.BaseEntity;
 
+import java.util.List;
+
 @Entity(name = "album")
 @SuperBuilder
 @NoArgsConstructor
@@ -40,4 +42,7 @@ public class Album extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "album_group_id", insertable = false, updatable = false)
     private Album originalAlbum;
+
+    @OneToMany(mappedBy = "album", fetch = FetchType.LAZY)
+    private List<AlbumCategory> categoryRelations;
 }

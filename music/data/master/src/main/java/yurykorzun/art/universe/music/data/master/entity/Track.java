@@ -5,6 +5,8 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import yurykorzun.art.universe.common.domain.entity.BaseEntity;
 
+import java.util.List;
+
 @Entity(name = "track")
 @SuperBuilder
 @NoArgsConstructor
@@ -41,4 +43,6 @@ public class Track extends BaseEntity {
     @JoinColumn(name = "track_group_id", insertable = false, updatable = false)
     private Track originalTrack;
 
+    @OneToMany(mappedBy = "track", fetch = FetchType.LAZY)
+    private List<TrackCategory> categoryRelations;
 }

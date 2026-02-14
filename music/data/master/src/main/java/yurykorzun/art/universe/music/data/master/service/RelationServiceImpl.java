@@ -243,12 +243,12 @@ public class RelationServiceImpl implements RelationService {
         if (metadata.isSameEntityRelation()) {
             // For same-entity relations, query both directions
             String sql = """
-                SELECT t.id, t.name%s
+                SELECT t.id, t.name, r.id AS relation_id%s
                 FROM %s r
                 JOIN %s t ON r.%s = t.id%s
                 WHERE r.%s = ?1%s
                 UNION
-                SELECT t.id, t.name%s
+                SELECT t.id, t.name, r.id AS relation_id%s
                 FROM %s r
                 JOIN %s t ON r.%s = t.id%s
                 WHERE r.%s = ?1%s
@@ -285,7 +285,7 @@ public class RelationServiceImpl implements RelationService {
         } else {
             // For cross-entity relations, query single direction
             String sql = """
-                SELECT t.id, t.name%s
+                SELECT t.id, t.name, r.id AS relation_id%s
                 FROM %s r
                 JOIN %s t ON r.%s = t.id%s
                 WHERE r.%s = ?1%s
@@ -322,10 +322,11 @@ public class RelationServiceImpl implements RelationService {
             var builder = RelatedEntityDTO.builder()
                 .id(((Number) row[0]).longValue())
                 .name((String) row[1])
+                .relationId(((Number) row[2]).longValue())
                 .entityType(entityType);
             if (hasTypeSupport) {
-                builder.relationTypeId(row[2] != null ? ((Number) row[2]).longValue() : null)
-                       .relationTypeName((String) row[3]);
+                builder.relationTypeId(row[3] != null ? ((Number) row[3]).longValue() : null)
+                       .relationTypeName((String) row[4]);
             }
             entities.add(builder.build());
         }
