@@ -10,7 +10,7 @@ export function useAlbumWithCategories(albumId: number) {
     const queryKey = masterEntitiesKeys.withRelationsDetail('album', albumId);
 
     const invalidate = () => {
-        queryClient.invalidateQueries({ queryKey });
+        queryClient.invalidateQueries({ queryKey: masterEntitiesKeys.type('album') });
     };
 
     const albumQuery = useQuery({

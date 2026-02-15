@@ -10,7 +10,7 @@ export function useArtistWithCategories(artistId: number) {
     const queryKey = masterEntitiesKeys.withRelationsDetail('artist', artistId);
 
     const invalidate = () => {
-        queryClient.invalidateQueries({ queryKey });
+        queryClient.invalidateQueries({ queryKey: masterEntitiesKeys.type('artist') });
     };
 
     const artistQuery = useQuery({

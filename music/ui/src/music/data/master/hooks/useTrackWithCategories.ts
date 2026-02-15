@@ -10,7 +10,7 @@ export function useTrackWithCategories(trackId: number) {
     const queryKey = masterEntitiesKeys.withRelationsDetail('track', trackId);
 
     const invalidate = () => {
-        queryClient.invalidateQueries({ queryKey });
+        queryClient.invalidateQueries({ queryKey: masterEntitiesKeys.type('track') });
     };
 
     const trackQuery = useQuery({
