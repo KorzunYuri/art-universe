@@ -1,16 +1,19 @@
 import { useCallback, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import type { LastfmEntity } from '@/music/data/raw/lastfm/types/lastfm-entity.ts';
 import type { DataSource } from '@/music/data/raw/shared/types/data-sources.ts';
 import {ApprovalStatus, type ApprovalStatusType} from "@/music/data/raw/lastfm/constants/approvalStatus.ts";
 import {updateRawEntityApprovalStatus} from "@/music/data/raw/shared/api/approval.tsx";
 import type {MasterEntityType} from "@/music/shared/types/entities.ts";
 import {useNotifications} from "@/music/shared/hooks";
+import { rawEntitiesKeys } from "@/music/shared/utils/query-keys.ts";
 
 export const useLastfmEntityApproval = <M extends MasterEntityType, T extends LastfmEntity<M>>(
     entity: T | undefined,
     dataSource: DataSource,
     updateEntity: (entity: T) => void
 ) => {
+    const queryClient = useQueryClient();
     const [isApproving, setIsApproving] = useState(false);
     const { showNotification } = useNotifications();
 
@@ -22,6 +25,7 @@ export const useLastfmEntityApproval = <M extends MasterEntityType, T extends La
             .then(() => {
                 entity.setApprovalStatus(newStatus);
                 updateEntity(entity);
+                queryClient.invalidateQueries({ queryKey: rawEntitiesKeys.type(dataSource, entity.getEntityType()) });
             })
             .finally(() => {
                 setIsApproving(false);
