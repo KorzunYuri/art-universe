@@ -5,12 +5,20 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import yurykorzun.art.universe.music.data.master.dto.AlbumDto;
+import yurykorzun.art.universe.music.data.master.dto.AlbumSaveRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.AlbumTrackItemDTO;
+import yurykorzun.art.universe.music.data.master.dto.AlbumWithTracksSaveRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.binding.ExternalAlbumTrackItemDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.ExternalAlbumWithTracksCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedBatchLookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupRequestDTO;
 import yurykorzun.art.universe.common.domain.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.common.domain.dto.lookup.LookupResultDTO;
+import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.service.AlbumService;
 import yurykorzun.art.universe.music.data.master.service.BindingService;
@@ -220,23 +228,212 @@ public class AlbumControllerTest {
             .masterArtistId(123L)
             .dataSource(DataSource.LASTFM)
             .build();
-        
+
         ArtistRelatedBatchLookupRequestDTO batchRequest = ArtistRelatedBatchLookupRequestDTO.builder()
             .searchRequests(List.of(request))
             .limit(10)
             .build();
-        
+
         RuntimeException expectedException = new RuntimeException("Test error");
-        
+
         when(albumService.batchLookupAlbums(batchRequest))
             .thenThrow(expectedException);
-        
+
         // When & Then
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
             albumController.batchLookupAlbums(batchRequest)
         );
-        
+
         assertSame(expectedException, exception);
         verify(albumService).batchLookupAlbums(batchRequest);
+    }
+
+    // --- saveAlbum ---
+
+    @Test
+    void saveAlbum_shouldCallService_andReturnAlbumDto() {
+        // Given
+        AlbumSaveRequestDTO request = AlbumSaveRequestDTO.builder()
+            .name("OK Computer")
+            .primaryArtistId(10L)
+            .build();
+        AlbumDto expected = AlbumDto.builder().id(1L).name("OK Computer").primaryArtistId(10L).build();
+
+        when(albumService.saveAlbum(request)).thenReturn(expected);
+
+        // When
+        AlbumDto result = albumController.saveAlbum(request);
+
+        // Then
+        assertEquals(expected, result);
+        verify(albumService).saveAlbum(request);
+    }
+
+    @Test
+    void saveAlbum_withExistingId_shouldCallService_andReturnUpdatedDto() {
+        // Given
+        AlbumSaveRequestDTO request = AlbumSaveRequestDTO.builder()
+            .id(5L)
+            .name("OK Computer (Remastered)")
+            .build();
+        AlbumDto expected = AlbumDto.builder().id(5L).name("OK Computer (Remastered)").primaryArtistId(10L).build();
+
+        when(albumService.saveAlbum(request)).thenReturn(expected);
+
+        // When
+        AlbumDto result = albumController.saveAlbum(request);
+
+        // Then
+        assertEquals(expected, result);
+        verify(albumService).saveAlbum(request);
+    }
+
+    // --- deleteAlbum ---
+
+    @Test
+    void deleteAlbum_whenExists_shouldReturnTrue() {
+        // Given
+        Long albumId = 1L;
+        when(albumService.deleteAlbum(albumId)).thenReturn(true);
+
+        // When
+        boolean result = albumController.deleteAlbum(albumId);
+
+        // Then
+        assertTrue(result);
+        verify(albumService).deleteAlbum(albumId);
+    }
+
+    @Test
+    void deleteAlbum_whenNotExists_shouldThrowCustomEntityNotFoundException() {
+        // Given
+        Long albumId = 999L;
+        when(albumService.deleteAlbum(albumId)).thenReturn(false);
+
+        // When & Then
+        assertThrows(CustomEntityNotFoundException.class, () -> albumController.deleteAlbum(albumId));
+        verify(albumService).deleteAlbum(albumId);
+    }
+
+    // --- saveAlbumWithTracks ---
+
+    @Test
+    void saveAlbumWithTracks_shouldCallService_andReturnAlbumDto() {
+        // Given
+        AlbumWithTracksSaveRequestDTO request = AlbumWithTracksSaveRequestDTO.builder()
+            .name("OK Computer")
+            .primaryArtistId(10L)
+            .tracks(List.of(
+                AlbumTrackItemDTO.builder().trackId(1L).trackOrder(1).build(),
+                AlbumTrackItemDTO.builder().trackId(2L).trackOrder(2).build()
+            ))
+            .build();
+        AlbumDto expected = AlbumDto.builder().id(1L).name("OK Computer").primaryArtistId(10L).build();
+
+        when(albumService.saveAlbumWithTracks(request)).thenReturn(expected);
+
+        // When
+        AlbumDto result = albumController.saveAlbumWithTracks(request);
+
+        // Then
+        assertEquals(expected, result);
+        verify(albumService).saveAlbumWithTracks(request);
+    }
+
+    // --- createAndBind ---
+
+    @Test
+    void createAndBind_shouldCallService_andReturnBoundProjection() {
+        // Given
+        DataSource dataSource = DataSource.LASTFM;
+        Long externalId = 500L;
+        ArtistRelatedEntityCreateAndBindRequestDTO request = ArtistRelatedEntityCreateAndBindRequestDTO.builder()
+            .entityName("OK Computer")
+            .primaryArtistId(100L)
+            .build();
+        BoundEntityProjection expected = new TestBoundEntityProjectionImpl(externalId, dataSource, 1L, "OK Computer");
+
+        when(albumService.createAndBind(dataSource, externalId, request)).thenReturn(expected);
+
+        // When
+        BoundEntityProjection result = albumController.createAndBind(dataSource, externalId, request);
+
+        // Then
+        assertEquals(expected, result);
+        verify(albumService).createAndBind(dataSource, externalId, request);
+    }
+
+    @Test
+    void createAndBind_whenServiceThrows_shouldPassThroughException() {
+        // Given
+        DataSource dataSource = DataSource.LASTFM;
+        Long externalId = 500L;
+        ArtistRelatedEntityCreateAndBindRequestDTO request = ArtistRelatedEntityCreateAndBindRequestDTO.builder()
+            .entityName("OK Computer")
+            .primaryArtistId(100L)
+            .build();
+        RuntimeException expectedException = new RuntimeException("Artist not bound");
+
+        when(albumService.createAndBind(dataSource, externalId, request)).thenThrow(expectedException);
+
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+            albumController.createAndBind(dataSource, externalId, request));
+
+        assertSame(expectedException, exception);
+        verify(albumService).createAndBind(dataSource, externalId, request);
+    }
+
+    // --- createAndBindWithTracks ---
+
+    @Test
+    void createAndBindWithTracks_shouldCallService_andReturnBoundProjection() {
+        // Given
+        DataSource dataSource = DataSource.LASTFM;
+        Long externalAlbumId = 500L;
+        ExternalAlbumWithTracksCreateAndBindRequestDTO request = ExternalAlbumWithTracksCreateAndBindRequestDTO.builder()
+            .albumName("OK Computer")
+            .primaryArtistId(100L)
+            .tracks(List.of(
+                ExternalAlbumTrackItemDTO.builder()
+                    .externalTrackId(10L).trackName("Airbag").trackOrder(1).build(),
+                ExternalAlbumTrackItemDTO.builder()
+                    .externalTrackId(20L).masterTrackId(200L).trackOrder(2).build()
+            ))
+            .build();
+        BoundEntityProjection expected = new TestBoundEntityProjectionImpl(externalAlbumId, dataSource, 1L, "OK Computer");
+
+        when(albumService.createAndBindWithTracks(dataSource, externalAlbumId, request)).thenReturn(expected);
+
+        // When
+        BoundEntityProjection result = albumController.createAndBindWithTracks(dataSource, externalAlbumId, request);
+
+        // Then
+        assertEquals(expected, result);
+        verify(albumService).createAndBindWithTracks(dataSource, externalAlbumId, request);
+    }
+
+    @Test
+    void createAndBindWithTracks_whenServiceThrows_shouldPassThroughException() {
+        // Given
+        DataSource dataSource = DataSource.LASTFM;
+        Long externalAlbumId = 500L;
+        ExternalAlbumWithTracksCreateAndBindRequestDTO request = ExternalAlbumWithTracksCreateAndBindRequestDTO.builder()
+            .albumName("OK Computer")
+            .primaryArtistId(100L)
+            .tracks(List.of(
+                ExternalAlbumTrackItemDTO.builder().externalTrackId(10L).trackName("Airbag").trackOrder(1).build()
+            ))
+            .build();
+        RuntimeException expectedException = new RuntimeException("Artist not bound");
+
+        when(albumService.createAndBindWithTracks(dataSource, externalAlbumId, request)).thenThrow(expectedException);
+
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+            albumController.createAndBindWithTracks(dataSource, externalAlbumId, request));
+
+        assertSame(expectedException, exception);
+        verify(albumService).createAndBindWithTracks(dataSource, externalAlbumId, request);
     }
 }

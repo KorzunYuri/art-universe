@@ -16,6 +16,7 @@ import yurykorzun.art.universe.music.data.master.repository.AlbumRepository;
 import yurykorzun.art.universe.music.data.master.repository.AlbumTrackRepository;
 import yurykorzun.art.universe.music.data.master.repository.CategoryRepository;
 import yurykorzun.art.universe.music.data.master.repository.RelationTypeApplicabilityRepository;
+import yurykorzun.art.universe.music.data.master.repository.TrackBindingRepository;
 import yurykorzun.art.universe.music.data.master.repository.TrackRepository;
 
 import java.util.Arrays;
@@ -47,6 +48,15 @@ public class AlbumServiceTest {
 
     @Mock
     private TrackRepository trackRepository;
+
+    @Mock
+    private TrackBindingRepository trackBindingRepository;
+
+    @Mock
+    private ArtistService artistService;
+
+    @Mock
+    private RelationService relationService;
 
     @Mock
     private EntityManager entityManager;
