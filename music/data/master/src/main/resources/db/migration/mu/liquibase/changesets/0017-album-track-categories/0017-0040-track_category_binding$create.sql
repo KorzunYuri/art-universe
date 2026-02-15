@@ -1,5 +1,5 @@
 -- Create track_category_binding table
-CREATE TABLE track_category_binding (
+CREATE TABLE IF NOT EXISTS track_category_binding (
     id BIGINT PRIMARY KEY,
     master_id BIGINT NOT NULL,
     data_source_id INTEGER NOT NULL,
@@ -16,16 +16,16 @@ CREATE TABLE track_category_binding (
 );
 
 -- Create sequence for track_category_binding
-CREATE SEQUENCE track_category_binding_seq INCREMENT BY 50 START WITH 1;
+CREATE SEQUENCE IF NOT EXISTS track_category_binding_seq INCREMENT BY 50 START WITH 1;
 
-CREATE INDEX idx_track_category_binding_master_id
+CREATE INDEX IF NOT EXISTS idx_track_category_binding_master_id
     ON track_category_binding(master_id);
 
-CREATE INDEX idx_track_category_binding_data_source
+CREATE INDEX IF NOT EXISTS idx_track_category_binding_data_source
     ON track_category_binding(data_source_id);
 
-CREATE INDEX idx_track_category_binding_external_track_id
+CREATE INDEX IF NOT EXISTS idx_track_category_binding_external_track_id
     ON track_category_binding(external_track_id);
 
-CREATE INDEX idx_track_category_binding_external_category_id
+CREATE INDEX IF NOT EXISTS idx_track_category_binding_external_category_id
     ON track_category_binding(external_category_id);

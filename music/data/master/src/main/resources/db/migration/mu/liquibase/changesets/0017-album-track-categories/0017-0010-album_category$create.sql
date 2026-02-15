@@ -1,5 +1,5 @@
 -- Create album_category table
-CREATE TABLE album_category (
+CREATE TABLE IF NOT EXISTS album_category (
     id BIGINT PRIMARY KEY,
     album_id BIGINT NOT NULL,
     category_id BIGINT NOT NULL,
@@ -11,11 +11,11 @@ CREATE TABLE album_category (
 );
 
 -- Create sequence for album_category
-CREATE SEQUENCE album_category_seq INCREMENT BY 50 START WITH 1;
+CREATE SEQUENCE IF NOT EXISTS album_category_seq INCREMENT BY 50 START WITH 1;
 
 -- Create indexes for better performance
-CREATE INDEX idx_album_category_album_id
+CREATE INDEX IF NOT EXISTS idx_album_category_album_id
     ON album_category(album_id);
 
-CREATE INDEX idx_album_category_category_id
+CREATE INDEX IF NOT EXISTS idx_album_category_category_id
     ON album_category(category_id);

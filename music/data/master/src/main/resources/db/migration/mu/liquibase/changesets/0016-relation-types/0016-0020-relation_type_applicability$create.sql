@@ -1,5 +1,5 @@
 -- Create relation_type_applicability table (which relation types apply to which entity pairs)
-CREATE TABLE relation_type_applicability (
+CREATE TABLE IF NOT EXISTS relation_type_applicability (
     id BIGINT PRIMARY KEY,
     relation_type_id BIGINT NOT NULL,
     source_entity_type SMALLINT NOT NULL,
@@ -14,8 +14,8 @@ CREATE TABLE relation_type_applicability (
 );
 
 -- Create sequence for relation_type_applicability
-CREATE SEQUENCE relation_type_applicability_seq INCREMENT BY 10 START WITH 1;
+CREATE SEQUENCE IF NOT EXISTS relation_type_applicability_seq INCREMENT BY 10 START WITH 1;
 
 -- Create indexes
-CREATE INDEX idx_rta_relation_type_id ON relation_type_applicability(relation_type_id);
-CREATE INDEX idx_rta_entity_types ON relation_type_applicability(source_entity_type, target_entity_type);
+CREATE INDEX IF NOT EXISTS idx_rta_relation_type_id ON relation_type_applicability(relation_type_id);
+CREATE INDEX IF NOT EXISTS idx_rta_entity_types ON relation_type_applicability(source_entity_type, target_entity_type);

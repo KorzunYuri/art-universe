@@ -1,5 +1,5 @@
 -- Create artist_album junction table
-CREATE TABLE artist_album (
+CREATE TABLE IF NOT EXISTS artist_album (
     id BIGINT PRIMARY KEY,
     artist_id BIGINT NOT NULL,
     album_id BIGINT NOT NULL,
@@ -12,24 +12,24 @@ CREATE TABLE artist_album (
 );
 
 -- Create sequence for artist_album
-CREATE SEQUENCE artist_album_seq INCREMENT BY 50 START WITH 1;
+CREATE SEQUENCE IF NOT EXISTS artist_album_seq INCREMENT BY 50 START WITH 1;
 
 -- Create indexes
-CREATE INDEX idx_artist_album_artist_id ON artist_album(artist_id);
-CREATE INDEX idx_artist_album_album_id ON artist_album(album_id);
-CREATE INDEX idx_artist_album_relation_type ON artist_album(relation_type_id);
+CREATE INDEX IF NOT EXISTS idx_artist_album_artist_id ON artist_album(artist_id);
+CREATE INDEX IF NOT EXISTS idx_artist_album_album_id ON artist_album(album_id);
+CREATE INDEX IF NOT EXISTS idx_artist_album_relation_type ON artist_album(relation_type_id);
 
 -- Partial unique indexes
-CREATE UNIQUE INDEX uk_artist_album_untyped
+CREATE UNIQUE INDEX IF NOT EXISTS uk_artist_album_untyped
     ON artist_album(artist_id, album_id)
     WHERE relation_type_id IS NULL;
 
-CREATE UNIQUE INDEX uk_artist_album_typed
+CREATE UNIQUE INDEX IF NOT EXISTS uk_artist_album_typed
     ON artist_album(artist_id, album_id, relation_type_id)
     WHERE relation_type_id IS NOT NULL;
 
 -- Create artist_album_binding table
-CREATE TABLE artist_album_binding (
+CREATE TABLE IF NOT EXISTS artist_album_binding (
     id BIGINT PRIMARY KEY,
     master_id BIGINT NOT NULL,
     data_source_id INTEGER NOT NULL,
@@ -46,17 +46,17 @@ CREATE TABLE artist_album_binding (
 );
 
 -- Create sequence for artist_album_binding
-CREATE SEQUENCE artist_album_binding_seq INCREMENT BY 50 START WITH 1;
+CREATE SEQUENCE IF NOT EXISTS artist_album_binding_seq INCREMENT BY 50 START WITH 1;
 
 -- Create indexes for artist_album_binding
-CREATE INDEX idx_artist_album_binding_master_id
+CREATE INDEX IF NOT EXISTS idx_artist_album_binding_master_id
     ON artist_album_binding(master_id);
 
-CREATE INDEX idx_artist_album_binding_data_source
+CREATE INDEX IF NOT EXISTS idx_artist_album_binding_data_source
     ON artist_album_binding(data_source_id);
 
-CREATE INDEX idx_artist_album_binding_external_artist_id
+CREATE INDEX IF NOT EXISTS idx_artist_album_binding_external_artist_id
     ON artist_album_binding(external_artist_id);
 
-CREATE INDEX idx_artist_album_binding_external_album_id
+CREATE INDEX IF NOT EXISTS idx_artist_album_binding_external_album_id
     ON artist_album_binding(external_album_id);

@@ -43,23 +43,27 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Triggers for artist_binding
+DROP TRIGGER IF EXISTS trg_cascade_delete_artist_album_bindings ON artist_binding;
 CREATE TRIGGER trg_cascade_delete_artist_album_bindings
     BEFORE DELETE ON artist_binding
     FOR EACH ROW
     EXECUTE FUNCTION fn_cascade_delete_artist_album_bindings();
 
 -- Triggers for album_binding
+DROP TRIGGER IF EXISTS trg_cascade_delete_album_artist_bindings ON album_binding;
 CREATE TRIGGER trg_cascade_delete_album_artist_bindings
     BEFORE DELETE ON album_binding
     FOR EACH ROW
     EXECUTE FUNCTION fn_cascade_delete_album_artist_bindings();
 
+DROP TRIGGER IF EXISTS trg_cascade_delete_album_track_bindings ON album_binding;
 CREATE TRIGGER trg_cascade_delete_album_track_bindings
     BEFORE DELETE ON album_binding
     FOR EACH ROW
     EXECUTE FUNCTION fn_cascade_delete_album_track_bindings();
 
 -- Trigger for track_binding
+DROP TRIGGER IF EXISTS trg_cascade_delete_track_album_bindings ON track_binding;
 CREATE TRIGGER trg_cascade_delete_track_album_bindings
     BEFORE DELETE ON track_binding
     FOR EACH ROW

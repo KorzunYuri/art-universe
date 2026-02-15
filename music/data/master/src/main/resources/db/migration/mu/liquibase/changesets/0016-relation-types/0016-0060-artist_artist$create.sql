@@ -1,5 +1,5 @@
 -- Create artist_artist same-entity junction table
-CREATE TABLE artist_artist (
+CREATE TABLE IF NOT EXISTS artist_artist (
     id BIGINT PRIMARY KEY,
     source_artist_id BIGINT NOT NULL,
     target_artist_id BIGINT NOT NULL,
@@ -13,18 +13,18 @@ CREATE TABLE artist_artist (
 );
 
 -- Create sequence for artist_artist
-CREATE SEQUENCE artist_artist_seq INCREMENT BY 50 START WITH 1;
+CREATE SEQUENCE IF NOT EXISTS artist_artist_seq INCREMENT BY 50 START WITH 1;
 
 -- Create indexes
-CREATE INDEX idx_artist_artist_source ON artist_artist(source_artist_id);
-CREATE INDEX idx_artist_artist_target ON artist_artist(target_artist_id);
-CREATE INDEX idx_artist_artist_relation_type ON artist_artist(relation_type_id);
+CREATE INDEX IF NOT EXISTS idx_artist_artist_source ON artist_artist(source_artist_id);
+CREATE INDEX IF NOT EXISTS idx_artist_artist_target ON artist_artist(target_artist_id);
+CREATE INDEX IF NOT EXISTS idx_artist_artist_relation_type ON artist_artist(relation_type_id);
 
 -- Partial unique indexes
-CREATE UNIQUE INDEX uk_artist_artist_untyped
+CREATE UNIQUE INDEX IF NOT EXISTS uk_artist_artist_untyped
     ON artist_artist(source_artist_id, target_artist_id)
     WHERE relation_type_id IS NULL;
 
-CREATE UNIQUE INDEX uk_artist_artist_typed
+CREATE UNIQUE INDEX IF NOT EXISTS uk_artist_artist_typed
     ON artist_artist(source_artist_id, target_artist_id, relation_type_id)
     WHERE relation_type_id IS NOT NULL;

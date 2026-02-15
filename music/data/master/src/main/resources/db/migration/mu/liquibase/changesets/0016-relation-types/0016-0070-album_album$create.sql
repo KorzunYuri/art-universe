@@ -1,5 +1,5 @@
 -- Create album_album same-entity junction table
-CREATE TABLE album_album (
+CREATE TABLE IF NOT EXISTS album_album (
     id BIGINT PRIMARY KEY,
     source_album_id BIGINT NOT NULL,
     target_album_id BIGINT NOT NULL,
@@ -13,18 +13,18 @@ CREATE TABLE album_album (
 );
 
 -- Create sequence for album_album
-CREATE SEQUENCE album_album_seq INCREMENT BY 50 START WITH 1;
+CREATE SEQUENCE IF NOT EXISTS album_album_seq INCREMENT BY 50 START WITH 1;
 
 -- Create indexes
-CREATE INDEX idx_album_album_source ON album_album(source_album_id);
-CREATE INDEX idx_album_album_target ON album_album(target_album_id);
-CREATE INDEX idx_album_album_relation_type ON album_album(relation_type_id);
+CREATE INDEX IF NOT EXISTS idx_album_album_source ON album_album(source_album_id);
+CREATE INDEX IF NOT EXISTS idx_album_album_target ON album_album(target_album_id);
+CREATE INDEX IF NOT EXISTS idx_album_album_relation_type ON album_album(relation_type_id);
 
 -- Partial unique indexes
-CREATE UNIQUE INDEX uk_album_album_untyped
+CREATE UNIQUE INDEX IF NOT EXISTS uk_album_album_untyped
     ON album_album(source_album_id, target_album_id)
     WHERE relation_type_id IS NULL;
 
-CREATE UNIQUE INDEX uk_album_album_typed
+CREATE UNIQUE INDEX IF NOT EXISTS uk_album_album_typed
     ON album_album(source_album_id, target_album_id, relation_type_id)
     WHERE relation_type_id IS NOT NULL;

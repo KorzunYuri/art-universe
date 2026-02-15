@@ -1,7 +1,5 @@
 -- Create relation_type dictionary table
-DROP TABLE IF EXISTS relation_type;
-
-CREATE TABLE relation_type (
+CREATE TABLE IF NOT EXISTS relation_type (
     id BIGINT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     reverse_name VARCHAR(255),
@@ -13,5 +11,4 @@ CREATE TABLE relation_type (
 );
 
 -- Create sequence for relation_type
-DROP SEQUENCE IF EXISTS relation_type_seq;
-CREATE SEQUENCE relation_type_seq INCREMENT BY 50 START WITH 1;
+CREATE SEQUENCE IF NOT EXISTS relation_type_seq INCREMENT BY 50 START WITH 1;

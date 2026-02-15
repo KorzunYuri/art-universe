@@ -21,12 +21,14 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Trigger for album_binding
+DROP TRIGGER IF EXISTS trg_cascade_delete_album_category_bindings ON album_binding;
 CREATE TRIGGER trg_cascade_delete_album_category_bindings
     BEFORE DELETE ON album_binding
     FOR EACH ROW
     EXECUTE FUNCTION fn_cascade_delete_album_category_bindings();
 
 -- Trigger for track_binding
+DROP TRIGGER IF EXISTS trg_cascade_delete_track_category_bindings ON track_binding;
 CREATE TRIGGER trg_cascade_delete_track_category_bindings
     BEFORE DELETE ON track_binding
     FOR EACH ROW

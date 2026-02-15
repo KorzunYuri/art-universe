@@ -1,5 +1,5 @@
 -- Create track_track same-entity junction table
-CREATE TABLE track_track (
+CREATE TABLE IF NOT EXISTS track_track (
     id BIGINT PRIMARY KEY,
     source_track_id BIGINT NOT NULL,
     target_track_id BIGINT NOT NULL,
@@ -13,18 +13,18 @@ CREATE TABLE track_track (
 );
 
 -- Create sequence for track_track
-CREATE SEQUENCE track_track_seq INCREMENT BY 50 START WITH 1;
+CREATE SEQUENCE IF NOT EXISTS track_track_seq INCREMENT BY 50 START WITH 1;
 
 -- Create indexes
-CREATE INDEX idx_track_track_source ON track_track(source_track_id);
-CREATE INDEX idx_track_track_target ON track_track(target_track_id);
-CREATE INDEX idx_track_track_relation_type ON track_track(relation_type_id);
+CREATE INDEX IF NOT EXISTS idx_track_track_source ON track_track(source_track_id);
+CREATE INDEX IF NOT EXISTS idx_track_track_target ON track_track(target_track_id);
+CREATE INDEX IF NOT EXISTS idx_track_track_relation_type ON track_track(relation_type_id);
 
 -- Partial unique indexes
-CREATE UNIQUE INDEX uk_track_track_untyped
+CREATE UNIQUE INDEX IF NOT EXISTS uk_track_track_untyped
     ON track_track(source_track_id, target_track_id)
     WHERE relation_type_id IS NULL;
 
-CREATE UNIQUE INDEX uk_track_track_typed
+CREATE UNIQUE INDEX IF NOT EXISTS uk_track_track_typed
     ON track_track(source_track_id, target_track_id, relation_type_id)
     WHERE relation_type_id IS NOT NULL;

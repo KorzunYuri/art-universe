@@ -14,7 +14,9 @@
     </changeSet>
 
     <changeSet id="0016-0030-artist_track$add_relation_type" author="claude">
-        <sqlFile path="../changesets/0016-relation-types/0016-0030-artist_track$add_relation_type.sql" relativeToChangelogFile="true"/>
+        <sqlFile path="../changesets/0016-relation-types/0016-0030-artist_track$add_relation_type.sql" relativeToChangelogFile="true"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
     </changeSet>
 
     <changeSet id="0016-0040-artist_album$create" author="claude">

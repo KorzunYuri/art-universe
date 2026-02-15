@@ -1,7 +1,5 @@
 -- Create album_track junction table
-DROP TABLE IF EXISTS album_track;
-
-CREATE TABLE album_track (
+CREATE TABLE IF NOT EXISTS album_track (
     id BIGINT PRIMARY KEY,
     album_id BIGINT NOT NULL,
     track_id BIGINT NOT NULL,
@@ -15,26 +13,24 @@ CREATE TABLE album_track (
 );
 
 -- Create sequence for album_track
-CREATE SEQUENCE album_track_seq INCREMENT BY 50 START WITH 1;
+CREATE SEQUENCE IF NOT EXISTS album_track_seq INCREMENT BY 50 START WITH 1;
 
 -- Create indexes
-CREATE INDEX idx_album_track_album_id ON album_track(album_id);
-CREATE INDEX idx_album_track_track_id ON album_track(track_id);
-CREATE INDEX idx_album_track_relation_type ON album_track(relation_type_id);
+CREATE INDEX IF NOT EXISTS idx_album_track_album_id ON album_track(album_id);
+CREATE INDEX IF NOT EXISTS idx_album_track_track_id ON album_track(track_id);
+CREATE INDEX IF NOT EXISTS idx_album_track_relation_type ON album_track(relation_type_id);
 
 -- Partial unique indexes
-CREATE UNIQUE INDEX uk_album_track_untyped
+CREATE UNIQUE INDEX IF NOT EXISTS uk_album_track_untyped
     ON album_track(album_id, track_id)
     WHERE relation_type_id IS NULL;
 
-CREATE UNIQUE INDEX uk_album_track_typed
+CREATE UNIQUE INDEX IF NOT EXISTS uk_album_track_typed
     ON album_track(album_id, track_id, relation_type_id)
     WHERE relation_type_id IS NOT NULL;
 
 -- Create album_track_binding table
-DROP TABLE IF EXISTS album_track_binding;
-
-CREATE TABLE album_track_binding (
+CREATE TABLE IF NOT EXISTS album_track_binding (
     id BIGINT PRIMARY KEY,
     master_id BIGINT NOT NULL,
     data_source_id INTEGER NOT NULL,
@@ -51,18 +47,17 @@ CREATE TABLE album_track_binding (
 );
 
 -- Create sequence for album_track_binding
-DROP SEQUENCE IF EXISTS album_track_binding_seq;
-CREATE SEQUENCE album_track_binding_seq INCREMENT BY 50 START WITH 1;
+CREATE SEQUENCE IF NOT EXISTS album_track_binding_seq INCREMENT BY 50 START WITH 1;
 
 -- Create indexes for album_track_binding
-CREATE INDEX idx_album_track_binding_master_id
+CREATE INDEX IF NOT EXISTS idx_album_track_binding_master_id
     ON album_track_binding(master_id);
 
-CREATE INDEX idx_album_track_binding_data_source
+CREATE INDEX IF NOT EXISTS idx_album_track_binding_data_source
     ON album_track_binding(data_source_id);
 
-CREATE INDEX idx_album_track_binding_external_album_id
+CREATE INDEX IF NOT EXISTS idx_album_track_binding_external_album_id
     ON album_track_binding(external_album_id);
 
-CREATE INDEX idx_album_track_binding_external_track_id
+CREATE INDEX IF NOT EXISTS idx_album_track_binding_external_track_id
     ON album_track_binding(external_track_id);
