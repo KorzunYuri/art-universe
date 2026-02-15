@@ -66,12 +66,22 @@ export const EntityBinding = <T extends LastfmSupportedEntityType>(
         isError
     } = useLastfmEntity<T>(entityType, entityId);
 
+    const [prevEntityId, setPrevEntityId] = useState(entityId);
     const [inputValue, setInputValue] = useState('');
     const [isBinding, setIsBinding] = useState(false);
     const [isUnbinding, setIsUnbinding] = useState(false);
     const [selectedEntity, setSelectedEntity] = useState<LookupEntity | null>(null);
 
-    // Initialize input value when entity loads or changes
+    // Synchronously reset transient state when switching to a different entity.
+    // This runs during the render phase, ensuring EntityLookup never receives a
+    // stale searchString that could trigger a spurious auto-select.
+    if (prevEntityId !== entityId) {
+        setPrevEntityId(entityId);
+        setInputValue('');
+        setSelectedEntity(null);
+    }
+
+    // Populate input once the new entity has loaded
     useEffect(() => {
         if (entity) {
             setInputValue(entity.masterEntity?.name || entity.name || '');
