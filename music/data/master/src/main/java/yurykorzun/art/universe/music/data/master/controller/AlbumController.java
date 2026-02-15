@@ -13,6 +13,7 @@ import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntity
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindResponseDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.ExternalAlbumWithTracksCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedBatchLookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupRequestDTO;
 import yurykorzun.art.universe.common.domain.dto.lookup.BatchLookupResponseDTO;
@@ -149,6 +150,15 @@ public class AlbumController {
         @Valid @RequestBody ArtistRelatedEntityCreateAndBindRequestDTO request
     ) {
         return albumService.createAndBind(dataSource, externalId, request);
+    }
+
+    @PostMapping("/bind/new/{dataSource}/{externalId}/with-tracks")
+    public BoundEntityProjection createAndBindWithTracks(
+        @PathVariable DataSource dataSource,
+        @PathVariable Long externalId,
+        @Valid @RequestBody ExternalAlbumWithTracksCreateAndBindRequestDTO request
+    ) {
+        return albumService.createAndBindWithTracks(dataSource, externalId, request);
     }
 
     @DeleteMapping("/unbind/{dataSource}/{externalId}")

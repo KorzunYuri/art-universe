@@ -9,9 +9,13 @@ import org.springframework.stereotype.Repository;
 import yurykorzun.art.universe.music.data.master.entity.Album;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface AlbumRepository extends JpaRepository<Album, Long> {
+
+    Optional<Album> findByNameAndPrimaryArtistId(String name, Long primaryArtistId);
+
 
     @Query("""
         SELECT a

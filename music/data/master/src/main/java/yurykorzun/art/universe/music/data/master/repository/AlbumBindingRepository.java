@@ -9,9 +9,13 @@ import yurykorzun.art.universe.music.data.master.entity.AlbumBinding;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface AlbumBindingRepository extends JpaRepository<AlbumBinding, Long> {
+
+    Optional<AlbumBinding> findByDataSourceAndExternalId(DataSource dataSource, Long externalId);
+
 
     /**
      * Returns bindings for a list of albums from external source.

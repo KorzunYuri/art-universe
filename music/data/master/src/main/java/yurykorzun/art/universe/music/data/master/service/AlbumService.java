@@ -9,6 +9,7 @@ import yurykorzun.art.universe.music.data.master.dto.AlbumWithTracksSaveRequestD
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.binding.ExternalAlbumWithTracksCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedBatchLookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupRequestDTO;
 import yurykorzun.art.universe.common.domain.dto.lookup.BatchLookupResponseDTO;
@@ -64,7 +65,19 @@ public interface AlbumService {
      * @throws IllegalArgumentException if an album with the same name and artist already exists
      */
     BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, ArtistRelatedEntityCreateAndBindRequestDTO request);
-    
+
+    /**
+     * Creates a new master album from an external album together with its full tracklist.
+     * Unbound tracks are created as new master tracks and bound to the provided external track IDs.
+     * Bound tracks are linked to already-existing master tracks.
+     *
+     * @param dataSource      The external data source
+     * @param externalAlbumId The ID of the album in the external system
+     * @param request         The request containing album info and per-track binding details
+     * @return The created album binding information
+     */
+    BoundEntityProjection createAndBindWithTracks(DataSource dataSource, Long externalAlbumId, ExternalAlbumWithTracksCreateAndBindRequestDTO request);
+
     /**
      * Unbinds an external album from the system.
      *
