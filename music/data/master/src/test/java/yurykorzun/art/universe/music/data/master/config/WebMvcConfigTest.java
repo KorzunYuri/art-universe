@@ -3,9 +3,11 @@ package yurykorzun.art.universe.music.data.master.config;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import yurykorzun.art.universe.common.test.archetypes.BaseMvcTest;
 import yurykorzun.art.universe.music.data.master.controller.RelationController;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
@@ -17,7 +19,8 @@ import static org.junit.jupiter.api.Assertions.*;
  * Contains tests of auto-conversion of data type in controllers.
  */
 @WebMvcTest(controllers = RelationController.class)
-class WebMvcConfigTest {
+@Import(WebMvcTestConfig.class)
+class WebMvcConfigTest extends BaseMvcTest {
 
     @Autowired
     private ConversionService conversionService;

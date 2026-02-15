@@ -20,8 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(ArtistController.class)
 class ArtistControllerTest extends BaseMvcTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+
 
     @Autowired
     private ObjectMapper objectMapper;

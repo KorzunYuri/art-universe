@@ -10,3 +10,6 @@ spring:
       org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration,
       org.springframework.boot.autoconfigure.websocket.servlet.WebSocketServletAutoConfiguration,
       org.springframework.boot.actuate.autoconfigure.endpoint.jmx.JmxEndpointAutoConfiguration
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false

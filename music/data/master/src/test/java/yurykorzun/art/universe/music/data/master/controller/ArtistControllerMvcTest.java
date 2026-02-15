@@ -50,9 +50,6 @@ class ArtistControllerMvcTest extends BaseMasterDataMvcTest {
     @MockitoBean
     private BindingService bindingService;
 
-    @Autowired
-    private MockMvc mockMvc;
-
     private List<TestBoundEntityProjectionImpl> mockArtistBindings;
 
     @BeforeEach

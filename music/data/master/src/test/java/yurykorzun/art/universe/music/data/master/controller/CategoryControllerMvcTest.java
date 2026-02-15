@@ -52,9 +52,6 @@ class CategoryControllerMvcTest extends BaseMasterDataMvcTest {
     @MockitoBean
     private BindingService bindingService;
 
-    @Autowired
-    private MockMvc mockMvc;
-
     private List<TestBoundEntityProjectionImpl> mockCategoryBindings;
 
     @BeforeEach

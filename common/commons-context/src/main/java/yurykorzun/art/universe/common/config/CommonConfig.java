@@ -10,33 +10,48 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean;
 
 /**
- * Common web configuration that automatically enables common exception handling
- * and other shared web components when imported by modules.
+ * Common configuration that provides common components and customizations used across the project when imported by modules.
  */
 @AutoConfiguration
 public class CommonConfig {
 
+    /**
+     * Registers a shared ObjectMapper bean following project serialization rules:
+     */
     @Bean
     @ConditionalOnMissingBean
     public ObjectMapper objectMapper() {
-        ObjectMapper mapper = new ObjectMapper();
+        return getObjectMapper();
+    }
 
+    /**
+     * Returns ObjectMapper following project serialization rules:
+     * <ul>
+     *   <li>Dates/times serialized as ISO-8601 strings (not timestamps)</li>
+     *   <li>Boolean getters with {@code is} prefix keep their name (e.g. {@code isSomething}, not {@code something})</li>
+     * </ul>
+     */
+    public static ObjectMapper getObjectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        mapper.setPropertyNamingStrategy(getObjectMapperPropertyNamingStrategy());
+        return mapper;
+    }
 
-        // don't change the name of boolean properties
-        mapper.setPropertyNamingStrategy(new PropertyNamingStrategy() {
+    public static PropertyNamingStrategy getObjectMapperPropertyNamingStrategy() {
+        return new PropertyNamingStrategy() {
             @Override
             public String nameForGetterMethod(MapperConfig<?> config,
                                               AnnotatedMethod method,
                                               String defaultName) {
+                // don't change name of boolean properties
                 String methodName = method.getName();
                 if (methodName.startsWith("is") && method.getRawReturnType().equals(boolean.class)) {
                     return methodName;
                 }
                 return super.nameForGetterMethod(config, method, defaultName);
             }
-        });
-        return mapper;
+        };
     }
 }
