@@ -1,6 +1,6 @@
 import {useState, useCallback, useEffect} from "react";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
-import {entityLookupKeys, rawEntitiesKeys} from "@/music/shared/utils/query-keys.ts";
+import {entityLookupKeys, rawEntitiesKeys, ENTITY_LOOKUP_LIMIT} from "@/music/shared/utils/query-keys.ts";
 import type {DataSource} from "@/music/data/raw/shared/types/data-sources.ts";
 import type {LastfmSupportedEntityType} from "@/music/data/raw/lastfm/types/lastfm-entity.ts";
 import {
@@ -88,12 +88,13 @@ export function useLastfmEntityTable<T extends LastfmSupportedEntityType>(
         try {
             const request = rawEntities.map(entity => new LookupRequestSourceParams(entity.name, entity));
             // TODO fix the situation where there can be tracks with the same name - artist key should be involved
-            const masterEntitiesLookups = await batchLookupMasterEntitiesWithParams(entityType, request);
+            const masterEntitiesLookups = await batchLookupMasterEntitiesWithParams(entityType, request, ENTITY_LOOKUP_LIMIT);
             rawEntities.forEach(rawEntity => {
                 const lookupEntities = masterEntitiesLookups.results[rawEntity.name] ?? [];
                 const lookupParams = {
                     search: rawEntity.name,
-                    context: RawEntityLookupContextFactory.fromRawEntity(rawEntity)
+                    context: RawEntityLookupContextFactory.fromRawEntity(rawEntity),
+                    limit: ENTITY_LOOKUP_LIMIT
                 };
                 queryClient.setQueryData(entityLookupKeys.query('master', entityType, lookupParams), lookupEntities);
             });

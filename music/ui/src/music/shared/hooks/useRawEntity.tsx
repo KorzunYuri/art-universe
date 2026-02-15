@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { entityLookupKeys, rawEntitiesKeys } from "@/music/shared/utils/query-keys.ts";
+import { entityLookupKeys, rawEntitiesKeys, ENTITY_LOOKUP_LIMIT } from "@/music/shared/utils/query-keys.ts";
 import type { DataSource } from "@/music/data/raw/shared/types/data-sources.ts";
 import { fetchBoundMasterEntities } from "@/music/data/master/api/music-data-common-binding.ts";
 import { lookupMasterEntitiesWithParams } from "@/music/data/master/api/music-data-common-lookup.ts";
@@ -63,7 +63,8 @@ export function useRawEntity<M extends MasterEntityType, R extends RawEntity<M>>
                 const masterEntityLookup = await lookupMasterEntitiesWithParams(entityType, searchSourceParams);
                 const lookupParams = {
                     search: rawEntity.name,
-                    context: RawEntityLookupContextFactory.fromRawEntity(rawEntity)
+                    context: RawEntityLookupContextFactory.fromRawEntity(rawEntity),
+                    limit: ENTITY_LOOKUP_LIMIT
                 };
                 const masterEntityLookupQueryKey = entityLookupKeys.query('master', entityType, lookupParams);
                 queryClient.setQueryData(masterEntityLookupQueryKey, masterEntityLookup);

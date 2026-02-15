@@ -10,6 +10,7 @@ import type { BasicLookupContext } from "@/music/shared/types/lookup-context";
 import type { RawEntityLookupContext } from "@/music/data/raw/shared/types/lookup-context";
 // hooks
 import { useEntityLookup } from "@/music/shared/hooks/useEntityLookup.ts";
+import { ENTITY_LOOKUP_LIMIT } from "@/music/shared/utils/query-keys.ts";
 
 export interface EntityLookupProps {
     dataSource: DataSource | 'master';
@@ -26,6 +27,7 @@ export interface EntityLookupProps {
     limit?: number;
 }
 
+
 export const EntityLookup = memo(({
     dataSource,
     entityType,
@@ -38,7 +40,7 @@ export const EntityLookup = memo(({
     disabled = false,
     className = '',
     autoSelectExactMatch = true,
-    limit = 20
+    limit = ENTITY_LOOKUP_LIMIT
 }: EntityLookupProps) => {
 
     // Combine search string with context and limit

@@ -53,6 +53,10 @@ export const relationTypeKeys = {
     [...relationTypeKeys.all, 'applicable', sourceType, targetType] as const,
 };
 
+/** Standard result limit for entity lookup dropdowns. Used by both individual
+ *  EntityLookup components and batch cache pre-warming so their query keys match. */
+export const ENTITY_LOOKUP_LIMIT = 20;
+
 /**
  * keys for lookup
  */
