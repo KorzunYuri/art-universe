@@ -39,6 +39,10 @@ public class AlbumTrack extends BaseEntity implements RelationEntity {
     @JoinColumn(name = "track_id", insertable = false, updatable = false)
     private Track track;
 
+    @NonNull
+    @Column(name = "track_order", nullable = false)
+    private Integer trackOrder;
+
     @Column(name = "relation_type_id")
     private Long relationTypeId;
 

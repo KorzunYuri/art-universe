@@ -44,6 +44,7 @@ public class RelationTypeServiceImpl implements RelationTypeService {
     @Transactional
     public RelationTypeDTO updateRelationType(Long id, String name, String reverseName, boolean symmetrical) {
         RelationType relationType = findByIdOrThrow(id);
+        rejectIfSystem(relationType, "modify");
         relationType.setName(name);
         relationType.setReverseName(reverseName);
         relationType.setSymmetrical(symmetrical);
@@ -54,7 +55,8 @@ public class RelationTypeServiceImpl implements RelationTypeService {
     @Override
     @Transactional
     public void deleteRelationType(Long id) {
-        findByIdOrThrow(id);
+        RelationType relationType = findByIdOrThrow(id);
+        rejectIfSystem(relationType, "delete");
         relationTypeRepository.deleteById(id);
     }
 
@@ -74,6 +76,7 @@ public class RelationTypeServiceImpl implements RelationTypeService {
             .name(relationType.getName())
             .reverseName(relationType.getReverseName())
             .isSymmetrical(relationType.isSymmetrical())
+            .isSystem(relationType.isSystem())
             .applicabilities(applicabilities.stream().map(this::toApplicabilityDTO).collect(Collectors.toList()))
             .build();
     }
@@ -103,7 +106,8 @@ public class RelationTypeServiceImpl implements RelationTypeService {
     @Override
     @Transactional
     public RelationTypeApplicabilityDTO addApplicability(Long relationTypeId, MasterEntityType sourceEntityType, MasterEntityType targetEntityType, boolean isDefault) {
-        findByIdOrThrow(relationTypeId);
+        RelationType relationType = findByIdOrThrow(relationTypeId);
+        rejectIfSystem(relationType, "modify applicability of");
 
         if (applicabilityRepository.existsByRelationTypeIdAndSourceEntityTypeAndTargetEntityType(
                 relationTypeId, sourceEntityType, targetEntityType)) {
@@ -125,6 +129,8 @@ public class RelationTypeServiceImpl implements RelationTypeService {
     @Override
     @Transactional
     public void removeApplicability(Long relationTypeId, MasterEntityType sourceEntityType, MasterEntityType targetEntityType) {
+        RelationType relationType = findByIdOrThrow(relationTypeId);
+        rejectIfSystem(relationType, "modify applicability of");
         applicabilityRepository.deleteByRelationTypeIdAndSourceEntityTypeAndTargetEntityType(
             relationTypeId, sourceEntityType, targetEntityType);
     }
@@ -142,12 +148,20 @@ public class RelationTypeServiceImpl implements RelationTypeService {
             .orElseThrow(() -> new CustomEntityNotFoundException("relation_type", id));
     }
 
+    private void rejectIfSystem(RelationType relationType, String action) {
+        if (relationType.isSystem()) {
+            throw new IllegalArgumentException(
+                String.format("Cannot %s system relation type '%s'", action, relationType.getName()));
+        }
+    }
+
     private RelationTypeDTO toDTO(RelationType entity) {
         return RelationTypeDTO.builder()
             .id(entity.getId())
             .name(entity.getName())
             .reverseName(entity.getReverseName())
             .isSymmetrical(entity.isSymmetrical())
+            .isSystem(entity.isSystem())
             .build();
     }
 

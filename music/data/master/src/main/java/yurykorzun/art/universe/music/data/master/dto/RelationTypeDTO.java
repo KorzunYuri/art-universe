@@ -12,4 +12,5 @@ public class RelationTypeDTO {
     private String name;
     private String reverseName;
     private boolean isSymmetrical;
+    private boolean isSystem;
 }

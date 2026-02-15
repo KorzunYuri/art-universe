@@ -1,9 +1,12 @@
 -- Create album_track junction table
+DROP TABLE IF EXISTS album_track;
+
 CREATE TABLE album_track (
     id BIGINT PRIMARY KEY,
     album_id BIGINT NOT NULL,
     track_id BIGINT NOT NULL,
     relation_type_id BIGINT,
+    track_order INTEGER NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_album_track_album FOREIGN KEY (album_id) REFERENCES album(id) ON DELETE CASCADE,
@@ -29,6 +32,8 @@ CREATE UNIQUE INDEX uk_album_track_typed
     WHERE relation_type_id IS NOT NULL;
 
 -- Create album_track_binding table
+DROP TABLE IF EXISTS album_track_binding;
+
 CREATE TABLE album_track_binding (
     id BIGINT PRIMARY KEY,
     master_id BIGINT NOT NULL,
@@ -46,6 +51,7 @@ CREATE TABLE album_track_binding (
 );
 
 -- Create sequence for album_track_binding
+DROP SEQUENCE IF EXISTS album_track_binding_seq;
 CREATE SEQUENCE album_track_binding_seq INCREMENT BY 50 START WITH 1;
 
 -- Create indexes for album_track_binding

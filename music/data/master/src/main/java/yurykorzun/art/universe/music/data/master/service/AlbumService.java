@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import yurykorzun.art.universe.music.data.master.dto.AlbumDto;
 import yurykorzun.art.universe.music.data.master.dto.AlbumSaveRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.AlbumWithCategoriesDto;
+import yurykorzun.art.universe.music.data.master.dto.AlbumWithTracksSaveRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
@@ -27,6 +28,8 @@ public interface AlbumService {
     AlbumWithCategoriesDto getAlbumWithCategories(Long id);
 
     AlbumDto saveAlbum(AlbumSaveRequestDTO request);
+
+    AlbumDto saveAlbumWithTracks(AlbumWithTracksSaveRequestDTO request);
 
     boolean deleteAlbum(Long id);
 

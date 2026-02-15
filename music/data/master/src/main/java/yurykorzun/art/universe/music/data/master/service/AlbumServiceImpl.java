@@ -7,7 +7,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.music.data.master.dto.AlbumDto;
 import yurykorzun.art.universe.music.data.master.dto.AlbumSaveRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.AlbumTrackItemDTO;
 import yurykorzun.art.universe.music.data.master.dto.AlbumWithCategoriesDto;
+import yurykorzun.art.universe.music.data.master.dto.AlbumWithTracksSaveRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategoryDto;
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityCreateAndBindRequestDTO;
@@ -18,13 +20,18 @@ import yurykorzun.art.universe.common.domain.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.common.domain.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.entity.Album;
 import yurykorzun.art.universe.music.data.master.entity.AlbumCategory;
+import yurykorzun.art.universe.music.data.master.entity.AlbumTrack;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
+import yurykorzun.art.universe.music.data.master.entity.RelationTypeApplicability;
 import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.repository.AlbumBindingRepository;
 import yurykorzun.art.universe.music.data.master.repository.AlbumCategoryRepository;
 import yurykorzun.art.universe.music.data.master.repository.AlbumRepository;
+import yurykorzun.art.universe.music.data.master.repository.AlbumTrackRepository;
 import yurykorzun.art.universe.music.data.master.repository.CategoryRepository;
+import yurykorzun.art.universe.music.data.master.repository.RelationTypeApplicabilityRepository;
+import yurykorzun.art.universe.music.data.master.repository.TrackRepository;
 import yurykorzun.art.universe.music.data.master.service.lookup.ArtistRelatedLookupService;
 
 import java.util.List;
@@ -36,6 +43,9 @@ public class AlbumServiceImpl implements AlbumService {
     private final AlbumBindingRepository bindingsRepository;
     private final AlbumCategoryRepository albumCategoryRepository;
     private final CategoryRepository categoryRepository;
+    private final AlbumTrackRepository albumTrackRepository;
+    private final RelationTypeApplicabilityRepository relationTypeApplicabilityRepository;
+    private final TrackRepository trackRepository;
     private final ArtistRelatedLookupService lookupService;
 
     public AlbumServiceImpl(
@@ -43,12 +53,18 @@ public class AlbumServiceImpl implements AlbumService {
         AlbumBindingRepository bindingsRepository,
         AlbumCategoryRepository albumCategoryRepository,
         CategoryRepository categoryRepository,
+        AlbumTrackRepository albumTrackRepository,
+        RelationTypeApplicabilityRepository relationTypeApplicabilityRepository,
+        TrackRepository trackRepository,
         EntityManager entityManager
     ) {
         this.albumRepository = albumRepository;
         this.bindingsRepository = bindingsRepository;
         this.albumCategoryRepository = albumCategoryRepository;
         this.categoryRepository = categoryRepository;
+        this.albumTrackRepository = albumTrackRepository;
+        this.relationTypeApplicabilityRepository = relationTypeApplicabilityRepository;
+        this.trackRepository = trackRepository;
         this.lookupService = new ArtistRelatedLookupService(entityManager, MasterEntityType.ALBUM);
     }
 
@@ -108,6 +124,63 @@ public class AlbumServiceImpl implements AlbumService {
 
         Album savedAlbum = albumRepository.save(album);
         return mapToDto(savedAlbum);
+    }
+
+    @Override
+    @Transactional
+    public AlbumDto saveAlbumWithTracks(AlbumWithTracksSaveRequestDTO request) {
+        // Save or update the album itself
+        AlbumSaveRequestDTO albumRequest = AlbumSaveRequestDTO.builder()
+                .id(request.getId())
+                .name(request.getName())
+                .primaryArtistId(request.getPrimaryArtistId())
+                .build();
+        AlbumDto savedAlbum = saveAlbum(albumRequest);
+        Long albumId = savedAlbum.getId();
+
+        // Resolve default relation type for ALBUM → TRACK
+        Long defaultRelationTypeId = relationTypeApplicabilityRepository
+                .findBySourceEntityTypeAndTargetEntityTypeAndIsDefaultTrue(
+                        MasterEntityType.ALBUM, MasterEntityType.TRACK)
+                .map(RelationTypeApplicability::getRelationTypeId)
+                .orElse(null);
+
+        // Create or update album-track relations
+        for (AlbumTrackItemDTO trackItem : request.getTracks()) {
+            Long trackId = trackItem.getTrackId();
+
+            // Validate track exists
+            if (!trackRepository.existsById(trackId)) {
+                throw new CustomEntityNotFoundException("Track", trackId);
+            }
+
+            // Determine relation type: use provided or fall back to default
+            Long relationTypeId = trackItem.getRelationTypeId() != null
+                    ? trackItem.getRelationTypeId()
+                    : defaultRelationTypeId;
+
+            // Find existing album-track relation or create new one
+            var existing = albumTrackRepository
+                    .findByAlbumIdAndTrackIdAndRelationTypeId(albumId, trackId, relationTypeId);
+
+            if (existing.isPresent()) {
+                // Update track order
+                AlbumTrack albumTrack = existing.get();
+                albumTrack.setTrackOrder(trackItem.getTrackOrder());
+                albumTrackRepository.save(albumTrack);
+            } else {
+                // Create new album-track relation
+                AlbumTrack albumTrack = AlbumTrack.builder()
+                        .albumId(albumId)
+                        .trackId(trackId)
+                        .trackOrder(trackItem.getTrackOrder())
+                        .relationTypeId(relationTypeId)
+                        .build();
+                albumTrackRepository.save(albumTrack);
+            }
+        }
+
+        return savedAlbum;
     }
 
     @Override

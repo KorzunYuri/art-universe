@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.music.data.master.dto.AlbumDto;
 import yurykorzun.art.universe.music.data.master.dto.AlbumSaveRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.AlbumWithCategoriesDto;
+import yurykorzun.art.universe.music.data.master.dto.AlbumWithTracksSaveRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
@@ -67,6 +68,11 @@ public class AlbumController {
     @PostMapping
     public AlbumDto saveAlbum(@Valid @RequestBody AlbumSaveRequestDTO request) {
         return albumService.saveAlbum(request);
+    }
+
+    @PostMapping("/with-tracks")
+    public AlbumDto saveAlbumWithTracks(@Valid @RequestBody AlbumWithTracksSaveRequestDTO request) {
+        return albumService.saveAlbumWithTracks(request);
     }
 
     @DeleteMapping("/{id}")

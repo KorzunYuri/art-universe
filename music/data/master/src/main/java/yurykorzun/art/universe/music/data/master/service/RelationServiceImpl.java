@@ -359,6 +359,7 @@ public class RelationServiceImpl implements RelationService {
         // Validate relation type applicability if a type is specified
         if (relationTypeId != null) {
             validateRelationTypeApplicability(relationTypeId, sourceEntityType, targetEntityType);
+            rejectIfSystemRelationType(relationTypeId);
         }
 
         // Create or find the relation
@@ -374,6 +375,11 @@ public class RelationServiceImpl implements RelationService {
         Long targetEntityId,
         @Nullable Long relationTypeId
     ) {
+        // Reject deletion of system relation types
+        if (relationTypeId != null) {
+            rejectIfSystemRelationType(relationTypeId);
+        }
+
         // Create relation metadata
         RelationMetadata metadata = createRelationMetadata(sourceEntityType, targetEntityType);
 
@@ -927,6 +933,22 @@ public class RelationServiceImpl implements RelationService {
      * @throws CustomEntityNotFoundException if relation type does not exist
      * @throws IllegalArgumentException if relation type is not applicable to the entity pair
      */
+    private void rejectIfSystemRelationType(Long relationTypeId) {
+        String sql = "SELECT is_system FROM relation_type WHERE id = ?1";
+        try {
+            Boolean isSystem = (Boolean) entityManager.createNativeQuery(sql)
+                .setParameter(1, relationTypeId)
+                .getSingleResult();
+            if (Boolean.TRUE.equals(isSystem)) {
+                throw new IllegalArgumentException(
+                    "Cannot manually create or delete relations with system relation types. " +
+                    "These relations are managed automatically.");
+            }
+        } catch (NoResultException e) {
+            // Will be caught by validateRelationTypeApplicability
+        }
+    }
+
     private void validateRelationTypeApplicability(
         Long relationTypeId, MasterEntityType sourceEntityType, MasterEntityType targetEntityType
     ) {

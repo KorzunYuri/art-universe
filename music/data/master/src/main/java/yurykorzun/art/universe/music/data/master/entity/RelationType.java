@@ -31,4 +31,7 @@ public class RelationType extends BaseEntity {
 
     @Column(name = "is_symmetrical", nullable = false)
     private boolean symmetrical;
+
+    @Column(name = "is_system", nullable = false)
+    private boolean system;
 }

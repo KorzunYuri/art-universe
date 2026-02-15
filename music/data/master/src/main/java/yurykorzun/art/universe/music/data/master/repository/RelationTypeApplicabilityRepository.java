@@ -7,6 +7,7 @@ import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.entity.RelationTypeApplicability;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface RelationTypeApplicabilityRepository extends JpaRepository<RelationTypeApplicability, Long> {
@@ -30,4 +31,7 @@ public interface RelationTypeApplicabilityRepository extends JpaRepository<Relat
     """)
     List<RelationTypeApplicability> findApplicableTypes(
         MasterEntityType firstEntityType, MasterEntityType secondEntityType);
+
+    Optional<RelationTypeApplicability> findBySourceEntityTypeAndTargetEntityTypeAndIsDefaultTrue(
+        MasterEntityType sourceEntityType, MasterEntityType targetEntityType);
 }

@@ -56,4 +56,8 @@
         <sqlFile path="../changesets/0016-relation-types/0016-0120-readonly_views$merge_primary_artist.sql" relativeToChangelogFile="true"/>
     </changeSet>
 
+    <changeSet id="0016-0130-system_relation_types$seed" author="claude">
+        <sqlFile path="../changesets/0016-relation-types/0016-0130-system_relation_types$seed.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
 </databaseChangeLog>
