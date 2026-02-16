@@ -13,6 +13,7 @@ import yurykorzun.art.universe.music.data.master.repository.RelationTypeApplicab
 import yurykorzun.art.universe.music.data.master.repository.RelationTypeRepository;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -108,6 +109,7 @@ public class RelationTypeServiceImpl implements RelationTypeService {
     public RelationTypeApplicabilityDTO addApplicability(Long relationTypeId, MasterEntityType sourceEntityType, MasterEntityType targetEntityType, boolean isDefault) {
         RelationType relationType = findByIdOrThrow(relationTypeId);
         rejectIfSystem(relationType, "modify applicability of");
+        validateApplicabilityCombination(sourceEntityType, targetEntityType);
 
         if (applicabilityRepository.existsByRelationTypeIdAndSourceEntityTypeAndTargetEntityType(
                 relationTypeId, sourceEntityType, targetEntityType)) {
@@ -141,6 +143,21 @@ public class RelationTypeServiceImpl implements RelationTypeService {
         return applicabilityRepository.findByRelationTypeId(relationTypeId).stream()
             .map(this::toApplicabilityDTO)
             .collect(Collectors.toList());
+    }
+
+    private static final Set<MasterEntityType> RELATABLE_TYPES =
+        Set.of(MasterEntityType.ARTIST, MasterEntityType.ALBUM, MasterEntityType.TRACK);
+
+    private void validateApplicabilityCombination(MasterEntityType source, MasterEntityType target) {
+        if (!RELATABLE_TYPES.contains(source) || !RELATABLE_TYPES.contains(target)) {
+            throw new IllegalArgumentException(
+                "Applicability only valid for artist, album and track entity types");
+        }
+        if (!source.equals(target) && source.getCode() > target.getCode()) {
+            throw new IllegalArgumentException(String.format(
+                "Non-canonical combination %s\u2192%s; use %s\u2192%s instead",
+                source.getName(), target.getName(), target.getName(), source.getName()));
+        }
     }
 
     private RelationType findByIdOrThrow(Long id) {
