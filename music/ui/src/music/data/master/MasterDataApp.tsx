@@ -3,10 +3,12 @@ import { Categories } from './pages/Categories'
 import { Artists } from './pages/Artists'
 import { Albums } from './pages/Albums'
 import { Tracks } from './pages/Tracks'
+import { RelationTypes } from './pages/RelationTypes'
 import { MusicDataHome } from './pages/MusicDataHome'
 import { ArtistDetail } from './pages/ArtistDetail'
 import { AlbumDetail } from './pages/AlbumDetail'
 import { TrackDetail } from './pages/TrackDetail'
+import { RelationTypeDetail } from './pages/RelationTypeDetail'
 import { TableWithDetailLayout } from '@/music/shared/components/TableWithDetailLayout'
 import { registerMasterLookups } from "./services/registerMasterLookups.ts";
 
@@ -36,6 +38,13 @@ export default function MasterDataApp() {
             element: <TableWithDetailLayout><Tracks /></TableWithDetailLayout>,
             children: [
                 { path: ':trackId', element: <TrackDetail /> },
+            ],
+        },
+        {
+            path: 'relation-types',
+            element: <TableWithDetailLayout><RelationTypes /></TableWithDetailLayout>,
+            children: [
+                { path: ':relationTypeId', element: <RelationTypeDetail /> },
             ],
         },
     ]

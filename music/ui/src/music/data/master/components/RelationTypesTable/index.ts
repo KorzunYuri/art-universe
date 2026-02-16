@@ -1,0 +1,1 @@
+export { RelationTypesTable } from './RelationTypesTable';

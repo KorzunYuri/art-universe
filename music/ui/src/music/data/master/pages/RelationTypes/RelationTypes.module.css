@@ -1,0 +1,62 @@
+.page {
+    padding: 20px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.header h2 {
+    margin: 0;
+    color: #333;
+}
+
+.createSection {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.nameInput,
+.reverseNameInput {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.nameInput {
+    min-width: 200px;
+}
+
+.reverseNameInput {
+    min-width: 180px;
+}
+
+.checkboxLabel {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.createButton {
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.createButton:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}

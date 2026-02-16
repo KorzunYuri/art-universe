@@ -49,6 +49,8 @@ export const relationTypeKeys = {
   all: ['relationTypes'] as const,
   list: (search?: string) =>
     [...relationTypeKeys.all, 'list', search] as const,
+  detail: (id: number) =>
+    [...relationTypeKeys.all, 'detail', id] as const,
   applicable: (sourceType: MasterEntityType, targetType: MasterEntityType) =>
     [...relationTypeKeys.all, 'applicable', sourceType, targetType] as const,
 };
