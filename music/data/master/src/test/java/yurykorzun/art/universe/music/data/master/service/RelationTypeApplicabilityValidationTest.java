@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 @Import({
     RelationRegistry.class,
+    RelationQueryDispatcher.class,
 })
 class RelationTypeApplicabilityValidationTest extends BaseMasterDataJpaTest {
 
@@ -34,6 +35,9 @@ class RelationTypeApplicabilityValidationTest extends BaseMasterDataJpaTest {
     @Autowired
     private RelationRegistry relationRegistry;
 
+    @Autowired
+    private RelationQueryDispatcher relationQueryDispatcher;
+
     private RelationServiceImpl relationService;
 
     private Artist artist1;
@@ -45,7 +49,7 @@ class RelationTypeApplicabilityValidationTest extends BaseMasterDataJpaTest {
 
     @BeforeEach
     void setUp() {
-        relationService = new RelationServiceImpl(entityManager, relationRegistry);
+        relationService = new RelationServiceImpl(entityManager, relationRegistry, relationQueryDispatcher);
 
         // Create test entities
         artist1 = Artist.builder().name("Artist 1").build();
