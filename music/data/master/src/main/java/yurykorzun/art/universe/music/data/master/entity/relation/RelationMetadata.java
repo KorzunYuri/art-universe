@@ -4,6 +4,8 @@ import lombok.Getter;
 import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.entity.MasterEntityMetadata;
 
+import java.util.List;
+
 /**
  * Metadata for a relation between two entities, containing information about
  * relation table names, field names, and entity order.
@@ -205,5 +207,16 @@ public class RelationMetadata {
      */
     public Long getSecondExternalEntityId(Long sourceExternalId, Long targetExternalId) {
         return isSourceFirst ? targetExternalId : sourceExternalId;
+    }
+
+    /**
+     * Returns extra columns specific to this relation table (e.g., track_order for album_track).
+     * These are appended to the SELECT clause and extracted in result processing.
+     */
+    public List<String> getExtraColumns() {
+        if ("album_track".equals(relationTableName)) {
+            return List.of("track_order");
+        }
+        return List.of();
     }
 }

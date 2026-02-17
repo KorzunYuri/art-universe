@@ -223,44 +223,54 @@ public class RelationServiceImpl implements RelationService {
         MasterEntityType targetEntityType,
         @Nullable Long relationTypeId
     ) {
-        // Create relation metadata
         RelationMetadata metadata = createRelationMetadata(sourceEntityType, targetEntityType);
 
         boolean hasTypeSupport = metadata.isSupportsRelationTypes();
 
-        String relationTypeFilter = "";
-        String relationTypeColumns = "";
         String relationTypeJoin = "";
-
+        String relationTypeFilter = "";
         if (hasTypeSupport) {
-            relationTypeColumns = ", r.relation_type_id, rt.name AS relation_type_name";
             relationTypeJoin = " LEFT JOIN relation_type rt ON r.relation_type_id = rt.id";
             if (relationTypeId != null) {
                 relationTypeFilter = " AND r.relation_type_id = ?2";
             }
         }
 
+        // Extra columns specific to certain relation tables (e.g., track_order for album_track)
+        List<String> extraColumns = metadata.getExtraColumns();
+        String extraColumnsSql = extraColumns.stream()
+            .map(col -> ", r." + col)
+            .collect(Collectors.joining());
+
         if (metadata.isSameEntityRelation()) {
-            // For same-entity relations, query both directions
+            // Forward direction: WHERE source_id = ?1, JOIN target_id → use rt.name
+            String forwardTypeColumns = hasTypeSupport
+                ? ", r.relation_type_id, rt.name AS relation_type_name" : "";
+            // Reverse direction: WHERE target_id = ?1, JOIN source_id → use reverse_name
+            String reverseTypeColumns = hasTypeSupport
+                ? ", r.relation_type_id, COALESCE(rt.reverse_name, rt.name) AS relation_type_name" : "";
+
             String sql = """
-                SELECT t.id, t.name, r.id AS relation_id%s
+                SELECT t.id, t.name, r.id AS relation_id%s%s
                 FROM %s r
                 JOIN %s t ON r.%s = t.id%s
                 WHERE r.%s = ?1%s
-                UNION
-                SELECT t.id, t.name, r.id AS relation_id%s
+                UNION ALL
+                SELECT t.id, t.name, r.id AS relation_id%s%s
                 FROM %s r
                 JOIN %s t ON r.%s = t.id%s
                 WHERE r.%s = ?1%s
                 """.formatted(
-                    relationTypeColumns,
+                    forwardTypeColumns,
+                    extraColumnsSql,
                     metadata.getRelationTableName(),
                     targetEntityType.getName(),
                     metadata.getTargetIdField(),
                     relationTypeJoin,
                     metadata.getSourceIdField(),
                     relationTypeFilter,
-                    relationTypeColumns,
+                    reverseTypeColumns,
+                    extraColumnsSql,
                     metadata.getRelationTableName(),
                     targetEntityType.getName(),
                     metadata.getSourceIdField(),
@@ -269,28 +279,29 @@ public class RelationServiceImpl implements RelationService {
                     relationTypeFilter
                 );
 
-            List<Object[]> results;
-            try {
-                var query = entityManager.createNativeQuery(sql)
-                    .setParameter(1, sourceEntityId);
-                if (hasTypeSupport && relationTypeId != null) {
-                    query.setParameter(2, relationTypeId);
-                }
-                results = query.getResultList();
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to get related entities", e);
+            List<Object[]> results = executeRelatedEntitiesQuery(
+                sql, sourceEntityId, hasTypeSupport, relationTypeId);
+
+            return buildRelatedEntityDTOs(results, targetEntityType, hasTypeSupport, extraColumns);
+        } else {
+            // Cross-entity: forward when source is first in canonical order, reverse otherwise
+            String relationTypeColumns;
+            if (!hasTypeSupport) {
+                relationTypeColumns = "";
+            } else if (metadata.isSourceFirst()) {
+                relationTypeColumns = ", r.relation_type_id, rt.name AS relation_type_name";
+            } else {
+                relationTypeColumns = ", r.relation_type_id, COALESCE(rt.reverse_name, rt.name) AS relation_type_name";
             }
 
-            return buildRelatedEntityDTOs(results, targetEntityType, hasTypeSupport);
-        } else {
-            // For cross-entity relations, query single direction
             String sql = """
-                SELECT t.id, t.name, r.id AS relation_id%s
+                SELECT t.id, t.name, r.id AS relation_id%s%s
                 FROM %s r
                 JOIN %s t ON r.%s = t.id%s
                 WHERE r.%s = ?1%s
                 """.formatted(
                     relationTypeColumns,
+                    extraColumnsSql,
                     metadata.getRelationTableName(),
                     targetEntityType.getName(),
                     metadata.getTargetIdField(),
@@ -299,24 +310,31 @@ public class RelationServiceImpl implements RelationService {
                     relationTypeFilter
                 );
 
-            List<Object[]> results;
-            try {
-                var query = entityManager.createNativeQuery(sql)
-                    .setParameter(1, sourceEntityId);
-                if (hasTypeSupport && relationTypeId != null) {
-                    query.setParameter(2, relationTypeId);
-                }
-                results = query.getResultList();
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to get related entities", e);
-            }
+            List<Object[]> results = executeRelatedEntitiesQuery(
+                sql, sourceEntityId, hasTypeSupport, relationTypeId);
 
-            return buildRelatedEntityDTOs(results, targetEntityType, hasTypeSupport);
+            return buildRelatedEntityDTOs(results, targetEntityType, hasTypeSupport, extraColumns);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Object[]> executeRelatedEntitiesQuery(
+            String sql, Long sourceEntityId, boolean hasTypeSupport, @Nullable Long relationTypeId) {
+        try {
+            var query = entityManager.createNativeQuery(sql)
+                .setParameter(1, sourceEntityId);
+            if (hasTypeSupport && relationTypeId != null) {
+                query.setParameter(2, relationTypeId);
+            }
+            return query.getResultList();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get related entities", e);
         }
     }
 
     private List<RelatedEntityDTO> buildRelatedEntityDTOs(
-            List<Object[]> results, MasterEntityType entityType, boolean hasTypeSupport) {
+            List<Object[]> results, MasterEntityType entityType,
+            boolean hasTypeSupport, List<String> extraColumns) {
         List<RelatedEntityDTO> entities = new ArrayList<>();
         for (Object[] row : results) {
             var builder = RelatedEntityDTO.builder()
@@ -324,9 +342,18 @@ public class RelationServiceImpl implements RelationService {
                 .name((String) row[1])
                 .relationId(((Number) row[2]).longValue())
                 .entityType(entityType);
+            int nextIdx = 3;
             if (hasTypeSupport) {
-                builder.relationTypeId(row[3] != null ? ((Number) row[3]).longValue() : null)
-                       .relationTypeName((String) row[4]);
+                builder.relationTypeId(row[nextIdx] != null ? ((Number) row[nextIdx]).longValue() : null);
+                nextIdx++;
+                builder.relationTypeName((String) row[nextIdx]);
+                nextIdx++;
+            }
+            for (String col : extraColumns) {
+                if ("track_order".equals(col) && row[nextIdx] != null) {
+                    builder.trackOrder(((Number) row[nextIdx]).intValue());
+                }
+                nextIdx++;
             }
             entities.add(builder.build());
         }

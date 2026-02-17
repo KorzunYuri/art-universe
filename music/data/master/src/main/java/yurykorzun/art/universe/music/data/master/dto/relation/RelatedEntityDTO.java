@@ -18,4 +18,5 @@ public class RelatedEntityDTO extends BaseEntityDto {
     private Long relationId;
     private Long relationTypeId;
     private String relationTypeName;
+    private Integer trackOrder;
 }

@@ -58,6 +58,7 @@ export interface RelatedEntityDTO {
     relationId: number;
     relationTypeId: number | null;
     relationTypeName: string | null;
+    trackOrder: number | null;
 }
 
 /**

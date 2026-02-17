@@ -104,6 +104,9 @@ export const RelatedEntitiesSection = ({
                         {relatedEntities.map((entity: RelatedEntityDTO) => (
                             <div key={`${entity.id}-${entity.relationId}`} className={styles.item}>
                                 <div className={styles.itemInfo}>
+                                    {entity.trackOrder != null && (
+                                        <span className={styles.trackOrder}>{entity.trackOrder}.</span>
+                                    )}
                                     <span className={styles.entityName}>{entity.name}</span>
                                     {entity.relationTypeName && (
                                         <span className={styles.relationType}>{entity.relationTypeName}</span>
