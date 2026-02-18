@@ -8,7 +8,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
-import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
@@ -38,27 +37,29 @@ class TrackServiceTest {
 
     @Mock
     private ArtistService artistService;
-    
+
     @Mock
     private RelationService relationService;
-    
+
     @Mock
     private EntityManager entityManager;
 
     @InjectMocks
     private TrackServiceImpl trackService;
 
+    // ---- findBoundTracks ----
+
     @Test
     void findBoundTracks_shouldReturnListOfBoundTracks() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         List<Long> externalIds = List.of(1L, 2L);
-        
+
         TestBoundEntityProjectionImpl projection = new TestBoundEntityProjectionImpl(
             1L, dataSource, 101L, "Test Track"
         );
         List<BoundEntityProjection> expectedResult = List.of(projection);
-        
+
         when(trackBindingRepository.findBoundTracksForDataSource(dataSource, externalIds))
             .thenReturn(expectedResult);
 
@@ -75,11 +76,11 @@ class TrackServiceTest {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
-        
+
         TestBoundEntityProjectionImpl projection = new TestBoundEntityProjectionImpl(
             externalId, dataSource, 101L, "Test Track"
         );
-        
+
         when(trackBindingRepository.findBoundTracksForDataSource(dataSource, List.of(externalId)))
             .thenReturn(List.of(projection));
 
@@ -96,7 +97,7 @@ class TrackServiceTest {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
-        
+
         when(trackBindingRepository.findBoundTracksForDataSource(dataSource, List.of(externalId)))
             .thenReturn(List.of());
 
@@ -108,87 +109,89 @@ class TrackServiceTest {
         verify(trackBindingRepository).findBoundTracksForDataSource(dataSource, List.of(externalId));
     }
 
+    // ---- bindToExisting ----
+
     @Test
-    void bindToExisting_whenArtistNotBound_shouldThrowException() {
+    void bindToExisting_whenMasterPrimaryArtistIdIsNull_shouldThrowException() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
-        Long primaryArtistId = 100L;
-        Long masterId = 200L;
-        
+
         ArtistRelatedEntityBindToExistingRequestDTO request = ArtistRelatedEntityBindToExistingRequestDTO.builder()
-            .masterId(masterId)
-            .primaryArtistId(primaryArtistId)
+            .masterId(200L)
+            .masterPrimaryArtistId(null)
             .build();
-        
-        when(artistService.findArtist(dataSource, primaryArtistId)).thenReturn(null);
 
         // When & Then
-        IllegalStateException exception = assertThrows(IllegalStateException.class, 
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
             () -> trackService.bindToExisting(dataSource, externalId, request));
-        
-        assertEquals("Artist with external ID 100 from LASTFM must be bound before binding track", 
-            exception.getMessage());
-        
-        verify(artistService).findArtist(dataSource, primaryArtistId);
-        verifyNoInteractions(trackRepository, relationService);
+
+        assertEquals("masterPrimaryArtistId is required", exception.getMessage());
+
+        verifyNoInteractions(trackRepository, trackBindingRepository, relationService);
     }
 
     @Test
-    void bindToExisting_whenTrackExists_shouldCreateRelationAndBinding() {
+    void bindToExisting_whenArtistNotFound_shouldPropagateException() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
-        Long primaryArtistId = 100L;
+        Long masterPrimaryArtistId = 100L;
+
+        ArtistRelatedEntityBindToExistingRequestDTO request = ArtistRelatedEntityBindToExistingRequestDTO.builder()
+            .masterId(200L)
+            .masterPrimaryArtistId(masterPrimaryArtistId)
+            .build();
+
+        when(artistService.getArtist(masterPrimaryArtistId))
+            .thenThrow(new RuntimeException("Artist not found"));
+
+        // When & Then
+        assertThrows(RuntimeException.class,
+            () -> trackService.bindToExisting(dataSource, externalId, request));
+
+        verify(artistService).getArtist(masterPrimaryArtistId);
+        verifyNoInteractions(trackRepository, trackBindingRepository, relationService);
+    }
+
+    @Test
+    void bindToExisting_withNewBinding_shouldCreateBindingAndRelation() {
+        // Given
+        DataSource dataSource = DataSource.LASTFM;
+        Long externalId = 1L;
+        Long masterPrimaryArtistId = 100L;
         Long masterId = 200L;
-        
+
         ArtistRelatedEntityBindToExistingRequestDTO request = ArtistRelatedEntityBindToExistingRequestDTO.builder()
             .masterId(masterId)
-            .primaryArtistId(primaryArtistId)
+            .masterPrimaryArtistId(masterPrimaryArtistId)
             .build();
-        
-        TestBoundEntityProjectionImpl artistBinding = new TestBoundEntityProjectionImpl(
-            primaryArtistId, dataSource, 300L, "Test Artist"
-        );
-        
+
         Track existingTrack = Track.builder()
             .id(masterId)
             .name("Test Track")
-            .primaryArtistId(400L) // Different from artist binding
+            .primaryArtistId(masterPrimaryArtistId)
             .build();
-        
+
         TrackBinding trackBinding = TrackBinding.builder()
             .id(1L)
             .dataSource(dataSource)
             .externalId(externalId)
             .masterId(masterId)
             .build();
-        
-        RelationBindingDTO relationBinding = RelationBindingDTO.builder()
-            .sourceExternalId(primaryArtistId)
-            .targetExternalId(externalId)
-            .dataSource(dataSource)
-            .relationId(500L)
-            .build();
-        
+
         TestBoundEntityProjectionImpl expectedResult = new TestBoundEntityProjectionImpl(
             externalId, dataSource, masterId, "Test Track"
         );
-        
-        when(artistService.findArtist(dataSource, primaryArtistId)).thenReturn(artistBinding);
+
         when(trackRepository.findById(masterId)).thenReturn(Optional.of(existingTrack));
         when(trackBindingRepository.findByDataSourceAndExternalId(dataSource, externalId))
             .thenReturn(Optional.empty());
         when(trackBindingRepository.save(any(TrackBinding.class))).thenReturn(trackBinding);
         when(relationService.createInternalRelation(
-            eq(MasterEntityType.ARTIST), eq(artistBinding.getMasterId()),
+            eq(MasterEntityType.ARTIST), eq(masterPrimaryArtistId),
             eq(MasterEntityType.TRACK), eq(masterId), isNull()
         )).thenReturn(500L);
-        when(relationService.bindExternalRelation(
-            eq(dataSource), 
-            eq(MasterEntityType.ARTIST), eq(primaryArtistId),
-            eq(MasterEntityType.TRACK), eq(externalId)
-        )).thenReturn(relationBinding);
         when(trackBindingRepository.findBoundTracksForDataSource(dataSource, List.of(externalId)))
             .thenReturn(List.of(expectedResult));
 
@@ -197,47 +200,87 @@ class TrackServiceTest {
 
         // Then
         assertEquals(expectedResult, result);
-        
-        verify(artistService).findArtist(dataSource, primaryArtistId);
+
+        verify(artistService).getArtist(masterPrimaryArtistId);
         verify(trackRepository).findById(masterId);
         verify(trackBindingRepository).findByDataSourceAndExternalId(dataSource, externalId);
         verify(trackBindingRepository).save(any(TrackBinding.class));
         verify(relationService).createInternalRelation(
-            eq(MasterEntityType.ARTIST), eq(artistBinding.getMasterId()),
+            eq(MasterEntityType.ARTIST), eq(masterPrimaryArtistId),
             eq(MasterEntityType.TRACK), eq(masterId), isNull()
-        );
-        verify(relationService).bindExternalRelation(
-            eq(dataSource), 
-            eq(MasterEntityType.ARTIST), eq(primaryArtistId),
-            eq(MasterEntityType.TRACK), eq(externalId)
         );
         verify(trackBindingRepository).findBoundTracksForDataSource(dataSource, List.of(externalId));
     }
 
     @Test
-    void createAndBind_whenArtistNotBound_shouldThrowException() {
+    void bindToExisting_whenBindingAlreadyExists_shouldUpdateAndCreateRelation() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
-        Long primaryArtistId = 100L;
-        String trackName = "New Track";
-        
-        ArtistRelatedEntityCreateAndBindRequestDTO request = ArtistRelatedEntityCreateAndBindRequestDTO.builder()
-            .entityName(trackName)
-            .primaryArtistId(primaryArtistId)
+        Long masterPrimaryArtistId = 100L;
+        Long masterId = 200L;
+
+        ArtistRelatedEntityBindToExistingRequestDTO request = ArtistRelatedEntityBindToExistingRequestDTO.builder()
+            .masterId(masterId)
+            .masterPrimaryArtistId(masterPrimaryArtistId)
             .build();
-        
-        when(artistService.findArtist(dataSource, primaryArtistId)).thenReturn(null);
+
+        Track existingTrack = Track.builder()
+            .id(masterId)
+            .name("Test Track")
+            .primaryArtistId(masterPrimaryArtistId)
+            .build();
+
+        TrackBinding existingBinding = TrackBinding.builder()
+            .id(1L)
+            .dataSource(dataSource)
+            .externalId(externalId)
+            .masterId(999L) // different master ID — should be updated
+            .build();
+
+        TestBoundEntityProjectionImpl expectedResult = new TestBoundEntityProjectionImpl(
+            externalId, dataSource, masterId, "Test Track"
+        );
+
+        when(trackRepository.findById(masterId)).thenReturn(Optional.of(existingTrack));
+        when(trackBindingRepository.findByDataSourceAndExternalId(dataSource, externalId))
+            .thenReturn(Optional.of(existingBinding));
+        when(trackBindingRepository.save(any(TrackBinding.class))).thenReturn(existingBinding);
+        when(relationService.createInternalRelation(
+            eq(MasterEntityType.ARTIST), eq(masterPrimaryArtistId),
+            eq(MasterEntityType.TRACK), eq(masterId), isNull()
+        )).thenReturn(500L);
+        when(trackBindingRepository.findBoundTracksForDataSource(dataSource, List.of(externalId)))
+            .thenReturn(List.of(expectedResult));
+
+        // When
+        BoundEntityProjection result = trackService.bindToExisting(dataSource, externalId, request);
+
+        // Then
+        assertEquals(expectedResult, result);
+        verify(trackBindingRepository).save(any(TrackBinding.class)); // binding was updated
+    }
+
+    // ---- createAndBind ----
+
+    @Test
+    void createAndBind_whenMasterPrimaryArtistIdIsNull_shouldThrowException() {
+        // Given
+        DataSource dataSource = DataSource.LASTFM;
+        Long externalId = 1L;
+
+        ArtistRelatedEntityCreateAndBindRequestDTO request = ArtistRelatedEntityCreateAndBindRequestDTO.builder()
+            .entityName("New Track")
+            .masterPrimaryArtistId(null)
+            .build();
 
         // When & Then
-        IllegalStateException exception = assertThrows(IllegalStateException.class, 
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
             () -> trackService.createAndBind(dataSource, externalId, request));
-        
-        assertEquals("Artist with external ID 100 from LASTFM must be bound before binding track", 
-            exception.getMessage());
-        
-        verify(artistService).findArtist(dataSource, primaryArtistId);
-        verifyNoInteractions(trackRepository, relationService);
+
+        assertEquals("masterPrimaryArtistId is required", exception.getMessage());
+
+        verifyNoInteractions(trackRepository, trackBindingRepository, relationService);
     }
 
     @Test
@@ -245,80 +288,74 @@ class TrackServiceTest {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
-        Long primaryArtistId = 100L;
+        Long masterPrimaryArtistId = 100L;
         String trackName = "Existing Track";
-        
+
         ArtistRelatedEntityCreateAndBindRequestDTO request = ArtistRelatedEntityCreateAndBindRequestDTO.builder()
             .entityName(trackName)
-            .primaryArtistId(primaryArtistId)
+            .masterPrimaryArtistId(masterPrimaryArtistId)
             .build();
-        
-        TestBoundEntityProjectionImpl artistBinding = new TestBoundEntityProjectionImpl(
-            primaryArtistId, dataSource, 300L, "Test Artist"
-        );
-        
+
         Track existingTrack = Track.builder()
             .id(200L)
             .name(trackName)
-            .primaryArtistId(300L)
+            .primaryArtistId(masterPrimaryArtistId)
             .build();
-        
-        when(artistService.findArtist(dataSource, primaryArtistId)).thenReturn(artistBinding);
-        when(trackRepository.findByNameAndPrimaryArtistId(trackName, artistBinding.getMasterId()))
+
+        when(trackRepository.findByNameAndPrimaryArtistId(trackName, masterPrimaryArtistId))
             .thenReturn(Optional.of(existingTrack));
 
         // When & Then
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, 
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
             () -> trackService.createAndBind(dataSource, externalId, request));
-        
-        assertEquals("Track with name 'Existing Track' for artist ID 300 already exists", 
-            exception.getMessage());
-        
-        verify(artistService).findArtist(dataSource, primaryArtistId);
-        verify(trackRepository).findByNameAndPrimaryArtistId(trackName, artistBinding.getMasterId());
+
+        assertEquals(
+            String.format("Track with name '%s' for artist ID %d already exists", trackName, masterPrimaryArtistId),
+            exception.getMessage()
+        );
+
+        verify(artistService).getArtist(masterPrimaryArtistId);
+        verify(trackRepository).findByNameAndPrimaryArtistId(trackName, masterPrimaryArtistId);
         verifyNoMoreInteractions(trackRepository);
-        verifyNoInteractions(relationService);
+        verifyNoInteractions(trackBindingRepository, relationService);
     }
-    
+
     @Test
     void createAndBind_whenTrackBindingAlreadyExists_shouldThrowException() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
-        Long primaryArtistId = 100L;
+        Long masterPrimaryArtistId = 100L;
         String trackName = "New Track";
-        
+
         ArtistRelatedEntityCreateAndBindRequestDTO request = ArtistRelatedEntityCreateAndBindRequestDTO.builder()
             .entityName(trackName)
-            .primaryArtistId(primaryArtistId)
+            .masterPrimaryArtistId(masterPrimaryArtistId)
             .build();
-        
-        TestBoundEntityProjectionImpl artistBinding = new TestBoundEntityProjectionImpl(
-            primaryArtistId, dataSource, 300L, "Test Artist"
-        );
-        
+
         TrackBinding existingBinding = TrackBinding.builder()
             .id(1L)
             .dataSource(dataSource)
             .externalId(externalId)
             .masterId(999L)
             .build();
-        
-        when(artistService.findArtist(dataSource, primaryArtistId)).thenReturn(artistBinding);
-        when(trackRepository.findByNameAndPrimaryArtistId(trackName, artistBinding.getMasterId()))
+
+        when(trackRepository.findByNameAndPrimaryArtistId(trackName, masterPrimaryArtistId))
             .thenReturn(Optional.empty());
         when(trackBindingRepository.findByDataSourceAndExternalId(dataSource, externalId))
             .thenReturn(Optional.of(existingBinding));
 
         // When & Then
-        IllegalStateException exception = assertThrows(IllegalStateException.class, 
+        IllegalStateException exception = assertThrows(IllegalStateException.class,
             () -> trackService.createAndBind(dataSource, externalId, request));
-        
-        assertEquals("Track binding for external ID 1 from LASTFM already exists", 
-            exception.getMessage());
-        
-        verify(artistService).findArtist(dataSource, primaryArtistId);
-        verify(trackRepository).findByNameAndPrimaryArtistId(trackName, artistBinding.getMasterId());
+
+        assertEquals(
+            String.format("Track binding for external ID %d from %s already exists", externalId, dataSource),
+            exception.getMessage()
+        );
+
+        verify(artistService).getArtist(masterPrimaryArtistId);
+        verify(trackRepository).findByNameAndPrimaryArtistId(trackName, masterPrimaryArtistId);
         verify(trackBindingRepository).findByDataSourceAndExternalId(dataSource, externalId);
         verifyNoMoreInteractions(trackRepository, trackBindingRepository);
         verifyNoInteractions(relationService);
@@ -329,58 +366,41 @@ class TrackServiceTest {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
-        Long primaryArtistId = 100L;
+        Long masterPrimaryArtistId = 100L;
         String trackName = "New Track";
-        
+
         ArtistRelatedEntityCreateAndBindRequestDTO request = ArtistRelatedEntityCreateAndBindRequestDTO.builder()
             .entityName(trackName)
-            .primaryArtistId(primaryArtistId)
+            .masterPrimaryArtistId(masterPrimaryArtistId)
             .build();
-        
-        TestBoundEntityProjectionImpl artistBinding = new TestBoundEntityProjectionImpl(
-            primaryArtistId, dataSource, 300L, "Test Artist"
-        );
-        
+
         Track newTrack = Track.builder()
             .id(200L)
             .name(trackName)
-            .primaryArtistId(300L)
+            .primaryArtistId(masterPrimaryArtistId)
             .build();
-        
+
         TrackBinding trackBinding = TrackBinding.builder()
             .id(1L)
             .dataSource(dataSource)
             .externalId(externalId)
             .masterId(newTrack.getId())
             .build();
-        
-        RelationBindingDTO relationBinding = RelationBindingDTO.builder()
-            .sourceExternalId(primaryArtistId)
-            .targetExternalId(externalId)
-            .dataSource(dataSource)
-            .relationId(500L)
-            .build();
-        
+
         TestBoundEntityProjectionImpl expectedResult = new TestBoundEntityProjectionImpl(
             externalId, dataSource, 200L, trackName
         );
-        
-        when(artistService.findArtist(dataSource, primaryArtistId)).thenReturn(artistBinding);
-        when(trackRepository.findByNameAndPrimaryArtistId(trackName, artistBinding.getMasterId()))
+
+        when(trackRepository.findByNameAndPrimaryArtistId(trackName, masterPrimaryArtistId))
             .thenReturn(Optional.empty());
         when(trackBindingRepository.findByDataSourceAndExternalId(dataSource, externalId))
             .thenReturn(Optional.empty());
         when(trackRepository.save(any(Track.class))).thenReturn(newTrack);
         when(trackBindingRepository.save(any(TrackBinding.class))).thenReturn(trackBinding);
         when(relationService.createInternalRelation(
-            eq(MasterEntityType.ARTIST), eq(artistBinding.getMasterId()),
+            eq(MasterEntityType.ARTIST), eq(masterPrimaryArtistId),
             eq(MasterEntityType.TRACK), eq(newTrack.getId()), isNull()
         )).thenReturn(500L);
-        when(relationService.bindExternalRelation(
-            eq(dataSource), 
-            eq(MasterEntityType.ARTIST), eq(primaryArtistId),
-            eq(MasterEntityType.TRACK), eq(externalId)
-        )).thenReturn(relationBinding);
         when(trackBindingRepository.findBoundTracksForDataSource(dataSource, List.of(externalId)))
             .thenReturn(List.of(expectedResult));
 
@@ -389,37 +409,34 @@ class TrackServiceTest {
 
         // Then
         assertEquals(expectedResult, result);
-        
-        verify(artistService).findArtist(dataSource, primaryArtistId);
-        verify(trackRepository).findByNameAndPrimaryArtistId(trackName, artistBinding.getMasterId());
+
+        verify(artistService).getArtist(masterPrimaryArtistId);
+        verify(trackRepository).findByNameAndPrimaryArtistId(trackName, masterPrimaryArtistId);
         verify(trackBindingRepository).findByDataSourceAndExternalId(dataSource, externalId);
         verify(trackRepository).save(any(Track.class));
         verify(trackBindingRepository).save(any(TrackBinding.class));
         verify(relationService).createInternalRelation(
-            eq(MasterEntityType.ARTIST), eq(artistBinding.getMasterId()),
+            eq(MasterEntityType.ARTIST), eq(masterPrimaryArtistId),
             eq(MasterEntityType.TRACK), eq(newTrack.getId()), isNull()
-        );
-        verify(relationService).bindExternalRelation(
-            eq(dataSource), 
-            eq(MasterEntityType.ARTIST), eq(primaryArtistId),
-            eq(MasterEntityType.TRACK), eq(externalId)
         );
         verify(trackBindingRepository).findBoundTracksForDataSource(dataSource, List.of(externalId));
     }
+
+    // ---- unbindTrack ----
 
     @Test
     void unbindTrack_whenBindingExists_shouldDeleteBinding() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
-        
+
         TrackBinding existingBinding = TrackBinding.builder()
             .id(1L)
             .dataSource(dataSource)
             .externalId(externalId)
             .masterId(101L)
             .build();
-        
+
         when(trackBindingRepository.findByDataSourceAndExternalId(dataSource, externalId))
             .thenReturn(Optional.of(existingBinding));
         doNothing().when(trackBindingRepository).delete(existingBinding);
@@ -438,7 +455,7 @@ class TrackServiceTest {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 1L;
-        
+
         when(trackBindingRepository.findByDataSourceAndExternalId(dataSource, externalId))
             .thenReturn(Optional.empty());
 
@@ -450,8 +467,4 @@ class TrackServiceTest {
         verify(trackBindingRepository).findByDataSourceAndExternalId(dataSource, externalId);
         verify(trackBindingRepository, never()).delete(any());
     }
-    
-
-    
-
 }

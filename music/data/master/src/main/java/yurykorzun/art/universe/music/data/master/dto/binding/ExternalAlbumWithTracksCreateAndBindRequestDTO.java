@@ -1,9 +1,7 @@
 package yurykorzun.art.universe.music.data.master.dto.binding;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,21 +10,22 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 /**
- * Request DTO for creating a new master album from an external album together with its tracklist.
+ * Request DTO for binding an external album (with its tracklist) to master entities.
  *
- * <p>Flow:</p>
- * <ol>
- *   <li>Creates a new master album and binds the external album to it.</li>
- *   <li>For each track item:
- *     <ul>
- *       <li><b>Bound</b> ({@code masterTrackId} present): verifies/creates the external↔master
- *           track binding, then creates the album-track relation.</li>
- *       <li><b>Unbound</b> ({@code masterTrackId} absent): creates a new master track, binds the
- *           external track to it, creates the ARTIST→TRACK internal relation, then creates the
- *           album-track relation.</li>
- *     </ul>
- *   </li>
- * </ol>
+ * <p>Album resolution:</p>
+ * <ul>
+ *   <li>If {@code masterAlbumId} is provided, the album is already bound — skip creation.</li>
+ *   <li>Otherwise, create a new master album using {@code albumName} and bind it.</li>
+ * </ul>
+ *
+ * <p>For each track item:</p>
+ * <ul>
+ *   <li><b>Bound</b> ({@code masterTrackId} present): verifies/creates the external↔master
+ *       track binding, then creates the album-track relation.</li>
+ *   <li><b>Unbound</b> ({@code masterTrackId} absent): creates a new master track, binds the
+ *       external track to it, creates the ARTIST→TRACK internal relation, then creates the
+ *       album-track relation.</li>
+ * </ul>
  */
 @Data
 @Builder
@@ -34,11 +33,14 @@ import java.util.List;
 @AllArgsConstructor
 public class ExternalAlbumWithTracksCreateAndBindRequestDTO {
 
-    @NotBlank(message = "Album name is required")
+    /** Name for the new master album. Required when {@code masterAlbumId} is absent. */
     private String albumName;
 
-    @NotNull(message = "Primary artist ID is required")
-    private Long primaryArtistId;
+    /** Master artist ID — required, used directly to set the album's and tracks' primary artist. */
+    private Long masterPrimaryArtistId;
+
+    /** Existing master album ID. When provided, album creation is skipped. */
+    private Long masterAlbumId;
 
     @NotEmpty(message = "Tracks list must not be empty")
     @Valid

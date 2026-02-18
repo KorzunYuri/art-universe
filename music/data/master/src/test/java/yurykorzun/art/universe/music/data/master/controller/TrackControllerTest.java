@@ -109,7 +109,7 @@ public class TrackControllerTest {
         
         ArtistRelatedEntityBindToExistingRequestDTO request = ArtistRelatedEntityBindToExistingRequestDTO.builder()
             .masterId(masterId)
-            .primaryArtistId(primaryArtistId)
+            .masterPrimaryArtistId(primaryArtistId)
             .build();
         
         TestBoundEntityProjectionImpl projection = new TestBoundEntityProjectionImpl(
@@ -138,7 +138,7 @@ public class TrackControllerTest {
         
         ArtistRelatedEntityBindToExistingRequestDTO request = ArtistRelatedEntityBindToExistingRequestDTO.builder()
             .masterId(masterId)
-            .primaryArtistId(primaryArtistId)
+            .masterPrimaryArtistId(primaryArtistId)
             .build();
         
         when(trackService.bindToExisting(eq(dataSource), eq(externalId), any(ArtistRelatedEntityBindToExistingRequestDTO.class)))
@@ -163,7 +163,7 @@ public class TrackControllerTest {
         
         ArtistRelatedEntityCreateAndBindRequestDTO request = ArtistRelatedEntityCreateAndBindRequestDTO.builder()
             .entityName(trackName)
-            .primaryArtistId(primaryArtistId)
+            .masterPrimaryArtistId(primaryArtistId)
             .build();
         
         TestBoundEntityProjectionImpl projection = new TestBoundEntityProjectionImpl(
@@ -192,7 +192,7 @@ public class TrackControllerTest {
         
         ArtistRelatedEntityCreateAndBindRequestDTO request = ArtistRelatedEntityCreateAndBindRequestDTO.builder()
             .entityName(trackName)
-            .primaryArtistId(primaryArtistId)
+            .masterPrimaryArtistId(primaryArtistId)
             .build();
         
         when(trackService.createAndBind(eq(dataSource), eq(externalId), any(ArtistRelatedEntityCreateAndBindRequestDTO.class)))

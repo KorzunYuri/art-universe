@@ -28,7 +28,9 @@ import yurykorzun.art.universe.music.data.master.dto.binding.ExternalAlbumTrackI
 import yurykorzun.art.universe.music.data.master.dto.binding.ExternalAlbumWithTracksCreateAndBindRequestDTO;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -299,7 +301,7 @@ class AlbumControllerMvcTest extends BaseMasterDataMvcTest {
         Long externalId = 500L;
         ArtistRelatedEntityCreateAndBindRequestDTO request = ArtistRelatedEntityCreateAndBindRequestDTO.builder()
             .entityName("OK Computer")
-            .primaryArtistId(100L)
+            .masterPrimaryArtistId(100L)
             .build();
         BoundEntityProjection response = new TestBoundEntityProjectionImpl(externalId, dataSource, 1L, "OK Computer");
 
@@ -320,23 +322,7 @@ class AlbumControllerMvcTest extends BaseMasterDataMvcTest {
         DataSource dataSource = DataSource.LASTFM;
         Long externalId = 500L;
         ArtistRelatedEntityCreateAndBindRequestDTO request = ArtistRelatedEntityCreateAndBindRequestDTO.builder()
-            .primaryArtistId(100L)
-            .build();
-
-        // When & Then
-        mockMvc.perform(post("/api/v1/albums/bind/new/{dataSource}/{externalId}", dataSource, externalId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void createAndBind_withMissingPrimaryArtistId_shouldReturn400() throws Exception {
-        // Given — primaryArtistId is null → @NotNull fails
-        DataSource dataSource = DataSource.LASTFM;
-        Long externalId = 500L;
-        ArtistRelatedEntityCreateAndBindRequestDTO request = ArtistRelatedEntityCreateAndBindRequestDTO.builder()
-            .entityName("OK Computer")
+            .masterPrimaryArtistId(100L)
             .build();
 
         // When & Then
@@ -355,7 +341,7 @@ class AlbumControllerMvcTest extends BaseMasterDataMvcTest {
         Long externalAlbumId = 500L;
         ExternalAlbumWithTracksCreateAndBindRequestDTO request = ExternalAlbumWithTracksCreateAndBindRequestDTO.builder()
             .albumName("OK Computer")
-            .primaryArtistId(100L)
+            .masterPrimaryArtistId(100L)
             .tracks(List.of(
                 ExternalAlbumTrackItemDTO.builder().externalTrackId(10L).trackName("Airbag").trackOrder(1).build(),
                 ExternalAlbumTrackItemDTO.builder().externalTrackId(20L).trackName("Paranoid Android").trackOrder(2).build()
@@ -381,7 +367,7 @@ class AlbumControllerMvcTest extends BaseMasterDataMvcTest {
         Long externalAlbumId = 500L;
         ExternalAlbumWithTracksCreateAndBindRequestDTO request = ExternalAlbumWithTracksCreateAndBindRequestDTO.builder()
             .albumName("OK Computer")
-            .primaryArtistId(100L)
+            .masterPrimaryArtistId(100L)
             .tracks(List.of(
                 ExternalAlbumTrackItemDTO.builder().externalTrackId(10L).masterTrackId(101L).trackOrder(1).build(),
                 ExternalAlbumTrackItemDTO.builder().externalTrackId(20L).masterTrackId(201L).trackOrder(2).build()
@@ -401,16 +387,16 @@ class AlbumControllerMvcTest extends BaseMasterDataMvcTest {
 
     @Test
     void createAndBindWithTracks_withMixedTracks_shouldReturn200() throws Exception {
-        // Given — mix of bound and unbound tracks, one with per-track artist and relation type
+        // Given — mix of bound and unbound tracks; one track has a relation type override
         DataSource dataSource = DataSource.LASTFM;
         Long externalAlbumId = 500L;
         ExternalAlbumWithTracksCreateAndBindRequestDTO request = ExternalAlbumWithTracksCreateAndBindRequestDTO.builder()
             .albumName("OK Computer")
-            .primaryArtistId(100L)
+            .masterPrimaryArtistId(100L)
             .tracks(List.of(
                 ExternalAlbumTrackItemDTO.builder().externalTrackId(10L).trackName("Airbag").trackOrder(1).build(),
                 ExternalAlbumTrackItemDTO.builder().externalTrackId(20L).masterTrackId(201L).trackOrder(2).relationTypeId(50L).build(),
-                ExternalAlbumTrackItemDTO.builder().externalTrackId(30L).trackName("Karma Police").trackOrder(3).primaryArtistId(200L).build()
+                ExternalAlbumTrackItemDTO.builder().externalTrackId(30L).trackName("Karma Police").trackOrder(3).build()
             ))
             .build();
         BoundEntityProjection response = new TestBoundEntityProjectionImpl(externalAlbumId, dataSource, 1L, "OK Computer");
@@ -425,41 +411,45 @@ class AlbumControllerMvcTest extends BaseMasterDataMvcTest {
     }
 
     @Test
-    void createAndBindWithTracks_withMissingAlbumName_shouldReturn400() throws Exception {
-        // Given
+    void createAndBindWithTracks_withPerTrackArtistOverride_shouldDeserializeAndPassToService() throws Exception {
+        // Given — second track carries a per-track masterPrimaryArtistId; first track has none
         DataSource dataSource = DataSource.LASTFM;
         Long externalAlbumId = 500L;
-        ExternalAlbumWithTracksCreateAndBindRequestDTO request = ExternalAlbumWithTracksCreateAndBindRequestDTO.builder()
-            .primaryArtistId(100L)
-            .tracks(List.of(
-                ExternalAlbumTrackItemDTO.builder().externalTrackId(10L).trackName("Airbag").trackOrder(1).build()
-            ))
-            .build();
-
-        // When & Then
-        mockMvc.perform(post("/api/v1/albums/bind/new/{dataSource}/{externalId}/with-tracks", dataSource, externalAlbumId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void createAndBindWithTracks_withMissingPrimaryArtistId_shouldReturn400() throws Exception {
-        // Given
-        DataSource dataSource = DataSource.LASTFM;
-        Long externalAlbumId = 500L;
+        Long trackArtistOverrideId = 200L;
         ExternalAlbumWithTracksCreateAndBindRequestDTO request = ExternalAlbumWithTracksCreateAndBindRequestDTO.builder()
             .albumName("OK Computer")
+            .masterPrimaryArtistId(100L)
             .tracks(List.of(
-                ExternalAlbumTrackItemDTO.builder().externalTrackId(10L).trackName("Airbag").trackOrder(1).build()
+                ExternalAlbumTrackItemDTO.builder()
+                    .externalTrackId(10L).trackName("Airbag").trackOrder(1).build(),
+                ExternalAlbumTrackItemDTO.builder()
+                    .externalTrackId(20L).trackName("Paranoid Android").trackOrder(2)
+                    .masterPrimaryArtistId(trackArtistOverrideId)
+                    .build()
             ))
             .build();
+        BoundEntityProjection response = new TestBoundEntityProjectionImpl(externalAlbumId, dataSource, 1L, "OK Computer");
+
+        when(albumService.createAndBindWithTracks(eq(dataSource), eq(externalAlbumId), any()))
+            .thenReturn(response);
 
         // When & Then
         mockMvc.perform(post("/api/v1/albums/bind/new/{dataSource}/{externalId}/with-tracks", dataSource, externalAlbumId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isBadRequest());
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(content().json(objectMapper.writeValueAsString(response)));
+
+        // Verify the field survived JSON deserialization and reached the service
+        verify(albumService).createAndBindWithTracks(
+            eq(dataSource),
+            eq(externalAlbumId),
+            argThat(req ->
+                trackArtistOverrideId.equals(req.getTracks().get(1).getMasterPrimaryArtistId()) &&
+                req.getTracks().get(0).getMasterPrimaryArtistId() == null
+            )
+        );
     }
 
     @Test
@@ -469,7 +459,7 @@ class AlbumControllerMvcTest extends BaseMasterDataMvcTest {
         Long externalAlbumId = 500L;
         ExternalAlbumWithTracksCreateAndBindRequestDTO request = ExternalAlbumWithTracksCreateAndBindRequestDTO.builder()
             .albumName("OK Computer")
-            .primaryArtistId(100L)
+            .masterPrimaryArtistId(100L)
             .tracks(List.of())
             .build();
 
@@ -487,7 +477,7 @@ class AlbumControllerMvcTest extends BaseMasterDataMvcTest {
         Long externalAlbumId = 500L;
         ExternalAlbumWithTracksCreateAndBindRequestDTO request = ExternalAlbumWithTracksCreateAndBindRequestDTO.builder()
             .albumName("OK Computer")
-            .primaryArtistId(100L)
+            .masterPrimaryArtistId(100L)
             .tracks(List.of(
                 ExternalAlbumTrackItemDTO.builder().trackName("Airbag").trackOrder(1).build()
             ))
@@ -507,7 +497,7 @@ class AlbumControllerMvcTest extends BaseMasterDataMvcTest {
         Long externalAlbumId = 500L;
         ExternalAlbumWithTracksCreateAndBindRequestDTO request = ExternalAlbumWithTracksCreateAndBindRequestDTO.builder()
             .albumName("OK Computer")
-            .primaryArtistId(100L)
+            .masterPrimaryArtistId(100L)
             .tracks(List.of(
                 ExternalAlbumTrackItemDTO.builder().externalTrackId(10L).trackName("Airbag").build()
             ))

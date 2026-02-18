@@ -21,10 +21,11 @@ public interface TrackBindingRepository extends JpaRepository<TrackBinding, Long
      * @return list of bindings for tracks that are already bound
      */
     @Query("""
-        SELECT  tb.externalId   AS externalId,
-                tb.dataSource   AS dataSource,
-                tb.masterId     AS masterId,
-                t.name          AS masterName
+        SELECT  tb.externalId       AS externalId,
+                tb.dataSource       AS dataSource,
+                tb.masterId         AS masterId,
+                t.name              AS masterName,
+                t.primaryArtistId   AS masterPrimaryArtistId
         FROM
             track_binding tb
         JOIN

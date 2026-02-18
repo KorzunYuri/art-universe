@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
  *       and {@code trackOrder} are required.</li>
  *   <li><b>Unbound</b> ({@code masterTrackId == null}): a new master track will be created and the
  *       external track will be bound to it. {@code trackName} and {@code trackOrder} are required;
- *       {@code primaryArtistId} defaults to the album's primary artist when absent.</li>
+ *       the album's primary artist is used.</li>
  * </ul>
  */
 @Data
@@ -36,14 +36,15 @@ public class ExternalAlbumTrackItemDTO {
      */
     private String trackName;
 
+    /**
+     * Optional per-track artist override.
+     * When present, this artist is used instead of the album-level {@code masterPrimaryArtistId}
+     * for creating new master tracks.
+     */
+    private Long masterPrimaryArtistId;
+
     @NotNull(message = "Track order is required")
     private Integer trackOrder;
-
-    /**
-     * External artist ID for the track's primary artist. Only relevant for unbound tracks.
-     * When absent the album's primary artist is used instead.
-     */
-    private Long primaryArtistId;
 
     /** Optional relation type override. Falls back to the default ALBUM→TRACK type when absent. */
     private Long relationTypeId;

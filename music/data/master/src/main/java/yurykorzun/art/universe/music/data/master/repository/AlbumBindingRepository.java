@@ -24,10 +24,11 @@ public interface AlbumBindingRepository extends JpaRepository<AlbumBinding, Long
      * @return list of bindings for albums that are already bound
      */
     @Query("""
-        SELECT  ab.externalId   AS externalId,
-                ab.dataSource   AS dataSource,
-                ab.masterId     AS masterId,
-                a.name          AS masterName
+        SELECT  ab.externalId       AS externalId,
+                ab.dataSource       AS dataSource,
+                ab.masterId         AS masterId,
+                a.name              AS masterName,
+                a.primaryArtistId   AS masterPrimaryArtistId
         FROM
             album_binding ab
         JOIN

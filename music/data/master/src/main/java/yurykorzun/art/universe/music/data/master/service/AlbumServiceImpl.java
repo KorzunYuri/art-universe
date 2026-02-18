@@ -1,49 +1,27 @@
 package yurykorzun.art.universe.music.data.master.service;
 
 import jakarta.persistence.EntityManager;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import yurykorzun.art.universe.music.data.master.dto.AlbumDto;
-import yurykorzun.art.universe.music.data.master.dto.AlbumSaveRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.AlbumTrackItemDTO;
-import yurykorzun.art.universe.music.data.master.dto.AlbumWithCategoriesDto;
-import yurykorzun.art.universe.music.data.master.dto.AlbumWithTracksSaveRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.CategoryDto;
-import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityBindToExistingRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityCreateAndBindRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
-import yurykorzun.art.universe.music.data.master.dto.binding.ExternalAlbumTrackItemDTO;
-import yurykorzun.art.universe.music.data.master.dto.binding.ExternalAlbumWithTracksCreateAndBindRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedBatchLookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupRequestDTO;
 import yurykorzun.art.universe.common.domain.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.common.domain.dto.lookup.LookupResultDTO;
-import yurykorzun.art.universe.music.data.master.entity.Album;
-import yurykorzun.art.universe.music.data.master.entity.AlbumBinding;
-import yurykorzun.art.universe.music.data.master.entity.AlbumCategory;
-import yurykorzun.art.universe.music.data.master.entity.AlbumTrack;
-import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
-import yurykorzun.art.universe.music.data.master.entity.RelationTypeApplicability;
-import yurykorzun.art.universe.music.data.master.entity.Track;
-import yurykorzun.art.universe.music.data.master.entity.TrackBinding;
 import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
-import yurykorzun.art.universe.music.data.master.repository.AlbumBindingRepository;
-import yurykorzun.art.universe.music.data.master.repository.AlbumCategoryRepository;
-import yurykorzun.art.universe.music.data.master.repository.AlbumRepository;
-import yurykorzun.art.universe.music.data.master.repository.AlbumTrackRepository;
-import yurykorzun.art.universe.music.data.master.repository.CategoryRepository;
-import yurykorzun.art.universe.music.data.master.repository.RelationTypeApplicabilityRepository;
-import yurykorzun.art.universe.music.data.master.repository.TrackBindingRepository;
-import yurykorzun.art.universe.music.data.master.repository.TrackRepository;
+import yurykorzun.art.universe.music.data.master.dto.*;
+import yurykorzun.art.universe.music.data.master.dto.binding.*;
+import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedBatchLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupRequestDTO;
+import yurykorzun.art.universe.music.data.master.entity.*;
+import yurykorzun.art.universe.music.data.master.repository.*;
 import yurykorzun.art.universe.music.data.master.service.lookup.ArtistRelatedLookupService;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class AlbumServiceImpl implements AlbumService {
 
     private final AlbumRepository albumRepository;
@@ -284,14 +262,7 @@ public class AlbumServiceImpl implements AlbumService {
     @Override
     @Transactional
     public BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, ArtistRelatedEntityCreateAndBindRequestDTO request) {
-        // Look up master artist by external ID
-        BoundEntityProjection artistBinding = artistService.findArtist(dataSource, request.getPrimaryArtistId());
-        if (artistBinding == null) {
-            throw new IllegalStateException(String.format(
-                "Artist with external ID %d from %s must be bound before binding album",
-                request.getPrimaryArtistId(), dataSource));
-        }
-        Long masterArtistId = artistBinding.getMasterId();
+        Long masterArtistId = resolveMasterArtistId(request.getMasterPrimaryArtistId());
 
         // Guard against duplicate album name under the same artist
         Optional<Album> existingAlbum = albumRepository.findByNameAndPrimaryArtistId(
@@ -331,12 +302,6 @@ public class AlbumServiceImpl implements AlbumService {
             MasterEntityType.ALBUM, savedAlbum.getId(),
             null);
 
-        // Bind external ARTIST → ALBUM relation
-        relationService.bindExternalRelation(
-            dataSource,
-            MasterEntityType.ARTIST, request.getPrimaryArtistId(),
-            MasterEntityType.ALBUM, externalId);
-
         return bindingsRepository.findBoundAlbumsForDataSource(dataSource, List.of(externalId))
             .stream().findFirst()
             .orElseThrow(() -> new CustomEntityNotFoundException("Album binding not found after creation"));
@@ -345,24 +310,83 @@ public class AlbumServiceImpl implements AlbumService {
     @Override
     @Transactional
     public BoundEntityProjection createAndBindWithTracks(DataSource dataSource, Long externalAlbumId, ExternalAlbumWithTracksCreateAndBindRequestDTO request) {
-        // 1. Look up master artist for the album
-        BoundEntityProjection artistBinding = artistService.findArtist(dataSource, request.getPrimaryArtistId());
-        if (artistBinding == null) {
-            throw new IllegalStateException(String.format(
-                "Artist with external ID %d from %s must be bound before binding album",
-                request.getPrimaryArtistId(), dataSource));
-        }
-        Long masterArtistId = artistBinding.getMasterId();
+        // 1. Resolve master artist
+        Long masterArtistId = resolveMasterArtistId(request.getMasterPrimaryArtistId());
 
-        // 2. Guard against duplicate external album binding
+        // 2. Resolve master album (existing or new)
+        Long albumId = resolveMasterAlbum(dataSource, externalAlbumId, request, masterArtistId);
+
+        // 3. Resolve default ALBUM → TRACK relation type once for all tracks
+        Long defaultRelationTypeId = relationTypeApplicabilityRepository
+            .findBySourceEntityTypeAndTargetEntityTypeAndIsDefaultTrue(
+                MasterEntityType.ALBUM, MasterEntityType.TRACK)
+            .map(RelationTypeApplicability::getRelationTypeId)
+            .orElse(null);
+
+        // 4. Process each track in the request
+        for (ExternalAlbumTrackItemDTO trackItem : request.getTracks()) {
+            Long masterTrackId = resolveMasterTrack(dataSource, trackItem, masterArtistId);
+
+            // Upsert ALBUM → TRACK relation
+            Long relationTypeId = trackItem.getRelationTypeId() != null
+                ? trackItem.getRelationTypeId()
+                : defaultRelationTypeId;
+
+            Optional<AlbumTrack> existingAlbumTrack = albumTrackRepository
+                .findByAlbumIdAndTrackIdAndRelationTypeId(albumId, masterTrackId, relationTypeId);
+
+            if (existingAlbumTrack.isPresent()) {
+                AlbumTrack albumTrack = existingAlbumTrack.get();
+                albumTrack.setTrackOrder(trackItem.getTrackOrder());
+                albumTrackRepository.save(albumTrack);
+            } else {
+                AlbumTrack albumTrack = AlbumTrack.builder()
+                    .albumId(albumId)
+                    .trackId(masterTrackId)
+                    .trackOrder(trackItem.getTrackOrder())
+                    .relationTypeId(relationTypeId)
+                    .build();
+                albumTrackRepository.save(albumTrack);
+            }
+        }
+
+        return bindingsRepository.findBoundAlbumsForDataSource(dataSource, List.of(externalAlbumId))
+            .stream().findFirst()
+            .orElseThrow(() -> new CustomEntityNotFoundException("Album binding not found after creation"));
+    }
+
+    /**
+     * Resolves the master album ID — either from an existing binding/master ID or by creating a new one.
+     */
+    private Long resolveMasterAlbum(
+        DataSource dataSource,
+        Long externalAlbumId,
+        ExternalAlbumWithTracksCreateAndBindRequestDTO request,
+        Long masterArtistId
+    ) {
+        // Case 1: Master album ID provided directly — album is already bound
+        if (request.getMasterAlbumId() != null) {
+            if (!albumRepository.existsById(request.getMasterAlbumId())) {
+                throw new CustomEntityNotFoundException("Album", request.getMasterAlbumId());
+            }
+            log.info("Using existing master album ID {} for external album {}", request.getMasterAlbumId(), externalAlbumId);
+            return request.getMasterAlbumId();
+        }
+
+        // Case 2: Check if external album is already bound
         Optional<AlbumBinding> existingAlbumBinding = bindingsRepository.findByDataSourceAndExternalId(dataSource, externalAlbumId);
         if (existingAlbumBinding.isPresent()) {
-            throw new IllegalStateException(String.format(
-                "Album binding for external ID %d from %s already exists",
-                externalAlbumId, dataSource));
+            Long existingMasterId = existingAlbumBinding.get().getMasterId();
+            log.warn("External album {} from {} is already bound to master album {}. Using existing binding.",
+                externalAlbumId, dataSource, existingMasterId);
+            return existingMasterId;
         }
 
-        // 3. Create master album
+        // Case 3: Create new master album
+        if (request.getAlbumName() == null || request.getAlbumName().isBlank()) {
+            throw new IllegalArgumentException("albumName is required when masterAlbumId is not provided");
+        }
+
         Album album = Album.builder()
             .name(request.getAlbumName())
             .primaryArtistId(masterArtistId)
@@ -370,7 +394,7 @@ public class AlbumServiceImpl implements AlbumService {
         Album savedAlbum = albumRepository.save(album);
         Long albumId = savedAlbum.getId();
 
-        // 4. Bind external album
+        // Bind external album
         AlbumBinding albumBinding = AlbumBinding.builder()
             .dataSource(dataSource)
             .externalId(externalAlbumId)
@@ -378,46 +402,13 @@ public class AlbumServiceImpl implements AlbumService {
             .build();
         bindingsRepository.save(albumBinding);
 
-        // 5. Create ARTIST → ALBUM internal relation
+        // Create ARTIST → ALBUM internal relation
         relationService.createInternalRelation(
             MasterEntityType.ARTIST, masterArtistId,
             MasterEntityType.ALBUM, albumId,
             null);
 
-        // 6. Bind external ARTIST → ALBUM relation
-        relationService.bindExternalRelation(
-            dataSource,
-            MasterEntityType.ARTIST, request.getPrimaryArtistId(),
-            MasterEntityType.ALBUM, externalAlbumId);
-
-        // 7. Resolve default ALBUM → TRACK relation type once for all tracks
-        Long defaultRelationTypeId = relationTypeApplicabilityRepository
-            .findBySourceEntityTypeAndTargetEntityTypeAndIsDefaultTrue(
-                MasterEntityType.ALBUM, MasterEntityType.TRACK)
-            .map(RelationTypeApplicability::getRelationTypeId)
-            .orElse(null);
-
-        // 8. Process each track in the request
-        for (ExternalAlbumTrackItemDTO trackItem : request.getTracks()) {
-            Long masterTrackId = resolveMasterTrack(dataSource, trackItem, masterArtistId, request.getPrimaryArtistId());
-
-            // Create ALBUM → TRACK relation
-            Long relationTypeId = trackItem.getRelationTypeId() != null
-                ? trackItem.getRelationTypeId()
-                : defaultRelationTypeId;
-
-            AlbumTrack albumTrack = AlbumTrack.builder()
-                .albumId(albumId)
-                .trackId(masterTrackId)
-                .trackOrder(trackItem.getTrackOrder())
-                .relationTypeId(relationTypeId)
-                .build();
-            albumTrackRepository.save(albumTrack);
-        }
-
-        return bindingsRepository.findBoundAlbumsForDataSource(dataSource, List.of(externalAlbumId))
-            .stream().findFirst()
-            .orElseThrow(() -> new CustomEntityNotFoundException("Album binding not found after creation"));
+        return albumId;
     }
 
     /**
@@ -430,18 +421,19 @@ public class AlbumServiceImpl implements AlbumService {
     private Long resolveMasterTrack(
         DataSource dataSource,
         ExternalAlbumTrackItemDTO trackItem,
-        Long albumMasterArtistId,
-        Long albumExternalArtistId
+        Long albumMasterArtistId
     ) {
+        // Check if external track is already bound
+        Optional<TrackBinding> existingTrackBinding =
+            trackBindingRepository.findByDataSourceAndExternalId(dataSource, trackItem.getExternalTrackId());
+
         if (trackItem.getMasterTrackId() != null) {
-            // --- Bound track ---
+            // --- Bound track (master ID provided explicitly) ---
             Long masterTrackId = trackItem.getMasterTrackId();
             if (!trackRepository.existsById(masterTrackId)) {
                 throw new CustomEntityNotFoundException("Track", masterTrackId);
             }
             // Create external binding only if it doesn't already exist
-            Optional<TrackBinding> existingTrackBinding =
-                trackBindingRepository.findByDataSourceAndExternalId(dataSource, trackItem.getExternalTrackId());
             if (existingTrackBinding.isEmpty()) {
                 TrackBinding trackBinding = TrackBinding.builder()
                     .dataSource(dataSource)
@@ -453,33 +445,29 @@ public class AlbumServiceImpl implements AlbumService {
             return masterTrackId;
         }
 
-        // --- Unbound track ---
+        // --- Check if external track is already bound (no masterTrackId provided) ---
+        if (existingTrackBinding.isPresent()) {
+            Long existingMasterId = existingTrackBinding.get().getMasterId();
+            log.warn("External track {} from {} is already bound to master track {}. Using existing binding.",
+                trackItem.getExternalTrackId(), dataSource, existingMasterId);
+            return existingMasterId;
+        }
+
+        // --- Unbound track: create new master track ---
         if (trackItem.getTrackName() == null || trackItem.getTrackName().isBlank()) {
             throw new IllegalArgumentException(
                 "trackName is required for unbound tracks (externalTrackId=" + trackItem.getExternalTrackId() + ")");
         }
 
-        // Resolve track artist: use per-track override or fall back to album's artist
-        Long trackMasterArtistId;
-        Long trackExternalArtistId;
-        if (trackItem.getPrimaryArtistId() != null) {
-            BoundEntityProjection trackArtistBinding = artistService.findArtist(dataSource, trackItem.getPrimaryArtistId());
-            if (trackArtistBinding == null) {
-                throw new IllegalStateException(String.format(
-                    "Artist with external ID %d from %s must be bound before creating track '%s'",
-                    trackItem.getPrimaryArtistId(), dataSource, trackItem.getTrackName()));
-            }
-            trackMasterArtistId = trackArtistBinding.getMasterId();
-            trackExternalArtistId = trackItem.getPrimaryArtistId();
-        } else {
-            trackMasterArtistId = albumMasterArtistId;
-            trackExternalArtistId = albumExternalArtistId;
-        }
+        // Prefer per-track artist override; fall back to album's master artist
+        Long effectiveArtistId = trackItem.getMasterPrimaryArtistId() != null
+            ? trackItem.getMasterPrimaryArtistId()
+            : albumMasterArtistId;
 
         // Create master track
         Track track = Track.builder()
             .name(trackItem.getTrackName())
-            .primaryArtistId(trackMasterArtistId)
+            .primaryArtistId(effectiveArtistId)
             .build();
         Track savedTrack = trackRepository.save(track);
         Long masterTrackId = savedTrack.getId();
@@ -494,15 +482,9 @@ public class AlbumServiceImpl implements AlbumService {
 
         // Create ARTIST → TRACK internal relation
         relationService.createInternalRelation(
-            MasterEntityType.ARTIST, trackMasterArtistId,
+            MasterEntityType.ARTIST, effectiveArtistId,
             MasterEntityType.TRACK, masterTrackId,
             null);
-
-        // Bind external ARTIST → TRACK relation
-        relationService.bindExternalRelation(
-            dataSource,
-            MasterEntityType.ARTIST, trackExternalArtistId,
-            MasterEntityType.TRACK, trackItem.getExternalTrackId());
 
         return masterTrackId;
     }
@@ -527,5 +509,20 @@ public class AlbumServiceImpl implements AlbumService {
     @Transactional(readOnly = true)
     public BatchLookupResponseDTO batchLookupAlbums(ArtistRelatedBatchLookupRequestDTO request) {
         return lookupService.batchLookup(request);
+    }
+
+    /**
+     * Validates and returns the master artist ID.
+     *
+     * @param masterPrimaryArtistId master artist ID — required
+     * @return the master artist ID
+     * @throws IllegalArgumentException if not provided or artist does not exist
+     */
+    private Long resolveMasterArtistId(Long masterPrimaryArtistId) {
+        if (masterPrimaryArtistId == null) {
+            throw new IllegalArgumentException("masterPrimaryArtistId is required");
+        }
+        artistService.getArtist(masterPrimaryArtistId);
+        return masterPrimaryArtistId;
     }
 }

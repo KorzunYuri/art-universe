@@ -31,6 +31,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -349,7 +350,7 @@ public class AlbumControllerTest {
         Long externalId = 500L;
         ArtistRelatedEntityCreateAndBindRequestDTO request = ArtistRelatedEntityCreateAndBindRequestDTO.builder()
             .entityName("OK Computer")
-            .primaryArtistId(100L)
+            .masterPrimaryArtistId(100L)
             .build();
         BoundEntityProjection expected = new TestBoundEntityProjectionImpl(externalId, dataSource, 1L, "OK Computer");
 
@@ -370,7 +371,7 @@ public class AlbumControllerTest {
         Long externalId = 500L;
         ArtistRelatedEntityCreateAndBindRequestDTO request = ArtistRelatedEntityCreateAndBindRequestDTO.builder()
             .entityName("OK Computer")
-            .primaryArtistId(100L)
+            .masterPrimaryArtistId(100L)
             .build();
         RuntimeException expectedException = new RuntimeException("Artist not bound");
 
@@ -393,7 +394,7 @@ public class AlbumControllerTest {
         Long externalAlbumId = 500L;
         ExternalAlbumWithTracksCreateAndBindRequestDTO request = ExternalAlbumWithTracksCreateAndBindRequestDTO.builder()
             .albumName("OK Computer")
-            .primaryArtistId(100L)
+            .masterPrimaryArtistId(100L)
             .tracks(List.of(
                 ExternalAlbumTrackItemDTO.builder()
                     .externalTrackId(10L).trackName("Airbag").trackOrder(1).build(),
@@ -414,13 +415,51 @@ public class AlbumControllerTest {
     }
 
     @Test
+    void createAndBindWithTracks_withPerTrackArtistOverride_shouldPassOverrideToService() {
+        // Given — second track has a per-track masterPrimaryArtistId overriding the album-level artist
+        DataSource dataSource = DataSource.LASTFM;
+        Long externalAlbumId = 500L;
+        Long albumArtistId = 100L;
+        Long trackArtistOverrideId = 200L;
+        ExternalAlbumWithTracksCreateAndBindRequestDTO request = ExternalAlbumWithTracksCreateAndBindRequestDTO.builder()
+            .albumName("OK Computer")
+            .masterPrimaryArtistId(albumArtistId)
+            .tracks(List.of(
+                ExternalAlbumTrackItemDTO.builder()
+                    .externalTrackId(10L).trackName("Airbag").trackOrder(1).build(),
+                ExternalAlbumTrackItemDTO.builder()
+                    .externalTrackId(20L).trackName("Paranoid Android").trackOrder(2)
+                    .masterPrimaryArtistId(trackArtistOverrideId)
+                    .build()
+            ))
+            .build();
+        BoundEntityProjection expected = new TestBoundEntityProjectionImpl(externalAlbumId, dataSource, 1L, "OK Computer");
+
+        when(albumService.createAndBindWithTracks(dataSource, externalAlbumId, request)).thenReturn(expected);
+
+        // When
+        BoundEntityProjection result = albumController.createAndBindWithTracks(dataSource, externalAlbumId, request);
+
+        // Then
+        assertEquals(expected, result);
+        verify(albumService).createAndBindWithTracks(
+            eq(dataSource),
+            eq(externalAlbumId),
+            argThat(req ->
+                trackArtistOverrideId.equals(req.getTracks().get(1).getMasterPrimaryArtistId()) &&
+                req.getTracks().get(0).getMasterPrimaryArtistId() == null
+            )
+        );
+    }
+
+    @Test
     void createAndBindWithTracks_whenServiceThrows_shouldPassThroughException() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         Long externalAlbumId = 500L;
         ExternalAlbumWithTracksCreateAndBindRequestDTO request = ExternalAlbumWithTracksCreateAndBindRequestDTO.builder()
             .albumName("OK Computer")
-            .primaryArtistId(100L)
+            .masterPrimaryArtistId(100L)
             .tracks(List.of(
                 ExternalAlbumTrackItemDTO.builder().externalTrackId(10L).trackName("Airbag").trackOrder(1).build()
             ))
