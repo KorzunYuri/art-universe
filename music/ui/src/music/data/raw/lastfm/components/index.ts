@@ -1,4 +1,5 @@
 export * from "./ApprovalToggle"
+export * from "./ArtistRelatedEntityBinding"
 export * from "./LastfmArtistFilterButton"
 export * from "./LastfmArtistLink"
 export * from "./EntityBinding"

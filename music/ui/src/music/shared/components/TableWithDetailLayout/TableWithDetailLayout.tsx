@@ -10,6 +10,8 @@ interface TableWithDetailLayoutProps {
     detailTitle?: string;
     /** The route param name that indicates a detail view is active (default: auto-detect) */
     detailParamName?: string;
+    /** Widens the detail panel (50% / max 900px) for complex content like tracklists */
+    wideDetail?: boolean;
 }
 
 /**
@@ -27,6 +29,7 @@ export const TableWithDetailLayout = ({
     children,
     detailTitle,
     detailParamName,
+    wideDetail = false,
 }: TableWithDetailLayoutProps) => {
     const params = useParams();
     const navigate = useNavigate();
@@ -65,7 +68,7 @@ export const TableWithDetailLayout = ({
                 {children}
             </div>
             {isRendered && (
-                <div className={`${styles.detailSection} ${isClosing ? styles.closing : ''}`}>
+                <div className={`${styles.detailSection} ${wideDetail ? styles.detailSectionWide : ''} ${isClosing ? styles.closing : ''}`}>
                     <DetailPanel title={detailTitle} onClose={handleCloseDetail}>
                         <Outlet />
                     </DetailPanel>

@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNotifications } from '@/music/shared/hooks';
 import { FoldableSection } from '@/music/shared/components/FoldableSection';
@@ -11,6 +12,7 @@ import {
 import { AddRelationForm } from './AddRelationForm';
 import { relationKeys } from '@/music/shared/utils/query-keys';
 import type { MasterEntityType } from '@/music/shared/types/entities';
+import { getMasterEntityUrl } from '@/music/data/master/utils/masterEntityUrl';
 import styles from './RelatedEntitiesSection.module.scss';
 
 interface RelatedEntitiesSectionProps {
@@ -101,27 +103,41 @@ export const RelatedEntitiesSection = ({
                     <div className={styles.empty}>No related {ENTITY_TYPE_LABELS[targetEntityType]}</div>
                 ) : (
                     <div className={styles.list}>
-                        {relatedEntities.map((entity: RelatedEntityDTO) => (
-                            <div key={`${entity.id}-${entity.relationId}`} className={styles.item}>
-                                <div className={styles.itemInfo}>
-                                    {entity.trackOrder != null && (
-                                        <span className={styles.trackOrder}>{entity.trackOrder}.</span>
-                                    )}
-                                    <span className={styles.entityName}>{entity.name}</span>
-                                    {entity.relationTypeName && (
-                                        <span className={styles.relationType}>{entity.relationTypeName}</span>
-                                    )}
+                        {relatedEntities.map((entity: RelatedEntityDTO) => {
+                            const url = getMasterEntityUrl(targetEntityType, entity.id);
+                            const isAlbumTrack = sourceEntityType === 'album' && targetEntityType === 'track';
+                            return (
+                                <div key={`${entity.id}-${entity.relationId}`} className={styles.item}>
+                                    <div className={styles.itemInfo}>
+                                        {isAlbumTrack && (
+                                            <>
+                                                {entity.trackOrder != null && (
+                                                    <span className={styles.trackOrder}>{entity.trackOrder}.</span>
+                                                )}
+                                            </>
+                                        )}
+                                        {
+                                        entity.relationTypeName && (
+                                            <span className={styles.relationType}>{entity.relationTypeName}</span>
+                                            )
+                                        }
+                                        {url ? (
+                                            <Link to={url} className={styles.entityName}>{entity.name}</Link>
+                                        ) : (
+                                            <span className={styles.entityName}>{entity.name}</span>
+                                        )}
+                                    </div>
+                                    <button
+                                        onClick={() => handleRemoveRelation(entity.relationId)}
+                                        disabled={removingIds.has(entity.relationId)}
+                                        className={styles.removeButton}
+                                        title="Remove relation"
+                                    >
+                                        {removingIds.has(entity.relationId) ? '...' : '\u00d7'}
+                                    </button>
                                 </div>
-                                <button
-                                    onClick={() => handleRemoveRelation(entity.relationId)}
-                                    disabled={removingIds.has(entity.relationId)}
-                                    className={styles.removeButton}
-                                    title="Remove relation"
-                                >
-                                    {removingIds.has(entity.relationId) ? '...' : '\u00d7'}
-                                </button>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )
             )}

@@ -23,6 +23,11 @@
     animation: slideIn 0.2s ease;
 }
 
+.detailSectionWide {
+    width: 50%;
+    max-width: 900px;
+}
+
 .detailSection.closing {
     animation: slideOut 0.2s ease forwards;
 }
@@ -63,7 +68,8 @@
         display: none;
     }
 
-    .detailSection {
+    .detailSection,
+    .detailSectionWide {
         width: 100%;
         min-width: 0;
         max-width: none;

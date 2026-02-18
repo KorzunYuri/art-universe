@@ -24,7 +24,7 @@ export default function LastfmApp() {
         },
         {
             path: 'albums',
-            element: <TableWithDetailLayout><LastfmAlbums /></TableWithDetailLayout>,
+            element: <TableWithDetailLayout wideDetail><LastfmAlbums /></TableWithDetailLayout>,
             children: [
                 { path: ':albumId', element: <LastfmAlbumDetail /> },
             ],

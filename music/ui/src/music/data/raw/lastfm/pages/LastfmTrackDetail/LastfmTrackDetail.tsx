@@ -2,7 +2,7 @@ import { useParams } from 'react-router-dom';
 import { useLastfmEntity } from '@/music/data/raw/lastfm/hooks/useLastfmEntity';
 import { useLastfmEntityApproval } from '@/music/data/raw/lastfm/hooks/useLastfmEntityApproval';
 import { ExternalLink } from '@/music/shared/components';
-import { ApprovalToggle, EntityBinding, EntityTagPanel } from '@/music/data/raw/lastfm/components';
+import { ApprovalToggle, ArtistRelatedEntityBinding, EntityTagPanel } from '@/music/data/raw/lastfm/components';
 import { QuizBinding } from '@/music/quiz/components';
 import { LastfmConfig } from '@/music/data/raw/lastfm/config/lastfmconfig';
 import { getMasterEntityUrl } from '@/music/data/master/utils/masterEntityUrl';
@@ -87,7 +87,7 @@ export const LastfmTrackDetail = () => {
             <section className={styles.section}>
                 <h3 className={styles.sectionTitle}>Master Binding</h3>
                 <div className={styles.bindingWrapper}>
-                    <EntityBinding
+                    <ArtistRelatedEntityBinding
                         dataSource="lastfm"
                         entityType="track"
                         entityId={id}

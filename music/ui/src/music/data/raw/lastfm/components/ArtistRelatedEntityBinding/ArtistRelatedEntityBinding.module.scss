@@ -1,0 +1,42 @@
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.wrapperCompact {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+    align-items: center;
+    width: 100%;
+
+    .label {
+        display: none;
+    }
+
+    .row {
+        flex: 1;
+        min-width: 0;
+    }
+}
+
+.row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.label {
+    font-size: 0.8rem;
+    color: #64748b;
+    font-weight: 500;
+    min-width: 50px;
+    flex-shrink: 0;
+}
+
+.artistLookup {
+    flex: 1;
+    min-width: 0;
+}

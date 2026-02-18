@@ -41,6 +41,14 @@ export function createArtistWithCategoriesFromDto(dto: ArtistWithCategoriesDto) 
 }
 
 /**
+ * Fetches a single artist by ID
+ */
+export async function fetchArtist(artistId: number): Promise<ArtistDto> {
+    const response = await masterDataApi.get<ArtistDto>(`/artists/${artistId}`);
+    return response.data;
+}
+
+/**
  * Fetches a single artist with categories by ID
  */
 export async function fetchArtistWithCategories(artistId: number): Promise<ArtistWithCategoriesDto | null> {

@@ -7,7 +7,7 @@ import { usePlayCountFilter, useListenersCountFilter, useArtistFilter, useTagFil
 import { DataTable } from '@/music/shared/components/DataTable';
 import { stringToSortingState, sortingStateToString } from '@/music/shared/components/DataTable/sortUtils';
 import { ExternalLink, ReadonlyAttr } from '@/music/shared/components';
-import { LastfmApprovalCell, LastfmBindingCell, LastfmQuizCell } from '@/music/data/raw/lastfm/components/cells';
+import { LastfmApprovalCell, LastfmArtistRelatedBindingCell, LastfmQuizCell } from '@/music/data/raw/lastfm/components/cells';
 import { LastfmArtistFilterButton } from '@/music/data/raw/lastfm/components';
 import { LastfmArtistLink } from '@/music/data/raw/lastfm/components/LastfmArtistLink';
 import { LastfmConfig } from '@/music/data/raw/lastfm/config/lastfmconfig';
@@ -130,7 +130,7 @@ export const LastfmTracksTable = ({ artistId }: LastfmTracksTableProps) => {
             enableSorting: false,
             meta: { headerClassName: styles.masterBinding, cellClassName: styles.masterBinding },
             cell: ({ row }) => (
-                <LastfmBindingCell entityType="track" entityId={row.original.id} />
+                <LastfmArtistRelatedBindingCell entityType="track" entityId={row.original.id} />
             ),
         },
         {
