@@ -26,7 +26,8 @@ export const LastfmArtistRelatedBindingCell = ({ entityType, entityId }: LastfmA
     );
 
     return (
-        <span onClick={(e) => e.stopPropagation()}>
+        <span style={{flex:  1}}
+              onClick={(e) => e.stopPropagation()}>
             <ArtistRelatedEntityBinding
                 dataSource="lastfm"
                 entityType={entityType}

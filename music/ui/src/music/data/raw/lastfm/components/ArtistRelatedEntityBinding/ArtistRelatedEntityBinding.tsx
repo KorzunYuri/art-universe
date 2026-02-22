@@ -113,11 +113,11 @@ export const ArtistRelatedEntityBinding = <T extends LastfmSupportedEntityType &
     const isEntityDisabled = disabled || !selectedArtist;
 
     if (isEntityLoading) {
-        return <div style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Loading...</div>;
+        return <div className={styles.loading}>Loading...</div>;
     }
 
     return (
-        <div className={`${compact ? styles.wrapperCompact : styles.wrapper}${className ? ` ${className}` : ''}`}>
+        <div className={`${styles.wrapper} ${compact ? styles.compact : ''} ${className ? ` ${className}` : ''}`}>
             {/* Artist row */}
             <div className={styles.row}>
                 <span className={styles.label}>Artist</span>
@@ -143,7 +143,7 @@ export const ArtistRelatedEntityBinding = <T extends LastfmSupportedEntityType &
                 <span className={styles.label}>
                     {entityType === 'album' ? 'Album' : 'Track'}
                 </span>
-                <div style={{ flex: 1, minWidth: 0 }}>
+                <div className={styles.entityLookup}>
                     <EntityBinding
                         dataSource={dataSource}
                         entityType={entityType}

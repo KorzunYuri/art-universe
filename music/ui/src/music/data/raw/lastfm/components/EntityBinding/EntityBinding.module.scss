@@ -3,7 +3,7 @@
     align-items: center;
     gap: 8px;
     width: 100%;
-    justify-content: space-between; // Распределяем элементы по краям
+    justify-content: space-between;
 }
 
 .bindingName {
@@ -11,10 +11,11 @@
     min-width: 0; // Allow text truncation
     
     &.boundState {
-        display: inline-flex;
-        align-items: center;
-        height: 2.25rem; // Match .muLabel height (36px)
-        padding: 0 0.75rem; // Slightly more padding for visual balance
+        display: block;
+        width: 100%;
+        height: 2.25rem;
+        line-height: 2.25rem;
+        padding: 0 0.75rem;
         background-color: #d4edda;
         border: 1px solid #c3e6cb;
         border-radius: 0.25rem;
@@ -23,7 +24,7 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        flex-shrink: 1; // Позволяем сжиматься при необходимости
+        box-sizing: border-box;
     }
     
     &.matchedState {

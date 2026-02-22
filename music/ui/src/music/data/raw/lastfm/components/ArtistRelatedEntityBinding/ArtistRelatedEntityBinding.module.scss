@@ -2,23 +2,19 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    width: 100%;
-}
+    flex: 1;
 
-.wrapperCompact {
-    display: flex;
-    flex-direction: row;
-    gap: 0.5rem;
-    align-items: center;
-    width: 100%;
+    &.compact {
+        flex-direction: row;
 
-    .label {
-        display: none;
-    }
+        .label {
+            display: none;
+        }
 
-    .row {
-        flex: 1;
-        min-width: 0;
+        .row {
+            flex: 1;
+            min-width: 0;
+        }
     }
 }
 
@@ -39,4 +35,14 @@
 .artistLookup {
     flex: 1;
     min-width: 0;
+}
+
+.entityLookup {
+    flex: 1;
+    min-width: 0;
+}
+
+.loading {
+    font-size: 0.85rem;
+    color: #94a3b8;
 }

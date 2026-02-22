@@ -25,7 +25,8 @@ export const LastfmBindingCell = ({ entityType, entityId }: LastfmBindingCellPro
     );
 
     return (
-        <span onClick={(e) => e.stopPropagation()}>
+        <span style={{flex:  1}}
+              onClick={(e) => e.stopPropagation()}>
             <EntityBinding
                 dataSource="lastfm"
                 entityType={entityType}
