@@ -31,8 +31,8 @@ The `docs/kb/` directory in the project root contains LLM-optimized documentatio
 
 ### 2. Available Commands
 
-#### Documentation Commands
 | Command               | Purpose                                                         |
 |-----------------------|-----------------------------------------------------------------|
 | `/update-devlog`      | Create/update development log for current session               |
 | `/update-module-docs` | Create/update module docs that fit currently approved structure |
+| `/analyze-coverage <:module:path>` | Run JaCoCo summary, report low-coverage classes, optionally write tests    |

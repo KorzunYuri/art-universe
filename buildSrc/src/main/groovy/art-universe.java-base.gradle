@@ -58,10 +58,45 @@ tasks.register('integrationTest', Test) {
 
 jacocoTestReport {
     dependsOn test // tests are required to run before generating the jacoco report
+    reports {
+        xml.required = true
+    }
 }
 
 test {
     finalizedBy jacocoTestReport  // report is always generated after tests run
+}
+
+tasks.register('jacocoSummary') {
+    dependsOn jacocoTestReport
+
+    doLast {
+        def report = file("$buildDir/reports/jacoco/test/jacocoTestReport.xml")
+        def parser = new XmlParser(false, false)
+        parser.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false)
+        parser.setFeature("http://xml.org/sax/features/external-general-entities", false)
+        parser.setFeature("http://xml.org/sax/features/external-parameter-entities", false)
+        parser.setEntityResolver { publicId, systemId ->
+            new org.xml.sax.InputSource(new java.io.StringReader(""))
+        }
+        def xml = parser.parse(report)
+
+        xml.'package'.each { pkg ->
+            pkg.'class'.each { cls ->
+                def lineCounter = cls.counter.find { it.@type == 'LINE' }
+                if (lineCounter) {
+                    def missed = lineCounter.@missed.toInteger()
+                    def covered = lineCounter.@covered.toInteger()
+                    def total = missed + covered
+                    def coverage = total > 0 ? (covered * 100 / total) : 100
+
+                    if (coverage < 80) {
+                        println "${cls.@name} -> ${coverage}% (missed: $missed)"
+                    }
+                }
+            }
+        }
+    }
 }
 
 clean.doLast {
