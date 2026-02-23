@@ -20,18 +20,6 @@ public interface RelationTypeApplicabilityRepository extends JpaRepository<Relat
     boolean existsByRelationTypeIdAndSourceEntityTypeAndTargetEntityType(
         Long relationTypeId, MasterEntityType sourceEntityType, MasterEntityType targetEntityType);
 
-    void deleteByRelationTypeIdAndSourceEntityTypeAndTargetEntityType(
-        Long relationTypeId, MasterEntityType sourceEntityType, MasterEntityType targetEntityType);
-
-    @Query("""
-        SELECT  rta
-        FROM    relation_type_applicability rta
-        WHERE   rta.sourceEntityType = ?1
-            AND rta.targetEntityType = ?2
-    """)
-    List<RelationTypeApplicability> findApplicableTypes(
-        MasterEntityType firstEntityType, MasterEntityType secondEntityType);
-
     Optional<RelationTypeApplicability> findBySourceEntityTypeAndTargetEntityTypeAndIsDefaultTrue(
         MasterEntityType sourceEntityType, MasterEntityType targetEntityType);
 }

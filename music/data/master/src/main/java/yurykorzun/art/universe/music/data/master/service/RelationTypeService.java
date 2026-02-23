@@ -9,23 +9,11 @@ import java.util.List;
 
 public interface RelationTypeService {
 
-    RelationTypeDTO createRelationType(String name, String reverseName, boolean symmetrical);
-
-    RelationTypeDTO updateRelationType(Long id, String name, String reverseName, boolean symmetrical);
-
-    void deleteRelationType(Long id);
-
-    RelationTypeDTO getRelationType(Long id);
-
-    RelationTypeWithApplicabilitiesDTO getRelationTypeWithApplicabilities(Long id);
+    RelationTypeWithApplicabilitiesDTO getRelationTypeWithApplicabilities(Long relationTypeId);
 
     List<RelationTypeDTO> findRelationTypes(String search);
 
     List<RelationTypeDTO> getApplicableTypes(MasterEntityType sourceEntityType, MasterEntityType targetEntityType);
-
-    RelationTypeApplicabilityDTO addApplicability(Long relationTypeId, MasterEntityType sourceEntityType, MasterEntityType targetEntityType, boolean isDefault);
-
-    void removeApplicability(Long relationTypeId, MasterEntityType sourceEntityType, MasterEntityType targetEntityType);
 
     List<RelationTypeApplicabilityDTO> getApplicabilities(Long relationTypeId);
 }

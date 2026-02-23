@@ -13,7 +13,6 @@ import yurykorzun.art.universe.music.data.master.repository.RelationTypeApplicab
 import yurykorzun.art.universe.music.data.master.repository.RelationTypeRepository;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,48 +29,10 @@ public class RelationTypeServiceImpl implements RelationTypeService {
     }
 
     @Override
-    @Transactional
-    public RelationTypeDTO createRelationType(String name, String reverseName, boolean symmetrical) {
-        RelationType relationType = RelationType.builder()
-            .name(name)
-            .reverseName(reverseName)
-            .symmetrical(symmetrical)
-            .build();
-        relationType = relationTypeRepository.save(relationType);
-        return toDTO(relationType);
-    }
-
-    @Override
-    @Transactional
-    public RelationTypeDTO updateRelationType(Long id, String name, String reverseName, boolean symmetrical) {
-        RelationType relationType = findByIdOrThrow(id);
-        rejectIfSystem(relationType, "modify");
-        relationType.setName(name);
-        relationType.setReverseName(reverseName);
-        relationType.setSymmetrical(symmetrical);
-        relationType = relationTypeRepository.save(relationType);
-        return toDTO(relationType);
-    }
-
-    @Override
-    @Transactional
-    public void deleteRelationType(Long id) {
-        RelationType relationType = findByIdOrThrow(id);
-        rejectIfSystem(relationType, "delete");
-        relationTypeRepository.deleteById(id);
-    }
-
-    @Override
     @Transactional(readOnly = true)
-    public RelationTypeDTO getRelationType(Long id) {
-        return toDTO(findByIdOrThrow(id));
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public RelationTypeWithApplicabilitiesDTO getRelationTypeWithApplicabilities(Long id) {
-        RelationType relationType = findByIdOrThrow(id);
-        List<RelationTypeApplicability> applicabilities = applicabilityRepository.findByRelationTypeId(id);
+    public RelationTypeWithApplicabilitiesDTO getRelationTypeWithApplicabilities(Long relationTypeId) {
+        RelationType relationType = findByIdOrThrow(relationTypeId);
+        List<RelationTypeApplicability> applicabilities = applicabilityRepository.findByRelationTypeId(relationTypeId);
         return RelationTypeWithApplicabilitiesDTO.builder()
             .id(relationType.getId())
             .name(relationType.getName())
@@ -105,39 +66,6 @@ public class RelationTypeServiceImpl implements RelationTypeService {
     }
 
     @Override
-    @Transactional
-    public RelationTypeApplicabilityDTO addApplicability(Long relationTypeId, MasterEntityType sourceEntityType, MasterEntityType targetEntityType, boolean isDefault) {
-        RelationType relationType = findByIdOrThrow(relationTypeId);
-        rejectIfSystem(relationType, "modify applicability of");
-        validateApplicabilityCombination(sourceEntityType, targetEntityType);
-
-        if (applicabilityRepository.existsByRelationTypeIdAndSourceEntityTypeAndTargetEntityType(
-                relationTypeId, sourceEntityType, targetEntityType)) {
-            throw new IllegalArgumentException(
-                String.format("Applicability already exists for relation type %d and entity types %s -> %s",
-                    relationTypeId, sourceEntityType.getName(), targetEntityType.getName()));
-        }
-
-        RelationTypeApplicability applicability = RelationTypeApplicability.builder()
-            .relationTypeId(relationTypeId)
-            .sourceEntityType(sourceEntityType)
-            .targetEntityType(targetEntityType)
-            .isDefault(isDefault)
-            .build();
-        applicability = applicabilityRepository.save(applicability);
-        return toApplicabilityDTO(applicability);
-    }
-
-    @Override
-    @Transactional
-    public void removeApplicability(Long relationTypeId, MasterEntityType sourceEntityType, MasterEntityType targetEntityType) {
-        RelationType relationType = findByIdOrThrow(relationTypeId);
-        rejectIfSystem(relationType, "modify applicability of");
-        applicabilityRepository.deleteByRelationTypeIdAndSourceEntityTypeAndTargetEntityType(
-            relationTypeId, sourceEntityType, targetEntityType);
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public List<RelationTypeApplicabilityDTO> getApplicabilities(Long relationTypeId) {
         return applicabilityRepository.findByRelationTypeId(relationTypeId).stream()
@@ -145,31 +73,9 @@ public class RelationTypeServiceImpl implements RelationTypeService {
             .collect(Collectors.toList());
     }
 
-    private static final Set<MasterEntityType> RELATABLE_TYPES =
-        Set.of(MasterEntityType.ARTIST, MasterEntityType.ALBUM, MasterEntityType.TRACK);
-
-    private void validateApplicabilityCombination(MasterEntityType source, MasterEntityType target) {
-        if (!RELATABLE_TYPES.contains(source) || !RELATABLE_TYPES.contains(target)) {
-            throw new IllegalArgumentException(
-                "Applicability only valid for artist, album and track entity types");
-        }
-        if (!source.equals(target) && source.getCode() > target.getCode()) {
-            throw new IllegalArgumentException(String.format(
-                "Non-canonical combination %s\u2192%s; use %s\u2192%s instead",
-                source.getName(), target.getName(), target.getName(), source.getName()));
-        }
-    }
-
-    private RelationType findByIdOrThrow(Long id) {
-        return relationTypeRepository.findById(id)
-            .orElseThrow(() -> new CustomEntityNotFoundException("relation_type", id));
-    }
-
-    private void rejectIfSystem(RelationType relationType, String action) {
-        if (relationType.isSystem()) {
-            throw new IllegalArgumentException(
-                String.format("Cannot %s system relation type '%s'", action, relationType.getName()));
-        }
+    private RelationType findByIdOrThrow(Long relationTypeId) {
+        return relationTypeRepository.findById(relationTypeId)
+            .orElseThrow(() -> new CustomEntityNotFoundException("relation_type", relationTypeId));
     }
 
     private RelationTypeDTO toDTO(RelationType entity) {
