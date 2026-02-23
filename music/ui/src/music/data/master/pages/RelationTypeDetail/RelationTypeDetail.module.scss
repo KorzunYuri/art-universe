@@ -10,33 +10,21 @@
     letter-spacing: 0.04em;
 }
 
-.checkboxLabel {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.875rem;
-    cursor: pointer;
-    user-select: none;
-}
-
 .applicabilityList {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
-    margin-bottom: 0.75rem;
 }
 
 .applicabilityRow {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
     padding: 0.25rem 0.5rem;
     border-radius: 4px;
     background: #f8f9fa;
 }
 
 .applicabilityLabel {
-    flex: 1;
     font-size: 0.875rem;
     display: flex;
     align-items: center;
@@ -51,65 +39,4 @@
     color: #2e7d32;
     font-size: 0.7rem;
     font-weight: 600;
-}
-
-.removeButton {
-    padding: 0.1rem 0.4rem;
-    border: 1px solid #dc3545;
-    border-radius: 3px;
-    background: transparent;
-    color: #dc3545;
-    cursor: pointer;
-    font-size: 0.75rem;
-    line-height: 1;
-
-    &:disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-    }
-
-    &:hover:not(:disabled) {
-        background: #dc3545;
-        color: white;
-    }
-}
-
-.addApplicabilityForm {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    margin-top: 0.5rem;
-}
-
-.typeSelect {
-    padding: 0.3rem 0.5rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 0.875rem;
-    background: white;
-}
-
-.arrow {
-    font-size: 1rem;
-    color: #555;
-}
-
-.addButton {
-    padding: 0.3rem 0.75rem;
-    border: 1px solid #007bff;
-    border-radius: 4px;
-    background: #007bff;
-    color: white;
-    cursor: pointer;
-    font-size: 0.875rem;
-
-    &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
-    &:hover:not(:disabled) {
-        background: #0069d9;
-    }
 }
