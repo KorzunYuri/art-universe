@@ -491,6 +491,67 @@ public class AlbumServiceImpl implements AlbumService {
 
     @Override
     @Transactional
+    public int copyTracklist(Long targetAlbumId, Long sourceAlbumId) {
+        if (!albumRepository.existsById(targetAlbumId)) {
+            throw new CustomEntityNotFoundException("Album", targetAlbumId);
+        }
+        if (!albumRepository.existsById(sourceAlbumId)) {
+            throw new CustomEntityNotFoundException("Album", sourceAlbumId);
+        }
+
+        List<AlbumTrack> sourceTracks = albumTrackRepository.findByAlbumId(sourceAlbumId);
+        int copiedCount = 0;
+
+        for (AlbumTrack source : sourceTracks) {
+            Optional<AlbumTrack> existing = albumTrackRepository
+                .findByAlbumIdAndTrackIdAndRelationTypeId(targetAlbumId, source.getTrackId(), source.getRelationTypeId());
+
+            if (existing.isEmpty()) {
+                AlbumTrack copy = AlbumTrack.builder()
+                    .albumId(targetAlbumId)
+                    .trackId(source.getTrackId())
+                    .trackOrder(source.getTrackOrder())
+                    .relationTypeId(source.getRelationTypeId())
+                    .build();
+                albumTrackRepository.save(copy);
+                copiedCount++;
+            } else {
+                log.debug("Skipping track {} — already exists in album {}", source.getTrackId(), targetAlbumId);
+            }
+        }
+
+        return copiedCount;
+    }
+
+    @Override
+    @Transactional
+    public void reorderTracks(Long albumId, List<TrackReorderItemDTO> items) {
+        if (!albumRepository.existsById(albumId)) {
+            throw new CustomEntityNotFoundException("Album", albumId);
+        }
+
+        // Validate no duplicate newOrder values in the request
+        long distinctOrders = items.stream().map(TrackReorderItemDTO::getNewOrder).distinct().count();
+        if (distinctOrders < items.size()) {
+            throw new IllegalArgumentException("Duplicate newOrder values are not allowed in a reorder request");
+        }
+
+        for (TrackReorderItemDTO item : items) {
+            AlbumTrack albumTrack = albumTrackRepository.findById(item.getAlbumTrackId())
+                .orElseThrow(() -> new CustomEntityNotFoundException("AlbumTrack", item.getAlbumTrackId()));
+
+            if (!albumTrack.getAlbumId().equals(albumId)) {
+                throw new IllegalArgumentException(String.format(
+                    "AlbumTrack %d does not belong to album %d", item.getAlbumTrackId(), albumId));
+            }
+
+            albumTrack.setTrackOrder(item.getNewOrder());
+            albumTrackRepository.save(albumTrack);
+        }
+    }
+
+    @Override
+    @Transactional
     public boolean unbindAlbum(DataSource dataSource, Long externalId) {
         Optional<AlbumBinding> binding = bindingsRepository.findByDataSourceAndExternalId(dataSource, externalId);
         if (binding.isPresent()) {

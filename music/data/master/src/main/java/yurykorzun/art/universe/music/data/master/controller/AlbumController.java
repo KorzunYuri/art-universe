@@ -3,11 +3,13 @@ package yurykorzun.art.universe.music.data.master.controller;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.music.data.master.dto.AlbumDto;
 import yurykorzun.art.universe.music.data.master.dto.AlbumSaveRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.AlbumWithCategoriesDto;
 import yurykorzun.art.universe.music.data.master.dto.AlbumWithTracksSaveRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.TrackReorderRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
@@ -25,6 +27,7 @@ import yurykorzun.art.universe.music.data.master.service.AlbumService;
 import yurykorzun.art.universe.music.data.master.service.BindingService;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/albums")
@@ -169,6 +172,24 @@ public class AlbumController {
         return albumService.unbindAlbum(dataSource, externalId);
     }
     
+    @PostMapping("/{albumId}/tracks/copy-from/{sourceAlbumId}")
+    public Map<String, Integer> copyTracklist(
+        @PathVariable Long albumId,
+        @PathVariable Long sourceAlbumId
+    ) {
+        int copied = albumService.copyTracklist(albumId, sourceAlbumId);
+        return Map.of("copiedCount", copied);
+    }
+
+    @PutMapping("/{albumId}/tracks/reorder")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void reorderTracks(
+        @PathVariable Long albumId,
+        @Valid @RequestBody TrackReorderRequestDTO request
+    ) {
+        albumService.reorderTracks(albumId, request.getItems());
+    }
+
     @DeleteMapping("/unbind/{dataSource}/batch")
     public BatchUnbindResponseDTO batchUnbindAlbums(
         @PathVariable DataSource dataSource,

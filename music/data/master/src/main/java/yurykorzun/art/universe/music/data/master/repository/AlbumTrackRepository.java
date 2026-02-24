@@ -13,6 +13,8 @@ import java.util.Optional;
 @Repository
 public interface AlbumTrackRepository extends JpaRepository<AlbumTrack, Long> {
 
+    List<AlbumTrack> findByAlbumId(Long albumId);
+
     Optional<AlbumTrack> findByAlbumIdAndTrackIdAndRelationTypeId(Long albumId, Long trackId, Long relationTypeId);
 
     @Query(value = """

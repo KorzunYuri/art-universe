@@ -6,6 +6,7 @@ import yurykorzun.art.universe.music.data.master.dto.AlbumDto;
 import yurykorzun.art.universe.music.data.master.dto.AlbumSaveRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.AlbumWithCategoriesDto;
 import yurykorzun.art.universe.music.data.master.dto.AlbumWithTracksSaveRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.TrackReorderItemDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
@@ -87,6 +88,27 @@ public interface AlbumService {
      */
     boolean unbindAlbum(DataSource dataSource, Long externalId);
     
+    /**
+     * Copies all album-track relations from sourceAlbumId to targetAlbumId.
+     * Already-existing (targetAlbumId, trackId, relationTypeId) combinations are skipped silently.
+     * Copied tracks use the same trackOrder as in the source album.
+     *
+     * @param targetAlbumId the album to copy tracks into
+     * @param sourceAlbumId the album to copy tracks from
+     * @return count of newly created album-track records (skipped tracks not counted)
+     */
+    int copyTracklist(Long targetAlbumId, Long sourceAlbumId);
+
+    /**
+     * Updates track orders for multiple album-track relations atomically.
+     * Validates that no two items specify the same newOrder value and
+     * that all albumTrackIds belong to the given albumId.
+     *
+     * @param albumId the album whose track orders are being updated
+     * @param items   list of (albumTrackId, newOrder) pairs
+     */
+    void reorderTracks(Long albumId, List<TrackReorderItemDTO> items);
+
     /**
      * Searches for albums by name (case insensitive, partial match) with optional artist filter.
      * Results are formatted as "Artist - Album" and prioritized by matching artist if specified.
