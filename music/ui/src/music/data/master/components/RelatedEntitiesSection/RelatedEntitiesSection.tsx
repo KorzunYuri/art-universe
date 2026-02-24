@@ -21,6 +21,9 @@ interface RelatedEntitiesSectionProps {
     sourceEntityId: number;
     targetEntityType: MasterEntityType;
     defaultOpen?: boolean;
+    onEntityAction?: (entity: RelatedEntityDTO) => void;
+    entityActionLabel?: string;
+    actionInProgressIds?: Set<number>;
 }
 
 const ENTITY_TYPE_LABELS: Record<MasterEntityType, string> = {
@@ -36,6 +39,9 @@ export const RelatedEntitiesSection = ({
     sourceEntityId,
     targetEntityType,
     defaultOpen = false,
+    onEntityAction,
+    entityActionLabel,
+    actionInProgressIds,
 }: RelatedEntitiesSectionProps) => {
     const queryClient = useQueryClient();
     const { showNotification } = useNotifications();
@@ -127,6 +133,16 @@ export const RelatedEntitiesSection = ({
                                             <span className={styles.entityName}>{entity.name}</span>
                                         )}
                                     </div>
+                                    {onEntityAction && entityActionLabel && (
+                                        <button
+                                            onClick={() => onEntityAction(entity)}
+                                            disabled={actionInProgressIds?.has(entity.id)}
+                                            className={styles.actionButton}
+                                            title={entityActionLabel}
+                                        >
+                                            {actionInProgressIds?.has(entity.id) ? '...' : entityActionLabel}
+                                        </button>
+                                    )}
                                     <button
                                         onClick={() => handleRemoveRelation(entity.relationId)}
                                         disabled={removingIds.has(entity.relationId)}

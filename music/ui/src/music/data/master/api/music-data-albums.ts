@@ -107,3 +107,17 @@ export async function unbindAlbumFromCategory(albumId: number, categoryId: numbe
         `/albums/${albumId}/categories/${categoryId}`
     );
 }
+
+/**
+ * Copies all album-track relations from sourceAlbumId to targetAlbumId.
+ * Returns the count of newly created track relations.
+ */
+export async function copyAlbumTracklist(
+    targetAlbumId: number,
+    sourceAlbumId: number
+): Promise<{ copiedCount: number }> {
+    const response = await masterDataApi.post<{ copiedCount: number }>(
+        `/albums/${targetAlbumId}/tracks/copy-from/${sourceAlbumId}`
+    );
+    return response.data;
+}

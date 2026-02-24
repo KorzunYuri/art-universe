@@ -69,6 +69,30 @@
     white-space: nowrap;
 }
 
+.actionButton {
+    flex-shrink: 0;
+    padding: 0.125rem 0.5rem;
+    font-size: 0.75rem;
+    color: #64748b;
+    background: transparent;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 0.15s, border-color 0.15s, background-color 0.15s;
+
+    &:hover:not(:disabled) {
+        color: #334155;
+        border-color: #94a3b8;
+        background-color: #f1f5f9;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}
+
 .removeButton {
     opacity: 0;
     flex-shrink: 0;

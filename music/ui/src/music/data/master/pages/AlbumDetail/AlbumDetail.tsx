@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { useNotifications } from '@/music/shared/hooks';
 import { EditableText, ConfirmDialog } from '@/music/shared/components';
 import { MasterEntityPanel } from '@/music/data/master/components/MasterEntityPanel';
 import { MasterEntityPicker } from '@/music/data/master/components/MasterEntityPicker';
 import { RelatedEntitiesSection } from '@/music/data/master/components/RelatedEntitiesSection';
+import type { RelatedEntityDTO } from '@/music/data/master/api/music-data-relations';
 import { useMasterEntity } from '@/music/data/master/hooks/useMasterEntity';
 import { useAlbumWithCategories } from '@/music/data/master/hooks/useAlbumWithCategories';
 import {
@@ -12,14 +14,17 @@ import {
     deleteAlbum,
     bindAlbumToCategory,
     unbindAlbumFromCategory,
+    copyAlbumTracklist,
     type AlbumSaveRequest,
 } from '@/music/data/master/api/music-data-albums';
+import { relationKeys } from '@/music/shared/utils/query-keys';
 import styles from '../MasterDetailPage.module.scss';
 
 export const AlbumDetail = () => {
     const { albumId } = useParams<{ albumId: string }>();
     const id = Number(albumId);
     const { showNotification } = useNotifications();
+    const queryClient = useQueryClient();
 
     const {
         album,
@@ -41,6 +46,7 @@ export const AlbumDetail = () => {
     const [isDeleting, setIsDeleting] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [processingCategories, setProcessingCategories] = useState<Set<number>>(new Set());
+    const [copyingAlbumIds, setCopyingAlbumIds] = useState<Set<number>>(new Set());
 
     useEffect(() => {
         if (album) {
@@ -106,6 +112,21 @@ export const AlbumDetail = () => {
                 next.delete(categoryId);
                 return next;
             });
+        }
+    };
+
+    const handleCopyTracklist = async (entity: RelatedEntityDTO) => {
+        setCopyingAlbumIds(prev => new Set(prev).add(entity.id));
+        try {
+            const result = await copyAlbumTracklist(album.id, entity.id);
+            queryClient.invalidateQueries({
+                queryKey: relationKeys.entities('album', album.id, 'track'),
+            });
+            showNotification('success', `Copied ${result.copiedCount} track(s) from "${entity.name}"`);
+        } catch (error: any) {
+            showNotification('error', error?.response?.data?.message || error?.message || 'Failed to copy tracklist');
+        } finally {
+            setCopyingAlbumIds(prev => { const next = new Set(prev); next.delete(entity.id); return next; });
         }
     };
 
@@ -198,6 +219,9 @@ export const AlbumDetail = () => {
                     sourceEntityType="album"
                     sourceEntityId={album.id}
                     targetEntityType="album"
+                    onEntityAction={handleCopyTracklist}
+                    entityActionLabel="Copy tracklist"
+                    actionInProgressIds={copyingAlbumIds}
                 />
                 <RelatedEntitiesSection
                     title="Related Tracks"
