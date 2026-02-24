@@ -109,6 +109,17 @@ export async function unbindAlbumFromCategory(albumId: number, categoryId: numbe
 }
 
 /**
+ * Reorders album tracks by updating their track orders.
+ * Items should be pairs of { albumTrackId, newOrder }.
+ */
+export async function reorderAlbumTracks(
+    albumId: number,
+    items: { albumTrackId: number; newOrder: number }[]
+): Promise<void> {
+    await masterDataApi.put(`/albums/${albumId}/tracks/reorder`, { items });
+}
+
+/**
  * Copies all album-track relations from sourceAlbumId to targetAlbumId.
  * Returns the count of newly created track relations.
  */

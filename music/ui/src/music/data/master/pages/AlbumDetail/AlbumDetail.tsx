@@ -15,6 +15,7 @@ import {
     bindAlbumToCategory,
     unbindAlbumFromCategory,
     copyAlbumTracklist,
+    reorderAlbumTracks,
     type AlbumSaveRequest,
 } from '@/music/data/master/api/music-data-albums';
 import { relationKeys } from '@/music/shared/utils/query-keys';
@@ -47,6 +48,7 @@ export const AlbumDetail = () => {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [processingCategories, setProcessingCategories] = useState<Set<number>>(new Set());
     const [copyingAlbumIds, setCopyingAlbumIds] = useState<Set<number>>(new Set());
+    const [swappingTrackRelationIds, setSwappingTrackRelationIds] = useState<Set<number>>(new Set());
 
     useEffect(() => {
         if (album) {
@@ -110,6 +112,28 @@ export const AlbumDetail = () => {
             setProcessingCategories(prev => {
                 const next = new Set(prev);
                 next.delete(categoryId);
+                return next;
+            });
+        }
+    };
+
+    const handleSwapTracks = async (entityA: RelatedEntityDTO, entityB: RelatedEntityDTO) => {
+        setSwappingTrackRelationIds(prev => new Set([...prev, entityA.relationId, entityB.relationId]));
+        try {
+            await reorderAlbumTracks(album.id, [
+                { albumTrackId: entityA.relationId, newOrder: entityB.trackOrder! },
+                { albumTrackId: entityB.relationId, newOrder: entityA.trackOrder! },
+            ]);
+            queryClient.invalidateQueries({
+                queryKey: relationKeys.entities('album', album.id, 'track'),
+            });
+        } catch (error: any) {
+            showNotification('error', error?.response?.data?.message || error?.message || 'Failed to reorder tracks');
+        } finally {
+            setSwappingTrackRelationIds(prev => {
+                const next = new Set(prev);
+                next.delete(entityA.relationId);
+                next.delete(entityB.relationId);
                 return next;
             });
         }
@@ -228,6 +252,8 @@ export const AlbumDetail = () => {
                     sourceEntityType="album"
                     sourceEntityId={album.id}
                     targetEntityType="track"
+                    onEntitySwap={handleSwapTracks}
+                    swappingRelationIds={swappingTrackRelationIds}
                 />
             </section>
 
