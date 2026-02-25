@@ -1,5 +1,6 @@
 package yurykorzun.art.universe.music.data.master.dto.relation;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,6 +22,7 @@ public class RelationBindingStatusDTO {
     private Long sourceExternalId;
     private MasterEntityType sourceEntityType;
     private String sourceEntityName;
+    @JsonProperty("isSourceEntityBound")
     private boolean isSourceEntityBound;
     @Nullable private Long sourceInternalId;
     

@@ -24,9 +24,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(LastfmTagController.class)
 class LastfmTagControllerMvcTest extends BaseMvcTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-
     @MockitoBean
     private LastfmTagService tagService;
 

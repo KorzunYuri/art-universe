@@ -82,25 +82,32 @@
 
 /* Column widths */
 .artist {
-    width: 200px;
+    flex: 6;
+    text-align: left;
 }
 
 .name {
-    width: 300px;
+    flex: 12;
+    text-align: left;
 }
 
 .mbid {
-    width: 120px;
+    flex: 3;
 }
 
 .status {
-    width: 120px;
+    flex: 4;
+    display: flex;
+    justify-content: center;
 }
 
 .masterBinding {
-    width: 200px;
+    flex: 14;
+    display: flex;
+    text-align: left;
 }
 
 .count {
-    width: 100px;
+    flex: 3;
+    text-align: right;
 }

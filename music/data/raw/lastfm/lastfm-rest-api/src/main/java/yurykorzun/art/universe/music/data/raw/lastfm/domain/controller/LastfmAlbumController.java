@@ -7,8 +7,10 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.dto.AlbumSearchParams;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.dto.LastfmAlbumResponseDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.domain.dto.LastfmAlbumTrackResponseDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.LastfmAlbumService;
 
+import java.util.List;
 import java.util.Set;
 
 @RestController
@@ -43,5 +45,13 @@ public class LastfmAlbumController {
     )
     public LastfmAlbumResponseDto getAlbumById(@PathVariable Long id) {
         return albumService.findById(id);
+    }
+
+    @GetMapping(
+        value = "/{id}/tracks",
+        produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public List<LastfmAlbumTrackResponseDto> getAlbumTracks(@PathVariable Long id) {
+        return albumService.findAlbumTracks(id);
     }
 }

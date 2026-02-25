@@ -17,6 +17,18 @@ import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.service.BindingService;
 import yurykorzun.art.universe.music.data.master.service.TrackService;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import yurykorzun.art.universe.music.data.master.dto.TrackDto;
+import yurykorzun.art.universe.music.data.master.dto.TrackSaveRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.TrackWithCategoriesDto;
+import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindResponseDTO;
+import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
+import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -109,7 +121,7 @@ public class TrackControllerTest {
         
         ArtistRelatedEntityBindToExistingRequestDTO request = ArtistRelatedEntityBindToExistingRequestDTO.builder()
             .masterId(masterId)
-            .primaryArtistId(primaryArtistId)
+            .masterPrimaryArtistId(primaryArtistId)
             .build();
         
         TestBoundEntityProjectionImpl projection = new TestBoundEntityProjectionImpl(
@@ -138,7 +150,7 @@ public class TrackControllerTest {
         
         ArtistRelatedEntityBindToExistingRequestDTO request = ArtistRelatedEntityBindToExistingRequestDTO.builder()
             .masterId(masterId)
-            .primaryArtistId(primaryArtistId)
+            .masterPrimaryArtistId(primaryArtistId)
             .build();
         
         when(trackService.bindToExisting(eq(dataSource), eq(externalId), any(ArtistRelatedEntityBindToExistingRequestDTO.class)))
@@ -163,7 +175,7 @@ public class TrackControllerTest {
         
         ArtistRelatedEntityCreateAndBindRequestDTO request = ArtistRelatedEntityCreateAndBindRequestDTO.builder()
             .entityName(trackName)
-            .primaryArtistId(primaryArtistId)
+            .masterPrimaryArtistId(primaryArtistId)
             .build();
         
         TestBoundEntityProjectionImpl projection = new TestBoundEntityProjectionImpl(
@@ -192,7 +204,7 @@ public class TrackControllerTest {
         
         ArtistRelatedEntityCreateAndBindRequestDTO request = ArtistRelatedEntityCreateAndBindRequestDTO.builder()
             .entityName(trackName)
-            .primaryArtistId(primaryArtistId)
+            .masterPrimaryArtistId(primaryArtistId)
             .build();
         
         when(trackService.createAndBind(eq(dataSource), eq(externalId), any(ArtistRelatedEntityCreateAndBindRequestDTO.class)))
@@ -389,6 +401,133 @@ public class TrackControllerTest {
         verify(trackService).batchLookupTracks(request);
     }
     
+    // --- findTracks ---
+
+    @Test
+    void findTracks_shouldDelegateToService() {
+        String search = "paranoid";
+        Long categoryId = 5L;
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<TrackDto> expected = new PageImpl<>(List.of(
+            TrackDto.builder().id(1L).name("Paranoid Android").primaryArtistId(10L).build()
+        ));
+        when(trackService.findTracks(search, categoryId, pageable)).thenReturn(expected);
+
+        Page<TrackDto> result = trackController.findTracks(search, categoryId, pageable);
+
+        assertEquals(expected, result);
+        verify(trackService).findTracks(search, categoryId, pageable);
+    }
+
+    // --- findTracksWithCategories ---
+
+    @Test
+    void findTracksWithCategories_shouldDelegateToService() {
+        String search = "paranoid";
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<TrackWithCategoriesDto> expected = new PageImpl<>(List.of());
+        when(trackService.findTracksWithCategories(search, null, pageable)).thenReturn(expected);
+
+        Page<TrackWithCategoriesDto> result = trackController.findTracksWithCategories(search, null, pageable);
+
+        assertEquals(expected, result);
+    }
+
+    // --- getTrack ---
+
+    @Test
+    void getTrack_shouldDelegateToService() {
+        TrackDto expected = TrackDto.builder().id(1L).name("Paranoid Android").primaryArtistId(10L).build();
+        when(trackService.getTrack(1L)).thenReturn(expected);
+
+        TrackDto result = trackController.getTrack(1L);
+
+        assertEquals(expected, result);
+    }
+
+    // --- getTrackWithCategories ---
+
+    @Test
+    void getTrackWithCategories_shouldDelegateToService() {
+        TrackWithCategoriesDto expected = TrackWithCategoriesDto.builder()
+            .id(1L).name("Paranoid Android").primaryArtistId(10L).categories(List.of()).build();
+        when(trackService.getTrackWithCategories(1L)).thenReturn(expected);
+
+        TrackWithCategoriesDto result = trackController.getTrackWithCategories(1L);
+
+        assertEquals(expected, result);
+    }
+
+    // --- saveTrack ---
+
+    @Test
+    void saveTrack_shouldDelegateToService() {
+        TrackSaveRequestDTO request = TrackSaveRequestDTO.builder()
+            .name("New Track").primaryArtistId(10L).build();
+        TrackDto expected = TrackDto.builder().id(1L).name("New Track").primaryArtistId(10L).build();
+        when(trackService.saveTrack(request)).thenReturn(expected);
+
+        TrackDto result = trackController.saveTrack(request);
+
+        assertEquals(expected, result);
+    }
+
+    // --- deleteTrack ---
+
+    @Test
+    void deleteTrack_whenExists_shouldReturnTrue() {
+        when(trackService.deleteTrack(1L)).thenReturn(true);
+
+        boolean result = trackController.deleteTrack(1L);
+
+        assertTrue(result);
+    }
+
+    @Test
+    void deleteTrack_whenNotExists_shouldThrow() {
+        when(trackService.deleteTrack(999L)).thenReturn(false);
+
+        assertThrows(CustomEntityNotFoundException.class, () -> trackController.deleteTrack(999L));
+    }
+
+    // --- bindToCategory ---
+
+    @Test
+    void bindToCategory_shouldDelegateToService() {
+        trackController.bindToCategory(1L, 2L);
+
+        verify(trackService).bindToCategory(1L, 2L);
+    }
+
+    // --- unbindFromCategory ---
+
+    @Test
+    void unbindFromCategory_shouldDelegateToService() {
+        trackController.unbindFromCategory(1L, 2L);
+
+        verify(trackService).unbindFromCategory(1L, 2L);
+    }
+
+    // --- batchUnbindTracks ---
+
+    @Test
+    void batchUnbindTracks_shouldDelegateToBindingService() {
+        DataSource dataSource = DataSource.LASTFM;
+        BatchUnbindRequestDTO request = BatchUnbindRequestDTO.builder()
+            .externalIds(List.of(1L, 2L)).build();
+        BatchUnbindResponseDTO expected = BatchUnbindResponseDTO.builder()
+            .successfullyUnbound(List.of(1L))
+            .notFound(List.of(2L))
+            .totalProcessed(2).successCount(1).notFoundCount(1)
+            .build();
+        when(bindingService.batchUnbind(MasterEntityType.TRACK, dataSource, request)).thenReturn(expected);
+
+        BatchUnbindResponseDTO result = trackController.batchUnbindTracks(dataSource, request);
+
+        assertEquals(expected, result);
+        verify(bindingService).batchUnbind(MasterEntityType.TRACK, dataSource, request);
+    }
+
     /**
      * Helper method to convert a list of search terms to a list of ArtistRelatedLookupRequestDTO
      */

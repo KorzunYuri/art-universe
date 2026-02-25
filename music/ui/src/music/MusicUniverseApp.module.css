@@ -1,0 +1,10 @@
+.layout {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 20px); /* account for #root padding */
+    text-align: left;
+}
+
+.content {
+    flex: 1;
+}

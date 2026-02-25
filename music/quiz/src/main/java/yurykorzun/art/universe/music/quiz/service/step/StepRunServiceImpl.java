@@ -12,7 +12,6 @@ import yurykorzun.art.universe.music.quiz.dto.step.stats.StepRunStats;
 import yurykorzun.art.universe.music.quiz.entity.ExecutionStatus;
 import yurykorzun.art.universe.music.quiz.entity.Step;
 import yurykorzun.art.universe.music.quiz.entity.StepRun;
-import yurykorzun.art.universe.music.quiz.repository.StepRepository;
 import yurykorzun.art.universe.music.quiz.repository.StepRunRepository;
 
 import java.time.Instant;

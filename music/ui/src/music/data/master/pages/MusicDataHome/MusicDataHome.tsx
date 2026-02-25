@@ -9,6 +9,7 @@ export function MusicDataHome() {
             <NavigationCard to="/music/data/master/artists" label="Artists" />
             <NavigationCard to="/music/data/master/albums" label="Albums" />
             <NavigationCard to="/music/data/master/tracks" label="Tracks" />
+            <NavigationCard to="/music/data/master/relation-types" label="Relation Types" />
         </div>
     )
 }

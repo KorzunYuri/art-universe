@@ -1,5 +1,6 @@
 package yurykorzun.art.universe.music.data.master.service;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.Query;
@@ -34,10 +35,13 @@ public class RelationServiceImpl implements RelationService {
 
     private final EntityManager entityManager;
     private final RelationRegistry relationRegistry;
+    private final RelationQueryDispatcher relationQueryDispatcher;
 
-    public RelationServiceImpl(EntityManager entityManager, RelationRegistry relationRegistry) {
+    public RelationServiceImpl(EntityManager entityManager, RelationRegistry relationRegistry,
+                               RelationQueryDispatcher relationQueryDispatcher) {
         this.entityManager = entityManager;
         this.relationRegistry = relationRegistry;
+        this.relationQueryDispatcher = relationQueryDispatcher;
     }
 
     @Override
@@ -218,46 +222,23 @@ public class RelationServiceImpl implements RelationService {
     @Transactional(readOnly = true)
     public List<RelatedEntityDTO> getRelatedEntities(
         MasterEntityType sourceEntityType,
-        Long sourceEntityId, 
-        MasterEntityType targetEntityType
+        Long sourceEntityId,
+        MasterEntityType targetEntityType,
+        @Nullable Long relationTypeId
     ) {
-        // Create relation metadata
-        RelationMetadata metadata = createRelationMetadata(sourceEntityType, targetEntityType);
-        
-        // Form SQL query
-        String sql = """
-            SELECT t.id, t.name 
-            FROM %s r 
-            JOIN %s t ON r.%s = t.id 
-            WHERE r.%s = ?1
-            """.formatted(
-                metadata.getRelationTableName(),
-                targetEntityType.getName(),
-                metadata.getTargetIdField(),
-                metadata.getSourceIdField()
-            );
-        
-        // Execute query
-        List<Object[]> results;
-        try {
-            results = entityManager.createNativeQuery(sql)
-                .setParameter(1, sourceEntityId)
-                .getResultList();
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to get related entities", e);
-        }
-        
-        // Convert results to DTOs
-        List<RelatedEntityDTO> entities = new ArrayList<>();
-        for (Object[] row : results) {
-            entities.add(RelatedEntityDTO.builder()
-                .id(((Number) row[0]).longValue())
-                .name((String) row[1])
-                .entityType(targetEntityType)
-                .build());
-        }
-        
-        return entities;
+        return relationQueryDispatcher
+                .findRelatedEntities(sourceEntityType, sourceEntityId, targetEntityType, relationTypeId)
+                .stream()
+                .map(projection -> RelatedEntityDTO.builder()
+                        .id(projection.getId())
+                        .name(projection.getName())
+                        .relationId(projection.getRelationId())
+                        .entityType(targetEntityType)
+                        .relationTypeId(projection.getRelationTypeId())
+                        .relationTypeName(projection.getRelationTypeName())
+                        .trackOrder(projection.getTrackOrder())
+                        .build())
+                .collect(Collectors.toList());
     }
     
     @Override
@@ -266,17 +247,31 @@ public class RelationServiceImpl implements RelationService {
         MasterEntityType sourceEntityType,
         Long sourceEntityId,
         MasterEntityType targetEntityType,
-        Long targetEntityId
+        Long targetEntityId,
+        @Nullable Long relationTypeId
     ) {
         // Validate that entities exist
         validateEntityExists(sourceEntityType, sourceEntityId);
         validateEntityExists(targetEntityType, targetEntityId);
-        
+
         // Create relation metadata
         RelationMetadata metadata = createRelationMetadata(sourceEntityType, targetEntityType);
-        
+
+        // Reject relation type for relations that don't support types (e.g. category relations)
+        if (relationTypeId != null && !metadata.isSupportsRelationTypes()) {
+            throw new IllegalArgumentException(
+                String.format("Relation between %s and %s does not support relation types",
+                    sourceEntityType.getName(), targetEntityType.getName()));
+        }
+
+        // Validate relation type applicability if a type is specified
+        if (relationTypeId != null) {
+            validateRelationTypeApplicability(relationTypeId, sourceEntityType, targetEntityType);
+            rejectIfSystemRelationType(relationTypeId);
+        }
+
         // Create or find the relation
-        return findOrCreateRelation(metadata, sourceEntityId, targetEntityId);
+        return findOrCreateRelation(metadata, sourceEntityId, targetEntityId, relationTypeId);
     }
     
     @Override
@@ -285,30 +280,49 @@ public class RelationServiceImpl implements RelationService {
         MasterEntityType sourceEntityType,
         Long sourceEntityId,
         MasterEntityType targetEntityType,
-        Long targetEntityId
+        Long targetEntityId,
+        @Nullable Long relationTypeId
     ) {
+        // Reject deletion of system relation types
+        if (relationTypeId != null) {
+            rejectIfSystemRelationType(relationTypeId);
+        }
+
         // Create relation metadata
         RelationMetadata metadata = createRelationMetadata(sourceEntityType, targetEntityType);
-        
+
+        String relationTypeCondition = "";
+        if (metadata.isSupportsRelationTypes()) {
+            if (relationTypeId != null) {
+                relationTypeCondition = " AND relation_type_id = ?3";
+            } else {
+                relationTypeCondition = " AND relation_type_id IS NULL";
+            }
+        }
+
         // Form SQL query to find the relation
         String findSql = """
-            SELECT id 
-            FROM %s 
-            WHERE %s = ?1 
-                AND %s = ?2
+            SELECT id
+            FROM %s
+            WHERE %s = ?1
+                AND %s = ?2%s
             """.formatted(
-                metadata.getRelationTableName(), 
-                metadata.getSourceIdField(), 
-                metadata.getTargetIdField()
+                metadata.getRelationTableName(),
+                metadata.getSourceIdField(),
+                metadata.getTargetIdField(),
+                relationTypeCondition
             );
-        
+
         try {
             // Find the relation
-            Number relationId = (Number) entityManager.createNativeQuery(findSql)
+            var query = entityManager.createNativeQuery(findSql)
                 .setParameter(1, sourceEntityId)
-                .setParameter(2, targetEntityId)
-                .getSingleResult();
-            
+                .setParameter(2, targetEntityId);
+            if (metadata.isSupportsRelationTypes() && relationTypeId != null) {
+                query.setParameter(3, relationTypeId);
+            }
+            Number relationId = (Number) query.getSingleResult();
+
             // Delete the relation
             return deleteInternalRelationById(relationId.longValue());
         } catch (NoResultException e) {
@@ -543,76 +557,135 @@ public class RelationServiceImpl implements RelationService {
     }
     
     /**
-     * Finds or creates a relation between entities using direct SQL
-     * 
-     * @param metadata Relation metadata
-     * @param sourceEntityId Source entity ID
-     * @param targetEntityId Target entity ID
-     * @return Relation ID
+     * Finds or creates a relation between entities using direct SQL.
+     * Delegates to the overloaded method with null relationTypeId.
      */
     private Long findOrCreateRelation(
         RelationMetadata metadata,
         Long sourceEntityId,
         Long targetEntityId
     ) {
+        return findOrCreateRelation(metadata, sourceEntityId, targetEntityId, null);
+    }
+
+    /**
+     * Finds or creates a relation between entities using direct SQL
+     *
+     * @param metadata Relation metadata
+     * @param sourceEntityId Source entity ID
+     * @param targetEntityId Target entity ID
+     * @param relationTypeId Optional relation type ID
+     * @return Relation ID
+     */
+    private Long findOrCreateRelation(
+        RelationMetadata metadata,
+        Long sourceEntityId,
+        Long targetEntityId,
+        @Nullable Long relationTypeId
+    ) {
         // Get first and second entity IDs based on relation order
         Long firstEntityId = metadata.getFirstEntityId(sourceEntityId, targetEntityId);
         Long secondEntityId = metadata.getSecondEntityId(sourceEntityId, targetEntityId);
-        
+
+        boolean hasTypeSupport = metadata.isSupportsRelationTypes();
+
+        // Build relation_type_id condition only for tables that support it
+        String relationTypeCondition = "";
+        if (hasTypeSupport) {
+            if (relationTypeId != null) {
+                relationTypeCondition = " AND relation_type_id = ?3";
+            } else {
+                relationTypeCondition = " AND relation_type_id IS NULL";
+            }
+        }
+
         // Find existing relation
         String query = """
-            SELECT 
-                id 
-            FROM 
-                %s 
-            WHERE 
-                %s = ?1 
-                AND %s = ?2
+            SELECT
+                id
+            FROM
+                %s
+            WHERE
+                %s = ?1
+                AND %s = ?2%s
             """.formatted(
-                metadata.getRelationTableName(), 
-                metadata.getFirstEntityMetadata().getIdFieldName(), 
-                metadata.getSecondEntityMetadata().getIdFieldName()
+                metadata.getRelationTableName(),
+                metadata.getFirstIdField(),
+                metadata.getSecondIdField(),
+                relationTypeCondition
             );
-        
+
         try {
-            Number id = (Number) entityManager.createNativeQuery(query)
+            var nativeQuery = entityManager.createNativeQuery(query)
                 .setParameter(1, firstEntityId)
-                .setParameter(2, secondEntityId)
-                .getSingleResult();
+                .setParameter(2, secondEntityId);
+            if (hasTypeSupport && relationTypeId != null) {
+                nativeQuery.setParameter(3, relationTypeId);
+            }
+            Number id = (Number) nativeQuery.getSingleResult();
             return id.longValue();
         } catch (NoResultException e) {
             // Relation not found, create a new one
             try {
-                // Create SQL for insertion with sequence for id
-                String insertSql = """
-                    INSERT INTO %s (
-                        id, 
-                        %s, 
-                        %s, 
-                        created_at, 
-                        updated_at
-                    ) 
-                    VALUES (
-                        nextval('%s_seq'), 
-                        ?1, 
-                        ?2, 
-                        now(), 
-                        now()
-                    ) 
-                    RETURNING id
-                    """.formatted(
-                        metadata.getRelationTableName(), 
-                        metadata.getFirstEntityMetadata().getIdFieldName(), 
-                        metadata.getSecondEntityMetadata().getIdFieldName(), 
-                        metadata.getRelationTableName()
-                    );
-                
-                // Execute insert and get generated ID
-                Number id = (Number) entityManager.createNativeQuery(insertSql)
+                String insertSql;
+                if (hasTypeSupport && relationTypeId != null) {
+                    insertSql = """
+                        INSERT INTO %s (
+                            id,
+                            %s,
+                            %s,
+                            relation_type_id,
+                            created_at,
+                            updated_at
+                        )
+                        VALUES (
+                            nextval('%s_seq'),
+                            ?1,
+                            ?2,
+                            ?3,
+                            now(),
+                            now()
+                        )
+                        RETURNING id
+                        """.formatted(
+                            metadata.getRelationTableName(),
+                            metadata.getFirstIdField(),
+                            metadata.getSecondIdField(),
+                            metadata.getRelationTableName()
+                        );
+                } else {
+                    insertSql = """
+                        INSERT INTO %s (
+                            id,
+                            %s,
+                            %s,
+                            created_at,
+                            updated_at
+                        )
+                        VALUES (
+                            nextval('%s_seq'),
+                            ?1,
+                            ?2,
+                            now(),
+                            now()
+                        )
+                        RETURNING id
+                        """.formatted(
+                            metadata.getRelationTableName(),
+                            metadata.getFirstIdField(),
+                            metadata.getSecondIdField(),
+                            metadata.getRelationTableName()
+                        );
+                }
+
+                var insertQuery = entityManager.createNativeQuery(insertSql)
                     .setParameter(1, firstEntityId)
-                    .setParameter(2, secondEntityId)
-                    .getSingleResult();
-                
+                    .setParameter(2, secondEntityId);
+                if (hasTypeSupport && relationTypeId != null) {
+                    insertQuery.setParameter(3, relationTypeId);
+                }
+                Number id = (Number) insertQuery.getSingleResult();
+
                 return id.longValue();
             } catch (Exception ex) {
                 throw new RuntimeException("Failed to create relation", ex);
@@ -759,8 +832,67 @@ public class RelationServiceImpl implements RelationService {
     }
     
     /**
+     * Validates that a relation type exists and is applicable to the given entity types.
+     * Uses the canonical order: lower entity type code first.
+     *
+     * @param relationTypeId Relation type ID
+     * @param sourceEntityType Source entity type
+     * @param targetEntityType Target entity type
+     * @throws CustomEntityNotFoundException if relation type does not exist
+     * @throws IllegalArgumentException if relation type is not applicable to the entity pair
+     */
+    private void rejectIfSystemRelationType(Long relationTypeId) {
+        String sql = "SELECT is_system FROM relation_type WHERE id = ?1";
+        try {
+            Boolean isSystem = (Boolean) entityManager.createNativeQuery(sql)
+                .setParameter(1, relationTypeId)
+                .getSingleResult();
+            if (Boolean.TRUE.equals(isSystem)) {
+                throw new IllegalArgumentException(
+                    "Cannot manually create or delete relations with system relation types. " +
+                    "These relations are managed automatically.");
+            }
+        } catch (NoResultException e) {
+            // Will be caught by validateRelationTypeApplicability
+        }
+    }
+
+    private void validateRelationTypeApplicability(
+        Long relationTypeId, MasterEntityType sourceEntityType, MasterEntityType targetEntityType
+    ) {
+        // Check that relation type exists
+        String checkTypeSql = "SELECT COUNT(*) FROM relation_type WHERE id = ?1";
+        Number typeCount = (Number) entityManager.createNativeQuery(checkTypeSql)
+            .setParameter(1, relationTypeId)
+            .getSingleResult();
+
+        if (typeCount.intValue() == 0) {
+            throw new CustomEntityNotFoundException("relation_type", relationTypeId);
+        }
+
+        // Check applicability in both directions since the pair may be stored in either order
+        String checkApplicabilitySql = """
+            SELECT COUNT(*) FROM relation_type_applicability
+            WHERE relation_type_id = ?1
+                AND ((source_entity_type = ?2 AND target_entity_type = ?3)
+                  OR (source_entity_type = ?3 AND target_entity_type = ?2))
+            """;
+        Number applicabilityCount = (Number) entityManager.createNativeQuery(checkApplicabilitySql)
+            .setParameter(1, relationTypeId)
+            .setParameter(2, sourceEntityType.getCode())
+            .setParameter(3, targetEntityType.getCode())
+            .getSingleResult();
+
+        if (applicabilityCount.intValue() == 0) {
+            throw new IllegalArgumentException(
+                String.format("Relation type %d is not applicable to entity pair %s -> %s",
+                    relationTypeId, sourceEntityType.getName(), targetEntityType.getName()));
+        }
+    }
+
+    /**
      * Validates that an entity exists
-     * 
+     *
      * @param entityType Entity type
      * @param entityId Entity ID
      * @throws CustomEntityNotFoundException if entity does not exist

@@ -1,0 +1,1 @@
+export { RelatedEntitiesSection } from './RelatedEntitiesSection';

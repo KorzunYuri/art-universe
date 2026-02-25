@@ -25,9 +25,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class GenerationControllerMvcTest extends BaseMvcTest {
 
     @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
     private ObjectMapper objectMapper;
 
     @MockitoBean
@@ -111,6 +108,56 @@ class GenerationControllerMvcTest extends BaseMvcTest {
             .andExpect(content().json(expectedJson));
 
         verify(generationService).getGenerationTracks(generationId);
+    }
+
+    @Test
+    void PATCH_approveGeneration_shouldReturnApprovedDto() throws Exception {
+        // given
+        Long generationId = 1L;
+        GenerationDto expectedDto = GenerationDto.builder()
+            .id(generationId)
+            .gameId(1L)
+            .status(GenerationStatus.COMPLETED)
+            .approved(true)
+            .createdAt(Instant.now())
+            .build();
+
+        when(generationService.approveGeneration(generationId)).thenReturn(expectedDto);
+
+        String expectedJson = objectMapper.writeValueAsString(expectedDto);
+
+        // when & then
+        mockMvc.perform(patch("/api/v1/generations/{generationId}/approve", generationId)
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().json(expectedJson));
+
+        verify(generationService).approveGeneration(generationId);
+    }
+
+    @Test
+    void PATCH_disapproveGeneration_shouldReturnDisapprovedDto() throws Exception {
+        // given
+        Long generationId = 1L;
+        GenerationDto expectedDto = GenerationDto.builder()
+            .id(generationId)
+            .gameId(1L)
+            .status(GenerationStatus.COMPLETED)
+            .approved(false)
+            .createdAt(Instant.now())
+            .build();
+
+        when(generationService.disapproveGeneration(generationId)).thenReturn(expectedDto);
+
+        String expectedJson = objectMapper.writeValueAsString(expectedDto);
+
+        // when & then
+        mockMvc.perform(patch("/api/v1/generations/{generationId}/disapprove", generationId)
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().json(expectedJson));
+
+        verify(generationService).disapproveGeneration(generationId);
     }
 
     @Test

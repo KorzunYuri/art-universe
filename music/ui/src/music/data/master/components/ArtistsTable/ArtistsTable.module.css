@@ -53,3 +53,8 @@
     text-align: center;
     display: block;
 }
+
+.stub {
+    color: #94a3b8;
+    font-style: italic;
+}

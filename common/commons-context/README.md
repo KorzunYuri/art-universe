@@ -5,7 +5,8 @@ The module provides common Spring Boot beans and application properties for the 
 ## Key Components
 
 - [CommonConfig.java](src/main/java/yurykorzun/art/universe/common/config/CommonConfig.java)
-  - Spring Boot auto-configuration class that provides beans for common usage:
+  - Spring Boot auto-configuration class that provides shared beans and util methods:
+    - ObjectMapper customizations 
     - ObjectMapper - for consistent unified serialization across the project
 - [commons-context.yml](src/main/resources/commons-context.yml)
   - Importable Spring configuration. Disables several auto-configurations to reduce overhead.

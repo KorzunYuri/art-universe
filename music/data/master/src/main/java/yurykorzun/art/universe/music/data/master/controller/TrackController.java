@@ -1,7 +1,12 @@
 package yurykorzun.art.universe.music.data.master.controller;
 
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
+import yurykorzun.art.universe.music.data.master.dto.TrackDto;
+import yurykorzun.art.universe.music.data.master.dto.TrackSaveRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.TrackWithCategoriesDto;
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityBindToExistingRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
@@ -13,6 +18,7 @@ import yurykorzun.art.universe.common.domain.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.common.domain.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
+import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.service.TrackService;
 import yurykorzun.art.universe.music.data.master.service.BindingService;
 
@@ -28,6 +34,64 @@ public class TrackController {
     public TrackController(TrackService trackService, BindingService bindingService) {
         this.trackService = trackService;
         this.bindingService = bindingService;
+    }
+
+    @GetMapping
+    public Page<TrackDto> findTracks(
+        @RequestParam(required = false) String search,
+        @RequestParam(required = false) Long categoryId,
+        Pageable pageable
+    ) {
+        return trackService.findTracks(search, categoryId, pageable);
+    }
+
+    @GetMapping("/with-categories")
+    public Page<TrackWithCategoriesDto> findTracksWithCategories(
+        @RequestParam(required = false) String search,
+        @RequestParam(required = false) Long categoryId,
+        Pageable pageable
+    ) {
+        return trackService.findTracksWithCategories(search, categoryId, pageable);
+    }
+
+    @GetMapping("/{id}")
+    public TrackDto getTrack(@PathVariable Long id) {
+        return trackService.getTrack(id);
+    }
+
+    @GetMapping("/{id}/with-categories")
+    public TrackWithCategoriesDto getTrackWithCategories(@PathVariable Long id) {
+        return trackService.getTrackWithCategories(id);
+    }
+
+    @PostMapping
+    public TrackDto saveTrack(@Valid @RequestBody TrackSaveRequestDTO request) {
+        return trackService.saveTrack(request);
+    }
+
+    @DeleteMapping("/{id}")
+    public boolean deleteTrack(@PathVariable Long id) {
+        boolean deleted = trackService.deleteTrack(id);
+        if (!deleted) {
+            throw new CustomEntityNotFoundException("Track", id);
+        }
+        return true;
+    }
+
+    @PostMapping("/{trackId}/categories/{categoryId}")
+    public void bindToCategory(
+        @PathVariable Long trackId,
+        @PathVariable Long categoryId
+    ) {
+        trackService.bindToCategory(trackId, categoryId);
+    }
+
+    @DeleteMapping("/{trackId}/categories/{categoryId}")
+    public void unbindFromCategory(
+        @PathVariable Long trackId,
+        @PathVariable Long categoryId
+    ) {
+        trackService.unbindFromCategory(trackId, categoryId);
     }
 
     @GetMapping("/bound/{dataSource}")

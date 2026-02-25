@@ -2,10 +2,30 @@ plugins {
     id 'art-universe.spring-boot-app'
 }
 
+// Ensure commons-web is fully evaluated before this project so that
+// sourceSets.testFixtures is available when we configure the test task below.
+project.evaluationDependsOn(':common:commons-web')
+
 dependencies {
     implementation project(':common:commons-web')
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'io.micrometer:micrometer-registry-prometheus'
+
+    // Pull in commons-web's testFixtures so common tests are on the test compile/runtime classpath.
+    testImplementation(testFixtures(project(':common:commons-web')))
+}
+
+// Make JUnit discover and run WebSerializationTest (which lives in commons-web's
+// testFixtures source set) as part of every web-app module's test task.
+// testFixtures are excluded from commons-web's own testClassesDirs by Gradle, so
+// the test only runs in consumer modules — never in commons-web itself.
+def commonsWebProject = project.rootProject.findProject(':common:commons-web')
+tasks.named('test', Test).configure { t ->
+    if (commonsWebProject != null) {
+        t.dependsOn commonsWebProject.tasks.named('compileTestFixturesJava')
+        t.testClassesDirs = t.testClassesDirs +
+                commonsWebProject.sourceSets.testFixtures.output.classesDirs
+    }
 }

@@ -17,17 +17,28 @@ public class MasterEntityMetadata extends BaseEntityMetadata<MasterEntityType> {
     }
     
     /**
-     * Gets the name of the ID field for this entity in a relation table.
-     * 
-     * @return ID field name
+     * Gets the name of the ID field for this entity in a cross-entity relation table.
+     *
+     * @return ID field name (e.g., "artist_id")
      */
     public String getIdFieldName() {
         return getEntityType().getName() + "_id";
     }
-    
+
+    /**
+     * Gets the name of the ID field for this entity in a same-entity relation table,
+     * using a prefix to distinguish source from target.
+     *
+     * @param prefix "source" or "target"
+     * @return ID field name (e.g., "source_artist_id")
+     */
+    public String getIdFieldName(String prefix) {
+        return prefix + "_" + getEntityType().getName() + "_id";
+    }
+
     /**
      * Gets the name of the external ID field for this entity in a binding table.
-     * 
+     *
      * @return External ID field name
      */
     public String getExternalIdFieldName() {

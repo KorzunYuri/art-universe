@@ -10,7 +10,7 @@ import {
     type Track, TrackImpl,
     type Category, CategoryImpl,
     type RawEntity,
-    type ArtistRelatedRawEntity, type MasterEntityMap
+    type MasterEntityMap
 } from "@/music/shared/types/entities.ts";
 import {entityToEndpoint} from "@/music/data/master/api/music-data-commons.ts";
 import {MusicDataConfig} from "@/music/data/master/config/musicdataconfig.ts";
@@ -29,11 +29,11 @@ export interface EntityBindToExistingRequest {
 }
 
 export interface ArtistRelatedEntityCreateAndBindRequest extends EntityCreateAndBindRequest {
-    primaryArtistId: number;
+    masterPrimaryArtistId?: number;
 }
 
 export interface ArtistRelatedEntityBindToExistingRequest extends EntityBindToExistingRequest {
-    primaryArtistId: number;
+    masterPrimaryArtistId?: number;
 }
 
 
@@ -45,7 +45,7 @@ export interface BoundEntityResponse {
 }
 
 interface ArtistRelatedBoundEntityResponse extends BoundEntityResponse {
-    primaryArtistId: number;
+    masterPrimaryArtistId: number;
 }
 
 type EntityBindingResponseMap = {
@@ -73,10 +73,10 @@ function createArtistFromBindingResponse(res: BoundEntityResponse): Artist {
     return new ArtistImpl(res.masterId, res.masterName);
 }
 function createAlbumFromBindingResponse(res: ArtistRelatedBoundEntityResponse): Album {
-    return new AlbumImpl(res.masterId, res.masterName, res.primaryArtistId);
+    return new AlbumImpl(res.masterId, res.masterName, res.masterPrimaryArtistId);
 }
 function createTrackFromBindingResponse(res: ArtistRelatedBoundEntityResponse): Track {
-    return new TrackImpl(res.masterId, res.masterName, res.primaryArtistId);
+    return new TrackImpl(res.masterId, res.masterName, res.masterPrimaryArtistId);
 }
 function createCategoryFromBindingResponse(res: BoundEntityResponse): Category {
     return new CategoryImpl(res.masterId, res.masterName);
@@ -147,18 +147,20 @@ export async function fetchBoundMasterEntities<K extends MasterEntityType>(
 /**
  * Bind an entity from data source to an existing master entity
  *
- * @returns The bound master entity
  * @param masterId master entity id to bind entity to
  * @param entity raw entity to bind to existing master entity
+ * @param masterPrimaryArtistId optional master artist ID (used directly, skips external resolution)
+ * @returns The bound master entity
  */
 export async function bindRawEntityToExistingMaster<K extends MasterEntityType>(
     masterId: number,
-    entity: RawEntity<K>
+    entity: RawEntity<K>,
+    masterPrimaryArtistId?: number
 ): Promise<BoundEntityInfo<K>> {
     const endpoint = entityToEndpoint[entity.getEntityType()];
     const response = await masterDataClient.post<EntityBindingResponseMap[K]>(
         `/${endpoint}/bind/existing/${entity.getDataSource()}/${entity.id}`,
-        toBindToExistingRequest(masterId, entity)
+        toBindToExistingRequest(masterId, entity, masterPrimaryArtistId)
     );
 
     return makeBoundEntityInfoMapper(entity.getEntityType())(response.data);
@@ -167,18 +169,20 @@ export async function bindRawEntityToExistingMaster<K extends MasterEntityType>(
 /**
  * Creates a new entity and binds it to raw entity from an external source
  *
- * @returns The bound master entity
  * @param entityName effective name of master entity that will be created
  * @param entity raw entity to create master entity from
+ * @param masterPrimaryArtistId optional master artist ID (used directly, skips external resolution)
+ * @returns The bound master entity
  */
 export async function bindRawEntityToNewMaster<K extends MasterEntityType>(
     entityName: string,
-    entity: RawEntity<K>
+    entity: RawEntity<K>,
+    masterPrimaryArtistId?: number
 ): Promise<BoundEntityInfo<K>> {
     const endpoint = entityToEndpoint[entity.getEntityType()];
     const response = await masterDataClient.post<EntityBindingResponseMap[K]>(
         `/${endpoint}/bind/new/${entity.getDataSource()}/${entity.id}`,
-        toCreateAndBindRequest(entityName, entity)
+        toCreateAndBindRequest(entityName, entity, masterPrimaryArtistId)
     );
 
     return makeBoundEntityInfoMapper(entity.getEntityType())(response.data);
@@ -187,38 +191,29 @@ export async function bindRawEntityToNewMaster<K extends MasterEntityType>(
 /**
  * Helper function to create a request for artist-related entities
  */
-function createArtistRelatedRequest<T extends 'create' | 'bind', K extends MasterEntityType>(
+function createArtistRelatedRequest<T extends 'create' | 'bind'>(
     baseRequest: T extends 'create' ? { entityName: string } : { masterId: number },
-    entity: ArtistRelatedRawEntity<K>
+    masterPrimaryArtistId?: number
 ): T extends 'create' ? ArtistRelatedEntityCreateAndBindRequest : ArtistRelatedEntityBindToExistingRequest {
-    const artistId = entity.getExternalArtistId();
-
-    if (!artistId) {
-        throw new Error("Cannot create artist-related binding request: artist ID is missing");
+    if (masterPrimaryArtistId == null) {
+        throw new Error("Cannot create artist-related binding request: masterPrimaryArtistId is required");
     }
-
-    return {
-        ...baseRequest,
-        primaryArtistId: artistId
-    } as T extends 'create' ? ArtistRelatedEntityCreateAndBindRequest : ArtistRelatedEntityBindToExistingRequest;
+    return { ...baseRequest, masterPrimaryArtistId } as T extends 'create' ? ArtistRelatedEntityCreateAndBindRequest : ArtistRelatedEntityBindToExistingRequest;
 }
 
 /**
  * Creates a request for creating and binding a new master entity
- *
- * @param entityName Name for the new master entity
- * @param entity Raw entity to bind
- * @returns Request object for creating and binding
  */
 function toCreateAndBindRequest<T extends MasterEntityType>(
     entityName: string,
-    entity: RawEntity<T>
+    entity: RawEntity<T>,
+    masterPrimaryArtistId?: number
 ): EntityCreateAndBindRequestMap[T] {
     const baseRequest = { entityName };
 
-    // For track entities, we need to include the primary artist ID
-    if (entity.getEntityType() === 'track' && isArtistRelatedEntity(entity)) {
-        return createArtistRelatedRequest<'create', T>(baseRequest, entity) as EntityCreateAndBindRequestMap[T];
+    // For artist-related entities (album, track), include masterPrimaryArtistId
+    if (entity.getEntityType() === 'track' || entity.getEntityType() === 'album') {
+        return createArtistRelatedRequest<'create'>(baseRequest, masterPrimaryArtistId) as EntityCreateAndBindRequestMap[T];
     }
 
     return baseRequest as EntityCreateAndBindRequestMap[T];
@@ -226,30 +221,20 @@ function toCreateAndBindRequest<T extends MasterEntityType>(
 
 /**
  * Creates a request for binding to an existing master entity
- *
- * @param masterId ID of the existing master entity
- * @param entity Raw entity to bind
- * @returns Request object for binding to existing
  */
 function toBindToExistingRequest<T extends MasterEntityType>(
     masterId: number,
-    entity: RawEntity<T>
+    entity: RawEntity<T>,
+    masterPrimaryArtistId?: number
 ): EntityBindToExistingRequestMap[T] {
     const baseRequest = { masterId };
 
-    // For track entities, we need to include the primary artist ID
-    if (entity.getEntityType() === 'track' && isArtistRelatedEntity(entity)) {
-        return createArtistRelatedRequest<'bind', T>(baseRequest, entity) as EntityBindToExistingRequestMap[T];
+    // For artist-related entities (album, track), include masterPrimaryArtistId
+    if (entity.getEntityType() === 'track' || entity.getEntityType() === 'album') {
+        return createArtistRelatedRequest<'bind'>(baseRequest, masterPrimaryArtistId) as EntityBindToExistingRequestMap[T];
     }
 
     return baseRequest as EntityBindToExistingRequestMap[T];
-}
-
-/**
- * Type guard to check if an entity implements ArtistRelatedRawEntity
- */
-function isArtistRelatedEntity<T extends MasterEntityType>(entity: RawEntity<T>): entity is ArtistRelatedRawEntity<T> {
-    return 'getExternalArtistId' in entity && typeof entity.getExternalArtistId === 'function';
 }
 
 /**
@@ -271,4 +256,41 @@ export async function unbindRawEntity(
     );
 
     return response.data;
+}
+
+/**
+ * Request for binding an album with its tracklist
+ */
+export interface AlbumWithTracksBindRequest {
+    albumName?: string;
+    masterAlbumId?: number;
+    masterPrimaryArtistId?: number;
+    tracks: AlbumTrackBindItem[];
+}
+
+export interface AlbumTrackBindItem {
+    externalTrackId: number;
+    masterTrackId?: number;
+    trackName?: string;
+    trackOrder: number;
+    relationTypeId?: number;
+    /** Per-track artist override; falls back to the album-level masterPrimaryArtistId when absent */
+    masterPrimaryArtistId?: number;
+}
+
+/**
+ * Binds an album with its tracklist in a single backend call.
+ * Handles both new and already-bound albums/tracks.
+ */
+export async function bindAlbumWithTracklist(
+    dataSource: DataSource,
+    externalAlbumId: number,
+    request: AlbumWithTracksBindRequest
+): Promise<BoundEntityInfo<'album'>> {
+    const response = await masterDataClient.post<EntityBindingResponseMap['album']>(
+        `/albums/bind/new/${dataSource}/${externalAlbumId}/with-tracks`,
+        request
+    );
+
+    return makeBoundEntityInfoMapper('album')(response.data);
 }

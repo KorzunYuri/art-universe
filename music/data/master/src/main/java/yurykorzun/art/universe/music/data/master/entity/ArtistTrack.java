@@ -38,7 +38,14 @@ public class ArtistTrack extends BaseEntity implements RelationEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "track_id", insertable = false, updatable = false)
     private Track track;
-    
+
+    @Column(name = "relation_type_id")
+    private Long relationTypeId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "relation_type_id", insertable = false, updatable = false)
+    private RelationType relationType;
+
     @Override
     public MasterEntityType getFirstEntityType() {
         return MasterEntityType.ARTIST;
@@ -57,5 +64,10 @@ public class ArtistTrack extends BaseEntity implements RelationEntity {
     @Override
     public Long getSecondEntityId() {
         return trackId;
+    }
+
+    @Override
+    public boolean supportsRelationTypes() {
+        return true;
     }
 }

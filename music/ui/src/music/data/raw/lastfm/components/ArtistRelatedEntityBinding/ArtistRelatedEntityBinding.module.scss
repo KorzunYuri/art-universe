@@ -1,0 +1,48 @@
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+
+    &.compact {
+        flex-direction: row;
+
+        .label {
+            display: none;
+        }
+
+        .row {
+            flex: 1;
+            min-width: 0;
+        }
+    }
+}
+
+.row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.label {
+    font-size: 0.8rem;
+    color: #64748b;
+    font-weight: 500;
+    min-width: 50px;
+    flex-shrink: 0;
+}
+
+.artistLookup {
+    flex: 1;
+    min-width: 0;
+}
+
+.entityLookup {
+    flex: 1;
+    min-width: 0;
+}
+
+.loading {
+    font-size: 0.85rem;
+    color: #94a3b8;
+}

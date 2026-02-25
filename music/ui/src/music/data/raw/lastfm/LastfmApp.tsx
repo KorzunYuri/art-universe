@@ -1,9 +1,10 @@
 import { useRoutes } from 'react-router-dom'
 
-import { LastfmHome, LastfmTags, LastfmArtists, LastfmAlbums, LastfmTracks } from "./pages";
-import {QueryProvider} from "@/music/shared/providers/QueryProvider.tsx";
-import { NotificationProvider } from "@/music/shared/providers/NotificationProvider.tsx";
-import { NotificationContainer } from "@/music/shared/components/NotificationContainer/NotificationContainer.tsx";
+import { LastfmHome, LastfmTags, LastfmArtists, LastfmAlbums, LastfmTracks, LastfmAdmin } from "./pages";
+import { LastfmArtistDetail } from "./pages/LastfmArtistDetail";
+import { LastfmAlbumDetail } from "./pages/LastfmAlbumDetail";
+import { LastfmTrackDetail } from "./pages/LastfmTrackDetail";
+import { TableWithDetailLayout } from "@/music/shared/components/TableWithDetailLayout";
 import { registerLastfmLookups } from "@/music/data/raw/lastfm/services/registerLastfmLookups.ts";
 
 // Register LastFM lookups on module load
@@ -13,17 +14,29 @@ export default function LastfmApp() {
     const routes = [
         { path: '/',        element: <LastfmHome /> },
         { path: 'tags',     element: <LastfmTags /> },
-        { path: 'artists',  element: <LastfmArtists /> },
-        { path: 'albums',   element: <LastfmAlbums /> },
-        { path: 'tracks',   element: <LastfmTracks /> },
+        { path: 'admin',    element: <LastfmAdmin /> },
+        {
+            path: 'artists',
+            element: <TableWithDetailLayout><LastfmArtists /></TableWithDetailLayout>,
+            children: [
+                { path: ':artistId', element: <LastfmArtistDetail /> },
+            ],
+        },
+        {
+            path: 'albums',
+            element: <TableWithDetailLayout wideDetail><LastfmAlbums /></TableWithDetailLayout>,
+            children: [
+                { path: ':albumId', element: <LastfmAlbumDetail /> },
+            ],
+        },
+        {
+            path: 'tracks',
+            element: <TableWithDetailLayout><LastfmTracks /></TableWithDetailLayout>,
+            children: [
+                { path: ':trackId', element: <LastfmTrackDetail /> },
+            ],
+        },
     ]
 
-    return (
-        <QueryProvider>
-            <NotificationProvider>
-                {useRoutes(routes)}
-                <NotificationContainer />
-            </NotificationProvider>
-        </QueryProvider>
-    );
+    return useRoutes(routes)
 }

@@ -32,9 +32,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class LastfmAlbumControllerMvcTest extends BaseMvcTest {
 
     @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
     private ObjectMapper objectMapper;
 
     @MockitoBean

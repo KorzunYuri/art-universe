@@ -34,6 +34,32 @@ export const masterEntitiesKeys = {
 };
 
 /**
+ * keys for entity relations
+ */
+export const relationKeys = {
+  all: ['relations'] as const,
+  entities: (sourceType: MasterEntityType, sourceId: number, targetType: MasterEntityType) =>
+    [...relationKeys.all, sourceType, sourceId, targetType] as const,
+};
+
+/**
+ * keys for relation types
+ */
+export const relationTypeKeys = {
+  all: ['relationTypes'] as const,
+  list: (search?: string) =>
+    [...relationTypeKeys.all, 'list', search] as const,
+  detail: (id: number) =>
+    [...relationTypeKeys.all, 'detail', id] as const,
+  applicable: (sourceType: MasterEntityType, targetType: MasterEntityType) =>
+    [...relationTypeKeys.all, 'applicable', sourceType, targetType] as const,
+};
+
+/** Standard result limit for entity lookup dropdowns. Used by both individual
+ *  EntityLookup components and batch cache pre-warming so their query keys match. */
+export const ENTITY_LOOKUP_LIMIT = 20;
+
+/**
  * keys for lookup
  */
 export const entityLookupKeys = {

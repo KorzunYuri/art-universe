@@ -25,17 +25,31 @@ class ArtistRelatedEntityCreateAndBindRequestDTOTest {
     void shouldCreateValidDTO_whenAllFieldsAreSet() {
         // Given
         String name = "Test Track";
-        Long primaryArtistId = 123L;
-        
+        Long masterPrimaryArtistId = 123L;
+
         // When
         ArtistRelatedEntityCreateAndBindRequestDTO dto = ArtistRelatedEntityCreateAndBindRequestDTO.builder()
             .entityName(name)
-            .primaryArtistId(primaryArtistId)
+            .masterPrimaryArtistId(masterPrimaryArtistId)
             .build();
-        
+
         // Then
         assertEquals(name, dto.getEntityName());
-        assertEquals(primaryArtistId, dto.getPrimaryArtistId());
+        assertEquals(masterPrimaryArtistId, dto.getMasterPrimaryArtistId());
+    }
+
+    @Test
+    void shouldCreateValidDTO_whenMasterPrimaryArtistIdIsNull() {
+        // Given — masterPrimaryArtistId is optional at DTO level; service validates it
+        ArtistRelatedEntityCreateAndBindRequestDTO dto = ArtistRelatedEntityCreateAndBindRequestDTO.builder()
+            .entityName("Test Track")
+            .build();
+
+        // When
+        Set<ConstraintViolation<ArtistRelatedEntityCreateAndBindRequestDTO>> violations = validator.validate(dto);
+
+        // Then — no violations (masterPrimaryArtistId is optional in DTO)
+        assertTrue(violations.isEmpty());
     }
 
     @Test
@@ -43,12 +57,12 @@ class ArtistRelatedEntityCreateAndBindRequestDTOTest {
         // Given
         ArtistRelatedEntityCreateAndBindRequestDTO dto = ArtistRelatedEntityCreateAndBindRequestDTO.builder()
             .entityName(null)
-            .primaryArtistId(123L)
+            .masterPrimaryArtistId(123L)
             .build();
-        
+
         // When
         Set<ConstraintViolation<ArtistRelatedEntityCreateAndBindRequestDTO>> violations = validator.validate(dto);
-        
+
         // Then
         assertEquals(1, violations.size());
         ConstraintViolation<ArtistRelatedEntityCreateAndBindRequestDTO> violation = violations.iterator().next();
@@ -61,7 +75,7 @@ class ArtistRelatedEntityCreateAndBindRequestDTOTest {
         // Given
         ArtistRelatedEntityCreateAndBindRequestDTO dto = ArtistRelatedEntityCreateAndBindRequestDTO.builder()
             .entityName("")
-            .primaryArtistId(1L)
+            .masterPrimaryArtistId(1L)
             .build();
 
         // When
@@ -75,46 +89,28 @@ class ArtistRelatedEntityCreateAndBindRequestDTOTest {
     }
 
     @Test
-    void shouldFailValidation_whenPrimaryArtistIdIsNull() {
-        // Given
-        ArtistRelatedEntityCreateAndBindRequestDTO dto = ArtistRelatedEntityCreateAndBindRequestDTO.builder()
-            .entityName("Test Track")
-            .primaryArtistId(null)
-            .build();
-        
-        // When
-        Set<ConstraintViolation<ArtistRelatedEntityCreateAndBindRequestDTO>> violations = validator.validate(dto);
-        
-        // Then
-        assertEquals(1, violations.size());
-        ConstraintViolation<ArtistRelatedEntityCreateAndBindRequestDTO> violation = violations.iterator().next();
-        assertEquals("primaryArtistId", violation.getPropertyPath().toString());
-        assertEquals("Primary artist ID is required", violation.getMessage());
-    }
-
-    @Test
     void shouldCreateDTOWithNoArgsConstructor() {
         // When
         ArtistRelatedEntityCreateAndBindRequestDTO dto = new ArtistRelatedEntityCreateAndBindRequestDTO();
         dto.setEntityName("Test Track");
-        dto.setPrimaryArtistId(123L);
-        
+        dto.setMasterPrimaryArtistId(123L);
+
         // Then
         assertEquals("Test Track", dto.getEntityName());
-        assertEquals(123L, dto.getPrimaryArtistId());
+        assertEquals(123L, dto.getMasterPrimaryArtistId());
     }
 
     @Test
     void shouldCreateDTOWithAllArgsConstructor() {
         // Given
-        Long primaryArtistId = 123L;
-        
+        Long masterPrimaryArtistId = 123L;
+
         // When
-        ArtistRelatedEntityCreateAndBindRequestDTO dto = new ArtistRelatedEntityCreateAndBindRequestDTO(primaryArtistId);
+        ArtistRelatedEntityCreateAndBindRequestDTO dto = new ArtistRelatedEntityCreateAndBindRequestDTO(masterPrimaryArtistId);
         dto.setEntityName("Test Track");
-        
+
         // Then
         assertEquals("Test Track", dto.getEntityName());
-        assertEquals(primaryArtistId, dto.getPrimaryArtistId());
+        assertEquals(masterPrimaryArtistId, dto.getMasterPrimaryArtistId());
     }
 }

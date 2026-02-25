@@ -36,7 +36,8 @@ export function useMasterEntity<T extends MasterEntityType>(
         queryFn: async () => {
             console.log(`🔄 Fetching ${entityType} master entity with ID: ${entityId}`);
             return await fetchMasterEntity(entityType, entityId);
-        }
+        },
+        enabled: entityId > 0,
     });
 
     return {

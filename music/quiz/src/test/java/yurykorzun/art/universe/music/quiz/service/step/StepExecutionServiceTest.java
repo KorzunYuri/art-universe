@@ -42,7 +42,7 @@ class StepExecutionServiceTest {
     @Mock
     private StepMetadataProjection stepMetadata;
 
-    private ObjectMapper objectMapper = new CommonConfig().objectMapper();
+    private ObjectMapper objectMapper = CommonConfig.getObjectMapper();
 
     @InjectMocks
     private StepExecutionServiceImpl stepExecutionService;

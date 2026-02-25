@@ -31,4 +31,18 @@ public interface RelationEntity {
      * @return ID of the relation
      */
     Long getId();
+
+    /**
+     * @return ID of the relation type, or null if untyped
+     */
+    default Long getRelationTypeId() {
+        return null;
+    }
+
+    /**
+     * @return true if this relation supports relation types (has relation_type_id column)
+     */
+    default boolean supportsRelationTypes() {
+        return false;
+    }
 }

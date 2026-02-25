@@ -17,9 +17,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class ExceptionHandlerIntegrationTest extends BaseMvcTest {
 
     @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
     private ObjectMapper objectMapper;
 
     @Test

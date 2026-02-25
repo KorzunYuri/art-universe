@@ -37,9 +37,6 @@ class TrackControllerMvcTest extends BaseMasterDataMvcTest {
     @MockitoBean
     private BindingService bindingService;
 
-    @Autowired
-    private MockMvc mockMvc;
-
     private List<TestBoundEntityProjectionImpl> mockTrackBindings;
 
     @BeforeEach

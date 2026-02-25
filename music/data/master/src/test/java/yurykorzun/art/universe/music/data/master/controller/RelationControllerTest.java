@@ -247,18 +247,18 @@ class RelationControllerTest {
         );
 
         when(relationService.getRelatedEntities(
-            sourceEntityType, sourceEntityId, targetEntityType
+            sourceEntityType, sourceEntityId, targetEntityType, null
         )).thenReturn(expectedEntities);
 
         // When
         List<RelatedEntityDTO> result = relationController.getRelatedEntities(
-            sourceEntityType, sourceEntityId, targetEntityType
+            sourceEntityType, sourceEntityId, targetEntityType, null
         );
 
         // Then
         assertEquals(expectedEntities, result);
         verify(relationService).getRelatedEntities(
-            sourceEntityType, sourceEntityId, targetEntityType
+            sourceEntityType, sourceEntityId, targetEntityType, null
         );
     }
 
@@ -271,19 +271,19 @@ class RelationControllerTest {
         RuntimeException expectedException = new RuntimeException("Test error");
 
         when(relationService.getRelatedEntities(
-            sourceEntityType, sourceEntityId, targetEntityType
+            sourceEntityType, sourceEntityId, targetEntityType, null
         )).thenThrow(expectedException);
 
         // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class, () -> 
             relationController.getRelatedEntities(
-                sourceEntityType, sourceEntityId, targetEntityType
+                sourceEntityType, sourceEntityId, targetEntityType, null
             )
         );
         
         assertSame(expectedException, exception);
         verify(relationService).getRelatedEntities(
-            sourceEntityType, sourceEntityId, targetEntityType
+            sourceEntityType, sourceEntityId, targetEntityType, null
         );
     }
     
@@ -297,18 +297,18 @@ class RelationControllerTest {
         Long expectedRelationId = 789L;
 
         when(relationService.createInternalRelation(
-            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId
+            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, null
         )).thenReturn(expectedRelationId);
 
         // When
         Long result = relationController.createInternalRelation(
-            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId
+            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, null
         );
 
         // Then
         assertEquals(expectedRelationId, result);
         verify(relationService).createInternalRelation(
-            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId
+            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, null
         );
     }
 
@@ -322,19 +322,19 @@ class RelationControllerTest {
         RuntimeException expectedException = new RuntimeException("Test error");
 
         when(relationService.createInternalRelation(
-            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId
+            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, null
         )).thenThrow(expectedException);
 
         // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class, () -> 
             relationController.createInternalRelation(
-                sourceEntityType, sourceEntityId, targetEntityType, targetEntityId
+                sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, null
             )
         );
         
         assertSame(expectedException, exception);
         verify(relationService).createInternalRelation(
-            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId
+            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, null
         );
     }
 
@@ -347,18 +347,18 @@ class RelationControllerTest {
         Long targetEntityId = 456L;
 
         when(relationService.deleteInternalRelation(
-            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId
+            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, null
         )).thenReturn(true);
 
         // When
         boolean result = relationController.deleteInternalRelation(
-            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId
+            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, null
         );
 
         // Then
         assertTrue(result);
         verify(relationService).deleteInternalRelation(
-            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId
+            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, null
         );
     }
 
@@ -372,19 +372,19 @@ class RelationControllerTest {
         RuntimeException expectedException = new RuntimeException("Test error");
 
         when(relationService.deleteInternalRelation(
-            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId
+            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, null
         )).thenThrow(expectedException);
 
         // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class, () -> 
             relationController.deleteInternalRelation(
-                sourceEntityType, sourceEntityId, targetEntityType, targetEntityId
+                sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, null
             )
         );
         
         assertSame(expectedException, exception);
         verify(relationService).deleteInternalRelation(
-            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId
+            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, null
         );
     }
 

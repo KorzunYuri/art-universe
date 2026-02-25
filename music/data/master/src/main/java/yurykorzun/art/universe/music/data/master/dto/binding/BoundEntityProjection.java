@@ -7,4 +7,6 @@ public interface BoundEntityProjection {
     DataSource  getDataSource();
     Long        getMasterId();
     String      getMasterName();
+    /** The master entity's primary artist ID. Null for non-artist-related entities. */
+    Long        getMasterPrimaryArtistId();
 }

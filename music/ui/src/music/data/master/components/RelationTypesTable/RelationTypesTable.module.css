@@ -1,0 +1,40 @@
+.name {
+    flex: 0 0 25%;
+}
+
+.reverseName {
+    flex: 0 0 25%;
+}
+
+.symmetrical {
+    flex: 0 0 15%;
+}
+
+.system {
+    flex: 0 0 15%;
+}
+
+.empty {
+    color: var(--color-text-muted, #888);
+}
+
+.badgeYes {
+    color: var(--color-success, #4caf50);
+    font-weight: 500;
+}
+
+.badgeNo {
+    color: var(--color-text-muted, #888);
+}
+
+.badgeSystem {
+    display: inline-block;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    background: var(--color-info-bg, #e3f2fd);
+    color: var(--color-info, #1565c0);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}

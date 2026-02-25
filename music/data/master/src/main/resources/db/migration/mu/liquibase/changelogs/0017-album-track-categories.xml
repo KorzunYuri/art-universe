@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
+
+    <changeSet id="0017-0010-album_category$create" author="claude">
+        <sqlFile path="../changesets/0017-album-track-categories/0017-0010-album_category$create.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0017-0020-album_category_binding$create" author="claude">
+        <sqlFile path="../changesets/0017-album-track-categories/0017-0020-album_category_binding$create.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0017-0030-track_category$create" author="claude">
+        <sqlFile path="../changesets/0017-album-track-categories/0017-0030-track_category$create.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0017-0040-track_category_binding$create" author="claude">
+        <sqlFile path="../changesets/0017-album-track-categories/0017-0040-track_category_binding$create.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0017-0050-cascade_triggers$update" author="claude">
+        <sqlFile path="../changesets/0017-album-track-categories/0017-0050-cascade_triggers$update.sql" relativeToChangelogFile="true"
+            splitStatements="false"
+            endDelimiter="$$"
+        />
+    </changeSet>
+
+    <changeSet id="0017-0060-readonly_views$update" author="claude">
+        <sqlFile path="../changesets/0017-album-track-categories/0017-0060-readonly_views$update.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+</databaseChangeLog>

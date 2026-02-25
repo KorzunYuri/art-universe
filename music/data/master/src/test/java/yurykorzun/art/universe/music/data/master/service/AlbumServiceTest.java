@@ -11,7 +11,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.repository.AlbumBindingRepository;
+import yurykorzun.art.universe.music.data.master.repository.AlbumCategoryRepository;
 import yurykorzun.art.universe.music.data.master.repository.AlbumRepository;
+import yurykorzun.art.universe.music.data.master.repository.AlbumTrackRepository;
+import yurykorzun.art.universe.music.data.master.repository.CategoryRepository;
+import yurykorzun.art.universe.music.data.master.repository.RelationTypeApplicabilityRepository;
+import yurykorzun.art.universe.music.data.master.repository.TrackBindingRepository;
+import yurykorzun.art.universe.music.data.master.repository.TrackRepository;
 
 import java.util.Arrays;
 import java.util.List;
@@ -27,13 +33,34 @@ public class AlbumServiceTest {
 
     @Mock
     private AlbumBindingRepository albumBindingRepository;
-    
+
+    @Mock
+    private AlbumCategoryRepository albumCategoryRepository;
+
+    @Mock
+    private CategoryRepository categoryRepository;
+
+    @Mock
+    private AlbumTrackRepository albumTrackRepository;
+
+    @Mock
+    private RelationTypeApplicabilityRepository relationTypeApplicabilityRepository;
+
+    @Mock
+    private TrackRepository trackRepository;
+
+    @Mock
+    private TrackBindingRepository trackBindingRepository;
+
     @Mock
     private ArtistService artistService;
-    
+
+    @Mock
+    private RelationService relationService;
+
     @Mock
     private EntityManager entityManager;
-    
+
     @Mock
     private Query query;
 
