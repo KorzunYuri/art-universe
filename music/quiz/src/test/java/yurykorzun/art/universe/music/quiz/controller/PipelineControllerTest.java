@@ -96,6 +96,71 @@ class PipelineControllerTest {
     }
 
     @Test
+    void removeStep_shouldReturnUpdatedPipeline_whenSuccessful() {
+        // given
+        Long pipelineId = 1L;
+        Long stepId = 2L;
+        PipelineDto expectedDto = PipelineDto.builder()
+            .id(pipelineId)
+            .immutable(false)
+            .steps(List.of())
+            .build();
+
+        when(pipelineService.removeStep(pipelineId, stepId)).thenReturn(expectedDto);
+
+        // when
+        PipelineDto result = pipelineController.removeStep(pipelineId, stepId);
+
+        // then
+        assertNotNull(result);
+        assertEquals(expectedDto, result);
+        verify(pipelineService).removeStep(pipelineId, stepId);
+    }
+
+    @Test
+    void updateStepConfiguration_shouldReturnUpdatedPipeline_whenSuccessful() {
+        // given
+        Long pipelineId = 1L;
+        Long stepId = 2L;
+        PipelineStepDto stepDto = PipelineStepDto.builder()
+            .type(StepType.FINAL_LIMITER)
+            .cfgData("{\"targetCount\":30}")
+            .build();
+
+        PipelineDto expectedDto = PipelineDto.builder()
+            .id(pipelineId)
+            .immutable(false)
+            .steps(List.of(stepDto))
+            .build();
+
+        when(pipelineService.updateStepConfiguration(pipelineId, stepId, stepDto)).thenReturn(expectedDto);
+
+        // when
+        PipelineDto result = pipelineController.updateStepConfiguration(pipelineId, stepId, stepDto);
+
+        // then
+        assertNotNull(result);
+        assertEquals(expectedDto, result);
+        verify(pipelineService).updateStepConfiguration(pipelineId, stepId, stepDto);
+    }
+
+    @Test
+    void getStepPreview_shouldReturnPreview_whenSuccessful() {
+        // given
+        Long stepId = 1L;
+        String expectedPreview = "{\"preview\": \"data\"}";
+
+        when(pipelineService.getStepPreview(stepId)).thenReturn(expectedPreview);
+
+        // when
+        String result = pipelineController.getStepPreview(stepId);
+
+        // then
+        assertEquals(expectedPreview, result);
+        verify(pipelineService).getStepPreview(stepId);
+    }
+
+    @Test
     void moveStep_shouldReturnUpdatedPipeline_whenSuccessful() {
         // given
         Long pipelineId = 4L;

@@ -211,6 +211,150 @@ class FinalCategoriesBalancerProcessorTest {
     }
 
     @Test
+    void getResultStats_shouldHandleNullCategories() {
+        // given
+        final String inputTableName = "input.table";
+        final String resultTableName = "output.table";
+        StepRun stepRun = StepRun.builder()
+            .inputTableName(inputTableName)
+            .resultTableName(resultTableName)
+            .stepCfgData("{\"targetCount\":20,\"defaultQuota\":0.5}")
+            .build();
+
+        try (var mockedStatic = mockStatic(DatabaseUtils.class)) {
+            mockedStatic.when(() -> DatabaseUtils.tableExists(entityManager, inputTableName)).thenReturn(true);
+            mockedStatic.when(() -> DatabaseUtils.tableExists(entityManager, resultTableName)).thenReturn(true);
+
+            // Use answer-based mock to handle all native queries
+            when(entityManager.createNativeQuery(anyString())).thenAnswer(invocation -> {
+                String sql = invocation.getArgument(0, String.class);
+                Query q = mock(Query.class);
+                if (sql.contains("LEFT JOIN")) {
+                    when(q.getResultList()).thenReturn(List.of(new Object[]{3L}));
+                } else if (sql.contains("COUNT(DISTINCT")) {
+                    when(q.getSingleResult()).thenReturn(5L);
+                } else {
+                    when(q.getSingleResult()).thenReturn(10L);
+                }
+                return q;
+            });
+
+            // when
+            FinalCategoriesBalancerStats result = (FinalCategoriesBalancerStats) processor.getResultStats(stepRun);
+
+            // then
+            assertNotNull(result);
+            assertTrue(result.getOutputRecordsByCategory().isEmpty());
+            assertTrue(result.getOutputArtistsByCategory().isEmpty());
+            assertNotNull(result.getDefaultQuotaRecords());
+            assertNotNull(result.getDefaultQuotaArtists());
+        }
+    }
+
+    @Test
+    void getResultStats_shouldHandleEmptyCategories() {
+        // given
+        final String inputTableName = "input.table";
+        final String resultTableName = "output.table";
+        StepRun stepRun = StepRun.builder()
+            .inputTableName(inputTableName)
+            .resultTableName(resultTableName)
+            .stepCfgData("{\"targetCount\":20,\"defaultQuota\":0.5,\"categories\":[]}")
+            .build();
+
+        try (var mockedStatic = mockStatic(DatabaseUtils.class)) {
+            mockedStatic.when(() -> DatabaseUtils.tableExists(entityManager, inputTableName)).thenReturn(true);
+            mockedStatic.when(() -> DatabaseUtils.tableExists(entityManager, resultTableName)).thenReturn(true);
+
+            when(entityManager.createNativeQuery(anyString())).thenAnswer(invocation -> {
+                String sql = invocation.getArgument(0, String.class);
+                Query q = mock(Query.class);
+                if (sql.contains("LEFT JOIN")) {
+                    when(q.getResultList()).thenReturn(List.of(new Object[]{8L}));
+                } else if (sql.contains("COUNT(DISTINCT")) {
+                    when(q.getSingleResult()).thenReturn(4L);
+                } else {
+                    when(q.getSingleResult()).thenReturn(10L);
+                }
+                return q;
+            });
+
+            // when
+            FinalCategoriesBalancerStats result = (FinalCategoriesBalancerStats) processor.getResultStats(stepRun);
+
+            // then
+            assertNotNull(result);
+            assertTrue(result.getOutputRecordsByCategory().isEmpty());
+            assertTrue(result.getOutputArtistsByCategory().isEmpty());
+            assertNotNull(result.getDefaultQuotaRecords());
+            assertNotNull(result.getDefaultQuotaArtists());
+        }
+    }
+
+    @Test
+    void getResultStats_shouldReturnDefaultStats_whenExceptionOccurs() {
+        // given
+        StepRun stepRun = StepRun.builder()
+            .inputTableName("input.table")
+            .resultTableName("output.table")
+            .stepCfgData("invalid json")
+            .build();
+
+        try (var mockedStatic = mockStatic(DatabaseUtils.class)) {
+            mockedStatic.when(() -> DatabaseUtils.tableExists(entityManager, "input.table")).thenReturn(true);
+            mockedStatic.when(() -> DatabaseUtils.tableExists(entityManager, "output.table")).thenReturn(true);
+
+            when(entityManager.createNativeQuery(anyString())).thenAnswer(invocation -> {
+                String sql = invocation.getArgument(0, String.class);
+                Query q = mock(Query.class);
+                if (sql.contains("COUNT(DISTINCT")) {
+                    when(q.getSingleResult()).thenReturn(5L);
+                } else {
+                    when(q.getSingleResult()).thenReturn(10L);
+                }
+                return q;
+            });
+
+            // when
+            FinalCategoriesBalancerStats result = (FinalCategoriesBalancerStats) processor.getResultStats(stepRun);
+
+            // then
+            assertNotNull(result);
+            assertTrue(result.getOutputRecordsByCategory().isEmpty());
+            assertTrue(result.getOutputArtistsByCategory().isEmpty());
+            assertEquals(0L, result.getDefaultQuotaRecords());
+            assertEquals(0L, result.getDefaultQuotaArtists());
+        }
+    }
+
+    @Test
+    void processStep_shouldHandleEmptyCategories() {
+        // given
+        Step step = Step.builder()
+            .id(1L)
+            .type(StepType.FINAL_CATEGORIES_BALANCER)
+            .cfgData("{\"targetCount\":20,\"defaultQuota\":0.5,\"categories\":[]}")
+            .build();
+
+        StepRun stepRun = StepRun.builder().id(1L).build();
+
+        final String inputTableName = "input.table";
+        final String stepTableNameBase = "output.table";
+
+        when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+        when(query.setParameter(anyString(), any())).thenReturn(query);
+        when(query.executeUpdate()).thenReturn(1);
+        when(query.getSingleResult()).thenReturn(null);
+
+        // when
+        StepRunResult result = processor.processStep(step, inputTableName, stepTableNameBase, stepRun);
+
+        // then
+        assertNotNull(result);
+        assertEquals(stepTableNameBase + "_categories_balancer", result.getOutputTableName());
+    }
+
+    @Test
     void getResultStats_shouldReturnEmptyStats_whenOutputTableNotExists() {
         // given
         final String inputTableName = "input.table";

@@ -1,16 +1,16 @@
 package yurykorzun.art.universe.music.quiz.service;
 
 import jakarta.persistence.EntityManager;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import yurykorzun.art.universe.music.quiz.dto.GenerationDto;
 import yurykorzun.art.universe.music.quiz.dto.GenerationTrackDto;
-import yurykorzun.art.universe.music.quiz.entity.Generation;
-import yurykorzun.art.universe.music.quiz.entity.GenerationStatus;
-import yurykorzun.art.universe.music.quiz.entity.GenerationTrack;
+import yurykorzun.art.universe.music.quiz.entity.*;
 import yurykorzun.art.universe.music.quiz.repository.*;
 import yurykorzun.art.universe.music.quiz.service.impl.GenerationServiceImpl;
 
@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -53,6 +53,11 @@ class GenerationServiceTest {
 
     @InjectMocks
     private GenerationServiceImpl generationService;
+
+    @BeforeEach
+    void setUp() {
+        ReflectionTestUtils.setField(generationService, "entityManager", entityManager);
+    }
 
     @Test
     void approveGeneration_shouldReturnApprovedGeneration_whenGenerationExists() {
@@ -207,6 +212,134 @@ class GenerationServiceTest {
         // then
         assertEquals(2, result.size());
         verify(generationRepository).findByGameIdOrderByCreatedAtDesc(gameId);
+    }
+
+    @Test
+    void generateTracks_shouldCreateGenerationAndExecutePipeline_whenGameExists() {
+        // given
+        Long gameId = 1L;
+        Long pipelineId = 10L;
+        Long immutablePipelineId = 20L;
+        Long pipelineRunId = 30L;
+
+        Game game = Game.builder().pipelineId(pipelineId).build();
+        Pipeline immutablePipeline = Pipeline.builder().immutable(true).build();
+        // Use reflection to set id since setter is private
+        try {
+            var idField = Pipeline.class.getDeclaredField("id");
+            idField.setAccessible(true);
+            idField.set(immutablePipeline, immutablePipelineId);
+        } catch (Exception e) {
+            fail("Could not set pipeline id");
+        }
+
+        PipelineRun completedRun = PipelineRun.builder()
+            .pipelineId(immutablePipelineId)
+            .resultTableName("mu_quiz.result_table")
+            .build();
+        try {
+            var idField = PipelineRun.class.getDeclaredField("id");
+            idField.setAccessible(true);
+            idField.set(completedRun, pipelineRunId);
+        } catch (Exception e) {
+            fail("Could not set pipeline run id");
+        }
+
+        Generation savedGeneration = Generation.builder()
+            .gameId(gameId)
+            .pipelineId(immutablePipelineId)
+            .status(GenerationStatus.PENDING)
+            .build();
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(pipelineService.createImmutableCopy(pipelineId)).thenReturn(immutablePipeline);
+        when(generationRepository.save(any(Generation.class))).thenReturn(savedGeneration);
+        when(pipelineService.executePipeline(immutablePipelineId)).thenReturn(completedRun);
+
+        jakarta.persistence.Query nativeQuery = mock(jakarta.persistence.Query.class);
+        when(entityManager.createNativeQuery(anyString())).thenReturn(nativeQuery);
+        when(nativeQuery.getResultList()).thenReturn(List.of(
+            new Object[]{1L, 100L, "Track 1", "Artist 1"},
+            new Object[]{2L, 200L, "Track 2", "Artist 2"}
+        ));
+
+        // when
+        GenerationDto result = generationService.generateTracks(gameId);
+
+        // then
+        assertNotNull(result);
+        verify(pipelineService).validatePipelineForGeneration(pipelineId);
+        verify(pipelineService).createImmutableCopy(pipelineId);
+        verify(pipelineService).executePipeline(immutablePipelineId);
+        verify(generationTrackRepository).saveAll(anyList());
+        verify(generationRepository, times(3)).save(any(Generation.class));
+    }
+
+    @Test
+    void generateTracks_shouldSetStatusFailed_whenPipelineExecutionFails() {
+        // given
+        Long gameId = 1L;
+        Long pipelineId = 10L;
+        Long immutablePipelineId = 20L;
+
+        Game game = Game.builder().pipelineId(pipelineId).build();
+        Pipeline immutablePipeline = Pipeline.builder().immutable(true).build();
+        try {
+            var idField = Pipeline.class.getDeclaredField("id");
+            idField.setAccessible(true);
+            idField.set(immutablePipeline, immutablePipelineId);
+        } catch (Exception e) {
+            fail("Could not set pipeline id");
+        }
+
+        Generation savedGeneration = Generation.builder()
+            .gameId(gameId)
+            .pipelineId(immutablePipelineId)
+            .status(GenerationStatus.PENDING)
+            .build();
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+        when(pipelineService.createImmutableCopy(pipelineId)).thenReturn(immutablePipeline);
+        when(generationRepository.save(any(Generation.class))).thenReturn(savedGeneration);
+        when(pipelineService.executePipeline(immutablePipelineId)).thenThrow(new RuntimeException("Pipeline failed"));
+
+        // when & then
+        RuntimeException exception = assertThrows(RuntimeException.class,
+            () -> generationService.generateTracks(gameId));
+
+        assertEquals("Track generation failed", exception.getMessage());
+        verify(generationRepository, atLeast(2)).save(any(Generation.class));
+    }
+
+    @Test
+    void generateTracks_shouldThrowException_whenGameNotFound() {
+        // given
+        Long gameId = 999L;
+        when(gameRepository.findById(gameId)).thenReturn(Optional.empty());
+
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> generationService.generateTracks(gameId)
+        );
+
+        assertEquals("Game not found: 999", exception.getMessage());
+    }
+
+    @Test
+    void disapproveGeneration_shouldThrowException_whenGenerationNotFound() {
+        // given
+        Long generationId = 999L;
+        when(generationRepository.findById(generationId)).thenReturn(Optional.empty());
+
+        // when & then
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> generationService.disapproveGeneration(generationId)
+        );
+
+        assertEquals("Generation not found: 999", exception.getMessage());
+        verify(generationRepository, never()).save(any());
     }
 
     @Test
