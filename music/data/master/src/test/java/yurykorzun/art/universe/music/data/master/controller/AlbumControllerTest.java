@@ -23,6 +23,18 @@ import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.service.AlbumService;
 import yurykorzun.art.universe.music.data.master.service.BindingService;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import yurykorzun.art.universe.music.data.master.dto.AlbumWithCategoriesDto;
+import yurykorzun.art.universe.music.data.master.dto.TrackReorderItemDTO;
+import yurykorzun.art.universe.music.data.master.dto.TrackReorderRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityBindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindResponseDTO;
+import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -474,5 +486,156 @@ public class AlbumControllerTest {
 
         assertSame(expectedException, exception);
         verify(albumService).createAndBindWithTracks(dataSource, externalAlbumId, request);
+    }
+
+    // --- findAlbums ---
+
+    @Test
+    void findAlbums_shouldDelegateToService() {
+        String search = "abbey";
+        Long categoryId = 5L;
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<AlbumDto> expected = new PageImpl<>(List.of(
+            AlbumDto.builder().id(1L).name("Abbey Road").primaryArtistId(10L).build()
+        ));
+        when(albumService.findAlbums(search, categoryId, pageable)).thenReturn(expected);
+
+        Page<AlbumDto> result = albumController.findAlbums(search, categoryId, pageable);
+
+        assertEquals(expected, result);
+        verify(albumService).findAlbums(search, categoryId, pageable);
+    }
+
+    // --- findAlbumsWithCategories ---
+
+    @Test
+    void findAlbumsWithCategories_shouldDelegateToService() {
+        String search = "abbey";
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<AlbumWithCategoriesDto> expected = new PageImpl<>(List.of());
+        when(albumService.findAlbumsWithCategories(search, null, pageable)).thenReturn(expected);
+
+        Page<AlbumWithCategoriesDto> result = albumController.findAlbumsWithCategories(search, null, pageable);
+
+        assertEquals(expected, result);
+    }
+
+    // --- getAlbum ---
+
+    @Test
+    void getAlbum_shouldDelegateToService() {
+        AlbumDto expected = AlbumDto.builder().id(1L).name("Abbey Road").primaryArtistId(10L).build();
+        when(albumService.getAlbum(1L)).thenReturn(expected);
+
+        AlbumDto result = albumController.getAlbum(1L);
+
+        assertEquals(expected, result);
+    }
+
+    // --- getAlbumWithCategories ---
+
+    @Test
+    void getAlbumWithCategories_shouldDelegateToService() {
+        AlbumWithCategoriesDto expected = AlbumWithCategoriesDto.builder()
+            .id(1L).name("Abbey Road").primaryArtistId(10L).categories(List.of()).build();
+        when(albumService.getAlbumWithCategories(1L)).thenReturn(expected);
+
+        AlbumWithCategoriesDto result = albumController.getAlbumWithCategories(1L);
+
+        assertEquals(expected, result);
+    }
+
+    // --- bindToCategory ---
+
+    @Test
+    void bindToCategory_shouldDelegateToService() {
+        albumController.bindToCategory(1L, 2L);
+
+        verify(albumService).bindToCategory(1L, 2L);
+    }
+
+    // --- unbindFromCategory ---
+
+    @Test
+    void unbindFromCategory_shouldDelegateToService() {
+        albumController.unbindFromCategory(1L, 2L);
+
+        verify(albumService).unbindFromCategory(1L, 2L);
+    }
+
+    // --- bindToExisting ---
+
+    @Test
+    void bindToExisting_shouldDelegateToService() {
+        DataSource dataSource = DataSource.LASTFM;
+        Long externalId = 500L;
+        ArtistRelatedEntityBindToExistingRequestDTO request = ArtistRelatedEntityBindToExistingRequestDTO.builder()
+            .masterId(1L).masterPrimaryArtistId(100L).build();
+        BoundEntityProjection expected = new TestBoundEntityProjectionImpl(externalId, dataSource, 1L, "Test");
+        when(albumService.bindToExisting(dataSource, externalId, request)).thenReturn(expected);
+
+        BoundEntityProjection result = albumController.bindToExisting(dataSource, externalId, request);
+
+        assertEquals(expected, result);
+    }
+
+    // --- unbindAlbum ---
+
+    @Test
+    void unbindAlbum_shouldDelegateToService() {
+        DataSource dataSource = DataSource.LASTFM;
+        when(albumService.unbindAlbum(dataSource, 100L)).thenReturn(true);
+
+        boolean result = albumController.unbindAlbum(dataSource, 100L);
+
+        assertTrue(result);
+    }
+
+    // --- copyTracklist ---
+
+    @Test
+    void copyTracklist_shouldReturnCopiedCount() {
+        when(albumService.copyTracklist(1L, 2L)).thenReturn(5);
+
+        Map<String, Integer> result = albumController.copyTracklist(1L, 2L);
+
+        assertEquals(5, result.get("copiedCount"));
+        verify(albumService).copyTracklist(1L, 2L);
+    }
+
+    // --- reorderTracks ---
+
+    @Test
+    void reorderTracks_shouldDelegateToService() {
+        Long albumId = 1L;
+        List<TrackReorderItemDTO> items = List.of(
+            TrackReorderItemDTO.builder().albumTrackId(10L).newOrder(1).build(),
+            TrackReorderItemDTO.builder().albumTrackId(20L).newOrder(2).build()
+        );
+        TrackReorderRequestDTO request = TrackReorderRequestDTO.builder().items(items).build();
+
+        albumController.reorderTracks(albumId, request);
+
+        verify(albumService).reorderTracks(albumId, items);
+    }
+
+    // --- batchUnbindAlbums ---
+
+    @Test
+    void batchUnbindAlbums_shouldDelegateToBindingService() {
+        DataSource dataSource = DataSource.LASTFM;
+        BatchUnbindRequestDTO request = BatchUnbindRequestDTO.builder()
+            .externalIds(List.of(1L, 2L, 3L)).build();
+        BatchUnbindResponseDTO expected = BatchUnbindResponseDTO.builder()
+            .successfullyUnbound(List.of(1L, 2L))
+            .notFound(List.of(3L))
+            .totalProcessed(3).successCount(2).notFoundCount(1)
+            .build();
+        when(bindingService.batchUnbind(MasterEntityType.ALBUM, dataSource, request)).thenReturn(expected);
+
+        BatchUnbindResponseDTO result = albumController.batchUnbindAlbums(dataSource, request);
+
+        assertEquals(expected, result);
+        verify(bindingService).batchUnbind(MasterEntityType.ALBUM, dataSource, request);
     }
 }
