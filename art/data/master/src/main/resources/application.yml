@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: art-data-master-rest-api
+  config:
+    import:
+      - classpath:commons-context.yml
+      - optional:classpath:commons-context-${spring.profiles.active}.yml
+      - classpath:commons-observability.yml
+      - optional:classpath:commons-observability-${spring.profiles.active}.yml
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://${ART_DATA_DB_HOST:localhost}:${ART_DATA_DB_PORT:5432}/music_universe?currentSchema=art
+    username: art_dm
+    password: '${ART_DATA_DB_PASSWORD_DM}'
+    hikari:
+      pool-name: ArtDataHikariPool
+      maximum-pool-size: 4
+      minimum-idle: 1
+  jpa:
+    database: postgresql
+    properties:
+      hibernate:
+        order_by:
+          default_null_ordering: last
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        show-sql: false
+    hibernate:
+      ddl-auto: none
+  liquibase:
+    default-schema: art
+    change-log: classpath:db/migration/art/liquibase/db.changelog.xml
+  docker:
+    compose:
+      enabled: false
+
+server:
+  port: ${ART_DATA_APP_INTERNAL_PORT:8080}
+  allowed-origins: ${ART_DATA_APP_CORS_ALLOWED_ORIGINS}

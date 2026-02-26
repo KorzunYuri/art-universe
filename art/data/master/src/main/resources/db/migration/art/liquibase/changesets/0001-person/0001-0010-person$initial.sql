@@ -1,0 +1,10 @@
+CREATE TABLE person (
+    id          BIGINT          NOT NULL,
+    name        VARCHAR(1024)   NOT NULL,
+    created_at  TIMESTAMP       DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at  TIMESTAMP       DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT person_PK PRIMARY KEY (id),
+    CONSTRAINT person_UK UNIQUE (name)
+);
+
+CREATE SEQUENCE person_seq START 1 INCREMENT BY 50;

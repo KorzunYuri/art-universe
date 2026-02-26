@@ -67,6 +67,13 @@ This document is the **single source of truth** for list of modules.
 | [`:music:data:raw:lastfm:test:lastfm-commons-test-db-helper`](../music/data/raw/lastfm/test/lastfm-commons-test-db-helper/README.md) | Library | Database consistency helpers (DbConsistencyHelper) |
 | [`:music:data:raw:lastfm:test:lastfm-commons-test-web`](../music/data/raw/lastfm/test/lastfm-commons-test-web/README.md) | Library | Web/MVC testing utilities |
 
+### Art Foundation Modules
+
+| Module | Type | Purpose |
+|--------|------|---------|
+| [`:art:data:models`](../art/data/models/README.md) | Library | JPA entities and DTOs for art domain (Person) |
+| [`:art:data:master`](../art/data/master/README.md) | Service | Art foundation data management (Person CRUD) |
+
 ### Master Data & Quiz Modules
 
 | Module | Type | Purpose |
