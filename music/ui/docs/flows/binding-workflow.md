@@ -94,9 +94,9 @@ Provides the UI part of [Entity Binding Feature](../../../../docs/kb/features/bi
 
 ## API Integration
 
-- **Queries:** [useEntityLookup](../../src/music/shared/hooks/useEntityLookup.ts)
+- **Queries:** [useEntityLookup](../../src/shared/hooks/useEntityLookup.ts)
 - **Mutations:** Binding functions in [music-data-common-binding.ts](../../src/music/data/master/api/music-data-common-binding.ts)
-- **Cache:** [Cache invalidation strategies](../react-query/cache-invalidation.md)
+- **Cache:** [Cache invalidation strategies](../patterns/react-query/cache-invalidation.md)
 
 ## Validation Rules
 

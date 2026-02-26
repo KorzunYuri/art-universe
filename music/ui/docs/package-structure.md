@@ -2,80 +2,79 @@
 
 ## Overview
 
-The Music UI module follows a modular architecture with domain-driven organization, separating concerns between shared infrastructure, raw data integration, master data management, and quiz functionality.
+The UI module follows a modular architecture with domain-driven organization. The top-level `src/` directory separates cross-domain shared infrastructure from domain-specific modules (`music/`, `art/`).
 
-## Module Organization
+## Module Details
 
-### Shared Layer
+### Shared Layer (`src/shared/`)
 
-Location: [src/music/shared/](../src/music/shared/)
+Cross-cutting infrastructure used by all domain modules. Contains no domain-specific logic.
 
-**Purpose:** Cross-cutting infrastructure used by all domain modules
+**Key contents:**
+- `components/` — Reusable UI: [DataTable](../src/shared/components/DataTable/), [EntityTable](../src/shared/components/EntityTable/), [EntityPicker](../src/shared/components/EntityPicker/), [EntityLookup](../src/shared/components/EntityLookup/), [EditableText](../src/shared/components/EditableText/), [TableWithDetailLayout](../src/shared/components/TableWithDetailLayout/), [AppHeader](../src/shared/components/AppHeader/), [NavigationCard](../src/shared/components/NavigationCard/), [ConfirmDialog](../src/shared/components/ConfirmDialog/), etc.
+- `config/` — [appConfig.ts](../src/shared/config/appConfig.ts): runtime config for all API endpoints
+- `hooks/` — [useEntityLookup](../src/shared/hooks/useEntityLookup.ts), [useNotifications](../src/shared/hooks/useNotifications.ts), [useColumnPreferences](../src/shared/hooks/useColumnPreferences.ts)
+- `services/` — [LookupRegistry](../src/shared/services/LookupRegistry.ts), [tracingInterceptor](../src/shared/services/tracingInterceptor.ts)
+- `types/` — [page.ts](../src/shared/types/page.ts), [lookup.ts](../src/shared/types/lookup.ts), [notification.ts](../src/shared/types/notification.ts)
 
-**Key Subdirectories:**
-- `components/` - Reusable UI components ([EntityTable](../src/music/shared/components/EntityTable/), [EntityPicker](../src/music/shared/components/EntityPicker/), etc.)
-- `hooks/` - Shared React hooks ([useEntityLookup](../src/music/shared/hooks/useEntityLookup.ts), [useNotifications](../src/music/shared/hooks/useNotifications.ts))
-- `services/` - Core services ([LookupRegistry](../src/music/shared/services/LookupRegistry.ts))
-- `types/` - Base type definitions ([entities.ts](../src/music/shared/types/entities.ts), [page.ts](../src/music/shared/types/page.ts))
-- `utils/` - Utilities ([query-keys.ts](../src/music/shared/utils/query-keys.ts))
+### Music-Specific Shared (`src/music/shared/`)
 
-### Master Data Module
+Types and utilities that are specific to the music domain.
 
-Location: [src/music/data/master/](../src/music/data/master/)
+- `types/entities.ts` — `MasterEntityType` union, entity interfaces and implementations (Artist, Album, Track, Category)
+- `hooks/useRawEntity.tsx` — Raw data approval workflow hook
+- `utils/query-keys.ts` — Query key factories for music entities (masterEntitiesKeys, rawEntitiesKeys, relationKeys, entityLookupKeys)
 
-**Purpose:** Canonical master entity management
+### Music Master Data (`src/music/data/master/`)
 
-**Key Subdirectories:**
-- `api/` - Master data API client with entity-specific files
-  - [music-data-commons.ts](../src/music/data/master/api/music-data-commons.ts) - Entity mappers, endpoint mapping
-  - [music-data-common-fetching.ts](../src/music/data/master/api/music-data-common-fetching.ts) - Page fetching
-  - [music-data-common-lookup.ts](../src/music/data/master/api/music-data-common-lookup.ts) - Lookup functions
-  - [music-data-common-binding.ts](../src/music/data/master/api/music-data-common-binding.ts) - Binding operations
-  - [music-data-artists.ts](../src/music/data/master/api/music-data-artists.ts) - Artist DTOs and API
-  - [music-data-albums.ts](../src/music/data/master/api/music-data-albums.ts) - Album DTOs and API
-  - [music-data-tracks.ts](../src/music/data/master/api/music-data-tracks.ts) - Track DTOs and API
-  - [music-data-categories.ts](../src/music/data/master/api/music-data-categories.ts) - Category DTOs and API
-- `components/` - Master-specific UI ([ArtistsTable](../src/music/data/master/components/ArtistsTable/), [CategoryDag](../src/music/data/master/components/CategoryDag/))
-- `hooks/` - Master-specific hooks ([useMasterEntityTable](../src/music/data/master/hooks/useMasterEntityTable.ts), [useMasterEntity](../src/music/data/master/hooks/useMasterEntity.ts))
-- `services/` - [registerMasterLookups](../src/music/data/master/services/registerMasterLookups.ts)
+Canonical music entity management (artists, albums, tracks, categories, relation types).
 
-### LastFM Module
+- `api/` — Master data API client with entity-specific files
+- `components/` — Master-specific UI ([ArtistsTable](../src/music/data/master/components/ArtistsTable/), [AlbumsTable](../src/music/data/master/components/AlbumsTable/), [CategoryDag](../src/music/data/master/components/CategoryDag/), etc.)
+- `hooks/` — [useMasterEntityTable](../src/music/data/master/hooks/useMasterEntityTable.ts), [useMasterEntity](../src/music/data/master/hooks/useMasterEntity.ts), entity-specific hooks
+- `services/` — [registerMasterLookups](../src/music/data/master/services/registerMasterLookups.ts)
 
-Location: [src/music/data/raw/lastfm/](../src/music/data/raw/lastfm/)
+### LastFM Module (`src/music/data/raw/lastfm/`)
 
-**Purpose:** LastFM external data integration
+LastFM external data integration.
 
-**Key Subdirectories:**
-- `api/` - LastFM API client with entity-specific files
-  - [lastfm-common.ts](../src/music/data/raw/lastfm/api/lastfm-common.ts) - Entity mappers, endpoint mapping
-  - [lastfm-common-fetching.ts](../src/music/data/raw/lastfm/api/lastfm-common-fetching.ts) - Page fetching
-  - [lastfm-lookup.ts](../src/music/data/raw/lastfm/api/lastfm-lookup.ts) - Lookup by entity type
-  - [lastfm-artists.ts](../src/music/data/raw/lastfm/api/lastfm-artists.ts) - Artist DTOs and API
-  - [lastfm-albums.ts](../src/music/data/raw/lastfm/api/lastfm-albums.ts) - Album DTOs and API
-  - [lastfm-tracks.ts](../src/music/data/raw/lastfm/api/lastfm-tracks.ts) - Track DTOs and API
-  - [lastfm-tags.ts](../src/music/data/raw/lastfm/api/lastfm-tags.ts) - Tag DTOs and API
-- `components/` - LastFM-specific UI ([ApprovalToggle](../src/music/data/raw/lastfm/components/ApprovalToggle/), [EntityBinding](../src/music/data/raw/lastfm/components/EntityBinding/))
-- `hooks/` - [useLastfmEntityApproval](../src/music/data/raw/lastfm/hooks/useLastfmEntityApproval.ts)
-- `constants/` - [approvalStatus.ts](../src/music/data/raw/lastfm/constants/approvalStatus.ts)
-- `services/` - [registerLastfmLookups](../src/music/data/raw/lastfm/services/registerLastfmLookups.ts)
+- `api/` — LastFM API client with entity-specific files
+- `components/` — LastFM-specific tables and row components
+- `hooks/` — [useLastfmEntityApproval](../src/music/data/raw/lastfm/hooks/useLastfmEntityApproval.ts)
+- `services/` — [registerLastfmLookups](../src/music/data/raw/lastfm/services/registerLastfmLookups.ts)
 
-### Quiz Module
+### Raw Data Shared (`src/music/data/raw/shared/`)
 
-Location: [src/music/quiz/](../src/music/quiz/)
+Shared code used across raw data sources (currently LastFM only).
 
-**Purpose:** Quiz generation and management
+- `api/` — Approval API
+- `hooks/` — Approval status filter
+- `types/` — Lookup context types, data source definitions
+- `components/` — [ApprovalToggle](../src/music/data/raw/shared/components/ApprovalToggle/), [EntityBinding](../src/music/data/raw/shared/components/EntityBinding/), [ArtistRelatedEntityBinding](../src/music/data/raw/shared/components/ArtistRelatedEntityBinding/)
 
-**Key Subdirectories:**
-- `api/` - Quiz API client
-- `components/` - Quiz-specific UI
-- `hooks/` - [useQuizBinding](../src/music/quiz/hooks/useQuizBinding.ts), [useQuizData](../src/music/quiz/hooks/useQuizData.ts)
-- `types/` - Quiz entity types, generation steps
+### Quiz Module (`src/music/quiz/`)
+
+Quiz generation and management.
+
+- `api/` — Quiz API client
+- `components/` — Quiz-specific UI (GameDetails, PipelineEditor, StepBuilder, etc.)
+- `hooks/` — [useQuizBinding](../src/music/quiz/hooks/useQuizBinding.ts), [useQuizData](../src/music/quiz/hooks/useQuizData.ts)
+- `types/` — Quiz entity types, generation steps
+
+### Art Master Data (`src/art/data/master/`)
+
+Art domain entity management (persons, future: relations).
+
+- `api/` — [art-data-persons.ts](../src/art/data/master/api/art-data-persons.ts): Person DTOs and CRUD API
+- `config/` — [artdataconfig.ts](../src/art/data/master/config/artdataconfig.ts): Axios instance for art-data service
+- `hooks/` — [usePersonTable](../src/art/data/master/hooks/usePersonTable.ts), [usePerson](../src/art/data/master/hooks/usePerson.ts)
+- `components/` — [PersonsTable](../src/art/data/master/components/PersonsTable/) with inline edit and delete
+- `pages/` — ArtDataHome, Persons, PersonDetail
+- `utils/` — [query-keys.ts](../src/art/data/master/utils/query-keys.ts): artEntitiesKeys factory
 
 ## File Organization Patterns
 
-### API Layer Pattern
-
-Each domain module follows consistent API organization:
+### API Layer
 
 ```
 api/
@@ -84,21 +83,17 @@ api/
 ├── {module}-[topic/entity].ts    # Topic/entity specific DTOs and functions
 ```
 
-### Component Layer Pattern
-
-Components organized by domain with consistent structure:
+### Component Layer
 
 ```
 components/
 ├── {ComponentName}/
-│   ├── {ComponentName}.tsx       # Component implementation
-│   ├── {ComponentName}.module.scss  # Scoped styles
-│   └── index.ts                  # Re-export
+│   ├── {ComponentName}.tsx          # Component implementation
+│   ├── {ComponentName}.module.css   # Scoped styles
+│   └── index.ts                     # Re-export
 ```
 
-### Hooks Layer Pattern
-
-Hooks organized by purpose:
+### Hooks Layer
 
 ```
 hooks/
@@ -107,38 +102,18 @@ hooks/
 └── index.ts                      # Re-exports
 ```
 
-## Configuration Files
+## Configuration
 
-Location: `src/music/data/{module}/config/`
-
-**Purpose:** Environment-based configuration for API endpoints
-
-**Files:**
-- [musicdataconfig.ts](../src/music/data/master/config/musicdataconfig.ts) - Master data API configuration
-- [lastfmconfig.ts](../src/music/data/raw/lastfm/config/lastfmconfig.ts) - LastFM API configuration
-- [musicquizconfig.ts](../src/music/quiz/config/musicquizconfig.ts) - Quiz API configuration
-
-## Type Definitions
-
-### Shared Types
-
-Location: [src/music/shared/types/](../src/music/shared/types/)
-
-- [entities.ts](../src/music/shared/types/entities.ts) - Base entity interfaces and implementations
-- [page.ts](../src/music/shared/types/page.ts) - Pagination types
-- [lookup.ts](../src/music/shared/types/lookup.ts) - Lookup configuration types
-
-### Domain-Specific Types
-
-Each domain module has its own types directory with entity-specific definitions:
-
-- Master: [src/music/data/master/types/](../src/music/data/master/types/)
-- LastFM: [src/music/data/raw/lastfm/types/](../src/music/data/raw/lastfm/types/)
-- Quiz: [src/music/quiz/types/](../src/music/quiz/types/)
+Each domain module has its own API config under `config/`:
+- [appConfig.ts](../src/shared/config/appConfig.ts) — Central runtime config (all endpoints)
+- [musicdataconfig.ts](../src/music/data/master/config/musicdataconfig.ts) — Music Master Data API
+- [lastfmconfig.ts](../src/music/data/raw/lastfm/config/lastfmconfig.ts) — LastFM API
+- [musicquizconfig.ts](../src/music/quiz/config/musicquizconfig.ts) — Quiz API
+- [artdataconfig.ts](../src/art/data/master/config/artdataconfig.ts) — Art Master Data API
 
 ## Related Documentation
 
-- [API Integration Overview](./api-integration/README.md) - API client architecture
-- [React Query Overview](./patterns/react-query/README.md) - State management patterns
-- [Component Index](./components/index.md) - Component reference
-- [Entity Types Pattern](./patterns/data-types/entity-types.md) - Entity type system details
+- [API Integration Overview](./api-integration/README.md) — API client architecture
+- [React Query Overview](./patterns/react-query/README.md) — State management patterns
+- [Component Overview](./components/overview.md) — Component reference
+- [Entity Types Pattern](./patterns/data-types/entity-types.md) — Entity type system details

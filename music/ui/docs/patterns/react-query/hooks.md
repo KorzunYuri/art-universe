@@ -75,7 +75,7 @@ Use `useMutation` for creating, updating, or deleting data.
 - Returns: `{ currentOptions, isLoading, isError, error }`
 - Features: Debounced search, empty search handling
 
-**Example:** [useEntityLookup](../../src/music/shared/hooks/useEntityLookup.ts)
+**Example:** [useEntityLookup](../../../src/shared/hooks/useEntityLookup.ts)
 
 **Configuration:**
 - `enabled`: Only run if search string meets minimum length
@@ -92,7 +92,7 @@ Use `useMutation` for creating, updating, or deleting data.
 - Returns: Entity with populated relations
 - Uses `withRelations` key variant
 
-**Example:** [useArtistWithCategories](../../src/music/data/master/hooks/useArtistWithCategories.ts)
+**Example:** [useArtistWithCategories](../../../src/music/data/master/hooks/useArtistWithCategories.ts)
 
 ### Pattern 5: Dependent Query
 

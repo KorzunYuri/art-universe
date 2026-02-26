@@ -10,7 +10,7 @@ Decouples components from specific API implementations, provides consistent look
 
 ## Location
 
-[src/music/shared/services/LookupRegistry.ts](../../src/music/shared/services/LookupRegistry.ts)
+[src/shared/services/LookupRegistry.ts](../../../src/shared/services/LookupRegistry.ts)
 
 ## How It Works
 
@@ -19,8 +19,8 @@ Decouples components from specific API implementations, provides consistent look
 **When:** Module initialization
 
 **Where:**
-- Master data: [registerMasterLookups.ts](../../src/music/data/master/services/registerMasterLookups.ts)
-- LastFM: [registerLastfmLookups.ts](../../src/music/data/raw/lastfm/services/registerLastfmLookups.ts)
+- Master data: [registerMasterLookups.ts](../../../src/music/data/master/services/registerMasterLookups.ts)
+- LastFM: [registerLastfmLookups.ts](../../../src/music/data/raw/lastfm/services/registerLastfmLookups.ts)
 
 **Process:**
 1. Module calls `LookupRegistry.register()`
@@ -100,14 +100,14 @@ Decouples components from specific API implementations, provides consistent look
 
 ## Usage in Components
 
-Components use registry through [useEntityLookup](../../src/music/shared/hooks/useEntityLookup.ts) hook.
+Components use registry through [useEntityLookup](../../../src/shared/hooks/useEntityLookup.ts) hook.
 
 **Pattern:**
 1. Component specifies data source, entity type, params
 2. Hook calls registry
 3. Component receives results
 
-**Example:** [EntityLookup](../../src/music/shared/components/EntityLookup/EntityLookup.tsx) component
+**Example:** [EntityLookup](../../../src/shared/components/EntityLookup/EntityLookup.tsx) component
 
 ## Singleton Pattern
 

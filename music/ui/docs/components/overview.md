@@ -1,21 +1,26 @@
 # Component Overview
 
-This document categorizes all UI components in the Music Universe module by their purpose and reusability.
+This document categorizes all UI components by their purpose and reusability.
 
 ## 1. Small Single-Purpose Components
 
 Reusable UI elements serving a specific, focused purpose.
 
-**Shared** (`src/music/shared/components/`):
-- [ConfirmDialog](../../src/music/shared/components/ConfirmDialog/) - Modal confirmation dialog
-- [EditableText](../../src/music/shared/components/EditableText/) - Inline text editing widget
-- [ExternalLink](../../src/music/shared/components/ExternalLink/) - Link that opens in new tab
-- [LabelWithPopup](../../src/music/shared/components/LabelWithPopup/) - Label with tooltip/popup
-- [NavigationCard](../../src/music/shared/components/NavigationCard/) - Card for navigation menu
-- [NotificationContainer](../../src/music/shared/components/NotificationContainer/) - Toast notification display
-- [Pagination](../../src/music/shared/components/Pagination/) - Pagination controls for tables
-- [ReadonlyAttr](../../src/music/shared/components/ReadonlyAttr/) - Read-only attribute display
-- [StaticAutocompleteInput](../../src/music/shared/components/StaticAutocompleteInput/) - Static autocomplete dropdown
+**Shared** (`src/shared/components/`):
+- [ConfirmDialog](../../src/shared/components/ConfirmDialog/) - Modal confirmation dialog
+- [EditableText](../../src/shared/components/EditableText/) - Inline text editing widget
+- [ExternalLink](../../src/shared/components/ExternalLink/) - Link that opens in new tab
+- [LabelWithPopup](../../src/shared/components/LabelWithPopup/) - Label with tooltip/popup
+- [NavigationCard](../../src/shared/components/NavigationCard/) - Card for navigation menu
+- [NotificationContainer](../../src/shared/components/NotificationContainer/) - Toast notification display
+- [Pagination](../../src/shared/components/Pagination/) - Pagination controls for tables
+- [ReadonlyAttr](../../src/shared/components/ReadonlyAttr/) - Read-only attribute display
+- [StaticAutocompleteInput](../../src/shared/components/StaticAutocompleteInput/) - Static autocomplete dropdown
+
+**Raw Data Shared** (`src/music/data/raw/shared/components/`):
+- [ApprovalToggle](../../src/music/data/raw/shared/components/ApprovalToggle/) - Raw entity approval status management
+- [EntityBinding](../../src/music/data/raw/shared/components/EntityBinding/) - Raw entity to master entity binding workflow modal
+- [ArtistRelatedEntityBinding](../../src/music/data/raw/shared/components/ArtistRelatedEntityBinding/) - Artist-related entity binding
 
 **LastFM** (`src/music/data/raw/lastfm/components/`):
 - [EntityTagItem](../../src/music/data/raw/lastfm/components/EntityTagItem/) - Single tag/category chip display
@@ -44,32 +49,33 @@ Reusable UI elements serving a specific, focused purpose.
 
 Generic, configurable components designed to be extended or reused across domains.
 
-**Shared** (`src/music/shared/components/`):
-- [EntityTable](../../src/music/shared/components/EntityTable/) - Generic paginated table with search, sort, and filters
-- [EntityPicker](../../src/music/shared/components/EntityPicker/) - Generic entity picker with autocomplete
-- [EntityLookup](../../src/music/shared/components/EntityLookup/) - Generic entity lookup/search input
+**Shared** (`src/shared/components/`):
+- [DataTable](../../src/shared/components/DataTable/) - Modern TanStack Table wrapper with sorting, pagination, search
+- [EntityTable](../../src/shared/components/EntityTable/) - Generic paginated table with search, sort, and filters
+- [EntityPicker](../../src/shared/components/EntityPicker/) - Generic entity picker with autocomplete
+- [EntityLookup](../../src/shared/components/EntityLookup/) - Generic entity lookup/search input
+- [TableWithDetailLayout](../../src/shared/components/TableWithDetailLayout/) - Two-column layout (table + detail panel)
+- [ColumnToggle](../../src/shared/components/ColumnToggle/) - Column visibility dropdown menu
 
 ## 3. Components That Extend/Reuse Base Components
 
 Domain-specific implementations that wrap or configure base components.
 
+**Art Master Tables** (`src/art/data/master/components/`):
+- [PersonsTable](../../src/art/data/master/components/PersonsTable/) - Uses DataTable for art persons
+
 **LastFM Tables** (`src/music/data/raw/lastfm/components/`):
 - [LastfmAlbumsTable](../../src/music/data/raw/lastfm/components/LastfmAlbumsTable/) - Uses EntityTable for LastFM albums
-- [LastfmAlbumsTableRow](../../src/music/data/raw/lastfm/components/LastfmAlbumsTableRow/) - Row component for LastfmAlbumsTable
 - [LastfmArtistsTable](../../src/music/data/raw/lastfm/components/LastfmArtistsTable/) - Uses EntityTable for LastFM artists
-- [LastfmArtistsTableRow](../../src/music/data/raw/lastfm/components/LastfmArtistsTableRow/) - Row component for LastfmArtistsTable
 - [LastfmTagsTable](../../src/music/data/raw/lastfm/components/LastfmTagsTable/) - Uses EntityTable for LastFM tags
-- [LastfmTagsTableRow](../../src/music/data/raw/lastfm/components/LastfmTagsTableRow/) - Row component for LastfmTagsTable
 - [LastfmTracksTable](../../src/music/data/raw/lastfm/components/LastfmTracksTable/) - Uses EntityTable for LastFM tracks
-- [LastfmTracksTableRow](../../src/music/data/raw/lastfm/components/LastfmTracksTableRow/) - Row component for LastfmTracksTable
 
-**Master Tables** (`src/music/data/master/components/`):
-- [AlbumsTable](../../src/music/data/master/components/AlbumsTable/) - Uses EntityTable for master albums
-- [ArtistsTable](../../src/music/data/master/components/ArtistsTable/) - Uses EntityTable for master artists
-- [ArtistsTableRow](../../src/music/data/master/components/ArtistsTableRow/) - Row component for ArtistsTable
-- [CategoriesTable](../../src/music/data/master/components/CategoriesTable/) - Uses EntityTable for master categories
-- [CategoriesTableRow](../../src/music/data/master/components/CategoriesTableRow/) - Row component for CategoriesTable
-- [TracksTable](../../src/music/data/master/components/TracksTable/) - Uses EntityTable for master tracks
+**Music Master Tables** (`src/music/data/master/components/`):
+- [AlbumsTable](../../src/music/data/master/components/AlbumsTable/) - Uses DataTable for master albums
+- [ArtistsTable](../../src/music/data/master/components/ArtistsTable/) - Uses DataTable for master artists
+- [CategoriesTable](../../src/music/data/master/components/CategoriesTable/) - Uses DataTable for master categories
+- [TracksTable](../../src/music/data/master/components/TracksTable/) - Uses DataTable for master tracks
+- [RelationTypesTable](../../src/music/data/master/components/RelationTypesTable/) - Uses DataTable for relation types
 - [MasterEntityPicker](../../src/music/data/master/components/MasterEntityPicker/) - Wraps EntityPicker with master data source preset
 
 **Quiz Tables** (`src/music/quiz/components/`):
@@ -81,13 +87,10 @@ Domain-specific implementations that wrap or configure base components.
 
 Complex components implementing specific business logic or workflows.
 
-**LastFM** (`src/music/data/raw/lastfm/components/`):
-- [ApprovalToggle](../../src/music/data/raw/lastfm/components/ApprovalToggle/) - Raw entity approval status management
-- [EntityBinding](../../src/music/data/raw/lastfm/components/EntityBinding/) - Raw entity to master entity binding workflow modal
-
 **Master** (`src/music/data/master/components/`):
 - [CategoryDag](../../src/music/data/master/components/CategoryDag/) - Category hierarchy DAG visualization (using @xyflow/react)
 - [MasterEntityPanel](../../src/music/data/master/components/MasterEntityPanel/) - Panel displaying master entity information
+- [RelatedEntitiesSection](../../src/music/data/master/components/RelatedEntitiesSection/) - Related entities display and management
 
 **Quiz** (`src/music/quiz/components/`):
 - [GameDetails](../../src/music/quiz/components/GameDetails/) - Quiz game details and configuration

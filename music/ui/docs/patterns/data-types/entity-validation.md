@@ -65,7 +65,7 @@ Prevents invalid operations, provides automatic approval before binding, and ens
 4. If validation passes: Execute binding
 5. If validation fails: Show error message
 
-**Example:** [EntityBinding](../../src/music/data/raw/lastfm/components/EntityBinding/EntityBinding.tsx)
+**Example:** [EntityBinding](../../../src/music/data/raw/shared/components/EntityBinding/EntityBinding.tsx)
 
 ## Error Handling
 

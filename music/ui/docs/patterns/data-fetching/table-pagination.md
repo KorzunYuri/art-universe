@@ -10,7 +10,7 @@ Provides consistent pagination across all entity lists, enables efficient data l
 
 ## Pagination Types
 
-Location: [src/music/shared/types/page.ts](../../src/music/shared/types/page.ts)
+Location: [src/shared/types/page.ts](../../../src/shared/types/page.ts)
 
 ### Page<T> Interface
 

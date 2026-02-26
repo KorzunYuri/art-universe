@@ -12,7 +12,7 @@ Allows lookups to be filtered by related entities without coupling components to
 
 ### Basic Context
 
-Location: [src/music/shared/types/lookup-context.ts](../../src/music/shared/types/lookup-context.ts)
+Location: [src/shared/types/lookup-context.ts](../../../src/shared/types/lookup-context.ts)
 
 **Purpose:** No scoping, search all entities
 
@@ -26,7 +26,7 @@ Location: [src/music/shared/types/lookup-context.ts](../../src/music/shared/type
 
 ### Artist-Related Context
 
-Location: [src/music/data/raw/shared/types/lookup-context.ts](../../src/music/data/raw/shared/types/lookup-context.ts)
+Location: [src/music/data/raw/shared/types/lookup-context.ts](../../../src/music/data/raw/shared/types/lookup-context.ts)
 
 **Purpose:** Scope lookup to specific artist
 
@@ -44,7 +44,7 @@ Location: [src/music/data/raw/shared/types/lookup-context.ts](../../src/music/da
 
 ### LookupContextFactory
 
-Location: [src/music/shared/types/lookup-context.ts](../../src/music/shared/types/lookup-context.ts)
+Location: [src/shared/types/lookup-context.ts](../../../src/shared/types/lookup-context.ts)
 
 **Methods:**
 - `basic()`: Creates basic context
@@ -55,7 +55,7 @@ Location: [src/music/shared/types/lookup-context.ts](../../src/music/shared/type
 
 ### RawEntityLookupContextFactory
 
-Location: [src/music/data/raw/shared/types/lookup-context.ts](../../src/music/data/raw/shared/types/lookup-context.ts)
+Location: [src/music/data/raw/shared/types/lookup-context.ts](../../../src/music/data/raw/shared/types/lookup-context.ts)
 
 **Methods:**
 - `fromRawEntity<T>(entity)`: Creates context from raw entity
@@ -124,7 +124,7 @@ Location: [src/music/data/raw/shared/types/lookup-context.ts](../../src/music/da
 
 ### EntityLookup Component
 
-Location: [EntityLookup.tsx](../../src/music/shared/components/EntityLookup/EntityLookup.tsx)
+Location: [EntityLookup.tsx](../../../src/shared/components/EntityLookup/EntityLookup.tsx)
 
 **Props:**
 - `context`: Optional lookup context
@@ -136,7 +136,7 @@ Location: [EntityLookup.tsx](../../src/music/shared/components/EntityLookup/Enti
 
 ### EntityBinding Component
 
-Location: [EntityBinding.tsx](../../src/music/data/raw/lastfm/components/EntityBinding/EntityBinding.tsx)
+Location: [EntityBinding.tsx](../../../src/music/data/raw/shared/components/EntityBinding/EntityBinding.tsx)
 
 **Context Creation:**
 - Calls `RawEntityLookupContextFactory.fromRawEntity()`

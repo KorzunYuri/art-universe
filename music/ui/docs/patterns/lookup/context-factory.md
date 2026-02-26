@@ -12,7 +12,7 @@ Centralizes context creation logic, enables automatic context derivation from en
 
 ### LookupContextFactory
 
-Location: [src/music/shared/types/lookup-context.ts](../../src/music/shared/types/lookup-context.ts)
+Location: [src/shared/types/lookup-context.ts](../../../src/shared/types/lookup-context.ts)
 
 **Purpose:** Create basic lookup contexts
 
@@ -25,7 +25,7 @@ Location: [src/music/shared/types/lookup-context.ts](../../src/music/shared/type
 
 ### RawEntityLookupContextFactory
 
-Location: [src/music/data/raw/shared/types/lookup-context.ts](../../src/music/data/raw/shared/types/lookup-context.ts)
+Location: [src/music/data/raw/shared/types/lookup-context.ts](../../../src/music/data/raw/shared/types/lookup-context.ts)
 
 **Purpose:** Create contexts from raw entities
 
@@ -115,7 +115,7 @@ Location: [src/music/data/raw/shared/types/lookup-context.ts](../../src/music/da
 
 ### EntityBinding Component
 
-Location: [EntityBinding.tsx](../../src/music/data/raw/lastfm/components/EntityBinding/EntityBinding.tsx)
+Location: [EntityBinding.tsx](../../../src/music/data/raw/shared/components/EntityBinding/EntityBinding.tsx)
 
 **Pattern:**
 - Get raw entity
@@ -127,7 +127,7 @@ Location: [EntityBinding.tsx](../../src/music/data/raw/lastfm/components/EntityB
 
 ### EntityLookup Component
 
-Location: [EntityLookup.tsx](../../src/music/shared/components/EntityLookup/EntityLookup.tsx)
+Location: [EntityLookup.tsx](../../../src/shared/components/EntityLookup/EntityLookup.tsx)
 
 **Pattern:**
 - Accept context prop

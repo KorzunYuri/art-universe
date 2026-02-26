@@ -14,7 +14,7 @@ React Query (TanStack Query) manages all server state in the Music UI module, pr
 
 ## QueryClient Configuration
 
-Location: [src/music/main.tsx](../../src/music/main.tsx)
+Location: [src/shared/providers/QueryProvider.tsx](../../../src/shared/providers/QueryProvider.tsx)
 
 **Default Options:**
 
@@ -32,7 +32,7 @@ Location: [src/music/main.tsx](../../src/music/main.tsx)
 
 React Query DevTools enabled in development for debugging cache state.
 
-Location: [src/music/main.tsx](../../src/music/main.tsx)
+Location: [src/shared/providers/QueryProvider.tsx](../../../src/shared/providers/QueryProvider.tsx)
 
 ## Documentation Structure
 

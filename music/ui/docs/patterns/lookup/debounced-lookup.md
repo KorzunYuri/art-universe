@@ -10,7 +10,7 @@ Reduces server load by limiting requests, improves user experience by waiting fo
 
 ## Location
 
-[src/music/shared/components/UniversalEntityLookup/EntityLookup.tsx](../../src/music/shared/components/EntityLookup/EntityLookup.tsx)
+[src/shared/components/UniversalEntityLookup/EntityLookup.tsx](../../../src/shared/components/EntityLookup/EntityLookup.tsx)
 
 ## How It Works
 
