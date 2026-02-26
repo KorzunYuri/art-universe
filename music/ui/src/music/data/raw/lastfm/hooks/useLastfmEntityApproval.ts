@@ -5,7 +5,7 @@ import type { DataSource } from '@/music/data/raw/shared/types/data-sources.ts';
 import {ApprovalStatus, type ApprovalStatusType} from "@/music/data/raw/lastfm/constants/approvalStatus.ts";
 import {updateRawEntityApprovalStatus} from "@/music/data/raw/shared/api/approval.tsx";
 import type {MasterEntityType} from "@/music/shared/types/entities.ts";
-import {useNotifications} from "@/music/shared/hooks";
+import {useNotifications} from "@/shared/hooks";
 import { rawEntitiesKeys } from "@/music/shared/utils/query-keys.ts";
 
 export const useLastfmEntityApproval = <M extends MasterEntityType, T extends LastfmEntity<M>>(

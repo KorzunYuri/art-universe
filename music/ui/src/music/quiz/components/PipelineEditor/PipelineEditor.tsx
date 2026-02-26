@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNotifications } from '@/music/shared/hooks/useNotifications.ts';
+import { useNotifications } from '@/shared/hooks/useNotifications.ts';
 import {
   useAddStep,
   useMoveStep,

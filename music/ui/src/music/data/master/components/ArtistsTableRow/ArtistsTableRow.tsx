@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
-import { useNotifications } from "@/music/shared/hooks";
-import { EditableText, ConfirmDialog, type BaseEntityTableRow } from "@/music/shared/components";
+import { useNotifications } from "@/shared/hooks";
+import { EditableText, ConfirmDialog, type BaseEntityTableRow } from "@/shared/components";
 import { MasterEntityPanel } from "../MasterEntityPanel";
 import { MasterEntityPicker } from "../MasterEntityPicker";
 import { useArtistWithCategories } from "@/music/data/master/hooks/useArtistWithCategories.ts";
 import { saveArtist, deleteArtist, bindArtistToCategory, unbindArtistFromCategory, type ArtistSaveRequest } from "@/music/data/master/api/music-data-artists.ts";
 import styles from "./ArtistsTableRow.module.css";
 import tableStyles from "../ArtistsTable/ArtistsTable.module.css";
-import sharedTableStyles from "@/music/shared/styles/EntityTableStyles.module.scss";
+import sharedTableStyles from "@/shared/styles/EntityTableStyles.module.scss";
 
 interface ArtistsTableRowProps extends BaseEntityTableRow {
     onDeleted?: () => void;

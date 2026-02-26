@@ -1,8 +1,8 @@
 import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNotifications } from '@/music/shared/hooks';
-import { FoldableSection } from '@/music/shared/components/FoldableSection';
+import { useNotifications } from '@/shared/hooks';
+import { FoldableSection } from '@/shared/components/FoldableSection';
 import {
     getRelatedEntities,
     createInternalRelation,

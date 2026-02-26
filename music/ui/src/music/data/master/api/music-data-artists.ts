@@ -1,7 +1,7 @@
 import { MusicDataConfig } from '../config/musicdataconfig.ts';
 import { ArtistImpl } from "@/music/shared/types/entities.ts";
 import type { BaseMasterEntityDto } from "@/music/data/master/api/music-data-commons.ts";
-import type { BasePageSearchParams } from "@/music/shared/types/page.ts";
+import type { BasePageSearchParams } from "@/shared/types/page.ts";
 import type { CategoryDto } from "./music-data-categories.ts";
 
 const masterDataApi = MusicDataConfig.api;

@@ -1,9 +1,9 @@
 import { useState, useMemo, useCallback } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { useMasterEntityTable } from '@/music/data/master/hooks/useMasterEntityTable';
-import { useNotifications } from '@/music/shared/hooks';
-import { DataTable } from '@/music/shared/components/DataTable';
-import { stringToSortingState, sortingStateToString } from '@/music/shared/components/DataTable/sortUtils';
+import { useNotifications } from '@/shared/hooks';
+import { DataTable } from '@/shared/components/DataTable';
+import { stringToSortingState, sortingStateToString } from '@/shared/components/DataTable/sortUtils';
 import type { Category } from '@/music/shared/types/entities';
 import { NameCell } from './cells/NameCell';
 import { ParentsCell } from './cells/ParentsCell';

@@ -6,7 +6,7 @@ import {
     type BatchLookupResponseDTO,
     type LookupRequestMap
 } from "@/music/data/master/types/master-entities-lookup.ts";
-import type {LookupEntity} from "@/music/shared/types/lookup.ts";
+import type {LookupEntity} from "@/shared/types/lookup.ts";
 import type {
     BasicMasterLookupRequest,
     MasterArtistRelatedLookupRequest

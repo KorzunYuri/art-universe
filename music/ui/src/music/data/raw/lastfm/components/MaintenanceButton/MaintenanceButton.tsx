@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { triggerDbMaintenance } from '@/music/data/raw/lastfm/api/lastfm-maintenance.ts';
-import { useNotifications } from '@/music/shared/hooks/useNotifications.ts';
+import { useNotifications } from '@/shared/hooks/useNotifications.ts';
 import styles from './MaintenanceButton.module.scss';
 
 export function MaintenanceButton() {

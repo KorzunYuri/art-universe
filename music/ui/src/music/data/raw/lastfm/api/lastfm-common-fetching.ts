@@ -6,7 +6,7 @@ import type {
     LastfmSupportedEntityType,
     LastfmSupportedEntityTypeMap
 } from "@/music/data/raw/lastfm/types/lastfm-entity.ts";
-import type {BasePageSearchParams, Page} from "@/music/shared/types/page.ts";
+import type {BasePageSearchParams, Page} from "@/shared/types/page.ts";
 import {LastfmConfig} from "@/music/data/raw/lastfm/config/lastfmconfig.ts";
 import {
     type LastfmEntityDtoMap,

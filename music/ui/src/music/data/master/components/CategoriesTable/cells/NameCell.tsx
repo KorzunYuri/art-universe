@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { EditableText } from '@/music/shared/components';
-import { useNotifications } from '@/music/shared/hooks';
+import { EditableText } from '@/shared/components';
+import { useNotifications } from '@/shared/hooks';
 import { saveCategory, type CategorySaveRequest } from '@/music/data/master/api/music-data-categories';
 import type { Category } from '@/music/shared/types/entities';
 import rowStyles from '../../CategoriesTableRow/CategoriesTableRow.module.css';

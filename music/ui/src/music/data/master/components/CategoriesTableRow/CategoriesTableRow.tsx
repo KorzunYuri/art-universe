@@ -1,8 +1,8 @@
 // hooks
 import { useState, useEffect } from "react";
-import { useNotifications } from "@/music/shared/hooks";
+import { useNotifications } from "@/shared/hooks";
 // components
-import { EditableText, ConfirmDialog, type BaseEntityTableRow } from "@/music/shared/components";
+import { EditableText, ConfirmDialog, type BaseEntityTableRow } from "@/shared/components";
 import { MasterEntityPanel } from "../MasterEntityPanel";
 import { MasterEntityPicker } from "../MasterEntityPicker";
 // types
@@ -14,7 +14,7 @@ import { useCategoryWithParents } from "@/music/data/master/hooks/useCategoryWit
 // styles
 import styles from "./CategoriesTableRow.module.css";
 import tableStyles from "../CategoriesTable/CategoriesTable.module.css";
-import sharedTableStyles from "@/music/shared/styles/EntityTableStyles.module.scss";
+import sharedTableStyles from "@/shared/styles/EntityTableStyles.module.scss";
 
 interface CategoriesTableRowProps extends BaseEntityTableRow {
     onDeleted?: () => void;

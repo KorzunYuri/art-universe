@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useNotifications } from '@/music/shared/hooks';
-import { ConfirmDialog } from '@/music/shared/components';
+import { useNotifications } from '@/shared/hooks';
+import { ConfirmDialog } from '@/shared/components';
 import { deleteAlbum } from '@/music/data/master/api/music-data-albums';
 import type { Album } from '@/music/shared/types/entities';
 import styles from '../AlbumsTable.module.css';

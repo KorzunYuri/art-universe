@@ -1,4 +1,4 @@
-import { LookupRegistry } from "@/music/shared/services/LookupRegistry.ts";
+import { LookupRegistry } from "@/shared/services/LookupRegistry.ts";
 import { lookupMasterEntities } from "@/music/data/master/api/music-data-common-lookup.ts";
 import type {
     BasicMasterEntityLookupParams,

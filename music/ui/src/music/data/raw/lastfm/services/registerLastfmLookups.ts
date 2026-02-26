@@ -1,4 +1,4 @@
-import { LookupRegistry } from "@/music/shared/services/LookupRegistry.ts";
+import { LookupRegistry } from "@/shared/services/LookupRegistry.ts";
 import { 
     lookupLastfmArtists, 
     lookupLastfmTags

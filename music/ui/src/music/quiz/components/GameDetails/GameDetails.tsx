@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useGame, useGenerations, useGenerateTracks, useApproveGeneration, useDisapproveGeneration, usePipeline } from '@/music/quiz/hooks/useQuizData.ts';
-import { useNotifications } from '@/music/shared/hooks/useNotifications.ts';
+import { useNotifications } from '@/shared/hooks/useNotifications.ts';
 import { validatePipeline } from '@/music/quiz/types/pipeline-steps.ts';
 import type {GenerationDto} from '../../types';
 import { PipelineEditor } from '../PipelineEditor/PipelineEditor.tsx';

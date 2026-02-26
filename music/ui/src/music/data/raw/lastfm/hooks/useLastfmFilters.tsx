@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { useAdditionalSearchFields } from '@/music/shared/hooks/useAdditionalSearchFields.ts';
-import { EntityLookup } from '@/music/shared/components';
-import { LookupContextFactory } from '@/music/shared/types/lookup-context.ts';
-import type { LookupEntity } from '@/music/shared/types/lookup.ts';
+import { useAdditionalSearchFields } from '@/shared/hooks/useAdditionalSearchFields.ts';
+import { EntityLookup } from '@/shared/components';
+import { LookupContextFactory } from '@/shared/types/lookup-context.ts';
+import type { LookupEntity } from '@/shared/types/lookup.ts';
 
 /**
  * This file contains hooks used in search panels across Lastfm entity tables

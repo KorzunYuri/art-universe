@@ -14,7 +14,7 @@ import {getQuizBindings} from "@/music/quiz/api/music-quiz-common-binding";
 import {quizBindingKeys} from "@/music/quiz/hooks/useQuizBinding.ts";
 import type {MusicQuizSupportedEntityType} from "@/music/quiz/types/music-quiz-entity.ts";
 import {RawEntityLookupContextFactory} from "@/music/data/raw/shared/types/lookup-context.ts";
-import type {Page} from "@/music/shared/types/page.ts";
+import type {Page} from "@/shared/types/page.ts";
 import type {LastfmSupportedEntityTypeMap} from "@/music/data/raw/lastfm/types/lastfm-entity.ts";
 
 /**

@@ -4,8 +4,9 @@ import {useLastfmEntity} from '@/music/data/raw/lastfm/hooks/useLastfmEntity';
 import {useLastfmEntityApproval} from '@/music/data/raw/lastfm/hooks/useLastfmEntityApproval';
 import {useLastfmAlbumTracks} from '@/music/data/raw/lastfm/hooks/useLastfmAlbumTracks';
 import {useApplicableRelationTypes} from '@/music/data/master/hooks/useApplicableRelationTypes';
-import {ExternalLink} from '@/music/shared/components';
-import {ApprovalToggle, ArtistRelatedEntityBinding, EntityTagPanel} from '@/music/data/raw/lastfm/components';
+import {ExternalLink} from '@/shared/components';
+import { EntityTagPanel } from '@/music/data/raw/lastfm/components';
+import { ApprovalToggle, ArtistRelatedEntityBinding } from '@/music/data/raw/shared/components';
 import {LastfmConfig} from '@/music/data/raw/lastfm/config/lastfmconfig';
 import {getMasterEntityUrl} from '@/music/data/master/utils/masterEntityUrl';
 import {
@@ -16,7 +17,7 @@ import {useQueryClient} from '@tanstack/react-query';
 import {lastfmAlbumTracksKeys} from '@/music/data/raw/lastfm/utils/query-keys';
 import {rawEntitiesKeys} from '@/music/shared/utils/query-keys';
 import type {LastfmAlbumTrackDto} from '@/music/data/raw/lastfm/api/lastfm-albums';
-import styles from '../LastfmDetailPage.module.scss';
+import styles from '@/music/data/raw/lastfm/styles/LastfmDetailPage.module.scss';
 
 interface TrackEditState {
     trackOrder: number;

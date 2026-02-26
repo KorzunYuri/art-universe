@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNotifications } from '@/music/shared/hooks';
+import { useNotifications } from '@/shared/hooks';
 import { MasterEntityPanel } from '@/music/data/master/components/MasterEntityPanel';
 import { unbindAlbumFromCategory } from '@/music/data/master/api/music-data-albums';
 import type { Album } from '@/music/shared/types/entities';

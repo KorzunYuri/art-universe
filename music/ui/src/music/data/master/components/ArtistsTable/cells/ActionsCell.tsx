@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useNotifications } from '@/music/shared/hooks';
-import { ConfirmDialog } from '@/music/shared/components';
+import { useNotifications } from '@/shared/hooks';
+import { ConfirmDialog } from '@/shared/components';
 import { deleteArtist } from '@/music/data/master/api/music-data-artists';
 import type { Artist } from '@/music/shared/types/entities';
 import rowStyles from '../../ArtistsTableRow/ArtistsTableRow.module.css';

@@ -1,4 +1,4 @@
-import { useNotifications } from '@/music/shared/hooks';
+import { useNotifications } from '@/shared/hooks';
 import { MasterEntityPicker } from '@/music/data/master/components/MasterEntityPicker';
 import { bindArtistToCategory } from '@/music/data/master/api/music-data-artists';
 

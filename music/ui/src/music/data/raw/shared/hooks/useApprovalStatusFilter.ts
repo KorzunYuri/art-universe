@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAdditionalSearchFields } from '@/music/shared/hooks/useAdditionalSearchFields.ts';
+import { useAdditionalSearchFields } from '@/shared/hooks/useAdditionalSearchFields.ts';
 
 /**
  * Hook for managing approval status filter

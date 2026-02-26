@@ -1,5 +1,5 @@
 import { LastfmConfig } from '@/music/data/raw/lastfm/config/lastfmconfig.ts';
-import type { LookupEntity, BaseLookupRequest } from '@/music/shared/types/lookup.ts';
+import type { LookupEntity, BaseLookupRequest } from '@/shared/types/lookup.ts';
 
 const lastfmReadApi = LastfmConfig.readApi;
 

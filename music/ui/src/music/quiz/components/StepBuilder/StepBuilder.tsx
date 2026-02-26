@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { MasterEntityPicker } from '@/music/data/master/components/MasterEntityPicker/MasterEntityPicker.tsx';
 import { CategoryWeightItem } from '../CategoryWeightItem/CategoryWeightItem.tsx';
-import type { LookupEntity } from '@/music/shared/types/lookup.ts';
+import type { LookupEntity } from '@/shared/types/lookup.ts';
 import type { CategoryWeight, GenerationStepUI, StepType } from '@/music/quiz/types/generation-steps.ts';
 import styles from './StepBuilder.module.scss';
 

@@ -1,6 +1,6 @@
 import { MasterEntityPicker } from '@/music/data/master/components/MasterEntityPicker/MasterEntityPicker.tsx';
 import { CategoryName } from '@/music/data/master/components/CategoryName/CategoryName.tsx';
-import type { LookupEntity } from '@/music/shared/types/lookup.ts';
+import type { LookupEntity } from '@/shared/types/lookup.ts';
 import {
   type PipelineStepDto,
   type BlacklistFilterStepConfig,

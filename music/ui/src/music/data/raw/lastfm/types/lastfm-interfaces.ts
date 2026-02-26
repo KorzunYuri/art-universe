@@ -1,5 +1,5 @@
 import type { RawEntity, MasterEntityType } from "@/music/shared/types/entities.ts";
-import type { Approvable } from "@/music/shared/types/approvable.ts";
+import type { Approvable } from "@/shared/types/approvable.ts";
 import type { ApprovalStatusType } from "@/music/data/raw/lastfm/constants/approvalStatus.ts";
 
 /**

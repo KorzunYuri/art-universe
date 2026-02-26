@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { EditableText } from '@/music/shared/components';
-import { useNotifications } from '@/music/shared/hooks';
+import { EditableText } from '@/shared/components';
+import { useNotifications } from '@/shared/hooks';
 import { saveArtist, type ArtistSaveRequest } from '@/music/data/master/api/music-data-artists';
 import type { Artist } from '@/music/shared/types/entities';
 import rowStyles from '../../ArtistsTableRow/ArtistsTableRow.module.css';

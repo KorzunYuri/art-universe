@@ -1,5 +1,5 @@
-import type { BaseLookupParams, BaseLookupRequest } from "@/music/shared/types/lookup.ts";
-import type { BasicLookupContext } from "@/music/shared/types/lookup-context.ts";
+import type { BaseLookupParams, BaseLookupRequest } from "@/shared/types/lookup.ts";
+import type { BasicLookupContext } from "@/shared/types/lookup-context.ts";
 
 /**
  * LastFM specific lookup parameters

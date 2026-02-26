@@ -3,12 +3,12 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { useLastfmEntityTable } from '@/music/data/raw/lastfm/hooks/useLastfmEntityTable';
 import { useApprovalStatusFilter } from '@/music/data/raw/shared/hooks';
 import { useUsageCountFilter, useUsageUsersCountFilter } from '@/music/data/raw/lastfm/hooks/useLastfmFilters';
-import { DataTable } from '@/music/shared/components/DataTable';
-import { stringToSortingState, sortingStateToString } from '@/music/shared/components/DataTable/sortUtils';
-import { ExternalLink, ReadonlyAttr } from '@/music/shared/components';
+import { DataTable } from '@/shared/components/DataTable';
+import { stringToSortingState, sortingStateToString } from '@/shared/components/DataTable/sortUtils';
+import { ExternalLink, ReadonlyAttr } from '@/shared/components';
 import { LastfmApprovalCell, LastfmBindingCell } from '@/music/data/raw/lastfm/components/cells';
 import type { LastfmTag } from '@/music/data/raw/lastfm/types/lastfm-tag';
-import type { AdditionalSearchConfig } from '@/music/shared/components/EntityTable/types';
+import type { AdditionalSearchConfig } from '@/shared/components/EntityTable/types';
 import styles from './LastfmTagsTable.module.css';
 
 interface LastfmTagsTableProps {

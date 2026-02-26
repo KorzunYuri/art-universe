@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useNotifications } from '@/music/shared/hooks';
-import { EditableText, ConfirmDialog } from '@/music/shared/components';
+import { useNotifications } from '@/shared/hooks';
+import { EditableText, ConfirmDialog } from '@/shared/components';
 import { MasterEntityPanel } from '@/music/data/master/components/MasterEntityPanel';
 import { MasterEntityPicker } from '@/music/data/master/components/MasterEntityPicker';
 import { RelatedEntitiesSection } from '@/music/data/master/components/RelatedEntitiesSection';
@@ -14,7 +14,7 @@ import {
     unbindTrackFromCategory,
     type TrackSaveRequest,
 } from '@/music/data/master/api/music-data-tracks';
-import styles from '../MasterDetailPage.module.scss';
+import styles from '@/music/data/master/styles/MasterDetailPage.module.scss';
 
 export const TrackDetail = () => {
     const { trackId } = useParams<{ trackId: string }>();

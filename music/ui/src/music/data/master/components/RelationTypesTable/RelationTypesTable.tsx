@@ -2,8 +2,8 @@ import { useState, useMemo, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { DataTable } from '@/music/shared/components/DataTable';
-import type { EntityTablePagination } from '@/music/shared/components/EntityTable/EntityTable';
+import { DataTable } from '@/shared/components/DataTable';
+import type { EntityTablePagination } from '@/shared/components/EntityTable/EntityTable';
 import {
     fetchRelationTypes,
     type RelationTypeDTO,

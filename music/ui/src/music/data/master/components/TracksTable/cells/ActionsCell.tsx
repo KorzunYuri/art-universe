@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useNotifications } from '@/music/shared/hooks';
-import { ConfirmDialog } from '@/music/shared/components';
+import { useNotifications } from '@/shared/hooks';
+import { ConfirmDialog } from '@/shared/components';
 import { deleteTrack } from '@/music/data/master/api/music-data-tracks';
 import type { Track } from '@/music/shared/types/entities';
 import styles from '../TracksTable.module.css';

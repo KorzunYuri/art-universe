@@ -1,6 +1,6 @@
 import styles from './LastfmHome.module.css';
-import { NavigationCard } from "@/music/shared/components";
-import { usePermissions } from "@/music/shared/hooks/usePermissions";
+import { NavigationCard } from "@/shared/components";
+import { usePermissions } from "@/shared/hooks/usePermissions";
 
 export function LastfmHome() {
     const permissions = usePermissions();

@@ -1,5 +1,5 @@
 import { MusicDataConfig } from '../config/musicdataconfig.ts';
-import type {BasePageSearchParams} from '@/music/shared/types/page.ts';
+import type {BasePageSearchParams} from '@/shared/types/page.ts';
 import {type Category, CategoryImpl} from '@/music/shared/types/entities.ts';
 import type {BaseMasterEntityDto} from "@/music/data/master/api/music-data-commons.ts";
 

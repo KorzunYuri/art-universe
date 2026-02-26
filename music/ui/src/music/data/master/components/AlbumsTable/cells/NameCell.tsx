@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { EditableText } from '@/music/shared/components';
-import { useNotifications } from '@/music/shared/hooks';
+import { EditableText } from '@/shared/components';
+import { useNotifications } from '@/shared/hooks';
 import { saveAlbum, type AlbumSaveRequest } from '@/music/data/master/api/music-data-albums';
 import type { Album } from '@/music/shared/types/entities';
 import styles from '../AlbumsTable.module.css';

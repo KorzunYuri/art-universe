@@ -1,5 +1,5 @@
-import { EntityPicker } from '@/music/shared/components/EntityPicker/EntityPicker.tsx';
-import type { LookupEntity } from '@/music/shared/types/lookup.ts';
+import { EntityPicker } from '@/shared/components/EntityPicker/EntityPicker.tsx';
+import type { LookupEntity } from '@/shared/types/lookup.ts';
 import type { MasterEntityType } from '@/music/shared/types/entities.ts';
 
 export interface MasterEntityPickerProps {

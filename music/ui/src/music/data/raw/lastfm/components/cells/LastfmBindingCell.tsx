@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useLastfmEntity } from '@/music/data/raw/lastfm/hooks/useLastfmEntity';
 import { useLastfmEntityApproval } from '@/music/data/raw/lastfm/hooks/useLastfmEntityApproval';
-import { EntityBinding } from '@/music/data/raw/lastfm/components/EntityBinding';
+import { EntityBinding } from '@/music/data/raw/shared/components/EntityBinding';
 import { getMasterEntityUrl } from '@/music/data/master/utils/masterEntityUrl';
 import type { LastfmSupportedEntityType } from '@/music/data/raw/lastfm/types/lastfm-entity';
 

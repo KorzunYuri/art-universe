@@ -1,5 +1,5 @@
 import { Navigate } from 'react-router-dom';
-import { usePermissions } from '@/music/shared/hooks/usePermissions';
+import { usePermissions } from '@/shared/hooks/usePermissions';
 import { MaintenanceButton } from '@/music/data/raw/lastfm/components/MaintenanceButton/MaintenanceButton';
 import styles from './LastfmAdmin.module.css';
 

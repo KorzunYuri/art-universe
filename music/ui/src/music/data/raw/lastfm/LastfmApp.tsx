@@ -4,7 +4,7 @@ import { LastfmHome, LastfmTags, LastfmArtists, LastfmAlbums, LastfmTracks, Last
 import { LastfmArtistDetail } from "./pages/LastfmArtistDetail";
 import { LastfmAlbumDetail } from "./pages/LastfmAlbumDetail";
 import { LastfmTrackDetail } from "./pages/LastfmTrackDetail";
-import { TableWithDetailLayout } from "@/music/shared/components/TableWithDetailLayout";
+import { TableWithDetailLayout } from "@/shared/components/TableWithDetailLayout";
 import { registerLastfmLookups } from "@/music/data/raw/lastfm/services/registerLastfmLookups.ts";
 
 // Register LastFM lookups on module load

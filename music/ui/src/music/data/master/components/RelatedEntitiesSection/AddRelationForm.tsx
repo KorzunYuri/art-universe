@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { MasterEntityPicker } from '@/music/data/master/components/MasterEntityPicker';
 import { useApplicableRelationTypes } from '@/music/data/master/hooks/useApplicableRelationTypes';
-import type { LookupEntity } from '@/music/shared/types/lookup';
+import type { LookupEntity } from '@/shared/types/lookup';
 import type { MasterEntityType } from '@/music/shared/types/entities';
 import styles from './RelatedEntitiesSection.module.scss';
 

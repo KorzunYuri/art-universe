@@ -1,9 +1,9 @@
 import type { 
     BaseLookupParams, 
     BaseLookupRequest
-} from "@/music/shared/types/lookup.ts";
+} from "@/shared/types/lookup.ts";
 import type { DataSource } from "@/music/data/raw/shared/types/data-sources.ts";
-import type { BasicLookupContext } from "@/music/shared/types/lookup-context.ts";
+import type { BasicLookupContext } from "@/shared/types/lookup-context.ts";
 import type { ArtistRelatedLookupContext } from "@/music/data/raw/shared/types/lookup-context.ts";
 
 /**

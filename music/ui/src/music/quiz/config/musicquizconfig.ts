@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { setupTracingInterceptor } from '@/music/shared/services/tracingInterceptor';
-import { appConfig } from '@/music/shared/config/appConfig';
+import { setupTracingInterceptor } from '@/shared/services/tracingInterceptor';
+import { appConfig } from '@/shared/config/appConfig';
 
 const baseApiUrl = `http://${appConfig.musicQuizHost}:${appConfig.musicQuizPort}/api/v1`;
 

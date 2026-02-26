@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { type Edge, ReactFlowProvider, useReactFlow } from '@xyflow/react';
 import { useQuery } from '@tanstack/react-query';
-import { useNotifications } from '@/music/shared/hooks';
+import { useNotifications } from '@/shared/hooks';
 import { fetchCategoryDag, createCategoryRelation, deleteCategoryRelation } from '@/music/data/master/api/music-data-categories.ts';
 import { CategoryDagInteractive } from './CategoryDagInteractive.tsx';
 import { treeLayout, radialWithCollisionDetectionLayout, smartRadialLayout, hierarchicalLayout, hybridLayout, clusterLayout, recursiveLayout, radialRecursiveLayout, stylePriorityLayout, type LayoutEngine, type CategoryNode } from './layouts';

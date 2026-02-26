@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { useRelationTypeDetail } from '@/music/data/master/hooks/useRelationTypeDetail';
-import styles from '../MasterDetailPage.module.scss';
+import styles from '@/music/data/master/styles/MasterDetailPage.module.scss';
 import localStyles from './RelationTypeDetail.module.scss';
 
 export const RelationTypeDetail = () => {

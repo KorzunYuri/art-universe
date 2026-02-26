@@ -3,7 +3,7 @@ import type {
     BasicMasterLookupRequest,
     MasterArtistRelatedLookupRequest
 } from "@/music/data/master/types/music-data-lookup-types.ts";
-import type {LookupEntity} from "@/music/shared/types/lookup.ts";
+import type {LookupEntity} from "@/shared/types/lookup.ts";
 
 /**
  * Request parameters for lookup operations

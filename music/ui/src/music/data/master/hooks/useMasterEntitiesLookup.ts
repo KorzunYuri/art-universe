@@ -1,4 +1,4 @@
-import { useEntityLookup } from "@/music/shared/hooks/useEntityLookup.ts";
+import { useEntityLookup } from "@/shared/hooks/useEntityLookup.ts";
 import type {MasterEntityType} from "@/music/shared/types/entities.ts";
 import type {BasicMasterEntityLookupParams} from "@/music/data/master/types/music-data-lookup-types.ts";
 

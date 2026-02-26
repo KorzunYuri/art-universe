@@ -1,5 +1,5 @@
 import {MusicDataConfig} from "@/music/data/master/config/musicdataconfig.ts";
-import type {Page} from "@/music/shared/types/page.ts";
+import type {Page} from "@/shared/types/page.ts";
 import type {MasterEntityMap, MasterEntityType} from "@/music/shared/types/entities.ts";
 import {
     type MasterEntityDtoMap,

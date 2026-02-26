@@ -1,7 +1,7 @@
 import type { DataSource } from "@/music/data/raw/shared/types/data-sources.ts";
 import type { RawEntity, MasterEntityType, ArtistRelatedRawEntity } from "@/music/shared/types/entities.ts";
-import type { BasicLookupContext } from "@/music/shared/types/lookup-context.ts";
-import { LookupContextFactory } from "@/music/shared/types/lookup-context.ts";
+import type { BasicLookupContext } from "@/shared/types/lookup-context.ts";
+import { LookupContextFactory } from "@/shared/types/lookup-context.ts";
 
 /**
  * Artist-related lookup context for album/track searches with artist scope

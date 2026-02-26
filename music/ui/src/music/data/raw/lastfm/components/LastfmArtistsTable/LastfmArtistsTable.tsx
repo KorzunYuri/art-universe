@@ -4,16 +4,16 @@ import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import { useLastfmEntityTable } from '@/music/data/raw/lastfm/hooks/useLastfmEntityTable';
 import { useApprovalStatusFilter } from '@/music/data/raw/shared/hooks';
 import { usePlayCountFilter, useListenersCountFilter, useTagFilter } from '@/music/data/raw/lastfm/hooks/useLastfmFilters';
-import { useNotifications } from '@/music/shared/hooks';
-import { DataTable } from '@/music/shared/components/DataTable';
-import { stringToSortingState, sortingStateToString } from '@/music/shared/components/DataTable/sortUtils';
-import { ExternalLink, ReadonlyAttr } from '@/music/shared/components';
+import { useNotifications } from '@/shared/hooks';
+import { DataTable } from '@/shared/components/DataTable';
+import { stringToSortingState, sortingStateToString } from '@/shared/components/DataTable/sortUtils';
+import { ExternalLink, ReadonlyAttr } from '@/shared/components';
 import { LastfmApprovalCell, LastfmBindingCell, LastfmQuizCell } from '@/music/data/raw/lastfm/components/cells';
 import { LastfmArtistFilterButton } from '@/music/data/raw/lastfm/components';
 import { LastfmConfig } from '@/music/data/raw/lastfm/config/lastfmconfig';
 import { searchArtist } from '@/music/data/raw/lastfm/api/lastfm-artists';
 import type { LastfmArtist } from '@/music/data/raw/lastfm/types/lastfm-artist';
-import type { AdditionalSearchConfig } from '@/music/shared/components/EntityTable/types';
+import type { AdditionalSearchConfig } from '@/shared/components/EntityTable/types';
 import styles from './LastfmArtistsTable.module.css';
 
 export const LastfmArtistsTable = () => {

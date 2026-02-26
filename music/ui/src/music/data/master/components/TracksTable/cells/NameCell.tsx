@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { EditableText } from '@/music/shared/components';
-import { useNotifications } from '@/music/shared/hooks';
+import { EditableText } from '@/shared/components';
+import { useNotifications } from '@/shared/hooks';
 import { saveTrack, type TrackSaveRequest } from '@/music/data/master/api/music-data-tracks';
 import type { Track } from '@/music/shared/types/entities';
 import styles from '../TracksTable.module.css';

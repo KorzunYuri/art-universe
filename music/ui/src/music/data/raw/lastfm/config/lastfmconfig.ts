@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { setupTracingInterceptor } from '@/music/shared/services/tracingInterceptor';
-import { appConfig } from '@/music/shared/config/appConfig';
+import { setupTracingInterceptor } from '@/shared/services/tracingInterceptor';
+import { appConfig } from '@/shared/config/appConfig';
 
 const readApiUrl = `http://${appConfig.lastfmReadApiHost}:${appConfig.lastfmReadApiPort}/api/v1`;
 const writeApiUrl = `http://${appConfig.lastfmWriteApiHost}:${appConfig.lastfmWriteApiPort}/api/v1`;

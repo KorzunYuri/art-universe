@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useLastfmEntity } from '@/music/data/raw/lastfm/hooks/useLastfmEntity';
 import { useLastfmEntityApproval } from '@/music/data/raw/lastfm/hooks/useLastfmEntityApproval';
-import { ArtistRelatedEntityBinding } from '@/music/data/raw/lastfm/components/ArtistRelatedEntityBinding';
+import { ArtistRelatedEntityBinding } from '@/music/data/raw/shared/components';
 import { getMasterEntityUrl } from '@/music/data/master/utils/masterEntityUrl';
 
 type ArtistRelatedEntityType = 'album' | 'track';

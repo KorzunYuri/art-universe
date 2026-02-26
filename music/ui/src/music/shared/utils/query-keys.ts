@@ -1,6 +1,6 @@
 import type {MasterEntityType} from "@/music/shared/types/entities.ts";
 import type {DataSource} from "@/music/data/raw/shared/types/data-sources.ts";
-import type { BaseLookupParams } from "@/music/shared/types/lookup.ts";
+import type { BaseLookupParams } from "@/shared/types/lookup.ts";
 /**
  * keys for raw entities
  */

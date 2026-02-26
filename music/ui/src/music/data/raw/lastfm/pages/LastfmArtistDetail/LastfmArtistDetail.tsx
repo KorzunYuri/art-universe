@@ -1,12 +1,13 @@
 import { useParams } from 'react-router-dom';
 import { useLastfmEntity } from '@/music/data/raw/lastfm/hooks/useLastfmEntity';
 import { useLastfmEntityApproval } from '@/music/data/raw/lastfm/hooks/useLastfmEntityApproval';
-import { ExternalLink } from '@/music/shared/components';
-import { ApprovalToggle, EntityBinding, EntityTagPanel } from '@/music/data/raw/lastfm/components';
+import { ExternalLink } from '@/shared/components';
+import { EntityTagPanel } from '@/music/data/raw/lastfm/components';
+import { ApprovalToggle, EntityBinding } from '@/music/data/raw/shared/components';
 import { QuizBinding } from '@/music/quiz/components';
 import { LastfmConfig } from '@/music/data/raw/lastfm/config/lastfmconfig';
 import { getMasterEntityUrl } from '@/music/data/master/utils/masterEntityUrl';
-import styles from '../LastfmDetailPage.module.scss';
+import styles from '@/music/data/raw/lastfm/styles/LastfmDetailPage.module.scss';
 
 export const LastfmArtistDetail = () => {
     const { artistId } = useParams<{ artistId: string }>();
