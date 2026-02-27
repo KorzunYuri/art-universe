@@ -53,7 +53,7 @@ For a complete categorized list of all components, see:
 
 ### Main Router
 
-File: `music/ui/src/music/MusicUniverseApp.tsx`
+File: `ui/src/App.tsx`
 
 Routes:
 ```

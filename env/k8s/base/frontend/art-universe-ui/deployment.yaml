@@ -1,25 +1,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: music-ui
+  name: art-universe-ui
   namespace: mu-frontend
   labels:
-    app: music-ui
-    app.kubernetes.io/name: music-ui
+    app: art-universe-ui
+    app.kubernetes.io/name: art-universe-ui
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: music-ui
+      app: art-universe-ui
   template:
     metadata:
       labels:
-        app: music-ui
-        app.kubernetes.io/name: music-ui
+        app: art-universe-ui
+        app.kubernetes.io/name: art-universe-ui
     spec:
       containers:
         - name: nginx
-          image: mu-music-ui:latest
+          image: art-universe-ui:latest
           imagePullPolicy: Never
           ports:
             - containerPort: 80

@@ -1,7 +1,7 @@
-# Gradle Integration for music-universe-ui
+# Gradle Integration for art-universe-ui
 
 ## Overview
-The `music-universe-ui` module is integrated with Gradle build system to provide seamless build and cleanup operations.
+The `art-universe-ui` module is integrated with Gradle build system to provide seamless build and cleanup operations.
 
 ## Available Tasks
 
@@ -19,12 +19,12 @@ The `music-universe-ui` module is integrated with Gradle build system to provide
 
 ### Build the UI module
 ```bash
-./gradlew :music-universe:music-universe-ui:build
+./gradlew :ui:build
 ```
 
 ### Clean the UI module
 ```bash
-./gradlew :music-universe:music-universe-ui:clean
+./gradlew :ui:clean
 ```
 
 ### Build entire project (includes UI)

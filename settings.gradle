@@ -33,4 +33,4 @@ include 'music:data:raw:lastfm:test:lastfm-commons-test-db-helper'
 include 'music:data:raw:lastfm:test:lastfm-commons-test-web'
 
 include 'music:quiz'
-include 'music:ui'
+include 'ui'

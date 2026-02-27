@@ -80,7 +80,7 @@ This document is the **single source of truth** for list of modules.
 |--------|------|---------|
 | [`:music:data:master`](../music/data/master/README.md) | Service | Master data management and binding service |
 | [`:music:quiz`](../music/quiz/README.md) | Service | Quiz generation from master data |
-| [`:music:ui`](../music/ui/README.md) | Service | React-based data management interface |
+| [`:ui`](../ui/README.md) | Service | React-based data management interface |
 
 ---
 

@@ -25,7 +25,7 @@ The project supports multiple deployment modes:
 | [Art Data Master](../art/data/master/README.md)                                           | Art foundation data management (Person CRUD)                | [`:art:data:master`](../art/data/master/README.md) | 7081 | 9081  | 8081 |
 | [Music Data Master](../music/data/master/README.md)                                       | Curated data management and binding service                 | [`:music:data:master`](../music/data/master/README.md) | 7082 | 9082  | 8082 |
 | [Music Quiz](../music/quiz/README.md)                                                     | Quiz generation from approved data                          | [`:music:quiz`](../music/quiz/README.md) | 7083 | 9083  | 8083 |
-| [Music UI](../music/ui/README.md)                                                         | React management interface for all services                 | [`:music:ui`](../music/ui/README.md) | 5173 | 4000  | 3000 |
+| [Art Universe UI](../ui/README.md)                                                        | React management interface for all services                 | [`:ui`](../ui/README.md) | 5173 | 4000  | 3000 |
 | PostgreSQL (LastFM)                                                                       | Database for LastFM raw data (schema: `mu_raw_lastfm`)      | N/A | 7799 | 9999  | -    |
 | PostgreSQL (Music Data)                                                                   | Database for music data and quiz (schemas: `mu`, `mu_quiz`) | N/A | 7789 | 9989  | -    |
 | Prometheus                                                                                | Metrics collection and monitoring                           | N/A | 7080 | 9090  | 8080 |

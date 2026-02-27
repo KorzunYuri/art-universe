@@ -422,14 +422,14 @@ services:
       - mu__network
 
   # UI
-  music-universe-ui:
-    container_name: local__mu-ui__app
+  art-universe-ui:
+    container_name: local__au-ui__app
     restart: unless-stopped
-    image: mu-music-ui:latest
+    image: art-universe-ui:latest
     env_file:
       - ./common.env
-      - ./music-universe-ui.env
-      - ./music-universe-ui.secrets.env
+      - ./art-universe-ui.env
+      - ./art-universe-ui.secrets.env
     ports:
       - "${MU_UI_EXTERNAL_PORT}:80"
     depends_on:

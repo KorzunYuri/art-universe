@@ -113,7 +113,7 @@ declare -a APPS=(
     "app=music-quiz:mu-apps"
     "app=lastfm-rest-api:mu-lastfm"
     "app=lastfm-etl-rest-api:mu-lastfm"
-    "app=music-ui:mu-frontend"
+    "app=art-universe-ui:mu-frontend"
 )
 
 for app_def in "${APPS[@]}"; do

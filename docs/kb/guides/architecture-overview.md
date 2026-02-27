@@ -48,7 +48,7 @@ Curated data powers various applications:
 - [Master Data](../../../music/data/master/README.md): Entity management for artists, albums, tracks with basic relationships
 - [Quiz Game](../../../music/quiz/README.md): "Guess the Track" quiz with configurable difficulty and categories
 
-[Music UI](../../../music/ui/README.md) provides the interface to put all data management and application together.
+[Art Universe UI](../../../ui/README.md) provides the interface to put all data management and application together.
 
 ### Current Data Flow
 

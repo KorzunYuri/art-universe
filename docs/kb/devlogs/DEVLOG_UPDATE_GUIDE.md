@@ -118,7 +118,7 @@ I'll create a devlog entry for this session:
 
 Task: pipeline-metadata-persistence
 Type: Feature
-Modules: music:quiz, music:ui
+Modules: music:quiz, ui
 Patterns Created: Pipeline Versioning, Soft Delete
 
 Proceed? (yes/no)
@@ -531,14 +531,14 @@ Instead of copying full file contents or conversation, **summarize**.
 ```
 music/quiz/src/main/java/.../service/PipelineService.java
 music/quiz/src/main/java/.../entity/PipelineStep.java
-music/ui/src/quiz/components/PipelineVisualization.tsx
+ui/src/quiz/components/PipelineVisualization.tsx
 {...}
 ```
 
 ### Modified ({N} files)
 ```
 music/quiz/src/main/java/.../service/GenerationService.java
-music/ui/src/quiz/hooks/useGenerations.ts
+ui/src/quiz/hooks/useGenerations.ts
 {...}
 ```
 

@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: music-ui
+  name: art-universe-ui
   namespace: mu-frontend
   labels:
-    app: music-ui
-    app.kubernetes.io/name: music-ui
+    app: art-universe-ui
+    app.kubernetes.io/name: art-universe-ui
 spec:
   type: ClusterIP
   ports:
@@ -13,4 +13,4 @@ spec:
       targetPort: 80
       name: http
   selector:
-    app: music-ui
+    app: art-universe-ui

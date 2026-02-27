@@ -6,14 +6,14 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: music-ui-local
+  name: art-universe-ui-local
   namespace: mu-frontend
   labels:
-    app: music-ui
+    app: art-universe-ui
 spec:
   type: LoadBalancer
   selector:
-    app: music-ui
+    app: art-universe-ui
   ports:
     - port: 4000
       targetPort: 80

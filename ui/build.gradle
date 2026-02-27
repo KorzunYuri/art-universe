@@ -1,0 +1,6 @@
+plugins {
+    id 'art-universe.react-ui'
+}
+
+archivesBaseName = 'art-universe-ui'
+ext.dockerImageName = 'art-universe-ui'
