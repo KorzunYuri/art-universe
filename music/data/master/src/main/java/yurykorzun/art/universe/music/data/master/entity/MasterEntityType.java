@@ -15,7 +15,7 @@ public enum MasterEntityType implements EntityType {
     ALBUM(2, "album"),
     TRACK(3, "track"),
     CATEGORY(4, "category"),
-    DIMENSION(5, "dimension");
+    PERSON(101, "person");
 
     private final int code;
     private final String name;

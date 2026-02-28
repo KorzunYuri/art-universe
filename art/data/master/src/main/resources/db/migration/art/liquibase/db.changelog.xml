@@ -11,5 +11,6 @@
     </preConditions>
 
     <include file="changelogs/0001-person.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0002-art-view.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

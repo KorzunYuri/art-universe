@@ -2,6 +2,7 @@ package yurykorzun.art.universe.music.data.master.entity.relation;
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
+import yurykorzun.art.universe.common.domain.entity.EntityType;
 import yurykorzun.art.universe.music.data.master.entity.AlbumCategory;
 import yurykorzun.art.universe.music.data.master.entity.AlbumCategoryBinding;
 import yurykorzun.art.universe.music.data.master.entity.ArtistAlbum;
@@ -9,14 +10,16 @@ import yurykorzun.art.universe.music.data.master.entity.ArtistAlbumBinding;
 import yurykorzun.art.universe.music.data.master.entity.ArtistArtist;
 import yurykorzun.art.universe.music.data.master.entity.ArtistCategory;
 import yurykorzun.art.universe.music.data.master.entity.ArtistCategoryBinding;
+import yurykorzun.art.universe.music.data.master.entity.ArtistPerson;
 import yurykorzun.art.universe.music.data.master.entity.ArtistTrack;
 import yurykorzun.art.universe.music.data.master.entity.ArtistTrackBinding;
 import yurykorzun.art.universe.music.data.master.entity.AlbumAlbum;
+import yurykorzun.art.universe.music.data.master.entity.AlbumPerson;
 import yurykorzun.art.universe.music.data.master.entity.AlbumTrack;
 import yurykorzun.art.universe.music.data.master.entity.AlbumTrackBinding;
-import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.entity.TrackCategory;
 import yurykorzun.art.universe.music.data.master.entity.TrackCategoryBinding;
+import yurykorzun.art.universe.music.data.master.entity.TrackPerson;
 import yurykorzun.art.universe.music.data.master.entity.TrackTrack;
 
 import java.util.Collection;
@@ -48,7 +51,7 @@ public class RelationRegistry {
         // Register TrackCategory
         registerRelationEntity(TrackCategory.class);
         registerRelationBindingEntity(TrackCategoryBinding.class);
-        
+
         // Register ArtistTrack
         registerRelationEntity(ArtistTrack.class);
         registerRelationBindingEntity(ArtistTrackBinding.class);
@@ -65,11 +68,16 @@ public class RelationRegistry {
         registerRelationEntity(ArtistArtist.class);
         registerRelationEntity(AlbumAlbum.class);
         registerRelationEntity(TrackTrack.class);
+
+        // Register cross-domain person relations
+        registerRelationEntity(ArtistPerson.class);
+        registerRelationEntity(AlbumPerson.class);
+        registerRelationEntity(TrackPerson.class);
     }
-    
+
     /**
      * Registers a relation entity class
-     * 
+     *
      * @param entityClass Relation entity class
      */
     private void registerRelationEntity(Class<? extends RelationEntity> entityClass) {
@@ -84,10 +92,10 @@ public class RelationRegistry {
             throw new RuntimeException("Failed to register relation entity: " + entityClass.getName(), e);
         }
     }
-    
+
     /**
      * Registers a relation binding entity class
-     * 
+     *
      * @param entityClass Relation binding entity class
      */
     private void registerRelationBindingEntity(Class<? extends RelationBindingEntity> entityClass) {
@@ -99,90 +107,72 @@ public class RelationRegistry {
             throw new RuntimeException("Failed to register relation binding entity: " + entityClass.getName(), e);
         }
     }
-    
+
     /**
      * Returns the relation entity class for the given entity types
-     * 
-     * @param sourceEntityType Source entity type
-     * @param targetEntityType Target entity type
-     * @return Relation entity class
-     * @throws IllegalArgumentException if no relation is found
      */
-    public Class<? extends RelationEntity> getRelationEntityClass(MasterEntityType sourceEntityType, MasterEntityType targetEntityType) {
+    public Class<? extends RelationEntity> getRelationEntityClass(EntityType sourceEntityType, EntityType targetEntityType) {
         // Check direct order
         RelationKey directKey = new RelationKey(sourceEntityType, targetEntityType);
         Class<? extends RelationEntity> entityClass = relationEntities.get(directKey);
-        
+
         if (entityClass != null) {
             return entityClass;
         }
-        
+
         // Check reverse order
         RelationKey reverseKey = new RelationKey(targetEntityType, sourceEntityType);
         entityClass = relationEntities.get(reverseKey);
-        
+
         if (entityClass != null) {
             return entityClass;
         }
-        
+
         throw new IllegalArgumentException(
             String.format("No relation entity found for types: %s and %s", sourceEntityType, targetEntityType));
     }
-    
+
     /**
      * Returns the relation binding entity class for the given entity types
-     * 
-     * @param sourceEntityType Source entity type
-     * @param targetEntityType Target entity type
-     * @return Relation binding entity class
-     * @throws IllegalArgumentException if no relation binding is found
      */
-    public Class<? extends RelationBindingEntity> getRelationBindingEntityClass(MasterEntityType sourceEntityType, MasterEntityType targetEntityType) {
+    public Class<? extends RelationBindingEntity> getRelationBindingEntityClass(EntityType sourceEntityType, EntityType targetEntityType) {
         // Check direct order
         RelationKey directKey = new RelationKey(sourceEntityType, targetEntityType);
         Class<? extends RelationBindingEntity> entityClass = relationBindingEntities.get(directKey);
-        
+
         if (entityClass != null) {
             return entityClass;
         }
-        
+
         // Check reverse order
         RelationKey reverseKey = new RelationKey(targetEntityType, sourceEntityType);
         entityClass = relationBindingEntities.get(reverseKey);
-        
+
         if (entityClass != null) {
             return entityClass;
         }
-        
+
         throw new IllegalArgumentException(
             String.format("No relation binding entity found for types: %s and %s", sourceEntityType, targetEntityType));
     }
-    
+
     /**
      * Checks if the source entity is the first entity in the relation
-     * 
-     * @param sourceEntityType Source entity type
-     * @param targetEntityType Target entity type
-     * @return true if the source entity is the first in the relation, false otherwise
      */
-    public boolean isFirstEntityInRelation(MasterEntityType sourceEntityType, MasterEntityType targetEntityType) {
+    public boolean isFirstEntityInRelation(EntityType sourceEntityType, EntityType targetEntityType) {
         RelationKey directKey = new RelationKey(sourceEntityType, targetEntityType);
         if (relationEntities.containsKey(directKey)) {
             return true;
         }
-        
+
         RelationKey reverseKey = new RelationKey(targetEntityType, sourceEntityType);
         return !relationEntities.containsKey(reverseKey);
     }
-    
+
     /**
      * Returns the relation table name for the given entity types
-     * 
-     * @param sourceEntityType Source entity type
-     * @param targetEntityType Target entity type
-     * @return Relation table name
      */
-    public String getRelationTableName(MasterEntityType sourceEntityType, MasterEntityType targetEntityType) {
+    public String getRelationTableName(EntityType sourceEntityType, EntityType targetEntityType) {
         try {
             Class<? extends RelationEntity> entityClass = getRelationEntityClass(sourceEntityType, targetEntityType);
             RelationEntity instance = entityClass.getDeclaredConstructor().newInstance();
@@ -191,15 +181,11 @@ public class RelationRegistry {
             throw new RuntimeException("Failed to get relation table name", e);
         }
     }
-    
+
     /**
      * Returns the relation binding table name for the given entity types
-     * 
-     * @param sourceEntityType Source entity type
-     * @param targetEntityType Target entity type
-     * @return Relation binding table name
      */
-    public String getRelationBindingTableName(MasterEntityType sourceEntityType, MasterEntityType targetEntityType) {
+    public String getRelationBindingTableName(EntityType sourceEntityType, EntityType targetEntityType) {
         try {
             Class<? extends RelationBindingEntity> entityClass = getRelationBindingEntityClass(sourceEntityType, targetEntityType);
             RelationBindingEntity instance = entityClass.getDeclaredConstructor().newInstance();
@@ -208,11 +194,9 @@ public class RelationRegistry {
             throw new RuntimeException("Failed to get relation binding table name", e);
         }
     }
-    
+
     /**
      * Returns all registered relation entity classes
-     *
-     * @return Collection of relation entity classes
      */
     public Collection<Class<? extends RelationEntity>> getAllRelationEntityClasses() {
         return relationEntities.values();
@@ -220,13 +204,8 @@ public class RelationRegistry {
 
     /**
      * Checks if the relation between the given entity types supports relation types.
-     * Category relations return false; entity-entity relations return true.
-     *
-     * @param sourceEntityType Source entity type
-     * @param targetEntityType Target entity type
-     * @return true if the relation supports relation types
      */
-    public boolean supportsRelationTypes(MasterEntityType sourceEntityType, MasterEntityType targetEntityType) {
+    public boolean supportsRelationTypes(EntityType sourceEntityType, EntityType targetEntityType) {
         RelationKey directKey = new RelationKey(sourceEntityType, targetEntityType);
         if (typeSupportingRelations.contains(directKey)) {
             return true;

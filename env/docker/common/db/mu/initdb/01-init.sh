@@ -68,10 +68,24 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "music_universe" <<
     ALTER DEFAULT PRIVILEGES IN SCHEMA art GRANT ALL ON FUNCTIONS TO art_dm;
 
     -- =============================================================================
+    -- ART VIEW SCHEMA (for cross-schema reads from art)
+    -- =============================================================================
+    CREATE SCHEMA IF NOT EXISTS art_view AUTHORIZATION art_dm;
+    GRANT ALL PRIVILEGES ON SCHEMA art_view TO art_dm;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA art_view GRANT ALL ON TABLES TO art_dm;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA art_view GRANT ALL ON SEQUENCES TO art_dm;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA art_view GRANT ALL ON FUNCTIONS TO art_dm;
+
+    -- =============================================================================
     -- Cross-schema read access
     -- =============================================================================
     -- mu_quiz_dm: read from mu_view
     GRANT USAGE ON SCHEMA mu_view TO mu_quiz_dm;
     GRANT SELECT ON ALL TABLES IN SCHEMA mu_view TO mu_quiz_dm;
     ALTER DEFAULT PRIVILEGES IN SCHEMA mu_view GRANT SELECT ON TABLES TO mu_quiz_dm;
+
+    -- mu_dm: read from art_view
+    GRANT USAGE ON SCHEMA art_view TO mu_dm;
+    GRANT SELECT ON ALL TABLES IN SCHEMA art_view TO mu_dm;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA art_view GRANT SELECT ON TABLES TO mu_dm;
 EOSQL

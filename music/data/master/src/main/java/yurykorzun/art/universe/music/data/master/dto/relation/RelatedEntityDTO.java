@@ -2,8 +2,8 @@ package yurykorzun.art.universe.music.data.master.dto.relation;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import yurykorzun.art.universe.common.domain.entity.EntityType;
 import yurykorzun.art.universe.music.data.master.dto.BaseEntityDto;
-import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 
 /**
  * DTO for entity information
@@ -14,7 +14,7 @@ import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RelatedEntityDTO extends BaseEntityDto {
-    private MasterEntityType entityType;
+    private EntityType entityType;
     private Long relationId;
     private Long relationTypeId;
     private String relationTypeName;

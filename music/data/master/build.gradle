@@ -9,6 +9,7 @@ ext.dockerImageName = 'mu-music-data'
 dependencies {
     implementation project(':common:commons-web')
     implementation project(':common:commons-observability')
+    implementation project(':art:data:models')
 
     implementation 'org.springframework.boot:spring-boot-docker-compose'
 

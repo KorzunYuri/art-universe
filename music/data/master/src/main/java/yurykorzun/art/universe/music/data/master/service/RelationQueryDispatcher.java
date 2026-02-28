@@ -2,16 +2,20 @@ package yurykorzun.art.universe.music.data.master.service;
 
 import jakarta.annotation.Nullable;
 import org.springframework.stereotype.Component;
+import yurykorzun.art.universe.common.domain.entity.EntityType;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelatedEntityProjection;
 import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.repository.AlbumAlbumRepository;
 import yurykorzun.art.universe.music.data.master.repository.AlbumCategoryRepository;
+import yurykorzun.art.universe.music.data.master.repository.AlbumPersonRepository;
 import yurykorzun.art.universe.music.data.master.repository.AlbumTrackRepository;
 import yurykorzun.art.universe.music.data.master.repository.ArtistAlbumRepository;
 import yurykorzun.art.universe.music.data.master.repository.ArtistArtistRepository;
 import yurykorzun.art.universe.music.data.master.repository.ArtistCategoryRepository;
+import yurykorzun.art.universe.music.data.master.repository.ArtistPersonRepository;
 import yurykorzun.art.universe.music.data.master.repository.ArtistTrackRepository;
 import yurykorzun.art.universe.music.data.master.repository.TrackCategoryRepository;
+import yurykorzun.art.universe.music.data.master.repository.TrackPersonRepository;
 import yurykorzun.art.universe.music.data.master.repository.TrackTrackRepository;
 
 import java.util.List;
@@ -32,6 +36,9 @@ public class RelationQueryDispatcher {
     private final ArtistCategoryRepository artistCategoryRepository;
     private final AlbumCategoryRepository albumCategoryRepository;
     private final TrackCategoryRepository trackCategoryRepository;
+    private final ArtistPersonRepository artistPersonRepository;
+    private final AlbumPersonRepository albumPersonRepository;
+    private final TrackPersonRepository trackPersonRepository;
 
     public RelationQueryDispatcher(
             ArtistTrackRepository artistTrackRepository,
@@ -42,7 +49,10 @@ public class RelationQueryDispatcher {
             TrackTrackRepository trackTrackRepository,
             ArtistCategoryRepository artistCategoryRepository,
             AlbumCategoryRepository albumCategoryRepository,
-            TrackCategoryRepository trackCategoryRepository
+            TrackCategoryRepository trackCategoryRepository,
+            ArtistPersonRepository artistPersonRepository,
+            AlbumPersonRepository albumPersonRepository,
+            TrackPersonRepository trackPersonRepository
     ) {
         this.artistTrackRepository = artistTrackRepository;
         this.artistAlbumRepository = artistAlbumRepository;
@@ -53,27 +63,24 @@ public class RelationQueryDispatcher {
         this.artistCategoryRepository = artistCategoryRepository;
         this.albumCategoryRepository = albumCategoryRepository;
         this.trackCategoryRepository = trackCategoryRepository;
+        this.artistPersonRepository = artistPersonRepository;
+        this.albumPersonRepository = albumPersonRepository;
+        this.trackPersonRepository = trackPersonRepository;
     }
 
     /**
      * Finds related entities using typed repository queries.
      * Automatically selects the correct repository and query direction
      * (forward vs reverse) based on source and target entity types.
-     *
-     * @param sourceType Source entity type
-     * @param sourceId Source entity ID
-     * @param targetType Target entity type
-     * @param relationTypeId Optional relation type filter
-     * @return Projection results with entity info, relation type name, and extra fields
      */
     public List<RelatedEntityProjection> findRelatedEntities(
-            MasterEntityType sourceType,
+            EntityType sourceType,
             Long sourceId,
-            MasterEntityType targetType,
+            EntityType targetType,
             @Nullable Long relationTypeId
     ) {
-        if (sourceType == targetType) {
-            return findSameEntityRelations(sourceType, sourceId, relationTypeId);
+        if (sourceType == targetType && sourceType instanceof MasterEntityType masterType) {
+            return findSameEntityRelations(masterType, sourceId, relationTypeId);
         }
         return findCrossEntityRelations(sourceType, sourceId, targetType, relationTypeId);
     }
@@ -90,8 +97,8 @@ public class RelationQueryDispatcher {
     }
 
     private List<RelatedEntityProjection> findCrossEntityRelations(
-            MasterEntityType sourceType, Long sourceId,
-            MasterEntityType targetType, @Nullable Long relationTypeId) {
+            EntityType sourceType, Long sourceId,
+            EntityType targetType, @Nullable Long relationTypeId) {
         String key = sourceType.getName() + "_" + targetType.getName();
         return switch (key) {
             case "artist_track" -> artistTrackRepository.findRelatedTracksByArtistId(sourceId, relationTypeId);
@@ -103,6 +110,12 @@ public class RelationQueryDispatcher {
             case "artist_category" -> artistCategoryRepository.findRelatedCategoriesByArtistId(sourceId);
             case "album_category" -> albumCategoryRepository.findRelatedCategoriesByAlbumId(sourceId);
             case "track_category" -> trackCategoryRepository.findRelatedCategoriesByTrackId(sourceId);
+            case "artist_person" -> artistPersonRepository.findRelatedPersonsByArtistId(sourceId, relationTypeId);
+            case "person_artist" -> artistPersonRepository.findRelatedArtistsByPersonId(sourceId, relationTypeId);
+            case "album_person" -> albumPersonRepository.findRelatedPersonsByAlbumId(sourceId, relationTypeId);
+            case "person_album" -> albumPersonRepository.findRelatedAlbumsByPersonId(sourceId, relationTypeId);
+            case "track_person" -> trackPersonRepository.findRelatedPersonsByTrackId(sourceId, relationTypeId);
+            case "person_track" -> trackPersonRepository.findRelatedTracksByPersonId(sourceId, relationTypeId);
             default -> throw new IllegalArgumentException(
                     String.format("Cross-entity relations not supported for %s -> %s",
                             sourceType.getName(), targetType.getName()));
