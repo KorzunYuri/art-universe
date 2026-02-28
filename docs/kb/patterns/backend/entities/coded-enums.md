@@ -21,7 +21,7 @@ Do NOT use for:
 
 ### Infrastructure
 - [Coded Interface](../../../../../common/commons-jpa/src/main/java/yurykorzun/art/universe/common/Coded.java) - Base interface
-- [CodedConverter](../../../../../common/commons-jpa/src/main/java/yurykorzun/art/universe/common/CodedConverter.java) - JPA converter base
+- [CodedConverter](../../../../../common/commons-jpa/src/main/java/yurykorzun/art/universe/common/persistence/converter/CodedConverter.java) - JPA converter base
 - [CodedRegistry](../../../../../common/commons-jpa/src/main/java/yurykorzun/art/universe/common/CodedRegistry.java) - Enum registry
 
 
@@ -151,7 +151,7 @@ Database: status = 3
 ### Base Infrastructure (Common Module)
 
 - [Coded Interface](../../../../../common/commons-jpa/src/main/java/yurykorzun/art/universe/common/Coded.java) - Interface all coded enums must implement
-- [CodedConverter](../../../../../common/commons-jpa/src/main/java/yurykorzun/art/universe/common/CodedConverter.java) - Base converter class
+- [CodedConverter](../../../../../common/commons-jpa/src/main/java/yurykorzun/art/universe/common/persistence/converter/CodedConverter.java) - Base converter class
 - [CodedRegistry](../../../../../common/commons-jpa/src/main/java/yurykorzun/art/universe/common/CodedRegistry.java) - Registry for enum lookup
 
 ### Execution Status (Quiz Module)
@@ -180,13 +180,21 @@ Database: status = 3
 
 **Converter**: [DataSourceConverter](../../../../../music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/entity/DataSourceConverter.java)
 
-### Master Entity Type (Master Data Module)
+### Master Entity Type (Common Module)
 
-**Location**: [MasterEntityType](../../../../../music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/entity/MasterEntityType.java)
+**Location**: [MasterEntityType](../../../../../common/commons-jpa/src/main/java/yurykorzun/art/universe/common/domain/entity/MasterEntityType.java)
 
-**Values**: ARTIST, ALBUM, TRACK, CATEGORY
+**Values**: ARTIST(1), ALBUM(2), TRACK(3), CATEGORY(4), PERSON(101)
 
-**Converter**: [EntityTypeConverter](../../../../../music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/entity/EntityTypeConverter.java)
+**Converter**: [EntityTypeConverter](../../../../../common/commons-jpa/src/main/java/yurykorzun/art/universe/common/persistence/converter/EntityTypeConverter.java) (`@Converter(autoApply = true)`)
+
+**Note**: This is a cross-domain enum shared by all modules. It lives in
+`common:commons-jpa` rather than in any specific domain module. Because
+`@SpringBootApplication` only scans its own package tree, modules using this
+enum must add `@EntityScan` to include the common packages — otherwise JPA
+will not discover the auto-applied converter and will fall back to ordinal
+storage. Code ranges: 1–99 for music domain, 101–199 for art/cross-domain
+(PERSON), 201+ reserved.
 
 
 ## Common Enhancements
@@ -214,6 +222,9 @@ Database: status = 3
 ❌ Use 0 as a meaningful value (can be confused with null)
 ❌ Forget to register enum in CodedRegistry
 ❌ Mix coded enums with string enums in same entity
+❌ Place a shared `@Converter(autoApply = true)` in a library package without
+   adding that package to `@EntityScan` in consuming applications — JPA silently
+   falls back to ordinal storage
 
 
 ## See Also

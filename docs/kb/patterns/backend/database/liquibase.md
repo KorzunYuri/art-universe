@@ -245,6 +245,47 @@ ALTER TABLE artist ADD COLUMN category VARCHAR(50);
 **Note**: Rollback strategies should be documented but implemented as forward migrations.
 
 
+## Seed Data Conventions
+
+### Hardcoded IDs for System Data
+
+System seed data (reference data that must be consistent across all environments)
+uses hardcoded IDs in a reserved range above auto-generated sequence values.
+
+**ID scheme** (example from relation types):
+
+| Entity | ID pattern | Example |
+|---|---|---|
+| `relation_type` | `1000 + ordinal` | 1001 = "Is Primary Artist Of", 1002 = "Contains" |
+| `relation_type_applicability` | `{parent_id} * 1000 + ordinal` | 1001001, 1001002, 1002001 |
+
+Auto-generated IDs from application sequences start well below 1000, so there is
+no collision risk.
+
+### Idempotent Seed SQL
+
+Seed changesets use `ON CONFLICT DO NOTHING` to be safely re-runnable:
+
+```sql
+INSERT INTO relation_type (id, name, reverse_name, is_symmetrical, is_system)
+VALUES (1001, 'Is Primary Artist Of', 'Has Primary Artist', FALSE, TRUE)
+ON CONFLICT (name) DO NOTHING;
+
+INSERT INTO relation_type_applicability (id, relation_type_id, source_entity_type, target_entity_type, is_default)
+SELECT 1001001, rt.id, 1, 2, TRUE
+FROM relation_type rt
+WHERE rt.name = 'Is Primary Artist Of'
+ON CONFLICT ON CONSTRAINT rta_UK DO NOTHING;
+```
+
+**Key points**:
+- Each INSERT uses a unique hardcoded ID — avoid multi-row INSERTs with a single ID
+- `ON CONFLICT` targets the appropriate unique constraint for each table
+- Use `SELECT ... FROM` to reference parent rows by name rather than hardcoding FKs
+
+**Example**: [System relation types seed](../../../../../music/data/master/src/main/resources/db/migration/mu/liquibase/changesets/0016-relation-types/0016-0130-system_relation_types$seed.sql)
+
+
 ## Liquibase Tables
 
 Liquibase creates two tables to track migrations:
