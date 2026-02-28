@@ -1,5 +1,5 @@
 import type {DataSource} from "@/music/data/raw/shared/types/data-sources.ts";
-export type MasterEntityType = "artist" | "album" | "track" | "category";
+export type MasterEntityType = "artist" | "album" | "track" | "category" | "person";
 export interface BaseEntity {
     id: number;
     name: string;
@@ -67,6 +67,7 @@ export interface Track extends MasterEntity<"track"> {
 export interface Category extends MasterEntity<"category"> {
     parents?: Array<{ id: number; name: string }>;
 }
+export interface Person extends MasterEntity<"person"> {}
 /** ------------------ Master Entity Implementations ------------------ **/
 export class ArtistImpl extends BaseMasterEntity<"artist"> implements Artist {
     categories?: Array<{ id: number; name: string }>;
@@ -116,4 +117,5 @@ export type MasterEntityMap = {
     album:      Album;
     track:      Track;
     category:   Category;
+    person:     Person;
 };

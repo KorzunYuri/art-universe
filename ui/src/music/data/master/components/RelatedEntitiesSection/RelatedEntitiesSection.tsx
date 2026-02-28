@@ -33,6 +33,7 @@ const ENTITY_TYPE_LABELS: Record<MasterEntityType, string> = {
     album: 'albums',
     track: 'tracks',
     category: 'categories',
+    person: 'persons',
 };
 
 export const RelatedEntitiesSection = ({

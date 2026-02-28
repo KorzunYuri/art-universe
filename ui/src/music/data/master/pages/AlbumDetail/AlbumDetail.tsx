@@ -255,6 +255,12 @@ export const AlbumDetail = () => {
                     onEntitySwap={handleSwapTracks}
                     swappingRelationIds={swappingTrackRelationIds}
                 />
+                <RelatedEntitiesSection
+                    title="Related Persons"
+                    sourceEntityType="album"
+                    sourceEntityId={album.id}
+                    targetEntityType="person"
+                />
             </section>
 
             <ConfirmDialog

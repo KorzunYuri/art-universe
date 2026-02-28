@@ -1,6 +1,6 @@
 import type {MasterEntityType, RawEntity, ArtistRelatedRawEntity} from "@/music/shared/types/entities.ts";
 import {MusicDataConfig} from "@/music/data/master/config/musicdataconfig.ts";
-import {entityToEndpoint} from "@/music/data/master/api/music-data-commons.ts";
+import {entityToEndpoint, type MusicMasterEntityType} from "@/music/data/master/api/music-data-commons.ts";
 import {
     LookupRequestSourceParams,
     type BatchLookupResponseDTO,
@@ -18,7 +18,7 @@ const masterDataApi = MusicDataConfig.api;
  * Direct lookup function for master entities using typed requests
  * This is the function that should be used in lookup configurations
  */
-export async function lookupMasterEntities<K extends MasterEntityType>(
+export async function lookupMasterEntities<K extends MusicMasterEntityType>(
     entityType: K,
     request: K extends 'album' | 'track' ? MasterArtistRelatedLookupRequest : BasicMasterLookupRequest
 ): Promise<LookupEntity[]> {
@@ -37,7 +37,7 @@ export async function lookupMasterEntities<K extends MasterEntityType>(
  * @param sourceParams parameters used to build the request
  * @returns List of matching categories
  */
-export async function lookupMasterEntitiesWithParams<K extends MasterEntityType>(
+export async function lookupMasterEntitiesWithParams<K extends MusicMasterEntityType>(
     entityType: K,
     sourceParams: LookupRequestSourceParams<K>
 ): Promise<LookupEntity[]> {
@@ -53,7 +53,7 @@ export async function lookupMasterEntitiesWithParams<K extends MasterEntityType>
  * @param limit default row limit for each lookup list
  * @returns Object with lookup results grouped by search strings
  */
-export async function batchLookupMasterEntitiesWithParams<K extends MasterEntityType>(
+export async function batchLookupMasterEntitiesWithParams<K extends MusicMasterEntityType>(
     entityType: K,
     sourceParams: LookupRequestSourceParams<K>[],
     limit: number = 10
@@ -75,7 +75,7 @@ export async function batchLookupMasterEntitiesWithParams<K extends MasterEntity
  * @returns Lookup request object appropriate for the entity type
  * @param sourceParams parameters used to build the request
  */
-function toLookupRequest<T extends MasterEntityType>(
+function toLookupRequest<T extends MusicMasterEntityType>(
     sourceParams: LookupRequestSourceParams<T>
 ): LookupRequestMap[T] {
     // Base request for all entity types
@@ -104,7 +104,7 @@ function toLookupRequest<T extends MasterEntityType>(
 /**
  * Type guard to check if an entity implements ArtistRelatedRawEntity
  */
-function isArtistRelatedEntity<T extends MasterEntityType>(entity: RawEntity<T>): entity is ArtistRelatedRawEntity<T> {
+function isArtistRelatedEntity<T extends MusicMasterEntityType>(entity: RawEntity<T>): entity is ArtistRelatedRawEntity<T> {
     return (    entity.getEntityType() === 'track'
             ||  entity.getEntityType() === 'album'  )
         && 'getExternalArtistId'    in entity && typeof entity.getExternalArtistId  === 'function'

@@ -4,7 +4,6 @@
 
 import type {DataSource} from "@/music/data/raw/shared/types/data-sources.ts";
 import {
-    type MasterEntityType,
     type Album, AlbumImpl,
     type Artist, ArtistImpl,
     type Track, TrackImpl,
@@ -12,7 +11,7 @@ import {
     type RawEntity,
     type MasterEntityMap
 } from "@/music/shared/types/entities.ts";
-import {entityToEndpoint} from "@/music/data/master/api/music-data-commons.ts";
+import {entityToEndpoint, type MusicMasterEntityType} from "@/music/data/master/api/music-data-commons.ts";
 import {MusicDataConfig} from "@/music/data/master/config/musicdataconfig.ts";
 
 const masterDataClient = MusicDataConfig.api;
@@ -83,7 +82,7 @@ function createCategoryFromBindingResponse(res: BoundEntityResponse): Category {
 }
 
 const bindingResponseMappers: {
-    [K in MasterEntityType]: (dto: EntityBindingResponseMap[K]) => MasterEntityMap[K];
+    [K in MusicMasterEntityType]: (dto: EntityBindingResponseMap[K]) => MasterEntityMap[K];
 } = {
     artist:     createArtistFromBindingResponse,
     album:      createAlbumFromBindingResponse,
@@ -95,14 +94,14 @@ const bindingResponseMappers: {
 /**
  * Bound entity response adapted for UI needs
  */
-export interface BoundEntityInfo<K extends MasterEntityType> {
+export interface BoundEntityInfo<K extends MusicMasterEntityType> {
     dataSource: DataSource;
     entityType: K;
     externalId: number;
     masterEntity: MasterEntityMap[K];
 }
 
-function makeBoundEntityInfoMapper<K extends MasterEntityType>(entityType: K) {
+function makeBoundEntityInfoMapper<K extends MusicMasterEntityType>(entityType: K) {
     return (dto: EntityBindingResponseMap[K]): BoundEntityInfo<K> => ({
         dataSource: dto.dataSource,
         entityType,
@@ -125,7 +124,7 @@ function makeBoundEntityInfoMapper<K extends MasterEntityType>(entityType: K) {
  * @param externalIds List of external IDs to check
  * @returns List of bound master entities
  */
-export async function fetchBoundMasterEntities<K extends MasterEntityType>(
+export async function fetchBoundMasterEntities<K extends MusicMasterEntityType>(
     dataSource: DataSource,
     entityType: K,
     externalIds: number[]
@@ -152,7 +151,7 @@ export async function fetchBoundMasterEntities<K extends MasterEntityType>(
  * @param masterPrimaryArtistId optional master artist ID (used directly, skips external resolution)
  * @returns The bound master entity
  */
-export async function bindRawEntityToExistingMaster<K extends MasterEntityType>(
+export async function bindRawEntityToExistingMaster<K extends MusicMasterEntityType>(
     masterId: number,
     entity: RawEntity<K>,
     masterPrimaryArtistId?: number
@@ -174,7 +173,7 @@ export async function bindRawEntityToExistingMaster<K extends MasterEntityType>(
  * @param masterPrimaryArtistId optional master artist ID (used directly, skips external resolution)
  * @returns The bound master entity
  */
-export async function bindRawEntityToNewMaster<K extends MasterEntityType>(
+export async function bindRawEntityToNewMaster<K extends MusicMasterEntityType>(
     entityName: string,
     entity: RawEntity<K>,
     masterPrimaryArtistId?: number
@@ -204,7 +203,7 @@ function createArtistRelatedRequest<T extends 'create' | 'bind'>(
 /**
  * Creates a request for creating and binding a new master entity
  */
-function toCreateAndBindRequest<T extends MasterEntityType>(
+function toCreateAndBindRequest<T extends MusicMasterEntityType>(
     entityName: string,
     entity: RawEntity<T>,
     masterPrimaryArtistId?: number
@@ -222,7 +221,7 @@ function toCreateAndBindRequest<T extends MasterEntityType>(
 /**
  * Creates a request for binding to an existing master entity
  */
-function toBindToExistingRequest<T extends MasterEntityType>(
+function toBindToExistingRequest<T extends MusicMasterEntityType>(
     masterId: number,
     entity: RawEntity<T>,
     masterPrimaryArtistId?: number
@@ -247,7 +246,7 @@ function toBindToExistingRequest<T extends MasterEntityType>(
  */
 export async function unbindRawEntity(
     dataSource: DataSource,
-    entityType: MasterEntityType,
+    entityType: MusicMasterEntityType,
     externalId: number
 ): Promise<boolean> {
     const endpoint = entityToEndpoint[entityType];

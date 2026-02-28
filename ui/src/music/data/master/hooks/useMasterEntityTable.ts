@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { masterEntitiesKeys } from "@/music/shared/utils/query-keys.ts";
-import type { MasterEntityType } from "@/music/shared/types/entities.ts";
+import type { MusicMasterEntityType } from "@/music/data/master/api/music-data-commons.ts";
 import type { MasterEntityPageSearchParamsMap } from "@/music/data/master/api/music-data-common-fetching.ts";
 import { fetchMasterEntitiesWithRelations } from "@/music/data/master/api/music-data-common-fetching.ts";
 
@@ -12,7 +12,7 @@ import { fetchMasterEntitiesWithRelations } from "@/music/data/master/api/music-
  * @param initialParams Initial search parameters
  * @returns Object with data and functions to control the table
  */
-export function useMasterEntityTable<T extends MasterEntityType>(
+export function useMasterEntityTable<T extends MusicMasterEntityType>(
     entityType: T,
     initialParams: Partial<MasterEntityPageSearchParamsMap[T]> = {}
 ) {

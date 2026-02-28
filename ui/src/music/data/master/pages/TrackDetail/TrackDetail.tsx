@@ -205,6 +205,12 @@ export const TrackDetail = () => {
                     sourceEntityId={track.id}
                     targetEntityType="track"
                 />
+                <RelatedEntitiesSection
+                    title="Related Persons"
+                    sourceEntityType="track"
+                    sourceEntityId={track.id}
+                    targetEntityType="person"
+                />
             </section>
 
             <ConfirmDialog

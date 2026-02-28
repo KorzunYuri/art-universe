@@ -3,8 +3,12 @@ import {type ArtistDto, createArtistFromDto} from "@/music/data/master/api/music
 import {type CategoryDto, createCategoryFromDto} from "@/music/data/master/api/music-data-categories.ts";
 import {type AlbumDto, createAlbumFromDto} from "@/music/data/master/api/music-data-albums.ts";
 import {createTrackFromDto, type TrackDto} from "@/music/data/master/api/music-data-tracks.ts";
+import type {PersonDto} from "@/art/data/master/api/art-data-persons.ts";
 
-export const entityToEndpoint: Record<MasterEntityType, string> = {
+/** Music-domain entity type — excludes cross-domain types like person */
+export type MusicMasterEntityType = "artist" | "album" | "track" | "category";
+
+export const entityToEndpoint: Record<MusicMasterEntityType, string> = {
     'artist':       'artists',
     'album':        'albums',
     'track':        'tracks',
@@ -21,10 +25,11 @@ export type MasterEntityDtoMap = {
     album:      AlbumDto;
     track:      TrackDto;
     category:   CategoryDto;
+    person:     PersonDto;
 };
 
 export const masterEntityFromDtoMappers: {
-    [K in MasterEntityType]: (dto: MasterEntityDtoMap[K]) => MasterEntityMap[K];
+    [K in MusicMasterEntityType]: (dto: MasterEntityDtoMap[K]) => MasterEntityMap[K];
 } = {
     artist:     createArtistFromDto,
     album:      createAlbumFromDto,

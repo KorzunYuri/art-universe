@@ -4,7 +4,8 @@ import type { DataSource } from "@/music/data/raw/shared/types/data-sources.ts";
 import { fetchBoundMasterEntities } from "@/music/data/master/api/music-data-common-binding.ts";
 import { lookupMasterEntitiesWithParams } from "@/music/data/master/api/music-data-common-lookup.ts";
 import { LookupRequestSourceParams } from "@/music/data/master/types/master-entities-lookup.ts";
-import type { MasterEntityType, RawEntity } from "@/music/shared/types/entities.ts";
+import type { RawEntity } from "@/music/shared/types/entities.ts";
+import type { MusicMasterEntityType } from "@/music/data/master/api/music-data-commons.ts";
 import {RawEntityLookupContextFactory} from "@/music/data/raw/shared/types/lookup-context.ts";
 
 /**
@@ -16,7 +17,7 @@ import {RawEntityLookupContextFactory} from "@/music/data/raw/shared/types/looku
  * @param fetchFn Function that fetches the raw entity from the data source
  * @returns Object with entity data and utility functions
  */
-export function useRawEntity<M extends MasterEntityType, R extends RawEntity<M>>(
+export function useRawEntity<M extends MusicMasterEntityType, R extends RawEntity<M>>(
     dataSource: DataSource,
     entityType: M,
     rawEntityId: number,

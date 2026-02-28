@@ -191,6 +191,12 @@ export const ArtistDetail = () => {
                     sourceEntityId={artist.id}
                     targetEntityType="track"
                 />
+                <RelatedEntitiesSection
+                    title="Related Persons"
+                    sourceEntityType="artist"
+                    sourceEntityId={artist.id}
+                    targetEntityType="person"
+                />
             </section>
 
             <ConfirmDialog

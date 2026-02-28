@@ -1,8 +1,9 @@
 import {MusicDataConfig} from "@/music/data/master/config/musicdataconfig.ts";
 import type {Page} from "@/shared/types/page.ts";
-import type {MasterEntityMap, MasterEntityType} from "@/music/shared/types/entities.ts";
+import type {MasterEntityMap} from "@/music/shared/types/entities.ts";
 import {
     type MasterEntityDtoMap,
+    type MusicMasterEntityType,
     entityToEndpoint,
     masterEntityFromDtoMappers
 } from "@/music/data/master/api/music-data-commons.ts";
@@ -29,7 +30,7 @@ export type MasterEntityPageSearchParamsMap = {
     category:   CategoryPageSearchParams
 }
 
-export async function fetchMasterEntities<T extends MasterEntityType>(
+export async function fetchMasterEntities<T extends MusicMasterEntityType>(
     entityType: T,
     params: MasterEntityPageSearchParamsMap[T]
 ): Promise<Page<MasterEntityMap[T]>> {
@@ -47,7 +48,7 @@ export async function fetchMasterEntities<T extends MasterEntityType>(
     };
 }
 
-export async function fetchMasterEntity<T extends MasterEntityType>(
+export async function fetchMasterEntity<T extends MusicMasterEntityType>(
     entityType: T,
     entityId: number
 ): Promise<MasterEntityMap[T]> {
@@ -59,7 +60,7 @@ export async function fetchMasterEntity<T extends MasterEntityType>(
     return masterEntityFromDtoMappers[entityType](response.data);
 }
 
-export async function fetchMasterEntitiesWithRelations<T extends MasterEntityType>(
+export async function fetchMasterEntitiesWithRelations<T extends MusicMasterEntityType>(
     entityType: T,
     params: MasterEntityPageSearchParamsMap[T]
 ): Promise<Page<MasterEntityMap[T]>> {

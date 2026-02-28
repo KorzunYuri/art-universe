@@ -1,6 +1,7 @@
 import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {masterEntitiesKeys} from "@/music/shared/utils/query-keys.ts";
-import type {MasterEntityMap, MasterEntityType} from "@/music/shared/types/entities.ts";
+import type {MasterEntityMap} from "@/music/shared/types/entities.ts";
+import type {MusicMasterEntityType} from "@/music/data/master/api/music-data-commons.ts";
 import {fetchMasterEntity} from "@/music/data/master/api/music-data-common-fetching.ts";
 
 /**
@@ -10,7 +11,7 @@ import {fetchMasterEntity} from "@/music/data/master/api/music-data-common-fetch
  * @param entityId The ID of the master entity to fetch
  * @returns Object with entity data and utility functions
  */
-export function useMasterEntity<T extends MasterEntityType>(
+export function useMasterEntity<T extends MusicMasterEntityType>(
     entityType: T,
     entityId: number
 ) {

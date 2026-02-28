@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useNotifications } from '@/shared/hooks';
 import { EditableText, ConfirmDialog } from '@/shared/components';
+import { RelatedEntitiesSection } from '@/music/data/master/components/RelatedEntitiesSection';
 import { usePerson } from '@/art/data/master/hooks/usePerson';
 import {
     savePerson,
@@ -114,10 +115,27 @@ export const PersonDetail = () => {
                 </div>
             </div>
 
-            {/* Relations stub */}
+            {/* Relations */}
             <section className={styles.section}>
                 <h3 className={styles.sectionTitle}>Relations</h3>
-                <div className={styles.stub}>Relations coming soon</div>
+                <RelatedEntitiesSection
+                    title="Related Artists"
+                    sourceEntityType="person"
+                    sourceEntityId={person.id}
+                    targetEntityType="artist"
+                />
+                <RelatedEntitiesSection
+                    title="Related Albums"
+                    sourceEntityType="person"
+                    sourceEntityId={person.id}
+                    targetEntityType="album"
+                />
+                <RelatedEntitiesSection
+                    title="Related Tracks"
+                    sourceEntityType="person"
+                    sourceEntityId={person.id}
+                    targetEntityType="track"
+                />
             </section>
 
             <ConfirmDialog

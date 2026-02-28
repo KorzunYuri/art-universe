@@ -9,7 +9,7 @@ import type { LookupEntity } from "@/shared/types/lookup.ts";
 // styles
 import commonStyles from "@/shared/styles/common.module.scss";
 import styles from "./EntityBinding.module.scss";
-import type {MasterEntityType} from "@/music/shared/types/entities.ts";
+import type {MusicMasterEntityType} from "@/music/data/master/api/music-data-commons.ts";
 import type {DataSource} from "@/music/data/raw/shared/types/data-sources.ts";
 import {
     bindRawEntityToExistingMaster,
@@ -24,7 +24,7 @@ import { LookupContextFactory } from "@/shared/types/lookup-context.ts";
 import { RawEntityLookupContextFactory, type RawEntityLookupContext } from "@/music/data/raw/shared/types/lookup-context.ts";
 import type { BasicLookupContext } from "@/shared/types/lookup-context.ts";
 
-export interface EntityBindingProps<K extends MasterEntityType> {
+export interface EntityBindingProps<K extends MusicMasterEntityType> {
     dataSource: DataSource;
     entityType: K;
     entityId: number;
