@@ -3,7 +3,7 @@ package yurykorzun.art.universe.music.data.master.service;
 import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindResponseDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
+import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 
 /**
  * Universal service for entity binding operations

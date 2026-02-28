@@ -4,7 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import yurykorzun.art.universe.music.data.master.entity.ArtistCategory;
 import yurykorzun.art.universe.music.data.master.entity.ArtistCategoryBinding;
-import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
+import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.entity.relation.RelationBindingEntity;
 import yurykorzun.art.universe.music.data.master.entity.relation.RelationEntity;
 import yurykorzun.art.universe.music.data.master.entity.relation.RelationRegistry;

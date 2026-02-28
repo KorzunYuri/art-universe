@@ -1,5 +1,7 @@
 package yurykorzun.art.universe.music.data.master.entity;
 
+import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
+
 import lombok.Getter;
 import yurykorzun.art.universe.common.domain.entity.BaseEntityMetadata;
 

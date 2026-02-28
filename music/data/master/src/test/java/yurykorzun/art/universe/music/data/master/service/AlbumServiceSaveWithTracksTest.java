@@ -12,7 +12,7 @@ import yurykorzun.art.universe.music.data.master.dto.AlbumWithTracksSaveRequestD
 import yurykorzun.art.universe.music.data.master.dto.AlbumDto;
 import yurykorzun.art.universe.music.data.master.entity.Album;
 import yurykorzun.art.universe.music.data.master.entity.AlbumTrack;
-import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
+import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.entity.RelationTypeApplicability;
 import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.repository.AlbumBindingRepository;

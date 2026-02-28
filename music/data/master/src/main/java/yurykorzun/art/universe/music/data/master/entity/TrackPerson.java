@@ -3,7 +3,7 @@ package yurykorzun.art.universe.music.data.master.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import yurykorzun.art.universe.art.data.models.entity.ArtEntityType;
+import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 import yurykorzun.art.universe.common.domain.entity.BaseEntity;
 import yurykorzun.art.universe.common.domain.entity.EntityType;
 import yurykorzun.art.universe.music.data.master.entity.relation.RelationEntity;
@@ -51,7 +51,7 @@ public class TrackPerson extends BaseEntity implements RelationEntity {
 
     @Override
     public EntityType getSecondEntityType() {
-        return ArtEntityType.PERSON;
+        return MasterEntityType.PERSON;
     }
 
     @Override

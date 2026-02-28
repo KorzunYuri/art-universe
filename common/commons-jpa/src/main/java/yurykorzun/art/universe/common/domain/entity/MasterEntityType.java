@@ -1,9 +1,8 @@
-package yurykorzun.art.universe.music.data.master.entity;
+package yurykorzun.art.universe.common.domain.entity;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import yurykorzun.art.universe.common.CodedRegistry;
-import yurykorzun.art.universe.common.domain.entity.EntityType;
 
 import java.util.Arrays;
 
@@ -36,20 +35,12 @@ public enum MasterEntityType implements EntityType {
         return name;
     }
 
-    /**
-     * Converts string to EntityType
-     * Used for JSON deserialization and path variable conversion
-     *
-     * @param name Entity type name
-     * @return EntityType instance
-     * @throws IllegalArgumentException if name doesn't match any EntityType
-     */
     @JsonCreator
     public static MasterEntityType fromString(String name) {
         if (name == null) {
             throw new IllegalArgumentException("Entity type name cannot be null");
         }
-        
+
         for (MasterEntityType entityType : MasterEntityType.values()) {
             if (entityType.name.equalsIgnoreCase(name)) {
                 return entityType;

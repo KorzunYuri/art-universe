@@ -17,7 +17,7 @@ import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjecti
 import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindResponseDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
+import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.service.ArtistService;
 import yurykorzun.art.universe.music.data.master.service.BindingService;

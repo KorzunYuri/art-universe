@@ -27,7 +27,7 @@ import yurykorzun.art.universe.music.data.master.entity.Category;
 import yurykorzun.art.universe.music.data.master.entity.CategoryBinding;
 import yurykorzun.art.universe.music.data.master.entity.CategoryCategory;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
+import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.repository.CategoryRepository;
 import yurykorzun.art.universe.music.data.master.repository.CategoryBindingRepository;
 import yurykorzun.art.universe.music.data.master.repository.CategoryCategoryRepository;

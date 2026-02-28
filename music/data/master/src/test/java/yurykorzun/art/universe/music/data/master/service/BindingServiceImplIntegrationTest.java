@@ -9,7 +9,7 @@ import yurykorzun.art.universe.music.data.master.test.archetypes.BaseMasterDataJ
 import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindResponseDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
+import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.repository.*;
 
 import java.util.Arrays;

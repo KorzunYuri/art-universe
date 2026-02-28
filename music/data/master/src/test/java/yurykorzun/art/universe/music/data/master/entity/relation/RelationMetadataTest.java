@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import yurykorzun.art.universe.music.data.master.entity.ArtistAlbum;
 import yurykorzun.art.universe.music.data.master.entity.ArtistAlbumBinding;
 import yurykorzun.art.universe.music.data.master.entity.ArtistArtist;
-import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
+import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 
 import static org.junit.jupiter.api.Assertions.*;
 

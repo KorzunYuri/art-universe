@@ -13,7 +13,7 @@ import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingDTO
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingStatusDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.TargetEntityBindingDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
+import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.service.RelationService;
 import yurykorzun.art.universe.music.data.master.test.archetypes.BaseMasterDataMvcTest;
 

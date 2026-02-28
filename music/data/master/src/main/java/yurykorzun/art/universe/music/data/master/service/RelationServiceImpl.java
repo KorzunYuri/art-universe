@@ -6,14 +6,14 @@ import jakarta.persistence.NoResultException;
 import jakarta.persistence.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import yurykorzun.art.universe.art.data.models.entity.ArtEntityType;
 import yurykorzun.art.universe.common.domain.entity.EntityType;
+import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelatedEntityDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingStatusDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.TargetEntityBindingDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
+import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.entity.relation.RelationBindingEntity;
 import yurykorzun.art.universe.music.data.master.entity.relation.RelationEntity;
@@ -777,7 +777,7 @@ public class RelationServiceImpl implements RelationService {
     private String getEntityName(EntityType entityType, Long entityId) {
         try {
             String tableName;
-            if (entityType instanceof ArtEntityType) {
+            if (entityType == MasterEntityType.PERSON) {
                 tableName = "art_view.v_" + entityType.getName();
             } else {
                 tableName = entityType.getName();
@@ -855,7 +855,7 @@ public class RelationServiceImpl implements RelationService {
     private void validateEntityExists(EntityType entityType, Long entityId) {
         try {
             String tableName;
-            if (entityType instanceof ArtEntityType) {
+            if (entityType == MasterEntityType.PERSON) {
                 tableName = "art_view.v_" + entityType.getName();
             } else {
                 tableName = entityType.getName();

@@ -4,7 +4,7 @@ import jakarta.annotation.Nullable;
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.common.domain.entity.EntityType;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelatedEntityProjection;
-import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
+import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.repository.AlbumAlbumRepository;
 import yurykorzun.art.universe.music.data.master.repository.AlbumCategoryRepository;
 import yurykorzun.art.universe.music.data.master.repository.AlbumPersonRepository;

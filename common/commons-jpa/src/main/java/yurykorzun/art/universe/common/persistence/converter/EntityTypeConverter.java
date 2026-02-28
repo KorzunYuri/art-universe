@@ -1,10 +1,10 @@
-package yurykorzun.art.universe.music.data.master.entity;
+package yurykorzun.art.universe.common.persistence.converter;
 
 import jakarta.persistence.Converter;
-import yurykorzun.art.universe.common.persistence.converter.CodedConverter;
+import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 
 /**
- * JPA converter for EntityType enum
+ * JPA converter for MasterEntityType enum
  */
 @Converter(autoApply = true)
 public class EntityTypeConverter extends CodedConverter<MasterEntityType> {

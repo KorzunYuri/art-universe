@@ -1,4 +1,4 @@
-import {type MasterEntityMap, type MasterEntityType} from "@/music/shared/types/entities.ts";
+import {type MasterEntityMap} from "@/music/shared/types/entities.ts";
 import {type ArtistDto, createArtistFromDto} from "@/music/data/master/api/music-data-artists.ts";
 import {type CategoryDto, createCategoryFromDto} from "@/music/data/master/api/music-data-categories.ts";
 import {type AlbumDto, createAlbumFromDto} from "@/music/data/master/api/music-data-albums.ts";

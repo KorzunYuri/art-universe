@@ -1,5 +1,7 @@
 package yurykorzun.art.universe.music.data.master.entity;
 
+import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
+
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;

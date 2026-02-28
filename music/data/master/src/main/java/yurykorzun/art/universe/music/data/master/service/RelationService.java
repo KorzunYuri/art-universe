@@ -6,7 +6,7 @@ import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingDTO
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingStatusDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import jakarta.annotation.Nullable;
-import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
+import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-import type {MasterEntityType, RawEntity, ArtistRelatedRawEntity} from "@/music/shared/types/entities.ts";
+import type {RawEntity, ArtistRelatedRawEntity} from "@/music/shared/types/entities.ts";
 import {MusicDataConfig} from "@/music/data/master/config/musicdataconfig.ts";
 import {entityToEndpoint, type MusicMasterEntityType} from "@/music/data/master/api/music-data-commons.ts";
 import {
