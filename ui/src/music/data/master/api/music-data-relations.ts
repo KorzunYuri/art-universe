@@ -49,15 +49,22 @@ export interface EntityDTO {
 }
 
 /**
- * DTO for related entity with relation type information
+ * DTO for relation type info within a grouped related entity
+ */
+export interface RelationTypeInfo {
+    relationId: number;
+    relationTypeId: number | null;
+    relationTypeName: string | null;
+}
+
+/**
+ * DTO for related entity with grouped relation type information
  */
 export interface RelatedEntityDTO {
     id: number;
     name: string;
     entityType: string;
-    relationId: number;
-    relationTypeId: number | null;
-    relationTypeName: string | null;
+    relationTypes: RelationTypeInfo[];
     trackOrder: number | null;
 }
 
@@ -176,19 +183,24 @@ export async function getRelatedEntities(
 }
 
 /**
- * Creates an internal relation between two master entities
+ * Creates internal relations between two master entities.
+ * Accepts multiple relation type IDs; when none provided, creates a single untyped relation.
  */
 export async function createInternalRelation(
     sourceEntityType: MasterEntityType,
     sourceEntityId: number,
     targetEntityType: MasterEntityType,
     targetEntityId: number,
-    relationTypeId?: number
-): Promise<number> {
-    const response = await masterDataApi.post<number>(
+    relationTypeIds?: number[]
+): Promise<number[]> {
+    const params = relationTypeIds && relationTypeIds.length > 0
+        ? { relationTypeIds: relationTypeIds.join(',') }
+        : undefined;
+
+    const response = await masterDataApi.post<number[]>(
         `/relations/internal/${sourceEntityType}/${sourceEntityId}/${targetEntityType}/${targetEntityId}`,
         null,
-        { params: relationTypeId != null ? { relationTypeId } : undefined }
+        { params }
     );
 
     return response.data;

@@ -67,7 +67,7 @@ export const RelatedEntitiesSection = ({
         queryClient.invalidateQueries({ queryKey });
     }, [queryClient, queryKey]);
 
-    const handleAddRelation = useCallback(async (targetEntityId: number, relationTypeId: number | undefined) => {
+    const handleAddRelation = useCallback(async (targetEntityId: number, relationTypeIds: number[]) => {
         setIsAdding(true);
         try {
             await createInternalRelation(
@@ -75,7 +75,7 @@ export const RelatedEntitiesSection = ({
                 sourceEntityId,
                 targetEntityType,
                 targetEntityId,
-                relationTypeId
+                relationTypeIds.length > 0 ? relationTypeIds : undefined
             );
             invalidateRelations();
             queryClient.invalidateQueries({ queryKey: reverseQueryKey(targetEntityId) });
@@ -87,15 +87,12 @@ export const RelatedEntitiesSection = ({
         }
     }, [sourceEntityType, sourceEntityId, targetEntityType, invalidateRelations, showNotification, queryClient]);
 
-    const handleRemoveRelation = useCallback(async (relationId: number) => {
-        const targetEntityId = relatedEntities?.find(e => e.relationId === relationId)?.id;
+    const handleRemoveRelationType = useCallback(async (entityId: number, relationId: number) => {
         setRemovingIds(prev => new Set(prev).add(relationId));
         try {
             await deleteInternalRelation(relationId);
             invalidateRelations();
-            if (targetEntityId != null) {
-                queryClient.invalidateQueries({ queryKey: reverseQueryKey(targetEntityId) });
-            }
+            queryClient.invalidateQueries({ queryKey: reverseQueryKey(entityId) });
         } catch (error: any) {
             showNotification('error', error?.response?.data?.message || error?.message || 'Failed to remove relation');
         } finally {
@@ -105,7 +102,29 @@ export const RelatedEntitiesSection = ({
                 return next;
             });
         }
-    }, [invalidateRelations, showNotification, relatedEntities, queryClient]);
+    }, [invalidateRelations, showNotification, queryClient]);
+
+    const handleRemoveAllRelations = useCallback(async (entity: RelatedEntityDTO) => {
+        const relationIds = entity.relationTypes.map(rt => rt.relationId);
+        setRemovingIds(prev => {
+            const next = new Set(prev);
+            relationIds.forEach(id => next.add(id));
+            return next;
+        });
+        try {
+            await Promise.all(relationIds.map(id => deleteInternalRelation(id)));
+            invalidateRelations();
+            queryClient.invalidateQueries({ queryKey: reverseQueryKey(entity.id) });
+        } catch (error: any) {
+            showNotification('error', error?.response?.data?.message || error?.message || 'Failed to remove relations');
+        } finally {
+            setRemovingIds(prev => {
+                const next = new Set(prev);
+                relationIds.forEach(id => next.delete(id));
+                return next;
+            });
+        }
+    }, [invalidateRelations, showNotification, queryClient]);
 
     const count = relatedEntities?.length ?? 0;
     const sectionTitle = `${title} (${isLoading ? '...' : count})`;
@@ -129,15 +148,30 @@ export const RelatedEntitiesSection = ({
                             const url = getMasterEntityUrl(targetEntityType, entity.id);
                             const isAlbumTrack = sourceEntityType === 'album' && targetEntityType === 'track';
                             const hasReorderButtons = onEntitySwap != null && entity.trackOrder != null;
+                            const isAnyRemoving = entity.relationTypes.some(rt => removingIds.has(rt.relationId));
+                            const firstRelationId = entity.relationTypes[0]?.relationId;
                             return (
-                                <div key={`${entity.id}-${entity.relationId}`} className={styles.item}>
+                                <div key={entity.id} className={styles.item}>
                                     <div className={styles.itemInfo}>
                                         {isAlbumTrack && entity.trackOrder != null && (
                                             <span className={styles.trackOrder}>{entity.trackOrder}.</span>
                                         )}
-                                        {entity.relationTypeName && (
-                                            <span className={styles.relationType}>{entity.relationTypeName}</span>
-                                        )}
+                                        {entity.relationTypes
+                                            .filter(rt => rt.relationTypeName != null)
+                                            .map(rt => (
+                                                <span key={rt.relationId} className={styles.relationTypeChip}>
+                                                    {rt.relationTypeName}
+                                                    <button
+                                                        type="button"
+                                                        className={styles.chipRemove}
+                                                        onClick={() => handleRemoveRelationType(entity.id, rt.relationId)}
+                                                        disabled={removingIds.has(rt.relationId)}
+                                                        title={`Remove ${rt.relationTypeName}`}
+                                                    >
+                                                        &times;
+                                                    </button>
+                                                </span>
+                                            ))}
                                         {url ? (
                                             <Link to={url} className={styles.entityName}>{entity.name}</Link>
                                         ) : (
@@ -148,13 +182,13 @@ export const RelatedEntitiesSection = ({
                                         <>
                                             <button
                                                 onClick={() => onEntitySwap!(entity, arr[index - 1])}
-                                                disabled={index === 0 || swappingRelationIds?.has(entity.relationId) || swappingRelationIds?.has(arr[index - 1]?.relationId)}
+                                                disabled={index === 0 || swappingRelationIds?.has(firstRelationId) || swappingRelationIds?.has(arr[index - 1]?.relationTypes[0]?.relationId)}
                                                 className={styles.moveButton}
                                                 title="Move up"
                                             >↑</button>
                                             <button
                                                 onClick={() => onEntitySwap!(entity, arr[index + 1])}
-                                                disabled={index === arr.length - 1 || swappingRelationIds?.has(entity.relationId) || swappingRelationIds?.has(arr[index + 1]?.relationId)}
+                                                disabled={index === arr.length - 1 || swappingRelationIds?.has(firstRelationId) || swappingRelationIds?.has(arr[index + 1]?.relationTypes[0]?.relationId)}
                                                 className={styles.moveButton}
                                                 title="Move down"
                                             >↓</button>
@@ -171,12 +205,12 @@ export const RelatedEntitiesSection = ({
                                         </button>
                                     )}
                                     <button
-                                        onClick={() => handleRemoveRelation(entity.relationId)}
-                                        disabled={removingIds.has(entity.relationId)}
+                                        onClick={() => handleRemoveAllRelations(entity)}
+                                        disabled={isAnyRemoving}
                                         className={styles.removeButton}
                                         title="Remove relation"
                                     >
-                                        {removingIds.has(entity.relationId) ? '...' : '\u00d7'}
+                                        {isAnyRemoving ? '...' : '\u00d7'}
                                     </button>
                                 </div>
                             );

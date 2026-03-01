@@ -8,7 +8,7 @@ import styles from './RelatedEntitiesSection.module.scss';
 interface AddRelationFormProps {
     sourceEntityType: MasterEntityType;
     targetEntityType: MasterEntityType;
-    onSubmit: (targetEntityId: number, relationTypeId: number | undefined) => Promise<void>;
+    onSubmit: (targetEntityId: number, relationTypeIds: number[]) => Promise<void>;
     onCancel: () => void;
     isSubmitting: boolean;
 }
@@ -21,7 +21,7 @@ export const AddRelationForm = ({
     isSubmitting,
 }: AddRelationFormProps) => {
     const [selectedEntity, setSelectedEntity] = useState<LookupEntity | null>(null);
-    const [selectedRelationTypeId, setSelectedRelationTypeId] = useState<string>('');
+    const [selectedRelationTypeIds, setSelectedRelationTypeIds] = useState<number[]>([]);
 
     const { relationTypes, isLoading: isLoadingTypes } = useApplicableRelationTypes(
         sourceEntityType,
@@ -32,13 +32,26 @@ export const AddRelationForm = ({
         setSelectedEntity(entity);
     };
 
+    const handleAddType = (typeId: string) => {
+        if (!typeId) return;
+        const id = Number(typeId);
+        if (!selectedRelationTypeIds.includes(id)) {
+            setSelectedRelationTypeIds(prev => [...prev, id]);
+        }
+    };
+
+    const handleRemoveType = (typeId: number) => {
+        setSelectedRelationTypeIds(prev => prev.filter(id => id !== typeId));
+    };
+
     const handleSubmit = async () => {
         if (!selectedEntity) return;
-        const relationTypeId = selectedRelationTypeId ? Number(selectedRelationTypeId) : undefined;
-        await onSubmit(selectedEntity.id, relationTypeId);
+        await onSubmit(selectedEntity.id, selectedRelationTypeIds);
         setSelectedEntity(null);
-        setSelectedRelationTypeId('');
+        setSelectedRelationTypeIds([]);
     };
+
+    const availableTypes = relationTypes.filter(rt => !selectedRelationTypeIds.includes(rt.id));
 
     return (
         <div className={styles.addForm}>
@@ -56,19 +69,41 @@ export const AddRelationForm = ({
 
             {relationTypes.length > 0 && (
                 <div className={styles.addFormRow}>
-                    <select
-                        value={selectedRelationTypeId}
-                        onChange={(e) => setSelectedRelationTypeId(e.target.value)}
-                        disabled={isSubmitting || isLoadingTypes}
-                        className={styles.relationTypeSelect}
-                    >
-                        <option value="">No relation type</option>
-                        {relationTypes.map((rt) => (
-                            <option key={rt.id} value={String(rt.id)}>
-                                {rt.name}
-                            </option>
-                        ))}
-                    </select>
+                    <div className={styles.relationTypeChips}>
+                        {selectedRelationTypeIds.map(typeId => {
+                            const rt = relationTypes.find(r => r.id === typeId);
+                            return (
+                                <span key={typeId} className={styles.relationTypeChip}>
+                                    {rt?.name ?? `Type ${typeId}`}
+                                    <button
+                                        type="button"
+                                        className={styles.chipRemove}
+                                        onClick={() => handleRemoveType(typeId)}
+                                        disabled={isSubmitting}
+                                    >
+                                        &times;
+                                    </button>
+                                </span>
+                            );
+                        })}
+                        {availableTypes.length > 0 && (
+                            <select
+                                value=""
+                                onChange={(e) => handleAddType(e.target.value)}
+                                disabled={isSubmitting || isLoadingTypes}
+                                className={styles.relationTypeSelect}
+                            >
+                                <option value="">
+                                    {selectedRelationTypeIds.length === 0 ? 'Select relation type...' : 'Add another type...'}
+                                </option>
+                                {availableTypes.map((rt) => (
+                                    <option key={rt.id} value={String(rt.id)}>
+                                        {rt.name}
+                                    </option>
+                                ))}
+                            </select>
+                        )}
+                    </div>
                 </div>
             )}
 

@@ -118,11 +118,13 @@ export const AlbumDetail = () => {
     };
 
     const handleSwapTracks = async (entityA: RelatedEntityDTO, entityB: RelatedEntityDTO) => {
-        setSwappingTrackRelationIds(prev => new Set([...prev, entityA.relationId, entityB.relationId]));
+        const relationIdA = entityA.relationTypes[0].relationId;
+        const relationIdB = entityB.relationTypes[0].relationId;
+        setSwappingTrackRelationIds(prev => new Set([...prev, relationIdA, relationIdB]));
         try {
             await reorderAlbumTracks(album.id, [
-                { albumTrackId: entityA.relationId, newOrder: entityB.trackOrder! },
-                { albumTrackId: entityB.relationId, newOrder: entityA.trackOrder! },
+                { albumTrackId: relationIdA, newOrder: entityB.trackOrder! },
+                { albumTrackId: relationIdB, newOrder: entityA.trackOrder! },
             ]);
             queryClient.invalidateQueries({
                 queryKey: relationKeys.entities('album', album.id, 'track'),
@@ -132,8 +134,8 @@ export const AlbumDetail = () => {
         } finally {
             setSwappingTrackRelationIds(prev => {
                 const next = new Set(prev);
-                next.delete(entityA.relationId);
-                next.delete(entityB.relationId);
+                next.delete(relationIdA);
+                next.delete(relationIdB);
                 return next;
             });
         }

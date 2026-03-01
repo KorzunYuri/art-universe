@@ -69,6 +69,51 @@
     white-space: nowrap;
 }
 
+.relationTypeChips {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    flex-wrap: wrap;
+}
+
+.relationTypeChip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    color: #64748b;
+    background-color: #f1f5f9;
+    padding: 0.125rem 0.375rem 0.125rem 0.5rem;
+    border-radius: 10px;
+    white-space: nowrap;
+}
+
+.chipRemove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1rem;
+    height: 1rem;
+    border: none;
+    background: transparent;
+    color: #94a3b8;
+    font-size: 0.75rem;
+    cursor: pointer;
+    padding: 0;
+    border-radius: 50%;
+    line-height: 1;
+
+    &:hover:not(:disabled) {
+        color: #dc3545;
+        background-color: #fee2e2;
+    }
+
+    &:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+    }
+}
+
 .moveButton {
     flex-shrink: 0;
     width: 1.25rem;
