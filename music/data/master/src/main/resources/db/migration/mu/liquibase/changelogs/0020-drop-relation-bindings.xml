@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
+
+    <!--
+        Migration to drop the external relation binding layer.
+        All changesets are currently disabled (SQL is commented out).
+        Uncomment the SQL statements when ready to execute.
+        Order: triggers -> functions -> views -> tables
+    -->
+
+    <changeSet id="0020-0010-drop_relation_binding_triggers" author="yurykorzun">
+        <sqlFile path="../changesets/0020-drop-relation-bindings/0020-0010-drop_relation_binding_triggers$drop.sql"
+                 relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0020-0020-drop_relation_binding_functions" author="yurykorzun">
+        <sqlFile path="../changesets/0020-drop-relation-bindings/0020-0020-drop_relation_binding_functions$drop.sql"
+                 relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0020-0030-drop_relation_binding_views" author="yurykorzun">
+        <sqlFile path="../changesets/0020-drop-relation-bindings/0020-0030-drop_relation_binding_views$drop.sql"
+                 relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0020-0040-drop_relation_binding_tables" author="yurykorzun">
+        <sqlFile path="../changesets/0020-drop-relation-bindings/0020-0040-drop_relation_binding_tables$drop.sql"
+                 relativeToChangelogFile="true"/>
+    </changeSet>
+
+</databaseChangeLog>
