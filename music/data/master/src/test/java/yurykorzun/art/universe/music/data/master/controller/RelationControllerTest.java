@@ -288,32 +288,32 @@ class RelationControllerTest {
     }
     
     @Test
-    void createInternalRelation_shouldReturnLong() {
+    void createInternalRelations_shouldReturnListOfIds() {
         // Given
         MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceEntityId = 123L;
         MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         Long targetEntityId = 456L;
-        Long expectedRelationId = 789L;
+        List<Long> expectedRelationIds = Arrays.asList(789L);
 
-        when(relationService.createInternalRelation(
+        when(relationService.createInternalRelations(
             sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, null
-        )).thenReturn(expectedRelationId);
+        )).thenReturn(expectedRelationIds);
 
         // When
-        Long result = relationController.createInternalRelation(
+        List<Long> result = relationController.createInternalRelations(
             sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, null
         );
 
         // Then
-        assertEquals(expectedRelationId, result);
-        verify(relationService).createInternalRelation(
+        assertEquals(expectedRelationIds, result);
+        verify(relationService).createInternalRelations(
             sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, null
         );
     }
 
     @Test
-    void createInternalRelation_whenExceptionThrown_shouldPassThroughException() {
+    void createInternalRelations_whenExceptionThrown_shouldPassThroughException() {
         // Given
         MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceEntityId = 123L;
@@ -321,19 +321,19 @@ class RelationControllerTest {
         Long targetEntityId = 456L;
         RuntimeException expectedException = new RuntimeException("Test error");
 
-        when(relationService.createInternalRelation(
+        when(relationService.createInternalRelations(
             sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, null
         )).thenThrow(expectedException);
 
         // When & Then
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
-            relationController.createInternalRelation(
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+            relationController.createInternalRelations(
                 sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, null
             )
         );
-        
+
         assertSame(expectedException, exception);
-        verify(relationService).createInternalRelation(
+        verify(relationService).createInternalRelations(
             sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, null
         );
     }

@@ -69,6 +69,18 @@ public interface RelationService {
     );
 
     /**
+     * Creates internal relations between two entities for the given relation type IDs.
+     * When relationTypeIds is null or empty, creates a single untyped relation.
+     */
+    List<Long> createInternalRelations(
+        EntityType sourceEntityType,
+        Long sourceEntityId,
+        EntityType targetEntityType,
+        Long targetEntityId,
+        @Nullable List<Long> relationTypeIds
+    );
+
+    /**
      * Deletes an internal relation by entity types and IDs
      */
     boolean deleteInternalRelation(

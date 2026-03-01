@@ -5,6 +5,8 @@ import lombok.experimental.SuperBuilder;
 import yurykorzun.art.universe.common.domain.entity.EntityType;
 import yurykorzun.art.universe.music.data.master.dto.BaseEntityDto;
 
+import java.util.List;
+
 /**
  * DTO for entity information
  */
@@ -15,8 +17,6 @@ import yurykorzun.art.universe.music.data.master.dto.BaseEntityDto;
 @AllArgsConstructor
 public class RelatedEntityDTO extends BaseEntityDto {
     private EntityType entityType;
-    private Long relationId;
-    private Long relationTypeId;
-    private String relationTypeName;
+    private List<RelationTypeInfoDTO> relationTypes;
     private Integer trackOrder;
 }

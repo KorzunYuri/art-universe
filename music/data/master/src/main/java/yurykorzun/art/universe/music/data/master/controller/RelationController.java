@@ -85,18 +85,19 @@ public class RelationController {
     }
 
     /**
-     * Creates an internal relation between two entities
+     * Creates internal relations between two entities.
+     * Accepts multiple relation type IDs; when none provided, creates a single untyped relation.
      */
     @PostMapping("/internal/{sourceEntityType}/{sourceEntityId}/{targetEntityType}/{targetEntityId}")
-    public Long createInternalRelation(
+    public List<Long> createInternalRelations(
         @PathVariable EntityType sourceEntityType,
         @PathVariable Long sourceEntityId,
         @PathVariable EntityType targetEntityType,
         @PathVariable Long targetEntityId,
-        @Nullable @RequestParam(name = "relationTypeId", required = false) Long relationTypeId
+        @Nullable @RequestParam(name = "relationTypeIds", required = false) List<Long> relationTypeIds
     ) {
-        return relationService.createInternalRelation(
-            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, relationTypeId);
+        return relationService.createInternalRelations(
+            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, relationTypeIds);
     }
 
     /**

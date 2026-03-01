@@ -21,9 +21,13 @@ import yurykorzun.art.universe.music.data.master.entity.relation.RelationRegistr
 import yurykorzun.art.universe.music.data.master.entity.MasterEntityMetadata;
 import yurykorzun.art.universe.music.data.master.entity.relation.RelationMetadata;
 
+import yurykorzun.art.universe.music.data.master.dto.relation.RelatedEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.relation.RelationTypeInfoDTO;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -228,19 +232,32 @@ public class RelationServiceImpl implements RelationService {
         EntityType targetEntityType,
         @Nullable Long relationTypeId
     ) {
-        return relationQueryDispatcher
-                .findRelatedEntities(sourceEntityType, sourceEntityId, targetEntityType, relationTypeId)
-                .stream()
-                .map(projection -> RelatedEntityDTO.builder()
-                        .id(projection.getId())
-                        .name(projection.getName())
-                        .relationId(projection.getRelationId())
-                        .entityType(targetEntityType)
-                        .relationTypeId(projection.getRelationTypeId())
-                        .relationTypeName(projection.getRelationTypeName())
-                        .trackOrder(projection.getTrackOrder())
-                        .build())
-                .collect(Collectors.toList());
+        var projections = relationQueryDispatcher
+                .findRelatedEntities(sourceEntityType, sourceEntityId, targetEntityType, relationTypeId);
+
+        // Group projections by target entity ID to merge multiple relation types
+        Map<Long, List<RelatedEntityProjection>> grouped =
+                projections.stream().collect(Collectors.groupingBy(
+                        RelatedEntityProjection::getId,
+                        LinkedHashMap::new,
+                        Collectors.toList()));
+
+        return grouped.values().stream().map(group -> {
+            var first = group.get(0);
+            return RelatedEntityDTO.builder()
+                    .id(first.getId())
+                    .name(first.getName())
+                    .entityType(targetEntityType)
+                    .trackOrder(first.getTrackOrder())
+                    .relationTypes(group.stream()
+                            .map(p -> RelationTypeInfoDTO.builder()
+                                    .relationId(p.getRelationId())
+                                    .relationTypeId(p.getRelationTypeId())
+                                    .relationTypeName(p.getRelationTypeName())
+                                    .build())
+                            .collect(Collectors.toList()))
+                    .build();
+        }).collect(Collectors.toList());
     }
 
     @Override
@@ -252,6 +269,21 @@ public class RelationServiceImpl implements RelationService {
         Long targetEntityId,
         @Nullable Long relationTypeId
     ) {
+        List<Long> ids = createInternalRelations(
+            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId,
+            relationTypeId != null ? Collections.singletonList(relationTypeId) : null);
+        return ids.get(0);
+    }
+
+    @Override
+    @Transactional
+    public List<Long> createInternalRelations(
+        EntityType sourceEntityType,
+        Long sourceEntityId,
+        EntityType targetEntityType,
+        Long targetEntityId,
+        @Nullable List<Long> relationTypeIds
+    ) {
         // Validate that entities exist
         validateEntityExists(sourceEntityType, sourceEntityId);
         validateEntityExists(targetEntityType, targetEntityId);
@@ -259,21 +291,27 @@ public class RelationServiceImpl implements RelationService {
         // Create relation metadata
         RelationMetadata metadata = createRelationMetadata(sourceEntityType, targetEntityType);
 
-        // Reject relation type for relations that don't support types (e.g. category relations)
-        if (relationTypeId != null && !metadata.isSupportsRelationTypes()) {
+        // If no relation type IDs provided, create a single untyped relation
+        if (relationTypeIds == null || relationTypeIds.isEmpty()) {
+            return Collections.singletonList(
+                findOrCreateRelation(metadata, sourceEntityId, targetEntityId, null));
+        }
+
+        // Reject relation types for relations that don't support types
+        if (!metadata.isSupportsRelationTypes()) {
             throw new IllegalArgumentException(
                 String.format("Relation between %s and %s does not support relation types",
                     sourceEntityType.getName(), targetEntityType.getName()));
         }
 
-        // Validate relation type applicability if a type is specified
-        if (relationTypeId != null) {
+        // Validate and create each relation type
+        List<Long> createdIds = new ArrayList<>();
+        for (Long relationTypeId : relationTypeIds) {
             validateRelationTypeApplicability(relationTypeId, sourceEntityType, targetEntityType);
             rejectIfSystemRelationType(relationTypeId);
+            createdIds.add(findOrCreateRelation(metadata, sourceEntityId, targetEntityId, relationTypeId));
         }
-
-        // Create or find the relation
-        return findOrCreateRelation(metadata, sourceEntityId, targetEntityId, relationTypeId);
+        return createdIds;
     }
 
     @Override

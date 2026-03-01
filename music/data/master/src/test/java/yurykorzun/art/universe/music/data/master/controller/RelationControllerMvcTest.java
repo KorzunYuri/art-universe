@@ -297,19 +297,19 @@ class RelationControllerMvcTest extends BaseMasterDataMvcTest {
     }
 
     @Test
-    void createInternalRelation_shouldReturnLong() throws Exception {
+    void createInternalRelations_shouldReturnListOfIds() throws Exception {
         // Given
         MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceEntityId = 123L;
         MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         Long targetEntityId = 456L;
-        Long relationId = 789L;
+        List<Long> relationIds = Arrays.asList(789L);
 
-        when(relationService.createInternalRelation(
+        when(relationService.createInternalRelations(
             eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId), isNull()
-        )).thenReturn(relationId);
+        )).thenReturn(relationIds);
 
-        String expectedJson = objectMapper.writeValueAsString(relationId);
+        String expectedJson = objectMapper.writeValueAsString(relationIds);
 
         // When & Then
         mockMvc.perform(post("/api/v1/relations/internal/{sourceEntityType}/{sourceEntityId}/{targetEntityType}/{targetEntityId}",
@@ -318,13 +318,13 @@ class RelationControllerMvcTest extends BaseMasterDataMvcTest {
             .andExpect(status().isOk())
             .andExpect(content().json(expectedJson));
 
-        verify(relationService).createInternalRelation(
+        verify(relationService).createInternalRelations(
             eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId), isNull()
         );
     }
 
     @Test
-    void createInternalRelation_whenExceptionThrown_shouldBeHandledByGlobalExceptionHandler() throws Exception {
+    void createInternalRelations_whenExceptionThrown_shouldBeHandledByGlobalExceptionHandler() throws Exception {
         // Given
         MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceEntityId = 123L;
@@ -332,7 +332,7 @@ class RelationControllerMvcTest extends BaseMasterDataMvcTest {
         Long targetEntityId = 456L;
         String errorMessage = "Test error";
 
-        when(relationService.createInternalRelation(
+        when(relationService.createInternalRelations(
             eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId), isNull()
         )).thenThrow(new RuntimeException(errorMessage));
 
@@ -342,7 +342,7 @@ class RelationControllerMvcTest extends BaseMasterDataMvcTest {
             .andDo(print())
             .andExpect(status().isInternalServerError());
 
-        verify(relationService).createInternalRelation(
+        verify(relationService).createInternalRelations(
             eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId), isNull()
         );
     }
