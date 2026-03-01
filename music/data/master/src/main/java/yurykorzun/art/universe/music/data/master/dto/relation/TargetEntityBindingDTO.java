@@ -21,8 +21,6 @@ public class TargetEntityBindingDTO {
     private boolean isTargetEntityBound;
     @JsonProperty("isInternalRelationBound")
     private boolean isInternalRelationBound;
-    @JsonProperty("isExternalRelationBound")
-    private boolean isExternalRelationBound;
     @Nullable
     private Long targetInternalId; // if bound
     @Nullable

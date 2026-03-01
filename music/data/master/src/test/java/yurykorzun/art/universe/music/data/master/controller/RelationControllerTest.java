@@ -6,7 +6,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelatedEntityDTO;
-import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingStatusDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.TargetEntityBindingDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
@@ -31,121 +30,6 @@ class RelationControllerTest {
     private RelationController relationController;
 
     @Test
-    void bindExternalRelation_shouldReturnBindingDTO() {
-        // Given
-        DataSource dataSource = DataSource.LASTFM;
-        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
-        Long sourceExternalEntityId = 123L;
-        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
-        Long targetExternalEntityId = 456L;
-
-        RelationBindingDTO expectedBinding = RelationBindingDTO.builder()
-            .sourceExternalId(sourceExternalEntityId)
-            .targetExternalId(targetExternalEntityId)
-            .dataSource(dataSource)
-            .relationId(789L)
-            .sourceEntityName("Artist Name")
-            .targetEntityName("Category Name")
-            .sourceEntityType(sourceEntityType)
-            .targetEntityType(targetEntityType)
-            .build();
-
-        when(relationService.bindExternalRelation(
-            dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId
-        )).thenReturn(expectedBinding);
-
-        // When
-        RelationBindingDTO result = relationController.bindExternalRelation(
-            dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId
-        );
-
-        // Then
-        assertEquals(expectedBinding, result);
-        verify(relationService).bindExternalRelation(
-            dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId
-        );
-    }
-
-    @Test
-    void bindExternalRelation_whenExceptionThrown_shouldPassThroughException() {
-        // Given
-        DataSource dataSource = DataSource.LASTFM;
-        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
-        Long sourceExternalEntityId = 123L;
-        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
-        Long targetExternalEntityId = 456L;
-        RuntimeException expectedException = new RuntimeException("Test error");
-
-        when(relationService.bindExternalRelation(
-            dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId
-        )).thenThrow(expectedException);
-
-        // When & Then
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
-            relationController.bindExternalRelation(
-                dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId
-            )
-        );
-        
-        assertSame(expectedException, exception);
-        verify(relationService).bindExternalRelation(
-            dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId
-        );
-    }
-
-    @Test
-    void unbindExternalRelation_shouldReturnBoolean() {
-        // Given
-        DataSource dataSource = DataSource.LASTFM;
-        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
-        Long sourceExternalEntityId = 123L;
-        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
-        Long targetExternalEntityId = 456L;
-
-        when(relationService.unbindExternalRelation(
-            dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId
-        )).thenReturn(true);
-
-        // When
-        boolean result = relationController.unbindExternalRelation(
-            dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId
-        );
-
-        // Then
-        assertTrue(result);
-        verify(relationService).unbindExternalRelation(
-            dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId
-        );
-    }
-
-    @Test
-    void unbindExternalRelation_whenExceptionThrown_shouldPassThroughException() {
-        // Given
-        DataSource dataSource = DataSource.LASTFM;
-        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
-        Long sourceExternalEntityId = 123L;
-        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
-        Long targetExternalEntityId = 456L;
-        RuntimeException expectedException = new RuntimeException("Test error");
-
-        when(relationService.unbindExternalRelation(
-            dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId
-        )).thenThrow(expectedException);
-
-        // When & Then
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
-            relationController.unbindExternalRelation(
-                dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId
-            )
-        );
-        
-        assertSame(expectedException, exception);
-        verify(relationService).unbindExternalRelation(
-            dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId
-        );
-    }
-
-    @Test
     void findBoundExternalRelations_shouldReturnBindingStatusDTO() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
@@ -168,7 +52,6 @@ class RelationControllerTest {
                     .targetInternalId(2L)
                     .isTargetEntityBound(true)
                     .isInternalRelationBound(true)
-                    .isExternalRelationBound(true)
                     .internalRelationId(10L)
                     .build(),
                 TargetEntityBindingDTO.builder()
@@ -177,7 +60,6 @@ class RelationControllerTest {
                     .targetInternalId(3L)
                     .isTargetEntityBound(true)
                     .isInternalRelationBound(false)
-                    .isExternalRelationBound(false)
                     .internalRelationId(null)
                     .build()
             ))
@@ -214,12 +96,12 @@ class RelationControllerTest {
         )).thenThrow(expectedException);
 
         // When & Then
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
             relationController.findBoundExternalRelations(
                 dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityIds
             )
         );
-        
+
         assertSame(expectedException, exception);
         verify(relationService).findBoundExternalRelations(
             eq(dataSource), eq(sourceEntityType), eq(sourceExternalEntityId), eq(targetEntityType), eq(targetExternalEntityIds)
@@ -275,18 +157,18 @@ class RelationControllerTest {
         )).thenThrow(expectedException);
 
         // When & Then
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
             relationController.getRelatedEntities(
                 sourceEntityType, sourceEntityId, targetEntityType, null
             )
         );
-        
+
         assertSame(expectedException, exception);
         verify(relationService).getRelatedEntities(
             sourceEntityType, sourceEntityId, targetEntityType, null
         );
     }
-    
+
     @Test
     void createInternalRelations_shouldReturnListOfIds() {
         // Given
@@ -376,12 +258,12 @@ class RelationControllerTest {
         )).thenThrow(expectedException);
 
         // When & Then
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
             relationController.deleteInternalRelation(
                 sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, null
             )
         );
-        
+
         assertSame(expectedException, exception);
         verify(relationService).deleteInternalRelation(
             sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, null

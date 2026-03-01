@@ -4,7 +4,6 @@ import jakarta.annotation.Nullable;
 import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.common.domain.entity.EntityType;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelatedEntityDTO;
-import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingStatusDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
@@ -23,36 +22,6 @@ public class RelationController {
 
     public RelationController(RelationService relationService) {
         this.relationService = relationService;
-    }
-
-    /**
-     * Binds an external relation to an internal one
-     */
-    @PostMapping("/bind/{dataSource}/{sourceEntityType}/{sourceExternalEntityId}/{targetEntityType}/{targetExternalEntityId}")
-    public RelationBindingDTO bindExternalRelation(
-        @PathVariable DataSource dataSource,
-        @PathVariable MasterEntityType sourceEntityType,
-        @PathVariable Long sourceExternalEntityId,
-        @PathVariable MasterEntityType targetEntityType,
-        @PathVariable Long targetExternalEntityId
-    ) {
-        return relationService.bindExternalRelation(
-            dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId);
-    }
-
-    /**
-     * Unbinds an external relation
-     */
-    @DeleteMapping("/unbind/{dataSource}/{sourceEntityType}/{sourceExternalEntityId}/{targetEntityType}/{targetExternalEntityId}")
-    public boolean unbindExternalRelation(
-        @PathVariable DataSource dataSource,
-        @PathVariable MasterEntityType sourceEntityType,
-        @PathVariable Long sourceExternalEntityId,
-        @PathVariable MasterEntityType targetEntityType,
-        @PathVariable Long targetExternalEntityId
-    ) {
-        return relationService.unbindExternalRelation(
-            dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId);
     }
 
     /**

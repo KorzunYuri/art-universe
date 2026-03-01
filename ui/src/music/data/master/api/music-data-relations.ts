@@ -27,16 +27,6 @@ export interface TargetBindingDTO {
     isTargetEntityBound: boolean;
     isInternalRelationBound: boolean;
     internalRelationId: number | null;
-    isExternalRelationBound: boolean;
-}
-
-/**
- * DTO for relation binding response
- */
-export interface RelationBindingDTO {
-    relationId: number;
-    sourceId: number;
-    targetId: number;
 }
 
 /**
@@ -77,60 +67,8 @@ export interface RelationPair {
 }
 
 /**
- * Binds an external relation to an internal one in music-data
- * 
- * @param dataSource {DataSource}
- * @param sourceEntityType Source entity type (e.g., 'ARTIST')
- * @param sourceExternalEntityId External source entity ID
- * @param targetEntityType Target entity type (e.g., 'CATEGORY')
- * @param targetExternalEntityId External target entity ID
- * @returns The bound relation if successful, null otherwise
- */
-export async function bindExternalRelation(
-    dataSource: DataSource,
-    sourceEntityType: MasterEntityType,
-    sourceExternalEntityId: number,
-    targetEntityType: MasterEntityType,
-    targetExternalEntityId: number
-): Promise<RelationBindingDTO | null> {
-    console.log(`🔗 Binding external relation: ${sourceEntityType}:${sourceExternalEntityId} -> ${targetEntityType}:${targetExternalEntityId}`);
-
-    const response = await masterDataApi.post<RelationBindingDTO>(
-        `/relations/bind/${dataSource}/${sourceEntityType}/${sourceExternalEntityId}/${targetEntityType}/${targetExternalEntityId}`
-    );
-
-    return response.data;
-}
-
-/**
- * Unbinds an external relation in music-data
- * 
- * @param dataSource {DataSource}
- * @param sourceEntityType Source entity type (e.g., 'ARTIST')
- * @param sourceExternalEntityId External source entity ID
- * @param targetEntityType Target entity type (e.g., 'CATEGORY')
- * @param targetExternalEntityId External target entity ID
- * @returns True if successful, false otherwise
- */
-export async function unbindExternalRelation(
-    dataSource: DataSource,
-    sourceEntityType: MasterEntityType,
-    sourceExternalEntityId: number,
-    targetEntityType: MasterEntityType,
-    targetExternalEntityId: number
-): Promise<boolean> {
-    console.log(`🔓 Unbinding external relation: ${sourceEntityType}:${sourceExternalEntityId} -> ${targetEntityType}:${targetExternalEntityId}`);
-
-    const response = await masterDataApi.delete<boolean>(
-        `/relations/unbind/${dataSource}/${sourceEntityType}/${sourceExternalEntityId}/${targetEntityType}/${targetExternalEntityId}`
-    );
-
-    return response.data;
-}
-
-/**
  * Finds bound external relations in music-data
- * 
+ *
  * @param dataSource {DataSource}
  * @param sourceEntityType Source entity type (e.g., 'ARTIST')
  * @param sourceExternalEntityId External source entity ID

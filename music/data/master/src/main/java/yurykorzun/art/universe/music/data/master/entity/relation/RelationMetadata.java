@@ -17,7 +17,6 @@ public class RelationMetadata {
     private final boolean isSameEntityRelation;
     private final boolean supportsRelationTypes;
     private final String relationTableName;
-    private final String relationBindingTableName;
     private final RelationRegistry registry;
 
     /**
@@ -40,7 +39,6 @@ public class RelationMetadata {
         this.targetMetadata = new BaseEntityMetadata<>(targetType);
 
         this.relationTableName = firstType.getName() + "_" + secondType.getName();
-        this.relationBindingTableName = relationTableName + "_binding";
     }
 
     /**
@@ -106,38 +104,10 @@ public class RelationMetadata {
     }
 
     /**
-     * Gets the name of the source external ID field in the binding table.
-     */
-    public String getSourceExternalIdField() {
-        return isSourceFirst ?
-            sourceMetadata.getExternalIdFieldName() :
-            targetMetadata.getExternalIdFieldName();
-    }
-
-    /**
-     * Gets the name of the target external ID field in the binding table.
-     */
-    public String getTargetExternalIdField() {
-        return isSourceFirst ?
-            targetMetadata.getExternalIdFieldName() :
-            sourceMetadata.getExternalIdFieldName();
-    }
-
-    /**
      * Gets the relation entity class for this relation.
      */
     public Class<? extends RelationEntity> getRelationEntityClass() {
         return registry.getRelationEntityClass(
-            getFirstEntityMetadata().getEntityType(),
-            getSecondEntityMetadata().getEntityType()
-        );
-    }
-
-    /**
-     * Gets the relation binding entity class for this relation.
-     */
-    public Class<? extends RelationBindingEntity> getRelationBindingEntityClass() {
-        return registry.getRelationBindingEntityClass(
             getFirstEntityMetadata().getEntityType(),
             getSecondEntityMetadata().getEntityType()
         );
@@ -155,19 +125,5 @@ public class RelationMetadata {
      */
     public Long getSecondEntityId(Long sourceId, Long targetId) {
         return isSourceFirst ? targetId : sourceId;
-    }
-
-    /**
-     * Gets the first external entity ID based on whether the source is first.
-     */
-    public Long getFirstExternalEntityId(Long sourceExternalId, Long targetExternalId) {
-        return isSourceFirst ? sourceExternalId : targetExternalId;
-    }
-
-    /**
-     * Gets the second external entity ID based on whether the source is first.
-     */
-    public Long getSecondExternalEntityId(Long sourceExternalId, Long targetExternalId) {
-        return isSourceFirst ? targetExternalId : sourceExternalId;
     }
 }

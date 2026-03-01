@@ -8,7 +8,6 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
 import yurykorzun.art.universe.music.data.master.test.archetypes.BaseMasterDataJpaTest;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelatedEntityDTO;
-import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingStatusDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.TargetEntityBindingDTO;
 import yurykorzun.art.universe.music.data.master.entity.Artist;
@@ -49,171 +48,86 @@ class RelationServiceIntegrationTest extends BaseMasterDataJpaTest {
     private RelationQueryDispatcher relationQueryDispatcher;
 
     private RelationServiceImpl relationService;
-    
+
     private Artist artist1;
     private Artist artist2;
     private Category category1;
     private Category category2;
-    
+
     @BeforeEach
     void setUp() {
         relationService = new RelationServiceImpl(entityManager, relationRegistry, relationQueryDispatcher);
-        
+
         // Create test data
         artist1 = Artist.builder().name("Artist 1").build();
         artist2 = Artist.builder().name("Artist 2").build();
         category1 = Category.builder().name("Category 1").build();
         category2 = Category.builder().name("Category 2").build();
-        
+
         testEntityManager.persist(artist1);
         testEntityManager.persist(artist2);
         testEntityManager.persist(category1);
         testEntityManager.persist(category2);
-        
+
         // Create bindings for external entities
         ArtistBinding artistBinding1 = ArtistBinding.builder()
             .dataSource(DataSource.LASTFM)
             .externalId(123L)
             .masterId(artist1.getId())
             .build();
-        
+
         ArtistBinding artistBinding2 = ArtistBinding.builder()
             .dataSource(DataSource.LASTFM)
             .externalId(456L)
             .masterId(artist2.getId())
             .build();
-        
+
         CategoryBinding categoryBinding1 = CategoryBinding.builder()
             .dataSource(DataSource.LASTFM)
             .externalId(789L)
             .masterId(category1.getId())
             .build();
-        
+
         CategoryBinding categoryBinding2 = CategoryBinding.builder()
             .dataSource(DataSource.LASTFM)
             .externalId(101L)
             .masterId(category2.getId())
             .build();
-        
+
         testEntityManager.persist(artistBinding1);
         testEntityManager.persist(artistBinding2);
         testEntityManager.persist(categoryBinding1);
         testEntityManager.persist(categoryBinding2);
-        
+
         testEntityManager.flush();
     }
-    
-    @Test
-    void bindRelation_shouldCreateExternalRelationAndBinding() {
-        // Given
-        DataSource dataSource = DataSource.LASTFM;
-        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
-        Long sourceExternalEntityId = 123L;
-        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
-        Long targetExternalEntityId = 789L;
-        
-        // When
-        RelationBindingDTO result = relationService.bindExternalRelation(
-            dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId);
-        
-        // Then
-        assertThat(result).isNotNull();
-        assertThat(result.getSourceExternalId()).isEqualTo(sourceExternalEntityId);
-        assertThat(result.getTargetExternalId()).isEqualTo(targetExternalEntityId);
-        assertThat(result.getDataSource()).isEqualTo(dataSource);
-        assertThat(result.getRelationId()).isNotNull();
-        assertThat(result.getSourceEntityName()).isEqualTo("Artist 1");
-        assertThat(result.getTargetEntityName()).isEqualTo("Category 1");
-        assertThat(result.getSourceEntityType()).isEqualTo(sourceEntityType);
-        assertThat(result.getTargetEntityType()).isEqualTo(targetEntityType);
-        
-        // Verify that relation exists in database
-        String checkRelationSql = "SELECT COUNT(*) FROM artist_category WHERE artist_id = ? AND category_id = ?";
-        Number relationCount = (Number) entityManager.createNativeQuery(checkRelationSql)
-            .setParameter(1, artist1.getId())
-            .setParameter(2, category1.getId())
-            .getSingleResult();
-        
-        assertThat(relationCount.intValue()).isEqualTo(1);
-        
-        // Verify that binding exists in database
-        String checkBindingSql = "SELECT COUNT(*) FROM artist_category_binding WHERE data_source_id = ? AND external_artist_id = ? AND external_category_id = ?";
-        Number bindingCount = (Number) entityManager.createNativeQuery(checkBindingSql)
-            .setParameter(1, dataSource.getCode())
-            .setParameter(2, sourceExternalEntityId)
-            .setParameter(3, targetExternalEntityId)
-            .getSingleResult();
-        
-        assertThat(bindingCount.intValue()).isEqualTo(1);
-    }
-    
-    @Test
-    void unbindExternalRelation_shouldRemoveBinding() {
-        // Given
-        DataSource dataSource = DataSource.LASTFM;
-        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
-        Long sourceExternalEntityId = 123L;
-        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
-        Long targetExternalEntityId = 789L;
-        
-        // First create a relation and binding
-        relationService.bindExternalRelation(
-            dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId);
-        
-        // When
-        boolean result = relationService.unbindExternalRelation(
-            dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId);
-        
-        // Then
-        assertThat(result).isTrue();
-        
-        // Verify that binding is removed from database
-        String checkBindingSql = "SELECT COUNT(*) FROM artist_category_binding WHERE data_source_id = ? AND external_artist_id = ? AND external_category_id = ?";
-        Number bindingCount = (Number) entityManager.createNativeQuery(checkBindingSql)
-            .setParameter(1, dataSource.getCode())
-            .setParameter(2, sourceExternalEntityId)
-            .setParameter(3, targetExternalEntityId)
-            .getSingleResult();
-        
-        assertThat(bindingCount.intValue()).isEqualTo(0);
-        
-        // Verify that relation still exists in database
-        String checkRelationSql = "SELECT COUNT(*) FROM artist_category WHERE artist_id = ? AND category_id = ?";
-        Number relationCount = (Number) entityManager.createNativeQuery(checkRelationSql)
-            .setParameter(1, artist1.getId())
-            .setParameter(2, category1.getId())
-            .getSingleResult();
-        
-        assertThat(relationCount.intValue()).isEqualTo(1);
-    }
-    
+
     @Test
     void getRelatedEntities_shouldReturnEntities() {
         // Given
-        DataSource dataSource = DataSource.LASTFM;
         MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
-        
+
         // Create relations
-        relationService.bindExternalRelation(dataSource, sourceEntityType, 123L, targetEntityType, 789L);
-        relationService.bindExternalRelation(dataSource, sourceEntityType, 123L, targetEntityType, 101L);
-        
+        relationService.createInternalRelations(sourceEntityType, artist1.getId(), targetEntityType, category1.getId(), null);
+        relationService.createInternalRelations(sourceEntityType, artist1.getId(), targetEntityType, category2.getId(), null);
+
         // When
         List<RelatedEntityDTO> results = relationService.getRelatedEntities(
             sourceEntityType, artist1.getId(), targetEntityType, null);
-        
+
         // Then
         assertThat(results).hasSize(2);
-        
+
         assertThat(results.get(0).getId()).isEqualTo(category1.getId());
         assertThat(results.get(0).getName()).isEqualTo("Category 1");
         assertThat(results.get(0).getEntityType()).isEqualTo(targetEntityType);
-        
+
         assertThat(results.get(1).getId()).isEqualTo(category2.getId());
         assertThat(results.get(1).getName()).isEqualTo("Category 2");
         assertThat(results.get(1).getEntityType()).isEqualTo(targetEntityType);
     }
-    
+
     @Test
     void createRelation_shouldCreateInternalRelation() {
         // Given
@@ -221,7 +135,7 @@ class RelationServiceIntegrationTest extends BaseMasterDataJpaTest {
         Long sourceEntityId = artist1.getId();
         MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         Long targetEntityId = category1.getId();
-        
+
         // When
         List<Long> relationIds = relationService.createInternalRelations(
             sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, null);
@@ -239,7 +153,7 @@ class RelationServiceIntegrationTest extends BaseMasterDataJpaTest {
 
         assertThat(relationCount.intValue()).isEqualTo(1);
     }
-    
+
     @Test
     void createInternalRelation_whenEntityDoesNotExist_shouldThrowException() {
         // Given
@@ -247,12 +161,12 @@ class RelationServiceIntegrationTest extends BaseMasterDataJpaTest {
         Long sourceEntityId = 999L; // Non-existent ID
         MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         Long targetEntityId = category1.getId();
-        
+
         // When & Then
         assertThrows(CustomEntityNotFoundException.class, () ->
             relationService.createInternalRelations(sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, null));
     }
-    
+
     @Test
     void deleteRelation_shouldDeleteInternalRelation() {
         // Given
@@ -260,7 +174,7 @@ class RelationServiceIntegrationTest extends BaseMasterDataJpaTest {
         Long sourceEntityId = artist1.getId();
         MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         Long targetEntityId = category1.getId();
-        
+
         // Create relation
         relationService.createInternalRelations(
             sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, null);
@@ -268,20 +182,20 @@ class RelationServiceIntegrationTest extends BaseMasterDataJpaTest {
         // When
         boolean result = relationService.deleteInternalRelation(
             sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, null);
-        
+
         // Then
         assertThat(result).isTrue();
-        
+
         // Verify that relation is removed from database
         String checkRelationSql = "SELECT COUNT(*) FROM artist_category WHERE artist_id = ? AND category_id = ?";
         Number relationCount = (Number) entityManager.createNativeQuery(checkRelationSql)
             .setParameter(1, sourceEntityId)
             .setParameter(2, targetEntityId)
             .getSingleResult();
-        
+
         assertThat(relationCount.intValue()).isEqualTo(0);
     }
-    
+
     @Test
     void deleteRelation_whenInternalRelationDoesNotExist_shouldReturnFalse() {
         // Given
@@ -289,15 +203,15 @@ class RelationServiceIntegrationTest extends BaseMasterDataJpaTest {
         Long sourceEntityId = artist1.getId();
         MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         Long targetEntityId = category1.getId();
-        
+
         // When
         boolean result = relationService.deleteInternalRelation(
             sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, null);
-        
+
         // Then
         assertThat(result).isFalse();
     }
-    
+
     @Test
     void deleteRelationById_shouldDeleteInternalInternalRelation() {
         // Given
@@ -305,7 +219,7 @@ class RelationServiceIntegrationTest extends BaseMasterDataJpaTest {
         Long sourceEntityId = artist1.getId();
         MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         Long targetEntityId = category1.getId();
-        
+
         // Create relation
         List<Long> relationIds = relationService.createInternalRelations(
             sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, null);
@@ -333,52 +247,11 @@ class RelationServiceIntegrationTest extends BaseMasterDataJpaTest {
 
         // When
         boolean result = relationService.deleteInternalRelationById(nonExistentRelationId, MasterEntityType.ARTIST, MasterEntityType.CATEGORY);
-        
+
         // Then
         assertThat(result).isFalse();
     }
-    
-    @Test
-    void deleteInternalRelationById_withExternalBindings_shouldCascadeDeleteBindings() {
-        // Given
-        DataSource dataSource = DataSource.LASTFM;
-        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
-        Long sourceExternalEntityId = 123L;
-        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
-        Long targetExternalEntityId = 789L;
-        
-        // Create relation and binding
-        RelationBindingDTO binding = relationService.bindExternalRelation(
-            dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId);
-        Long relationId = binding.getRelationId();
-        
-        // Verify binding exists
-        String checkBindingSql = "SELECT COUNT(*) FROM artist_category_binding WHERE master_id = ?";
-        Number bindingCountBefore = (Number) entityManager.createNativeQuery(checkBindingSql)
-            .setParameter(1, relationId)
-            .getSingleResult();
-        assertThat(bindingCountBefore.intValue()).isEqualTo(1);
-        
-        // When
-        boolean result = relationService.deleteInternalRelationById(relationId, sourceEntityType, targetEntityType);
 
-        // Then
-        assertThat(result).isTrue();
-
-        // Verify relation is deleted
-        String checkRelationSql = "SELECT COUNT(*) FROM artist_category WHERE id = ?";
-        Number relationCount = (Number) entityManager.createNativeQuery(checkRelationSql)
-            .setParameter(1, relationId)
-            .getSingleResult();
-        assertThat(relationCount.intValue()).isEqualTo(0);
-        
-        // Verify binding is cascade deleted
-        Number bindingCountAfter = (Number) entityManager.createNativeQuery(checkBindingSql)
-            .setParameter(1, relationId)
-            .getSingleResult();
-        assertThat(bindingCountAfter.intValue()).isEqualTo(0);
-    }
-    
     @Test
     void findBoundExternalRelations_withSourceAndTargetIds_shouldReturnBindingStatus() {
         // Given
@@ -387,14 +260,15 @@ class RelationServiceIntegrationTest extends BaseMasterDataJpaTest {
         Long sourceExternalEntityId = 123L;
         MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         List<Long> targetExternalEntityIds = Arrays.asList(789L, 101L, 999L); // 999L doesn't exist
-        
-        // Create relations
-        relationService.bindExternalRelation(dataSource, sourceEntityType, 123L, targetEntityType, 789L);
-        
+
+        // Create internal relation
+        relationService.createInternalRelations(
+            sourceEntityType, artist1.getId(), targetEntityType, category1.getId(), null);
+
         // When
         RelationBindingStatusDTO result = relationService.findBoundExternalRelations(
             dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityIds);
-        
+
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getSourceExternalId()).isEqualTo(sourceExternalEntityId);
@@ -403,64 +277,60 @@ class RelationServiceIntegrationTest extends BaseMasterDataJpaTest {
         assertThat(result.isSourceEntityBound()).isTrue();
         assertThat(result.getTargetEntityType()).isEqualTo(targetEntityType);
         assertThat(result.getTargetBindings()).hasSize(3);
-        
-        // Check first target binding (should be bound both internally and externally)
+
+        // Check first target binding (should have internal relation)
         TargetEntityBindingDTO binding1 = result.getTargetBindings().get(0);
         assertThat(binding1.getTargetExternalId()).isEqualTo(789L);
         assertThat(binding1.getTargetEntityName()).isEqualTo("Category 1");
         assertThat(binding1.isTargetEntityBound()).isTrue();
         assertThat(binding1.isInternalRelationBound()).isTrue();
-        assertThat(binding1.isExternalRelationBound()).isTrue();
         assertThat(binding1.getInternalRelationId()).isNotNull();
-        
+
         // Check second target binding (bound entity but no relation)
         TargetEntityBindingDTO binding2 = result.getTargetBindings().get(1);
         assertThat(binding2.getTargetExternalId()).isEqualTo(101L);
         assertThat(binding2.getTargetEntityName()).isEqualTo("Category 2");
         assertThat(binding2.isTargetEntityBound()).isTrue();
         assertThat(binding2.isInternalRelationBound()).isFalse();
-        assertThat(binding2.isExternalRelationBound()).isFalse();
         assertThat(binding2.getInternalRelationId()).isNull();
-        
+
         // Check third target binding (doesn't exist)
         TargetEntityBindingDTO binding3 = result.getTargetBindings().get(2);
         assertThat(binding3.getTargetExternalId()).isEqualTo(999L);
         assertThat(binding3.isTargetEntityBound()).isFalse();
         assertThat(binding3.isInternalRelationBound()).isFalse();
-        assertThat(binding3.isExternalRelationBound()).isFalse();
         assertThat(binding3.getInternalRelationId()).isNull();
     }
-    
+
     @Test
-    void findBoundExternalRelations_withInternalRelationButNoExternalBinding_shouldShowCorrectStatus() {
+    void findBoundExternalRelations_withInternalRelation_shouldShowCorrectStatus() {
         // Given
         DataSource dataSource = DataSource.LASTFM;
         MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceExternalEntityId = 123L;
         MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         List<Long> targetExternalEntityIds = Arrays.asList(789L);
-        
-        // Create internal relation without external binding
+
+        // Create internal relation
         relationService.createInternalRelations(
             sourceEntityType, artist1.getId(), targetEntityType, category1.getId(), null);
-        
+
         // When
         RelationBindingStatusDTO result = relationService.findBoundExternalRelations(
             dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityIds);
-        
+
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getTargetBindings()).hasSize(1);
-        
-        // Check binding status - should have internal relation but no external binding
+
+        // Check binding status - should have internal relation
         TargetEntityBindingDTO binding = result.getTargetBindings().get(0);
         assertThat(binding.getTargetExternalId()).isEqualTo(789L);
         assertThat(binding.isTargetEntityBound()).isTrue();
         assertThat(binding.isInternalRelationBound()).isTrue();
-        assertThat(binding.isExternalRelationBound()).isFalse();
         assertThat(binding.getInternalRelationId()).isNotNull();
     }
-    
+
     @Test
     void findBoundExternalRelations_withNonExistentSourceEntity_shouldReturnUnboundStatus() {
         // Given
@@ -469,11 +339,11 @@ class RelationServiceIntegrationTest extends BaseMasterDataJpaTest {
         Long sourceExternalEntityId = 999L; // Non-existent ID
         MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         List<Long> targetExternalEntityIds = Arrays.asList(789L, 101L);
-        
+
         // When
         RelationBindingStatusDTO result = relationService.findBoundExternalRelations(
             dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityIds);
-        
+
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getSourceExternalId()).isEqualTo(sourceExternalEntityId);
@@ -481,7 +351,7 @@ class RelationServiceIntegrationTest extends BaseMasterDataJpaTest {
         assertThat(result.getSourceInternalId()).isNull();
         assertThat(result.getTargetBindings()).isEmpty();
     }
-    
+
     @Test
     void findBoundExternalRelations_withEmptyTargetList_shouldReturnEmptyBindings() {
         // Given
@@ -490,64 +360,17 @@ class RelationServiceIntegrationTest extends BaseMasterDataJpaTest {
         Long sourceExternalEntityId = 123L;
         MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         List<Long> emptyTargetList = Collections.emptyList();
-        
+
         // When
         RelationBindingStatusDTO result = relationService.findBoundExternalRelations(
             dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, emptyTargetList);
-        
+
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getSourceExternalId()).isEqualTo(sourceExternalEntityId);
         assertThat(result.getSourceEntityType()).isEqualTo(sourceEntityType);
         assertThat(result.getTargetEntityType()).isEqualTo(targetEntityType);
         assertThat(result.getTargetBindings()).isEmpty();
-    }
-
-
-    @Test
-    void deleteInternalRelation_withExternalBindings_shouldCascadeDeleteBindings() {
-        // Given
-        DataSource dataSource = DataSource.LASTFM;
-        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
-        Long sourceExternalEntityId = 123L;
-        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
-        Long targetExternalEntityId = 789L;
-
-        // Create relation and binding
-        RelationBindingDTO binding = relationService.bindExternalRelation(
-            dataSource, sourceEntityType, sourceExternalEntityId, targetEntityType, targetExternalEntityId);
-        Long relationId = binding.getRelationId();
-
-        // Get internal IDs
-        Long sourceInternalId = artist1.getId();
-        Long targetInternalId = category1.getId();
-
-        // Verify binding exists
-        String checkBindingSql = "SELECT COUNT(*) FROM artist_category_binding WHERE master_id = ?";
-        Number bindingCountBefore = (Number) entityManager.createNativeQuery(checkBindingSql)
-            .setParameter(1, relationId)
-            .getSingleResult();
-        assertThat(bindingCountBefore.intValue()).isEqualTo(1);
-
-        // When
-        boolean result = relationService.deleteInternalRelation(
-            sourceEntityType, sourceInternalId, targetEntityType, targetInternalId, null);
-
-        // Then
-        assertThat(result).isTrue();
-
-        // Verify relation is deleted
-        String checkRelationSql = "SELECT COUNT(*) FROM artist_category WHERE id = ?";
-        Number relationCount = (Number) entityManager.createNativeQuery(checkRelationSql)
-            .setParameter(1, relationId)
-            .getSingleResult();
-        assertThat(relationCount.intValue()).isEqualTo(0);
-
-        // Verify binding is cascade deleted
-        Number bindingCountAfter = (Number) entityManager.createNativeQuery(checkBindingSql)
-            .setParameter(1, relationId)
-            .getSingleResult();
-        assertThat(bindingCountAfter.intValue()).isEqualTo(0);
     }
 
     // === Tests for supportsRelationTypes behavior ===
