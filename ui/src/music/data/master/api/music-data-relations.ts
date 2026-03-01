@@ -207,11 +207,16 @@ export async function createInternalRelation(
 }
 
 /**
- * Deletes an internal relation by ID
+ * Deletes an internal relation by ID, targeting the specific relation table
+ * identified by source and target entity types.
  */
-export async function deleteInternalRelation(relationId: number): Promise<boolean> {
+export async function deleteInternalRelation(
+    relationId: number,
+    sourceEntityType: MasterEntityType,
+    targetEntityType: MasterEntityType
+): Promise<boolean> {
     const response = await masterDataApi.delete<boolean>(
-        `/relations/internal/${relationId}`
+        `/relations/internal/${sourceEntityType}/${targetEntityType}/${relationId}`
     );
 
     return response.data;

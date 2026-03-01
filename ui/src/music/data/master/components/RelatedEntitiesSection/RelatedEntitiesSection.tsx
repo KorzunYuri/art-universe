@@ -90,7 +90,7 @@ export const RelatedEntitiesSection = ({
     const handleRemoveRelationType = useCallback(async (entityId: number, relationId: number) => {
         setRemovingIds(prev => new Set(prev).add(relationId));
         try {
-            await deleteInternalRelation(relationId);
+            await deleteInternalRelation(relationId, sourceEntityType, targetEntityType);
             invalidateRelations();
             queryClient.invalidateQueries({ queryKey: reverseQueryKey(entityId) });
         } catch (error: any) {
@@ -102,7 +102,7 @@ export const RelatedEntitiesSection = ({
                 return next;
             });
         }
-    }, [invalidateRelations, showNotification, queryClient]);
+    }, [invalidateRelations, showNotification, queryClient, sourceEntityType, targetEntityType]);
 
     const handleRemoveAllRelations = useCallback(async (entity: RelatedEntityDTO) => {
         const relationIds = entity.relationTypes.map(rt => rt.relationId);
@@ -112,7 +112,7 @@ export const RelatedEntitiesSection = ({
             return next;
         });
         try {
-            await Promise.all(relationIds.map(id => deleteInternalRelation(id)));
+            await Promise.all(relationIds.map(id => deleteInternalRelation(id, sourceEntityType, targetEntityType)));
             invalidateRelations();
             queryClient.invalidateQueries({ queryKey: reverseQueryKey(entity.id) });
         } catch (error: any) {
@@ -124,7 +124,7 @@ export const RelatedEntitiesSection = ({
                 return next;
             });
         }
-    }, [invalidateRelations, showNotification, queryClient]);
+    }, [invalidateRelations, showNotification, queryClient, sourceEntityType, targetEntityType]);
 
     const count = relatedEntities?.length ?? 0;
     const sectionTitle = `${title} (${isLoading ? '...' : count})`;

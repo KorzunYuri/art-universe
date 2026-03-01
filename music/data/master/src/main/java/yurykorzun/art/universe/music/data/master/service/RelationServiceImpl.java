@@ -364,7 +364,7 @@ public class RelationServiceImpl implements RelationService {
             Number relationId = (Number) query.getSingleResult();
 
             // Delete the relation
-            return deleteInternalRelationById(relationId.longValue());
+            return deleteInternalRelationById(relationId.longValue(), sourceEntityType, targetEntityType);
         } catch (NoResultException e) {
             // Relation not found
             return false;
@@ -375,30 +375,18 @@ public class RelationServiceImpl implements RelationService {
 
     @Override
     @Transactional
-    public boolean deleteInternalRelationById(Long relationId) {
+    public boolean deleteInternalRelationById(Long relationId, EntityType sourceEntityType, EntityType targetEntityType) {
         if (relationId == null) {
             return false;
         }
 
-        try {
-            // Find all relation entity classes
-            for (Class<? extends RelationEntity> relationEntityClass : relationRegistry.getAllRelationEntityClasses()) {
-                try {
-                    // Try to find and delete the relation
-                    RelationEntity relation = entityManager.find(relationEntityClass, relationId);
-                    if (relation != null) {
-                        entityManager.remove(relation);
-                        return true;
-                    }
-                } catch (Exception ignored) {
-                    // Continue to the next relation entity class
-                }
-            }
-
-            return false;
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to delete relation by ID", e);
+        Class<? extends RelationEntity> entityClass = relationRegistry.getRelationEntityClass(sourceEntityType, targetEntityType);
+        RelationEntity relation = entityManager.find(entityClass, relationId);
+        if (relation != null) {
+            entityManager.remove(relation);
+            return true;
         }
+        return false;
     }
 
     // Helper methods

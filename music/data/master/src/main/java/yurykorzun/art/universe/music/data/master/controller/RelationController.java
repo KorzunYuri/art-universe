@@ -116,12 +116,15 @@ public class RelationController {
     }
 
     /**
-     * Deletes an internal relation by relation ID
+     * Deletes an internal relation by relation ID, targeting the specific relation table
+     * identified by source and target entity types.
      */
-    @DeleteMapping("/internal/{relationId}")
+    @DeleteMapping("/internal/{sourceEntityType}/{targetEntityType}/{relationId}")
     public boolean deleteInternalRelationById(
+        @PathVariable EntityType sourceEntityType,
+        @PathVariable EntityType targetEntityType,
         @PathVariable Long relationId
     ) {
-        return relationService.deleteInternalRelationById(relationId);
+        return relationService.deleteInternalRelationById(relationId, sourceEntityType, targetEntityType);
     }
 }

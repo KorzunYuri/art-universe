@@ -392,31 +392,35 @@ class RelationControllerTest {
     void deleteInternalRelationById_shouldReturnBoolean() {
         // Given
         Long relationId = 123L;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
 
-        when(relationService.deleteInternalRelationById(relationId)).thenReturn(true);
+        when(relationService.deleteInternalRelationById(relationId, sourceEntityType, targetEntityType)).thenReturn(true);
 
         // When
-        boolean result = relationController.deleteInternalRelationById(relationId);
+        boolean result = relationController.deleteInternalRelationById(sourceEntityType, targetEntityType, relationId);
 
         // Then
         assertTrue(result);
-        verify(relationService).deleteInternalRelationById(relationId);
+        verify(relationService).deleteInternalRelationById(relationId, sourceEntityType, targetEntityType);
     }
 
     @Test
     void deleteInternalRelationById_whenExceptionThrown_shouldPassThroughException() {
         // Given
         Long relationId = 123L;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         RuntimeException expectedException = new RuntimeException("Test error");
 
-        when(relationService.deleteInternalRelationById(relationId)).thenThrow(expectedException);
+        when(relationService.deleteInternalRelationById(relationId, sourceEntityType, targetEntityType)).thenThrow(expectedException);
 
         // When & Then
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
-            relationController.deleteInternalRelationById(relationId)
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+            relationController.deleteInternalRelationById(sourceEntityType, targetEntityType, relationId)
         );
-        
+
         assertSame(expectedException, exception);
-        verify(relationService).deleteInternalRelationById(relationId);
+        verify(relationService).deleteInternalRelationById(relationId, sourceEntityType, targetEntityType);
     }
 }

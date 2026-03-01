@@ -401,34 +401,40 @@ class RelationControllerMvcTest extends BaseMasterDataMvcTest {
     void deleteInternalRelationById_shouldReturnBoolean() throws Exception {
         // Given
         Long relationId = 123L;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
 
-        when(relationService.deleteInternalRelationById(eq(relationId))).thenReturn(true);
+        when(relationService.deleteInternalRelationById(eq(relationId), eq(sourceEntityType), eq(targetEntityType))).thenReturn(true);
 
         String expectedJson = "true";
 
         // When & Then
-        mockMvc.perform(delete("/api/v1/relations/internal/{relationId}", relationId))
+        mockMvc.perform(delete("/api/v1/relations/internal/{sourceEntityType}/{targetEntityType}/{relationId}",
+                    sourceEntityType, targetEntityType, relationId))
             .andDo(print())
             .andExpect(status().isOk())
             .andExpect(content().string(expectedJson));
 
-        verify(relationService).deleteInternalRelationById(eq(relationId));
+        verify(relationService).deleteInternalRelationById(eq(relationId), eq(sourceEntityType), eq(targetEntityType));
     }
 
     @Test
     void deleteInternalRelationById_whenExceptionThrown_shouldBeHandledByGlobalExceptionHandler() throws Exception {
         // Given
         Long relationId = 123L;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         String errorMessage = "Test error";
 
-        when(relationService.deleteInternalRelationById(eq(relationId))).thenThrow(new RuntimeException(errorMessage));
+        when(relationService.deleteInternalRelationById(eq(relationId), eq(sourceEntityType), eq(targetEntityType))).thenThrow(new RuntimeException(errorMessage));
 
         // When & Then
-        mockMvc.perform(delete("/api/v1/relations/internal/{relationId}", relationId))
+        mockMvc.perform(delete("/api/v1/relations/internal/{sourceEntityType}/{targetEntityType}/{relationId}",
+                    sourceEntityType, targetEntityType, relationId))
             .andDo(print())
             .andExpect(status().isInternalServerError());
 
-        verify(relationService).deleteInternalRelationById(eq(relationId));
+        verify(relationService).deleteInternalRelationById(eq(relationId), eq(sourceEntityType), eq(targetEntityType));
     }
     
     @Test

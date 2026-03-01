@@ -92,7 +92,8 @@ public interface RelationService {
     );
 
     /**
-     * Deletes an internal relation by relation ID
+     * Deletes an internal relation by relation ID, targeting the specific relation table
+     * identified by source and target entity types.
      */
-    boolean deleteInternalRelationById(Long relationId);
+    boolean deleteInternalRelationById(Long relationId, EntityType sourceEntityType, EntityType targetEntityType);
 }

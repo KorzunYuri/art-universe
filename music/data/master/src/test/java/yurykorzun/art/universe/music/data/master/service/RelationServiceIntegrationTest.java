@@ -312,7 +312,7 @@ class RelationServiceIntegrationTest extends BaseMasterDataJpaTest {
         Long relationId = relationIds.get(0);
 
         // When
-        boolean result = relationService.deleteInternalRelationById(relationId);
+        boolean result = relationService.deleteInternalRelationById(relationId, sourceEntityType, targetEntityType);
 
         // Then
         assertThat(result).isTrue();
@@ -322,17 +322,17 @@ class RelationServiceIntegrationTest extends BaseMasterDataJpaTest {
         Number relationCount = (Number) entityManager.createNativeQuery(checkRelationSql)
             .setParameter(1, relationId)
             .getSingleResult();
-        
+
         assertThat(relationCount.intValue()).isEqualTo(0);
     }
-    
+
     @Test
     void deleteInternalRelationById_withNonExistentId_shouldReturnFalse() {
         // Given
         Long nonExistentRelationId = 999999L;
-        
+
         // When
-        boolean result = relationService.deleteInternalRelationById(nonExistentRelationId);
+        boolean result = relationService.deleteInternalRelationById(nonExistentRelationId, MasterEntityType.ARTIST, MasterEntityType.CATEGORY);
         
         // Then
         assertThat(result).isFalse();
@@ -360,11 +360,11 @@ class RelationServiceIntegrationTest extends BaseMasterDataJpaTest {
         assertThat(bindingCountBefore.intValue()).isEqualTo(1);
         
         // When
-        boolean result = relationService.deleteInternalRelationById(relationId);
-        
+        boolean result = relationService.deleteInternalRelationById(relationId, sourceEntityType, targetEntityType);
+
         // Then
         assertThat(result).isTrue();
-        
+
         // Verify relation is deleted
         String checkRelationSql = "SELECT COUNT(*) FROM artist_category WHERE id = ?";
         Number relationCount = (Number) entityManager.createNativeQuery(checkRelationSql)
