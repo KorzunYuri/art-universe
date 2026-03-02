@@ -106,19 +106,18 @@ CREATE TABLE stg_artist_template (
 
     -- Mirror of target columns
     name            VARCHAR(1024),
-    genres          TEXT,
-    images          TEXT,
-    external_urls   TEXT,
+    spotify_url     VARCHAR(512),
     uri             VARCHAR(256),
-    type            VARCHAR(32),
 
     -- Per-iteration dedup: last writer wins
     UNIQUE (spotify_id)
 );
--- Analogous templates for album, track, entity_relation, attribute_history
+-- Analogous templates for genre, album, track, entity_relation, attribute_history
+-- See database-schema.md for full template definitions
 
 -- When opening iteration 44:
 CREATE TABLE stg_artist_00044 (LIKE stg_artist_template INCLUDING ALL);
+CREATE TABLE stg_genre_00044 (LIKE stg_genre_template INCLUDING ALL);
 CREATE TABLE stg_album_00044 (LIKE stg_album_template INCLUDING ALL);
 CREATE TABLE stg_track_00044 (LIKE stg_track_template INCLUDING ALL);
 CREATE TABLE stg_entity_relation_00044 (LIKE stg_entity_relation_template INCLUDING ALL);
@@ -167,10 +166,11 @@ The Applicator picks up the oldest SEALED iteration and processes it:
 1. UPDATE staging_iteration SET status = 2 (APPLYING) WHERE id = <iter_id>
 2. Apply entities in dependency order:
    a. Artists  (no FK deps)
-   b. Albums   (depends on artists for primary_artist_id)
-   c. Tracks   (depends on albums, artists)
-   d. Entity relations (depends on all entity types)
-   e. Attribute history (depends on all entity types)
+   b. Genres   (no FK deps)
+   c. Albums   (depends on artists for primary_artist_id)
+   d. Tracks   (depends on albums, artists)
+   e. Entity relations (depends on all entity types including genres)
+   f. Attribute history (depends on all entity types)
 3. On success:
    UPDATE staging_iteration SET status = 3 (COMPLETED), applied_at = now()
 4. On failure:
