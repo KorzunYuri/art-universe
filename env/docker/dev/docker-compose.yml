@@ -18,7 +18,7 @@ services:
     volumes:
       - db-postgres-lastfm-master-data:/var/lib/postgresql/data
       - ../common/db/mu-raw-lastfm/initdb/01-init.sh:/docker-entrypoint-initdb.d/01-init.sh
-    command: ["postgres", "-c", "wal_level=replica", "-c", "max_wal_senders=3", "-c", "max_replication_slots=3"]
+    command: ["postgres", "-c", "wal_level=replica", "-c", "max_wal_senders=3", "-c", "max_replication_slots=3", "-c", "wal_keep_size=256"]
     ports:
       - "${MURAW_LASTFM_DB_MASTER_EXTERNAL_PORT}:5432"
     healthcheck:
@@ -47,7 +47,8 @@ services:
       - POSTGRES_REPLICATION_PASSWORD=${MURAW_LASTFM_DB_REPLICATION_PASSWORD}
     volumes:
       - db-postgres-lastfm-replica-data:/var/lib/postgresql/data
-      - ../common/db/mu-raw-lastfm/initdb/replica-setup.sh:/docker-entrypoint-initdb.d/replica-setup.sh
+      - ../common/db/mu-raw-lastfm/initdb/replica-entrypoint.sh:/replica-entrypoint.sh
+    entrypoint: ["bash", "/replica-entrypoint.sh"]
     ports:
       - "${MURAW_LASTFM_DB_REPLICA_EXTERNAL_PORT}:5432"
     depends_on:

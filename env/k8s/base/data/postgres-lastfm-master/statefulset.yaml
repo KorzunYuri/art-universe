@@ -32,6 +32,8 @@ spec:
             - "max_wal_senders=3"
             - "-c"
             - "max_replication_slots=3"
+            - "-c"
+            - "wal_keep_size=256"
           env:
             - name: POSTGRES_DB
               value: "postgres"

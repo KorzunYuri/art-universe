@@ -60,3 +60,8 @@ EOSQL
 
 # Configure pg_hba.conf for replication
 echo "host replication replicator 0.0.0.0/0 md5" >> "$PGDATA/pg_hba.conf"
+
+# Create a physical replication slot to ensure WAL segments are retained until consumed by the replica
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "music_universe" <<-EOSQL
+    SELECT pg_create_physical_replication_slot('replica_slot');
+EOSQL
