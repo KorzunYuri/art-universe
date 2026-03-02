@@ -4,130 +4,241 @@ Back to [main plan](SPOTIFY_IMPLEMENTATION_PLAN.md#4-staging-layer-design)
 
 ## Overview
 
-The staging layer sits between response parsing and target table population. Every parsed API response writes to staging tables, never directly to target tables. A separate Staging Applicator service periodically applies staged data to target tables in controlled batches.
+The staging layer sits between response parsing and target table population. Every parsed API response writes to staging tables, never directly to target tables. A separate Staging Applicator service applies staged data to target tables in controlled batches.
 
-## Hot/Cold Table Swap
+## Iteration-Based Staging
 
-### Mechanism
+### Why Not A/B Tables
 
-For each target table, two staging tables exist: `stg_{table}_a` and `stg_{table}_b`. At any given time:
-- One table is the **write target** (the Parser writes here)
-- The other is the **read source** (the Applicator reads from here)
+The initial A/B (hot/cold) swap design has a critical failure mode: if processing of table A fails, its records stay. The next swap makes B the read source — but A still has unprocessed data. Over time, failed records accumulate, tables grow, and the system degrades. Retrying the failed table risks conflicting with the live swap cycle.
 
-A metadata table `staging_control` tracks which table is active for writing:
+### The Iteration Model
+
+Instead of two fixed tables, we use **numbered staging iterations**. Each iteration is a self-contained batch with its own set of staging tables:
+
+```
+stg_artist_00042, stg_album_00042, stg_track_00042, ...   ← iteration 42
+stg_artist_00043, stg_album_00043, stg_track_00043, ...   ← iteration 43
+stg_artist_00044, stg_album_00044, stg_track_00044, ...   ← iteration 44 (currently being written)
+```
+
+A metadata table tracks iteration lifecycle:
 
 ```sql
-CREATE TABLE staging_control (
-    target_table    VARCHAR(64) PRIMARY KEY,
-    write_target    CHAR(1) NOT NULL DEFAULT 'A',  -- 'A' or 'B'
-    last_swap_at    TIMESTAMPTZ,
-    last_apply_at   TIMESTAMPTZ,
-    records_applied BIGINT DEFAULT 0
+CREATE TABLE staging_iteration (
+    id              BIGINT PRIMARY KEY DEFAULT nextval('staging_iteration_seq'),
+    status          SMALLINT NOT NULL DEFAULT 0,
+    -- 0=OPEN (parser is writing), 1=SEALED (ready for application),
+    -- 2=APPLYING, 3=COMPLETED, 4=FAILED, 5=RETRYING
+
+    records_staged  BIGINT DEFAULT 0,
+    records_applied BIGINT DEFAULT 0,
+    records_failed  BIGINT DEFAULT 0,
+
+    opened_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+    sealed_at       TIMESTAMPTZ,
+    applied_at      TIMESTAMPTZ,
+    error_message   TEXT,
+
+    -- For retry tracking
+    retry_count     SMALLINT DEFAULT 0,
+    last_retry_at   TIMESTAMPTZ
 );
+
+CREATE SEQUENCE staging_iteration_seq INCREMENT BY 1;
 ```
 
-### Swap Protocol
+### Iteration Lifecycle
 
 ```
-1. Applicator acquires advisory lock (pg_advisory_lock) for the target table
-2. Applicator reads staging_control to determine current write_target (e.g., 'A')
-3. Applicator flips write_target to 'B' (UPDATE staging_control SET write_target = 'B')
-4. From this moment, Parser writes to table B
-5. Applicator processes all records from table A
-6. After successful application, Applicator TRUNCATEs table A
-7. Applicator releases advisory lock
+                 ┌─────────┐
+                 │  OPEN   │ ← Parser writes to this iteration's tables
+                 └────┬────┘
+                      │ seal (time window or record count threshold)
+                      ▼
+                 ┌─────────┐
+                 │ SEALED  │ ← Ready for application
+                 └────┬────┘
+                      │ applicator picks up
+                      ▼
+                 ┌──────────┐
+                 │ APPLYING │
+                 └────┬─────┘
+                    ╱     ╲
+                   ╱       ╲
+                  ▼         ▼
+          ┌───────────┐  ┌────────┐
+          │ COMPLETED │  │ FAILED │
+          └───────────┘  └───┬────┘
+                             │ retry job picks up
+                             ▼
+                        ┌──────────┐
+                        │ RETRYING │
+                        └────┬─────┘
+                           ╱     ╲
+                          ▼       ▼
+                    COMPLETED   FAILED (retry_count++)
 ```
 
-The advisory lock prevents two Applicator instances from swapping simultaneously. The Parser doesn't need the lock — it simply reads `staging_control.write_target` before each batch write.
+### Seal Criteria
 
-### Why This Works
+An OPEN iteration is sealed (transitions to SEALED) when any of these conditions are met:
+- **Time window**: iteration has been open for > N minutes (configurable, e.g., 5 min)
+- **Record count**: total staged records across all tables > M (configurable, e.g., 5000)
+- **Manual trigger**: via REST API for testing/debugging
 
-- **No contention**: Parser and Applicator never touch the same staging table simultaneously
-- **No lost writes**: The swap is a single UPDATE; Parser reads the target atomically before each write
-- **Crash safety**: If the Applicator crashes mid-apply, table A still has all records. On restart, it re-processes A (idempotent application via UPSERT)
-- **Truncate is fast**: TRUNCATE is O(1) vs DELETE which scans all rows
+A scheduled job checks seal criteria every 30 seconds. When it seals the current iteration, it immediately opens a new one (creates tables, inserts metadata row) so the Parser always has a write target.
 
-### Staging Tables Per Target
+### Table Creation
 
-| Target Table | Staging A | Staging B |
-|-------------|-----------|-----------|
-| `artist` | `stg_artist_a` | `stg_artist_b` |
-| `album` | `stg_album_a` | `stg_album_b` |
-| `track` | `stg_track_a` | `stg_track_b` |
-| `entity_relation` | `stg_entity_relation_a` | `stg_entity_relation_b` |
-| `attribute_history` | `stg_attribute_history_a` | `stg_attribute_history_b` |
-
-Total: 10 staging tables + 1 control table.
-
-## Staging Table Schema
-
-Each staging table mirrors its target table columns, plus staging metadata:
+When a new iteration is opened, its staging tables are created from templates:
 
 ```sql
-CREATE TABLE stg_artist_a (
-    -- Staging metadata
+-- Template table (never written to directly, serves as DDL source)
+CREATE TABLE stg_artist_template (
     id              BIGSERIAL PRIMARY KEY,
-    batch_id        BIGINT NOT NULL,           -- Groups records from same parsing cycle
-    api_response_id BIGINT NOT NULL,           -- Provenance: which response produced this
+    api_response_id BIGINT NOT NULL,
     staged_at       TIMESTAMPTZ DEFAULT now(),
-    status          SMALLINT DEFAULT 0,        -- 0=PENDING, 1=APPLIED, 2=FAILED, 3=SKIPPED
 
     -- Synthetic or real ID
-    entity_id       BIGINT,                    -- Synthetic ID (negative) or real ID (positive)
-    spotify_id      VARCHAR(64) NOT NULL,      -- Spotify's canonical ID
+    entity_id       BIGINT,
+    spotify_id      VARCHAR(64) NOT NULL,
 
-    -- Target table columns (mirror artist table)
+    -- Mirror of target columns
     name            VARCHAR(1024),
-    genres          TEXT,                       -- JSON array
-    images          TEXT,                       -- JSON array
-    external_urls   TEXT,                       -- JSON object
+    genres          TEXT,
+    images          TEXT,
+    external_urls   TEXT,
     uri             VARCHAR(256),
+    type            VARCHAR(32),
 
-    -- Deduplication
-    UNIQUE (spotify_id)                        -- Only latest staging record per spotify_id
+    -- Per-iteration dedup: last writer wins
+    UNIQUE (spotify_id)
 );
+-- Analogous templates for album, track, entity_relation, attribute_history
+
+-- When opening iteration 44:
+CREATE TABLE stg_artist_00044 (LIKE stg_artist_template INCLUDING ALL);
+CREATE TABLE stg_album_00044 (LIKE stg_album_template INCLUDING ALL);
+CREATE TABLE stg_track_00044 (LIKE stg_track_template INCLUDING ALL);
+CREATE TABLE stg_entity_relation_00044 (LIKE stg_entity_relation_template INCLUDING ALL);
+CREATE TABLE stg_attribute_history_00044 (LIKE stg_attribute_history_template INCLUDING ALL);
 ```
 
-The `UNIQUE (spotify_id)` constraint with an upsert (ON CONFLICT DO UPDATE) ensures that if the same Spotify entity appears in multiple API responses within the same staging window, only the latest values are kept. This mirrors LastFM's staging dedup approach.
+`LIKE ... INCLUDING ALL` copies columns, constraints, indexes, and defaults. Fast DDL operation.
+
+### Parser Writes
+
+The Parser reads the current OPEN iteration ID from `staging_iteration` and writes to its tables:
+
+```java
+public class StagingWriter {
+
+    private volatile long currentIterationId;
+
+    @Scheduled(fixedDelay = 10_000)
+    void refreshCurrentIteration() {
+        currentIterationId = jdbcTemplate.queryForObject(
+            "SELECT id FROM staging_iteration WHERE status = 0 ORDER BY id DESC LIMIT 1",
+            Long.class
+        );
+    }
+
+    public void stageArtist(SpotifyArtistDto dto, long apiResponseId) {
+        String table = "stg_artist_" + String.format("%05d", currentIterationId);
+        jdbcTemplate.update(
+            "INSERT INTO " + table + " (...) VALUES (?, ?, ...) " +
+            "ON CONFLICT (spotify_id) DO UPDATE SET name = EXCLUDED.name, ...",
+            dto.getSpotifyId(), dto.getName(), ...
+        );
+    }
+}
+```
+
+**Contention**: Multiple parser instances writing to the same iteration's tables will only contend on the `UNIQUE(spotify_id)` constraint if two parsers process responses containing the same entity simultaneously. The `ON CONFLICT DO UPDATE` handles this gracefully — last writer wins, no errors.
 
 ## Application Process
 
-The Applicator processes each target table independently in this order:
+### Normal Application
+
+The Applicator picks up the oldest SEALED iteration and processes it:
 
 ```
-1. Apply artists    (entities first — they have no FK dependencies)
-2. Apply albums     (depends on artists for primary_artist_id)
-3. Apply tracks     (depends on albums)
-4. Apply entity_relation  (depends on all entity types)
-5. Apply attribute_history (depends on all entity types)
+1. UPDATE staging_iteration SET status = 2 (APPLYING) WHERE id = <iter_id>
+2. Apply entities in dependency order:
+   a. Artists  (no FK deps)
+   b. Albums   (depends on artists for primary_artist_id)
+   c. Tracks   (depends on albums, artists)
+   d. Entity relations (depends on all entity types)
+   e. Attribute history (depends on all entity types)
+3. On success:
+   UPDATE staging_iteration SET status = 3 (COMPLETED), applied_at = now()
+4. On failure:
+   UPDATE staging_iteration SET status = 4 (FAILED), error_message = <msg>
 ```
+
+### Retry of Failed Iterations
+
+When no SEALED iterations are pending, the Applicator switches to retry mode:
+
+```
+1. Find oldest FAILED iteration with retry_count < max_retries (configurable, e.g., 3)
+2. UPDATE staging_iteration SET status = 5 (RETRYING), retry_count = retry_count + 1
+3. Apply using the SAME logic as normal application (upsert-based, inherently idempotent)
+4. On success: status = 3 (COMPLETED)
+5. On failure: status = 4 (FAILED), last_retry_at = now()
+```
+
+**Safety of retrying old iterations**: Since newer iterations may have already been applied, a retried old iteration could contain stale data. The application SQL handles this with timestamp guards:
+
+```sql
+-- Only update target entity if staging data is not older than what's already there
+UPDATE artist a
+SET name = COALESCE(s.name, a.name),
+    genres = COALESCE(s.genres, a.genres),
+    ...
+    modified_dttm = now()
+FROM stg_artist_00041 s
+WHERE a.spotify_id = s.spotify_id
+  AND s.staged_at > a.modified_dttm;  -- Timestamp guard: only apply if newer
+```
+
+For new entities (not yet in target table), the INSERT always succeeds regardless of iteration age — the entity needs to exist. For attribute_history, the existing SCD2 logic already has `valid_from` ordering that prevents older values from overwriting newer ones.
+
+### The Partial-Failure Problem
+
+The user raised an important scenario: what if iteration 41 fails after inserting artist A but before inserting A's tracks T1 and T2? Then iteration 42 succeeds with different data. When retrying iteration 41:
+
+- **Artist A**: Already exists (from 41's partial apply or from 42). The UPSERT with timestamp guard skips it if 42's data is newer, or updates it if 41's data is somehow newer (unlikely but harmless).
+- **Tracks T1, T2**: May or may not exist. If they don't exist, they're inserted. If they do (from a later iteration), timestamp guard applies.
+- **Relations (A→T1, A→T2)**: UPSERT on composite key — if relation already exists, it's a no-op or update.
+
+The key insight: **application logic is purely additive (UPSERT-based)**. It never deletes, never requires all-or-nothing semantics within a batch. Partial application of a batch is safe because:
+1. Every entity has a canonical key (spotify_id) — duplicates are impossible
+2. Every relation has a composite unique key — duplicates are impossible
+3. Timestamp guards prevent old data from overwriting new data
+4. The only risk is "orphaned" staging data that references entities not yet in the system — these are simply skipped (ON CONFLICT DO NOTHING on FK violations) and may be resolved by a later retry or a later iteration
 
 ### Application SQL Pattern (Artist Example)
 
 ```sql
--- Step 1: Resolve synthetic IDs for records referencing existing entities
-WITH resolve_existing AS (
-    SELECT s.id as staging_id, a.id as real_id
-    FROM stg_artist_a s
-    JOIN artist a ON a.spotify_id = s.spotify_id
-    WHERE s.status = 0  -- PENDING
+WITH staging AS (
+    SELECT * FROM stg_artist_00042
 ),
 
--- Step 2: Insert new entities (no matching spotify_id in target)
+-- Insert entities not yet in the target table
 inserted AS (
     INSERT INTO artist (id, spotify_id, name, genres, images, external_urls, uri,
                         api_response_id, created_dttm, modified_dttm)
     SELECT nextval('artist_seq'), s.spotify_id, s.name, s.genres, s.images,
            s.external_urls, s.uri, s.api_response_id, now(), now()
-    FROM stg_artist_a s
-    LEFT JOIN resolve_existing re ON re.staging_id = s.id
-    WHERE s.status = 0
-      AND re.staging_id IS NULL  -- Not existing
-    ON CONFLICT (spotify_id) DO NOTHING  -- Race condition safety
+    FROM staging s
+    WHERE NOT EXISTS (SELECT 1 FROM artist a WHERE a.spotify_id = s.spotify_id)
+    ON CONFLICT (spotify_id) DO NOTHING
     RETURNING id, spotify_id
 ),
 
--- Step 3: Update existing entities where data changed
+-- Update existing entities only if staging data is newer
 updated AS (
     UPDATE artist a
     SET name = COALESCE(s.name, a.name),
@@ -137,52 +248,82 @@ updated AS (
         uri = COALESCE(s.uri, a.uri),
         api_response_id = s.api_response_id,
         modified_dttm = now()
-    FROM stg_artist_a s
-    JOIN resolve_existing re ON re.staging_id = s.id
-    WHERE a.id = re.real_id
-      AND s.status = 0
+    FROM staging s
+    WHERE a.spotify_id = s.spotify_id
+      AND s.staged_at > a.modified_dttm
       AND (a.name IS DISTINCT FROM s.name
            OR a.genres IS DISTINCT FROM s.genres
            OR a.images IS DISTINCT FROM s.images)
     RETURNING a.id, a.spotify_id
 ),
 
--- Step 4: Build synthetic→real ID mapping for downstream tables
-id_mapping AS (
-    SELECT spotify_id, id as real_id FROM inserted
+-- Collect all resolved IDs for downstream dependency resolution
+resolved_ids AS (
+    SELECT id, spotify_id FROM inserted
     UNION ALL
-    SELECT spotify_id, real_id FROM resolve_existing
+    SELECT a.id, a.spotify_id FROM artist a
+    JOIN staging s ON s.spotify_id = a.spotify_id
+    WHERE a.spotify_id NOT IN (SELECT spotify_id FROM inserted)
 )
 
--- Step 5: Mark staging records as applied
-UPDATE stg_artist_a SET status = 1 WHERE status = 0;
+-- Persist ID mappings for subsequent table applications within this iteration
+INSERT INTO synthetic_id_resolution (entity_type, spotify_id, synthetic_id, real_id)
+SELECT 1, r.spotify_id, s.entity_id, r.id
+FROM resolved_ids r
+JOIN staging s ON s.spotify_id = r.spotify_id
+WHERE s.entity_id < 0  -- Only for synthetic IDs
+ON CONFLICT (entity_type, spotify_id) DO UPDATE SET real_id = EXCLUDED.real_id;
 ```
 
-The `id_mapping` CTE result is persisted to a `synthetic_id_resolution` table so that subsequent target table applications (albums, tracks, relations) can resolve their foreign key references.
+## Cleanup
+
+A scheduled cleanup job runs periodically (e.g., daily) and drops staging tables for old iterations:
+
+```sql
+-- Find iterations eligible for cleanup
+SELECT id FROM staging_iteration
+WHERE status IN (3, 4)  -- COMPLETED or FAILED (exhausted retries)
+  AND COALESCE(applied_at, opened_at) < now() - INTERVAL '7 days';
+```
+
+For each eligible iteration:
+```sql
+DROP TABLE IF EXISTS stg_artist_00035;
+DROP TABLE IF EXISTS stg_album_00035;
+DROP TABLE IF EXISTS stg_track_00035;
+DROP TABLE IF EXISTS stg_entity_relation_00035;
+DROP TABLE IF EXISTS stg_attribute_history_00035;
+DELETE FROM staging_iteration WHERE id = 35;
+```
+
+Retention period is configurable (default: 7 days for COMPLETED, 30 days for FAILED — longer retention for failed iterations allows debugging).
 
 ## Comparison with LastFM Staging
 
-| Aspect | LastFM | Spotify |
-|--------|--------|---------|
+| Aspect | LastFM | Spotify (Iteration Model) |
+|--------|--------|---------------------------|
 | **Scope** | Attribute history only | All entity types |
-| **Tables** | 2 (stg_a, stg_b for attribute_history) | 10 (2 per target table) |
-| **Dedup in staging** | UPSERT on composite key | UPSERT on spotify_id |
-| **Application** | CTE pipeline (archive + delete + insert) | CTE pipeline (resolve + insert + update) |
-| **ID resolution** | Not needed (entities exist before staging) | Required (synthetic → real ID mapping) |
-| **Error tracking** | None (all-or-nothing per batch) | Per-record status column |
-| **Control mechanism** | Alternating table name in code | `staging_control` metadata table |
+| **Table lifecycle** | 2 fixed tables, never dropped | Dynamic tables per iteration, dropped after retention |
+| **Failure handling** | Retry same table (risk of accumulation) | Failed iterations retried independently, don't block new ones |
+| **Isolation** | Writer and reader on different fixed tables | Writer and reader on different iterations entirely |
+| **Dedup in staging** | UPSERT on composite key | UPSERT on spotify_id within iteration |
+| **Application** | CTE pipeline (archive + delete + insert) | CTE pipeline (insert + conditional update + ID resolution) |
+| **Timestamp safety** | `valid_from > old_valid_from` | `staged_at > modified_dttm` on entities, `valid_from` on attributes |
+| **Audit trail** | Lost on truncate | Preserved for retention period |
 
-## Failure Handling
+## DDL Management Considerations
 
-### Parser Crash Mid-Write
-- Staging records written before crash are committed (per-response transactions)
-- Unwritten records simply don't appear in staging — the API responses remain PENDING and will be re-processed
+Creating tables dynamically from application code is unusual. Trade-offs:
 
-### Applicator Crash Mid-Apply
-- Advisory lock is released on connection close
-- On restart, Applicator finds unapplied records (status=PENDING) in the same table
-- Application is idempotent (UPSERT + ON CONFLICT DO NOTHING)
+**Pros of dynamic tables**:
+- Complete isolation between iterations (no shared indexes, no row-level contention)
+- DROP TABLE is instant (vs DELETE which scans and generates WAL)
+- Failed iteration tables are preserved intact for debugging
+- No index bloat from accumulating records
 
-### Swap Failure
-- If swap UPDATE fails, Applicator retries on next cycle
-- Parser continues writing to the old target (no harm — just delays application)
+**Cons**:
+- DDL operations briefly lock `pg_class` catalog (negligible for CREATE/DROP)
+- Application needs DDL permissions (not just DML)
+- More tables in `pg_catalog` (manageable with cleanup)
+
+**Alternative considered**: PostgreSQL LIST partitioning by iteration_id on a single base table per entity type. This provides similar isolation (DROP PARTITION is fast) with cleaner DDL management. Worth revisiting if dynamic table management proves cumbersome, but the straightforward approach is simpler to implement and reason about initially.

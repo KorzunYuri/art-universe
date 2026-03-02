@@ -75,7 +75,7 @@ The Spotify Web API underwent massive restrictions in February 2026. The availab
                                     │                       │
                                     │ - Parses JSON → DTOs  │
                                     │ - Writes to STAGING   │
-                                    │   tables (hot/cold)   │
+                                    │   tables (iterations) │
                                     │ - Synthetic IDs for   │
                                     │   new entities        │
                                     └──────────┬────────────┘
@@ -84,11 +84,12 @@ The Spotify Web API underwent massive restrictions in February 2026. The availab
                                     ┌──────────────────────┐
                                     │  Staging Applicator   │
                                     │                       │
-                                    │ - Swaps hot/cold      │
+                                    │ - Picks SEALED iters  │
                                     │ - Applies staged data │
                                     │   to target tables    │
                                     │ - Resolves synthetic  │
                                     │   IDs → real IDs      │
+                                    │ - Retries FAILED iters│
                                     └──────────────────────┘
 ```
 
@@ -101,21 +102,23 @@ LastFM merges response parsing and data application into a single service. For S
 - The applicator can run independently, retry failed applications
 - Staging tables act as a buffer / audit trail
 
-**Decision 2: Kafka for call distribution (hybrid approach).**
+**Decision 2: Kafka with per-call-type topics and weighted quotas.**
 
-The Calls Generator still uses the database as the source of truth for "what needs to be fetched" (deduplication, staleness). But instead of the Performer polling the `api_call` table, the Generator publishes call requests to Kafka topics. This enables:
+The Calls Generator still uses the database as the source of truth for "what needs to be fetched" (deduplication, staleness). But instead of the Performer polling the `api_call` table, the Generator publishes call requests to **per-call-type Kafka topics** (e.g., `spotify.calls.artist-get`, `spotify.calls.album-get`). A **weighted round-robin consumer** allocates the rate budget across call types via configurable weights. This enables:
 - Horizontal scaling of Performers (multiple consumers)
+- Granular priority control per API call type (configurable weights)
+- Selective pause of individual call types (weight=0)
 - Backpressure handling via consumer lag
-- Priority topics (seed requests vs refresh requests)
-- Decoupling generator throughput from performer rate limits
+- Unused quota from empty topics automatically redistributes to others
 
-**Decision 3: Staging layer for all entity types, not just attribute history.**
+**Decision 3: Iteration-based staging for all entity types.**
 
-Unlike LastFM where only attribute_history uses staging, Spotify will stage ALL writes (entities, relations, attributes). This provides:
-- Atomic batch application (all-or-nothing per staging cycle)
-- Ability to validate the full batch before committing
-- Clean rollback if application fails partway through
-- Audit trail of what was received vs what was applied
+Unlike LastFM where only attribute_history uses staging (with a fixed A/B swap), Spotify will stage ALL writes using **numbered staging iterations**. Each iteration gets its own set of tables (`stg_artist_00042`, etc.), tracked by a metadata table. This provides:
+- **Failure isolation**: failed iterations don't block new ones; they can be retried independently
+- **No accumulation risk**: unlike A/B tables where failed records pile up
+- **Audit trail**: iteration tables are preserved for a configurable retention period
+- **Safe retries**: UPSERT-based application with timestamp guards prevents stale data from overwriting newer data
+- **Clean cleanup**: DROP TABLE is instant; a periodic job removes iterations past retention
 
 ---
 
@@ -165,7 +168,7 @@ All ETL services depend on a shared Kafka library (Spring Kafka or a thin common
 
 See [staging-layer-design.md](staging-layer-design.md) for the full design.
 
-**Summary**: For each target table (artist, album, track, entity_relation, attribute_history) there are two staging tables (A and B). While the Applicator reads from set A and applies to targets, the Parser writes new data to set B. On the next cycle they swap. Staging tables mirror target table columns plus metadata (batch_id, synthetic_entity_id, status).
+**Summary**: Instead of fixed A/B tables, we use numbered **staging iterations**. Each iteration gets its own set of tables (e.g., `stg_artist_00042`). The Parser writes to the current OPEN iteration; when it's sealed (by time or record count), the Applicator picks it up. Failed iterations are retried independently without blocking new ones. Old iteration tables are dropped after a configurable retention period. Application uses UPSERT with timestamp guards to safely handle retries of old batches.
 
 ---
 
@@ -181,7 +184,7 @@ See [synthetic-ids.md](synthetic-ids.md) for the full design.
 
 See [kafka-integration.md](kafka-integration.md) for the full design.
 
-**Summary**: Two topic families — `spotify.calls.seed` (priority, for newly discovered entities) and `spotify.calls.refresh` (lower priority, for staleness-based refreshes). The Performer consumes with priority from seed topic. Rate limiter (token bucket at ~8 req/s) gates actual HTTP calls regardless of consumption speed.
+**Summary**: One Kafka topic per API call type (e.g., `spotify.calls.artist-get`, `spotify.calls.album-get`). A weighted round-robin consumer allocates the global rate budget (~7 req/s) across call types via configurable weights. Empty topics' budgets redistribute to others automatically. Weights can be adjusted at runtime. Rate limiter (token bucket) gates actual HTTP calls. On 429 responses, the limiter pauses for the Retry-After duration.
 
 ---
 
@@ -243,12 +246,12 @@ See [database-schema.md](database-schema.md) for the full schema.
 
 | Aspect | LastFM | Spotify | Rationale |
 |--------|--------|---------|-----------|
-| **Call distribution** | DB polling | Kafka topics | Enables horizontal scaling of performers |
-| **Staging scope** | Attribute history only | All entity types | Atomic batch application, audit trail |
+| **Call distribution** | DB polling | Per-call-type Kafka topics with weighted quotas | Granular priority control, horizontal scaling, selective pause |
+| **Staging scope** | Attribute history only (A/B swap) | All entity types (numbered iterations) | Failure isolation, audit trail, no accumulation risk |
 | **ID generation** | DB sequences on insert | Synthetic IDs in staging, resolved on apply | Entities must reference each other in staging before they exist in target tables |
 | **Response parsing + application** | Single service | Two services (parser + applicator) | Separation of concerns; applicator can retry independently |
 | **Graph discovery** | API provides similar artists, top tags→artists | Cross-source seeding + album collaboration graph | Spotify removed discovery endpoints |
-| **Rate limiting** | Simple delay between calls | Token bucket with priority queues via Kafka | More precise budget control, priority support |
+| **Rate limiting** | Simple delay between calls | Token bucket + weighted round-robin per call type | Per-type budget control, auto-redistribution of unused quota |
 | **Entity deduplication** | Name-based (complex) | Spotify ID-based (deterministic) | Spotify IDs are globally unique, no ambiguity |
 | **Batch fetching** | N/A (LastFM has no batch) | N/A (Spotify removed batch) | Both require individual fetches |
 | **Blacklisting** | Threshold-based (listeners, plays) | Minimal — no popularity/follower data available | Cannot quality-filter on missing fields |

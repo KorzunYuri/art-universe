@@ -210,18 +210,20 @@ CREATE TABLE attribute_history_archive (
 );
 ```
 
-## Staging Tables
+## Staging Tables (Iteration-Based)
 
-For each target table, two staging variants (A and B):
+Staging tables are created dynamically per iteration from template tables. See [staging-layer-design.md](staging-layer-design.md) for the full lifecycle.
+
+### Template Tables
+
+Templates serve as DDL source for dynamic table creation. Never written to directly.
 
 ```sql
--- Example for artist staging (same pattern for album, track, entity_relation, attribute_history)
-CREATE TABLE stg_artist_a (
+-- Template for artist staging (analogous templates for album, track, entity_relation, attribute_history)
+CREATE TABLE stg_artist_template (
     id              BIGSERIAL PRIMARY KEY,
-    batch_id        BIGINT NOT NULL,
     api_response_id BIGINT NOT NULL,
     staged_at       TIMESTAMPTZ DEFAULT now(),
-    status          SMALLINT DEFAULT 0,      -- 0=PENDING, 1=APPLIED, 2=FAILED, 3=DEFERRED, 4=SKIPPED
 
     -- Synthetic or real ID
     entity_id       BIGINT,
@@ -235,30 +237,41 @@ CREATE TABLE stg_artist_a (
     uri             VARCHAR(256),
     type            VARCHAR(32),
 
+    -- Per-iteration dedup: last writer wins
     UNIQUE (spotify_id)
 );
-
--- Identical structure for stg_artist_b
-CREATE TABLE stg_artist_b (LIKE stg_artist_a INCLUDING ALL);
 ```
 
-### Staging Control
+Dynamic creation per iteration:
+```sql
+-- When opening iteration 42:
+CREATE TABLE stg_artist_00042 (LIKE stg_artist_template INCLUDING ALL);
+CREATE TABLE stg_album_00042 (LIKE stg_album_template INCLUDING ALL);
+-- ... etc for all entity types
+```
+
+### Staging Iteration Metadata
 
 ```sql
-CREATE TABLE staging_control (
-    target_table    VARCHAR(64) PRIMARY KEY,
-    write_target    CHAR(1) NOT NULL DEFAULT 'A',
-    last_swap_at    TIMESTAMPTZ,
-    last_apply_at   TIMESTAMPTZ,
-    records_applied BIGINT DEFAULT 0
+CREATE TABLE staging_iteration (
+    id              BIGINT PRIMARY KEY DEFAULT nextval('staging_iteration_seq'),
+    status          SMALLINT NOT NULL DEFAULT 0,
+    -- 0=OPEN, 1=SEALED, 2=APPLYING, 3=COMPLETED, 4=FAILED, 5=RETRYING
+
+    records_staged  BIGINT DEFAULT 0,
+    records_applied BIGINT DEFAULT 0,
+    records_failed  BIGINT DEFAULT 0,
+
+    opened_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+    sealed_at       TIMESTAMPTZ,
+    applied_at      TIMESTAMPTZ,
+    error_message   TEXT,
+
+    retry_count     SMALLINT DEFAULT 0,
+    last_retry_at   TIMESTAMPTZ
 );
 
-INSERT INTO staging_control VALUES
-    ('artist', 'A', NULL, NULL, 0),
-    ('album', 'A', NULL, NULL, 0),
-    ('track', 'A', NULL, NULL, 0),
-    ('entity_relation', 'A', NULL, NULL, 0),
-    ('attribute_history', 'A', NULL, NULL, 0);
+CREATE SEQUENCE staging_iteration_seq INCREMENT BY 1;
 ```
 
 ### Synthetic ID Resolution
@@ -320,4 +333,4 @@ CREATE INDEX idx_resolution_real ON synthetic_id_resolution (real_id);
 | api_call | type, params, status, due_dttm, entity_type, entity_id, data_snapshot_id | + spotify_id, priority, kafka_produced, kafka_topic | Added Kafka tracking and priority |
 | entity_relation | generic entity pairs | Same pattern | Same |
 | attribute_history | SCD2 with staging | Same pattern | Same |
-| staging tables | attribute_history only (2 tables) | All entity types (10 tables) | Broader staging scope |
+| staging tables | attribute_history only (2 fixed A/B tables) | All entity types, iteration-based (dynamic tables per batch) | Broader scope, failure isolation, audit trail |
