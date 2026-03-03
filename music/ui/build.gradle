@@ -1,6 +1,0 @@
-plugins {
-    id 'art-universe.react-ui'
-}
-
-archivesBaseName = 'music-ui'
-ext.dockerImageName = 'mu-music-ui'

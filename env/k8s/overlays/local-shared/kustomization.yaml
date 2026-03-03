@@ -14,12 +14,12 @@ resources:
   - shared-volumes.yaml
 
 patches:
-  # Override music-ui API ports for local environment (9xxx)
+  # Override art-universe-ui API ports for local environment (9xxx)
   - patch: |
       apiVersion: apps/v1
       kind: Deployment
       metadata:
-        name: music-ui
+        name: art-universe-ui
         namespace: mu-frontend
       spec:
         template:

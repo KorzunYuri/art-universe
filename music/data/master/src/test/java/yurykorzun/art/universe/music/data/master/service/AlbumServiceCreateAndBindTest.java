@@ -1,5 +1,7 @@
 package yurykorzun.art.universe.music.data.master.service;
 
+import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
+
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

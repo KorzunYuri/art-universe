@@ -179,7 +179,7 @@ The cleanup script handles environment-specific cleanup:
 - `music-quiz` (quiz generation) .
 
 **mu-frontend** — UI layer.
-- `music-ui` serves the React app via NGINX. An Ingress resource routes external traffic.
+- `art-universe-ui` serves the React app via NGINX. An Ingress resource routes external traffic.
 
 **art-universe-monitoring** — Observability stack.
 - Prometheus runs as a StatefulSet (persistent metrics storage).

@@ -3,7 +3,7 @@ package yurykorzun.art.universe.music.data.master.service;
 import yurykorzun.art.universe.music.data.master.dto.RelationTypeApplicabilityDTO;
 import yurykorzun.art.universe.music.data.master.dto.RelationTypeDTO;
 import yurykorzun.art.universe.music.data.master.dto.RelationTypeWithApplicabilitiesDTO;
-import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
+import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 
 import java.util.List;
 

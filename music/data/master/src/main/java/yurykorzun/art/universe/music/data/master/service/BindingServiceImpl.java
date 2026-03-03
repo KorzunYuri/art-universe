@@ -8,7 +8,7 @@ import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindRequestD
 import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindResponseDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.music.data.master.entity.MasterEntityMetadata;
-import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
+import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 
 import java.util.Collections;
 import java.util.List;

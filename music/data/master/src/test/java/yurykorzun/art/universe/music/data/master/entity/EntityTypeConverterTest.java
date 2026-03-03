@@ -3,6 +3,8 @@ package yurykorzun.art.universe.music.data.master.entity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import yurykorzun.art.universe.common.CodedRegistry;
+import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
+import yurykorzun.art.universe.common.persistence.converter.EntityTypeConverter;
 
 import static org.junit.jupiter.api.Assertions.*;
 

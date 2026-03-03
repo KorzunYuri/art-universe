@@ -9,7 +9,7 @@ import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.dto.RelationTypeApplicabilityDTO;
 import yurykorzun.art.universe.music.data.master.dto.RelationTypeDTO;
 import yurykorzun.art.universe.music.data.master.dto.RelationTypeWithApplicabilitiesDTO;
-import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
+import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.entity.RelationType;
 import yurykorzun.art.universe.music.data.master.entity.RelationTypeApplicability;
 import yurykorzun.art.universe.music.data.master.repository.RelationTypeApplicabilityRepository;
@@ -152,22 +152,119 @@ class RelationTypeServiceImplTest {
     // --- getApplicableTypes ---
 
     @Test
-    void getApplicableTypes_shouldReturnApplicableRelationTypes() {
-        // Given
-        RelationType type = relationType(1L, "Featuring", null, false, false);
+    void getApplicableTypes_shouldReturnForwardApplicableRelationTypes() {
+        // Given: "Featuring" is applicable to ARTIST→TRACK (forward direction)
+        RelationType type = relationType(1L, "Featuring", "Featured on", false, false);
         RelationTypeApplicability app = applicabilityWithType(10L, 1L, type,
             MasterEntityType.ARTIST, MasterEntityType.TRACK, false);
         when(applicabilityRepository.findBySourceEntityTypeAndTargetEntityType(
             MasterEntityType.ARTIST, MasterEntityType.TRACK))
             .thenReturn(List.of(app));
+        when(applicabilityRepository.findBySourceEntityTypeAndTargetEntityType(
+            MasterEntityType.TRACK, MasterEntityType.ARTIST))
+            .thenReturn(List.of());
 
         // When
         List<RelationTypeDTO> result = service.getApplicableTypes(MasterEntityType.ARTIST, MasterEntityType.TRACK);
 
-        // Then
+        // Then: should return forward name
         assertEquals(1, result.size());
         assertEquals(1L, result.get(0).getId());
         assertEquals("Featuring", result.get(0).getName());
+        assertEquals("Featured on", result.get(0).getReverseName());
+    }
+
+    @Test
+    void getApplicableTypes_shouldReturnReverseApplicableRelationTypes() {
+        // Given: "Has Member" is applicable to ARTIST→PERSON, query is PERSON→ARTIST
+        RelationType type = relationType(1L, "Has Member", "Is Member Of", false, false);
+        RelationTypeApplicability app = applicabilityWithType(10L, 1L, type,
+            MasterEntityType.ARTIST, MasterEntityType.PERSON, false);
+        when(applicabilityRepository.findBySourceEntityTypeAndTargetEntityType(
+            MasterEntityType.PERSON, MasterEntityType.ARTIST))
+            .thenReturn(List.of());
+        when(applicabilityRepository.findBySourceEntityTypeAndTargetEntityType(
+            MasterEntityType.ARTIST, MasterEntityType.PERSON))
+            .thenReturn(List.of(app));
+
+        // When
+        List<RelationTypeDTO> result = service.getApplicableTypes(MasterEntityType.PERSON, MasterEntityType.ARTIST);
+
+        // Then: should return reversed names
+        assertEquals(1, result.size());
+        assertEquals(1L, result.get(0).getId());
+        assertEquals("Is Member Of", result.get(0).getName());
+        assertEquals("Has Member", result.get(0).getReverseName());
+    }
+
+    @Test
+    void getApplicableTypes_shouldCombineForwardAndReverse() {
+        // Given: type A is applicable to X→Y (forward), type B to Y→X (reverse)
+        RelationType typeA = relationType(1L, "Featuring", "Featured on", false, false);
+        RelationType typeB = relationType(2L, "Produced By", "Produced", false, false);
+        RelationTypeApplicability appA = applicabilityWithType(10L, 1L, typeA,
+            MasterEntityType.ARTIST, MasterEntityType.TRACK, false);
+        RelationTypeApplicability appB = applicabilityWithType(20L, 2L, typeB,
+            MasterEntityType.TRACK, MasterEntityType.ARTIST, false);
+        when(applicabilityRepository.findBySourceEntityTypeAndTargetEntityType(
+            MasterEntityType.ARTIST, MasterEntityType.TRACK))
+            .thenReturn(List.of(appA));
+        when(applicabilityRepository.findBySourceEntityTypeAndTargetEntityType(
+            MasterEntityType.TRACK, MasterEntityType.ARTIST))
+            .thenReturn(List.of(appB));
+
+        // When
+        List<RelationTypeDTO> result = service.getApplicableTypes(MasterEntityType.ARTIST, MasterEntityType.TRACK);
+
+        // Then: should contain both, with typeB reversed
+        assertEquals(2, result.size());
+        assertEquals("Featuring", result.get(0).getName());
+        assertEquals("Produced", result.get(1).getName());
+        assertEquals("Produced By", result.get(1).getReverseName());
+    }
+
+    @Test
+    void getApplicableTypes_sameEntityType_shouldNotQueryReverse() {
+        // Given: ARTIST→ARTIST, forward query covers both directions
+        RelationType type = relationType(1L, "Similar To", "Similar To", true, false);
+        RelationTypeApplicability app = applicabilityWithType(10L, 1L, type,
+            MasterEntityType.ARTIST, MasterEntityType.ARTIST, false);
+        when(applicabilityRepository.findBySourceEntityTypeAndTargetEntityType(
+            MasterEntityType.ARTIST, MasterEntityType.ARTIST))
+            .thenReturn(List.of(app));
+
+        // When
+        List<RelationTypeDTO> result = service.getApplicableTypes(MasterEntityType.ARTIST, MasterEntityType.ARTIST);
+
+        // Then
+        assertEquals(1, result.size());
+        assertEquals("Similar To", result.get(0).getName());
+        // Reverse query should NOT be called for same-type pairs
+        verify(applicabilityRepository, times(1))
+            .findBySourceEntityTypeAndTargetEntityType(any(), any());
+    }
+
+    @Test
+    void getApplicableTypes_shouldDeduplicateForwardAndReverse() {
+        // Given: a type is applicable in BOTH directions (unlikely but possible)
+        RelationType type = relationType(1L, "Collaborates With", null, true, false);
+        RelationTypeApplicability appForward = applicabilityWithType(10L, 1L, type,
+            MasterEntityType.ARTIST, MasterEntityType.TRACK, false);
+        RelationTypeApplicability appReverse = applicabilityWithType(20L, 1L, type,
+            MasterEntityType.TRACK, MasterEntityType.ARTIST, false);
+        when(applicabilityRepository.findBySourceEntityTypeAndTargetEntityType(
+            MasterEntityType.ARTIST, MasterEntityType.TRACK))
+            .thenReturn(List.of(appForward));
+        when(applicabilityRepository.findBySourceEntityTypeAndTargetEntityType(
+            MasterEntityType.TRACK, MasterEntityType.ARTIST))
+            .thenReturn(List.of(appReverse));
+
+        // When
+        List<RelationTypeDTO> result = service.getApplicableTypes(MasterEntityType.ARTIST, MasterEntityType.TRACK);
+
+        // Then: should only include the type once (from forward match)
+        assertEquals(1, result.size());
+        assertEquals("Collaborates With", result.get(0).getName());
     }
 
     @Test
@@ -176,12 +273,37 @@ class RelationTypeServiceImplTest {
         when(applicabilityRepository.findBySourceEntityTypeAndTargetEntityType(
             MasterEntityType.ARTIST, MasterEntityType.ALBUM))
             .thenReturn(List.of());
+        when(applicabilityRepository.findBySourceEntityTypeAndTargetEntityType(
+            MasterEntityType.ALBUM, MasterEntityType.ARTIST))
+            .thenReturn(List.of());
 
         // When
         List<RelationTypeDTO> result = service.getApplicableTypes(MasterEntityType.ARTIST, MasterEntityType.ALBUM);
 
         // Then
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void getApplicableTypes_reverse_withNullReverseName_shouldFallBackToName() {
+        // Given: type has no reverseName
+        RelationType type = relationType(1L, "Related To", null, true, false);
+        RelationTypeApplicability app = applicabilityWithType(10L, 1L, type,
+            MasterEntityType.ARTIST, MasterEntityType.PERSON, false);
+        when(applicabilityRepository.findBySourceEntityTypeAndTargetEntityType(
+            MasterEntityType.PERSON, MasterEntityType.ARTIST))
+            .thenReturn(List.of());
+        when(applicabilityRepository.findBySourceEntityTypeAndTargetEntityType(
+            MasterEntityType.ARTIST, MasterEntityType.PERSON))
+            .thenReturn(List.of(app));
+
+        // When
+        List<RelationTypeDTO> result = service.getApplicableTypes(MasterEntityType.PERSON, MasterEntityType.ARTIST);
+
+        // Then: should fall back to name since reverseName is null
+        assertEquals(1, result.size());
+        assertEquals("Related To", result.get(0).getName());
+        assertEquals("Related To", result.get(0).getReverseName());
     }
 
     // --- getApplicabilities ---

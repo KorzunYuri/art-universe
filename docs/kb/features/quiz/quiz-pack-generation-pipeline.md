@@ -13,7 +13,7 @@ If the column is not present in the input dataset, it will be added in the outpu
 
 ## Modules Involved
 
-- [Music UI](../../../../music/ui/README.md) - Provides UI for pipeline configuration and execution
+- [Art Universe UI](../../../../ui/README.md) - Provides UI for pipeline configuration and execution
 - [Music Quiz service](../../../../music/quiz/README.md) - Serves as metadata storage and execution engine
 
 ## Steps Overview

@@ -53,6 +53,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: music-ui
+                name: art-universe-ui
                 port:
                   number: 80

@@ -7,8 +7,8 @@ kind: Kustomization
 namespace: mu-frontend
 
 resources:
-  - music-ui/deployment.yaml
-  - music-ui/service.yaml
+  - art-universe-ui/deployment.yaml
+  - art-universe-ui/service.yaml
   - external-services.yaml
   - ingress.yaml
 

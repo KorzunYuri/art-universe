@@ -21,5 +21,8 @@
     <include file="changelogs/0015-dictionary-synchronizer-deprecation.xml" relativeToChangelogFile="true"/>
     <include file="changelogs/0016-relation-types.xml" relativeToChangelogFile="true"/>
     <include file="changelogs/0017-album-track-categories.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0018-person-relations.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0019-relation-types-values.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0020-drop-relation-bindings.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

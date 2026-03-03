@@ -2,7 +2,7 @@ package yurykorzun.art.universe.music.data.master.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
-import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
+import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 
 @Data
 @Builder

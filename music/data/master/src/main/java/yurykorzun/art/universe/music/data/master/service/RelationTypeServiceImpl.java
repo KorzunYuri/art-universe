@@ -6,13 +6,15 @@ import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.dto.RelationTypeApplicabilityDTO;
 import yurykorzun.art.universe.music.data.master.dto.RelationTypeDTO;
 import yurykorzun.art.universe.music.data.master.dto.RelationTypeWithApplicabilitiesDTO;
-import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
+import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.entity.RelationType;
 import yurykorzun.art.universe.music.data.master.entity.RelationTypeApplicability;
 import yurykorzun.art.universe.music.data.master.repository.RelationTypeApplicabilityRepository;
 import yurykorzun.art.universe.music.data.master.repository.RelationTypeRepository;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -58,11 +60,30 @@ public class RelationTypeServiceImpl implements RelationTypeService {
     @Override
     @Transactional(readOnly = true)
     public List<RelationTypeDTO> getApplicableTypes(MasterEntityType sourceEntityType, MasterEntityType targetEntityType) {
-        List<RelationTypeApplicability> applicabilities =
+        // Forward matches: applicability stored in the same direction as the query
+        List<RelationTypeApplicability> forward =
             applicabilityRepository.findBySourceEntityTypeAndTargetEntityType(sourceEntityType, targetEntityType);
-        return applicabilities.stream()
-            .map(a -> toDTO(a.getRelationType()))
-            .collect(Collectors.toList());
+
+        List<RelationTypeDTO> result = new ArrayList<>(
+            forward.stream().map(a -> toDTO(a.getRelationType())).toList());
+
+        // Reverse matches: applicability stored in the opposite direction
+        // Skip if source == target (forward already covers both directions for same-type pairs)
+        if (sourceEntityType != targetEntityType) {
+            Set<Long> forwardTypeIds = forward.stream()
+                .map(a -> a.getRelationType().getId())
+                .collect(Collectors.toSet());
+
+            List<RelationTypeApplicability> reverse =
+                applicabilityRepository.findBySourceEntityTypeAndTargetEntityType(targetEntityType, sourceEntityType);
+
+            reverse.stream()
+                .filter(a -> !forwardTypeIds.contains(a.getRelationType().getId()))
+                .map(a -> toReversedDTO(a.getRelationType()))
+                .forEach(result::add);
+        }
+
+        return result;
     }
 
     @Override
@@ -83,6 +104,22 @@ public class RelationTypeServiceImpl implements RelationTypeService {
             .id(entity.getId())
             .name(entity.getName())
             .reverseName(entity.getReverseName())
+            .isSymmetrical(entity.isSymmetrical())
+            .isSystem(entity.isSystem())
+            .build();
+    }
+
+    /**
+     * Creates a DTO with name and reverseName swapped.
+     * Used when the applicability is stored as (A→B) but queried as (B→A).
+     * E.g. "Has Member" (artist→person) becomes "Is Member Of" (person→artist).
+     */
+    private RelationTypeDTO toReversedDTO(RelationType entity) {
+        String reverseName = entity.getReverseName();
+        return RelationTypeDTO.builder()
+            .id(entity.getId())
+            .name(reverseName != null ? reverseName : entity.getName())
+            .reverseName(entity.getName())
             .isSymmetrical(entity.isSymmetrical())
             .isSystem(entity.isSystem())
             .build();

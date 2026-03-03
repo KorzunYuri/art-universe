@@ -29,4 +29,4 @@ At the moment of writing this Lastfm was the only source of raw entities, with S
 - [Music Master Data Service](../../../music/data/master/README.md) - Manages master entities
 - [Lastfm Read API](../../../music/data/raw/lastfm/lastfm-rest-api/README.md) - Provides read access to Lastfm entities
 - [Lastfm Write API](../../../music/data/master/README.md) - Provides write access to Lastfm entities (approval status management)
-- [Music UI](../../../music/ui/README.md) - Provides user interface for all the required operations
+- [Art Universe UI](../../../ui/README.md) - Provides user interface for all the required operations

@@ -8,6 +8,9 @@ include 'common:test:commons-test'
 include 'common:test:commons-test-web'
 include 'common:test:commons-test-db'
 
+include 'art:data:models'
+include 'art:data:master'
+
 include 'music:data:master'
 
 include 'common:data:raw:data-raw-commons-jpa'
@@ -30,4 +33,4 @@ include 'music:data:raw:lastfm:test:lastfm-commons-test-db-helper'
 include 'music:data:raw:lastfm:test:lastfm-commons-test-web'
 
 include 'music:quiz'
-include 'music:ui'
+include 'ui'

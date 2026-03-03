@@ -9,11 +9,10 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import yurykorzun.art.universe.music.data.master.config.WebMvcTestConfig;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelatedEntityDTO;
-import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingStatusDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.TargetEntityBindingDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
+import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.service.RelationService;
 import yurykorzun.art.universe.music.data.master.test.archetypes.BaseMasterDataMvcTest;
 
@@ -39,121 +38,6 @@ class RelationControllerMvcTest extends BaseMasterDataMvcTest {
     private RelationService relationService;
 
     @Test
-    void bindExternalRelation_shouldReturnBindingDTO() throws Exception {
-        // Given
-        DataSource dataSource = DataSource.LASTFM;
-        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
-        Long sourceExternalEntityId = 123L;
-        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
-        Long targetExternalEntityId = 456L;
-
-        RelationBindingDTO binding = RelationBindingDTO.builder()
-            .sourceExternalId(sourceExternalEntityId)
-            .targetExternalId(targetExternalEntityId)
-            .dataSource(dataSource)
-            .relationId(789L)
-            .sourceEntityName("Artist Name")
-            .targetEntityName("Category Name")
-            .sourceEntityType(sourceEntityType)
-            .targetEntityType(targetEntityType)
-            .build();
-
-        when(relationService.bindExternalRelation(
-            eq(dataSource), eq(sourceEntityType), eq(sourceExternalEntityId), eq(targetEntityType), eq(targetExternalEntityId)
-        )).thenReturn(binding);
-
-        String expectedJson = objectMapper.writeValueAsString(binding);
-
-        // When & Then
-        mockMvc.perform(post("/api/v1/relations/bind/{dataSource}/{sourceEntityType}/{sourceExternalEntityId}/{targetEntityType}/{targetExternalEntityId}",
-                dataSource.name(), sourceEntityType.getName(), sourceExternalEntityId, targetEntityType.getName(), targetExternalEntityId))
-            .andDo(print())
-            .andExpect(status().isOk())
-            .andExpect(content().json(expectedJson));
-
-        verify(relationService).bindExternalRelation(
-            eq(dataSource), eq(sourceEntityType), eq(sourceExternalEntityId), eq(targetEntityType), eq(targetExternalEntityId)
-        );
-    }
-
-    @Test
-    void bindExternalRelation_whenExceptionThrown_shouldBeHandledByGlobalExceptionHandler() throws Exception {
-        // Given
-        DataSource dataSource = DataSource.LASTFM;
-        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
-        Long sourceExternalEntityId = 123L;
-        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
-        Long targetExternalEntityId = 456L;
-        String errorMessage = "Test error";
-
-        when(relationService.bindExternalRelation(
-            eq(dataSource), eq(sourceEntityType), eq(sourceExternalEntityId), eq(targetEntityType), eq(targetExternalEntityId)
-        )).thenThrow(new RuntimeException(errorMessage));
-
-        // When & Then
-        mockMvc.perform(post("/api/v1/relations/bind/{dataSource}/{sourceEntityType}/{sourceExternalEntityId}/{targetEntityType}/{targetExternalEntityId}",
-                dataSource.name(), sourceEntityType.getName(), sourceExternalEntityId, targetEntityType.getName(), targetExternalEntityId))
-            .andDo(print())
-            .andExpect(status().isInternalServerError());
-
-        verify(relationService).bindExternalRelation(
-            eq(dataSource), eq(sourceEntityType), eq(sourceExternalEntityId), eq(targetEntityType), eq(targetExternalEntityId)
-        );
-    }
-
-    @Test
-    void unbindExternalRelation_shouldReturnBoolean() throws Exception {
-        // Given
-        DataSource dataSource = DataSource.LASTFM;
-        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
-        Long sourceExternalEntityId = 123L;
-        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
-        Long targetExternalEntityId = 456L;
-
-        when(relationService.unbindExternalRelation(
-            eq(dataSource), eq(sourceEntityType), eq(sourceExternalEntityId), eq(targetEntityType), eq(targetExternalEntityId)
-        )).thenReturn(true);
-
-        String expectedJson = "true";
-
-        // When & Then
-        mockMvc.perform(delete("/api/v1/relations/unbind/{dataSource}/{sourceEntityType}/{sourceExternalEntityId}/{targetEntityType}/{targetExternalEntityId}",
-                dataSource.name(), sourceEntityType.getName(), sourceExternalEntityId, targetEntityType.getName(), targetExternalEntityId))
-            .andDo(print())
-            .andExpect(status().isOk())
-            .andExpect(content().string(expectedJson));
-
-        verify(relationService).unbindExternalRelation(
-            eq(dataSource), eq(sourceEntityType), eq(sourceExternalEntityId), eq(targetEntityType), eq(targetExternalEntityId)
-        );
-    }
-
-    @Test
-    void unbindExternalRelation_whenExceptionThrown_shouldBeHandledByGlobalExceptionHandler() throws Exception {
-        // Given
-        DataSource dataSource = DataSource.LASTFM;
-        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
-        Long sourceExternalEntityId = 123L;
-        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
-        Long targetExternalEntityId = 456L;
-        String errorMessage = "Test error";
-
-        when(relationService.unbindExternalRelation(
-            eq(dataSource), eq(sourceEntityType), eq(sourceExternalEntityId), eq(targetEntityType), eq(targetExternalEntityId)
-        )).thenThrow(new RuntimeException(errorMessage));
-
-        // When & Then
-        mockMvc.perform(delete("/api/v1/relations/unbind/{dataSource}/{sourceEntityType}/{sourceExternalEntityId}/{targetEntityType}/{targetExternalEntityId}",
-                dataSource.name(), sourceEntityType.getName(), sourceExternalEntityId, targetEntityType.getName(), targetExternalEntityId))
-            .andDo(print())
-            .andExpect(status().isInternalServerError());
-
-        verify(relationService).unbindExternalRelation(
-            eq(dataSource), eq(sourceEntityType), eq(sourceExternalEntityId), eq(targetEntityType), eq(targetExternalEntityId)
-        );
-    }
-
-    @Test
     void findBoundExternalRelations_shouldReturnBindingStatusDTO() throws Exception {
         // Given
         DataSource dataSource = DataSource.LASTFM;
@@ -176,7 +60,6 @@ class RelationControllerMvcTest extends BaseMasterDataMvcTest {
                     .targetInternalId(2L)
                     .isTargetEntityBound(true)
                     .isInternalRelationBound(true)
-                    .isExternalRelationBound(true)
                     .internalRelationId(10L)
                     .build(),
                 TargetEntityBindingDTO.builder()
@@ -185,7 +68,6 @@ class RelationControllerMvcTest extends BaseMasterDataMvcTest {
                     .targetInternalId(3L)
                     .isTargetEntityBound(true)
                     .isInternalRelationBound(false)
-                    .isExternalRelationBound(false)
                     .internalRelationId(null)
                     .build()
             ))
@@ -297,19 +179,19 @@ class RelationControllerMvcTest extends BaseMasterDataMvcTest {
     }
 
     @Test
-    void createInternalRelation_shouldReturnLong() throws Exception {
+    void createInternalRelations_shouldReturnListOfIds() throws Exception {
         // Given
         MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceEntityId = 123L;
         MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         Long targetEntityId = 456L;
-        Long relationId = 789L;
+        List<Long> relationIds = Arrays.asList(789L);
 
-        when(relationService.createInternalRelation(
+        when(relationService.createInternalRelations(
             eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId), isNull()
-        )).thenReturn(relationId);
+        )).thenReturn(relationIds);
 
-        String expectedJson = objectMapper.writeValueAsString(relationId);
+        String expectedJson = objectMapper.writeValueAsString(relationIds);
 
         // When & Then
         mockMvc.perform(post("/api/v1/relations/internal/{sourceEntityType}/{sourceEntityId}/{targetEntityType}/{targetEntityId}",
@@ -318,13 +200,13 @@ class RelationControllerMvcTest extends BaseMasterDataMvcTest {
             .andExpect(status().isOk())
             .andExpect(content().json(expectedJson));
 
-        verify(relationService).createInternalRelation(
+        verify(relationService).createInternalRelations(
             eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId), isNull()
         );
     }
 
     @Test
-    void createInternalRelation_whenExceptionThrown_shouldBeHandledByGlobalExceptionHandler() throws Exception {
+    void createInternalRelations_whenExceptionThrown_shouldBeHandledByGlobalExceptionHandler() throws Exception {
         // Given
         MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
         Long sourceEntityId = 123L;
@@ -332,7 +214,7 @@ class RelationControllerMvcTest extends BaseMasterDataMvcTest {
         Long targetEntityId = 456L;
         String errorMessage = "Test error";
 
-        when(relationService.createInternalRelation(
+        when(relationService.createInternalRelations(
             eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId), isNull()
         )).thenThrow(new RuntimeException(errorMessage));
 
@@ -342,11 +224,11 @@ class RelationControllerMvcTest extends BaseMasterDataMvcTest {
             .andDo(print())
             .andExpect(status().isInternalServerError());
 
-        verify(relationService).createInternalRelation(
+        verify(relationService).createInternalRelations(
             eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId), isNull()
         );
     }
-    
+
     @Test
     void deleteInternalRelation_shouldReturnBoolean() throws Exception {
         // Given
@@ -396,54 +278,44 @@ class RelationControllerMvcTest extends BaseMasterDataMvcTest {
             eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId), isNull()
         );
     }
-    
+
     @Test
     void deleteInternalRelationById_shouldReturnBoolean() throws Exception {
         // Given
         Long relationId = 123L;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
 
-        when(relationService.deleteInternalRelationById(eq(relationId))).thenReturn(true);
+        when(relationService.deleteInternalRelationById(eq(relationId), eq(sourceEntityType), eq(targetEntityType))).thenReturn(true);
 
         String expectedJson = "true";
 
         // When & Then
-        mockMvc.perform(delete("/api/v1/relations/internal/{relationId}", relationId))
+        mockMvc.perform(delete("/api/v1/relations/internal/{sourceEntityType}/{targetEntityType}/{relationId}",
+                    sourceEntityType, targetEntityType, relationId))
             .andDo(print())
             .andExpect(status().isOk())
             .andExpect(content().string(expectedJson));
 
-        verify(relationService).deleteInternalRelationById(eq(relationId));
+        verify(relationService).deleteInternalRelationById(eq(relationId), eq(sourceEntityType), eq(targetEntityType));
     }
 
     @Test
     void deleteInternalRelationById_whenExceptionThrown_shouldBeHandledByGlobalExceptionHandler() throws Exception {
         // Given
         Long relationId = 123L;
+        MasterEntityType sourceEntityType = MasterEntityType.ARTIST;
+        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
         String errorMessage = "Test error";
 
-        when(relationService.deleteInternalRelationById(eq(relationId))).thenThrow(new RuntimeException(errorMessage));
+        when(relationService.deleteInternalRelationById(eq(relationId), eq(sourceEntityType), eq(targetEntityType))).thenThrow(new RuntimeException(errorMessage));
 
         // When & Then
-        mockMvc.perform(delete("/api/v1/relations/internal/{relationId}", relationId))
+        mockMvc.perform(delete("/api/v1/relations/internal/{sourceEntityType}/{targetEntityType}/{relationId}",
+                    sourceEntityType, targetEntityType, relationId))
             .andDo(print())
             .andExpect(status().isInternalServerError());
 
-        verify(relationService).deleteInternalRelationById(eq(relationId));
-    }
-    
-    @Test
-    void bindExternalRelation_withInvalidEntityType_shouldReturnBadRequest() throws Exception {
-        // Given
-        DataSource dataSource = DataSource.LASTFM;
-        String invalidEntityType = "invalid";
-        Long sourceExternalEntityId = 123L;
-        MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
-        Long targetExternalEntityId = 456L;
-
-        // When & Then
-        mockMvc.perform(post("/api/v1/relations/bind/{dataSource}/{sourceEntityType}/{sourceExternalEntityId}/{targetEntityType}/{targetExternalEntityId}",
-                dataSource.name(), invalidEntityType, sourceExternalEntityId, targetEntityType.getName(), targetExternalEntityId))
-            .andDo(print())
-            .andExpect(status().isBadRequest());
+        verify(relationService).deleteInternalRelationById(eq(relationId), eq(sourceEntityType), eq(targetEntityType));
     }
 }

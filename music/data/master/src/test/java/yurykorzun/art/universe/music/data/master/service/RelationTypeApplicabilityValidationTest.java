@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Import;
 import yurykorzun.art.universe.music.data.master.test.archetypes.BaseMasterDataJpaTest;
 import yurykorzun.art.universe.music.data.master.entity.Artist;
 import yurykorzun.art.universe.music.data.master.entity.Category;
-import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
+import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.entity.RelationType;
 import yurykorzun.art.universe.music.data.master.entity.RelationTypeApplicability;
 import yurykorzun.art.universe.music.data.master.entity.Track;

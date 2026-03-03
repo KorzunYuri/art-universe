@@ -3,9 +3,8 @@ package yurykorzun.art.universe.music.data.master.entity.relation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import yurykorzun.art.universe.music.data.master.entity.ArtistAlbum;
-import yurykorzun.art.universe.music.data.master.entity.ArtistAlbumBinding;
 import yurykorzun.art.universe.music.data.master.entity.ArtistArtist;
-import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
+import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -29,7 +28,6 @@ class RelationMetadataTest {
         assertFalse(metadata.isSameEntityRelation());
         assertTrue(metadata.isSupportsRelationTypes());
         assertEquals("artist_album", metadata.getRelationTableName());
-        assertEquals("artist_album_binding", metadata.getRelationBindingTableName());
     }
 
     @Test
@@ -57,14 +55,6 @@ class RelationMetadataTest {
     }
 
     @Test
-    void getSourceExternalIdField_crossEntity_sourceFirst_shouldReturnExternalArtistId() {
-        RelationMetadata metadata = new RelationMetadata(MasterEntityType.ARTIST, MasterEntityType.ALBUM, registry);
-
-        assertEquals("external_artist_id", metadata.getSourceExternalIdField());
-        assertEquals("external_album_id", metadata.getTargetExternalIdField());
-    }
-
-    @Test
     void getFirstEntityId_crossEntity_sourceFirst_shouldReturnSourceId() {
         RelationMetadata metadata = new RelationMetadata(MasterEntityType.ARTIST, MasterEntityType.ALBUM, registry);
 
@@ -73,25 +63,10 @@ class RelationMetadataTest {
     }
 
     @Test
-    void getFirstExternalEntityId_crossEntity_sourceFirst_shouldReturnSourceExternalId() {
-        RelationMetadata metadata = new RelationMetadata(MasterEntityType.ARTIST, MasterEntityType.ALBUM, registry);
-
-        assertEquals(100L, metadata.getFirstExternalEntityId(100L, 200L));
-        assertEquals(200L, metadata.getSecondExternalEntityId(100L, 200L));
-    }
-
-    @Test
     void getRelationEntityClass_crossEntity_shouldReturnCorrectClass() {
         RelationMetadata metadata = new RelationMetadata(MasterEntityType.ARTIST, MasterEntityType.ALBUM, registry);
 
         assertEquals(ArtistAlbum.class, metadata.getRelationEntityClass());
-    }
-
-    @Test
-    void getRelationBindingEntityClass_crossEntity_shouldReturnCorrectClass() {
-        RelationMetadata metadata = new RelationMetadata(MasterEntityType.ARTIST, MasterEntityType.ALBUM, registry);
-
-        assertEquals(ArtistAlbumBinding.class, metadata.getRelationBindingEntityClass());
     }
 
     // --- Cross-entity relation where source is second (ALBUM, ARTIST) -> reversed ---
@@ -104,7 +79,6 @@ class RelationMetadataTest {
         assertFalse(metadata.isSameEntityRelation());
         assertTrue(metadata.isSupportsRelationTypes());
         assertEquals("artist_album", metadata.getRelationTableName());
-        assertEquals("artist_album_binding", metadata.getRelationBindingTableName());
     }
 
     @Test
@@ -133,23 +107,6 @@ class RelationMetadataTest {
         assertEquals(10L, metadata.getSecondEntityId(10L, 20L));
     }
 
-    @Test
-    void getFirstExternalEntityId_crossEntity_sourceSecond_shouldReturnTargetExternalId() {
-        RelationMetadata metadata = new RelationMetadata(MasterEntityType.ALBUM, MasterEntityType.ARTIST, registry);
-
-        assertEquals(200L, metadata.getFirstExternalEntityId(100L, 200L));
-        assertEquals(100L, metadata.getSecondExternalEntityId(100L, 200L));
-    }
-
-    @Test
-    void getSourceExternalIdField_crossEntity_sourceSecond_shouldReturnSwapped() {
-        RelationMetadata metadata = new RelationMetadata(MasterEntityType.ALBUM, MasterEntityType.ARTIST, registry);
-
-        // isSourceFirst=false, so sourceExternalIdField = targetMetadata.externalIdFieldName
-        assertEquals("external_artist_id", metadata.getSourceExternalIdField());
-        assertEquals("external_album_id", metadata.getTargetExternalIdField());
-    }
-
     // --- Same-entity relation (ARTIST, ARTIST) ---
 
     @Test
@@ -160,7 +117,6 @@ class RelationMetadataTest {
         assertTrue(metadata.isSameEntityRelation());
         assertTrue(metadata.isSupportsRelationTypes());
         assertEquals("artist_artist", metadata.getRelationTableName());
-        assertEquals("artist_artist_binding", metadata.getRelationBindingTableName());
     }
 
     @Test

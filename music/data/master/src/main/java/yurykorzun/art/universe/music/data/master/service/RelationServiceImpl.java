@@ -6,25 +6,27 @@ import jakarta.persistence.NoResultException;
 import jakarta.persistence.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import yurykorzun.art.universe.common.domain.entity.EntityType;
+import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelatedEntityDTO;
-import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingStatusDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.TargetEntityBindingDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.entity.MasterEntityType;
 import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
-import yurykorzun.art.universe.music.data.master.entity.relation.RelationBindingEntity;
 import yurykorzun.art.universe.music.data.master.entity.relation.RelationEntity;
 import yurykorzun.art.universe.music.data.master.entity.relation.RelationRegistry;
 import yurykorzun.art.universe.music.data.master.entity.MasterEntityMetadata;
 import yurykorzun.art.universe.music.data.master.entity.relation.RelationMetadata;
 
+import yurykorzun.art.universe.music.data.master.dto.relation.RelatedEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.relation.RelationTypeInfoDTO;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -45,112 +47,21 @@ public class RelationServiceImpl implements RelationService {
     }
 
     @Override
-    @Transactional
-    public RelationBindingDTO bindExternalRelation(
-        DataSource dataSource, 
-        MasterEntityType sourceEntityType,
-        Long sourceExternalEntityId, 
-        MasterEntityType targetEntityType,
-        Long targetExternalEntityId
-    ) {
-        // Check that external entities are bound
-        Long sourceInternalId = findInternalEntityId(dataSource, sourceEntityType, sourceExternalEntityId);
-        Long targetInternalId = findInternalEntityId(dataSource, targetEntityType, targetExternalEntityId);
-        
-        if (sourceInternalId == null) {
-            throw new CustomEntityNotFoundException(
-                String.format("Source external %s with id %d is not bound", sourceEntityType.getName(), sourceExternalEntityId));
-        }
-        
-        if (targetInternalId == null) {
-            throw new CustomEntityNotFoundException(
-                String.format("Target external %s with id %d ", targetEntityType.getName(), targetExternalEntityId));
-        }
-        
-        // Create relation metadata
-        RelationMetadata metadata = createRelationMetadata(sourceEntityType, targetEntityType);
-        
-        // Find or create relation
-        Long relationId = findOrCreateRelation(
-            metadata,
-            sourceInternalId,
-            targetInternalId
-        );
-        
-        // Find existing binding or create a new one
-        Optional<? extends RelationBindingEntity> existingBinding = findExistingBinding(
-            metadata, dataSource, sourceExternalEntityId, targetExternalEntityId);
-        
-        if (existingBinding.isPresent()) {
-            // Update binding if it already exists
-            RelationBindingEntity binding = existingBinding.get();
-            binding.setMasterBindingId(relationId);
-            entityManager.merge(binding);
-        } else {
-            // Create a new binding
-            createBinding(
-                metadata, dataSource, relationId, 
-                sourceExternalEntityId, targetExternalEntityId);
-        }
-        
-        // Get entity names
-        String sourceEntityName = getEntityName(sourceEntityType, sourceInternalId);
-        String targetEntityName = getEntityName(targetEntityType, targetInternalId);
-        
-        // Create DTO
-        return RelationBindingDTO.builder()
-            .sourceExternalId(sourceExternalEntityId)
-            .targetExternalId(targetExternalEntityId)
-            .dataSource(dataSource)
-            .relationId(relationId)
-            .sourceEntityName(sourceEntityName)
-            .targetEntityName(targetEntityName)
-            .sourceEntityType(sourceEntityType)
-            .targetEntityType(targetEntityType)
-            .build();
-    }
-
-    @Override
-    @Transactional
-    public boolean unbindExternalRelation(
-        DataSource dataSource, 
-        MasterEntityType sourceEntityType,
-        Long sourceExternalEntityId, 
-        MasterEntityType targetEntityType,
-        Long targetExternalEntityId
-    ) {
-        // Create relation metadata
-        RelationMetadata metadata = createRelationMetadata(sourceEntityType, targetEntityType);
-        
-        // Find existing binding
-        Optional<? extends RelationBindingEntity> existingBinding = findExistingBinding(
-            metadata, dataSource, sourceExternalEntityId, targetExternalEntityId);
-        
-        if (existingBinding.isPresent()) {
-            // Remove binding
-            entityManager.remove(existingBinding.get());
-            return true;
-        }
-        
-        return false;
-    }
-    
-    @Override
     @Transactional(readOnly = true)
     public RelationBindingStatusDTO findBoundExternalRelations(
-        DataSource dataSource, 
+        DataSource dataSource,
         MasterEntityType sourceEntityType,
-        Long sourceExternalEntityId, 
+        Long sourceExternalEntityId,
         MasterEntityType targetEntityType,
         List<Long> targetExternalEntityIds
     ) {
         // 1. Get information about source entity with name in a single query
         Map<Long, EntityInfo> sourceEntityInfo = findEntityInfoByExternalIds(
             dataSource, sourceEntityType, Collections.singletonList(sourceExternalEntityId));
-        
-        EntityInfo sourceInfo = sourceEntityInfo.getOrDefault(sourceExternalEntityId, 
+
+        EntityInfo sourceInfo = sourceEntityInfo.getOrDefault(sourceExternalEntityId,
             new EntityInfo(null, "Unknown", false));
-        
+
         // 2. Create base result structure
         RelationBindingStatusDTO result = RelationBindingStatusDTO.builder()
             .sourceExternalId(sourceExternalEntityId)
@@ -161,94 +72,110 @@ public class RelationServiceImpl implements RelationService {
             .targetEntityType(targetEntityType)
             .targetBindings(new ArrayList<>())
             .build();
-        
+
         // If source entity is not bound or no target entities provided, relations cannot exist
         if (!sourceInfo.isBound || targetExternalEntityIds == null || targetExternalEntityIds.isEmpty()) {
             return result;
         }
-        
+
         // 3. Get information about target entities in a single query
         Map<Long, EntityInfo> targetEntitiesInfo = findEntityInfoByExternalIds(
             dataSource, targetEntityType, targetExternalEntityIds);
-        
+
         // 4. Find relations between source and target entities in a single query
         Map<Long, Long> relationMap = findRelations(
-            sourceEntityType, sourceInfo.internalId, 
+            sourceEntityType, sourceInfo.internalId,
             targetEntityType, targetEntitiesInfo.values().stream()
                 .filter(info -> info.isBound)
                 .map(info -> info.internalId)
                 .collect(Collectors.toList())
         );
-        
-        // Create relation metadata
-        RelationMetadata metadata = createRelationMetadata(sourceEntityType, targetEntityType);
-        
+
         // 5. Build result
         for (Long targetExternalId : targetExternalEntityIds) {
-            EntityInfo targetInfo = targetEntitiesInfo.getOrDefault(targetExternalId, 
+            EntityInfo targetInfo = targetEntitiesInfo.getOrDefault(targetExternalId,
                 new EntityInfo(null, "Unknown", false));
-            
+
             boolean isInternalRelationBound = false;
-            boolean isExternalRelationBound = false;
             Long relationId = null;
-            
+
             if (targetInfo.isBound) {
                 relationId = relationMap.get(targetInfo.internalId);
                 isInternalRelationBound = relationId != null;
-                
-                // Check if external relation is bound
-                if (isInternalRelationBound) {
-                    Optional<? extends RelationBindingEntity> existingBinding = findExistingBinding(
-                        metadata, dataSource, sourceExternalEntityId, targetExternalId);
-                    isExternalRelationBound = existingBinding.isPresent();
-                }
             }
-            
+
             result.getTargetBindings().add(TargetEntityBindingDTO.builder()
                 .targetExternalId(targetExternalId)
                 .targetEntityName(targetInfo.name)
                 .targetInternalId(targetInfo.internalId)
                 .isTargetEntityBound(targetInfo.isBound)
                 .isInternalRelationBound(isInternalRelationBound)
-                .isExternalRelationBound(isExternalRelationBound)
                 .internalRelationId(relationId)
                 .build());
         }
-        
+
         return result;
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<RelatedEntityDTO> getRelatedEntities(
-        MasterEntityType sourceEntityType,
+        EntityType sourceEntityType,
         Long sourceEntityId,
-        MasterEntityType targetEntityType,
+        EntityType targetEntityType,
         @Nullable Long relationTypeId
     ) {
-        return relationQueryDispatcher
-                .findRelatedEntities(sourceEntityType, sourceEntityId, targetEntityType, relationTypeId)
-                .stream()
-                .map(projection -> RelatedEntityDTO.builder()
-                        .id(projection.getId())
-                        .name(projection.getName())
-                        .relationId(projection.getRelationId())
-                        .entityType(targetEntityType)
-                        .relationTypeId(projection.getRelationTypeId())
-                        .relationTypeName(projection.getRelationTypeName())
-                        .trackOrder(projection.getTrackOrder())
-                        .build())
-                .collect(Collectors.toList());
+        var projections = relationQueryDispatcher
+                .findRelatedEntities(sourceEntityType, sourceEntityId, targetEntityType, relationTypeId);
+
+        // Group projections by target entity ID to merge multiple relation types
+        Map<Long, List<RelatedEntityProjection>> grouped =
+                projections.stream().collect(Collectors.groupingBy(
+                        RelatedEntityProjection::getId,
+                        LinkedHashMap::new,
+                        Collectors.toList()));
+
+        return grouped.values().stream().map(group -> {
+            var first = group.get(0);
+            return RelatedEntityDTO.builder()
+                    .id(first.getId())
+                    .name(first.getName())
+                    .entityType(targetEntityType)
+                    .trackOrder(first.getTrackOrder())
+                    .relationTypes(group.stream()
+                            .map(p -> RelationTypeInfoDTO.builder()
+                                    .relationId(p.getRelationId())
+                                    .relationTypeId(p.getRelationTypeId())
+                                    .relationTypeName(p.getRelationTypeName())
+                                    .build())
+                            .collect(Collectors.toList()))
+                    .build();
+        }).collect(Collectors.toList());
     }
-    
+
     @Override
     @Transactional
     public Long createInternalRelation(
-        MasterEntityType sourceEntityType,
+        EntityType sourceEntityType,
         Long sourceEntityId,
-        MasterEntityType targetEntityType,
+        EntityType targetEntityType,
         Long targetEntityId,
         @Nullable Long relationTypeId
+    ) {
+        List<Long> ids = createInternalRelations(
+            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId,
+            relationTypeId != null ? Collections.singletonList(relationTypeId) : null);
+        return ids.get(0);
+    }
+
+    @Override
+    @Transactional
+    public List<Long> createInternalRelations(
+        EntityType sourceEntityType,
+        Long sourceEntityId,
+        EntityType targetEntityType,
+        Long targetEntityId,
+        @Nullable List<Long> relationTypeIds
     ) {
         // Validate that entities exist
         validateEntityExists(sourceEntityType, sourceEntityId);
@@ -257,29 +184,35 @@ public class RelationServiceImpl implements RelationService {
         // Create relation metadata
         RelationMetadata metadata = createRelationMetadata(sourceEntityType, targetEntityType);
 
-        // Reject relation type for relations that don't support types (e.g. category relations)
-        if (relationTypeId != null && !metadata.isSupportsRelationTypes()) {
+        // If no relation type IDs provided, create a single untyped relation
+        if (relationTypeIds == null || relationTypeIds.isEmpty()) {
+            return Collections.singletonList(
+                findOrCreateRelation(metadata, sourceEntityId, targetEntityId, null));
+        }
+
+        // Reject relation types for relations that don't support types
+        if (!metadata.isSupportsRelationTypes()) {
             throw new IllegalArgumentException(
                 String.format("Relation between %s and %s does not support relation types",
                     sourceEntityType.getName(), targetEntityType.getName()));
         }
 
-        // Validate relation type applicability if a type is specified
-        if (relationTypeId != null) {
+        // Validate and create each relation type
+        List<Long> createdIds = new ArrayList<>();
+        for (Long relationTypeId : relationTypeIds) {
             validateRelationTypeApplicability(relationTypeId, sourceEntityType, targetEntityType);
             rejectIfSystemRelationType(relationTypeId);
+            createdIds.add(findOrCreateRelation(metadata, sourceEntityId, targetEntityId, relationTypeId));
         }
-
-        // Create or find the relation
-        return findOrCreateRelation(metadata, sourceEntityId, targetEntityId, relationTypeId);
+        return createdIds;
     }
-    
+
     @Override
     @Transactional
     public boolean deleteInternalRelation(
-        MasterEntityType sourceEntityType,
+        EntityType sourceEntityType,
         Long sourceEntityId,
-        MasterEntityType targetEntityType,
+        EntityType targetEntityType,
         Long targetEntityId,
         @Nullable Long relationTypeId
     ) {
@@ -324,7 +257,7 @@ public class RelationServiceImpl implements RelationService {
             Number relationId = (Number) query.getSingleResult();
 
             // Delete the relation
-            return deleteInternalRelationById(relationId.longValue());
+            return deleteInternalRelationById(relationId.longValue(), sourceEntityType, targetEntityType);
         } catch (NoResultException e) {
             // Relation not found
             return false;
@@ -332,48 +265,32 @@ public class RelationServiceImpl implements RelationService {
             throw new RuntimeException("Failed to delete relation", e);
         }
     }
-    
+
     @Override
     @Transactional
-    public boolean deleteInternalRelationById(Long relationId) {
+    public boolean deleteInternalRelationById(Long relationId, EntityType sourceEntityType, EntityType targetEntityType) {
         if (relationId == null) {
             return false;
         }
-        
-        try {
-            // Find all relation entity classes
-            for (Class<? extends RelationEntity> relationEntityClass : relationRegistry.getAllRelationEntityClasses()) {
-                try {
-                    // Try to find and delete the relation
-                    RelationEntity relation = entityManager.find(relationEntityClass, relationId);
-                    if (relation != null) {
-                        entityManager.remove(relation);
-                        return true;
-                    }
-                } catch (Exception ignored) {
-                    // Continue to the next relation entity class
-                }
-            }
-            
-            return false;
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to delete relation by ID", e);
+
+        Class<? extends RelationEntity> entityClass = relationRegistry.getRelationEntityClass(sourceEntityType, targetEntityType);
+        RelationEntity relation = entityManager.find(entityClass, relationId);
+        if (relation != null) {
+            entityManager.remove(relation);
+            return true;
         }
+        return false;
     }
-    
+
     // Helper methods
-    
+
     /**
      * Creates relation metadata for the given entity types.
-     * 
-     * @param sourceEntityType Source entity type
-     * @param targetEntityType Target entity type
-     * @return Relation metadata
      */
-    private RelationMetadata createRelationMetadata(MasterEntityType sourceEntityType, MasterEntityType targetEntityType) {
+    private RelationMetadata createRelationMetadata(EntityType sourceEntityType, EntityType targetEntityType) {
         return new RelationMetadata(sourceEntityType, targetEntityType, relationRegistry);
     }
-    
+
     /**
      * Helper class to store entity information
      */
@@ -381,65 +298,60 @@ public class RelationServiceImpl implements RelationService {
         final Long internalId;
         final String name;
         final boolean isBound;
-        
+
         EntityInfo(Long internalId, String name, boolean isBound) {
             this.internalId = internalId;
             this.name = name;
             this.isBound = isBound;
         }
     }
-    
+
     /**
      * Finds entity information (internal ID and name) by external IDs in a single query
-     * 
-     * @param dataSource Data source
-     * @param entityType Entity type
-     * @param externalIds List of external IDs
-     * @return Map of external ID to entity information
      */
     private Map<Long, EntityInfo> findEntityInfoByExternalIds(
-        DataSource dataSource, 
+        DataSource dataSource,
         MasterEntityType entityType,
         List<Long> externalIds
     ) {
         if (externalIds == null || externalIds.isEmpty()) {
             return Collections.emptyMap();
         }
-        
+
         MasterEntityMetadata metadata = new MasterEntityMetadata(entityType);
-        
+
         // Create placeholders for IN clause
         String placeholders = externalIds.stream()
             .map(id -> "?")
             .collect(Collectors.joining(","));
-        
+
         // Form SQL query to get internal IDs and names in a single query
         String sql = """
-            SELECT 
-                b.external_id, 
-                e.id AS internal_id, 
-                e.name 
-            FROM 
-                %s b 
-            JOIN 
-                %s e ON b.master_id = e.id 
-            WHERE 
-                b.data_source_id = ? 
+            SELECT
+                b.external_id,
+                e.id AS internal_id,
+                e.name
+            FROM
+                %s b
+            JOIN
+                %s e ON b.master_id = e.id
+            WHERE
+                b.data_source_id = ?
                 AND b.external_id IN (%s)
             """.formatted(metadata.getBindingTableName(), metadata.getTableName(), placeholders);
-        
+
         try {
             // Execute query
             Query query = entityManager.createNativeQuery(sql)
                 .setParameter(1, dataSource.getCode());
-            
+
             // Set parameters for IN clause
             for (int i = 0; i < externalIds.size(); i++) {
                 query.setParameter(i + 2, externalIds.get(i));
             }
-            
+
             List<Object[]> results = query.getResultList();
-            
+
             // Convert results to map
             Map<Long, EntityInfo> entityInfoMap = new HashMap<>();
             for (Object[] row : results) {
@@ -448,21 +360,15 @@ public class RelationServiceImpl implements RelationService {
                 String name = (String) row[2];
                 entityInfoMap.put(externalId, new EntityInfo(internalId, name, true));
             }
-            
+
             return entityInfoMap;
         } catch (Exception e) {
             throw new RuntimeException("Failed to find entity information", e);
         }
     }
-    
+
     /**
      * Finds relations between source entity and target entities in a single query
-     * 
-     * @param sourceEntityType Source entity type
-     * @param sourceInternalId Internal source entity ID
-     * @param targetEntityType Target entity type
-     * @param targetInternalIds List of internal target entity IDs
-     * @return Map of target internal ID to relation ID
      */
     private Map<Long, Long> findRelations(
         MasterEntityType sourceEntityType,
@@ -473,24 +379,24 @@ public class RelationServiceImpl implements RelationService {
         if (targetInternalIds == null || targetInternalIds.isEmpty()) {
             return Collections.emptyMap();
         }
-        
+
         // Create relation metadata
         RelationMetadata metadata = createRelationMetadata(sourceEntityType, targetEntityType);
-        
+
         // Create placeholders for IN clause
         String placeholders = targetInternalIds.stream()
             .map(id -> "?")
             .collect(Collectors.joining(","));
-        
+
         // Form SQL query to find relations
         String sql = """
-            SELECT 
-                id, 
-                %s 
-            FROM 
-                %s 
-            WHERE 
-                %s = ? 
+            SELECT
+                id,
+                %s
+            FROM
+                %s
+            WHERE
+                %s = ?
                 AND %s IN (%s)
             """.formatted(
                 metadata.getTargetIdField(),
@@ -499,19 +405,19 @@ public class RelationServiceImpl implements RelationService {
                 metadata.getTargetIdField(),
                 placeholders
             );
-        
+
         try {
             // Execute query
             Query query = entityManager.createNativeQuery(sql)
                 .setParameter(1, sourceInternalId);
-            
+
             // Set parameters for IN clause
             for (int i = 0; i < targetInternalIds.size(); i++) {
                 query.setParameter(i + 2, targetInternalIds.get(i));
             }
-            
+
             List<Object[]> results = query.getResultList();
-            
+
             // Convert results to map
             Map<Long, Long> relationMap = new HashMap<>();
             for (Object[] row : results) {
@@ -519,63 +425,15 @@ public class RelationServiceImpl implements RelationService {
                 Long targetId = ((Number) row[1]).longValue();
                 relationMap.put(targetId, relationId);
             }
-            
+
             return relationMap;
         } catch (Exception e) {
             throw new RuntimeException("Failed to find relations", e);
         }
     }
-    
-    /**
-     * Finds internal entity ID by external ID and entity type
-     * 
-     * @param dataSource Data source
-     * @param entityType Entity type
-     * @param externalId External ID
-     * @return Internal ID or null if entity is not found
-     */
-    private Long findInternalEntityId(DataSource dataSource, MasterEntityType entityType, Long externalId) {
-        MasterEntityMetadata metadata = new MasterEntityMetadata(entityType);
-        
-        String query = """
-            SELECT master_id 
-            FROM %s 
-            WHERE data_source_id = ?1 
-                AND external_id = ?2
-            """.formatted(metadata.getBindingTableName());
-        
-        try {
-            return ((Number) entityManager.createNativeQuery(query)
-                .setParameter(1, dataSource.getCode())
-                .setParameter(2, externalId)
-                .getSingleResult()).longValue();
-        } catch (NoResultException e) {
-            return null;
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to find internal entity ID", e);
-        }
-    }
-    
-    /**
-     * Finds or creates a relation between entities using direct SQL.
-     * Delegates to the overloaded method with null relationTypeId.
-     */
-    private Long findOrCreateRelation(
-        RelationMetadata metadata,
-        Long sourceEntityId,
-        Long targetEntityId
-    ) {
-        return findOrCreateRelation(metadata, sourceEntityId, targetEntityId, null);
-    }
 
     /**
      * Finds or creates a relation between entities using direct SQL
-     *
-     * @param metadata Relation metadata
-     * @param sourceEntityId Source entity ID
-     * @param targetEntityId Target entity ID
-     * @param relationTypeId Optional relation type ID
-     * @return Relation ID
      */
     private Long findOrCreateRelation(
         RelationMetadata metadata,
@@ -694,135 +552,25 @@ public class RelationServiceImpl implements RelationService {
             throw new RuntimeException("Failed to find relation", e);
         }
     }
-    
+
     /**
-     * Finds existing relation binding
-     * 
-     * @param metadata Relation metadata
-     * @param dataSource Data source
-     * @param sourceExternalEntityId External source entity ID
-     * @param targetExternalEntityId External target entity ID
-     * @return Optional containing the found binding
+     * Gets entity name by type and ID.
+     * For art-domain entities (e.g. PERSON), queries art_view schema.
      */
-    private Optional<? extends RelationBindingEntity> findExistingBinding(
-        RelationMetadata metadata,
-        DataSource dataSource,
-        Long sourceExternalEntityId,
-        Long targetExternalEntityId
-    ) {
-        // Get first and second external entity IDs based on relation order
-        Long firstExternalEntityId = metadata.getFirstExternalEntityId(sourceExternalEntityId, targetExternalEntityId);
-        Long secondExternalEntityId = metadata.getSecondExternalEntityId(sourceExternalEntityId, targetExternalEntityId);
-        
-        // Form SQL query
-        String sql = """
-            SELECT id 
-            FROM %s 
-            WHERE data_source_id = ?1
-                AND %s = ?2
-                AND %s = ?3
-            """.formatted(
-                metadata.getRelationBindingTableName(), 
-                metadata.getFirstEntityMetadata().getExternalIdFieldName(), 
-                metadata.getSecondEntityMetadata().getExternalIdFieldName()
-            );
-        
+    private String getEntityName(EntityType entityType, Long entityId) {
         try {
-            // Execute query
-            Long id = ((Number) entityManager.createNativeQuery(sql)
-                .setParameter(1, dataSource.getCode())
-                .setParameter(2, firstExternalEntityId)
-                .setParameter(3, secondExternalEntityId)
-                .getSingleResult()).longValue();
-            
-            // Load entity by ID
-            return Optional.of(entityManager.find(metadata.getRelationBindingEntityClass(), id));
-        } catch (NoResultException e) {
-            return Optional.empty();
-        }
-    }
-    
-    /**
-     * Creates a new relation binding using direct SQL
-     * 
-     * @param metadata Relation metadata
-     * @param dataSource Data source
-     * @param relationId Relation ID
-     * @param sourceExternalEntityId External source entity ID
-     * @param targetExternalEntityId External target entity ID
-     * @return Created binding
-     */
-    private RelationBindingEntity createBinding(
-        RelationMetadata metadata,
-        DataSource dataSource,
-        Long relationId,
-        Long sourceExternalEntityId,
-        Long targetExternalEntityId
-    ) {
-        try {
-            // Get first and second external entity IDs based on relation order
-            Long firstExternalEntityId = metadata.getFirstExternalEntityId(sourceExternalEntityId, targetExternalEntityId);
-            Long secondExternalEntityId = metadata.getSecondExternalEntityId(sourceExternalEntityId, targetExternalEntityId);
-            
-            // Create SQL for insertion with sequence for id
-            String sql = """
-                INSERT INTO %s (
-                    id, 
-                    master_id, 
-                    data_source_id, 
-                    %s, 
-                    %s, 
-                    created_at, 
-                    updated_at
-                ) 
-                VALUES (
-                    nextval('%s_seq'), 
-                    ?1, 
-                    ?2, 
-                    ?3, 
-                    ?4, 
-                    now(), 
-                    now()
-                ) 
-                RETURNING id
-                """.formatted(
-                    metadata.getRelationBindingTableName(), 
-                    metadata.getFirstEntityMetadata().getExternalIdFieldName(), 
-                    metadata.getSecondEntityMetadata().getExternalIdFieldName(), 
-                    metadata.getRelationBindingTableName()
-                );
-            
-            // Execute insert and get generated ID
-            Number id = (Number) entityManager.createNativeQuery(sql)
-                .setParameter(1, relationId)
-                .setParameter(2, dataSource.getCode())
-                .setParameter(3, firstExternalEntityId)
-                .setParameter(4, secondExternalEntityId)
-                .getSingleResult();
-            
-            // Fetch the created binding using native SQL
-            return entityManager.find(metadata.getRelationBindingEntityClass(), id.longValue());
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to create binding", e);
-        }
-    }
-    
-    /**
-     * Gets entity name by type and ID
-     * 
-     * @param entityType Entity type
-     * @param entityId Entity ID
-     * @return Entity name
-     */
-    private String getEntityName(MasterEntityType entityType, Long entityId) {
-        try {
-            MasterEntityMetadata metadata = new MasterEntityMetadata(entityType);
-            
+            String tableName;
+            if (entityType == MasterEntityType.PERSON) {
+                tableName = "art_view.v_" + entityType.getName();
+            } else {
+                tableName = entityType.getName();
+            }
+
             String query = """
-                SELECT name 
-                FROM %s 
+                SELECT name
+                FROM %s
                 WHERE id = ?1
-                """.formatted(metadata.getTableName());
+                """.formatted(tableName);
             return (String) entityManager.createNativeQuery(query)
                 .setParameter(1, entityId)
                 .getSingleResult();
@@ -830,16 +578,9 @@ public class RelationServiceImpl implements RelationService {
             return "Unknown";
         }
     }
-    
+
     /**
      * Validates that a relation type exists and is applicable to the given entity types.
-     * Uses the canonical order: lower entity type code first.
-     *
-     * @param relationTypeId Relation type ID
-     * @param sourceEntityType Source entity type
-     * @param targetEntityType Target entity type
-     * @throws CustomEntityNotFoundException if relation type does not exist
-     * @throws IllegalArgumentException if relation type is not applicable to the entity pair
      */
     private void rejectIfSystemRelationType(Long relationTypeId) {
         String sql = "SELECT is_system FROM relation_type WHERE id = ?1";
@@ -858,7 +599,7 @@ public class RelationServiceImpl implements RelationService {
     }
 
     private void validateRelationTypeApplicability(
-        Long relationTypeId, MasterEntityType sourceEntityType, MasterEntityType targetEntityType
+        Long relationTypeId, EntityType sourceEntityType, EntityType targetEntityType
     ) {
         // Check that relation type exists
         String checkTypeSql = "SELECT COUNT(*) FROM relation_type WHERE id = ?1";
@@ -891,26 +632,28 @@ public class RelationServiceImpl implements RelationService {
     }
 
     /**
-     * Validates that an entity exists
-     *
-     * @param entityType Entity type
-     * @param entityId Entity ID
-     * @throws CustomEntityNotFoundException if entity does not exist
+     * Validates that an entity exists.
+     * For art-domain entities (e.g. PERSON), queries art_view schema.
      */
-    private void validateEntityExists(MasterEntityType entityType, Long entityId) {
+    private void validateEntityExists(EntityType entityType, Long entityId) {
         try {
-            MasterEntityMetadata metadata = new MasterEntityMetadata(entityType);
-            
+            String tableName;
+            if (entityType == MasterEntityType.PERSON) {
+                tableName = "art_view.v_" + entityType.getName();
+            } else {
+                tableName = entityType.getName();
+            }
+
             String query = """
-                SELECT COUNT(*) 
-                FROM %s 
+                SELECT COUNT(*)
+                FROM %s
                 WHERE id = ?1
-                """.formatted(metadata.getTableName());
-            
+                """.formatted(tableName);
+
             Number count = (Number) entityManager.createNativeQuery(query)
                 .setParameter(1, entityId)
                 .getSingleResult();
-            
+
             if (count.intValue() == 0) {
                 throw new CustomEntityNotFoundException(entityType.getName(), entityId);
             }

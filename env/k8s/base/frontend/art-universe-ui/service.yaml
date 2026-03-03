@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: art-universe-ui
+  namespace: mu-frontend
+  labels:
+    app: art-universe-ui
+    app.kubernetes.io/name: art-universe-ui
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 80
+      name: http
+  selector:
+    app: art-universe-ui
