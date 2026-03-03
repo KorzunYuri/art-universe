@@ -1,0 +1,8 @@
+plugins {
+    id 'java'
+}
+
+archivesBaseName = 'spotify-liquibase-resources'
+
+compileJava.enabled = false
+compileTestJava.enabled = false

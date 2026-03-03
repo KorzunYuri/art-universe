@@ -67,6 +67,28 @@ This document is the **single source of truth** for list of modules.
 | [`:music:data:raw:lastfm:test:lastfm-commons-test-db-helper`](../music/data/raw/lastfm/test/lastfm-commons-test-db-helper/README.md) | Library | Database consistency helpers (DbConsistencyHelper) |
 | [`:music:data:raw:lastfm:test:lastfm-commons-test-web`](../music/data/raw/lastfm/test/lastfm-commons-test-web/README.md) | Library | Web/MVC testing utilities |
 
+### Spotify Data Collection Modules
+
+#### Core Data Modules
+
+| Module | Type | Purpose |
+|--------|------|---------|
+| `:music:data:raw:spotify:spotify-models` | Library | JPA entities, enums, and DTOs for Spotify data |
+| `:music:data:raw:spotify:spotify-repositories` | Library | Base repository interfaces for Spotify entities |
+
+#### Service Modules
+
+| Module | Type | Purpose |
+|--------|------|---------|
+| `:music:data:raw:spotify:spotify-rest-api` | Service | REST API for Spotify raw data + seed endpoints |
+
+#### Infrastructure Modules
+
+| Module | Type | Purpose |
+|--------|------|---------|
+| `:music:data:raw:spotify:migrations:spotify-liquibase-service` | Service | Database migration runner |
+| `:music:data:raw:spotify:migrations:spotify-liquibase-resources` | Library | Liquibase changelog definitions (SQL) |
+
 ### Art Foundation Modules
 
 | Module | Type | Purpose |

@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: spotify-rest-api
+  config:
+    import:
+      - classpath:commons-context.yml
+      - optional:classpath:commons-context-${spring.profiles.active}.yml
+      - classpath:commons-observability.yml
+      - optional:classpath:commons-observability-${spring.profiles.active}.yml
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://${MURAW_SPOTIFY_DB_MASTER_HOST}:${MURAW_SPOTIFY_DB_MASTER_PORT}/${MURAW_SPOTIFY_DB_NAME}?currentSchema=${MURAW_SPOTIFY_DB_SCHEMA}
+    username: ${MURAW_SPOTIFY_DB_WRITER_USERNAME}
+    password: '${MURAW_SPOTIFY_DB_WRITER_PASSWORD}'
+    hikari:
+      pool-name: MuRawSpotifyHikariPool
+      maximum-pool-size: 8
+      minimum-idle: 2
+  jpa:
+    database: postgresql
+    properties:
+      hibernate:
+        order_by:
+          default_null_ordering: last
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        show-sql: false
+    hibernate:
+      ddl-auto: none
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+      - org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration
+
+server:
+  address: 0.0.0.0
+  port: ${MURAW_SPOTIFY_REST_API_INTERNAL_PORT:8080}
+  allowed-origins: ${MURAW_SPOTIFY_REST_API_CORS_ALLOWED_ORIGINS}
+
+spotify:
+  api:
+    base-url: https://api.spotify.com/v1
+    client-id: ${SPOTIFY_CLIENT_ID:placeholder}
+    client-secret: ${SPOTIFY_CLIENT_SECRET:placeholder}
+    token-url: https://accounts.spotify.com/api/token

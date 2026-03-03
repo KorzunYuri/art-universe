@@ -1,0 +1,16 @@
+plugins {
+    id 'art-universe.java-library'
+}
+
+archivesBaseName = 'spotify-repositories'
+
+dependencies {
+    api project(':music:data:raw:spotify:spotify-models')
+
+    api 'org.springframework.data:spring-data-commons'
+    api 'org.springframework.data:spring-data-jpa'
+
+    runtimeOnly project(':common:commons-context')
+
+    runtimeOnly 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+}

@@ -1,0 +1,36 @@
+package yurykorzun.art.universe.music.data.raw.spotify.domain.entity.common;
+
+import jakarta.persistence.*;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
+import yurykorzun.art.universe.common.domain.entity.BaseEntity;
+import yurykorzun.art.universe.data.raw.common.domain.entity.Approvable;
+import yurykorzun.art.universe.data.raw.common.domain.entity.ApprovalStatus;
+import yurykorzun.art.universe.data.raw.common.domain.entity.ApprovalStatusConverter;
+import yurykorzun.art.universe.music.data.raw.spotify.etl.entity.SpotifyApiCall;
+
+@MappedSuperclass
+@SuperBuilder
+@NoArgsConstructor
+@Getter
+public class BaseSpotifyCollectable extends BaseEntity implements Approvable {
+
+    @Column(name = "approval_status")
+    @Setter
+    @Convert(converter = ApprovalStatusConverter.class)
+    @Builder.Default
+    private ApprovalStatus approvalStatus = ApprovalStatus.PENDING;
+
+    @Override
+    public void updateApprovalStatus(ApprovalStatus approvalStatus) {
+        if (approvalStatus == ApprovalStatus.PRE_APPROVED) {
+            throw new IllegalArgumentException("Auto-approved status can be set only on creation");
+        }
+        this.approvalStatus = approvalStatus;
+    }
+
+    @NonNull
+    @JoinColumn(name = "api_call_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    protected SpotifyApiCall apiCall;
+}
