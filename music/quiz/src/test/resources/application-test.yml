@@ -22,3 +22,5 @@ logging:
         orm:
           jdbc:
             bind: TRACE
+
+MU_QUIZ_DB_SCHEMA: mu_quiz
