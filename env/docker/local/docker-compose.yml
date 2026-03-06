@@ -87,6 +87,20 @@ services:
     networks:
       - mu__network
 
+  spotify-liquibase-service:
+    container_name: local__spotify__liquibase
+    image: mu-spotify-liquibase:latest
+    env_file:
+      - ../common/music-data-raw-spotify.env
+      - ./common.env
+      - ./music-data-raw-spotify.env
+      - ./music-data-raw-spotify.secrets.env
+    depends_on:
+      postgres-master:
+        condition: service_healthy
+    networks:
+      - mu__network
+
   # Applications
   lastfm-rest-api:
     container_name: local__lastfm-rest-api__app
@@ -278,6 +292,43 @@ services:
       resources:
         limits:
           memory: 2Gb
+          cpus: '0.3'
+        reservations:
+          memory: 256M
+          cpus: '0.1'
+    networks:
+      - mu__network
+
+  spotify-rest-api:
+    container_name: local__spotify-rest-api__app
+    restart: unless-stopped
+    image: mu-spotify-rest-api:latest
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx768m -XX:MaxMetaspaceSize=192m
+    env_file:
+      - ../common/music-data-raw-spotify.env
+      - ./common.env
+      - ./music-data-raw-spotify.env
+      - ./music-data-raw-spotify.secrets.env
+    ports:
+      - "${MURAW_SPOTIFY_REST_API_EXTERNAL_PORT}:${MURAW_SPOTIFY_REST_API_INTERNAL_PORT}"
+    volumes:
+      - local__spotify-rest-api__app-logs:/app/logs
+    depends_on:
+      postgres-master:
+        condition: service_healthy
+      spotify-liquibase-service:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${MURAW_SPOTIFY_REST_API_INTERNAL_PORT}/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 600s
+    deploy:
+      resources:
+        limits:
+          memory: 1Gb
           cpus: '0.3'
         reservations:
           memory: 256M
@@ -525,6 +576,8 @@ volumes:
     name: local__au__db-postgres-data
   local__au__db-postgres-replica-data:
     name: local__au__db-postgres-replica-data
+  local__spotify-rest-api__app-logs:
+    name: local__spotify-rest-api__app-logs
   local__lastfm-rest-api__app-logs:
     name: local__lastfm-rest-api__app-logs
   local__lastfm-etl-rest-api__app-logs:

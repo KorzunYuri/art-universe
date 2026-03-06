@@ -2,6 +2,19 @@ version: '3.8'
 
 services:
   # Migrations
+  spotify-liquibase-service:
+    container_name: prod__spotify__liquibase
+    image: mu-spotify-liquibase:latest
+    env_file:
+      - ../common/music-data-raw-spotify.env
+      - ./common.env
+      - ./music-data-raw-spotify.env
+      - ./music-data-raw-spotify.secrets.env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - mu__network
+
   lastfm-liquibase-service:
     container_name: prod__lastfm__liquibase
     image: mu-lastfm-liquibase:latest
@@ -16,6 +29,43 @@ services:
       - mu__network
 
   # Applications
+  spotify-rest-api:
+    container_name: prod__spotify-rest-api__app
+    restart: unless-stopped
+    image: mu-spotify-rest-api:latest
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx768m -XX:MaxMetaspaceSize=192m
+    env_file:
+      - ../common/music-data-raw-spotify.env
+      - ./common.env
+      - ./music-data-raw-spotify.env
+      - ./music-data-raw-spotify.secrets.env
+    ports:
+      - "${MURAW_SPOTIFY_REST_API_EXTERNAL_PORT}:${MURAW_SPOTIFY_REST_API_INTERNAL_PORT}"
+    volumes:
+      - prod__spotify-rest-api__app-logs:/app/logs
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      spotify-liquibase-service:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${MURAW_SPOTIFY_REST_API_INTERNAL_PORT}/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 600s
+    deploy:
+      resources:
+        limits:
+          memory: 1Gb
+          cpus: '0.3'
+        reservations:
+          memory: 256M
+          cpus: '0.1'
+    networks:
+      - mu__network
+
   lastfm-rest-api:
     container_name: prod__lastfm-rest-api__app
     restart: unless-stopped
@@ -445,6 +495,8 @@ networks:
     name: prod__mu__network
 
 volumes:
+  prod__spotify-rest-api__app-logs:
+    name: prod__spotify-rest-api__app-logs
   prod__lastfm-rest-api__app-logs:
     name: prod__lastfm-rest-api__app-logs
   prod__lastfm-etl-rest-api__app-logs:

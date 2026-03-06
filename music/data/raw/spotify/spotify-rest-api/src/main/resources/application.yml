@@ -9,7 +9,7 @@ spring:
       - optional:classpath:commons-observability-${spring.profiles.active}.yml
   datasource:
     driverClassName: org.postgresql.Driver
-    url: jdbc:postgresql://${MURAW_SPOTIFY_DB_MASTER_HOST}:${MURAW_SPOTIFY_DB_MASTER_PORT}/${MURAW_SPOTIFY_DB_NAME}?currentSchema=${MURAW_SPOTIFY_DB_SCHEMA}
+    url: jdbc:postgresql://${AU_DB_MASTER_HOST}:${AU_DB_MASTER_PORT}/${AU_DB_NAME}?currentSchema=${MURAW_SPOTIFY_DB_SCHEMA}
     username: ${MURAW_SPOTIFY_DB_WRITER_USERNAME}
     password: '${MURAW_SPOTIFY_DB_WRITER_PASSWORD}'
     hikari:
