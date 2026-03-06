@@ -9,8 +9,8 @@ spring:
       - optional:classpath:commons-observability-${spring.profiles.active}.yml
   datasource:
     driverClassName: org.postgresql.Driver
-    url: jdbc:postgresql://${ART_DATA_DB_HOST:localhost}:${ART_DATA_DB_PORT:5432}/music_universe?currentSchema=art
-    username: art_dm
+    url: jdbc:postgresql://${AU_DB_MASTER_HOST}:${AU_DB_MASTER_PORT}/${AU_DB_NAME}?currentSchema=${ART_DATA_DB_SCHEMA}
+    username: ${ART_DATA_DB_USERNAME}
     password: '${ART_DATA_DB_PASSWORD_DM}'
     hikari:
       pool-name: ArtDataHikariPool
@@ -27,7 +27,7 @@ spring:
     hibernate:
       ddl-auto: none
   liquibase:
-    default-schema: art
+    default-schema: ${ART_DATA_DB_SCHEMA}
     change-log: classpath:db/migration/art/liquibase/db.changelog.xml
   docker:
     compose:

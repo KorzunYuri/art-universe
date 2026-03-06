@@ -15,7 +15,7 @@ import yurykorzun.art.universe.common.test.archetypes.BaseTest;
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @PostgresTestContainer(
-    databaseName = "music_universe",
+    databaseName = "art_universe",
     initScript = "db/init-schema.sql",
     schema = "mu_quiz"
 )

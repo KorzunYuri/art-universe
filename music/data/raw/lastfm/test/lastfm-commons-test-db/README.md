@@ -7,7 +7,7 @@ If you need to create and save entities while keeping DB in consistent state in 
 
 ## LastFM-Specific Configuration
 
-- Database: `music_universe`
+- Database: `art_universe`
 - Schema: `mu_raw_lastfm` (created via init script)
 - Credentials: `mu_raw_lastfm_dm` / `mu_raw_lastfm_dm_password`
 - Init Script: [db/init-schema.sql](src/main/resources/db/init-schema.sql) - Creates schemas and sets permissions

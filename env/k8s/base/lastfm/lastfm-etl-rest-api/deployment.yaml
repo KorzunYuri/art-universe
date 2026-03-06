@@ -30,7 +30,7 @@ spec:
             - |
               echo "Waiting for dependencies..."
               # Wait for database
-              until nc -z postgres-lastfm-master.mu-data.svc.cluster.local 5432; do
+              until nc -z postgres-master.mu-data.svc.cluster.local 5432; do
                 echo "Waiting for database..."
                 sleep 2
               done

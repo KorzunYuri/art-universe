@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: postgres-lastfm-master
+  name: postgres-master
   namespace: mu-data
   labels:
-    app: postgres-lastfm-master
-    app.kubernetes.io/name: postgres-lastfm-master
+    app: postgres-master
+    app.kubernetes.io/name: postgres-master
 spec:
-  serviceName: postgres-lastfm-master
+  serviceName: postgres-master
   replicas: 1
   selector:
     matchLabels:
-      app: postgres-lastfm-master
+      app: postgres-master
   template:
     metadata:
       labels:
-        app: postgres-lastfm-master
-        app.kubernetes.io/name: postgres-lastfm-master
+        app: postgres-master
+        app.kubernetes.io/name: postgres-master
     spec:
       terminationGracePeriodSeconds: 60
       containers:
@@ -42,23 +42,38 @@ spec:
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: lastfm-db-credentials
+                  name: db-credentials
                   key: POSTGRES_PASSWORD
             - name: MURAW_LASTFM_DB_WRITER_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: lastfm-db-credentials
+                  name: db-credentials
                   key: MURAW_LASTFM_DB_WRITER_PASSWORD
             - name: MURAW_LASTFM_DB_READER_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: lastfm-db-credentials
+                  name: db-credentials
                   key: MURAW_LASTFM_DB_READER_PASSWORD
             - name: MURAW_LASTFM_DB_REPLICATION_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: lastfm-db-credentials
+                  name: db-credentials
                   key: MURAW_LASTFM_DB_REPLICATION_PASSWORD
+            - name: MU_DATA_DB_PASSWORD_DM
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: MU_DATA_DB_PASSWORD_DM
+            - name: MU_QUIZ_DB_PASSWORD_DM
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: MU_QUIZ_DB_PASSWORD_DM
+            - name: ART_DATA_DB_PASSWORD_DM
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: ART_DATA_DB_PASSWORD_DM
           volumeMounts:
             - name: data
               mountPath: /var/lib/postgresql/data
@@ -94,7 +109,7 @@ spec:
       volumes:
         - name: init-scripts
           configMap:
-            name: postgres-lastfm-master-init
+            name: postgres-master-init
   volumeClaimTemplates:
     - metadata:
         name: data

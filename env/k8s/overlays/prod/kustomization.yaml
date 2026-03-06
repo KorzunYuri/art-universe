@@ -32,7 +32,7 @@ patches:
         namespace: mu-lastfm
       data:
         SPRING_PROFILES_ACTIVE: "prod"
-        MURAW_LASTFM_DB_REPLICA_PORT: "5433"
+        AU_DB_REPLICA_PORT: "5433"
 
   # --- music-data: spring profile + CORS ---
   - patch: |

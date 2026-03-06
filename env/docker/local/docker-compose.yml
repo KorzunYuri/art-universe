@@ -2,22 +2,21 @@ version: '3.8'
 
 services:
   # Databases
-  postgres-lastfm-master:
-    container_name: local__lastfm__db-postgres-master
+  postgres-master:
+    container_name: local__au__db-postgres-master
     image: postgres:14
     restart: unless-stopped
     shm_size: 128mb
     stop_grace_period: 1m
     stop_signal: SIGINT
     env_file:
-      - ./music-data-raw-lastfm.env
-      - ./music-data-raw-lastfm.secrets.env
+      - ./database.secrets.env
     volumes:
-      - local__lastfm__db-postgres-data:/var/lib/postgresql/data
-      - ../common/db/mu-raw-lastfm/initdb/01-init.sh:/docker-entrypoint-initdb.d/01-init.sh
+      - local__au__db-postgres-data:/var/lib/postgresql/data
+      - ../common/db/initdb/01-init.sh:/docker-entrypoint-initdb.d/01-init.sh
     command: ["postgres", "-c", "wal_level=replica", "-c", "max_wal_senders=3", "-c", "max_replication_slots=3", "-c", "wal_keep_size=256"]
     ports:
-      - "${MURAW_LASTFM_DB_MASTER_EXTERNAL_PORT}:5432"
+      - "${AU_DB_MASTER_EXTERNAL_PORT}:5432"
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 10s
@@ -34,64 +33,29 @@ services:
           memory: 128M
           cpus: '0.2'
 
-  postgres-lastfm-replica:
-    container_name: local__lastfm__db-postgres-replica
+  postgres-replica:
+    container_name: local__au__db-postgres-replica
     image: postgres:14
     restart: unless-stopped
     shm_size: 128mb
     stop_grace_period: 1m
     stop_signal: SIGINT
     env_file:
-      - ./music-data-raw-lastfm.env
-      - ./music-data-raw-lastfm.secrets.env
+      - ./database.secrets.env
     environment:
-      - POSTGRES_MASTER_HOST=postgres-lastfm-master
+      - POSTGRES_MASTER_HOST=postgres-master
       - POSTGRES_MASTER_PORT=5432
       - POSTGRES_REPLICATION_USER=replicator
       - POSTGRES_REPLICATION_PASSWORD=${MURAW_LASTFM_DB_REPLICATION_PASSWORD}
     volumes:
-      - local__lastfm__db-postgres-replica-data:/var/lib/postgresql/data
-      - ../common/db/mu-raw-lastfm/initdb/replica-entrypoint.sh:/replica-entrypoint.sh
+      - local__au__db-postgres-replica-data:/var/lib/postgresql/data
+      - ../common/db/initdb/replica-entrypoint.sh:/replica-entrypoint.sh
     entrypoint: ["bash", "/replica-entrypoint.sh"]
     ports:
-      - "${MURAW_LASTFM_DB_REPLICA_EXTERNAL_PORT}:5432"
+      - "${AU_DB_REPLICA_EXTERNAL_PORT}:5432"
     depends_on:
-      postgres-lastfm-master:
+      postgres-master:
         condition: service_healthy
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - mu__network
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-          cpus: '0.3'
-        reservations:
-          memory: 64M
-          cpus: '0.1'
-
-  postgres-music-data:
-    container_name: local__mu-music-data__db-postgres
-    image: postgres:14
-    restart: unless-stopped
-    shm_size: 128mb
-    stop_grace_period: 1m
-    stop_signal: SIGINT
-    env_file:
-      - ./music-data.env
-      - ./music-data.secrets.env
-      - ./music-quiz.env
-      - ./music-quiz.secrets.env
-      - ./art-data.secrets.env
-    volumes:
-      - local__mu-data__db-postgres-data:/var/lib/postgresql/data
-      - ../common/db/mu/initdb/01-init.sh:/docker-entrypoint-initdb.d/01-init.sh
-    ports:
-      - "${MU_DATA_DB_EXTERNAL_PORT}:5432"
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 10s
@@ -113,11 +77,12 @@ services:
     container_name: local__lastfm__liquibase
     image: mu-lastfm-liquibase:latest
     env_file:
+      - ./common.env
       - ../common/music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.secrets.env
     depends_on:
-      postgres-lastfm-master:
+      postgres-master:
         condition: service_healthy
     networks:
       - mu__network
@@ -139,9 +104,9 @@ services:
     volumes:
       - local__lastfm-rest-api__app-logs:/app/logs
     depends_on:
-      postgres-lastfm-master:
+      postgres-master:
         condition: service_healthy
-      postgres-lastfm-replica:
+      postgres-replica:
         condition: service_healthy
       lastfm-liquibase-service:
         condition: service_completed_successfully
@@ -179,7 +144,7 @@ services:
     volumes:
       - local__lastfm-etl-rest-api__app-logs:/app/logs
     depends_on:
-      postgres-lastfm-master:
+      postgres-master:
         condition: service_healthy
       lastfm-liquibase-service:
         condition: service_completed_successfully
@@ -219,7 +184,7 @@ services:
     volumes:
       - local__lastfm-calls-generator__app-logs:/app/logs
     depends_on:
-      postgres-lastfm-master:
+      postgres-master:
         condition: service_healthy
       lastfm-liquibase-service:
         condition: service_completed_successfully
@@ -257,7 +222,7 @@ services:
     volumes:
       - local__lastfm-calls-performer__app-logs:/app/logs
     depends_on:
-      postgres-lastfm-master:
+      postgres-master:
         condition: service_healthy
       lastfm-liquibase-service:
         condition: service_completed_successfully
@@ -297,7 +262,7 @@ services:
     volumes:
       - local__lastfm-response-parser__app-logs:/app/logs
     depends_on:
-      postgres-lastfm-master:
+      postgres-master:
         condition: service_healthy
       lastfm-liquibase-service:
         condition: service_completed_successfully
@@ -327,6 +292,7 @@ services:
     environment:
       - JAVA_OPTS=-Xms128m -Xmx384m -XX:MaxMetaspaceSize=96m
     env_file:
+      - ../common/music-data.env
       - ./common.env
       - ./music-data.env
       - ./music-data.secrets.env
@@ -335,7 +301,7 @@ services:
     volumes:
       - local__mu-data__app-logs:/app/logs
     depends_on:
-      postgres-music-data:
+      postgres-master:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${MU_DATA_APP_INTERNAL_PORT}/health"]
@@ -361,6 +327,7 @@ services:
     environment:
       - JAVA_OPTS=-Xms128m -Xmx384m -XX:MaxMetaspaceSize=96m
     env_file:
+      - ../common/art-data.env
       - ./common.env
       - ./art-data.env
       - ./art-data.secrets.env
@@ -369,7 +336,7 @@ services:
     volumes:
       - local__art-data__app-logs:/app/logs
     depends_on:
-      postgres-music-data:
+      postgres-master:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${ART_DATA_APP_INTERNAL_PORT}/health"]
@@ -395,6 +362,7 @@ services:
     environment:
       - JAVA_OPTS=-Xms128m -Xmx384m -XX:MaxMetaspaceSize=96m
     env_file:
+      - ../common/music-quiz.env
       - ./common.env
       - ./music-quiz.env
       - ./music-quiz.secrets.env
@@ -403,7 +371,7 @@ services:
     volumes:
       - local__mu-quiz__app-logs:/app/logs
     depends_on:
-      postgres-music-data:
+      postgres-master:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${MU_QUIZ_APP_INTERNAL_PORT}/health"]
@@ -553,12 +521,10 @@ networks:
     name: local__mu__network
 
 volumes:
-  local__lastfm__db-postgres-data:
-    name: local__lastfm__db-postgres-data
-  local__lastfm__db-postgres-replica-data:
-    name: local__lastfm__db-postgres-replica-data
-  local__mu-data__db-postgres-data:
-    name: local__mu-data__db-postgres-data
+  local__au__db-postgres-data:
+    name: local__au__db-postgres-data
+  local__au__db-postgres-replica-data:
+    name: local__au__db-postgres-replica-data
   local__lastfm-rest-api__app-logs:
     name: local__lastfm-rest-api__app-logs
   local__lastfm-etl-rest-api__app-logs:

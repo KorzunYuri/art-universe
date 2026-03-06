@@ -1,26 +1,24 @@
 # Dev environment - databases run in Docker, applications run in IntelliJ
-# The stack takes env variables from local env and overrides some ot them (mostly ports)
+# The stack takes env variables from local env and overrides some of them (mostly ports)
 version: '3.8'
 
 services:
-  # LastFM Databases
-  postgres-lastfm-master:
-    container_name: dev__music-data-raw-lastfm__db-postgres-master
+  # Databases
+  postgres-master:
+    container_name: dev__au__db-postgres-master
     restart: unless-stopped
     shm_size: 128mb
     stop_grace_period: 1m
     stop_signal: SIGINT
     image: postgres:14
     env_file:
-      - ../common/music-data-raw-lastfm.env
-      - ./music-data-raw-lastfm.env
-      - ./music-data-raw-lastfm.secrets.env
+      - ./database.secrets.env
     volumes:
-      - db-postgres-lastfm-master-data:/var/lib/postgresql/data
-      - ../common/db/mu-raw-lastfm/initdb/01-init.sh:/docker-entrypoint-initdb.d/01-init.sh
+      - db-postgres-master-data:/var/lib/postgresql/data
+      - ../common/db/initdb/01-init.sh:/docker-entrypoint-initdb.d/01-init.sh
     command: ["postgres", "-c", "wal_level=replica", "-c", "max_wal_senders=3", "-c", "max_replication_slots=3", "-c", "wal_keep_size=256"]
     ports:
-      - "${MURAW_LASTFM_DB_MASTER_EXTERNAL_PORT}:5432"
+      - "${AU_DB_MASTER_EXTERNAL_PORT}:5432"
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 10s
@@ -29,57 +27,29 @@ services:
     networks:
       - dev__network
 
-  postgres-lastfm-replica:
-    container_name: dev__music-data-raw-lastfm__db-postgres-replica
+  postgres-replica:
+    container_name: dev__au__db-postgres-replica
     restart: unless-stopped
     shm_size: 128mb
     stop_grace_period: 1m
     stop_signal: SIGINT
     image: postgres:14
     env_file:
-      - ../common/music-data-raw-lastfm.env
-      - ./music-data-raw-lastfm.env
-      - ./music-data-raw-lastfm.secrets.env
+      - ./database.secrets.env
     environment:
-      - POSTGRES_MASTER_HOST=postgres-lastfm-master
+      - POSTGRES_MASTER_HOST=postgres-master
       - POSTGRES_MASTER_PORT=5432
       - POSTGRES_REPLICATION_USER=replicator
       - POSTGRES_REPLICATION_PASSWORD=${MURAW_LASTFM_DB_REPLICATION_PASSWORD}
     volumes:
-      - db-postgres-lastfm-replica-data:/var/lib/postgresql/data
-      - ../common/db/mu-raw-lastfm/initdb/replica-entrypoint.sh:/replica-entrypoint.sh
+      - db-postgres-replica-data:/var/lib/postgresql/data
+      - ../common/db/initdb/replica-entrypoint.sh:/replica-entrypoint.sh
     entrypoint: ["bash", "/replica-entrypoint.sh"]
     ports:
-      - "${MURAW_LASTFM_DB_REPLICA_EXTERNAL_PORT}:5432"
+      - "${AU_DB_REPLICA_EXTERNAL_PORT}:5432"
     depends_on:
-      postgres-lastfm-master:
+      postgres-master:
         condition: service_healthy
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - dev__network
-
-  # MU Data Database
-  postgres-mu-data:
-    container_name: dev__mu-data__db-postgres
-    restart: unless-stopped
-    shm_size: 128mb
-    stop_grace_period: 1m
-    stop_signal: SIGINT
-    image: postgres:14
-    env_file:
-      - ./music-data.secrets.env
-      - ./music-quiz.secrets.env
-      - ./music-data.env
-      - ./music-quiz.env
-    volumes:
-      - db-postgres-mu-data:/var/lib/postgresql/data
-      - ../common/db/mu/initdb/01-init.sh:/docker-entrypoint-initdb.d/01-init.sh
-    ports:
-      - "${MU_DATA_DB_PORT}:5432"
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 10s
@@ -150,12 +120,10 @@ networks:
     name: dev__network
 
 volumes:
-  db-postgres-lastfm-master-data:
-    name: dev__mu-data-raw-lastfm__db-postgres-data
-  db-postgres-lastfm-replica-data:
-    name: dev__mu-data-raw-lastfm__db-postgres-replica-data
-  db-postgres-mu-data:
-    name: dev__mu-data__db-postgres-data
+  db-postgres-master-data:
+    name: dev__au__db-postgres-data
+  db-postgres-replica-data:
+    name: dev__au__db-postgres-replica-data
   prometheus-data:
     name: dev__mu__prometheus-data
   grafana-data:

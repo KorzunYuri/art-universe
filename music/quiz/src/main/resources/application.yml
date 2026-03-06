@@ -9,15 +9,15 @@ spring:
       - optional:classpath:commons-observability-${spring.profiles.active}.yml
   datasource:
     driverClassName: org.postgresql.Driver
-    url: jdbc:postgresql://${MU_DATA_DB_HOST:localhost}:${MU_DATA_DB_PORT:5432}/music_universe?currentSchema=mu_quiz
-    username: mu_quiz_dm
+    url: jdbc:postgresql://${AU_DB_MASTER_HOST}:${AU_DB_MASTER_PORT}/${AU_DB_NAME}?currentSchema=${MU_QUIZ_DB_SCHEMA}
+    username: ${MU_QUIZ_DB_USERNAME}
     password: '${MU_QUIZ_DB_PASSWORD_DM}'
     hikari:
       pool-name: MuQuizMetaHikariPool
       maximum-pool-size: 8
       minimum-idle: 2
   liquibase:
-    default-schema: mu_quiz
+    default-schema: ${MU_QUIZ_DB_SCHEMA}
     change-log: classpath:db/migration/muquiz/liquibase/db.changelog.xml
   jpa:
     database: postgresql

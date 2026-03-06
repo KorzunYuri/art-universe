@@ -8,19 +8,16 @@ namespace: mu-data
 
 resources:
   # PostgreSQL StatefulSets
-  - postgres-lastfm-master/statefulset.yaml
-  - postgres-lastfm-master/service.yaml
-  - postgres-lastfm-replica/statefulset.yaml
-  - postgres-lastfm-replica/service.yaml
-  - postgres-lastfm-replica/configmap.yaml
-  - postgres-music-data/statefulset.yaml
-  - postgres-music-data/service.yaml
+  - postgres-master/statefulset.yaml
+  - postgres-master/service.yaml
+  - postgres-replica/statefulset.yaml
+  - postgres-replica/service.yaml
   # Migration Jobs
   - migrations/lastfm-liquibase-job.yaml
 
-# Note: ConfigMaps postgres-lastfm-master-init and postgres-music-data-init are
-# created by the deploy scripts from shared init scripts at env/docker/common/db/.
-# This allows both Docker Compose and K8s to use the same source files.
+# Note: ConfigMap postgres-master-init is created by the deploy scripts
+# from the shared init script at env/docker/common/db/initdb/01-init.sh.
+# This allows both Docker Compose and K8s to use the same source file.
 
 commonLabels:
   app.kubernetes.io/part-of: art-universe

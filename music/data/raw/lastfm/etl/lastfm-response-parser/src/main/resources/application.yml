@@ -12,7 +12,7 @@ spring:
   datasource:
     driverClassName: org.postgresql.Driver
     # Use master for write operations with DM user (falls back to default host for compatibility)
-    url: jdbc:postgresql://${MURAW_LASTFM_DB_MASTER_HOST}:${MURAW_LASTFM_DB_MASTER_PORT}/${MURAW_LASTFM_DB_NAME}?currentSchema=${MURAW_LASTFM_DB_SCHEMA}
+    url: jdbc:postgresql://${AU_DB_MASTER_HOST}:${AU_DB_MASTER_PORT}/${AU_DB_NAME}?currentSchema=${MURAW_LASTFM_DB_SCHEMA}
     username: ${MURAW_LASTFM_DB_WRITER_USERNAME}
     password: '${MURAW_LASTFM_DB_WRITER_PASSWORD}'
     hikari:

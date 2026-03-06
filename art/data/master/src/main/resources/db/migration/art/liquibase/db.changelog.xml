@@ -7,7 +7,7 @@
 
     <!-- Guard: abort if connected to wrong database -->
     <preConditions onFail="HALT">
-        <sqlCheck expectedResult="music_universe">SELECT current_database()</sqlCheck>
+        <sqlCheck expectedResult="art_universe">SELECT current_database()</sqlCheck>
     </preConditions>
 
     <include file="changelogs/0001-person.xml" relativeToChangelogFile="true"/>

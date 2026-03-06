@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: postgres-music-data
+  name: postgres-master
   namespace: mu-data
   labels:
-    app: postgres-music-data
-    app.kubernetes.io/name: postgres-music-data
+    app: postgres-master
+    app.kubernetes.io/name: postgres-master
 spec:
   type: ClusterIP
   clusterIP: None  # Headless service for StatefulSet
@@ -14,4 +14,4 @@ spec:
       targetPort: 5432
       name: postgres
   selector:
-    app: postgres-music-data
+    app: postgres-master

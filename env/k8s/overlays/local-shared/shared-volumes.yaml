@@ -1,15 +1,15 @@
-# Shared Persistent Volumes - Docker Compose ↔ Kubernetes
+# Shared Persistent Volumes - Docker Compose <-> Kubernetes
 # Points hostPath PVs to Docker named volume directories in the WSL2 VM.
 # IMPORTANT: Stop Docker Compose before starting K8s (and vice versa).
 # PostgreSQL requires exclusive access to its data directory.
 
-# --- PostgreSQL: LastFM Master ---
+# --- PostgreSQL: Master ---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: shared-lastfm-master-data
+  name: shared-master-data
   labels:
-    app: postgres-lastfm-master
+    app: postgres-master
 spec:
   capacity:
     storage: 1Gi
@@ -18,19 +18,19 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: hostpath
   hostPath:
-    path: /var/lib/docker/volumes/local__lastfm__db-postgres-data/_data
+    path: /var/lib/docker/volumes/local__au__db-postgres-data/_data
     type: DirectoryOrCreate
   claimRef:
-    name: data-postgres-lastfm-master-0
+    name: data-postgres-master-0
     namespace: mu-data
 ---
-# --- PostgreSQL: LastFM Replica ---
+# --- PostgreSQL: Replica ---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: shared-lastfm-replica-data
+  name: shared-replica-data
   labels:
-    app: postgres-lastfm-replica
+    app: postgres-replica
 spec:
   capacity:
     storage: 1Gi
@@ -39,31 +39,10 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: hostpath
   hostPath:
-    path: /var/lib/docker/volumes/local__lastfm__db-postgres-replica-data/_data
+    path: /var/lib/docker/volumes/local__au__db-postgres-replica-data/_data
     type: DirectoryOrCreate
   claimRef:
-    name: data-postgres-lastfm-replica-0
-    namespace: mu-data
----
-# --- PostgreSQL: Music Data ---
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: shared-music-data-db
-  labels:
-    app: postgres-music-data
-spec:
-  capacity:
-    storage: 1Gi
-  accessModes:
-    - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: hostpath
-  hostPath:
-    path: /var/lib/docker/volumes/local__mu-data__db-postgres-data/_data
-    type: DirectoryOrCreate
-  claimRef:
-    name: data-postgres-music-data-0
+    name: data-postgres-replica-0
     namespace: mu-data
 ---
 # --- Prometheus ---

@@ -8,14 +8,14 @@ metadata:
     app.kubernetes.io/component: lastfm-config
 data:
   # Database configuration
-  MURAW_LASTFM_DB_NAME: "music_universe"
+  AU_DB_MASTER_HOST: "postgres-master.mu-data.svc.cluster.local"
+  AU_DB_MASTER_PORT: "5432"
+  AU_DB_REPLICA_HOST: "postgres-replica.mu-data.svc.cluster.local"
+  AU_DB_REPLICA_PORT: "5432"
+  AU_DB_NAME: "art_universe"
   MURAW_LASTFM_DB_SCHEMA: "mu_raw_lastfm"
   MURAW_LASTFM_DB_WRITER_USERNAME: "mu_raw_lastfm_dm"
   MURAW_LASTFM_DB_READER_USERNAME: "mu_raw_lastfm_reader"
-  MURAW_LASTFM_DB_MASTER_HOST: "postgres-lastfm-master.mu-data.svc.cluster.local"
-  MURAW_LASTFM_DB_MASTER_PORT: "5432"
-  MURAW_LASTFM_DB_REPLICA_HOST: "postgres-lastfm-replica.mu-data.svc.cluster.local"
-  MURAW_LASTFM_DB_REPLICA_PORT: "5432"
 
   # Spring profile
   SPRING_PROFILES_ACTIVE: "local"

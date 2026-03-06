@@ -10,7 +10,7 @@ spring:
   datasource:
     driverClassName: org.postgresql.Driver
     # Use replica for read operations with read-only user (falls back to master for compatibility)
-    url: jdbc:postgresql://${MURAW_LASTFM_DB_REPLICA_HOST}:${MURAW_LASTFM_DB_REPLICA_PORT}/${MURAW_LASTFM_DB_NAME}?currentSchema=${MURAW_LASTFM_DB_SCHEMA}
+    url: jdbc:postgresql://${AU_DB_REPLICA_HOST}:${AU_DB_REPLICA_PORT}/${AU_DB_NAME}?currentSchema=${MURAW_LASTFM_DB_SCHEMA}
     username: ${MURAW_LASTFM_DB_READER_USERNAME}
     password: '${MURAW_LASTFM_DB_READER_PASSWORD}'
     hikari:
