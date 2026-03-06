@@ -245,6 +245,38 @@ services:
     networks:
       - mu__network
 
+  art-data:
+    container_name: prod__art-data__app
+    restart: unless-stopped
+    image: art-data:latest
+    environment:
+      - JAVA_OPTS=-Xms128m -Xmx384m -XX:MaxMetaspaceSize=96m
+    env_file:
+      - ../common/art-data.env
+      - ./common.env
+      - ./art-data.env
+      - ./art-data.secrets.env
+    ports:
+      - "${ART_DATA_APP_EXTERNAL_PORT}:${ART_DATA_APP_INTERNAL_PORT}"
+    volumes:
+      - prod__art-data__app-logs:/app/logs
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:${ART_DATA_APP_INTERNAL_PORT}/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 600s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.2'
+        reservations:
+          memory: 256M
+          cpus: '0.05'
+    networks:
+      - mu__network
+
   music-quiz:
     container_name: prod__mu-quiz__app
     restart: unless-stopped
@@ -431,3 +463,5 @@ volumes:
     name: prod__mu__prometheus-data
   prod__mu__grafana-data:
     name: prod__mu__grafana-data
+  prod__art-data__app-logs:
+    name: prod__art-data__app-logs

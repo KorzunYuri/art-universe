@@ -16,7 +16,6 @@ dependencyManagement {
     }
     dependencies {
         dependency "org.projectlombok:lombok:1.18.30"
-        dependency "org.liquibase:liquibase-core:4.15.0"
     }
 }
 

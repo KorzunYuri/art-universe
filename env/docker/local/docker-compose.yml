@@ -77,8 +77,8 @@ services:
     container_name: local__lastfm__liquibase
     image: mu-lastfm-liquibase:latest
     env_file:
-      - ./common.env
       - ../common/music-data-raw-lastfm.env
+      - ./common.env
       - ./music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.secrets.env
     depends_on:
