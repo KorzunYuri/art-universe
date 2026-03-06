@@ -28,8 +28,8 @@ spec:
             - sh
             - -c
             - |
-              echo "Waiting for postgres-music-data..."
-              until nc -z postgres-music-data.mu-data.svc.cluster.local 5432; do
+              echo "Waiting for postgres-master..."
+              until nc -z postgres-master.mu-data.svc.cluster.local 5432; do
                 sleep 2
               done
               echo "Database ready!"
@@ -44,11 +44,13 @@ spec:
           env:
             - name: JAVA_OPTS
               value: "-Xms128m -Xmx384m -XX:MaxMetaspaceSize=96m"
-            # Database configuration (uses MU_DATA_DB_* for host/port as per application.yml)
-            - name: MU_DATA_DB_HOST
-              value: "postgres-music-data.mu-data.svc.cluster.local"
-            - name: MU_DATA_DB_PORT
+            # Database configuration
+            - name: AU_DB_MASTER_HOST
+              value: "postgres-master.mu-data.svc.cluster.local"
+            - name: AU_DB_MASTER_PORT
               value: "5432"
+            - name: AU_DB_NAME
+              value: "art_universe"
             - name: MU_QUIZ_DB_PASSWORD_DM
               valueFrom:
                 secretKeyRef:

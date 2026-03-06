@@ -24,8 +24,8 @@ spec:
             - sh
             - -c
             - |
-              echo "Waiting for postgres-lastfm-master to be ready..."
-              until nc -z postgres-lastfm-master.mu-data.svc.cluster.local 5432; do
+              echo "Waiting for postgres-master to be ready..."
+              until nc -z postgres-master.mu-data.svc.cluster.local 5432; do
                 echo "Database not ready, waiting..."
                 sleep 2
               done
@@ -38,12 +38,12 @@ spec:
           imagePullPolicy: Never
           env:
             # Database connection
-            - name: MURAW_LASTFM_DB_MASTER_HOST
-              value: "postgres-lastfm-master.mu-data.svc.cluster.local"
-            - name: MURAW_LASTFM_DB_MASTER_PORT
+            - name: AU_DB_MASTER_HOST
+              value: "postgres-master.mu-data.svc.cluster.local"
+            - name: AU_DB_MASTER_PORT
               value: "5432"
-            - name: MURAW_LASTFM_DB_NAME
-              value: "music_universe"
+            - name: AU_DB_NAME
+              value: "art_universe"
             - name: MURAW_LASTFM_DB_SCHEMA
               value: "mu_raw_lastfm"
             - name: MURAW_LASTFM_DB_WRITER_USERNAME
@@ -51,7 +51,7 @@ spec:
             - name: MURAW_LASTFM_DB_WRITER_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: lastfm-db-credentials
+                  name: db-credentials
                   key: MURAW_LASTFM_DB_WRITER_PASSWORD
             - name: MURAW_LASTFM_DB_MIGRATIONS_PATH
               value: "db/migration/muraw/liquibase/db.changelog.xml"

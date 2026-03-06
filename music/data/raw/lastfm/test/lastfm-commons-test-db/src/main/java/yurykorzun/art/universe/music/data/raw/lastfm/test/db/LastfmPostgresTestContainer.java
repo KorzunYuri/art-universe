@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @PostgresTestContainer(
-    databaseName = "music_universe",
+    databaseName = "art_universe",
     initScript = "db/init-schema.sql",
     username = "mu_raw_lastfm_dm",
     password = "mu_raw_lastfm_dm_password",

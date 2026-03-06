@@ -6,6 +6,7 @@ services:
     container_name: prod__lastfm__liquibase
     image: mu-lastfm-liquibase:latest
     env_file:
+      - ./common.env
       - ../common/music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.secrets.env
@@ -217,6 +218,7 @@ services:
     environment:
       - JAVA_OPTS=-Xms128m -Xmx384m -XX:MaxMetaspaceSize=96m
     env_file:
+      - ../common/music-data.env
       - ./common.env
       - ./music-data.env
       - ./music-data.secrets.env
@@ -250,6 +252,7 @@ services:
     environment:
       - JAVA_OPTS=-Xms128m -Xmx384m -XX:MaxMetaspaceSize=96m
     env_file:
+      - ../common/music-quiz.env
       - ./common.env
       - ./music-quiz.env
       - ./music-quiz.secrets.env

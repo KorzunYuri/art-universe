@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: postgres-lastfm-replica
+  name: postgres-replica
   namespace: mu-data
   labels:
-    app: postgres-lastfm-replica
-    app.kubernetes.io/name: postgres-lastfm-replica
+    app: postgres-replica
+    app.kubernetes.io/name: postgres-replica
 spec:
-  serviceName: postgres-lastfm-replica
+  serviceName: postgres-replica
   replicas: 1
   selector:
     matchLabels:
-      app: postgres-lastfm-replica
+      app: postgres-replica
   template:
     metadata:
       labels:
-        app: postgres-lastfm-replica
-        app.kubernetes.io/name: postgres-lastfm-replica
+        app: postgres-replica
+        app.kubernetes.io/name: postgres-replica
     spec:
       terminationGracePeriodSeconds: 60
       initContainers:
@@ -26,7 +26,7 @@ spec:
             - sh
             - -c
             - |
-              until nc -z postgres-lastfm-master.mu-data.svc.cluster.local 5432; do
+              until nc -z postgres-master.mu-data.svc.cluster.local 5432; do
                 echo "Waiting for master database..."
                 sleep 2
               done
@@ -37,7 +37,7 @@ spec:
             - name: PGPASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: lastfm-db-credentials
+                  name: db-credentials
                   key: MURAW_LASTFM_DB_REPLICATION_PASSWORD
           command:
             - sh
@@ -46,7 +46,7 @@ spec:
               # Only run if data directory is empty
               if [ -z "$(ls -A /var/lib/postgresql/data)" ]; then
                 echo "Initializing replica from master..."
-                pg_basebackup -h postgres-lastfm-master.mu-data.svc.cluster.local \
+                pg_basebackup -h postgres-master.mu-data.svc.cluster.local \
                   -D /var/lib/postgresql/data \
                   -U replicator \
                   -P -v -R -X stream -C -S replica_slot
@@ -69,7 +69,7 @@ spec:
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: lastfm-db-credentials
+                  name: db-credentials
                   key: POSTGRES_PASSWORD
           volumeMounts:
             - name: data

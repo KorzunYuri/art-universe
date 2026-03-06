@@ -52,11 +52,8 @@ fi
 # Create database init ConfigMaps from shared scripts (used by both Docker and K8s)
 PROJECT_ROOT="$(cd "$K8S_DIR/../.." && pwd)"
 echo -e "\n\033[33mCreating database init ConfigMaps from shared scripts...\033[0m"
-kubectl create configmap postgres-lastfm-master-init -n mu-data \
-    --from-file="01-init.sh=$PROJECT_ROOT/env/docker/common/db/mu-raw-lastfm/initdb/01-init.sh" \
-    --dry-run=client -o yaml | kubectl apply -f -
-kubectl create configmap postgres-music-data-init -n mu-data \
-    --from-file="01-init.sh=$PROJECT_ROOT/env/docker/common/db/mu/initdb/01-init.sh" \
+kubectl create configmap postgres-master-init -n mu-data \
+    --from-file="01-init.sh=$PROJECT_ROOT/env/docker/common/db/initdb/01-init.sh" \
     --dry-run=client -o yaml | kubectl apply -f -
 echo -e "\033[32mConfigMaps created.\033[0m"
 
@@ -82,16 +79,10 @@ kubectl apply -k "$K8S_DIR/overlays/local"
 
 # Wait for databases
 echo -e "\n\033[33mWaiting for databases to be ready...\033[0m"
-if kubectl wait --for=condition=ready pod -l app=postgres-lastfm-master -n mu-data --timeout="${WAIT_TIMEOUT}s" 2>/dev/null; then
-    echo -e "\033[32mpostgres-lastfm-master ready.\033[0m"
+if kubectl wait --for=condition=ready pod -l app=postgres-master -n mu-data --timeout="${WAIT_TIMEOUT}s" 2>/dev/null; then
+    echo -e "\033[32mpostgres-master ready.\033[0m"
 else
-    echo -e "\033[33mpostgres-lastfm-master not ready within timeout.\033[0m"
-fi
-
-if kubectl wait --for=condition=ready pod -l app=postgres-music-data -n mu-data --timeout="${WAIT_TIMEOUT}s" 2>/dev/null; then
-    echo -e "\033[32mpostgres-music-data ready.\033[0m"
-else
-    echo -e "\033[33mpostgres-music-data not ready within timeout.\033[0m"
+    echo -e "\033[33mpostgres-master not ready within timeout.\033[0m"
 fi
 
 # Wait for migrations
