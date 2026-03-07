@@ -38,6 +38,7 @@ include 'music:data:raw:spotify:spotify-rest-api'
 include 'music:data:raw:spotify:migrations:spotify-liquibase-resources'
 include 'music:data:raw:spotify:migrations:spotify-liquibase-service'
 include 'music:data:raw:spotify:etl:spotify-calls-generator'
+include 'music:data:raw:spotify:etl:spotify-calls-performer'
 
 include 'music:quiz'
 include 'ui'

@@ -1,0 +1,18 @@
+plugins {
+    id 'art-universe.spring-boot-app'
+}
+
+archivesBaseName = 'spotify-etl-calls-performer'
+ext.dockerImageName = 'mu-spotify-calls-performer'
+
+dependencies {
+    implementation project(':common:commons-observability')
+    implementation project(':common:data:raw:data-raw-commons-api-client')
+    implementation project(':music:data:raw:spotify:spotify-repositories')
+
+    // web for actuator endpoints
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    implementation 'org.springframework.retry:spring-retry'
+    implementation 'com.google.guava:guava:33.4.0-jre'
+}
