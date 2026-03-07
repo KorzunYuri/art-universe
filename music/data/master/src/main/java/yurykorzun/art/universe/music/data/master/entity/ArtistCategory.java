@@ -5,7 +5,7 @@ import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import yurykorzun.art.universe.common.domain.entity.BaseEntity;
+import yurykorzun.art.universe.music.data.master.entity.MasterBaseEntity;
 import yurykorzun.art.universe.music.data.master.entity.relation.RelationEntity;
 
 @Entity(name = "artist_category")
@@ -13,7 +13,7 @@ import yurykorzun.art.universe.music.data.master.entity.relation.RelationEntity;
 @NoArgsConstructor
 @Getter
 @Setter
-public class ArtistCategory extends BaseEntity implements RelationEntity {
+public class ArtistCategory extends MasterBaseEntity implements RelationEntity {
 
     @Id
     @SequenceGenerator(

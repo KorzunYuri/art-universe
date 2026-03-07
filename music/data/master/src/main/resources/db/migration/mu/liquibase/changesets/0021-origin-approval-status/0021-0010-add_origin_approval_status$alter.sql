@@ -1,0 +1,70 @@
+-- Add origin (SMALLINT, default 1 = MANUAL) and approval_status (SMALLINT, default 2 = APPROVED)
+-- to all master entities, bindings, and relations.
+-- Defaults ensure backward compatibility: all existing rows are treated as manually approved.
+
+-- Core entities
+ALTER TABLE artist ADD COLUMN origin SMALLINT NOT NULL DEFAULT 1;
+ALTER TABLE artist ADD COLUMN approval_status SMALLINT NOT NULL DEFAULT 2;
+
+ALTER TABLE album ADD COLUMN origin SMALLINT NOT NULL DEFAULT 1;
+ALTER TABLE album ADD COLUMN approval_status SMALLINT NOT NULL DEFAULT 2;
+
+ALTER TABLE track ADD COLUMN origin SMALLINT NOT NULL DEFAULT 1;
+ALTER TABLE track ADD COLUMN approval_status SMALLINT NOT NULL DEFAULT 2;
+
+ALTER TABLE category ADD COLUMN origin SMALLINT NOT NULL DEFAULT 1;
+ALTER TABLE category ADD COLUMN approval_status SMALLINT NOT NULL DEFAULT 2;
+
+-- Bindings
+ALTER TABLE artist_binding ADD COLUMN origin SMALLINT NOT NULL DEFAULT 1;
+ALTER TABLE artist_binding ADD COLUMN approval_status SMALLINT NOT NULL DEFAULT 2;
+
+ALTER TABLE album_binding ADD COLUMN origin SMALLINT NOT NULL DEFAULT 1;
+ALTER TABLE album_binding ADD COLUMN approval_status SMALLINT NOT NULL DEFAULT 2;
+
+ALTER TABLE track_binding ADD COLUMN origin SMALLINT NOT NULL DEFAULT 1;
+ALTER TABLE track_binding ADD COLUMN approval_status SMALLINT NOT NULL DEFAULT 2;
+
+ALTER TABLE category_binding ADD COLUMN origin SMALLINT NOT NULL DEFAULT 1;
+ALTER TABLE category_binding ADD COLUMN approval_status SMALLINT NOT NULL DEFAULT 2;
+
+-- Relations (cross-entity)
+ALTER TABLE artist_category ADD COLUMN origin SMALLINT NOT NULL DEFAULT 1;
+ALTER TABLE artist_category ADD COLUMN approval_status SMALLINT NOT NULL DEFAULT 2;
+
+ALTER TABLE artist_album ADD COLUMN origin SMALLINT NOT NULL DEFAULT 1;
+ALTER TABLE artist_album ADD COLUMN approval_status SMALLINT NOT NULL DEFAULT 2;
+
+ALTER TABLE artist_track ADD COLUMN origin SMALLINT NOT NULL DEFAULT 1;
+ALTER TABLE artist_track ADD COLUMN approval_status SMALLINT NOT NULL DEFAULT 2;
+
+ALTER TABLE artist_person ADD COLUMN origin SMALLINT NOT NULL DEFAULT 1;
+ALTER TABLE artist_person ADD COLUMN approval_status SMALLINT NOT NULL DEFAULT 2;
+
+ALTER TABLE album_category ADD COLUMN origin SMALLINT NOT NULL DEFAULT 1;
+ALTER TABLE album_category ADD COLUMN approval_status SMALLINT NOT NULL DEFAULT 2;
+
+ALTER TABLE album_track ADD COLUMN origin SMALLINT NOT NULL DEFAULT 1;
+ALTER TABLE album_track ADD COLUMN approval_status SMALLINT NOT NULL DEFAULT 2;
+
+ALTER TABLE album_person ADD COLUMN origin SMALLINT NOT NULL DEFAULT 1;
+ALTER TABLE album_person ADD COLUMN approval_status SMALLINT NOT NULL DEFAULT 2;
+
+ALTER TABLE track_category ADD COLUMN origin SMALLINT NOT NULL DEFAULT 1;
+ALTER TABLE track_category ADD COLUMN approval_status SMALLINT NOT NULL DEFAULT 2;
+
+ALTER TABLE track_person ADD COLUMN origin SMALLINT NOT NULL DEFAULT 1;
+ALTER TABLE track_person ADD COLUMN approval_status SMALLINT NOT NULL DEFAULT 2;
+
+-- Relations (same-entity)
+ALTER TABLE artist_artist ADD COLUMN origin SMALLINT NOT NULL DEFAULT 1;
+ALTER TABLE artist_artist ADD COLUMN approval_status SMALLINT NOT NULL DEFAULT 2;
+
+ALTER TABLE album_album ADD COLUMN origin SMALLINT NOT NULL DEFAULT 1;
+ALTER TABLE album_album ADD COLUMN approval_status SMALLINT NOT NULL DEFAULT 2;
+
+ALTER TABLE track_track ADD COLUMN origin SMALLINT NOT NULL DEFAULT 1;
+ALTER TABLE track_track ADD COLUMN approval_status SMALLINT NOT NULL DEFAULT 2;
+
+ALTER TABLE category_category ADD COLUMN origin SMALLINT NOT NULL DEFAULT 1;
+ALTER TABLE category_category ADD COLUMN approval_status SMALLINT NOT NULL DEFAULT 2;

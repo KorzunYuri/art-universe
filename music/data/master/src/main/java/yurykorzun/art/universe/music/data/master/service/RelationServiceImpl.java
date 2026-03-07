@@ -12,6 +12,8 @@ import yurykorzun.art.universe.music.data.master.dto.relation.RelatedEntityDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingStatusDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.TargetEntityBindingDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.entity.MasterApprovalStatus;
+import yurykorzun.art.universe.music.data.master.entity.Origin;
 import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.entity.relation.RelationEntity;
 import yurykorzun.art.universe.music.data.master.entity.relation.RelationRegistry;
@@ -160,11 +162,14 @@ public class RelationServiceImpl implements RelationService {
         Long sourceEntityId,
         EntityType targetEntityType,
         Long targetEntityId,
-        @Nullable Long relationTypeId
+        @Nullable Long relationTypeId,
+        Origin origin,
+        MasterApprovalStatus approvalStatus
     ) {
         List<Long> ids = createInternalRelations(
             sourceEntityType, sourceEntityId, targetEntityType, targetEntityId,
-            relationTypeId != null ? Collections.singletonList(relationTypeId) : null);
+            relationTypeId != null ? Collections.singletonList(relationTypeId) : null,
+            origin, approvalStatus);
         return ids.get(0);
     }
 
@@ -175,7 +180,9 @@ public class RelationServiceImpl implements RelationService {
         Long sourceEntityId,
         EntityType targetEntityType,
         Long targetEntityId,
-        @Nullable List<Long> relationTypeIds
+        @Nullable List<Long> relationTypeIds,
+        Origin origin,
+        MasterApprovalStatus approvalStatus
     ) {
         // Validate that entities exist
         validateEntityExists(sourceEntityType, sourceEntityId);
@@ -187,7 +194,7 @@ public class RelationServiceImpl implements RelationService {
         // If no relation type IDs provided, create a single untyped relation
         if (relationTypeIds == null || relationTypeIds.isEmpty()) {
             return Collections.singletonList(
-                findOrCreateRelation(metadata, sourceEntityId, targetEntityId, null));
+                findOrCreateRelation(metadata, sourceEntityId, targetEntityId, null, origin, approvalStatus));
         }
 
         // Reject relation types for relations that don't support types
@@ -202,7 +209,7 @@ public class RelationServiceImpl implements RelationService {
         for (Long relationTypeId : relationTypeIds) {
             validateRelationTypeApplicability(relationTypeId, sourceEntityType, targetEntityType);
             rejectIfSystemRelationType(relationTypeId);
-            createdIds.add(findOrCreateRelation(metadata, sourceEntityId, targetEntityId, relationTypeId));
+            createdIds.add(findOrCreateRelation(metadata, sourceEntityId, targetEntityId, relationTypeId, origin, approvalStatus));
         }
         return createdIds;
     }
@@ -439,7 +446,9 @@ public class RelationServiceImpl implements RelationService {
         RelationMetadata metadata,
         Long sourceEntityId,
         Long targetEntityId,
-        @Nullable Long relationTypeId
+        @Nullable Long relationTypeId,
+        Origin origin,
+        MasterApprovalStatus approvalStatus
     ) {
         // Get first and second entity IDs based on relation order
         Long firstEntityId = metadata.getFirstEntityId(sourceEntityId, targetEntityId);
@@ -493,6 +502,8 @@ public class RelationServiceImpl implements RelationService {
                             %s,
                             %s,
                             relation_type_id,
+                            origin,
+                            approval_status,
                             created_at,
                             updated_at
                         )
@@ -501,6 +512,8 @@ public class RelationServiceImpl implements RelationService {
                             ?1,
                             ?2,
                             ?3,
+                            ?4,
+                            ?5,
                             now(),
                             now()
                         )
@@ -517,6 +530,8 @@ public class RelationServiceImpl implements RelationService {
                             id,
                             %s,
                             %s,
+                            origin,
+                            approval_status,
                             created_at,
                             updated_at
                         )
@@ -524,6 +539,8 @@ public class RelationServiceImpl implements RelationService {
                             nextval('%s_seq'),
                             ?1,
                             ?2,
+                            ?3,
+                            ?4,
                             now(),
                             now()
                         )
@@ -541,6 +558,11 @@ public class RelationServiceImpl implements RelationService {
                     .setParameter(2, secondEntityId);
                 if (hasTypeSupport && relationTypeId != null) {
                     insertQuery.setParameter(3, relationTypeId);
+                    insertQuery.setParameter(4, origin.getCode());
+                    insertQuery.setParameter(5, approvalStatus.getCode());
+                } else {
+                    insertQuery.setParameter(3, origin.getCode());
+                    insertQuery.setParameter(4, approvalStatus.getCode());
                 }
                 Number id = (Number) insertQuery.getSingleResult();
 

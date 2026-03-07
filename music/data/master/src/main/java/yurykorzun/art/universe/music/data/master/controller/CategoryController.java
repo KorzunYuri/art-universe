@@ -20,6 +20,8 @@ import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindRequestD
 import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindResponseDTO;
 import yurykorzun.art.universe.common.domain.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.entity.MasterApprovalStatus;
+import yurykorzun.art.universe.music.data.master.entity.Origin;
 import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.service.CategoryService;
@@ -92,14 +94,14 @@ public class CategoryController {
     public CategoryDto saveCategory(
         @Valid @RequestBody CategorySaveRequestDTO request
     ) {
-        return categoryService.saveCategory(request);
+        return categoryService.saveCategory(request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
 
     @PostMapping("/with-parents")
     public CategoryWithParentsDto saveCategoryWithParents(
         @Valid @RequestBody CategorySaveWithParentsRequestDTO request
     ) {
-        return categoryService.saveCategoryWithParents(request);
+        return categoryService.saveCategoryWithParents(request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
 
     @DeleteMapping("/{id}")
@@ -125,7 +127,7 @@ public class CategoryController {
         @PathVariable Long externalId,
         @Valid @RequestBody EntityBindToExistingRequestDTO request
     ) {
-        return categoryService.bindToExisting(dataSource, externalId, request);
+        return categoryService.bindToExisting(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
 
     @PostMapping("/bind/new/{dataSource}/{externalId}")
@@ -134,7 +136,7 @@ public class CategoryController {
         @PathVariable Long externalId,
         @Valid @RequestBody EntityCreateAndBindRequestDTO request
     ) {
-        return categoryService.createAndBind(dataSource, externalId, request);
+        return categoryService.createAndBind(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
 
     @DeleteMapping("/unbind/{dataSource}/{externalId}")

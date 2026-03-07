@@ -13,6 +13,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import yurykorzun.art.universe.common.domain.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.common.domain.dto.lookup.LookupResultDTO;
+import yurykorzun.art.universe.music.data.master.entity.MasterApprovalStatus;
+import yurykorzun.art.universe.music.data.master.entity.Origin;
 import yurykorzun.art.universe.music.data.master.test.archetypes.BaseMasterDataMvcTest;
 import yurykorzun.art.universe.music.data.master.dto.ArtistDto;
 import yurykorzun.art.universe.music.data.master.dto.ArtistSaveRequestDTO;
@@ -284,7 +286,7 @@ class ArtistControllerMvcTest extends BaseMasterDataMvcTest {
         String requestJson = objectMapper.writeValueAsString(request);
         String expectedJson = objectMapper.writeValueAsString(savedArtist);
         
-        when(artistService.saveArtist(any(ArtistSaveRequestDTO.class))).thenReturn(savedArtist);
+        when(artistService.saveArtist(any(ArtistSaveRequestDTO.class), eq(Origin.MANUAL), eq(MasterApprovalStatus.APPROVED))).thenReturn(savedArtist);
         
         // When & Then
         mockMvc.perform(post("/api/v1/artists")
@@ -305,7 +307,7 @@ class ArtistControllerMvcTest extends BaseMasterDataMvcTest {
         String requestJson = objectMapper.writeValueAsString(request);
         String errorMessage = "Save error occurred";
         
-        when(artistService.saveArtist(any(ArtistSaveRequestDTO.class)))
+        when(artistService.saveArtist(any(ArtistSaveRequestDTO.class), eq(Origin.MANUAL), eq(MasterApprovalStatus.APPROVED)))
             .thenThrow(new RuntimeException(errorMessage));
         
         // When & Then
@@ -491,7 +493,7 @@ class ArtistControllerMvcTest extends BaseMasterDataMvcTest {
             .andDo(print())
             .andExpect(status().isOk());
         
-        verify(artistService).bindToCategory(artistId, categoryId);
+        verify(artistService).bindToCategory(artistId, categoryId, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
     
     @Test
@@ -502,7 +504,7 @@ class ArtistControllerMvcTest extends BaseMasterDataMvcTest {
         String errorMessage = "Bind error occurred";
         
         doThrow(new RuntimeException(errorMessage))
-            .when(artistService).bindToCategory(artistId, categoryId);
+            .when(artistService).bindToCategory(artistId, categoryId, Origin.MANUAL, MasterApprovalStatus.APPROVED);
         
         // When & Then
         mockMvc.perform(post("/api/v1/artists/{artistId}/categories/{categoryId}", artistId, categoryId))

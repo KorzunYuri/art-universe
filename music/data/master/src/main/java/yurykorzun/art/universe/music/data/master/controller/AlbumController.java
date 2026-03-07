@@ -21,6 +21,8 @@ import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupR
 import yurykorzun.art.universe.common.domain.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.common.domain.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.entity.MasterApprovalStatus;
+import yurykorzun.art.universe.music.data.master.entity.Origin;
 import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.service.AlbumService;
@@ -71,7 +73,7 @@ public class AlbumController {
 
     @PostMapping
     public AlbumDto saveAlbum(@Valid @RequestBody AlbumSaveRequestDTO request) {
-        return albumService.saveAlbum(request);
+        return albumService.saveAlbum(request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
 
     @PostMapping("/with-tracks")
@@ -93,7 +95,7 @@ public class AlbumController {
         @PathVariable Long albumId,
         @PathVariable Long categoryId
     ) {
-        albumService.bindToCategory(albumId, categoryId);
+        albumService.bindToCategory(albumId, categoryId, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
 
     @DeleteMapping("/{albumId}/categories/{categoryId}")
@@ -143,7 +145,7 @@ public class AlbumController {
         @PathVariable Long externalId,
         @Valid @RequestBody ArtistRelatedEntityBindToExistingRequestDTO request
     ) {
-        return albumService.bindToExisting(dataSource, externalId, request);
+        return albumService.bindToExisting(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
 
     @PostMapping("/bind/new/{dataSource}/{externalId}")
@@ -152,7 +154,7 @@ public class AlbumController {
         @PathVariable Long externalId,
         @Valid @RequestBody ArtistRelatedEntityCreateAndBindRequestDTO request
     ) {
-        return albumService.createAndBind(dataSource, externalId, request);
+        return albumService.createAndBind(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
 
     @PostMapping("/bind/new/{dataSource}/{externalId}/with-tracks")
@@ -161,7 +163,7 @@ public class AlbumController {
         @PathVariable Long externalId,
         @Valid @RequestBody ExternalAlbumWithTracksCreateAndBindRequestDTO request
     ) {
-        return albumService.createAndBindWithTracks(dataSource, externalId, request);
+        return albumService.createAndBindWithTracks(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
 
     @DeleteMapping("/unbind/{dataSource}/{externalId}")

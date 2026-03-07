@@ -10,6 +10,8 @@ import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingSta
 import yurykorzun.art.universe.music.data.master.dto.relation.TargetEntityBindingDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
+import yurykorzun.art.universe.music.data.master.entity.MasterApprovalStatus;
+import yurykorzun.art.universe.music.data.master.entity.Origin;
 import yurykorzun.art.universe.music.data.master.service.RelationService;
 
 import java.util.Arrays;
@@ -179,18 +181,26 @@ class RelationControllerTest {
         List<Long> expectedRelationIds = Arrays.asList(789L);
 
         when(relationService.createInternalRelations(
-            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, null
+            sourceEntityType, sourceEntityId,
+            targetEntityType, targetEntityId,
+            null,
+            Origin.MANUAL, MasterApprovalStatus.APPROVED
         )).thenReturn(expectedRelationIds);
 
         // When
         List<Long> result = relationController.createInternalRelations(
-            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, null
+            sourceEntityType, sourceEntityId,
+            targetEntityType, targetEntityId,
+            null
         );
 
         // Then
         assertEquals(expectedRelationIds, result);
         verify(relationService).createInternalRelations(
-            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, null
+            sourceEntityType, sourceEntityId,
+            targetEntityType, targetEntityId,
+            null,
+            Origin.MANUAL, MasterApprovalStatus.APPROVED
         );
     }
 
@@ -204,7 +214,10 @@ class RelationControllerTest {
         RuntimeException expectedException = new RuntimeException("Test error");
 
         when(relationService.createInternalRelations(
-            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, null
+            sourceEntityType, sourceEntityId,
+            targetEntityType, targetEntityId,
+            null,
+            Origin.MANUAL, MasterApprovalStatus.APPROVED
         )).thenThrow(expectedException);
 
         // When & Then
@@ -216,7 +229,10 @@ class RelationControllerTest {
 
         assertSame(expectedException, exception);
         verify(relationService).createInternalRelations(
-            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, null
+            sourceEntityType, sourceEntityId,
+            targetEntityType, targetEntityId,
+            null,
+            Origin.MANUAL, MasterApprovalStatus.APPROVED
         );
     }
 

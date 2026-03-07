@@ -11,6 +11,8 @@ import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistin
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.entity.MasterApprovalStatus;
+import yurykorzun.art.universe.music.data.master.entity.Origin;
 
 import java.util.List;
 
@@ -66,7 +68,7 @@ public interface CategoryService {
      * @param request The category save request DTO
      * @return The saved category with hierarchy information
      */
-    CategoryDto saveCategory(CategorySaveRequestDTO request);
+    CategoryDto saveCategory(CategorySaveRequestDTO request, Origin origin, MasterApprovalStatus approvalStatus);
     
     /**
      * Save a category with parent relationships (create new or update existing)
@@ -74,7 +76,7 @@ public interface CategoryService {
      * @param request The category save request DTO with parent information
      * @return The saved category with parent information
      */
-    CategoryWithParentsDto saveCategoryWithParents(CategorySaveWithParentsRequestDTO request);
+    CategoryWithParentsDto saveCategoryWithParents(CategorySaveWithParentsRequestDTO request, Origin origin, MasterApprovalStatus approvalStatus);
     
     /**
      * Delete a category by ID
@@ -110,7 +112,7 @@ public interface CategoryService {
      * @param request The binding request containing category ID
      * @return The created binding information
      */
-    BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, EntityBindToExistingRequestDTO request);
+    BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, EntityBindToExistingRequestDTO request, Origin origin, MasterApprovalStatus approvalStatus);
     
     /**
      * Create a new category and bind an external category to it
@@ -120,7 +122,7 @@ public interface CategoryService {
      * @param request The binding request containing category information
      * @return The created binding information
      */
-    BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, EntityCreateAndBindRequestDTO request);
+    BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, EntityCreateAndBindRequestDTO request, Origin origin, MasterApprovalStatus approvalStatus);
     
     /**
      * Unbind an external category from the system

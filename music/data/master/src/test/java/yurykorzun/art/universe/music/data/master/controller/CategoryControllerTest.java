@@ -21,6 +21,8 @@ import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProj
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.common.exception.DataUpdateException;
+import yurykorzun.art.universe.music.data.master.entity.MasterApprovalStatus;
+import yurykorzun.art.universe.music.data.master.entity.Origin;
 import yurykorzun.art.universe.music.data.master.service.BindingService;
 import yurykorzun.art.universe.music.data.master.service.CategoryService;
 
@@ -157,14 +159,14 @@ class CategoryControllerTest {
             .name("Genre")
             .build();
         
-        when(categoryService.saveCategory(request)).thenReturn(savedCategory);
+        when(categoryService.saveCategory(request, Origin.MANUAL, MasterApprovalStatus.APPROVED)).thenReturn(savedCategory);
 
         // When
         CategoryDto result = categoryController.saveCategory(request);
 
         // Then
         assertEquals(savedCategory, result);
-        verify(categoryService).saveCategory(request);
+        verify(categoryService).saveCategory(request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
 
     @Test
@@ -175,7 +177,7 @@ class CategoryControllerTest {
             .build();
         RuntimeException expectedException = new RuntimeException("Test error");
         
-        when(categoryService.saveCategory(request)).thenThrow(expectedException);
+        when(categoryService.saveCategory(request, Origin.MANUAL, MasterApprovalStatus.APPROVED)).thenThrow(expectedException);
 
         // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class, () -> 
@@ -183,7 +185,7 @@ class CategoryControllerTest {
         );
         
         assertSame(expectedException, exception);
-        verify(categoryService).saveCategory(request);
+        verify(categoryService).saveCategory(request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
 
     @Test
@@ -230,14 +232,14 @@ class CategoryControllerTest {
             .parents(Arrays.asList(parent1, parent2))
             .build();
         
-        when(categoryService.saveCategoryWithParents(request)).thenReturn(savedCategory);
+        when(categoryService.saveCategoryWithParents(request, Origin.MANUAL, MasterApprovalStatus.APPROVED)).thenReturn(savedCategory);
 
         // When
         CategoryWithParentsDto result = categoryController.saveCategoryWithParents(request);
 
         // Then
         assertEquals(savedCategory, result);
-        verify(categoryService).saveCategoryWithParents(request);
+        verify(categoryService).saveCategoryWithParents(request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
 
     @Test
@@ -249,7 +251,7 @@ class CategoryControllerTest {
             .build();
         RuntimeException expectedException = new RuntimeException("Test error");
         
-        when(categoryService.saveCategoryWithParents(request)).thenThrow(expectedException);
+        when(categoryService.saveCategoryWithParents(request, Origin.MANUAL, MasterApprovalStatus.APPROVED)).thenThrow(expectedException);
 
         // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class, () -> 
@@ -257,7 +259,7 @@ class CategoryControllerTest {
         );
         
         assertSame(expectedException, exception);
-        verify(categoryService).saveCategoryWithParents(request);
+        verify(categoryService).saveCategoryWithParents(request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
 
     @Test
@@ -364,7 +366,7 @@ class CategoryControllerTest {
             externalId, dataSource, masterId, "Rock"
         );
         
-        when(categoryService.bindToExisting(dataSource, externalId, request))
+        when(categoryService.bindToExisting(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED))
             .thenReturn(projection);
 
         // When
@@ -372,7 +374,7 @@ class CategoryControllerTest {
 
         // Then
         assertEquals(projection, result);
-        verify(categoryService).bindToExisting(dataSource, externalId, request);
+        verify(categoryService).bindToExisting(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
 
     @Test
@@ -387,7 +389,7 @@ class CategoryControllerTest {
             .masterId(masterId)
             .build();
         
-        when(categoryService.bindToExisting(dataSource, externalId, request))
+        when(categoryService.bindToExisting(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED))
             .thenThrow(expectedException);
 
         // When & Then
@@ -396,7 +398,7 @@ class CategoryControllerTest {
         );
         
         assertSame(expectedException, exception);
-        verify(categoryService).bindToExisting(dataSource, externalId, request);
+        verify(categoryService).bindToExisting(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
 
     @Test
@@ -414,7 +416,7 @@ class CategoryControllerTest {
             externalId, dataSource, 101L, categoryName
         );
         
-        when(categoryService.createAndBind(dataSource, externalId, request))
+        when(categoryService.createAndBind(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED))
             .thenReturn(projection);
 
         // When
@@ -422,7 +424,7 @@ class CategoryControllerTest {
 
         // Then
         assertEquals(projection, result);
-        verify(categoryService).createAndBind(dataSource, externalId, request);
+        verify(categoryService).createAndBind(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
 
     @Test
@@ -437,7 +439,7 @@ class CategoryControllerTest {
             .entityName(categoryName)
             .build();
         
-        when(categoryService.createAndBind(dataSource, externalId, request))
+        when(categoryService.createAndBind(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED))
             .thenThrow(expectedException);
 
         // When & Then
@@ -446,7 +448,7 @@ class CategoryControllerTest {
         );
         
         assertSame(expectedException, exception);
-        verify(categoryService).createAndBind(dataSource, externalId, request);
+        verify(categoryService).createAndBind(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
 
     @Test

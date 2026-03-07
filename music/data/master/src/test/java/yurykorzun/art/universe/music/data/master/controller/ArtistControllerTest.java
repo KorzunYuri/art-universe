@@ -22,6 +22,8 @@ import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjecti
 import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
+import yurykorzun.art.universe.music.data.master.entity.MasterApprovalStatus;
+import yurykorzun.art.universe.music.data.master.entity.Origin;
 import yurykorzun.art.universe.music.data.master.service.ArtistService;
 import yurykorzun.art.universe.music.data.master.service.BindingService;
 
@@ -156,7 +158,7 @@ class ArtistControllerTest {
             externalId, dataSource, masterId, "Radiohead"
         );
         
-        when(artistService.bindToExisting(dataSource, externalId, request))
+        when(artistService.bindToExisting(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED))
             .thenReturn(projection);
 
         // When
@@ -164,7 +166,7 @@ class ArtistControllerTest {
 
         // Then
         assertEquals(projection, result);
-        verify(artistService).bindToExisting(dataSource, externalId, request);
+        verify(artistService).bindToExisting(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
     
     @Test
@@ -179,7 +181,7 @@ class ArtistControllerTest {
             .masterId(masterId)
             .build();
         
-        when(artistService.bindToExisting(dataSource, externalId, request))
+        when(artistService.bindToExisting(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED))
             .thenThrow(expectedException);
 
         // When & Then
@@ -188,7 +190,7 @@ class ArtistControllerTest {
         );
         
         assertSame(expectedException, exception);
-        verify(artistService).bindToExisting(dataSource, externalId, request);
+        verify(artistService).bindToExisting(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
     
     @Test
@@ -395,14 +397,14 @@ class ArtistControllerTest {
             .name("New Artist")
             .build();
         
-        when(artistService.saveArtist(request)).thenReturn(savedArtist);
+        when(artistService.saveArtist(request, Origin.MANUAL, MasterApprovalStatus.APPROVED)).thenReturn(savedArtist);
 
         // When
         ArtistDto result = artistController.saveArtist(request);
 
         // Then
         assertEquals(savedArtist, result);
-        verify(artistService).saveArtist(request);
+        verify(artistService).saveArtist(request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
 
     @Test
@@ -413,7 +415,7 @@ class ArtistControllerTest {
             .build();
         RuntimeException expectedException = new RuntimeException("Test error");
         
-        when(artistService.saveArtist(request)).thenThrow(expectedException);
+        when(artistService.saveArtist(request, Origin.MANUAL, MasterApprovalStatus.APPROVED)).thenThrow(expectedException);
 
         // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class, () -> 
@@ -421,7 +423,7 @@ class ArtistControllerTest {
         );
         
         assertSame(expectedException, exception);
-        verify(artistService).saveArtist(request);
+        verify(artistService).saveArtist(request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
 
     @Test
@@ -487,7 +489,7 @@ class ArtistControllerTest {
             externalId, dataSource, 101L, artistName
         );
         
-        when(artistService.createAndBind(dataSource, externalId, request))
+        when(artistService.createAndBind(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED))
             .thenReturn(projection);
 
         // When
@@ -495,7 +497,7 @@ class ArtistControllerTest {
 
         // Then
         assertEquals(projection, result);
-        verify(artistService).createAndBind(dataSource, externalId, request);
+        verify(artistService).createAndBind(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
     
     @Test
@@ -510,7 +512,7 @@ class ArtistControllerTest {
             .entityName(artistName)
             .build();
         
-        when(artistService.createAndBind(dataSource, externalId, request))
+        when(artistService.createAndBind(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED))
             .thenThrow(expectedException);
 
         // When & Then
@@ -519,7 +521,7 @@ class ArtistControllerTest {
         );
         
         assertSame(expectedException, exception);
-        verify(artistService).createAndBind(dataSource, externalId, request);
+        verify(artistService).createAndBind(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
     
     @Test
@@ -634,7 +636,7 @@ class ArtistControllerTest {
         artistController.bindToCategory(artistId, categoryId);
         
         // Then
-        verify(artistService).bindToCategory(artistId, categoryId);
+        verify(artistService).bindToCategory(artistId, categoryId, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
     
     @Test
@@ -644,7 +646,7 @@ class ArtistControllerTest {
         Long categoryId = 2L;
         RuntimeException expectedException = new RuntimeException("Test error");
         
-        doThrow(expectedException).when(artistService).bindToCategory(artistId, categoryId);
+        doThrow(expectedException).when(artistService).bindToCategory(artistId, categoryId, Origin.MANUAL, MasterApprovalStatus.APPROVED);
         
         // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class, () -> 
@@ -652,7 +654,7 @@ class ArtistControllerTest {
         );
         
         assertSame(expectedException, exception);
-        verify(artistService).bindToCategory(artistId, categoryId);
+        verify(artistService).bindToCategory(artistId, categoryId, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
     
     @Test

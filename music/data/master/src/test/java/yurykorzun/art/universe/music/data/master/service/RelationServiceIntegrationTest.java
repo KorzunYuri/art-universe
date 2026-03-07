@@ -6,19 +6,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
+import yurykorzun.art.universe.music.data.master.entity.*;
 import yurykorzun.art.universe.music.data.master.test.archetypes.BaseMasterDataJpaTest;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelatedEntityDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingStatusDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.TargetEntityBindingDTO;
-import yurykorzun.art.universe.music.data.master.entity.Artist;
-import yurykorzun.art.universe.music.data.master.entity.ArtistBinding;
-import yurykorzun.art.universe.music.data.master.entity.Category;
-import yurykorzun.art.universe.music.data.master.entity.CategoryBinding;
-import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
-import yurykorzun.art.universe.music.data.master.entity.RelationType;
-import yurykorzun.art.universe.music.data.master.entity.RelationTypeApplicability;
-import yurykorzun.art.universe.music.data.master.entity.Track;
 import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.entity.relation.RelationRegistry;
 
@@ -109,8 +102,18 @@ class RelationServiceIntegrationTest extends BaseMasterDataJpaTest {
         MasterEntityType targetEntityType = MasterEntityType.CATEGORY;
 
         // Create relations
-        relationService.createInternalRelations(sourceEntityType, artist1.getId(), targetEntityType, category1.getId(), null);
-        relationService.createInternalRelations(sourceEntityType, artist1.getId(), targetEntityType, category2.getId(), null);
+        relationService.createInternalRelations(
+            sourceEntityType, artist1.getId(),
+            targetEntityType, category1.getId(),
+            null,
+            Origin.MANUAL, MasterApprovalStatus.APPROVED
+        );
+        relationService.createInternalRelations(
+            sourceEntityType, artist1.getId(),
+            targetEntityType, category2.getId(),
+            null,
+            Origin.MANUAL, MasterApprovalStatus.APPROVED
+        );
 
         // When
         List<RelatedEntityDTO> results = relationService.getRelatedEntities(
@@ -138,11 +141,14 @@ class RelationServiceIntegrationTest extends BaseMasterDataJpaTest {
 
         // When
         List<Long> relationIds = relationService.createInternalRelations(
-            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, null);
+            sourceEntityType, sourceEntityId,
+            targetEntityType, targetEntityId,
+            null,
+            Origin.MANUAL, MasterApprovalStatus.APPROVED);
 
         // Then
         assertThat(relationIds).hasSize(1);
-        assertThat(relationIds.get(0)).isNotNull();
+        assertThat(relationIds.getFirst()).isNotNull();
 
         // Verify that relation exists in database
         String checkRelationSql = "SELECT COUNT(*) FROM artist_category WHERE artist_id = ? AND category_id = ?";
@@ -164,7 +170,12 @@ class RelationServiceIntegrationTest extends BaseMasterDataJpaTest {
 
         // When & Then
         assertThrows(CustomEntityNotFoundException.class, () ->
-            relationService.createInternalRelations(sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, null));
+            relationService.createInternalRelations(
+                sourceEntityType, sourceEntityId,
+                targetEntityType, targetEntityId,
+                null,
+                Origin.MANUAL, MasterApprovalStatus.APPROVED
+            ));
     }
 
     @Test
@@ -177,7 +188,11 @@ class RelationServiceIntegrationTest extends BaseMasterDataJpaTest {
 
         // Create relation
         relationService.createInternalRelations(
-            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, null);
+            sourceEntityType, sourceEntityId,
+            targetEntityType, targetEntityId,
+            null,
+            Origin.MANUAL, MasterApprovalStatus.APPROVED
+        );
 
         // When
         boolean result = relationService.deleteInternalRelation(
@@ -222,8 +237,12 @@ class RelationServiceIntegrationTest extends BaseMasterDataJpaTest {
 
         // Create relation
         List<Long> relationIds = relationService.createInternalRelations(
-            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, null);
-        Long relationId = relationIds.get(0);
+            sourceEntityType, sourceEntityId,
+            targetEntityType, targetEntityId,
+            null,
+            Origin.MANUAL, MasterApprovalStatus.APPROVED
+        );
+        Long relationId = relationIds.getFirst();
 
         // When
         boolean result = relationService.deleteInternalRelationById(relationId, sourceEntityType, targetEntityType);
@@ -263,7 +282,11 @@ class RelationServiceIntegrationTest extends BaseMasterDataJpaTest {
 
         // Create internal relation
         relationService.createInternalRelations(
-            sourceEntityType, artist1.getId(), targetEntityType, category1.getId(), null);
+            sourceEntityType, artist1.getId(),
+            targetEntityType, category1.getId(),
+            null,
+            Origin.MANUAL, MasterApprovalStatus.APPROVED
+        );
 
         // When
         RelationBindingStatusDTO result = relationService.findBoundExternalRelations(
@@ -313,7 +336,11 @@ class RelationServiceIntegrationTest extends BaseMasterDataJpaTest {
 
         // Create internal relation
         relationService.createInternalRelations(
-            sourceEntityType, artist1.getId(), targetEntityType, category1.getId(), null);
+            sourceEntityType, artist1.getId(),
+            targetEntityType, category1.getId(),
+            null,
+            Origin.MANUAL, MasterApprovalStatus.APPROVED
+        );
 
         // When
         RelationBindingStatusDTO result = relationService.findBoundExternalRelations(
@@ -380,10 +407,16 @@ class RelationServiceIntegrationTest extends BaseMasterDataJpaTest {
         // Given: category relations don't support types
         relationService.createInternalRelations(
             MasterEntityType.ARTIST, artist1.getId(),
-            MasterEntityType.CATEGORY, category1.getId(), null);
+            MasterEntityType.CATEGORY, category1.getId(),
+            null,
+            Origin.MANUAL, MasterApprovalStatus.APPROVED
+        );
         relationService.createInternalRelations(
             MasterEntityType.ARTIST, artist1.getId(),
-            MasterEntityType.CATEGORY, category2.getId(), null);
+            MasterEntityType.CATEGORY, category2.getId(),
+            null,
+            Origin.MANUAL, MasterApprovalStatus.APPROVED
+        );
 
         // When
         List<RelatedEntityDTO> results = relationService.getRelatedEntities(
@@ -393,8 +426,8 @@ class RelationServiceIntegrationTest extends BaseMasterDataJpaTest {
         assertThat(results).hasSize(2);
         assertThat(results).allSatisfy(dto -> {
             assertThat(dto.getRelationTypes()).hasSize(1);
-            assertThat(dto.getRelationTypes().get(0).getRelationTypeId()).isNull();
-            assertThat(dto.getRelationTypes().get(0).getRelationTypeName()).isNull();
+            assertThat(dto.getRelationTypes().getFirst().getRelationTypeId()).isNull();
+            assertThat(dto.getRelationTypes().getFirst().getRelationTypeName()).isNull();
         });
     }
 
@@ -420,7 +453,9 @@ class RelationServiceIntegrationTest extends BaseMasterDataJpaTest {
         relationService.createInternalRelations(
             MasterEntityType.ARTIST, artist1.getId(),
             MasterEntityType.TRACK, track1.getId(),
-            Collections.singletonList(featuringType.getId()));
+            Collections.singletonList(featuringType.getId()),
+            Origin.MANUAL, MasterApprovalStatus.APPROVED
+        );
 
         // When
         List<RelatedEntityDTO> results = relationService.getRelatedEntities(
@@ -428,9 +463,9 @@ class RelationServiceIntegrationTest extends BaseMasterDataJpaTest {
 
         // Then: should return entity with relation type info
         assertThat(results).hasSize(1);
-        assertThat(results.get(0).getRelationTypes()).hasSize(1);
-        assertThat(results.get(0).getRelationTypes().get(0).getRelationTypeId()).isEqualTo(featuringType.getId());
-        assertThat(results.get(0).getRelationTypes().get(0).getRelationTypeName()).isEqualTo("Featuring");
+        assertThat(results.getFirst().getRelationTypes()).hasSize(1);
+        assertThat(results.getFirst().getRelationTypes().getFirst().getRelationTypeId()).isEqualTo(featuringType.getId());
+        assertThat(results.getFirst().getRelationTypes().getFirst().getRelationTypeName()).isEqualTo("Featuring");
     }
 
     @Test
@@ -462,11 +497,15 @@ class RelationServiceIntegrationTest extends BaseMasterDataJpaTest {
         relationService.createInternalRelations(
             MasterEntityType.ARTIST, artist1.getId(),
             MasterEntityType.TRACK, track1.getId(),
-            Collections.singletonList(featuringType.getId()));
+            Collections.singletonList(featuringType.getId()),
+            Origin.MANUAL, MasterApprovalStatus.APPROVED
+        );
         relationService.createInternalRelations(
             MasterEntityType.ARTIST, artist1.getId(),
             MasterEntityType.TRACK, track1.getId(),
-            Collections.singletonList(remixType.getId()));
+            Collections.singletonList(remixType.getId()),
+            Origin.MANUAL, MasterApprovalStatus.APPROVED
+        );
 
         // When: filter by featuringType
         List<RelatedEntityDTO> results = relationService.getRelatedEntities(
@@ -482,7 +521,10 @@ class RelationServiceIntegrationTest extends BaseMasterDataJpaTest {
         // Given: category relation (no type support)
         relationService.createInternalRelations(
             MasterEntityType.ARTIST, artist1.getId(),
-            MasterEntityType.CATEGORY, category1.getId(), null);
+            MasterEntityType.CATEGORY, category1.getId(),
+            null,
+            Origin.MANUAL, MasterApprovalStatus.APPROVED
+        );
 
         // When
         boolean result = relationService.deleteInternalRelation(
@@ -525,10 +567,16 @@ class RelationServiceIntegrationTest extends BaseMasterDataJpaTest {
 
         relationService.createInternalRelations(
             MasterEntityType.ARTIST, artist1.getId(),
-            MasterEntityType.TRACK, track1.getId(), Collections.singletonList(type1.getId()));
+            MasterEntityType.TRACK, track1.getId(),
+            Collections.singletonList(type1.getId()),
+            Origin.MANUAL, MasterApprovalStatus.APPROVED
+        );
         relationService.createInternalRelations(
             MasterEntityType.ARTIST, artist1.getId(),
-            MasterEntityType.TRACK, track1.getId(), Collections.singletonList(type2.getId()));
+            MasterEntityType.TRACK, track1.getId(),
+            Collections.singletonList(type2.getId()),
+            Origin.MANUAL, MasterApprovalStatus.APPROVED
+        );
 
         // When: delete only type1 relation
         boolean result = relationService.deleteInternalRelation(
@@ -565,6 +613,8 @@ class RelationServiceIntegrationTest extends BaseMasterDataJpaTest {
             relationService.createInternalRelations(
                 MasterEntityType.ARTIST, artist1.getId(),
                 MasterEntityType.CATEGORY, category1.getId(),
-                Collections.singletonList(someType.getId())));
+                Collections.singletonList(someType.getId()),
+                Origin.MANUAL, MasterApprovalStatus.APPROVED
+            ));
     }
 }

@@ -24,5 +24,6 @@
     <include file="changelogs/0018-person-relations.xml" relativeToChangelogFile="true"/>
     <include file="changelogs/0019-relation-types-values.xml" relativeToChangelogFile="true"/>
     <include file="changelogs/0020-drop-relation-bindings.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0021-origin-approval-status.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

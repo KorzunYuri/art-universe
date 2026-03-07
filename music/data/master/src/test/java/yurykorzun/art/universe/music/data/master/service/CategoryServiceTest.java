@@ -12,10 +12,7 @@ import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistin
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
-import yurykorzun.art.universe.music.data.master.entity.Category;
-import yurykorzun.art.universe.music.data.master.entity.CategoryBinding;
-import yurykorzun.art.universe.music.data.master.entity.CategoryCategory;
-import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.entity.*;
 import yurykorzun.art.universe.music.data.master.repository.CategoryRepository;
 import yurykorzun.art.universe.music.data.master.repository.CategoryBindingRepository;
 import yurykorzun.art.universe.music.data.master.repository.CategoryCategoryRepository;
@@ -141,7 +138,7 @@ class CategoryServiceTest {
             .thenReturn(expectedResult);
 
         // When
-        BoundEntityProjection result = categoryService.bindToExisting(dataSource, externalId, request);
+        BoundEntityProjection result = categoryService.bindToExisting(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
 
         // Then
         assertEquals(expectedResult, result);
@@ -167,7 +164,7 @@ class CategoryServiceTest {
 
         // When & Then
         assertThrows(EntityNotFoundException.class, () -> 
-            categoryService.bindToExisting(dataSource, externalId, request));
+            categoryService.bindToExisting(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED));
         
         verify(categoryRepository).findById(categoryId);
         verify(categoryBindingRepository, never()).save(any());
@@ -209,7 +206,7 @@ class CategoryServiceTest {
             .thenReturn(expectedResult);
 
         // When
-        BoundEntityProjection result = categoryService.bindToExisting(dataSource, externalId, request);
+        BoundEntityProjection result = categoryService.bindToExisting(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
 
         // Then
         assertEquals(expectedResult, result);
@@ -257,7 +254,7 @@ class CategoryServiceTest {
             .thenReturn(expectedResult);
 
         // When
-        BoundEntityProjection result = categoryService.createAndBind(dataSource, externalId, request);
+        BoundEntityProjection result = categoryService.createAndBind(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
 
         // Then
         assertEquals(expectedResult, result);
@@ -289,7 +286,7 @@ class CategoryServiceTest {
 
         // When & Then
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> 
-            categoryService.createAndBind(dataSource, externalId, request));
+            categoryService.createAndBind(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED));
         
         assertEquals("Category with name Existing Category already exists", exception.getMessage());
         
@@ -334,7 +331,7 @@ class CategoryServiceTest {
             .thenReturn(expectedResult);
 
         // When
-        BoundEntityProjection result = categoryService.createAndBind(dataSource, externalId, request);
+        BoundEntityProjection result = categoryService.createAndBind(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
 
         // Then
         assertEquals(expectedResult, result);
@@ -410,7 +407,7 @@ class CategoryServiceTest {
         when(categoryRepository.findById(3L)).thenReturn(Optional.of(savedCategory));
         
         // When
-        CategoryWithParentsDto result = categoryService.saveCategoryWithParents(request);
+        CategoryWithParentsDto result = categoryService.saveCategoryWithParents(request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
         
         // Then
         assertEquals(3L, result.getId());
@@ -548,7 +545,7 @@ class CategoryServiceTest {
         
         // When & Then
         DiamondRelationException exception = assertThrows(DiamondRelationException.class, () ->
-            categoryService.saveCategoryWithParents(request));
+            categoryService.saveCategoryWithParents(request, Origin.MANUAL, MasterApprovalStatus.APPROVED));
         
         assertTrue(exception.getMessage().contains("would create a diamond"));
     }
@@ -572,7 +569,7 @@ class CategoryServiceTest {
         
         // When & Then
         CycleRelationException exception = assertThrows(CycleRelationException.class, () ->
-            categoryService.saveCategoryWithParents(request));
+            categoryService.saveCategoryWithParents(request, Origin.MANUAL, MasterApprovalStatus.APPROVED));
         
         assertTrue(exception.getMessage().contains("would create a cycle"));
     }

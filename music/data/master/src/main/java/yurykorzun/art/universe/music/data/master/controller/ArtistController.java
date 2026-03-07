@@ -17,6 +17,8 @@ import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjecti
 import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindResponseDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.entity.MasterApprovalStatus;
+import yurykorzun.art.universe.music.data.master.entity.Origin;
 import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.service.ArtistService;
@@ -72,7 +74,7 @@ public class ArtistController {
     public ArtistDto saveArtist(
         @Valid @RequestBody ArtistSaveRequestDTO request
     ) {
-        return artistService.saveArtist(request);
+        return artistService.saveArtist(request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
 
     @DeleteMapping("/{id}")
@@ -117,7 +119,7 @@ public class ArtistController {
         @PathVariable Long externalId,
         @Valid @RequestBody EntityBindToExistingRequestDTO request
     ) {
-        return artistService.bindToExisting(dataSource, externalId, request);
+        return artistService.bindToExisting(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
     
     @PostMapping("/bind/new/{dataSource}/{externalId}")
@@ -126,7 +128,7 @@ public class ArtistController {
         @PathVariable Long externalId,
         @Valid @RequestBody EntityCreateAndBindRequestDTO request
     ) {
-        return artistService.createAndBind(dataSource, externalId, request);
+        return artistService.createAndBind(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
     
     @DeleteMapping("/unbind/{dataSource}/{externalId}")
@@ -150,7 +152,7 @@ public class ArtistController {
         @PathVariable Long artistId,
         @PathVariable Long categoryId
     ) {
-        artistService.bindToCategory(artistId, categoryId);
+        artistService.bindToCategory(artistId, categoryId, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
 
     @DeleteMapping("/{artistId}/categories/{categoryId}")

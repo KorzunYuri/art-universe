@@ -20,6 +20,8 @@ import yurykorzun.art.universe.music.data.master.entity.Artist;
 import yurykorzun.art.universe.music.data.master.entity.ArtistBinding;
 import yurykorzun.art.universe.music.data.master.entity.ArtistCategory;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.entity.MasterApprovalStatus;
+import yurykorzun.art.universe.music.data.master.entity.Origin;
 import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.repository.ArtistBindingRepository;
@@ -87,7 +89,7 @@ public class ArtistServiceImpl implements ArtistService {
 
     @Override
     @Transactional
-    public ArtistDto saveArtist(ArtistSaveRequestDTO request) {
+    public ArtistDto saveArtist(ArtistSaveRequestDTO request, Origin origin, MasterApprovalStatus approvalStatus) {
         Artist artist;
         if (request.getId() != null) {
             // Update existing artist
@@ -98,6 +100,8 @@ public class ArtistServiceImpl implements ArtistService {
             // Create new artist
             artist = Artist.builder()
                     .name(request.getName())
+                    .origin(origin)
+                    .approvalStatus(approvalStatus)
                     .build();
         }
 
@@ -152,7 +156,7 @@ public class ArtistServiceImpl implements ArtistService {
     
     @Override
     @Transactional
-    public BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, EntityBindToExistingRequestDTO request) {
+    public BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, EntityBindToExistingRequestDTO request, Origin origin, MasterApprovalStatus approvalStatus) {
         // Validate that the artist exists
         Artist artist = artistRepository.findById(request.getMasterId())
             .orElseThrow(() -> new CustomEntityNotFoundException("Artist", request.getMasterId()));
@@ -173,18 +177,20 @@ public class ArtistServiceImpl implements ArtistService {
                 .dataSource(dataSource)
                 .externalId(externalId)
                 .masterId(artist.getId())
+                .origin(origin)
+                .approvalStatus(approvalStatus)
                 .build();
-            
+
             bindingsRepository.save(binding);
         }
-        
+
         // Return the binding information
         return bindingsRepository.findBoundArtistForDataSource(dataSource, externalId);
     }
 
     @Override
     @Transactional
-    public BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, EntityCreateAndBindRequestDTO request) {
+    public BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, EntityCreateAndBindRequestDTO request, Origin origin, MasterApprovalStatus approvalStatus) {
         artistRepository.findByName(request.getEntityName())
             .ifPresent(artist -> {
                 throw new IllegalArgumentException(String.format("Artist with name %s already exists", artist.getName()));
@@ -193,13 +199,15 @@ public class ArtistServiceImpl implements ArtistService {
         // Create new artist
         Artist artist = Artist.builder()
             .name(request.getEntityName())
+            .origin(origin)
+            .approvalStatus(approvalStatus)
             .build();
-        
+
         Artist savedArtist = artistRepository.save(artist);
-        
+
         // Check if binding already exists
         Optional<ArtistBinding> existingBinding = bindingsRepository.findByDataSourceAndExternalId(dataSource, externalId);
-        
+
         if (existingBinding.isPresent()) {
             // Update existing binding
             ArtistBinding binding = existingBinding.get();
@@ -211,6 +219,8 @@ public class ArtistServiceImpl implements ArtistService {
                 .dataSource(dataSource)
                 .externalId(externalId)
                 .masterId(savedArtist.getId())
+                .origin(origin)
+                .approvalStatus(approvalStatus)
                 .build();
             
             bindingsRepository.save(binding);
@@ -245,7 +255,7 @@ public class ArtistServiceImpl implements ArtistService {
 
     @Override
     @Transactional
-    public void bindToCategory(Long artistId, Long categoryId) {
+    public void bindToCategory(Long artistId, Long categoryId, Origin origin, MasterApprovalStatus approvalStatus) {
         // Validate artist exists
         if (!artistRepository.existsById(artistId)) {
             throw new CustomEntityNotFoundException("Artist", artistId);
@@ -265,6 +275,8 @@ public class ArtistServiceImpl implements ArtistService {
         ArtistCategory relation = ArtistCategory.builder()
             .artistId(artistId)
             .categoryId(categoryId)
+            .origin(origin)
+            .approvalStatus(approvalStatus)
             .build();
         artistCategoryRepository.save(relation);
     }

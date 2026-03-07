@@ -5,36 +5,28 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-import yurykorzun.art.universe.music.data.master.test.archetypes.BaseMasterDataMvcTest;
-import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
-import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
+import yurykorzun.art.universe.music.data.master.dto.AlbumDto;
+import yurykorzun.art.universe.music.data.master.dto.AlbumSaveRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.AlbumTrackItemDTO;
+import yurykorzun.art.universe.music.data.master.dto.AlbumWithTracksSaveRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.*;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.entity.MasterApprovalStatus;
+import yurykorzun.art.universe.music.data.master.entity.Origin;
 import yurykorzun.art.universe.music.data.master.service.AlbumService;
 import yurykorzun.art.universe.music.data.master.service.BindingService;
+import yurykorzun.art.universe.music.data.master.test.archetypes.BaseMasterDataMvcTest;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.springframework.http.MediaType;
-import yurykorzun.art.universe.music.data.master.dto.AlbumDto;
-import yurykorzun.art.universe.music.data.master.dto.AlbumSaveRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.AlbumTrackItemDTO;
-import yurykorzun.art.universe.music.data.master.dto.AlbumWithTracksSaveRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityCreateAndBindRequestDTO;
-import yurykorzun.art.universe.music.data.master.dto.binding.ExternalAlbumTrackItemDTO;
-import yurykorzun.art.universe.music.data.master.dto.binding.ExternalAlbumWithTracksCreateAndBindRequestDTO;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -156,7 +148,7 @@ class AlbumControllerMvcTest extends BaseMasterDataMvcTest {
             .build();
         AlbumDto response = AlbumDto.builder().id(1L).name("OK Computer").primaryArtistId(10L).build();
 
-        when(albumService.saveAlbum(any(AlbumSaveRequestDTO.class))).thenReturn(response);
+        when(albumService.saveAlbum(any(AlbumSaveRequestDTO.class), any(Origin.class), any(MasterApprovalStatus.class))).thenReturn(response);
 
         // When & Then
         mockMvc.perform(post("/api/v1/albums")
@@ -305,7 +297,7 @@ class AlbumControllerMvcTest extends BaseMasterDataMvcTest {
             .build();
         BoundEntityProjection response = new TestBoundEntityProjectionImpl(externalId, dataSource, 1L, "OK Computer");
 
-        when(albumService.createAndBind(eq(dataSource), eq(externalId), any())).thenReturn(response);
+        when(albumService.createAndBind(eq(dataSource), eq(externalId), any(), eq(Origin.MANUAL), eq(MasterApprovalStatus.APPROVED))).thenReturn(response);
 
         // When & Then
         mockMvc.perform(post("/api/v1/albums/bind/new/{dataSource}/{externalId}", dataSource, externalId)
@@ -349,7 +341,7 @@ class AlbumControllerMvcTest extends BaseMasterDataMvcTest {
             .build();
         BoundEntityProjection response = new TestBoundEntityProjectionImpl(externalAlbumId, dataSource, 1L, "OK Computer");
 
-        when(albumService.createAndBindWithTracks(eq(dataSource), eq(externalAlbumId), any())).thenReturn(response);
+        when(albumService.createAndBindWithTracks(eq(dataSource), eq(externalAlbumId), any(), eq(Origin.MANUAL), eq(MasterApprovalStatus.APPROVED))).thenReturn(response);
 
         // When & Then
         mockMvc.perform(post("/api/v1/albums/bind/new/{dataSource}/{externalId}/with-tracks", dataSource, externalAlbumId)
@@ -375,7 +367,7 @@ class AlbumControllerMvcTest extends BaseMasterDataMvcTest {
             .build();
         BoundEntityProjection response = new TestBoundEntityProjectionImpl(externalAlbumId, dataSource, 1L, "OK Computer");
 
-        when(albumService.createAndBindWithTracks(eq(dataSource), eq(externalAlbumId), any())).thenReturn(response);
+        when(albumService.createAndBindWithTracks(eq(dataSource), eq(externalAlbumId), any(), eq(Origin.MANUAL), eq(MasterApprovalStatus.APPROVED))).thenReturn(response);
 
         // When & Then
         mockMvc.perform(post("/api/v1/albums/bind/new/{dataSource}/{externalId}/with-tracks", dataSource, externalAlbumId)
@@ -401,7 +393,7 @@ class AlbumControllerMvcTest extends BaseMasterDataMvcTest {
             .build();
         BoundEntityProjection response = new TestBoundEntityProjectionImpl(externalAlbumId, dataSource, 1L, "OK Computer");
 
-        when(albumService.createAndBindWithTracks(eq(dataSource), eq(externalAlbumId), any())).thenReturn(response);
+        when(albumService.createAndBindWithTracks(eq(dataSource), eq(externalAlbumId), any(), eq(Origin.MANUAL), eq(MasterApprovalStatus.APPROVED))).thenReturn(response);
 
         // When & Then
         mockMvc.perform(post("/api/v1/albums/bind/new/{dataSource}/{externalId}/with-tracks", dataSource, externalAlbumId)
@@ -430,7 +422,7 @@ class AlbumControllerMvcTest extends BaseMasterDataMvcTest {
             .build();
         BoundEntityProjection response = new TestBoundEntityProjectionImpl(externalAlbumId, dataSource, 1L, "OK Computer");
 
-        when(albumService.createAndBindWithTracks(eq(dataSource), eq(externalAlbumId), any()))
+        when(albumService.createAndBindWithTracks(eq(dataSource), eq(externalAlbumId), any(), eq(Origin.MANUAL), eq(MasterApprovalStatus.APPROVED)))
             .thenReturn(response);
 
         // When & Then
@@ -447,8 +439,10 @@ class AlbumControllerMvcTest extends BaseMasterDataMvcTest {
             eq(externalAlbumId),
             argThat(req ->
                 trackArtistOverrideId.equals(req.getTracks().get(1).getMasterPrimaryArtistId()) &&
-                req.getTracks().get(0).getMasterPrimaryArtistId() == null
-            )
+                req.getTracks().getFirst().getMasterPrimaryArtistId() == null
+            ),
+            eq(Origin.MANUAL),
+            eq(MasterApprovalStatus.APPROVED)
         );
     }
 

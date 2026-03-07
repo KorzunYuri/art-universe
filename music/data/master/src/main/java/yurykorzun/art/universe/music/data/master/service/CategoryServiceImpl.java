@@ -27,6 +27,8 @@ import yurykorzun.art.universe.music.data.master.entity.Category;
 import yurykorzun.art.universe.music.data.master.entity.CategoryBinding;
 import yurykorzun.art.universe.music.data.master.entity.CategoryCategory;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.entity.MasterApprovalStatus;
+import yurykorzun.art.universe.music.data.master.entity.Origin;
 import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.repository.CategoryRepository;
 import yurykorzun.art.universe.music.data.master.repository.CategoryBindingRepository;
@@ -148,7 +150,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
-    public CategoryDto saveCategory(CategorySaveRequestDTO request) {
+    public CategoryDto saveCategory(CategorySaveRequestDTO request, Origin origin, MasterApprovalStatus approvalStatus) {
         Category category;
         if (request.getId() != null) {
             // Update existing category
@@ -160,6 +162,8 @@ public class CategoryServiceImpl implements CategoryService {
             // Create new category
             category = Category.builder()
                     .name(request.getName())
+                    .origin(origin)
+                    .approvalStatus(approvalStatus)
                     .build();
         }
 
@@ -169,7 +173,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
-    public CategoryWithParentsDto saveCategoryWithParents(CategorySaveWithParentsRequestDTO request) {
+    public CategoryWithParentsDto saveCategoryWithParents(CategorySaveWithParentsRequestDTO request, Origin origin, MasterApprovalStatus approvalStatus) {
         Category category;
         if (request.getId() != null) {
             // Update existing category
@@ -181,6 +185,8 @@ public class CategoryServiceImpl implements CategoryService {
             // Create new category
             category = Category.builder()
                     .name(request.getName())
+                    .origin(origin)
+                    .approvalStatus(approvalStatus)
                     .build();
         }
 
@@ -279,7 +285,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
-    public BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, EntityBindToExistingRequestDTO request) {
+    public BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, EntityBindToExistingRequestDTO request, Origin origin, MasterApprovalStatus approvalStatus) {
         // Validate that the category exists
         Category category = categoryRepository.findById(request.getMasterId())
                 .orElseThrow(() -> new EntityNotFoundException("Category not found with id: " + request.getMasterId()));
@@ -300,6 +306,8 @@ public class CategoryServiceImpl implements CategoryService {
                     .dataSource(dataSource)
                     .externalId(externalId)
                     .masterId(category.getId())
+                    .origin(origin)
+                    .approvalStatus(approvalStatus)
                     .build();
 
             categoryBindingRepository.save(binding);
@@ -311,7 +319,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
-    public BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, EntityCreateAndBindRequestDTO request) {
+    public BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, EntityCreateAndBindRequestDTO request, Origin origin, MasterApprovalStatus approvalStatus) {
         // Check if category with the same name already exists
         categoryRepository.findByName(request.getEntityName())
                 .ifPresent(category -> {
@@ -321,6 +329,8 @@ public class CategoryServiceImpl implements CategoryService {
         // Create new category
         Category category = Category.builder()
                 .name(request.getEntityName())
+                .origin(origin)
+                .approvalStatus(approvalStatus)
                 .build();
 
         Category savedCategory = categoryRepository.save(category);
@@ -339,6 +349,8 @@ public class CategoryServiceImpl implements CategoryService {
                     .dataSource(dataSource)
                     .externalId(externalId)
                     .masterId(savedCategory.getId())
+                    .origin(origin)
+                    .approvalStatus(approvalStatus)
                     .build();
 
             categoryBindingRepository.save(binding);

@@ -4,6 +4,8 @@ import yurykorzun.art.universe.common.domain.entity.EntityType;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelatedEntityDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingStatusDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.entity.MasterApprovalStatus;
+import yurykorzun.art.universe.music.data.master.entity.Origin;
 import jakarta.annotation.Nullable;
 import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 
@@ -42,7 +44,9 @@ public interface RelationService {
         Long sourceEntityId,
         EntityType targetEntityType,
         Long targetEntityId,
-        @Nullable Long relationTypeId
+        @Nullable Long relationTypeId,
+        Origin origin,
+        MasterApprovalStatus approvalStatus
     );
 
     /**
@@ -54,7 +58,9 @@ public interface RelationService {
         Long sourceEntityId,
         EntityType targetEntityType,
         Long targetEntityId,
-        @Nullable List<Long> relationTypeIds
+        @Nullable List<Long> relationTypeIds,
+        Origin origin,
+        MasterApprovalStatus approvalStatus
     );
 
     /**
