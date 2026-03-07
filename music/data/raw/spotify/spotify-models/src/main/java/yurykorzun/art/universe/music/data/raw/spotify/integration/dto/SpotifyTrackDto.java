@@ -17,6 +17,7 @@ public record SpotifyTrackDto(
         @JsonProperty("explicit") Boolean explicit,
         @JsonProperty("is_playable") Boolean isPlayable,
         List<SpotifySimplifiedArtistDto> artists,
+        SpotifyAlbumDto album,
         @JsonProperty("external_urls") Map<String, String> externalUrls,
         @JsonProperty("external_ids") Map<String, String> externalIds
 ) {

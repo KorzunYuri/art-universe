@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import yurykorzun.art.universe.music.data.raw.spotify.integration.dto.SpotifyAlbumDto;
 import yurykorzun.art.universe.music.data.raw.spotify.integration.dto.SpotifyArtistDto;
+import yurykorzun.art.universe.music.data.raw.spotify.integration.dto.SpotifySimplifiedArtistDto;
 import yurykorzun.art.universe.music.data.raw.spotify.integration.dto.SpotifyTrackDto;
 
 @Service
@@ -28,6 +29,15 @@ public class StagingWriter {
     }
 
     public void insertArtist(long iterationId, long responseId, SpotifyArtistDto dto, long entityId) {
+        String table = "stg_artist_" + iterationId;
+        jdbc.update(
+            "INSERT INTO " + table + " (api_response_id, entity_id, spotify_id, name, spotify_url, uri) " +
+            "VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (spotify_id) DO NOTHING",
+            responseId, entityId, dto.id(), dto.name(), dto.getSpotifyUrl(), dto.uri()
+        );
+    }
+
+    public void insertSimplifiedArtist(long iterationId, long responseId, SpotifySimplifiedArtistDto dto, long entityId) {
         String table = "stg_artist_" + iterationId;
         jdbc.update(
             "INSERT INTO " + table + " (api_response_id, entity_id, spotify_id, name, spotify_url, uri) " +

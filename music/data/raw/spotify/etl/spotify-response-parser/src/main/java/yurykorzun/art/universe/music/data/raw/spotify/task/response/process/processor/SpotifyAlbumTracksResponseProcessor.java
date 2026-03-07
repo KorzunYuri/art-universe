@@ -5,14 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import yurykorzun.art.universe.data.raw.common.etl.entity.ApiCallStatus;
 import yurykorzun.art.universe.music.data.raw.spotify.enums.SpotifyEntityType;
 import yurykorzun.art.universe.music.data.raw.spotify.enums.SpotifyRelationType;
-import yurykorzun.art.universe.music.data.raw.spotify.etl.entity.SpotifyApiCall;
 import yurykorzun.art.universe.music.data.raw.spotify.etl.entity.SpotifyApiCallType;
 import yurykorzun.art.universe.music.data.raw.spotify.etl.entity.SpotifyApiResponse;
 import yurykorzun.art.universe.music.data.raw.spotify.etl.entity.StagingIteration;
-import yurykorzun.art.universe.music.data.raw.spotify.etl.repository.SpotifyApiCallRepository;
 import yurykorzun.art.universe.music.data.raw.spotify.integration.dto.SpotifyPagingDto;
 import yurykorzun.art.universe.music.data.raw.spotify.integration.dto.SpotifySimplifiedArtistDto;
 import yurykorzun.art.universe.music.data.raw.spotify.integration.dto.SpotifyTrackDto;
@@ -21,10 +18,7 @@ import yurykorzun.art.universe.music.data.raw.spotify.staging.SyntheticIdResolut
 import yurykorzun.art.universe.music.data.raw.spotify.task.response.process.BaseSpotifyApiResponseProcessor;
 
 import java.io.IOException;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Map;
 
 @Component
 @Slf4j
@@ -33,21 +27,15 @@ public class SpotifyAlbumTracksResponseProcessor extends BaseSpotifyApiResponseP
     private final ObjectMapper objectMapper;
     private final StagingWriter stagingWriter;
     private final SyntheticIdResolutionService idResolutionService;
-    private final SpotifyApiCallRepository apiCallRepository;
-
-    @Value("${spotify.tasks.calls-generate.due-duration-days.artist-get}")
-    private int artistGetDueDays;
 
     public SpotifyAlbumTracksResponseProcessor(
         ObjectMapper objectMapper,
         StagingWriter stagingWriter,
-        SyntheticIdResolutionService idResolutionService,
-        SpotifyApiCallRepository apiCallRepository
+        SyntheticIdResolutionService idResolutionService
     ) {
         this.objectMapper = objectMapper;
         this.stagingWriter = stagingWriter;
         this.idResolutionService = idResolutionService;
-        this.apiCallRepository = apiCallRepository;
     }
 
     @Override
@@ -98,28 +86,11 @@ public class SpotifyAlbumTracksResponseProcessor extends BaseSpotifyApiResponseP
                         idResolutionService.resolveId(SpotifyEntityType.ARTIST, featuredArtist.id()),
                         SpotifyRelationType.TRACK_ARTIST.getCode());
                     count++;
-                    createArtistGetCallIfMissing(featuredArtist);
                 }
             }
         }
 
         log.debug("Staged {} tracks for album {} into iteration {}", tracks.size(), albumSpotifyId, iteration.getId());
         return count;
-    }
-
-    private void createArtistGetCallIfMissing(SpotifySimplifiedArtistDto artist) {
-        // Only create if artist is not in DB (resolveId returns negative synthetic if missing)
-        long resolvedId = idResolutionService.resolveId(SpotifyEntityType.ARTIST, artist.id());
-        if (resolvedId < 0) {
-            SpotifyApiCall call = SpotifyApiCall.builder()
-                .type(SpotifyApiCallType.ARTIST_GET)
-                .spotifyId(artist.id())
-                .entityType(SpotifyEntityType.ARTIST)
-                .dueDttm(Instant.now().plus(artistGetDueDays, ChronoUnit.DAYS))
-                .params(Map.of("spotify_id", artist.id()))
-                .build();
-            apiCallRepository.save(call);
-            log.debug("Created ARTIST_GET call for featured artist {}", artist.id());
-        }
     }
 }

@@ -11,6 +11,7 @@ import yurykorzun.art.universe.music.data.raw.spotify.etl.entity.SpotifyApiRespo
 import yurykorzun.art.universe.music.data.raw.spotify.etl.entity.StagingIteration;
 import yurykorzun.art.universe.music.data.raw.spotify.integration.dto.SpotifyAlbumDto;
 import yurykorzun.art.universe.music.data.raw.spotify.integration.dto.SpotifyPagingDto;
+import yurykorzun.art.universe.music.data.raw.spotify.integration.dto.SpotifySimplifiedArtistDto;
 import yurykorzun.art.universe.music.data.raw.spotify.staging.StagingWriter;
 import yurykorzun.art.universe.music.data.raw.spotify.staging.SyntheticIdResolutionService;
 import yurykorzun.art.universe.music.data.raw.spotify.task.response.process.BaseSpotifyApiResponseProcessor;
@@ -63,12 +64,25 @@ public class SpotifyArtistAlbumsResponseProcessor extends BaseSpotifyApiResponse
             stagingWriter.insertAlbum(iteration.getId(), response.getId(), album,
                 albumEntityId, primaryArtistId, primaryArtistSpotifyId);
 
+            // ARTIST_ALBUM relation for the queried artist
             stagingWriter.insertEntityRelation(iteration.getId(), response.getId(),
                 SpotifyEntityType.ARTIST.getCode(), artistEntityId,
                 SpotifyEntityType.ALBUM.getCode(), albumEntityId,
                 SpotifyRelationType.ARTIST_ALBUM.getCode());
-
             count += 2;
+
+            // Stage all album artists + their ARTIST_ALBUM relations
+            if (album.artists() != null) {
+                for (SpotifySimplifiedArtistDto albumArtist : album.artists()) {
+                    long albumArtistEntityId = idResolutionService.resolveId(SpotifyEntityType.ARTIST, albumArtist.id());
+                    stagingWriter.insertSimplifiedArtist(iteration.getId(), response.getId(), albumArtist, albumArtistEntityId);
+                    stagingWriter.insertEntityRelation(iteration.getId(), response.getId(),
+                        SpotifyEntityType.ARTIST.getCode(), albumArtistEntityId,
+                        SpotifyEntityType.ALBUM.getCode(), albumEntityId,
+                        SpotifyRelationType.ARTIST_ALBUM.getCode());
+                    count += 2;
+                }
+            }
         }
 
         log.debug("Staged {} albums for artist {} into iteration {}", albums.size(), artistSpotifyId, iteration.getId());
