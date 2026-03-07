@@ -1,0 +1,30 @@
+package yurykorzun.art.universe.music.data.raw.spotify.task.call.generate;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+import java.util.concurrent.TimeUnit;
+
+@Component
+@Slf4j
+public class SpotifyApiCallGenerationScheduler {
+
+    public SpotifyApiCallGenerationScheduler() {
+    }
+
+    @Scheduled(
+        fixedDelayString = "${spotify.scheduling.calls-generate.fixed-delay-secs}",
+        timeUnit = TimeUnit.SECONDS
+    )
+    public void generateApiCalls() {
+        log.info("start API calls generation");
+        SpotifyApiCallGeneratorsRegistry.getRegistry()
+            .forEach((apiCallType, generator) -> {
+                log.info("start API calls generation for method {}", generator.getApiCallType().getMethod());
+                generator.createApiCalls();
+                log.info("finished API calls generation for method {}", generator.getApiCallType().getMethod());
+            });
+        log.info("finished API calls generation");
+    }
+}
