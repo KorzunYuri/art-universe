@@ -1,0 +1,52 @@
+spring:
+  application:
+    name: spotify-response-parser
+  config:
+    import:
+      - classpath:commons-context.yml
+      - optional:classpath:commons-context-${spring.profiles.active}.yml
+      - classpath:commons-observability.yml
+      - optional:classpath:commons-observability-${spring.profiles.active}.yml
+  lifecycle:
+    timeout-per-shutdown-phase: 90s
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://${AU_DB_MASTER_HOST}:${AU_DB_MASTER_PORT}/${AU_DB_NAME}?currentSchema=${MURAW_SPOTIFY_DB_SCHEMA}
+    username: ${MURAW_SPOTIFY_DB_WRITER_USERNAME}
+    password: '${MURAW_SPOTIFY_DB_WRITER_PASSWORD}'
+    hikari:
+      pool-name: SpotifyResponseParserHikariPool
+      maximum-pool-size: 8
+      minimum-idle: 2
+  jpa:
+    database: postgresql
+    properties:
+      hibernate:
+        order_by:
+          default_null_ordering: last
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        show-sql: false
+        jdbc:
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
+        javax.persistence.validation.mode: none
+    hibernate:
+      ddl-auto: none
+
+server:
+  # Non-web app - only needs actuator endpoints
+  port: ${MURAW_SPOTIFY_RESPONSE_PARSER_ACTUATOR_INTERNAL_PORT:8080}
+
+spotify:
+  scheduling:
+    response-parse:
+      fixed-delay-secs: ${SPOTIFY_SCHEDULING_RESPONSE_PARSE_FIXED_DELAY_SECS:5}
+  staging:
+    iteration:
+      max-records: ${SPOTIFY_STAGING_ITERATION_MAX_RECORDS:5000}
+      max-open-minutes: ${SPOTIFY_STAGING_ITERATION_MAX_OPEN_MINUTES:5}
+  tasks:
+    calls-generate:
+      due-duration-days:
+        artist-get: 30
