@@ -1,0 +1,17 @@
+plugins {
+    id 'art-universe.spring-boot-app'
+}
+
+archivesBaseName = 'spotify-etl-staging-applicator'
+ext.dockerImageName = 'mu-spotify-staging-applicator'
+
+dependencies {
+    implementation project(':common:commons-observability')
+    implementation project(':music:data:raw:spotify:spotify-repositories')
+
+    // web for actuator endpoints
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // JdbcTemplate for dynamic staging SQL
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+}

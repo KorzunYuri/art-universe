@@ -40,6 +40,7 @@ include 'music:data:raw:spotify:migrations:spotify-liquibase-service'
 include 'music:data:raw:spotify:etl:spotify-calls-generator'
 include 'music:data:raw:spotify:etl:spotify-calls-performer'
 include 'music:data:raw:spotify:etl:spotify-response-parser'
+include 'music:data:raw:spotify:etl:spotify-staging-applicator'
 
 include 'music:quiz'
 include 'ui'
