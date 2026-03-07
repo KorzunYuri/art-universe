@@ -81,6 +81,10 @@ This document is the **single source of truth** for list of modules.
 | Module | Type | Purpose |
 |--------|------|---------|
 | `:music:data:raw:spotify:spotify-rest-api` | Service | REST API for Spotify raw data + seed endpoints |
+| `:music:data:raw:spotify:etl:spotify-calls-generator` | Service | Generates API calls for Spotify data collection |
+| `:music:data:raw:spotify:etl:spotify-calls-performer` | Service | Executes API calls against Spotify API |
+| `:music:data:raw:spotify:etl:spotify-response-parser` | Service | Parses Spotify API responses and writes to staging tables |
+| `:music:data:raw:spotify:etl:spotify-staging-applicator` | Service | Applies sealed staging iterations to target tables |
 
 #### Infrastructure Modules
 
