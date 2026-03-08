@@ -8,6 +8,7 @@ import yurykorzun.art.universe.common.CodedRegistry;
 import java.util.Arrays;
 
 public enum Origin implements Coded {
+    UNKNOWN(0, "unknown"),
     MANUAL(1, "manual"),
     ETL(2, "etl"),
     AI(3, "ai");

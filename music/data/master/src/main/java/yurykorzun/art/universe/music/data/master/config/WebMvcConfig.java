@@ -6,6 +6,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import yurykorzun.art.universe.common.domain.entity.EntityType;
 import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.entity.MasterApprovalStatus;
+import yurykorzun.art.universe.music.data.master.entity.Origin;
 
 /**
  * Configuration for WebMvc to handle enum conversion
@@ -23,5 +25,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
         // Register converter for DataSource
         registry.addConverter(String.class, DataSource.class, DataSource::fromString);
+
+        // Register converters for origin/approval-status (used by internal ETL endpoints)
+        registry.addConverter(String.class, Origin.class, Origin::fromString);
+        registry.addConverter(String.class, MasterApprovalStatus.class, MasterApprovalStatus::fromString);
     }
 }

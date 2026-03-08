@@ -19,11 +19,11 @@ public class MasterBaseEntity extends BaseEntity {
     @Builder.Default
     @Column(name = "origin", nullable = false, updatable = false)
     @Convert(converter = OriginConverter.class)
-    private Origin origin = Origin.MANUAL;
+    private Origin origin = Origin.UNKNOWN;
 
     @Setter
     @Builder.Default
     @Column(name = "approval_status", nullable = false)
     @Convert(converter = MasterApprovalStatusConverter.class)
-    private MasterApprovalStatus approvalStatus = MasterApprovalStatus.APPROVED;
+    private MasterApprovalStatus approvalStatus = MasterApprovalStatus.NEW;
 }
