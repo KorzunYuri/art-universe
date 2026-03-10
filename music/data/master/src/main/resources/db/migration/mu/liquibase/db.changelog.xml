@@ -25,5 +25,6 @@
     <include file="changelogs/0019-relation-types-values.xml" relativeToChangelogFile="true"/>
     <include file="changelogs/0020-drop-relation-bindings.xml" relativeToChangelogFile="true"/>
     <include file="changelogs/0021-origin-approval-status.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0022-binding-views.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

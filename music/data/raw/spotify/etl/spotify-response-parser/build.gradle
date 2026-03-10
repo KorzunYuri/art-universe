@@ -14,4 +14,7 @@ dependencies {
 
     // JdbcTemplate for dynamic staging table SQL
     implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+
+    // String similarity for search match scoring
+    implementation 'org.apache.commons:commons-text:1.12.0'
 }

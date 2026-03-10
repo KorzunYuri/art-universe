@@ -50,3 +50,6 @@ spotify:
     calls-generate:
       due-duration-days:
         artist-get: 30
+  search:
+    match-threshold: ${SPOTIFY_SEARCH_MATCH_THRESHOLD:0.85}
+    grace-period-days: ${SPOTIFY_SEARCH_GRACE_PERIOD_DAYS:30}

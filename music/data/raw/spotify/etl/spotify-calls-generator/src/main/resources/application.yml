@@ -50,3 +50,10 @@ spotify:
         album-get: 30
         album-tracks: 30
         track-get: 30
+        search-artist: 7
+        search-album: 7
+        search-track: 7
+      search:
+        enabled: ${SPOTIFY_SEARCH_ENABLED:false}
+        batch-size: ${SPOTIFY_SEARCH_BATCH_SIZE:100}
+        grace-period-days: ${SPOTIFY_SEARCH_GRACE_PERIOD_DAYS:30}

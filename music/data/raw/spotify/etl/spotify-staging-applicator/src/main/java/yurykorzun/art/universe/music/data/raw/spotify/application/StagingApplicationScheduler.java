@@ -11,9 +11,14 @@ import java.util.concurrent.TimeUnit;
 public class StagingApplicationScheduler {
 
     private final StagingApplicationService applicationService;
+    private final SearchReconciliationService searchReconciliationService;
 
-    public StagingApplicationScheduler(StagingApplicationService applicationService) {
+    public StagingApplicationScheduler(
+        StagingApplicationService applicationService,
+        SearchReconciliationService searchReconciliationService
+    ) {
         this.applicationService = applicationService;
+        this.searchReconciliationService = searchReconciliationService;
     }
 
     @Scheduled(
@@ -23,6 +28,7 @@ public class StagingApplicationScheduler {
     public void triggerStagingApplication() {
         log.info("start staging application");
         applicationService.applySealedIterations();
+        searchReconciliationService.reconcileMatchedAttempts();
         log.info("finished staging application");
     }
 }

@@ -47,3 +47,6 @@ spotify:
   staging:
     cleanup:
       completed-retention-hours: ${SPOTIFY_STAGING_CLEANUP_RETENTION_HOURS:24}
+  integration:
+    music-data-master:
+      base-url: http://${MU_DATA_APP_HOST}:${MU_DATA_APP_PORT}

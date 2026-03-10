@@ -6,6 +6,7 @@ import yurykorzun.art.universe.music.data.raw.spotify.enums.SpotifyEntityType;
 import yurykorzun.art.universe.music.data.raw.spotify.etl.entity.SpotifyApiCallType;
 
 import java.time.Instant;
+import java.util.Map;
 
 @Builder
 @Getter
@@ -16,4 +17,5 @@ public class SpotifyApiCallCreateRequest {
     private SpotifyEntityType entityType;
     private Long entityId;
     private Instant dueDttm;
+    private Map<String, String> params;
 }

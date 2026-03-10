@@ -11,4 +11,7 @@ dependencies {
 
     // web for actuator endpoints
     implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // JdbcTemplate for cross-schema search queries
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
 }

@@ -25,13 +25,13 @@ public enum SpotifyApiCallType implements ApiCallType {
             Set.of("spotify_id"), Collections.emptySet()),
 
     SEARCH_ARTIST(6, "search.artist", "/search",
-            Set.of("query"), Set.of("offset", "limit")),
+            Set.of("q", "type"), Set.of("offset", "limit")),
 
     SEARCH_ALBUM(7, "search.album", "/search",
-            Set.of("query"), Set.of("offset", "limit")),
+            Set.of("q", "type"), Set.of("offset", "limit")),
 
     SEARCH_TRACK(8, "search.track", "/search",
-            Set.of("query"), Set.of("offset", "limit"));
+            Set.of("q", "type"), Set.of("offset", "limit"));
 
     static {
         CodedRegistry.register(Arrays.asList(values()), ApiCallType.class);

@@ -8,4 +8,5 @@
     <include file="changelogs/0002-entity-tables.xml" relativeToChangelogFile="true"/>
     <include file="changelogs/0003-relation-tables.xml" relativeToChangelogFile="true"/>
     <include file="changelogs/0004-staging-tables.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0005-search-tables.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

@@ -22,22 +22,26 @@ public class SpotifyApiCallServiceImpl implements SpotifyApiCallService {
 
     @Override
     @Transactional
-    public void createApiCalls(List<SpotifyApiCallCreateRequest> requests) {
+    public List<SpotifyApiCall> createApiCalls(List<SpotifyApiCallCreateRequest> requests) {
         List<SpotifyApiCall> calls = requests.stream()
             .map(this::toEntity)
             .toList();
-        apiCallRepository.saveAll(calls);
-        log.debug("Created {} api_call records", calls.size());
+        List<SpotifyApiCall> saved = apiCallRepository.saveAll(calls);
+        log.debug("Created {} api_call records", saved.size());
+        return saved;
     }
 
     private SpotifyApiCall toEntity(SpotifyApiCallCreateRequest req) {
+        Map<String, String> params = req.getParams() != null
+            ? req.getParams()
+            : Map.of("spotify_id", req.getSpotifyId());
         return SpotifyApiCall.builder()
             .type(req.getType())
             .spotifyId(req.getSpotifyId())
             .entityType(req.getEntityType())
             .entityId(req.getEntityId())
             .dueDttm(req.getDueDttm())
-            .params(Map.of("spotify_id", req.getSpotifyId()))
+            .params(params)
             .build();
     }
 }
