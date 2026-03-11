@@ -6,15 +6,15 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
 
     <changeSet id="0004_0010_staging_iteration_initial" author="system">
-        <sqlFile path="db/migration/muraw_spotify/liquibase/changesets/0004/0004_0010_staging_iteration$initial.sql"/>
+        <sqlFile path="db/migration/muraw_spotify/liquibase/changesets/0004-staging/0004_0010_staging_iteration$initial.sql"/>
     </changeSet>
 
     <changeSet id="0004_0020_stg_templates" author="system">
-        <sqlFile path="db/migration/muraw_spotify/liquibase/changesets/0004/0004_0020_stg_templates.sql"/>
+        <sqlFile path="db/migration/muraw_spotify/liquibase/changesets/0004-staging/0004_0020_stg_templates.sql"/>
     </changeSet>
 
     <changeSet id="0004_0030_synthetic_id_resolution_initial" author="system">
-        <sqlFile path="db/migration/muraw_spotify/liquibase/changesets/0004/0004_0030_synthetic_id_resolution$initial.sql"/>
+        <sqlFile path="db/migration/muraw_spotify/liquibase/changesets/0004-staging/0004_0030_synthetic_id_resolution$initial.sql"/>
     </changeSet>
 
 </databaseChangeLog>

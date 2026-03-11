@@ -12,8 +12,8 @@ spring:
   datasource:
     driverClassName: org.postgresql.Driver
     url: jdbc:postgresql://${AU_DB_MASTER_HOST}:${AU_DB_MASTER_PORT}/${AU_DB_NAME}?currentSchema=${MURAW_SPOTIFY_DB_SCHEMA}
-    username: ${MURAW_SPOTIFY_DB_WRITER_USERNAME}
-    password: '${MURAW_SPOTIFY_DB_WRITER_PASSWORD}'
+    username: ${MURAW_SPOTIFY_CALLS_PERFORMER_DB_USERNAME}
+    password: '${MURAW_SPOTIFY_CALLS_PERFORMER_DB_PASSWORD}'
     hikari:
       pool-name: SpotifyCallsPerformerHikariPool
       maximum-pool-size: 8
