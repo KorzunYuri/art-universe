@@ -12,4 +12,6 @@ public interface SpotifyApiCallService {
     void updateApiCallStatus(SpotifyApiCall call, ApiCallStatus status);
 
     void finalizeApiCall(SpotifyApiCall call, ApiCallStatus status, Integer httpStatus, String errorMessage);
+
+    void markForRetry(SpotifyApiCall call);
 }

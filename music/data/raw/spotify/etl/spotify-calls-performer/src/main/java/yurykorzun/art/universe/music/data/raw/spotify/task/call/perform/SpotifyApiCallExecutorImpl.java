@@ -21,17 +21,20 @@ public class SpotifyApiCallExecutorImpl implements SpotifyApiCallExecutor {
     private final SpotifyApiCallService apiCallService;
     private final SpotifyApiResponseService apiResponseService;
     private final SpotifyApiClient apiClient;
+    private final AdaptiveRateLimiter rateLimiter;
     private final SpotifyApiCallExecutorImpl self;
 
     public SpotifyApiCallExecutorImpl(
         SpotifyApiCallService apiCallService,
         SpotifyApiResponseService apiResponseService,
         SpotifyApiClient apiClient,
+        AdaptiveRateLimiter rateLimiter,
         @Lazy SpotifyApiCallExecutorImpl self
     ) {
         this.apiCallService = apiCallService;
         this.apiResponseService = apiResponseService;
         this.apiClient = apiClient;
+        this.rateLimiter = rateLimiter;
         this.self = self;
     }
 
@@ -44,6 +47,11 @@ public class SpotifyApiCallExecutorImpl implements SpotifyApiCallExecutor {
             String response = self.makeApiCallWithRetry(call);
             apiResponseService.createResponse(call, response);
             apiCallService.finalizeApiCall(call, ApiCallStatus.SUCCESSFUL, 200, null);
+            rateLimiter.recordSuccess();
+        } catch (HttpClientErrorException.TooManyRequests e) {
+            log.warn("Rate limited (429) for api_call {} — resetting to CREATED for retry", call.getId());
+            apiCallService.markForRetry(call);
+            rateLimiter.record429();
         } catch (HttpClientErrorException e) {
             int status = e.getStatusCode().value();
             log.warn("Spotify HTTP {} for api_call {} (spotifyId={})",
@@ -58,7 +66,7 @@ public class SpotifyApiCallExecutorImpl implements SpotifyApiCallExecutor {
 
     @Retryable(
         retryFor = {Exception.class},
-        noRetryFor = {HttpClientErrorException.NotFound.class},
+        noRetryFor = {HttpClientErrorException.NotFound.class, HttpClientErrorException.TooManyRequests.class},
         maxAttemptsExpression = "${spotify.tasks.calls-perform.retry.max-attempts}",
         backoff = @Backoff(
             delayExpression = "${spotify.tasks.calls-perform.retry.initial-delay-ms}",

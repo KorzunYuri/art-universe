@@ -32,6 +32,13 @@ public class SpotifyApiCallServiceImpl implements SpotifyApiCallService {
 
     @Override
     @Transactional
+    public void markForRetry(SpotifyApiCall call) {
+        call.setStatus(ApiCallStatus.DUE_TO_RETRY);
+        apiCallRepository.save(call);
+    }
+
+    @Override
+    @Transactional
     public void finalizeApiCall(SpotifyApiCall call, ApiCallStatus status, Integer httpStatus, String errorMessage) {
         call.setStatus(status);
         call.setHttpStatus(httpStatus);

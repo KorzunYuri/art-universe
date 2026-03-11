@@ -13,15 +13,18 @@ import java.util.List;
 public interface SpotifyApiCallRepository extends BaseSpotifyApiCallRepository {
 
     @Query(
-        value = "SELECT * FROM api_call WHERE status = :statusCode AND due_dttm > NOW() ORDER BY priority DESC, id ASC LIMIT :batchSize",
+        value = "SELECT * FROM api_call WHERE status IN (:statusCodes) AND due_dttm > NOW() ORDER BY priority DESC, id ASC LIMIT :batchSize",
         nativeQuery = true
     )
-    List<SpotifyApiCall> findByStatusCodeAndNotExpired(
-        @Param("statusCode") int statusCode,
+    List<SpotifyApiCall> findByStatusCodesAndNotExpired(
+        @Param("statusCodes") List<Integer> statusCodes,
         @Param("batchSize") int batchSize
     );
 
     default List<SpotifyApiCall> findAllCreatedUnexpired() {
-        return findByStatusCodeAndNotExpired(ApiCallStatus.CREATED.getCode(), SpotifyConstants.HIBERNATE_BATCH_SIZE);
+        return findByStatusCodesAndNotExpired(
+            List.of(ApiCallStatus.CREATED.getCode(), ApiCallStatus.DUE_TO_RETRY.getCode()),
+            SpotifyConstants.HIBERNATE_BATCH_SIZE
+        );
     }
 }
