@@ -50,6 +50,9 @@ public class StagingIterationServiceImpl implements StagingIterationService {
 
     @Override
     public boolean shouldSeal(StagingIteration iteration) {
+        if (iteration.getRecordsStaged() == 0) {
+            return false;
+        }
         if (iteration.getRecordsStaged() >= maxRecords) {
             return true;
         }
