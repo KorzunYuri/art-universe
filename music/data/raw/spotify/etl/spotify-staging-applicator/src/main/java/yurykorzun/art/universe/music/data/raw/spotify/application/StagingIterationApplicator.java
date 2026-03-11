@@ -15,6 +15,9 @@ import java.time.Instant;
 @Slf4j
 public class StagingIterationApplicator {
 
+    private static final String STG  = "mu_raw_spotify_staging";
+    private static final String MAIN = "mu_raw_spotify";
+
     private final SpotifyStagingIterationRepository iterationRepository;
     private final JdbcTemplate jdbc;
 
@@ -40,25 +43,29 @@ public class StagingIterationApplicator {
             // 1. Upsert artists
             applied += upsertArtists(n);
 
-            // 2. Resolve synthetic artist IDs in stg_album and stg_entity_relation
+            // 2. Upsert genres + resolve synthetic genre IDs in stg_entity_relation
+            applied += upsertGenres(n);
+            resolveEntityIdsInRelation(n, 4, "genre");
+
+            // 3. Resolve synthetic artist IDs in stg_album and stg_entity_relation
             resolveArtistIdsInAlbum(n);
             resolveEntityIdsInRelation(n, 1, "artist"); // ARTIST type code = 1
 
-            // 3. Upsert albums
+            // 4. Upsert albums
             applied += upsertAlbums(n);
 
-            // 4. Resolve synthetic album IDs in stg_track and stg_entity_relation
+            // 5. Resolve synthetic album IDs in stg_track and stg_entity_relation
             resolveAlbumIdsInTrack(n);
             resolveArtistIdsInTrack(n);
             resolveEntityIdsInRelation(n, 2, "album"); // ALBUM type code = 2
 
-            // 5. Upsert tracks
+            // 6. Upsert tracks
             applied += upsertTracks(n);
 
-            // 6. Resolve synthetic track IDs in stg_entity_relation
+            // 7. Resolve synthetic track IDs in stg_entity_relation
             resolveEntityIdsInRelation(n, 3, "track"); // TRACK type code = 3
 
-            // 7. Upsert entity relations (only fully resolved rows)
+            // 8. Upsert entity relations (only fully resolved rows)
             applied += upsertEntityRelations(n);
 
             iteration.setStatus(StagingIterationStatus.COMPLETED);
@@ -78,29 +85,41 @@ public class StagingIterationApplicator {
 
     private long upsertArtists(long n) {
         int rows = jdbc.update("""
-            INSERT INTO artist (spotify_id, name, spotify_url, uri)
+            INSERT INTO %s.artist (spotify_id, name, spotify_url, uri)
             SELECT spotify_id, name, spotify_url, uri
-            FROM stg_artist_%d
+            FROM %s.stg_artist_%d
             WHERE name IS NOT NULL
             ON CONFLICT (spotify_id) DO UPDATE
               SET name        = EXCLUDED.name,
                   spotify_url = COALESCE(EXCLUDED.spotify_url, artist.spotify_url),
                   uri         = COALESCE(EXCLUDED.uri, artist.uri),
                   updated_at  = now()
-            """.formatted(n));
+            """.formatted(MAIN, STG, n));
         log.debug("Iteration {}: upserted {} artists", n, rows);
+        return rows;
+    }
+
+    private long upsertGenres(long n) {
+        int rows = jdbc.update("""
+            INSERT INTO %s.genre (spotify_id, name)
+            SELECT spotify_id, name
+            FROM %s.stg_genre_%d
+            WHERE name IS NOT NULL
+            ON CONFLICT (spotify_id) DO NOTHING
+            """.formatted(MAIN, STG, n));
+        log.debug("Iteration {}: upserted {} genres", n, rows);
         return rows;
     }
 
     private long upsertAlbums(long n) {
         int rows = jdbc.update("""
-            INSERT INTO album (spotify_id, name, album_type, total_tracks, release_date,
+            INSERT INTO %s.album (spotify_id, name, album_type, total_tracks, release_date,
                                release_date_precision, spotify_url, uri,
                                primary_artist_id, primary_artist_spotify_id)
             SELECT spotify_id, name, album_type, total_tracks, release_date,
                    release_date_precision, spotify_url, uri,
                    NULLIF(primary_artist_id, 0), primary_artist_spotify_id
-            FROM stg_album_%d
+            FROM %s.stg_album_%d
             WHERE name IS NOT NULL
             ON CONFLICT (spotify_id) DO UPDATE
               SET name                     = EXCLUDED.name,
@@ -113,14 +132,14 @@ public class StagingIterationApplicator {
                   primary_artist_id        = COALESCE(EXCLUDED.primary_artist_id, album.primary_artist_id),
                   primary_artist_spotify_id = COALESCE(EXCLUDED.primary_artist_spotify_id, album.primary_artist_spotify_id),
                   updated_at               = now()
-            """.formatted(n));
+            """.formatted(MAIN, STG, n));
         log.debug("Iteration {}: upserted {} albums", n, rows);
         return rows;
     }
 
     private long upsertTracks(long n) {
         int rows = jdbc.update("""
-            INSERT INTO track (spotify_id, name, duration_ms, track_number, disc_number,
+            INSERT INTO %s.track (spotify_id, name, duration_ms, track_number, disc_number,
                                has_explicit_lyrics, is_playable, spotify_url, uri,
                                isrc, ean, upc,
                                primary_artist_id, primary_artist_spotify_id,
@@ -130,7 +149,7 @@ public class StagingIterationApplicator {
                    isrc, ean, upc,
                    NULLIF(primary_artist_id, 0), primary_artist_spotify_id,
                    NULLIF(album_id, 0), album_spotify_id
-            FROM stg_track_%d
+            FROM %s.stg_track_%d
             WHERE name IS NOT NULL
             ON CONFLICT (spotify_id) DO UPDATE
               SET name                     = EXCLUDED.name,
@@ -147,84 +166,84 @@ public class StagingIterationApplicator {
                   album_id                 = COALESCE(EXCLUDED.album_id, track.album_id),
                   album_spotify_id         = COALESCE(EXCLUDED.album_spotify_id, track.album_spotify_id),
                   updated_at               = now()
-            """.formatted(n));
+            """.formatted(MAIN, STG, n));
         log.debug("Iteration {}: upserted {} tracks", n, rows);
         return rows;
     }
 
     private long upsertEntityRelations(long n) {
         int rows = jdbc.update("""
-            INSERT INTO entity_relation (source_entity_type, source_entity_id,
+            INSERT INTO %s.entity_relation (source_entity_type, source_entity_id,
                                          target_entity_type, target_entity_id,
                                          relation_type)
             SELECT source_entity_type, source_entity_id,
                    target_entity_type, target_entity_id,
                    relation_type
-            FROM stg_entity_relation_%d
+            FROM %s.stg_entity_relation_%d
             WHERE source_entity_id > 0
               AND target_entity_id > 0
             ON CONFLICT (source_entity_type, source_entity_id,
                           target_entity_type, target_entity_id, relation_type) DO NOTHING
-            """.formatted(n));
+            """.formatted(MAIN, STG, n));
         log.debug("Iteration {}: upserted {} entity relations", n, rows);
         return rows;
     }
 
     private void resolveArtistIdsInAlbum(long n) {
         jdbc.update("""
-            UPDATE stg_album_%d s
+            UPDATE %s.stg_album_%d s
             SET primary_artist_id = a.id
-            FROM artist a
+            FROM %s.artist a
             WHERE a.spotify_id = s.primary_artist_spotify_id
               AND s.primary_artist_id < 0
-            """.formatted(n));
+            """.formatted(STG, n, MAIN));
     }
 
     private void resolveArtistIdsInTrack(long n) {
         jdbc.update("""
-            UPDATE stg_track_%d s
+            UPDATE %s.stg_track_%d s
             SET primary_artist_id = a.id
-            FROM artist a
+            FROM %s.artist a
             WHERE a.spotify_id = s.primary_artist_spotify_id
               AND s.primary_artist_id < 0
-            """.formatted(n));
+            """.formatted(STG, n, MAIN));
     }
 
     private void resolveAlbumIdsInTrack(long n) {
         jdbc.update("""
-            UPDATE stg_track_%d s
+            UPDATE %s.stg_track_%d s
             SET album_id = al.id
-            FROM album al
+            FROM %s.album al
             WHERE al.spotify_id = s.album_spotify_id
               AND s.album_id < 0
-            """.formatted(n));
+            """.formatted(STG, n, MAIN));
     }
 
     /**
      * Resolves synthetic IDs in stg_entity_relation for a given entity type.
      *
-     * @param entityTypeCode numeric code (1=ARTIST, 2=ALBUM, 3=TRACK)
-     * @param tableName      target table name (artist / album / track)
+     * @param entityTypeCode numeric code (1=ARTIST, 2=ALBUM, 3=TRACK, 4=GENRE)
+     * @param tableName      target table name (artist / album / track / genre)
      */
     private void resolveEntityIdsInRelation(long n, int entityTypeCode, String tableName) {
         jdbc.update("""
-            UPDATE stg_entity_relation_%d er
+            UPDATE %s.stg_entity_relation_%d er
             SET source_entity_id = t.id
-            FROM stg_%s_%d s
-            JOIN %s t ON t.spotify_id = s.spotify_id
+            FROM %s.stg_%s_%d s
+            JOIN %s.%s t ON t.spotify_id = s.spotify_id
             WHERE er.source_entity_type = %d
               AND er.source_entity_id   = s.entity_id
               AND er.source_entity_id   < 0
-            """.formatted(n, tableName, n, tableName, entityTypeCode));
+            """.formatted(STG, n, STG, tableName, n, MAIN, tableName, entityTypeCode));
 
         jdbc.update("""
-            UPDATE stg_entity_relation_%d er
+            UPDATE %s.stg_entity_relation_%d er
             SET target_entity_id = t.id
-            FROM stg_%s_%d s
-            JOIN %s t ON t.spotify_id = s.spotify_id
+            FROM %s.stg_%s_%d s
+            JOIN %s.%s t ON t.spotify_id = s.spotify_id
             WHERE er.target_entity_type = %d
               AND er.target_entity_id   = s.entity_id
               AND er.target_entity_id   < 0
-            """.formatted(n, tableName, n, tableName, entityTypeCode));
+            """.formatted(STG, n, STG, tableName, n, MAIN, tableName, entityTypeCode));
     }
 }

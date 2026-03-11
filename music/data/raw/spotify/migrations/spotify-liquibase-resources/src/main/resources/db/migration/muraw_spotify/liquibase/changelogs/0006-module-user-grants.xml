@@ -32,4 +32,11 @@
                  stripComments="true"/>
     </changeSet>
 
+    <changeSet id="0006_0050_appl_genre_grants$initial" author="system">
+        <sqlFile path="../changesets/0006-grants/0006_0050_appl_genre_grants$initial.sql"
+                 relativeToChangelogFile="true"
+                 splitStatements="true"
+                 stripComments="true"/>
+    </changeSet>
+
 </databaseChangeLog>
