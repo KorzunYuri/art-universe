@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import yurykorzun.art.universe.music.data.raw.spotify.common.SpotifyConstants;
 import yurykorzun.art.universe.music.data.raw.spotify.enums.SpotifyEntityType;
 import yurykorzun.art.universe.music.data.raw.spotify.etl.dto.SpotifyApiCallCreateRequest;
 import yurykorzun.art.universe.music.data.raw.spotify.etl.entity.*;
@@ -102,7 +103,7 @@ public class SpotifySearchArtistCallGenerator extends BaseSpotifyApiCallGenerato
                 .type(getApiCallType())
                 .entityType(SpotifyEntityType.ARTIST)
                 .dueDttm(Instant.now().plus(dueDurationDays, ChronoUnit.DAYS))
-                .params(Map.of("q", artist.name(), "type", "artist", "limit", "20"))
+                .params(Map.of("q", artist.name(), "type", "artist", "limit", String.valueOf(SpotifyConstants.SEARCH_LIMIT_MAX)))
                 .build());
         }
 
