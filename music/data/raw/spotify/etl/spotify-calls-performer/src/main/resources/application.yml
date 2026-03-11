@@ -49,7 +49,7 @@ spotify:
       fixed-delay-secs: ${SPOTIFY_SCHEDULING_CALLS_PERFORM_FIXED_DELAY_SECS:1}
   tasks:
     calls-perform:
-      calls-per-sec: ${SPOTIFY_TASKS_CALLS_PERFORM_CALLS_PER_SEC:7.0}
+      calls-per-sec: ${SPOTIFY_TASKS_CALLS_PERFORM_CALLS_PER_SEC:1.0}
       retry:
         max-attempts: 3
         initial-delay-ms: 500
