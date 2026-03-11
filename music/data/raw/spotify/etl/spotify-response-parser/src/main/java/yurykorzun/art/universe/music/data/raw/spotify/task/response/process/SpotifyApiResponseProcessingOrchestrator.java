@@ -55,7 +55,7 @@ public class SpotifyApiResponseProcessingOrchestrator {
 
     @Transactional
     protected int processSingle(SpotifyApiResponse response, StagingIteration iteration) {
-        SpotifyApiCallType callType = (SpotifyApiCallType) response.getApiCall().getType();
+        SpotifyApiCallType callType = response.getApiCall().getType();
         BaseSpotifyApiResponseProcessor processor = SpotifyApiResponseProcessorsRegistry.get(callType);
 
         if (processor == null) {

@@ -10,9 +10,10 @@ import yurykorzun.art.universe.music.data.raw.spotify.enums.SpotifyEntityType;
 @Slf4j
 public class SyntheticIdResolutionService {
 
-    private static final String SQL_FIND_ARTIST = "SELECT id FROM artist WHERE spotify_id = ?";
-    private static final String SQL_FIND_ALBUM  = "SELECT id FROM album WHERE spotify_id = ?";
-    private static final String SQL_FIND_TRACK  = "SELECT id FROM track WHERE spotify_id = ?";
+    private static final String SQL_FIND_ARTIST = "SELECT id FROM mu_raw_spotify.artist WHERE spotify_id = ?";
+    private static final String SQL_FIND_ALBUM  = "SELECT id FROM mu_raw_spotify.album WHERE spotify_id = ?";
+    private static final String SQL_FIND_TRACK  = "SELECT id FROM mu_raw_spotify.track WHERE spotify_id = ?";
+    private static final String SQL_FIND_GENRE  = "SELECT id FROM mu_raw_spotify.genre WHERE spotify_id = ?";
 
     private final JdbcTemplate jdbc;
 
@@ -29,6 +30,7 @@ public class SyntheticIdResolutionService {
             case ARTIST -> SQL_FIND_ARTIST;
             case ALBUM  -> SQL_FIND_ALBUM;
             case TRACK  -> SQL_FIND_TRACK;
+            case GENRE  -> SQL_FIND_GENRE;
             default -> throw new IllegalArgumentException("Unsupported entity type for ID resolution: " + entityType);
         };
 

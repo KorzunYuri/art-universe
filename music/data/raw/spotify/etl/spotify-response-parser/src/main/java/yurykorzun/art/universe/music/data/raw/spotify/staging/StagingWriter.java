@@ -19,17 +19,26 @@ public class StagingWriter {
     }
 
     public void createTablesForIteration(long iterationId) {
-        for (String template : new String[]{"stg_artist", "stg_album", "stg_track", "stg_entity_relation"}) {
-            String tableName = template + "_" + iterationId;
-            String templateName = template + "_template";
+        for (String template : new String[]{"stg_artist", "stg_genre", "stg_album", "stg_track", "stg_entity_relation"}) {
+            String tableName = "mu_raw_spotify_staging." + template + "_" + iterationId;
+            String templateName = "mu_raw_spotify." + template + "_template";
             jdbc.execute(String.format(
                 "CREATE TABLE IF NOT EXISTS %s (LIKE %s INCLUDING ALL)", tableName, templateName));
         }
         log.debug("Created staging tables for iteration {}", iterationId);
     }
 
+    public void insertGenre(long iterationId, long responseId, String genreName, long entityId) {
+        String table = "mu_raw_spotify_staging.stg_genre_" + iterationId;
+        jdbc.update(
+            "INSERT INTO " + table + " (api_response_id, entity_id, spotify_id, name) " +
+            "VALUES (?, ?, ?, ?) ON CONFLICT (spotify_id) DO NOTHING",
+            responseId, entityId, genreName, genreName
+        );
+    }
+
     public void insertArtist(long iterationId, long responseId, SpotifyArtistDto dto, long entityId) {
-        String table = "stg_artist_" + iterationId;
+        String table = "mu_raw_spotify_staging.stg_artist_" + iterationId;
         jdbc.update(
             "INSERT INTO " + table + " (api_response_id, entity_id, spotify_id, name, spotify_url, uri) " +
             "VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (spotify_id) DO NOTHING",
@@ -38,7 +47,7 @@ public class StagingWriter {
     }
 
     public void insertSimplifiedArtist(long iterationId, long responseId, SpotifySimplifiedArtistDto dto, long entityId) {
-        String table = "stg_artist_" + iterationId;
+        String table = "mu_raw_spotify_staging.stg_artist_" + iterationId;
         jdbc.update(
             "INSERT INTO " + table + " (api_response_id, entity_id, spotify_id, name, spotify_url, uri) " +
             "VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (spotify_id) DO NOTHING",
@@ -48,7 +57,7 @@ public class StagingWriter {
 
     public void insertAlbum(long iterationId, long responseId, SpotifyAlbumDto dto,
                             long entityId, Long primaryArtistId, String primaryArtistSpotifyId) {
-        String table = "stg_album_" + iterationId;
+        String table = "mu_raw_spotify_staging.stg_album_" + iterationId;
         Integer albumTypeCode = resolveAlbumTypeCode(dto.albumType());
         Integer datePrecisionCode = resolveDatePrecisionCode(dto.releaseDatePrecision());
         jdbc.update(
@@ -65,7 +74,7 @@ public class StagingWriter {
     public void insertTrack(long iterationId, long responseId, SpotifyTrackDto dto,
                             long entityId, Long primaryArtistId, String primaryArtistSpotifyId,
                             Long albumId, String albumSpotifyId) {
-        String table = "stg_track_" + iterationId;
+        String table = "mu_raw_spotify_staging.stg_track_" + iterationId;
         jdbc.update(
             "INSERT INTO " + table + " (api_response_id, entity_id, spotify_id, name, duration_ms, " +
             "track_number, disc_number, has_explicit_lyrics, is_playable, spotify_url, uri, " +
@@ -82,7 +91,7 @@ public class StagingWriter {
                                      int sourceEntityType, long sourceEntityId,
                                      int targetEntityType, long targetEntityId,
                                      int relationType) {
-        String table = "stg_entity_relation_" + iterationId;
+        String table = "mu_raw_spotify_staging.stg_entity_relation_" + iterationId;
         jdbc.update(
             "INSERT INTO " + table + " (api_response_id, source_entity_type, source_entity_id, " +
             "target_entity_type, target_entity_id, relation_type) " +
