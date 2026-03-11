@@ -13,4 +13,12 @@
         <sqlFile path="db/migration/muraw_spotify/liquibase/changesets/0001-etl-tables/0001_0020_api_response$initial.sql"/>
     </changeSet>
 
+    <changeSet id="0001_0030_api_call$executed_dttm" author="yurykorzun">
+        <sqlFile path="db/migration/muraw_spotify/liquibase/changesets/0001-etl-tables/0001_0030_api_call$executed_dttm.sql"/>
+    </changeSet>
+
+    <changeSet id="0001_0040_api_response$remove_unnecessary_fields" author="yurykorzun">
+        <sqlFile path="db/migration/muraw_spotify/liquibase/changesets/0001-etl-tables/0001_0040_api_response$remove_unnecessary_fields.sql"/>
+    </changeSet>
+
 </databaseChangeLog>

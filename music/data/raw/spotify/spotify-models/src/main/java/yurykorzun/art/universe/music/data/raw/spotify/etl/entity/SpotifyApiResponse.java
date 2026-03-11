@@ -29,10 +29,4 @@ public class SpotifyApiResponse extends ApiResponse {
     @Convert(converter = GzipBase64StringConverter.class)
     @Column(name = "response_body")
     private String responseBody;
-
-    @Column(name = "http_status")
-    private Integer httpStatus;
-
-    @Column(name = "error_message")
-    private String errorMessage;
 }

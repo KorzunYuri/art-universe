@@ -1,16 +1,15 @@
 package yurykorzun.art.universe.music.data.raw.spotify.etl.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import yurykorzun.art.universe.data.raw.common.etl.entity.ApiCall;
 import yurykorzun.art.universe.data.raw.common.etl.entity.ApiCallTypeConverter;
 import yurykorzun.art.universe.music.data.raw.spotify.common.SpotifyConstants;
 import yurykorzun.art.universe.music.data.raw.spotify.enums.SpotifyEntityType;
 import yurykorzun.art.universe.music.data.raw.spotify.enums.SpotifyEntityTypeConverter;
+
+import java.time.Instant;
 
 @Entity(name = "api_call")
 @SuperBuilder
@@ -40,7 +39,20 @@ public class SpotifyApiCall extends ApiCall {
 
     @Setter
     @Column(name = "priority")
-    private Short priority;
+    @Builder.Default
+    private Short priority = 0;
+
+    @Setter
+    @Column(name = "http_status")
+    private Integer httpStatus;
+
+    @Setter
+    @Column(name = "error_message")
+    private String errorMessage;
+
+    @Setter
+    @Column(name = "executed_dttm")
+    private Instant executedDttm;
 
     @Setter
     @Column(name = "kafka_produced")

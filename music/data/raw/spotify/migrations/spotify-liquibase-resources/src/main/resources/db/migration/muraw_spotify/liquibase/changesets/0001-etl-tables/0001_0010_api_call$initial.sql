@@ -1,3 +1,5 @@
+CREATE SEQUENCE api_call_seq START 1 INCREMENT BY 50;
+
 CREATE TABLE api_call (
         id              BIGINT PRIMARY KEY DEFAULT nextval('api_call_seq')
     ,   type            SMALLINT                            NOT NULL
@@ -13,8 +15,6 @@ CREATE TABLE api_call (
     ,   created_at      TIMESTAMPTZ                         NOT NULL DEFAULT now()
     ,   updated_at      TIMESTAMPTZ                         NOT NULL DEFAULT now()
 );
-
-CREATE SEQUENCE api_call_seq START 1 INCREMENT BY 50;
 
 CREATE INDEX idx_api_call_status_type ON api_call (status, type);
 CREATE INDEX idx_api_call_due ON api_call (due_dttm) WHERE status IN (0, 1);

@@ -1,3 +1,5 @@
+CREATE SEQUENCE track_seq START 1 INCREMENT BY 1;
+
 CREATE TABLE track (
         id                      BIGINT PRIMARY KEY DEFAULT nextval('track_seq')
     ,   spotify_id              VARCHAR(64)                         NOT NULL UNIQUE
@@ -21,8 +23,6 @@ CREATE TABLE track (
     ,   created_at              TIMESTAMPTZ                         NOT NULL DEFAULT now()
     ,   updated_at              TIMESTAMPTZ                         NOT NULL DEFAULT now()
 );
-
-CREATE SEQUENCE track_seq START 1 INCREMENT BY 50;
 
 CREATE INDEX idx_track_name ON track (name);
 CREATE INDEX idx_track_primary_artist ON track (primary_artist_id);

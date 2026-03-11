@@ -1,3 +1,5 @@
+CREATE SEQUENCE staging_iteration_seq START 1 INCREMENT BY 1;
+
 CREATE TABLE staging_iteration (
         id                  BIGINT PRIMARY KEY DEFAULT nextval('staging_iteration_seq')
     ,   status              SMALLINT                            NOT NULL DEFAULT 0
@@ -11,5 +13,3 @@ CREATE TABLE staging_iteration (
     ,   retry_count         SMALLINT                            DEFAULT 0
     ,   last_retry_at       TIMESTAMPTZ
 );
-
-CREATE SEQUENCE staging_iteration_seq START 1 INCREMENT BY 1;

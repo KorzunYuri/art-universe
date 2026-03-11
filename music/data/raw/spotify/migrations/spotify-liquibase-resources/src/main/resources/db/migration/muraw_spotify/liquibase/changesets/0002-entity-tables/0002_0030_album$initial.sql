@@ -1,3 +1,5 @@
+CREATE SEQUENCE album_seq START 1 INCREMENT BY 1;
+
 CREATE TABLE album (
         id                      BIGINT PRIMARY KEY DEFAULT nextval('album_seq')
     ,   spotify_id              VARCHAR(64)                         NOT NULL UNIQUE
@@ -15,8 +17,6 @@ CREATE TABLE album (
     ,   created_at              TIMESTAMPTZ                         NOT NULL DEFAULT now()
     ,   updated_at              TIMESTAMPTZ                         NOT NULL DEFAULT now()
 );
-
-CREATE SEQUENCE album_seq START 1 INCREMENT BY 50;
 
 CREATE INDEX idx_album_name ON album (name);
 CREATE INDEX idx_album_primary_artist ON album (primary_artist_id);

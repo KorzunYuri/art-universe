@@ -14,7 +14,7 @@ import yurykorzun.art.universe.music.data.raw.spotify.enums.SpotifyEntityType;
 public class SpotifyTrack extends BaseSpotifyEntity {
 
     @Id
-    @SequenceGenerator(name = "track_seq_gen", sequenceName = "track_seq", allocationSize = SpotifyConstants.HIBERNATE_BATCH_SIZE)
+    @SequenceGenerator(name = "track_seq_gen", sequenceName = "track_seq", allocationSize = SpotifyConstants.JDBC_ENTITY_SEQ_ALLOCATION)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "track_seq_gen")
     @Setter(AccessLevel.NONE)
     private long id;

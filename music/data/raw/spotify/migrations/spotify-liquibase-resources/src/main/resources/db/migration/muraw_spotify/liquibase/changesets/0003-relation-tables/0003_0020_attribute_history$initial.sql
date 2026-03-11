@@ -1,3 +1,5 @@
+CREATE SEQUENCE attr_hist_seq START 1 INCREMENT BY 50;
+
 CREATE TABLE attribute_history_current (
         id                  BIGINT PRIMARY KEY DEFAULT nextval('attr_hist_seq')
     ,   entity_type         SMALLINT                            NOT NULL
@@ -27,8 +29,6 @@ CREATE TABLE attribute_history_archive (
     ,   valid_from          DATE                                NOT NULL
     ,   valid_till          DATE                                NOT NULL
 );
-
-CREATE SEQUENCE attr_hist_seq START 1 INCREMENT BY 50;
 
 CREATE INDEX idx_attr_hist_current_entity ON attribute_history_current (entity_type, entity_id);
 CREATE INDEX idx_attr_hist_archive_entity ON attribute_history_archive (entity_type, entity_id);

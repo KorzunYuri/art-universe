@@ -1,3 +1,5 @@
+CREATE SEQUENCE genre_seq START 1 INCREMENT BY 50;
+
 CREATE TABLE genre (
         id                  BIGINT PRIMARY KEY DEFAULT nextval('genre_seq')
     ,   spotify_id          VARCHAR(256)                        NOT NULL UNIQUE
@@ -7,7 +9,5 @@ CREATE TABLE genre (
     ,   created_at          TIMESTAMPTZ                         NOT NULL DEFAULT now()
     ,   updated_at          TIMESTAMPTZ                         NOT NULL DEFAULT now()
 );
-
-CREATE SEQUENCE genre_seq START 1 INCREMENT BY 50;
 
 CREATE UNIQUE INDEX idx_genre_name ON genre (name);

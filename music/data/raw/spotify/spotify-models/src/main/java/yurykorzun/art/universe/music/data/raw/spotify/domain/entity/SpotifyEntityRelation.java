@@ -18,7 +18,7 @@ import yurykorzun.art.universe.music.data.raw.spotify.enums.SpotifyRelationTypeC
 public class SpotifyEntityRelation extends BaseSpotifyCollectable {
 
     @Id
-    @SequenceGenerator(name = "entity_relation_seq_gen", sequenceName = "entity_relation_seq", allocationSize = SpotifyConstants.HIBERNATE_BATCH_SIZE)
+    @SequenceGenerator(name = "entity_relation_seq_gen", sequenceName = "entity_relation_seq", allocationSize = SpotifyConstants.JDBC_ENTITY_SEQ_ALLOCATION)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "entity_relation_seq_gen")
     private long id;
 
