@@ -11,5 +11,4 @@ dependencies {
     implementation project(':common:data:raw:data-raw-commons-api-client')
     implementation project(':music:data:raw:spotify:spotify-repositories')
 
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 }
