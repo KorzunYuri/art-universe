@@ -87,6 +87,20 @@ services:
     networks:
       - mu__network
 
+  spotify-liquibase-service:
+    container_name: local__spotify__liquibase
+    image: mu-spotify-liquibase:latest
+    env_file:
+      - ../common/music-data-raw-spotify.env
+      - ./common.env
+      - ./music-data-raw-spotify.env
+      - ./music-data-raw-spotify.secrets.env
+    depends_on:
+      postgres-master:
+        condition: service_healthy
+    networks:
+      - mu__network
+
   # Applications
   lastfm-rest-api:
     container_name: local__lastfm-rest-api__app
@@ -282,6 +296,201 @@ services:
         reservations:
           memory: 256M
           cpus: '0.1'
+    networks:
+      - mu__network
+
+  spotify-rest-api:
+    container_name: local__spotify-rest-api__app
+    restart: unless-stopped
+    image: mu-spotify-rest-api:latest
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx768m -XX:MaxMetaspaceSize=192m
+    env_file:
+      - ../common/music-data-raw-spotify.env
+      - ./common.env
+      - ./music-data-raw-spotify.env
+      - ./music-data-raw-spotify.secrets.env
+    ports:
+      - "${MURAW_SPOTIFY_REST_API_EXTERNAL_PORT}:${MURAW_SPOTIFY_REST_API_INTERNAL_PORT}"
+    volumes:
+      - local__spotify-rest-api__app-logs:/app/logs
+    depends_on:
+      postgres-master:
+        condition: service_healthy
+      spotify-liquibase-service:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${MURAW_SPOTIFY_REST_API_INTERNAL_PORT}/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 600s
+    deploy:
+      resources:
+        limits:
+          memory: 1Gb
+          cpus: '0.3'
+        reservations:
+          memory: 256M
+          cpus: '0.1'
+    networks:
+      - mu__network
+
+  spotify-calls-generator:
+    container_name: local__spotify-calls-generator__app
+    restart: unless-stopped
+    stop_grace_period: 1m
+    image: mu-spotify-calls-generator:latest
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx768m -XX:MaxMetaspaceSize=192m
+    env_file:
+      - ../common/music-data-raw-spotify.env
+      - ../common/music-data-raw-spotify-etl.env
+      - ./common.env
+      - ./music-data-raw-spotify.secrets.env
+    ports:
+      - "${MURAW_SPOTIFY_CALLS_GENERATOR_ACTUATOR_EXTERNAL_PORT}:${MURAW_SPOTIFY_CALLS_GENERATOR_ACTUATOR_INTERNAL_PORT}"
+    volumes:
+      - local__spotify-calls-generator__app-logs:/app/logs
+    depends_on:
+      postgres-master:
+        condition: service_healthy
+      spotify-liquibase-service:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${MURAW_SPOTIFY_CALLS_GENERATOR_ACTUATOR_INTERNAL_PORT}/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 600s
+    deploy:
+      resources:
+        limits:
+          memory: 1Gb
+          cpus: '0.2'
+        reservations:
+          memory: 256M
+          cpus: '0.05'
+    networks:
+      - mu__network
+
+  spotify-calls-performer:
+    container_name: local__spotify-calls-performer__app
+    restart: unless-stopped
+    stop_grace_period: 1m
+    image: mu-spotify-calls-performer:latest
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx768m -XX:MaxMetaspaceSize=192m
+    env_file:
+      - ../common/music-data-raw-spotify.env
+      - ../common/music-data-raw-spotify-etl.env
+      - ./common.env
+      - ./music-data-raw-spotify.secrets.env
+    ports:
+      - "${MURAW_SPOTIFY_CALLS_PERFORMER_ACTUATOR_EXTERNAL_PORT}:${MURAW_SPOTIFY_CALLS_PERFORMER_ACTUATOR_INTERNAL_PORT}"
+    volumes:
+      - local__spotify-calls-performer__app-logs:/app/logs
+    depends_on:
+      postgres-master:
+        condition: service_healthy
+      spotify-liquibase-service:
+        condition: service_completed_successfully
+      spotify-calls-generator:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${MURAW_SPOTIFY_CALLS_PERFORMER_ACTUATOR_INTERNAL_PORT}/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 600s
+    deploy:
+      resources:
+        limits:
+          memory: 1Gb
+          cpus: '0.2'
+        reservations:
+          memory: 256M
+          cpus: '0.05'
+    networks:
+      - mu__network
+
+  spotify-response-parser:
+    container_name: local__spotify-response-parser__app
+    restart: unless-stopped
+    stop_grace_period: 1m
+    image: mu-spotify-response-parser:latest
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx1536m -XX:MaxMetaspaceSize=192m
+    env_file:
+      - ../common/music-data-raw-spotify.env
+      - ../common/music-data-raw-spotify-etl.env
+      - ./common.env
+      - ./music-data-raw-spotify.secrets.env
+    ports:
+      - "${MURAW_SPOTIFY_RESPONSE_PARSER_ACTUATOR_EXTERNAL_PORT}:${MURAW_SPOTIFY_RESPONSE_PARSER_ACTUATOR_INTERNAL_PORT}"
+    volumes:
+      - local__spotify-response-parser__app-logs:/app/logs
+    depends_on:
+      postgres-master:
+        condition: service_healthy
+      spotify-liquibase-service:
+        condition: service_completed_successfully
+      spotify-calls-performer:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${MURAW_SPOTIFY_RESPONSE_PARSER_ACTUATOR_INTERNAL_PORT}/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 600s
+    deploy:
+      resources:
+        limits:
+          memory: 2Gb
+          cpus: '0.3'
+        reservations:
+          memory: 256M
+          cpus: '0.1'
+    networks:
+      - mu__network
+
+  spotify-staging-applicator:
+    container_name: local__spotify-staging-applicator__app
+    restart: unless-stopped
+    stop_grace_period: 1m
+    image: mu-spotify-staging-applicator:latest
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx768m -XX:MaxMetaspaceSize=192m
+    env_file:
+      - ../common/music-data-raw-spotify.env
+      - ../common/music-data-raw-spotify-etl.env
+      - ./common.env
+      - ./music-data-raw-spotify.secrets.env
+    ports:
+      - "${MURAW_SPOTIFY_STAGING_APPLICATOR_ACTUATOR_EXTERNAL_PORT}:${MURAW_SPOTIFY_STAGING_APPLICATOR_ACTUATOR_INTERNAL_PORT}"
+    volumes:
+      - local__spotify-staging-applicator__app-logs:/app/logs
+    depends_on:
+      postgres-master:
+        condition: service_healthy
+      spotify-liquibase-service:
+        condition: service_completed_successfully
+      spotify-response-parser:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${MURAW_SPOTIFY_STAGING_APPLICATOR_ACTUATOR_INTERNAL_PORT}/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 600s
+    deploy:
+      resources:
+        limits:
+          memory: 1Gb
+          cpus: '0.2'
+        reservations:
+          memory: 256M
+          cpus: '0.05'
     networks:
       - mu__network
 
@@ -525,6 +734,16 @@ volumes:
     name: local__au__db-postgres-data
   local__au__db-postgres-replica-data:
     name: local__au__db-postgres-replica-data
+  local__spotify-rest-api__app-logs:
+    name: local__spotify-rest-api__app-logs
+  local__spotify-calls-generator__app-logs:
+    name: local__spotify-calls-generator__app-logs
+  local__spotify-calls-performer__app-logs:
+    name: local__spotify-calls-performer__app-logs
+  local__spotify-response-parser__app-logs:
+    name: local__spotify-response-parser__app-logs
+  local__spotify-staging-applicator__app-logs:
+    name: local__spotify-staging-applicator__app-logs
   local__lastfm-rest-api__app-logs:
     name: local__lastfm-rest-api__app-logs
   local__lastfm-etl-rest-api__app-logs:

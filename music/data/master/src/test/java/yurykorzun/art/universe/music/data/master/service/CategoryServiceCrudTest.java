@@ -16,6 +16,8 @@ import yurykorzun.art.universe.music.data.master.dto.CategorySaveRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategoryWithParentsDto;
 import yurykorzun.art.universe.music.data.master.entity.Category;
 import yurykorzun.art.universe.music.data.master.entity.CategoryCategory;
+import yurykorzun.art.universe.music.data.master.entity.MasterApprovalStatus;
+import yurykorzun.art.universe.music.data.master.entity.Origin;
 import yurykorzun.art.universe.music.data.master.repository.CategoryBindingRepository;
 import yurykorzun.art.universe.music.data.master.repository.CategoryCategoryRepository;
 import yurykorzun.art.universe.music.data.master.repository.CategoryRepository;
@@ -112,7 +114,7 @@ class CategoryServiceCrudTest {
         Category saved = category(1L, "New Category");
         when(categoryRepository.save(any(Category.class))).thenReturn(saved);
 
-        CategoryDto result = categoryService.saveCategory(request);
+        CategoryDto result = categoryService.saveCategory(request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
 
         assertEquals(1L, result.getId());
         assertEquals("New Category", result.getName());
@@ -126,7 +128,7 @@ class CategoryServiceCrudTest {
         when(categoryRepository.findById(1L)).thenReturn(Optional.of(existing));
         when(categoryRepository.save(existing)).thenReturn(existing);
 
-        CategoryDto result = categoryService.saveCategory(request);
+        CategoryDto result = categoryService.saveCategory(request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
 
         assertEquals("New Name", result.getName());
     }
@@ -137,7 +139,7 @@ class CategoryServiceCrudTest {
             .id(99L).name("Name").build();
         when(categoryRepository.findById(99L)).thenReturn(Optional.empty());
 
-        assertThrows(EntityNotFoundException.class, () -> categoryService.saveCategory(request));
+        assertThrows(EntityNotFoundException.class, () -> categoryService.saveCategory(request, Origin.MANUAL, MasterApprovalStatus.APPROVED));
         verify(categoryRepository, never()).save(any());
     }
 

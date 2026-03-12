@@ -18,10 +18,7 @@ import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistin
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
-import yurykorzun.art.universe.music.data.master.entity.Artist;
-import yurykorzun.art.universe.music.data.master.entity.ArtistBinding;
-import yurykorzun.art.universe.music.data.master.entity.ArtistCategory;
-import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.entity.*;
 import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.repository.ArtistBindingRepository;
 import yurykorzun.art.universe.music.data.master.repository.ArtistCategoryRepository;
@@ -181,7 +178,7 @@ class ArtistServiceTest {
             .thenReturn(expectedResult);
 
         // When
-        BoundEntityProjection result = artistService.bindToExisting(dataSource, externalId, request);
+        BoundEntityProjection result = artistService.bindToExisting(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
 
         // Then
         assertEquals(expectedResult, result);
@@ -207,7 +204,7 @@ class ArtistServiceTest {
 
         // When & Then
         assertThrows(CustomEntityNotFoundException.class, () ->
-            artistService.bindToExisting(dataSource, externalId, request));
+            artistService.bindToExisting(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED));
         
         verify(artistRepository).findById(artistId);
         verify(artistBindingRepository, never()).save(any());
@@ -249,7 +246,7 @@ class ArtistServiceTest {
             .thenReturn(expectedResult);
 
         // When
-        BoundEntityProjection result = artistService.bindToExisting(dataSource, externalId, request);
+        BoundEntityProjection result = artistService.bindToExisting(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
 
         // Then
         assertEquals(expectedResult, result);
@@ -296,7 +293,7 @@ class ArtistServiceTest {
             .thenReturn(expectedResult);
 
         // When
-        BoundEntityProjection result = artistService.createAndBind(dataSource, externalId, request);
+        BoundEntityProjection result = artistService.createAndBind(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
 
         // Then
         assertEquals(expectedResult, result);
@@ -342,7 +339,7 @@ class ArtistServiceTest {
             .thenReturn(expectedResult);
 
         // When
-        BoundEntityProjection result = artistService.createAndBind(dataSource, externalId, request);
+        BoundEntityProjection result = artistService.createAndBind(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
 
         // Then
         assertEquals(expectedResult, result);
@@ -373,7 +370,7 @@ class ArtistServiceTest {
 
         // When & Then
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> 
-            artistService.createAndBind(dataSource, externalId, request));
+            artistService.createAndBind(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED));
         
         assertEquals("Artist with name Existing Artist already exists", exception.getMessage());
         
@@ -603,7 +600,7 @@ class ArtistServiceTest {
         when(artistRepository.save(any(Artist.class))).thenReturn(savedArtist);
 
         // When
-        ArtistDto result = artistService.saveArtist(request);
+        ArtistDto result = artistService.saveArtist(request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
 
         // Then
         assertEquals(1L, result.getId());
@@ -634,7 +631,7 @@ class ArtistServiceTest {
         when(artistRepository.save(existingArtist)).thenReturn(savedArtist);
 
         // When
-        ArtistDto result = artistService.saveArtist(request);
+        ArtistDto result = artistService.saveArtist(request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
 
         // Then
         assertEquals(artistId, result.getId());
@@ -656,7 +653,7 @@ class ArtistServiceTest {
 
         // When & Then
         CustomEntityNotFoundException exception = assertThrows(CustomEntityNotFoundException.class, () ->
-            artistService.saveArtist(request));
+            artistService.saveArtist(request, Origin.MANUAL, MasterApprovalStatus.APPROVED));
         
         assertEquals("Artist not found with id: " + artistId, exception.getMessage());
         verify(artistRepository).findById(artistId);
@@ -706,7 +703,7 @@ class ArtistServiceTest {
         when(artistCategoryRepository.existsByArtistIdAndCategoryId(artistId, categoryId)).thenReturn(false);
         
         // When
-        artistService.bindToCategory(artistId, categoryId);
+        artistService.bindToCategory(artistId, categoryId, Origin.MANUAL, MasterApprovalStatus.APPROVED);
         
         // Then
         verify(artistRepository).existsById(artistId);
@@ -725,7 +722,7 @@ class ArtistServiceTest {
         
         // When & Then
         CustomEntityNotFoundException exception = assertThrows(CustomEntityNotFoundException.class, () ->
-            artistService.bindToCategory(artistId, categoryId));
+            artistService.bindToCategory(artistId, categoryId, Origin.MANUAL, MasterApprovalStatus.APPROVED));
         
         assertEquals("Artist not found with id: " + artistId, exception.getMessage());
         verify(artistRepository).existsById(artistId);
@@ -744,7 +741,7 @@ class ArtistServiceTest {
         
         // When & Then
         CustomEntityNotFoundException exception = assertThrows(CustomEntityNotFoundException.class, () ->
-            artistService.bindToCategory(artistId, categoryId));
+            artistService.bindToCategory(artistId, categoryId, Origin.MANUAL, MasterApprovalStatus.APPROVED));
         
         assertEquals("Category not found with id: " + categoryId, exception.getMessage());
         verify(artistRepository).existsById(artistId);
@@ -764,7 +761,7 @@ class ArtistServiceTest {
         
         // When & Then
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
-            artistService.bindToCategory(artistId, categoryId));
+            artistService.bindToCategory(artistId, categoryId, Origin.MANUAL, MasterApprovalStatus.APPROVED));
         
         assertEquals("Relation between artist " + artistId + " and category " + categoryId + " already exists", exception.getMessage());
         verify(artistCategoryRepository, never()).save(any());

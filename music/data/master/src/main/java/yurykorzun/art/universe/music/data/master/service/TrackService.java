@@ -13,6 +13,8 @@ import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupR
 import yurykorzun.art.universe.common.domain.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.common.domain.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.entity.MasterApprovalStatus;
+import yurykorzun.art.universe.music.data.master.entity.Origin;
 
 import java.util.List;
 
@@ -26,11 +28,11 @@ public interface TrackService {
 
     TrackWithCategoriesDto getTrackWithCategories(Long id);
 
-    TrackDto saveTrack(TrackSaveRequestDTO request);
+    TrackDto saveTrack(TrackSaveRequestDTO request, Origin origin, MasterApprovalStatus approvalStatus);
 
     boolean deleteTrack(Long id);
 
-    void bindToCategory(Long trackId, Long categoryId);
+    void bindToCategory(Long trackId, Long categoryId, Origin origin, MasterApprovalStatus approvalStatus);
 
     void unbindFromCategory(Long trackId, Long categoryId);
 
@@ -56,7 +58,7 @@ public interface TrackService {
      * @throws IllegalStateException if the artist is not bound
      * @throws jakarta.persistence.EntityNotFoundException if the track is not found
      */
-    BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, ArtistRelatedEntityBindToExistingRequestDTO request);
+    BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, ArtistRelatedEntityBindToExistingRequestDTO request, Origin origin, MasterApprovalStatus approvalStatus);
     
     /**
      * Creates a new track and binds an external track to it.
@@ -69,7 +71,7 @@ public interface TrackService {
      * @throws IllegalStateException if the artist is not bound or if track binding already exists
      * @throws IllegalArgumentException if a track with the same name and artist already exists
      */
-    BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, ArtistRelatedEntityCreateAndBindRequestDTO request);
+    BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, ArtistRelatedEntityCreateAndBindRequestDTO request, Origin origin, MasterApprovalStatus approvalStatus);
     
     /**
      * Unbinds an external track from the system.

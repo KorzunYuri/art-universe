@@ -3,14 +3,14 @@ package yurykorzun.art.universe.music.data.master.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import yurykorzun.art.universe.common.domain.entity.BaseEntity;
+import yurykorzun.art.universe.music.data.master.entity.MasterBaseEntity;
 
 @Entity(name = "artist_binding")
 @SuperBuilder
 @NoArgsConstructor
 @Getter
 @Setter
-public class ArtistBinding extends BaseEntity {
+public class ArtistBinding extends MasterBaseEntity {
 
     @Id
     @SequenceGenerator(

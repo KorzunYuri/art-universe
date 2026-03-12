@@ -18,6 +18,8 @@ import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupR
 import yurykorzun.art.universe.common.domain.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.common.domain.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.entity.MasterApprovalStatus;
+import yurykorzun.art.universe.music.data.master.entity.Origin;
 import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.entity.Track;
 import yurykorzun.art.universe.music.data.master.entity.TrackBinding;
@@ -95,7 +97,7 @@ public class TrackServiceImpl implements TrackService {
 
     @Override
     @Transactional
-    public TrackDto saveTrack(TrackSaveRequestDTO request) {
+    public TrackDto saveTrack(TrackSaveRequestDTO request, Origin origin, MasterApprovalStatus approvalStatus) {
         Track track;
         if (request.getId() != null) {
             // Update existing track
@@ -113,6 +115,8 @@ public class TrackServiceImpl implements TrackService {
             track = Track.builder()
                     .name(request.getName())
                     .primaryArtistId(request.getPrimaryArtistId())
+                    .origin(origin)
+                    .approvalStatus(approvalStatus)
                     .build();
         }
 
@@ -132,7 +136,7 @@ public class TrackServiceImpl implements TrackService {
 
     @Override
     @Transactional
-    public void bindToCategory(Long trackId, Long categoryId) {
+    public void bindToCategory(Long trackId, Long categoryId, Origin origin, MasterApprovalStatus approvalStatus) {
         if (!trackRepository.existsById(trackId)) {
             throw new CustomEntityNotFoundException("Track", trackId);
         }
@@ -146,6 +150,8 @@ public class TrackServiceImpl implements TrackService {
         TrackCategory relation = TrackCategory.builder()
             .trackId(trackId)
             .categoryId(categoryId)
+            .origin(origin)
+            .approvalStatus(approvalStatus)
             .build();
         trackCategoryRepository.save(relation);
     }
@@ -205,7 +211,7 @@ public class TrackServiceImpl implements TrackService {
 
     @Override
     @Transactional
-    public BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, ArtistRelatedEntityBindToExistingRequestDTO request) {
+    public BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, ArtistRelatedEntityBindToExistingRequestDTO request, Origin origin, MasterApprovalStatus approvalStatus) {
         Long masterArtistId = resolveMasterArtistId(request.getMasterPrimaryArtistId());
 
         Track track = trackRepository.findById(request.getMasterId())
@@ -224,12 +230,14 @@ public class TrackServiceImpl implements TrackService {
                 .dataSource(dataSource)
                 .externalId(externalId)
                 .masterId(track.getId())
+                .origin(origin)
+                .approvalStatus(approvalStatus)
                 .build();
             bindingsRepository.save(binding);
         }
 
         relationService.createInternalRelation(
-            MasterEntityType.ARTIST, masterArtistId, MasterEntityType.TRACK, track.getId(), null);
+            MasterEntityType.ARTIST, masterArtistId, MasterEntityType.TRACK, track.getId(), null, origin, approvalStatus);
 
         return bindingsRepository.findBoundTracksForDataSource(dataSource, List.of(externalId))
             .stream().findFirst()
@@ -238,7 +246,7 @@ public class TrackServiceImpl implements TrackService {
 
     @Override
     @Transactional
-    public BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, ArtistRelatedEntityCreateAndBindRequestDTO request) {
+    public BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, ArtistRelatedEntityCreateAndBindRequestDTO request, Origin origin, MasterApprovalStatus approvalStatus) {
         Long masterArtistId = resolveMasterArtistId(request.getMasterPrimaryArtistId());
 
         Optional<Track> existingTrack = trackRepository.findByNameAndPrimaryArtistId(request.getEntityName(), masterArtistId);
@@ -260,6 +268,8 @@ public class TrackServiceImpl implements TrackService {
         Track track = Track.builder()
             .name(request.getEntityName())
             .primaryArtistId(masterArtistId)
+            .origin(origin)
+            .approvalStatus(approvalStatus)
             .build();
 
         Track savedTrack = trackRepository.save(track);
@@ -268,12 +278,14 @@ public class TrackServiceImpl implements TrackService {
             .dataSource(dataSource)
             .externalId(externalId)
             .masterId(savedTrack.getId())
+            .origin(origin)
+            .approvalStatus(approvalStatus)
             .build();
 
         bindingsRepository.save(binding);
 
         relationService.createInternalRelation(
-            MasterEntityType.ARTIST, masterArtistId, MasterEntityType.TRACK, savedTrack.getId(), null);
+            MasterEntityType.ARTIST, masterArtistId, MasterEntityType.TRACK, savedTrack.getId(), null, origin, approvalStatus);
 
         return bindingsRepository.findBoundTracksForDataSource(dataSource, List.of(externalId))
             .stream().findFirst()

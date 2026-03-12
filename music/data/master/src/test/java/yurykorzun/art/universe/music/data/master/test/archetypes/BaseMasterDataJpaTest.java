@@ -13,9 +13,8 @@ import yurykorzun.art.universe.common.test.archetypes.BaseTest;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @PostgresTestContainer(
     databaseName = "art_universe",
-    initScript = "db/init-schema.sql",
     username = "mu_dm",
-    password = "mu_dm_password",
+    password = "test_password",
     schema = "mu"
 )
 @Tag("integration")

@@ -15,6 +15,8 @@ import yurykorzun.art.universe.music.data.master.dto.binding.*;
 import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedBatchLookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.entity.*;
+import yurykorzun.art.universe.music.data.master.entity.MasterApprovalStatus;
+import yurykorzun.art.universe.music.data.master.entity.Origin;
 import yurykorzun.art.universe.music.data.master.repository.*;
 import yurykorzun.art.universe.music.data.master.service.lookup.ArtistRelatedLookupService;
 
@@ -96,7 +98,7 @@ public class AlbumServiceImpl implements AlbumService {
 
     @Override
     @Transactional
-    public AlbumDto saveAlbum(AlbumSaveRequestDTO request) {
+    public AlbumDto saveAlbum(AlbumSaveRequestDTO request, Origin origin, MasterApprovalStatus approvalStatus) {
         Album album;
         if (request.getId() != null) {
             // Update existing album
@@ -114,6 +116,8 @@ public class AlbumServiceImpl implements AlbumService {
             album = Album.builder()
                     .name(request.getName())
                     .primaryArtistId(request.getPrimaryArtistId())
+                    .origin(origin)
+                    .approvalStatus(approvalStatus)
                     .build();
         }
 
@@ -130,7 +134,7 @@ public class AlbumServiceImpl implements AlbumService {
                 .name(request.getName())
                 .primaryArtistId(request.getPrimaryArtistId())
                 .build();
-        AlbumDto savedAlbum = saveAlbum(albumRequest);
+        AlbumDto savedAlbum = saveAlbum(albumRequest, Origin.MANUAL, MasterApprovalStatus.APPROVED);
         Long albumId = savedAlbum.getId();
 
         // Resolve default relation type for ALBUM → TRACK
@@ -190,7 +194,7 @@ public class AlbumServiceImpl implements AlbumService {
 
     @Override
     @Transactional
-    public void bindToCategory(Long albumId, Long categoryId) {
+    public void bindToCategory(Long albumId, Long categoryId, Origin origin, MasterApprovalStatus approvalStatus) {
         if (!albumRepository.existsById(albumId)) {
             throw new CustomEntityNotFoundException("Album", albumId);
         }
@@ -204,6 +208,8 @@ public class AlbumServiceImpl implements AlbumService {
         AlbumCategory relation = AlbumCategory.builder()
             .albumId(albumId)
             .categoryId(categoryId)
+            .origin(origin)
+            .approvalStatus(approvalStatus)
             .build();
         albumCategoryRepository.save(relation);
     }
@@ -256,13 +262,13 @@ public class AlbumServiceImpl implements AlbumService {
     }
 
     @Override
-    public BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, ArtistRelatedEntityBindToExistingRequestDTO request) {
+    public BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, ArtistRelatedEntityBindToExistingRequestDTO request, Origin origin, MasterApprovalStatus approvalStatus) {
         throw new UnsupportedOperationException("Album bindToExisting is not yet implemented");
     }
 
     @Override
     @Transactional
-    public BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, ArtistRelatedEntityCreateAndBindRequestDTO request) {
+    public BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, ArtistRelatedEntityCreateAndBindRequestDTO request, Origin origin, MasterApprovalStatus approvalStatus) {
         Long masterArtistId = resolveMasterArtistId(request.getMasterPrimaryArtistId());
 
         // Guard against duplicate album name under the same artist
@@ -286,6 +292,8 @@ public class AlbumServiceImpl implements AlbumService {
         Album album = Album.builder()
             .name(request.getEntityName())
             .primaryArtistId(masterArtistId)
+            .origin(origin)
+            .approvalStatus(approvalStatus)
             .build();
         Album savedAlbum = albumRepository.save(album);
 
@@ -294,6 +302,8 @@ public class AlbumServiceImpl implements AlbumService {
             .dataSource(dataSource)
             .externalId(externalId)
             .masterId(savedAlbum.getId())
+            .origin(origin)
+            .approvalStatus(approvalStatus)
             .build();
         bindingsRepository.save(binding);
 
@@ -301,7 +311,7 @@ public class AlbumServiceImpl implements AlbumService {
         relationService.createInternalRelation(
             MasterEntityType.ARTIST, masterArtistId,
             MasterEntityType.ALBUM, savedAlbum.getId(),
-            null);
+            null, origin, approvalStatus);
 
         return bindingsRepository.findBoundAlbumsForDataSource(dataSource, List.of(externalId))
             .stream().findFirst()
@@ -310,12 +320,12 @@ public class AlbumServiceImpl implements AlbumService {
 
     @Override
     @Transactional
-    public BoundEntityProjection createAndBindWithTracks(DataSource dataSource, Long externalAlbumId, ExternalAlbumWithTracksCreateAndBindRequestDTO request) {
+    public BoundEntityProjection createAndBindWithTracks(DataSource dataSource, Long externalAlbumId, ExternalAlbumWithTracksCreateAndBindRequestDTO request, Origin origin, MasterApprovalStatus approvalStatus) {
         // 1. Resolve master artist
         Long masterArtistId = resolveMasterArtistId(request.getMasterPrimaryArtistId());
 
         // 2. Resolve master album (existing or new)
-        Long albumId = resolveMasterAlbum(dataSource, externalAlbumId, request, masterArtistId);
+        Long albumId = resolveMasterAlbum(dataSource, externalAlbumId, request, masterArtistId, origin, approvalStatus);
 
         // 3. Resolve default ALBUM → TRACK relation type once for all tracks
         Long defaultRelationTypeId = relationTypeApplicabilityRepository
@@ -326,7 +336,7 @@ public class AlbumServiceImpl implements AlbumService {
 
         // 4. Process each track in the request
         for (ExternalAlbumTrackItemDTO trackItem : request.getTracks()) {
-            Long masterTrackId = resolveMasterTrack(dataSource, trackItem, masterArtistId);
+            Long masterTrackId = resolveMasterTrack(dataSource, trackItem, masterArtistId, origin, approvalStatus);
 
             // Upsert ALBUM → TRACK relation
             Long relationTypeId = trackItem.getRelationTypeId() != null
@@ -363,7 +373,9 @@ public class AlbumServiceImpl implements AlbumService {
         DataSource dataSource,
         Long externalAlbumId,
         ExternalAlbumWithTracksCreateAndBindRequestDTO request,
-        Long masterArtistId
+        Long masterArtistId,
+        Origin origin,
+        MasterApprovalStatus approvalStatus
     ) {
         // Case 1: Master album ID provided directly — album is already bound
         if (request.getMasterAlbumId() != null) {
@@ -391,6 +403,8 @@ public class AlbumServiceImpl implements AlbumService {
         Album album = Album.builder()
             .name(request.getAlbumName())
             .primaryArtistId(masterArtistId)
+            .origin(origin)
+            .approvalStatus(approvalStatus)
             .build();
         Album savedAlbum = albumRepository.save(album);
         Long albumId = savedAlbum.getId();
@@ -400,6 +414,8 @@ public class AlbumServiceImpl implements AlbumService {
             .dataSource(dataSource)
             .externalId(externalAlbumId)
             .masterId(albumId)
+            .origin(origin)
+            .approvalStatus(approvalStatus)
             .build();
         bindingsRepository.save(albumBinding);
 
@@ -407,7 +423,7 @@ public class AlbumServiceImpl implements AlbumService {
         relationService.createInternalRelation(
             MasterEntityType.ARTIST, masterArtistId,
             MasterEntityType.ALBUM, albumId,
-            null);
+            null, origin, approvalStatus);
 
         return albumId;
     }
@@ -422,7 +438,9 @@ public class AlbumServiceImpl implements AlbumService {
     private Long resolveMasterTrack(
         DataSource dataSource,
         ExternalAlbumTrackItemDTO trackItem,
-        Long albumMasterArtistId
+        Long albumMasterArtistId,
+        Origin origin,
+        MasterApprovalStatus approvalStatus
     ) {
         // Check if external track is already bound
         Optional<TrackBinding> existingTrackBinding =
@@ -440,6 +458,8 @@ public class AlbumServiceImpl implements AlbumService {
                     .dataSource(dataSource)
                     .externalId(trackItem.getExternalTrackId())
                     .masterId(masterTrackId)
+                    .origin(origin)
+                    .approvalStatus(approvalStatus)
                     .build();
                 trackBindingRepository.save(trackBinding);
             }
@@ -469,6 +489,8 @@ public class AlbumServiceImpl implements AlbumService {
         Track track = Track.builder()
             .name(trackItem.getTrackName())
             .primaryArtistId(effectiveArtistId)
+            .origin(origin)
+            .approvalStatus(approvalStatus)
             .build();
         Track savedTrack = trackRepository.save(track);
         Long masterTrackId = savedTrack.getId();
@@ -478,6 +500,8 @@ public class AlbumServiceImpl implements AlbumService {
             .dataSource(dataSource)
             .externalId(trackItem.getExternalTrackId())
             .masterId(masterTrackId)
+            .origin(origin)
+            .approvalStatus(approvalStatus)
             .build();
         trackBindingRepository.save(trackBinding);
 
@@ -485,7 +509,7 @@ public class AlbumServiceImpl implements AlbumService {
         relationService.createInternalRelation(
             MasterEntityType.ARTIST, effectiveArtistId,
             MasterEntityType.TRACK, masterTrackId,
-            null);
+            null, origin, approvalStatus);
 
         return masterTrackId;
     }

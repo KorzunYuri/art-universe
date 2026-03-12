@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
+
+    <changeSet id="0002_0010_artist_initial" author="system">
+        <sqlFile path="db/migration/muraw_spotify/liquibase/changesets/0002-entity-tables/0002_0010_artist$initial.sql"/>
+    </changeSet>
+
+    <changeSet id="0002_0020_genre_initial" author="system">
+        <sqlFile path="db/migration/muraw_spotify/liquibase/changesets/0002-entity-tables/0002_0020_genre$initial.sql"/>
+    </changeSet>
+
+    <changeSet id="0002_0030_album_initial" author="system">
+        <sqlFile path="db/migration/muraw_spotify/liquibase/changesets/0002-entity-tables/0002_0030_album$initial.sql"/>
+    </changeSet>
+
+    <changeSet id="0002_0040_track_initial" author="system">
+        <sqlFile path="db/migration/muraw_spotify/liquibase/changesets/0002-entity-tables/0002_0040_track$initial.sql"/>
+    </changeSet>
+
+</databaseChangeLog>

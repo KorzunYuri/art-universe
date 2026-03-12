@@ -14,6 +14,8 @@ import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupR
 import yurykorzun.art.universe.common.domain.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.common.domain.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.entity.MasterApprovalStatus;
+import yurykorzun.art.universe.music.data.master.entity.Origin;
 import yurykorzun.art.universe.music.data.master.service.BindingService;
 import yurykorzun.art.universe.music.data.master.service.TrackService;
 
@@ -128,7 +130,10 @@ public class TrackControllerTest {
             externalId, dataSource, masterId, "Test Track"
         );
         
-        when(trackService.bindToExisting(eq(dataSource), eq(externalId), any(ArtistRelatedEntityBindToExistingRequestDTO.class)))
+        when(trackService.bindToExisting(
+            eq(dataSource), eq(externalId), any(ArtistRelatedEntityBindToExistingRequestDTO.class),
+            eq(Origin.MANUAL), eq(MasterApprovalStatus.APPROVED))
+        )
             .thenReturn(projection);
 
         // When
@@ -136,7 +141,10 @@ public class TrackControllerTest {
 
         // Then
         assertEquals(projection, result);
-        verify(trackService).bindToExisting(eq(dataSource), eq(externalId), any(ArtistRelatedEntityBindToExistingRequestDTO.class));
+        verify(trackService).bindToExisting(
+            eq(dataSource), eq(externalId), any(ArtistRelatedEntityBindToExistingRequestDTO.class),
+            eq(Origin.MANUAL), eq(MasterApprovalStatus.APPROVED)
+        );
     }
     
     @Test
@@ -153,7 +161,10 @@ public class TrackControllerTest {
             .masterPrimaryArtistId(primaryArtistId)
             .build();
         
-        when(trackService.bindToExisting(eq(dataSource), eq(externalId), any(ArtistRelatedEntityBindToExistingRequestDTO.class)))
+        when(trackService.bindToExisting(
+            eq(dataSource), eq(externalId), any(ArtistRelatedEntityBindToExistingRequestDTO.class),
+            eq(Origin.MANUAL), eq(MasterApprovalStatus.APPROVED))
+        )
             .thenThrow(expectedException);
 
         // When & Then
@@ -162,7 +173,10 @@ public class TrackControllerTest {
         );
         
         assertSame(expectedException, exception);
-        verify(trackService).bindToExisting(eq(dataSource), eq(externalId), any(ArtistRelatedEntityBindToExistingRequestDTO.class));
+        verify(trackService).bindToExisting(
+            eq(dataSource), eq(externalId), any(ArtistRelatedEntityBindToExistingRequestDTO.class),
+            eq(Origin.MANUAL), eq(MasterApprovalStatus.APPROVED)
+        );
     }
     
     @Test
@@ -182,7 +196,10 @@ public class TrackControllerTest {
             externalId, dataSource, 101L, trackName
         );
         
-        when(trackService.createAndBind(eq(dataSource), eq(externalId), any(ArtistRelatedEntityCreateAndBindRequestDTO.class)))
+        when(trackService.createAndBind(
+            eq(dataSource), eq(externalId), any(ArtistRelatedEntityCreateAndBindRequestDTO.class),
+            eq(Origin.MANUAL), eq(MasterApprovalStatus.APPROVED))
+        )
             .thenReturn(projection);
 
         // When
@@ -190,7 +207,10 @@ public class TrackControllerTest {
 
         // Then
         assertEquals(projection, result);
-        verify(trackService).createAndBind(eq(dataSource), eq(externalId), any(ArtistRelatedEntityCreateAndBindRequestDTO.class));
+        verify(trackService).createAndBind(
+            eq(dataSource), eq(externalId), any(ArtistRelatedEntityCreateAndBindRequestDTO.class),
+            eq(Origin.MANUAL), eq(MasterApprovalStatus.APPROVED)
+        );
     }
     
     @Test
@@ -207,7 +227,10 @@ public class TrackControllerTest {
             .masterPrimaryArtistId(primaryArtistId)
             .build();
         
-        when(trackService.createAndBind(eq(dataSource), eq(externalId), any(ArtistRelatedEntityCreateAndBindRequestDTO.class)))
+        when(trackService.createAndBind(
+            eq(dataSource), eq(externalId), any(ArtistRelatedEntityCreateAndBindRequestDTO.class),
+            eq(Origin.MANUAL), eq(MasterApprovalStatus.APPROVED))
+        )
             .thenThrow(expectedException);
 
         // When & Then
@@ -216,7 +239,10 @@ public class TrackControllerTest {
         );
         
         assertSame(expectedException, exception);
-        verify(trackService).createAndBind(eq(dataSource), eq(externalId), any(ArtistRelatedEntityCreateAndBindRequestDTO.class));
+        verify(trackService).createAndBind(
+            eq(dataSource), eq(externalId), any(ArtistRelatedEntityCreateAndBindRequestDTO.class),
+            eq(Origin.MANUAL), eq(MasterApprovalStatus.APPROVED)
+        );
     }
     
     @Test
@@ -465,7 +491,7 @@ public class TrackControllerTest {
         TrackSaveRequestDTO request = TrackSaveRequestDTO.builder()
             .name("New Track").primaryArtistId(10L).build();
         TrackDto expected = TrackDto.builder().id(1L).name("New Track").primaryArtistId(10L).build();
-        when(trackService.saveTrack(request)).thenReturn(expected);
+        when(trackService.saveTrack(request, Origin.MANUAL, MasterApprovalStatus.APPROVED)).thenReturn(expected);
 
         TrackDto result = trackController.saveTrack(request);
 
@@ -496,7 +522,7 @@ public class TrackControllerTest {
     void bindToCategory_shouldDelegateToService() {
         trackController.bindToCategory(1L, 2L);
 
-        verify(trackService).bindToCategory(1L, 2L);
+        verify(trackService).bindToCategory(1L, 2L, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
 
     // --- unbindFromCategory ---

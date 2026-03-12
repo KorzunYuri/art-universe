@@ -14,9 +14,7 @@ import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.dto.TrackDto;
 import yurykorzun.art.universe.music.data.master.dto.TrackSaveRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.TrackWithCategoriesDto;
-import yurykorzun.art.universe.music.data.master.entity.Category;
-import yurykorzun.art.universe.music.data.master.entity.Track;
-import yurykorzun.art.universe.music.data.master.entity.TrackCategory;
+import yurykorzun.art.universe.music.data.master.entity.*;
 import yurykorzun.art.universe.music.data.master.repository.CategoryRepository;
 import yurykorzun.art.universe.music.data.master.repository.TrackBindingRepository;
 import yurykorzun.art.universe.music.data.master.repository.TrackCategoryRepository;
@@ -158,7 +156,7 @@ class TrackServiceCrudTest {
         Track saved = track(1L, "New Track", 10L);
         when(trackRepository.save(any(Track.class))).thenReturn(saved);
 
-        TrackDto result = trackService.saveTrack(request);
+        TrackDto result = trackService.saveTrack(request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
 
         assertEquals(1L, result.getId());
         assertEquals("New Track", result.getName());
@@ -169,7 +167,7 @@ class TrackServiceCrudTest {
     void saveTrack_create_withoutPrimaryArtistId_shouldThrow() {
         TrackSaveRequestDTO request = TrackSaveRequestDTO.builder().name("New Track").build();
 
-        assertThrows(IllegalArgumentException.class, () -> trackService.saveTrack(request));
+        assertThrows(IllegalArgumentException.class, () -> trackService.saveTrack(request, Origin.MANUAL, MasterApprovalStatus.APPROVED));
         verify(trackRepository, never()).save(any());
     }
 
@@ -182,7 +180,7 @@ class TrackServiceCrudTest {
         when(trackRepository.findById(trackId)).thenReturn(Optional.of(existing));
         when(trackRepository.save(existing)).thenReturn(existing);
 
-        TrackDto result = trackService.saveTrack(request);
+        TrackDto result = trackService.saveTrack(request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
 
         assertEquals("New Name", result.getName());
         assertEquals("New Name", existing.getName());
@@ -197,7 +195,7 @@ class TrackServiceCrudTest {
         when(trackRepository.findById(trackId)).thenReturn(Optional.of(existing));
         when(trackRepository.save(existing)).thenReturn(existing);
 
-        trackService.saveTrack(request);
+        trackService.saveTrack(request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
 
         assertEquals(20L, existing.getPrimaryArtistId());
     }
@@ -208,7 +206,7 @@ class TrackServiceCrudTest {
             .id(99L).name("Track").build();
         when(trackRepository.findById(99L)).thenReturn(Optional.empty());
 
-        assertThrows(CustomEntityNotFoundException.class, () -> trackService.saveTrack(request));
+        assertThrows(CustomEntityNotFoundException.class, () -> trackService.saveTrack(request, Origin.MANUAL, MasterApprovalStatus.APPROVED));
         verify(trackRepository, never()).save(any());
     }
 
@@ -242,7 +240,7 @@ class TrackServiceCrudTest {
         when(categoryRepository.existsById(2L)).thenReturn(true);
         when(trackCategoryRepository.existsByTrackIdAndCategoryId(1L, 2L)).thenReturn(false);
 
-        trackService.bindToCategory(1L, 2L);
+        trackService.bindToCategory(1L, 2L, Origin.MANUAL, MasterApprovalStatus.APPROVED);
 
         verify(trackCategoryRepository).save(any(TrackCategory.class));
     }
@@ -251,7 +249,7 @@ class TrackServiceCrudTest {
     void bindToCategory_whenTrackNotFound_shouldThrow() {
         when(trackRepository.existsById(1L)).thenReturn(false);
 
-        assertThrows(CustomEntityNotFoundException.class, () -> trackService.bindToCategory(1L, 2L));
+        assertThrows(CustomEntityNotFoundException.class, () -> trackService.bindToCategory(1L, 2L, Origin.MANUAL, MasterApprovalStatus.APPROVED));
         verify(trackCategoryRepository, never()).save(any());
     }
 
@@ -260,7 +258,7 @@ class TrackServiceCrudTest {
         when(trackRepository.existsById(1L)).thenReturn(true);
         when(categoryRepository.existsById(2L)).thenReturn(false);
 
-        assertThrows(CustomEntityNotFoundException.class, () -> trackService.bindToCategory(1L, 2L));
+        assertThrows(CustomEntityNotFoundException.class, () -> trackService.bindToCategory(1L, 2L, Origin.MANUAL, MasterApprovalStatus.APPROVED));
         verify(trackCategoryRepository, never()).save(any());
     }
 
@@ -270,7 +268,7 @@ class TrackServiceCrudTest {
         when(categoryRepository.existsById(2L)).thenReturn(true);
         when(trackCategoryRepository.existsByTrackIdAndCategoryId(1L, 2L)).thenReturn(true);
 
-        assertThrows(IllegalArgumentException.class, () -> trackService.bindToCategory(1L, 2L));
+        assertThrows(IllegalArgumentException.class, () -> trackService.bindToCategory(1L, 2L, Origin.MANUAL, MasterApprovalStatus.APPROVED));
         verify(trackCategoryRepository, never()).save(any());
     }
 

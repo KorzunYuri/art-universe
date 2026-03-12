@@ -1,0 +1,20 @@
+plugins {
+    id 'art-universe.spring-boot-app'
+}
+
+archivesBaseName = 'spotify-etl-response-parser'
+ext.dockerImageName = 'mu-spotify-response-parser'
+
+dependencies {
+    implementation project(':common:commons-observability')
+    implementation project(':music:data:raw:spotify:spotify-repositories')
+
+    // web for actuator endpoints
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // JdbcTemplate for dynamic staging table SQL
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+
+    // String similarity for search match scoring
+    implementation 'org.apache.commons:commons-text:1.12.0'
+}

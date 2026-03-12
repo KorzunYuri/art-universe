@@ -15,6 +15,12 @@ public @interface PostgresTestContainer {
     String databaseName() default "test_db";
     String username() default "test_user";
     String password() default "test_password";
-    String initScript() default "";
     String schema() default "";
+
+    /**
+     * Optional classpath path to a SQL script executed against the {@code databaseName} database
+     * after the centralized 01-init.sh completes. Use for module-specific stubs (e.g. views from
+     * sibling modules that this module's Liquibase migrations depend on).
+     */
+    String initScript() default "";
 }

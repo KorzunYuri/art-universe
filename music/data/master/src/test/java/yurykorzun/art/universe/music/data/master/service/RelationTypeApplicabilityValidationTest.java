@@ -6,13 +6,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
+import yurykorzun.art.universe.music.data.master.entity.*;
 import yurykorzun.art.universe.music.data.master.test.archetypes.BaseMasterDataJpaTest;
-import yurykorzun.art.universe.music.data.master.entity.Artist;
-import yurykorzun.art.universe.music.data.master.entity.Category;
 import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
-import yurykorzun.art.universe.music.data.master.entity.RelationType;
-import yurykorzun.art.universe.music.data.master.entity.RelationTypeApplicability;
-import yurykorzun.art.universe.music.data.master.entity.Track;
 import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.entity.relation.RelationRegistry;
 
@@ -106,7 +102,9 @@ class RelationTypeApplicabilityValidationTest extends BaseMasterDataJpaTest {
         Long relationId = relationService.createInternalRelation(
             MasterEntityType.ARTIST, artist1.getId(),
             MasterEntityType.TRACK, track1.getId(),
-            featuringType.getId());
+            featuringType.getId(),
+            Origin.MANUAL, MasterApprovalStatus.APPROVED
+        );
 
         assertThat(relationId).isNotNull();
 
@@ -127,7 +125,9 @@ class RelationTypeApplicabilityValidationTest extends BaseMasterDataJpaTest {
         Long relationId = relationService.createInternalRelation(
             MasterEntityType.TRACK, track1.getId(),
             MasterEntityType.ARTIST, artist1.getId(),
-            featuringType.getId());
+            featuringType.getId(),
+            Origin.MANUAL, MasterApprovalStatus.APPROVED
+        );
 
         assertThat(relationId).isNotNull();
     }
@@ -146,7 +146,9 @@ class RelationTypeApplicabilityValidationTest extends BaseMasterDataJpaTest {
             relationService.createInternalRelation(
                 MasterEntityType.ARTIST, artist1.getId(),
                 MasterEntityType.ALBUM, album1.getId(),
-                featuringType.getId())
+                featuringType.getId(),
+                Origin.MANUAL, MasterApprovalStatus.APPROVED
+            )
         ).isInstanceOf(IllegalArgumentException.class)
          .hasMessageContaining("not applicable")
          .hasMessageContaining("artist")
@@ -163,7 +165,9 @@ class RelationTypeApplicabilityValidationTest extends BaseMasterDataJpaTest {
             relationService.createInternalRelation(
                 MasterEntityType.ARTIST, artist1.getId(),
                 MasterEntityType.TRACK, track1.getId(),
-                nonExistentTypeId)
+                nonExistentTypeId,
+                Origin.MANUAL, MasterApprovalStatus.APPROVED
+            )
         ).isInstanceOf(CustomEntityNotFoundException.class);
     }
 
@@ -174,13 +178,17 @@ class RelationTypeApplicabilityValidationTest extends BaseMasterDataJpaTest {
         Long categoryRelationId = relationService.createInternalRelation(
             MasterEntityType.ARTIST, artist1.getId(),
             MasterEntityType.CATEGORY, category1.getId(),
-            null);
+            null,
+            Origin.MANUAL, MasterApprovalStatus.APPROVED
+        );
         assertThat(categoryRelationId).isNotNull();
 
         Long typedRelationId = relationService.createInternalRelation(
             MasterEntityType.ARTIST, artist1.getId(),
             MasterEntityType.TRACK, track1.getId(),
-            null);
+            null,
+            Origin.MANUAL, MasterApprovalStatus.APPROVED
+        );
         assertThat(typedRelationId).isNotNull();
     }
 
@@ -192,7 +200,9 @@ class RelationTypeApplicabilityValidationTest extends BaseMasterDataJpaTest {
             relationService.createInternalRelation(
                 MasterEntityType.ARTIST, artist1.getId(),
                 MasterEntityType.CATEGORY, category1.getId(),
-                featuringType.getId())
+                featuringType.getId(),
+                Origin.MANUAL, MasterApprovalStatus.APPROVED
+            )
         ).isInstanceOf(IllegalArgumentException.class)
          .hasMessageContaining("does not support relation types");
     }
@@ -204,7 +214,9 @@ class RelationTypeApplicabilityValidationTest extends BaseMasterDataJpaTest {
         Long relationId = relationService.createInternalRelation(
             MasterEntityType.ARTIST, artist1.getId(),
             MasterEntityType.ARTIST, artist2.getId(),
-            collaborationType.getId());
+            collaborationType.getId(),
+            Origin.MANUAL, MasterApprovalStatus.APPROVED
+        );
 
         assertThat(relationId).isNotNull();
 
@@ -225,7 +237,9 @@ class RelationTypeApplicabilityValidationTest extends BaseMasterDataJpaTest {
             relationService.createInternalRelation(
                 MasterEntityType.ARTIST, artist1.getId(),
                 MasterEntityType.ARTIST, artist2.getId(),
-                featuringType.getId())
+                featuringType.getId(),
+                Origin.MANUAL, MasterApprovalStatus.APPROVED
+            )
         ).isInstanceOf(IllegalArgumentException.class)
          .hasMessageContaining("not applicable");
     }
@@ -236,13 +250,17 @@ class RelationTypeApplicabilityValidationTest extends BaseMasterDataJpaTest {
         Long firstRelationId = relationService.createInternalRelation(
             MasterEntityType.ARTIST, artist1.getId(),
             MasterEntityType.TRACK, track1.getId(),
-            featuringType.getId());
+            featuringType.getId(),
+            Origin.MANUAL, MasterApprovalStatus.APPROVED
+        );
 
         // When: creating the same typed relation again
         Long secondRelationId = relationService.createInternalRelation(
             MasterEntityType.ARTIST, artist1.getId(),
             MasterEntityType.TRACK, track1.getId(),
-            featuringType.getId());
+            featuringType.getId(),
+            Origin.MANUAL, MasterApprovalStatus.APPROVED
+        );
 
         // Then: should return the existing relation ID
         assertThat(secondRelationId).isEqualTo(firstRelationId);
@@ -254,13 +272,17 @@ class RelationTypeApplicabilityValidationTest extends BaseMasterDataJpaTest {
         Long untypedRelationId = relationService.createInternalRelation(
             MasterEntityType.ARTIST, artist1.getId(),
             MasterEntityType.TRACK, track1.getId(),
-            null);
+            null,
+            Origin.MANUAL, MasterApprovalStatus.APPROVED
+        );
 
         // When: create a typed relation for the same entity pair
         Long typedRelationId = relationService.createInternalRelation(
             MasterEntityType.ARTIST, artist1.getId(),
             MasterEntityType.TRACK, track1.getId(),
-            featuringType.getId());
+            featuringType.getId(),
+            Origin.MANUAL, MasterApprovalStatus.APPROVED
+        );
 
         // Then: should create two separate relations
         assertThat(typedRelationId).isNotEqualTo(untypedRelationId);

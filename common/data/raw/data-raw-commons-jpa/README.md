@@ -36,23 +36,6 @@ The module extends [:common:commons-jpa](../../../../common/commons-jpa/README.m
 - `PARSED` - Successfully parsed
 - `FAILED` - Parsing failed
 
-### Collectable Entity Pattern
-
-**Location**: `entity/`
-
-| Component | Purpose |
-|-----------|---------|
-| `BaseCollectableEntity` | Base class for collectable entities (extends BaseEntity) |
-| `Approvable` | Interface for entities with approval workflow |
-| `ApprovalStatus` | Coded enum for approval states |
-
-**ApprovalStatus** (coded enum):
-- `PENDING` - Awaiting review
-- `APPROVED` - Approved for use
-- `REJECTED` - Rejected
-
-**Pattern**: Raw data entities (Artist, Album, etc.) extend BaseCollectableEntity and get automatic approval status tracking.
-
 ### API Processing
 
 **Location**: `api/methods/common/`

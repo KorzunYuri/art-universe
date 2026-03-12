@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
+
+    <changeSet id="0022-0010-binding_views$initial" author="system">
+        <sqlFile path="../changesets/0022-binding-views/0022-0010-binding_views$initial.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0023_0010_spotify_generator_grants$initial" author="system">
+        <sqlFile path="../changesets/0022-binding-views/0022-0020-spotify_generator_grants$initial.sql"
+                 relativeToChangelogFile="true"
+                 splitStatements="true"
+                 stripComments="true"/>
+    </changeSet>
+
+</databaseChangeLog>

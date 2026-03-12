@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
+
+    <changeSet id="0001_0010_api_call_initial" author="system">
+        <sqlFile path="db/migration/muraw_spotify/liquibase/changesets/0001-etl-tables/0001_0010_api_call$initial.sql"/>
+    </changeSet>
+
+    <changeSet id="0001_0020_api_response_initial" author="system">
+        <sqlFile path="db/migration/muraw_spotify/liquibase/changesets/0001-etl-tables/0001_0020_api_response$initial.sql"/>
+    </changeSet>
+
+    <changeSet id="0001_0030_api_call$executed_dttm" author="yurykorzun">
+        <sqlFile path="db/migration/muraw_spotify/liquibase/changesets/0001-etl-tables/0001_0030_api_call$executed_dttm.sql"/>
+    </changeSet>
+
+    <changeSet id="0001_0040_api_response$remove_unnecessary_fields" author="yurykorzun">
+        <sqlFile path="db/migration/muraw_spotify/liquibase/changesets/0001-etl-tables/0001_0040_api_response$remove_unnecessary_fields.sql"/>
+    </changeSet>
+
+</databaseChangeLog>

@@ -4,6 +4,53 @@
 
 Standard approach for managing database schema changes using Liquibase in Spring Boot modules.
 
+
+## What Belongs in Migrations vs. Init Script
+
+The `env/docker/common/db/initdb/01-init.sh` applies numbered SQL changesets from
+`env/docker/common/db/initdb/changesets/`. The split between init script and Liquibase is:
+
+**Init script only** — things Liquibase literally cannot do:
+- `CREATE DATABASE` — must run before the target DB exists
+- `CREATE USER` — passwords come from env vars; storing them in version-controlled migrations is a security anti-pattern
+- `CREATE SCHEMA … AUTHORIZATION` — schema ownership must be set before the module's Liquibase runner connects
+- `ALTER SCHEMA … OWNER TO` — ownership transfers requiring superuser context
+- `GRANT CREATE ON DATABASE` — superuser privilege
+- `GRANT USAGE ON SCHEMA mu_view TO PUBLIC` — must be set before any module starts, since all modules depend on it at boot time
+- Replication slot + pg_hba.conf — server-level operations
+
+**Liquibase migrations** — everything else:
+- `ALTER DEFAULT PRIVILEGES` — who can access future objects in each schema
+- `GRANT … ON SCHEMA` for non-bootstrap access (e.g. reader users, cross-schema grants)
+- `GRANT … ON TABLE/SEQUENCE` — fine-grained access tied to specific feature migrations
+- All DDL (tables, views, indexes, functions)
+
+**Consequence**: adding a new user or changing access policy for an existing DB is a single Liquibase migration — no manual SQL required.
+
+
+## Bootstrap Grants — The `0000-schema-grants` Pattern
+
+Every Liquibase module has a `0000-schema-grants` changelog that is **listed first** in `db.changelog.xml`. It runs as the module's dm user (schema owner) and establishes:
+
+1. `ALTER DEFAULT PRIVILEGES IN SCHEMA … GRANT ALL ON TABLES/SEQUENCES/FUNCTIONS TO <dm-user>` — ensures the dm user can manage all objects it creates going forward
+2. Read grants for any companion read-only user (e.g. `mu_raw_lastfm_reader`, `mu_raw_spotify_reader`)
+3. **Cross-schema grants where this module is the grantor** — e.g. the `art` module grants `mu_dm` access to `art_view`; the `mu` module grants `mu_quiz_dm` access to `mu_view`
+
+The principle for cross-schema grants: **the grant lives in the module that owns the schema being accessed**, not the module that needs it. This is because only the schema owner can issue the grant.
+
+These migrations are safe to run on existing databases — `GRANT`, `ALTER DEFAULT PRIVILEGES`, and `GRANT USAGE` are all idempotent in PostgreSQL.
+
+### Example
+
+```sql
+-- music/data/master: 0000-schema-grants
+ALTER DEFAULT PRIVILEGES IN SCHEMA mu_view GRANT ALL ON TABLES TO mu_dm;
+
+-- Cross-schema: mu_quiz_dm reads mu_view (grantor = mu_dm, owner of mu_view)
+GRANT SELECT ON ALL TABLES IN SCHEMA mu_view TO mu_quiz_dm;
+ALTER DEFAULT PRIVILEGES IN SCHEMA mu_view GRANT SELECT ON TABLES TO mu_quiz_dm;
+```
+
 ## Migration File Location
 
 The root for all migrations is `src/main/resources/db/migration/{module-specific-name}/liquibase/`
@@ -56,24 +103,7 @@ Each changelog XML file defines changesets that reference SQL files:
 
 ### SQL Changeset Files (changesets/*/*.sql)
 
-Actual SQL migration scripts organized by topic in subdirectories:
-
-```sql
--- changesets/0001-artist/0001-0010-artist$initial.sql
-CREATE TABLE artist
-(
-        id          BIGINT                                      NOT NULL
-    ,   name        VARCHAR(1024)                               NOT NULL
-    ,   created_at  TIMESTAMP       DEFAULT CURRENT_TIMESTAMP   NOT NULL
-    ,   updated_at  TIMESTAMP       DEFAULT CURRENT_TIMESTAMP   NOT NULL
-    ,   CONSTRAINT artist_PK
-            PRIMARY KEY (id)
-    ,   CONSTRAINT artist_UK
-            UNIQUE (name)
-);
-
-CREATE SEQUENCE artist_seq START 1 INCREMENT BY 50;
-```
+Actual SQL migration scripts organized by topic in subdirectories
 
 
 ## Running Migrations
@@ -102,15 +132,6 @@ spring:
   liquibase:
     enabled: false
 ```
-
-**Specify different changelog**:
-
-```yaml
-spring:
-  liquibase:
-    change-log: classpath:db/migration/custom/db.changelog.xml
-```
-
 
 ## Migration File Naming
 
@@ -216,30 +237,6 @@ changesets/
 ├── 0002-album/            # All album-related migrations
 ├── 0003-dictionary/       # All dictionary-related migrations
 └── 0004-track/            # All track-related migrations
-```
-
-### 5. Test Migrations on Copy of Production Data
-
-Before deploying migrations to production:
-
-1. Take a copy/snapshot of production database
-2. Run migrations on the copy
-3. Verify data integrity
-4. Test application functionality
-5. Only then deploy to production
-
-### 6. Use Rollback Where Possible
-
-While rollback is complex with SQL migrations, document reversibility:
-
-```sql
--- Forward migration
--- changesets/0005-add-column/0005-0010-add-category.sql
-ALTER TABLE artist ADD COLUMN category VARCHAR(50);
-
--- Note: To rollback, create a new migration:
--- changesets/0006-remove-column/0006-0010-remove-category.sql
--- ALTER TABLE artist DROP COLUMN category;
 ```
 
 **Note**: Rollback strategies should be documented but implemented as forward migrations.

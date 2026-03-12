@@ -1,0 +1,14 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
+
+    <include file="changelogs/0000-schema-grants.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0001-api-call-tables.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0002-entity-tables.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0003-relation-tables.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0004-staging-tables.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0005-search-tables.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0006-module-user-grants.xml" relativeToChangelogFile="true"/>
+</databaseChangeLog>

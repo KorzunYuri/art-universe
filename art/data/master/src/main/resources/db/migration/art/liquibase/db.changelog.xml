@@ -10,6 +10,7 @@
         <sqlCheck expectedResult="art_universe">SELECT current_database()</sqlCheck>
     </preConditions>
 
+    <include file="changelogs/0000-schema-grants.xml" relativeToChangelogFile="true"/>
     <include file="changelogs/0001-person.xml" relativeToChangelogFile="true"/>
     <include file="changelogs/0002-art-view.xml" relativeToChangelogFile="true"/>
 

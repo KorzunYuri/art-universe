@@ -75,14 +75,14 @@ class AlbumServiceCreateAndBindTest {
             .thenReturn(List.of(projection));
 
         // When
-        BoundEntityProjection result = albumService.createAndBind(DataSource.LASTFM, externalId, request);
+        BoundEntityProjection result = albumService.createAndBind(DataSource.LASTFM, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
 
         // Then
         assertSame(projection, result);
         verify(albumRepository).save(any(Album.class));
         verify(albumBindingRepository).save(any(AlbumBinding.class));
         verify(relationService).createInternalRelation(
-            MasterEntityType.ARTIST, artistId, MasterEntityType.ALBUM, savedAlbumId, null);
+            MasterEntityType.ARTIST, artistId, MasterEntityType.ALBUM, savedAlbumId, null, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
 
     @Test
@@ -93,7 +93,7 @@ class AlbumServiceCreateAndBindTest {
 
         // When & Then
         assertThrows(IllegalArgumentException.class,
-            () -> albumService.createAndBind(DataSource.LASTFM, 100L, request));
+            () -> albumService.createAndBind(DataSource.LASTFM, 100L, request, Origin.MANUAL, MasterApprovalStatus.APPROVED));
         verify(albumRepository, never()).save(any());
     }
 
@@ -110,7 +110,7 @@ class AlbumServiceCreateAndBindTest {
 
         // When & Then
         assertThrows(IllegalArgumentException.class,
-            () -> albumService.createAndBind(DataSource.LASTFM, 100L, request));
+            () -> albumService.createAndBind(DataSource.LASTFM, 100L, request, Origin.MANUAL, MasterApprovalStatus.APPROVED));
         verify(albumRepository, never()).save(any());
     }
 
@@ -131,7 +131,7 @@ class AlbumServiceCreateAndBindTest {
 
         // When & Then
         assertThrows(IllegalStateException.class,
-            () -> albumService.createAndBind(DataSource.LASTFM, externalId, request));
+            () -> albumService.createAndBind(DataSource.LASTFM, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED));
         verify(albumRepository, never()).save(any());
     }
 
@@ -173,7 +173,7 @@ class AlbumServiceCreateAndBindTest {
             .thenReturn(List.of(projection));
 
         // When
-        BoundEntityProjection result = albumService.createAndBindWithTracks(DataSource.LASTFM, externalAlbumId, request);
+        BoundEntityProjection result = albumService.createAndBindWithTracks(DataSource.LASTFM, externalAlbumId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
 
         // Then
         assertSame(projection, result);
@@ -197,7 +197,7 @@ class AlbumServiceCreateAndBindTest {
 
         // When & Then
         assertThrows(CustomEntityNotFoundException.class,
-            () -> albumService.createAndBindWithTracks(DataSource.LASTFM, 100L, request));
+            () -> albumService.createAndBindWithTracks(DataSource.LASTFM, 100L, request, Origin.MANUAL, MasterApprovalStatus.APPROVED));
     }
 
     @Test
@@ -237,7 +237,7 @@ class AlbumServiceCreateAndBindTest {
             .thenReturn(List.of(projection));
 
         // When
-        albumService.createAndBindWithTracks(DataSource.LASTFM, externalAlbumId, request);
+        albumService.createAndBindWithTracks(DataSource.LASTFM, externalAlbumId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
 
         // Then — album was NOT created (used existing binding)
         verify(albumRepository, never()).save(any());
@@ -287,16 +287,16 @@ class AlbumServiceCreateAndBindTest {
             .thenReturn(List.of(projection));
 
         // When
-        albumService.createAndBindWithTracks(DataSource.LASTFM, externalAlbumId, request);
+        albumService.createAndBindWithTracks(DataSource.LASTFM, externalAlbumId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
 
         // Then
         verify(albumRepository).save(any(Album.class));
         verify(trackRepository).save(any(Track.class));
         verify(trackBindingRepository).save(any(TrackBinding.class));
         verify(relationService).createInternalRelation(
-            MasterEntityType.ARTIST, artistId, MasterEntityType.ALBUM, savedAlbumId, null);
+            MasterEntityType.ARTIST, artistId, MasterEntityType.ALBUM, savedAlbumId, null, Origin.MANUAL, MasterApprovalStatus.APPROVED);
         verify(relationService).createInternalRelation(
-            MasterEntityType.ARTIST, artistId, MasterEntityType.TRACK, savedTrackId, null);
+            MasterEntityType.ARTIST, artistId, MasterEntityType.TRACK, savedTrackId, null, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
 
     @Test
@@ -314,7 +314,7 @@ class AlbumServiceCreateAndBindTest {
 
         // When & Then
         assertThrows(IllegalArgumentException.class,
-            () -> albumService.createAndBindWithTracks(DataSource.LASTFM, 100L, request));
+            () -> albumService.createAndBindWithTracks(DataSource.LASTFM, 100L, request, Origin.MANUAL, MasterApprovalStatus.APPROVED));
     }
 
     // ============================================================
@@ -357,7 +357,7 @@ class AlbumServiceCreateAndBindTest {
             .thenReturn(List.of(mock(BoundEntityProjection.class)));
 
         // When
-        albumService.createAndBindWithTracks(DataSource.LASTFM, externalAlbumId, request);
+        albumService.createAndBindWithTracks(DataSource.LASTFM, externalAlbumId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
 
         // Then — track binding was NOT created (already existed)
         verify(trackBindingRepository, never()).save(any());
@@ -382,7 +382,7 @@ class AlbumServiceCreateAndBindTest {
 
         // When & Then
         assertThrows(CustomEntityNotFoundException.class,
-            () -> albumService.createAndBindWithTracks(DataSource.LASTFM, 100L, request));
+            () -> albumService.createAndBindWithTracks(DataSource.LASTFM, 100L, request, Origin.MANUAL, MasterApprovalStatus.APPROVED));
     }
 
     @Test
@@ -420,7 +420,7 @@ class AlbumServiceCreateAndBindTest {
             .thenReturn(List.of(mock(BoundEntityProjection.class)));
 
         // When
-        albumService.createAndBindWithTracks(DataSource.LASTFM, externalAlbumId, request);
+        albumService.createAndBindWithTracks(DataSource.LASTFM, externalAlbumId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
 
         // Then — track not created (used existing binding)
         verify(trackRepository, never()).save(any());
@@ -443,7 +443,7 @@ class AlbumServiceCreateAndBindTest {
 
         // When & Then
         assertThrows(IllegalArgumentException.class,
-            () -> albumService.createAndBindWithTracks(DataSource.LASTFM, 100L, request));
+            () -> albumService.createAndBindWithTracks(DataSource.LASTFM, 100L, request, Origin.MANUAL, MasterApprovalStatus.APPROVED));
     }
 
     @Test
@@ -487,11 +487,11 @@ class AlbumServiceCreateAndBindTest {
             .thenReturn(List.of(mock(BoundEntityProjection.class)));
 
         // When
-        albumService.createAndBindWithTracks(DataSource.LASTFM, externalAlbumId, request);
+        albumService.createAndBindWithTracks(DataSource.LASTFM, externalAlbumId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
 
         // Then — ARTIST→TRACK relation uses the per-track artist, not the album artist
         verify(relationService).createInternalRelation(
-            MasterEntityType.ARTIST, trackArtistId, MasterEntityType.TRACK, savedTrackId, null);
+            MasterEntityType.ARTIST, trackArtistId, MasterEntityType.TRACK, savedTrackId, null, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
 
     @Test
@@ -531,7 +531,7 @@ class AlbumServiceCreateAndBindTest {
             .thenReturn(List.of(mock(BoundEntityProjection.class)));
 
         // When
-        albumService.createAndBindWithTracks(DataSource.LASTFM, externalAlbumId, request);
+        albumService.createAndBindWithTracks(DataSource.LASTFM, externalAlbumId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
 
         // Then — order updated on existing track
         assertEquals(5, existing.getTrackOrder());

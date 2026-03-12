@@ -183,7 +183,7 @@ class AlbumServiceCrudTest {
         when(albumRepository.save(any(Album.class))).thenReturn(saved);
 
         // When
-        AlbumDto result = albumService.saveAlbum(request);
+        AlbumDto result = albumService.saveAlbum(request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
 
         // Then
         assertEquals(1L, result.getId());
@@ -197,7 +197,7 @@ class AlbumServiceCrudTest {
         AlbumSaveRequestDTO request = AlbumSaveRequestDTO.builder().name("New Album").build();
 
         // When & Then
-        assertThrows(IllegalArgumentException.class, () -> albumService.saveAlbum(request));
+        assertThrows(IllegalArgumentException.class, () -> albumService.saveAlbum(request, Origin.MANUAL, MasterApprovalStatus.APPROVED));
         verify(albumRepository, never()).save(any());
     }
 
@@ -212,7 +212,7 @@ class AlbumServiceCrudTest {
         when(albumRepository.save(existing)).thenReturn(existing);
 
         // When
-        AlbumDto result = albumService.saveAlbum(request);
+        AlbumDto result = albumService.saveAlbum(request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
 
         // Then
         assertEquals("New Name", result.getName());
@@ -232,7 +232,7 @@ class AlbumServiceCrudTest {
         when(albumRepository.save(existing)).thenReturn(existing);
 
         // When
-        albumService.saveAlbum(request);
+        albumService.saveAlbum(request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
 
         // Then
         assertEquals(20L, existing.getPrimaryArtistId());
@@ -246,7 +246,7 @@ class AlbumServiceCrudTest {
         when(albumRepository.findById(99L)).thenReturn(Optional.empty());
 
         // When & Then
-        assertThrows(CustomEntityNotFoundException.class, () -> albumService.saveAlbum(request));
+        assertThrows(CustomEntityNotFoundException.class, () -> albumService.saveAlbum(request, Origin.MANUAL, MasterApprovalStatus.APPROVED));
         verify(albumRepository, never()).save(any());
     }
 
@@ -288,7 +288,7 @@ class AlbumServiceCrudTest {
         when(albumCategoryRepository.existsByAlbumIdAndCategoryId(1L, 2L)).thenReturn(false);
 
         // When
-        albumService.bindToCategory(1L, 2L);
+        albumService.bindToCategory(1L, 2L, Origin.MANUAL, MasterApprovalStatus.APPROVED);
 
         // Then
         verify(albumCategoryRepository).save(any(AlbumCategory.class));
@@ -300,7 +300,7 @@ class AlbumServiceCrudTest {
         when(albumRepository.existsById(1L)).thenReturn(false);
 
         // When & Then
-        assertThrows(CustomEntityNotFoundException.class, () -> albumService.bindToCategory(1L, 2L));
+        assertThrows(CustomEntityNotFoundException.class, () -> albumService.bindToCategory(1L, 2L, Origin.MANUAL, MasterApprovalStatus.APPROVED));
         verify(albumCategoryRepository, never()).save(any());
     }
 
@@ -311,7 +311,7 @@ class AlbumServiceCrudTest {
         when(categoryRepository.existsById(2L)).thenReturn(false);
 
         // When & Then
-        assertThrows(CustomEntityNotFoundException.class, () -> albumService.bindToCategory(1L, 2L));
+        assertThrows(CustomEntityNotFoundException.class, () -> albumService.bindToCategory(1L, 2L, Origin.MANUAL, MasterApprovalStatus.APPROVED));
         verify(albumCategoryRepository, never()).save(any());
     }
 
@@ -323,7 +323,7 @@ class AlbumServiceCrudTest {
         when(albumCategoryRepository.existsByAlbumIdAndCategoryId(1L, 2L)).thenReturn(true);
 
         // When & Then
-        assertThrows(IllegalArgumentException.class, () -> albumService.bindToCategory(1L, 2L));
+        assertThrows(IllegalArgumentException.class, () -> albumService.bindToCategory(1L, 2L, Origin.MANUAL, MasterApprovalStatus.APPROVED));
         verify(albumCategoryRepository, never()).save(any());
     }
 
@@ -415,7 +415,7 @@ class AlbumServiceCrudTest {
     void bindToExisting_shouldThrowUnsupportedOperation() {
         // When & Then
         assertThrows(UnsupportedOperationException.class,
-            () -> albumService.bindToExisting(DataSource.LASTFM, 1L, null));
+            () -> albumService.bindToExisting(DataSource.LASTFM, 1L, null, Origin.MANUAL, MasterApprovalStatus.APPROVED));
     }
 
     // --- helpers ---

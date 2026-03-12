@@ -6,6 +6,8 @@ import yurykorzun.art.universe.common.domain.entity.EntityType;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelatedEntityDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingStatusDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.entity.MasterApprovalStatus;
+import yurykorzun.art.universe.music.data.master.entity.Origin;
 import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.service.RelationService;
 
@@ -66,7 +68,8 @@ public class RelationController {
         @Nullable @RequestParam(name = "relationTypeIds", required = false) List<Long> relationTypeIds
     ) {
         return relationService.createInternalRelations(
-            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, relationTypeIds);
+            sourceEntityType, sourceEntityId, targetEntityType, targetEntityId, relationTypeIds,
+            Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
 
     /**

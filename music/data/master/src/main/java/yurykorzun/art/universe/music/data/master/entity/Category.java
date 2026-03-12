@@ -3,7 +3,7 @@ package yurykorzun.art.universe.music.data.master.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import yurykorzun.art.universe.common.domain.entity.BaseEntity;
+import yurykorzun.art.universe.music.data.master.entity.MasterBaseEntity;
 
 import java.util.List;
 
@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-public class Category extends BaseEntity {
+public class Category extends MasterBaseEntity {
 
     @Id
     @SequenceGenerator(

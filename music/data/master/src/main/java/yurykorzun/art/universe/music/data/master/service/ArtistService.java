@@ -13,6 +13,8 @@ import yurykorzun.art.universe.music.data.master.dto.binding.EntityBindToExistin
 import yurykorzun.art.universe.music.data.master.dto.binding.EntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.entity.MasterApprovalStatus;
+import yurykorzun.art.universe.music.data.master.entity.Origin;
 
 import java.util.List;
 
@@ -60,7 +62,7 @@ public interface ArtistService {
      * @param request The artist save request DTO
      * @return The saved artist
      */
-    ArtistDto saveArtist(ArtistSaveRequestDTO request);
+    ArtistDto saveArtist(ArtistSaveRequestDTO request, Origin origin, MasterApprovalStatus approvalStatus);
 
     /**
      * Delete an artist by ID
@@ -89,7 +91,7 @@ public interface ArtistService {
      * @param request The binding request containing artist ID
      * @return The created binding information
      */
-    BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, EntityBindToExistingRequestDTO request);
+    BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, EntityBindToExistingRequestDTO request, Origin origin, MasterApprovalStatus approvalStatus);
     
     /**
      * Create a new artist and bind an external artist to it
@@ -99,7 +101,7 @@ public interface ArtistService {
      * @param request The binding request containing artist information
      * @return The created binding information
      */
-    BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, EntityCreateAndBindRequestDTO request);
+    BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, EntityCreateAndBindRequestDTO request, Origin origin, MasterApprovalStatus approvalStatus);
     
     /**
      * Unbinds an external artist from the system.
@@ -135,7 +137,7 @@ public interface ArtistService {
      * @throws CustomEntityNotFoundException if artist or category not found
      * @throws IllegalArgumentException if relation already exists
      */
-    void bindToCategory(Long artistId, Long categoryId);
+    void bindToCategory(Long artistId, Long categoryId, Origin origin, MasterApprovalStatus approvalStatus);
 
     /**
      * Unbind an artist from a category

@@ -17,6 +17,8 @@ import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupR
 import yurykorzun.art.universe.common.domain.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.common.domain.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.entity.MasterApprovalStatus;
+import yurykorzun.art.universe.music.data.master.entity.Origin;
 import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.service.TrackService;
@@ -66,7 +68,7 @@ public class TrackController {
 
     @PostMapping
     public TrackDto saveTrack(@Valid @RequestBody TrackSaveRequestDTO request) {
-        return trackService.saveTrack(request);
+        return trackService.saveTrack(request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
 
     @DeleteMapping("/{id}")
@@ -83,7 +85,7 @@ public class TrackController {
         @PathVariable Long trackId,
         @PathVariable Long categoryId
     ) {
-        trackService.bindToCategory(trackId, categoryId);
+        trackService.bindToCategory(trackId, categoryId, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
 
     @DeleteMapping("/{trackId}/categories/{categoryId}")
@@ -133,7 +135,7 @@ public class TrackController {
         @PathVariable Long externalId,
         @Valid @RequestBody ArtistRelatedEntityBindToExistingRequestDTO request
     ) {
-        return trackService.bindToExisting(dataSource, externalId, request);
+        return trackService.bindToExisting(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
     
     @PostMapping("/bind/new/{dataSource}/{externalId}")
@@ -142,7 +144,7 @@ public class TrackController {
         @PathVariable Long externalId,
         @Valid @RequestBody ArtistRelatedEntityCreateAndBindRequestDTO request
     ) {
-        return trackService.createAndBind(dataSource, externalId, request);
+        return trackService.createAndBind(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
     
     @DeleteMapping("/unbind/{dataSource}/{externalId}")

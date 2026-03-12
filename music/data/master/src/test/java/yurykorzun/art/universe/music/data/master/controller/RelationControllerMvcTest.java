@@ -13,6 +13,8 @@ import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingSta
 import yurykorzun.art.universe.music.data.master.dto.relation.TargetEntityBindingDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
+import yurykorzun.art.universe.music.data.master.entity.MasterApprovalStatus;
+import yurykorzun.art.universe.music.data.master.entity.Origin;
 import yurykorzun.art.universe.music.data.master.service.RelationService;
 import yurykorzun.art.universe.music.data.master.test.archetypes.BaseMasterDataMvcTest;
 
@@ -188,7 +190,7 @@ class RelationControllerMvcTest extends BaseMasterDataMvcTest {
         List<Long> relationIds = Arrays.asList(789L);
 
         when(relationService.createInternalRelations(
-            eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId), isNull()
+            eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId), isNull(), eq(Origin.MANUAL), eq(MasterApprovalStatus.APPROVED)
         )).thenReturn(relationIds);
 
         String expectedJson = objectMapper.writeValueAsString(relationIds);
@@ -201,7 +203,10 @@ class RelationControllerMvcTest extends BaseMasterDataMvcTest {
             .andExpect(content().json(expectedJson));
 
         verify(relationService).createInternalRelations(
-            eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId), isNull()
+            eq(sourceEntityType), eq(sourceEntityId),
+            eq(targetEntityType), eq(targetEntityId),
+            isNull(),
+            eq(Origin.MANUAL), eq(MasterApprovalStatus.APPROVED)
         );
     }
 
@@ -215,7 +220,10 @@ class RelationControllerMvcTest extends BaseMasterDataMvcTest {
         String errorMessage = "Test error";
 
         when(relationService.createInternalRelations(
-            eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId), isNull()
+            eq(sourceEntityType), eq(sourceEntityId),
+            eq(targetEntityType), eq(targetEntityId),
+            isNull(),
+            eq(Origin.MANUAL), eq(MasterApprovalStatus.APPROVED)
         )).thenThrow(new RuntimeException(errorMessage));
 
         // When & Then
@@ -225,7 +233,10 @@ class RelationControllerMvcTest extends BaseMasterDataMvcTest {
             .andExpect(status().isInternalServerError());
 
         verify(relationService).createInternalRelations(
-            eq(sourceEntityType), eq(sourceEntityId), eq(targetEntityType), eq(targetEntityId), isNull()
+            eq(sourceEntityType), eq(sourceEntityId),
+            eq(targetEntityType), eq(targetEntityId),
+            isNull(),
+            eq(Origin.MANUAL), eq(MasterApprovalStatus.APPROVED)
         );
     }
 

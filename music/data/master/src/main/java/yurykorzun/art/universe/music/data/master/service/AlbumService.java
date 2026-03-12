@@ -16,6 +16,8 @@ import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupR
 import yurykorzun.art.universe.common.domain.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.common.domain.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.entity.MasterApprovalStatus;
+import yurykorzun.art.universe.music.data.master.entity.Origin;
 
 import java.util.List;
 
@@ -29,13 +31,13 @@ public interface AlbumService {
 
     AlbumWithCategoriesDto getAlbumWithCategories(Long id);
 
-    AlbumDto saveAlbum(AlbumSaveRequestDTO request);
+    AlbumDto saveAlbum(AlbumSaveRequestDTO request, Origin origin, MasterApprovalStatus approvalStatus);
 
     AlbumDto saveAlbumWithTracks(AlbumWithTracksSaveRequestDTO request);
 
     boolean deleteAlbum(Long id);
 
-    void bindToCategory(Long albumId, Long categoryId);
+    void bindToCategory(Long albumId, Long categoryId, Origin origin, MasterApprovalStatus approvalStatus);
 
     void unbindFromCategory(Long albumId, Long categoryId);
 
@@ -52,7 +54,7 @@ public interface AlbumService {
      * @throws IllegalStateException if the artist is not bound
      * @throws jakarta.persistence.EntityNotFoundException if the album is not found
      */
-    BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, ArtistRelatedEntityBindToExistingRequestDTO request);
+    BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, ArtistRelatedEntityBindToExistingRequestDTO request, Origin origin, MasterApprovalStatus approvalStatus);
     
     /**
      * Creates a new album and binds an external album to it.
@@ -65,7 +67,7 @@ public interface AlbumService {
      * @throws IllegalStateException if the artist is not bound or if album binding already exists
      * @throws IllegalArgumentException if an album with the same name and artist already exists
      */
-    BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, ArtistRelatedEntityCreateAndBindRequestDTO request);
+    BoundEntityProjection createAndBind(DataSource dataSource, Long externalId, ArtistRelatedEntityCreateAndBindRequestDTO request, Origin origin, MasterApprovalStatus approvalStatus);
 
     /**
      * Creates a new master album from an external album together with its full tracklist.
@@ -77,7 +79,7 @@ public interface AlbumService {
      * @param request         The request containing album info and per-track binding details
      * @return The created album binding information
      */
-    BoundEntityProjection createAndBindWithTracks(DataSource dataSource, Long externalAlbumId, ExternalAlbumWithTracksCreateAndBindRequestDTO request);
+    BoundEntityProjection createAndBindWithTracks(DataSource dataSource, Long externalAlbumId, ExternalAlbumWithTracksCreateAndBindRequestDTO request, Origin origin, MasterApprovalStatus approvalStatus);
 
     /**
      * Unbinds an external album from the system.

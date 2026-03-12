@@ -16,8 +16,10 @@ import yurykorzun.art.universe.common.test.archetypes.BaseTest;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @PostgresTestContainer(
     databaseName = "art_universe",
-    initScript = "db/init-schema.sql",
-    schema = "mu_quiz"
+    username = "mu_quiz_dm",
+    password = "test_password",
+    schema = "mu_quiz",
+    initScript = "db/mu-view-stubs.sql"
 )
 @Tag("integration")
 public abstract class BaseQuizJpaTest extends BaseTest {
