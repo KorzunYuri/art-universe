@@ -17,7 +17,41 @@
 
 set -e
 
+# Test environment defaults — bash assigns these only when the variable is unset or empty.
+# In production all variables are set by docker-compose env files, so these are no-ops.
+: "${MURAW_LASTFM_DB_REPLICATION_PASSWORD:=test_password}"
+: "${MURAW_LASTFM_DB_WRITER_PASSWORD:=test_password}"
+: "${MURAW_LASTFM_DB_READER_PASSWORD:=test_password}"
+: "${MU_DATA_DB_PASSWORD_DM:=test_password}"
+: "${MU_QUIZ_DB_PASSWORD_DM:=test_password}"
+: "${ART_DATA_DB_PASSWORD_DM:=test_password}"
+: "${MURAW_SPOTIFY_DB_WRITER_PASSWORD:=test_password}"
+: "${MURAW_SPOTIFY_DB_READER_PASSWORD:=test_password}"
+: "${MURAW_SPOTIFY_CALLS_GENERATOR_DB_PASSWORD:=test_password}"
+: "${MURAW_SPOTIFY_CALLS_PERFORMER_DB_PASSWORD:=test_password}"
+: "${MURAW_SPOTIFY_RESPONSE_PARSER_DB_PASSWORD:=test_password}"
+: "${MURAW_SPOTIFY_STAGING_APPLICATOR_DB_PASSWORD:=test_password}"
+
 CHANGESETS_DIR="$(dirname "$0")/changesets"
+
+# Portable envsubst replacement — works on alpine without gettext.
+# Only substitutes the password variables used in changeset SQL files.
+substitute_env_vars() {
+    sed \
+        -e "s|\${MURAW_LASTFM_DB_REPLICATION_PASSWORD}|${MURAW_LASTFM_DB_REPLICATION_PASSWORD}|g" \
+        -e "s|\${MURAW_LASTFM_DB_WRITER_PASSWORD}|${MURAW_LASTFM_DB_WRITER_PASSWORD}|g" \
+        -e "s|\${MURAW_LASTFM_DB_READER_PASSWORD}|${MURAW_LASTFM_DB_READER_PASSWORD}|g" \
+        -e "s|\${MU_DATA_DB_PASSWORD_DM}|${MU_DATA_DB_PASSWORD_DM}|g" \
+        -e "s|\${MU_QUIZ_DB_PASSWORD_DM}|${MU_QUIZ_DB_PASSWORD_DM}|g" \
+        -e "s|\${ART_DATA_DB_PASSWORD_DM}|${ART_DATA_DB_PASSWORD_DM}|g" \
+        -e "s|\${MURAW_SPOTIFY_DB_WRITER_PASSWORD}|${MURAW_SPOTIFY_DB_WRITER_PASSWORD}|g" \
+        -e "s|\${MURAW_SPOTIFY_DB_READER_PASSWORD}|${MURAW_SPOTIFY_DB_READER_PASSWORD}|g" \
+        -e "s|\${MURAW_SPOTIFY_CALLS_GENERATOR_DB_PASSWORD}|${MURAW_SPOTIFY_CALLS_GENERATOR_DB_PASSWORD}|g" \
+        -e "s|\${MURAW_SPOTIFY_CALLS_PERFORMER_DB_PASSWORD}|${MURAW_SPOTIFY_CALLS_PERFORMER_DB_PASSWORD}|g" \
+        -e "s|\${MURAW_SPOTIFY_RESPONSE_PARSER_DB_PASSWORD}|${MURAW_SPOTIFY_RESPONSE_PARSER_DB_PASSWORD}|g" \
+        -e "s|\${MURAW_SPOTIFY_STAGING_APPLICATOR_DB_PASSWORD}|${MURAW_SPOTIFY_STAGING_APPLICATOR_DB_PASSWORD}|g" \
+        "$1"
+}
 
 # ============================================================
 # Bootstrap: tracking table in the postgres system database
@@ -54,7 +88,7 @@ apply_changeset() {
 
     if [ "$already_applied" -eq "0" ]; then
         echo "[init] Applying:  $filename"
-        envsubst < "$file" \
+        substitute_env_vars "$file" \
             | psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$db"
         psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" \
              -c "INSERT INTO init_changesets (filename) VALUES ('$filename')"

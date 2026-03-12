@@ -15,9 +15,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @PostgresTestContainer(
     databaseName = "art_universe",
-    initScript = "db/init-schema.sql",
     username = "mu_raw_lastfm_dm",
-    password = "mu_raw_lastfm_dm_password",
+    password = "test_password",
     schema = "mu_raw_lastfm"
 )
 public @interface LastfmPostgresTestContainer {
