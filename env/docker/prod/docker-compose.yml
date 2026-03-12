@@ -2,6 +2,18 @@ version: '3.8'
 
 services:
   # Migrations
+  au-config-liquibase:
+    container_name: prod__au-config__liquibase
+    image: au-config-liquibase:latest
+    env_file:
+      - ./common.env
+      - ../common/au-config.env
+      - ./au-config.secrets.env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - mu__network
+
   spotify-liquibase-service:
     container_name: prod__spotify__liquibase
     image: mu-spotify-liquibase:latest
@@ -29,6 +41,43 @@ services:
       - mu__network
 
   # Applications
+  au-config-service:
+    container_name: prod__au-config-service__app
+    restart: unless-stopped
+    image: au-config-service:latest
+    environment:
+      - JAVA_OPTS=-Xms128m -Xmx256m -XX:MaxMetaspaceSize=96m
+    env_file:
+      - ./common.env
+      - ../common/au-config.env
+      - ./au-config.env
+      - ./au-config.secrets.env
+    ports:
+      - "${AU_CONFIG_APP_EXTERNAL_PORT}:${AU_CONFIG_APP_INTERNAL_PORT}"
+    volumes:
+      - prod__au-config-service__app-logs:/app/logs
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      au-config-liquibase:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${AU_CONFIG_APP_INTERNAL_PORT}/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 120s
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+          cpus: '0.2'
+        reservations:
+          memory: 128M
+          cpus: '0.05'
+    networks:
+      - mu__network
+
   spotify-rest-api:
     container_name: prod__spotify-rest-api__app
     restart: unless-stopped
@@ -76,6 +125,7 @@ services:
     env_file:
       - ../common/music-data-raw-spotify.env
       - ../common/music-data-raw-spotify-etl.env
+      - ../common/au-config.env
       - ./common.env
       - ./music-data-raw-spotify.secrets.env
     ports:
@@ -87,6 +137,8 @@ services:
     depends_on:
       spotify-liquibase-service:
         condition: service_completed_successfully
+      au-config-service:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${MURAW_SPOTIFY_CALLS_GENERATOR_ACTUATOR_INTERNAL_PORT}/actuator/health"]
       interval: 10s
@@ -114,6 +166,7 @@ services:
     env_file:
       - ../common/music-data-raw-spotify.env
       - ../common/music-data-raw-spotify-etl.env
+      - ../common/au-config.env
       - ./common.env
       - ./music-data-raw-spotify.secrets.env
     ports:
@@ -126,6 +179,8 @@ services:
       spotify-liquibase-service:
         condition: service_completed_successfully
       spotify-calls-generator:
+        condition: service_healthy
+      au-config-service:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${MURAW_SPOTIFY_CALLS_PERFORMER_ACTUATOR_INTERNAL_PORT}/actuator/health"]
@@ -154,6 +209,7 @@ services:
     env_file:
       - ../common/music-data-raw-spotify.env
       - ../common/music-data-raw-spotify-etl.env
+      - ../common/au-config.env
       - ./common.env
       - ./music-data-raw-spotify.secrets.env
     ports:
@@ -166,6 +222,8 @@ services:
       spotify-liquibase-service:
         condition: service_completed_successfully
       spotify-calls-performer:
+        condition: service_healthy
+      au-config-service:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${MURAW_SPOTIFY_RESPONSE_PARSER_ACTUATOR_INTERNAL_PORT}/actuator/health"]
@@ -194,6 +252,7 @@ services:
     env_file:
       - ../common/music-data-raw-spotify.env
       - ../common/music-data-raw-spotify-etl.env
+      - ../common/au-config.env
       - ./common.env
       - ./music-data-raw-spotify.secrets.env
     ports:
@@ -206,6 +265,8 @@ services:
       spotify-liquibase-service:
         condition: service_completed_successfully
       spotify-response-parser:
+        condition: service_healthy
+      au-config-service:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${MURAW_SPOTIFY_STAGING_APPLICATOR_ACTUATOR_INTERNAL_PORT}/actuator/health"]
@@ -270,6 +331,7 @@ services:
       - JAVA_OPTS=-Xms256m -Xmx768m -XX:MaxMetaspaceSize=192m
     env_file:
       - ../common/music-data-raw-lastfm.env
+      - ../common/au-config.env
       - ./common.env
       - ./music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.secrets.env
@@ -283,6 +345,8 @@ services:
       lastfm-liquibase-service:
         condition: service_completed_successfully
       music-data:
+        condition: service_healthy
+      au-config-service:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${MURAW_LASTFM_ETL_REST_API_INTERNAL_PORT}/health"]
@@ -310,6 +374,7 @@ services:
       - JAVA_OPTS=-Xms256m -Xmx768m -XX:MaxMetaspaceSize=192m
     env_file:
       - ../common/music-data-raw-lastfm.env
+      - ../common/au-config.env
       - ./common.env
       - ./music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.secrets.env
@@ -322,6 +387,8 @@ services:
     depends_on:
       lastfm-liquibase-service:
         condition: service_completed_successfully
+      au-config-service:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${MURAW_LASTFM_CALLS_GENERATOR_ACTUATOR_INTERNAL_PORT}/actuator/health"]
       interval: 10s
@@ -348,6 +415,7 @@ services:
       - JAVA_OPTS=-Xms256m -Xmx768m -XX:MaxMetaspaceSize=192m
     env_file:
       - ../common/music-data-raw-lastfm.env
+      - ../common/au-config.env
       - ./common.env
       - ./music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.secrets.env
@@ -361,6 +429,8 @@ services:
       lastfm-liquibase-service:
         condition: service_completed_successfully
       lastfm-calls-generator:
+        condition: service_healthy
+      au-config-service:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${MURAW_LASTFM_CALLS_PERFORMER_ACTUATOR_INTERNAL_PORT}/actuator/health"]
@@ -388,6 +458,7 @@ services:
       - JAVA_OPTS=-Xms256m -Xmx1536m -XX:MaxMetaspaceSize=192m
     env_file:
       - ../common/music-data-raw-lastfm.env
+      - ../common/au-config.env
       - ./common.env
       - ./music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.secrets.env
@@ -401,6 +472,8 @@ services:
       lastfm-liquibase-service:
         condition: service_completed_successfully
       lastfm-calls-performer:
+        condition: service_healthy
+      au-config-service:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${MURAW_LASTFM_RESPONSE_PARSER_ACTUATOR_INTERNAL_PORT}/actuator/health"]
@@ -683,3 +756,5 @@ volumes:
     name: prod__mu__grafana-data
   prod__art-data__app-logs:
     name: prod__art-data__app-logs
+  prod__au-config-service__app-logs:
+    name: prod__au-config-service__app-logs

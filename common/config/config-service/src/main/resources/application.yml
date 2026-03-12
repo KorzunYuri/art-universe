@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: au-config-service
+  config:
+    import:
+      - classpath:commons-context.yml
+      - optional:classpath:commons-context-${spring.profiles.active}.yml
+      - classpath:commons-observability.yml
+      - optional:classpath:commons-observability-${spring.profiles.active}.yml
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://${AU_DB_MASTER_HOST}:${AU_DB_MASTER_PORT}/${AU_DB_NAME}?currentSchema=${AU_CONFIG_DB_SCHEMA}
+    username: ${AU_CONFIG_DB_USERNAME}
+    password: '${AU_CONFIG_DB_PASSWORD_DM}'
+    hikari:
+      pool-name: AuConfigHikariPool
+      maximum-pool-size: 4
+      minimum-idle: 1
+  jpa:
+    database: postgresql
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        show-sql: false
+    hibernate:
+      ddl-auto: none
+  liquibase:
+    default-schema: ${AU_CONFIG_DB_SCHEMA}
+    change-log: classpath:db/migration/au_config/liquibase/db.changelog.xml
+  docker:
+    compose:
+      enabled: false
+
+server:
+  port: ${AU_CONFIG_APP_INTERNAL_PORT:8080}
