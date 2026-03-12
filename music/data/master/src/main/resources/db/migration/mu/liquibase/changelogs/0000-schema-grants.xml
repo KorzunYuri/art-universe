@@ -7,7 +7,9 @@
 
     <changeSet id="0000-0010-schema_grants$initial" author="developer">
         <sqlFile path="../changesets/0000-schema-grants/0000-0010-schema_grants$initial.sql"
-                 relativeToChangelogFile="true"/>
+                 relativeToChangelogFile="true"
+                 splitStatements="false"
+                 endDelimiter="$$"/>
     </changeSet>
 
 </databaseChangeLog>
