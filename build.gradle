@@ -19,6 +19,12 @@ gradle.projectsEvaluated {
     }
 }
 
+subprojects {
+    tasks.withType(Test).configureEach {
+        systemProperty 'project.root', rootProject.projectDir.absolutePath
+    }
+}
+
 allprojects {
     group = 'yurykorzun.art'
     version = '0.0.1-SNAPSHOT'

@@ -19,8 +19,8 @@ public final class PostgresDynamicPropertyConfigurer {
         PostgreSQLContainer<?> container = PostgresContainerManager.get(cfg);
 
         registry.add("spring.datasource.url", container::getJdbcUrl);
-        registry.add("spring.datasource.username", container::getUsername);
-        registry.add("spring.datasource.password", container::getPassword);
+        registry.add("spring.datasource.username", cfg::username);
+        registry.add("spring.datasource.password", cfg::password);
 
         if (!cfg.schema().isEmpty()) {
             registry.add("spring.jpa.properties.hibernate.default_schema", cfg::schema);
