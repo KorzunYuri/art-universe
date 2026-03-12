@@ -32,7 +32,7 @@ set -e
 : "${MURAW_SPOTIFY_RESPONSE_PARSER_DB_PASSWORD:=test_password}"
 : "${MURAW_SPOTIFY_STAGING_APPLICATOR_DB_PASSWORD:=test_password}"
 
-CHANGESETS_DIR="$(dirname "$0")/changesets"
+CHANGESETS_DIR="$(dirname "${BASH_SOURCE[0]:-$0}")/changesets"
 
 # Portable envsubst replacement — works on alpine without gettext.
 # Only substitutes the password variables used in changeset SQL files.
