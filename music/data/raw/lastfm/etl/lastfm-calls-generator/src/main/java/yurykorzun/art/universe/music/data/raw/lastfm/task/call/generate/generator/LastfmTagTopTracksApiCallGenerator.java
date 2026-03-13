@@ -1,8 +1,9 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.task.call.generate.generator;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import yurykorzun.art.universe.common.config.client.ConfigPropertyHolder;
+import yurykorzun.art.universe.music.data.raw.lastfm.config.LastfmGeneratorProperty;
 import yurykorzun.art.universe.music.data.raw.lastfm.integration.LastfmApiConstants;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.dto.LastfmApiCallCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCallType;
@@ -27,22 +28,18 @@ import java.util.stream.IntStream;
 public class LastfmTagTopTracksApiCallGenerator extends LastfmTagApiCallGenerator {
 
     private final LastfmAttributeSnapshotService attributeSnapshotService;
-
-    @Value("${lastfm.tasks.calls-generate.due-duration-days.tag-top-tracks}")
-    private int dueDurationDays;
-
-    @Value("${lastfm.tasks.calls-generate.usage-to-page-ratio.tag-top-tracks}")
-    private int usageToPageRatio;
+    private final ConfigPropertyHolder configPropertyHolder;
 
     public LastfmTagTopTracksApiCallGenerator(
         LastfmApiCallService apiCallService,
         LastfmApiCallEntityService entityService,
         LastfmDataSnapshotService dataSnapshotService,
-        LastfmAttributeSnapshotService attributeSnapshotService
+        LastfmAttributeSnapshotService attributeSnapshotService,
+        ConfigPropertyHolder configPropertyHolder
     ) {
         super(apiCallService, dataSnapshotService, entityService);
-
         this.attributeSnapshotService = attributeSnapshotService;
+        this.configPropertyHolder = configPropertyHolder;
     }
 
     @Override
@@ -52,25 +49,24 @@ public class LastfmTagTopTracksApiCallGenerator extends LastfmTagApiCallGenerato
 
     @Override
     protected int getDueDurationDays() {
-        return dueDurationDays;
+        return configPropertyHolder.getInt(LastfmGeneratorProperty.DUE_DURATION_TAG_TOP_TRACKS);
     }
 
     @Override
     protected List<LastfmApiCallCreateRequest> generateApiCallCreationRequests(LastfmTag tag, LastfmDataSnapshot dataSnapshot) {
-        //  create attribute_snapshots
         getOrCreateAttributeSnapshots(tag, dataSnapshot);
-        //  create api call
         return createApiCallCreationRequests(tag, dataSnapshot);
     }
 
     @Override
     protected List<LastfmAttributeSnapshot> getOrCreateAttributeSnapshots(LastfmTag entity, LastfmDataSnapshot dataSnapshot) {
-        // attributeSnapshotService.getOrCreateForEntity(snapshot, LastfmEntityType.TRACK, LastfmAttribute.RANK, tag);
         return List.of();
     }
 
     private List<LastfmApiCallCreateRequest> createApiCallCreationRequests(LastfmTag tag, LastfmDataSnapshot snapshot) {
-        return IntStream.range(1, calcPagesNumber(tag) + 1)
+        int dueDurationDays = configPropertyHolder.getInt(LastfmGeneratorProperty.DUE_DURATION_TAG_TOP_TRACKS);
+        int usageToPageRatio = configPropertyHolder.getInt(LastfmGeneratorProperty.USAGE_TO_PAGE_RATIO_TAG_TOP_TRACKS);
+        return IntStream.range(1, calcPagesNumber(tag, usageToPageRatio) + 1)
             .mapToObj(pageNumber -> LastfmApiCallCreateRequest.builder()
                 .type(getApiCallType())
                 .entityType(tag.getType())
@@ -84,13 +80,13 @@ public class LastfmTagTopTracksApiCallGenerator extends LastfmTagApiCallGenerato
 
     private Map<String, String> generateApiCallParameters(LastfmTag tag, int pageNumber) {
         return Map.of(
-                LastfmApiConstants.PARAM_NAME_TAG,      tag.getName()
-            ,   LastfmApiConstants.PARAM_NAME_LIMIT,    String.valueOf(LastfmApiConstants.PAGE_SIZE)
-            ,   LastfmApiConstants.PARAM_NAME_PAGE,     String.valueOf(pageNumber)
+            LastfmApiConstants.PARAM_NAME_TAG,   tag.getName(),
+            LastfmApiConstants.PARAM_NAME_LIMIT, String.valueOf(LastfmApiConstants.PAGE_SIZE),
+            LastfmApiConstants.PARAM_NAME_PAGE,  String.valueOf(pageNumber)
         );
     }
 
-    private int calcPagesNumber(LastfmTag tag) {
+    private int calcPagesNumber(LastfmTag tag, int usageToPageRatio) {
         return Math.max(1, Objects.requireNonNullElse(tag.getUsageCount(), 0) / usageToPageRatio);
     }
 }

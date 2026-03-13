@@ -1,8 +1,9 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.task.call.generate.generator;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import yurykorzun.art.universe.common.config.client.ConfigPropertyHolder;
+import yurykorzun.art.universe.music.data.raw.lastfm.config.LastfmGeneratorProperty;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.call.generate.LastfmApiCallEntityService;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.LastfmApiCallService;
@@ -18,21 +19,18 @@ import java.util.List;
 public class LastfmTrackGetInfoApiCallGenerator extends LastfmTrackApiCallGenerator {
 
     private final LastfmTrackService trackService;
-
-    @Value("${lastfm.tasks.calls-generate.due-duration-days.track-get-info}")
-    private int dueDurationDays;
-
-    @Value("${lastfm.threshold.track.listenersCount:1000}")
-    private int batchSize;
+    private final ConfigPropertyHolder configPropertyHolder;
 
     public LastfmTrackGetInfoApiCallGenerator(
         LastfmApiCallService apiCallService,
         LastfmDataSnapshotService snapshotService,
         LastfmApiCallEntityService entityService,
-        LastfmTrackService trackService
+        LastfmTrackService trackService,
+        ConfigPropertyHolder configPropertyHolder
     ) {
         super(apiCallService, snapshotService, entityService);
         this.trackService = trackService;
+        this.configPropertyHolder = configPropertyHolder;
     }
 
     @Override
@@ -42,12 +40,11 @@ public class LastfmTrackGetInfoApiCallGenerator extends LastfmTrackApiCallGenera
 
     @Override
     protected int getDueDurationDays() {
-        return dueDurationDays;
+        return configPropertyHolder.getInt(LastfmGeneratorProperty.DUE_DURATION_TRACK_GET_INFO);
     }
 
     @Override
     protected List<LastfmTrack> selectEntitiesForApiCalls() {
         return trackService.findTracksForGetInfo();
     }
-
 }
