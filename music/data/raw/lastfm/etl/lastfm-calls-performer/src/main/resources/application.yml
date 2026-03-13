@@ -39,6 +39,11 @@ server:
   # Non-web app - only needs actuator endpoints
   port: ${MURAW_LASTFM_CALLS_PERFORMER_ACTUATOR_INTERNAL_PORT}
 
+au:
+  config:
+    client:
+      service-url: "${AU_CONFIG_SERVICE_URL}"
+
 lastfm:
   api:
     base-url: "http://ws.audioscrobbler.com/2.0/"

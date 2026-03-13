@@ -1,9 +1,11 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.task.call.perform;
 
 import com.google.common.util.concurrent.RateLimiter;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import yurykorzun.art.universe.common.config.client.ConfigPropertyHolder;
+import yurykorzun.art.universe.music.data.raw.lastfm.config.LastfmPerformerProperty;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.LastfmApiCallService;
 
@@ -15,16 +17,24 @@ public class LastfmCallsOrchestrator {
 
     private final LastfmApiCallService apiCallService;
     private final LastfmApiCallExecutor executor;
-    private final RateLimiter rateLimiter;
+    private final ConfigPropertyHolder configPropertyHolder;
+
+    private RateLimiter rateLimiter;
 
     public LastfmCallsOrchestrator(
         LastfmApiCallService apiCallService,
         LastfmApiCallExecutor executor,
-        @Value("${lastfm.tasks.calls-perform.calls-per-sec}") double apiClientCallsPerSec
+        ConfigPropertyHolder configPropertyHolder
     ) {
         this.apiCallService = apiCallService;
         this.executor = executor;
-        this.rateLimiter = RateLimiter.create(apiClientCallsPerSec);
+        this.configPropertyHolder = configPropertyHolder;
+    }
+
+    @PostConstruct
+    public void init() {
+        double callsPerSec = configPropertyHolder.getDecimal(LastfmPerformerProperty.CALLS_PER_SEC).doubleValue();
+        rateLimiter = RateLimiter.create(callsPerSec);
     }
 
     public void orchestrateApiCalls() {
