@@ -6,6 +6,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import yurykorzun.art.universe.common.config.client.ConfigPropertyHolder;
+import yurykorzun.art.universe.music.data.raw.lastfm.config.LastfmMaintenanceProperty;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.maintenance.dto.MasterBatchUnbindRequestDTO;
 import yurykorzun.art.universe.music.data.raw.lastfm.maintenance.dto.MasterBatchUnbindResponseDTO;
@@ -17,24 +19,20 @@ import java.util.List;
 @Slf4j
 public class MusicDataIntegrationService {
 
-    private final int masterDataUnbindBatchSize;
     private final RestClient restClient;
+    private final ConfigPropertyHolder configPropertyHolder;
 
     public MusicDataIntegrationService(
         RestClient.Builder restClientBuilder,
         @Value("${master.base-url}") String musicDataBaseUrl,
-        @Value("${lastfm.tasks.maintenance.db.unbind.batch-size}") int masterDataUnbindBatchSize
+        ConfigPropertyHolder configPropertyHolder
     ) {
-        if (masterDataUnbindBatchSize < 10) {
-            throw new IllegalArgumentException(String.format("Too small batch size %d, expected at least %d", masterDataUnbindBatchSize, 10));
-        }
-        this.masterDataUnbindBatchSize = masterDataUnbindBatchSize;
+        this.configPropertyHolder = configPropertyHolder;
 
         String fullUrl = musicDataBaseUrl.startsWith("http") ? musicDataBaseUrl : "http://" + musicDataBaseUrl;
         this.restClient = restClientBuilder
             .baseUrl(fullUrl)
             .build();
-
     }
 
     /**
@@ -48,10 +46,10 @@ public class MusicDataIntegrationService {
 
         log.info("Unbinding {} entities of type {} from music-data", entityIds.size(), entityType);
 
-        // Split into batches of MAX_BATCH_SIZE
-        List<List<Long>> batches = splitIntoBatches(entityIds, masterDataUnbindBatchSize);
-        log.debug("Split {} entity IDs into {} batches of max {} items each", 
-            entityIds.size(), batches.size(), masterDataUnbindBatchSize);
+        int batchSize = configPropertyHolder.getInt(LastfmMaintenanceProperty.UNBIND_BATCH_SIZE);
+        List<List<Long>> batches = splitIntoBatches(entityIds, batchSize);
+        log.debug("Split {} entity IDs into {} batches of max {} items each",
+            entityIds.size(), batches.size(), batchSize);
 
         int totalProcessed = 0;
         int totalSuccessCount = 0;
@@ -60,7 +58,7 @@ public class MusicDataIntegrationService {
         for (int i = 0; i < batches.size(); i++) {
             List<Long> batch = batches.get(i);
             log.debug("Processing batch {}/{} with {} entity IDs", i + 1, batches.size(), batch.size());
-            
+
             MasterBatchUnbindResponseDTO response = unbindBatch(entityType, batch);
             if (response != null) {
                 totalProcessed += response.getTotalProcessed();
@@ -102,18 +100,18 @@ public class MusicDataIntegrationService {
                 .retrieve()
                 .toEntity(MasterBatchUnbindResponseDTO.class)
                 .getBody();
-            
+
             if (response == null) {
                 throw new IllegalArgumentException("Null response from master batch unbind has been received");
             }
 
             log.debug("Batch unbinding result for {} batch: {} processed, {} unbound, {} not found",
                 entityType, response.getTotalProcessed(), response.getSuccessCount(), response.getNotFoundCount());
-            
+
             return response;
-            
+
         } catch (Exception e) {
-            log.error("Failed to unbind batch of {} entities of type {}: {}", 
+            log.error("Failed to unbind batch of {} entities of type {}: {}",
                 entityIds.size(), entityType, e.getMessage(), e);
             // Don't rethrow - we want cleanup to continue even if unbinding fails
             return null;
