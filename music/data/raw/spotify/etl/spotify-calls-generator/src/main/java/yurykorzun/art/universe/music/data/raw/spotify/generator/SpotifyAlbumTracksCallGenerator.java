@@ -1,9 +1,10 @@
 package yurykorzun.art.universe.music.data.raw.spotify.generator;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import yurykorzun.art.universe.common.config.client.ConfigPropertyHolder;
+import yurykorzun.art.universe.music.data.raw.spotify.config.SpotifyGeneratorProperty;
 import yurykorzun.art.universe.music.data.raw.spotify.domain.entity.SpotifyAlbum;
 import yurykorzun.art.universe.music.data.raw.spotify.enums.SpotifyEntityType;
 import yurykorzun.art.universe.music.data.raw.spotify.etl.dto.SpotifyApiCallCreateRequest;
@@ -22,16 +23,16 @@ public class SpotifyAlbumTracksCallGenerator extends BaseSpotifyApiCallGenerator
 
     private final SpotifyApiCallEntityService entityService;
     private final SpotifyApiCallService apiCallService;
-
-    @Value("${spotify.tasks.calls-generate.due-duration-days.album-tracks}")
-    private int dueDurationDays;
+    private final ConfigPropertyHolder configPropertyHolder;
 
     public SpotifyAlbumTracksCallGenerator(
         SpotifyApiCallEntityService entityService,
-        SpotifyApiCallService apiCallService
+        SpotifyApiCallService apiCallService,
+        ConfigPropertyHolder configPropertyHolder
     ) {
         this.entityService = entityService;
         this.apiCallService = apiCallService;
+        this.configPropertyHolder = configPropertyHolder;
     }
 
     @Override
@@ -48,6 +49,7 @@ public class SpotifyAlbumTracksCallGenerator extends BaseSpotifyApiCallGenerator
             return;
         }
 
+        int dueDurationDays = configPropertyHolder.getInt(SpotifyGeneratorProperty.DUE_DURATION_ALBUM_TRACKS);
         List<SpotifyApiCallCreateRequest> requests = albums.stream()
             .map(album -> SpotifyApiCallCreateRequest.builder()
                 .type(getApiCallType())

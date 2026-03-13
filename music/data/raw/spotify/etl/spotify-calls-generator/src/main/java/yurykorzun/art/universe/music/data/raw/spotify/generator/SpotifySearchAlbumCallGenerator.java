@@ -1,11 +1,12 @@
 package yurykorzun.art.universe.music.data.raw.spotify.generator;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import yurykorzun.art.universe.common.config.client.ConfigPropertyHolder;
 import yurykorzun.art.universe.music.data.raw.spotify.common.SpotifyConstants;
+import yurykorzun.art.universe.music.data.raw.spotify.config.SpotifyGeneratorProperty;
 import yurykorzun.art.universe.music.data.raw.spotify.enums.SpotifyEntityType;
 import yurykorzun.art.universe.music.data.raw.spotify.etl.dto.SpotifyApiCallCreateRequest;
 import yurykorzun.art.universe.music.data.raw.spotify.etl.entity.*;
@@ -29,12 +30,12 @@ public class SpotifySearchAlbumCallGenerator extends BaseSpotifyApiCallGenerator
             LEFT JOIN mu_view.v_artist ar ON ar.id = a.primary_artist_id
             WHERE NOT EXISTS (
                 SELECT 1 FROM mu_view.v_album_binding b
-                WHERE   b.master_id = a.id 
+                WHERE   b.master_id = a.id
                     AND b.data_source_id = 2
             )
             AND NOT EXISTS (
                 SELECT 1 FROM search_attempt sa
-                WHERE sa.entity_type = 2 
+                WHERE sa.entity_type = 2
                   AND sa.master_entity_id = a.id
                     AND (   sa.status IN (1, 2, 3, 5)
                         OR (sa.status = 4 AND sa.next_retry_after > now()))
@@ -45,24 +46,18 @@ public class SpotifySearchAlbumCallGenerator extends BaseSpotifyApiCallGenerator
     private final JdbcTemplate jdbcTemplate;
     private final SpotifyApiCallService apiCallService;
     private final SpotifySearchAttemptRepository searchAttemptRepository;
-
-    @Value("${spotify.tasks.calls-generate.search.enabled:false}")
-    private boolean enabled;
-
-    @Value("${spotify.tasks.calls-generate.search.batch-size:100}")
-    private int batchSize;
-
-    @Value("${spotify.tasks.calls-generate.due-duration-days.search-album:7}")
-    private int dueDurationDays;
+    private final ConfigPropertyHolder configPropertyHolder;
 
     public SpotifySearchAlbumCallGenerator(
         JdbcTemplate jdbcTemplate,
         SpotifyApiCallService apiCallService,
-        SpotifySearchAttemptRepository searchAttemptRepository
+        SpotifySearchAttemptRepository searchAttemptRepository,
+        ConfigPropertyHolder configPropertyHolder
     ) {
         this.jdbcTemplate = jdbcTemplate;
         this.apiCallService = apiCallService;
         this.searchAttemptRepository = searchAttemptRepository;
+        this.configPropertyHolder = configPropertyHolder;
     }
 
     @Override
@@ -73,9 +68,8 @@ public class SpotifySearchAlbumCallGenerator extends BaseSpotifyApiCallGenerator
     @Override
     @Transactional
     public void createApiCalls() {
-        if (!enabled) {
-            return;
-        }
+        int batchSize = configPropertyHolder.getInt(SpotifyGeneratorProperty.SEARCH_BATCH_SIZE);
+        int dueDurationDays = configPropertyHolder.getInt(SpotifyGeneratorProperty.DUE_DURATION_SEARCH);
 
         List<UnboundAlbum> unboundAlbums = jdbcTemplate.query(
             FIND_UNBOUND_ALBUMS_SQL,
