@@ -1,10 +1,13 @@
 package yurykorzun.art.universe.music.data.raw.spotify.application;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
+import yurykorzun.art.universe.common.config.client.ConfigPropertyHolder;
+import yurykorzun.art.universe.music.data.raw.spotify.config.SpotifyApplicatorProperty;
 import yurykorzun.art.universe.music.data.raw.spotify.etl.entity.StagingIteration;
 import yurykorzun.art.universe.music.data.raw.spotify.etl.entity.StagingIterationStatus;
 import yurykorzun.art.universe.music.data.raw.spotify.etl.repository.SpotifyStagingIterationRepository;
@@ -12,7 +15,6 @@ import yurykorzun.art.universe.music.data.raw.spotify.etl.repository.SpotifyStag
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @Component
 @Slf4j
@@ -20,23 +22,53 @@ public class StagingCleanupService {
 
     private final SpotifyStagingIterationRepository iterationRepository;
     private final JdbcTemplate jdbc;
-    private final long retentionHours;
+    private final ThreadPoolTaskScheduler taskScheduler;
+    private final ConfigPropertyHolder configPropertyHolder;
+
+    private volatile boolean running = true;
 
     public StagingCleanupService(
         SpotifyStagingIterationRepository iterationRepository,
         JdbcTemplate jdbc,
-        @Value("${spotify.staging.cleanup.completed-retention-hours}") long retentionHours
+        ThreadPoolTaskScheduler taskScheduler,
+        ConfigPropertyHolder configPropertyHolder
     ) {
         this.iterationRepository = iterationRepository;
         this.jdbc = jdbc;
-        this.retentionHours = retentionHours;
+        this.taskScheduler = taskScheduler;
+        this.configPropertyHolder = configPropertyHolder;
     }
 
-    @Scheduled(
-        fixedDelayString = "${spotify.scheduling.staging-cleanup.fixed-delay-secs}",
-        timeUnit = TimeUnit.SECONDS
-    )
+    @PostConstruct
+    public void start() {
+        scheduleNext();
+    }
+
+    @PreDestroy
+    public void stop() {
+        running = false;
+    }
+
+    private void scheduleNext() {
+        if (!running) {
+            return;
+        }
+        long delaySecs = configPropertyHolder.getInt(SpotifyApplicatorProperty.STAGING_CLEANUP_DELAY_SECS);
+        taskScheduler.schedule(this::executeAndReschedule, Instant.now().plusSeconds(delaySecs));
+    }
+
+    private void executeAndReschedule() {
+        try {
+            cleanupOldStagingTables();
+        } catch (Exception ex) {
+            log.error("Error during staging cleanup", ex);
+        } finally {
+            scheduleNext();
+        }
+    }
+
     public void cleanupOldStagingTables() {
+        long retentionHours = configPropertyHolder.getInt(SpotifyApplicatorProperty.STAGING_CLEANUP_RETENTION_HOURS);
         Instant cutoff = Instant.now().minus(retentionHours, ChronoUnit.HOURS);
         List<StagingIteration> old = iterationRepository.findAllByStatusInAndSealedAtBefore(
             List.of(StagingIterationStatus.COMPLETED, StagingIterationStatus.FAILED), cutoff);

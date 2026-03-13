@@ -38,6 +38,11 @@ server:
   # Non-web app - only needs actuator endpoints
   port: ${MURAW_SPOTIFY_STAGING_APPLICATOR_ACTUATOR_INTERNAL_PORT:8080}
 
+au:
+  config:
+    client:
+      service-url: "${AU_CONFIG_SERVICE_URL}"
+
 spotify:
   scheduling:
     staging-apply:

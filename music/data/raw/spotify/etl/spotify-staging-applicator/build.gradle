@@ -6,6 +6,7 @@ archivesBaseName = 'spotify-etl-staging-applicator'
 ext.dockerImageName = 'mu-spotify-staging-applicator'
 
 dependencies {
+    implementation project(':common:config:config-client')
     implementation project(':common:commons-observability')
     implementation project(':music:data:raw:spotify:spotify-repositories')
 
