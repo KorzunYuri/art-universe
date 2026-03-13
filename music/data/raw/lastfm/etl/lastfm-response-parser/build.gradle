@@ -6,6 +6,7 @@ archivesBaseName = 'lastfm-etl-response-parser'
 ext.dockerImageName = 'mu-lastfm-response-parser'
 
 dependencies {
+    implementation project(':common:config:config-client')
     implementation project(':common:commons-observability')
     implementation project(':music:data:raw:lastfm:lastfm-repositories')
 

@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,10 +50,6 @@ public class LastfmAttributeHistoryProcessor {
         this.self = self;
     }
 
-    @Scheduled(
-        fixedDelayString = "${lastfm.scheduling.attribute-history.fixed-delay-secs}",
-        timeUnit = java.util.concurrent.TimeUnit.SECONDS
-    )
     @Transactional
     public void triggerAttributeHistoryProcessing() {
         log.info("start attribute history processing");

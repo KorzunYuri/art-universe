@@ -7,28 +7,26 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.common.config.client.ConfigPropertyHolder;
 import yurykorzun.art.universe.music.data.raw.lastfm.config.LastfmParserProperty;
-import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.LastfmApiResponseService;
+import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.processor.LastfmAttributeHistoryProcessor;
 
 import java.time.Instant;
 
 @Component
 @Slf4j
-public class LastfmApiResponseProcessingScheduler {
+public class LastfmAttributeHistoryScheduler {
 
-    public static final String TASK_NAME_API_RESPONSES_PROCESSING = "api-responses-processing";
-
-    private final LastfmApiResponseService apiResponseService;
+    private final LastfmAttributeHistoryProcessor processor;
     private final ThreadPoolTaskScheduler taskScheduler;
     private final ConfigPropertyHolder configPropertyHolder;
 
     private volatile boolean running = true;
 
-    public LastfmApiResponseProcessingScheduler(
-        LastfmApiResponseService apiResponseService,
+    public LastfmAttributeHistoryScheduler(
+        LastfmAttributeHistoryProcessor processor,
         ThreadPoolTaskScheduler taskScheduler,
         ConfigPropertyHolder configPropertyHolder
     ) {
-        this.apiResponseService = apiResponseService;
+        this.processor = processor;
         this.taskScheduler = taskScheduler;
         this.configPropertyHolder = configPropertyHolder;
     }
@@ -47,17 +45,15 @@ public class LastfmApiResponseProcessingScheduler {
         if (!running) {
             return;
         }
-        long delaySecs = configPropertyHolder.getInt(LastfmParserProperty.SCHEDULE_DELAY_SECS);
+        long delaySecs = configPropertyHolder.getInt(LastfmParserProperty.ATTRIBUTE_HISTORY_DELAY_SECS);
         taskScheduler.schedule(this::executeAndReschedule, Instant.now().plusSeconds(delaySecs));
     }
 
     private void executeAndReschedule() {
         try {
-            log.info("start API responses processing");
-            apiResponseService.processResponses();
-            log.info("finished API responses processing");
+            processor.triggerAttributeHistoryProcessing();
         } catch (Exception ex) {
-            log.error("Error during API responses processing", ex);
+            log.error("Error during attribute history processing", ex);
         } finally {
             scheduleNext();
         }

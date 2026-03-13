@@ -39,6 +39,11 @@ server:
   # Non-web app - only needs actuator endpoints
   port: ${MURAW_LASTFM_RESPONSE_PARSER_ACTUATOR_INTERNAL_PORT}
 
+au:
+  config:
+    client:
+      service-url: "${AU_CONFIG_SERVICE_URL}"
+
 lastfm:
   scheduling:
     pool:

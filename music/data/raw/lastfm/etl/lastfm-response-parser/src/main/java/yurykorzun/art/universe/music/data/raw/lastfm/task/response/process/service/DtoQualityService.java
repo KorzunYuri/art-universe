@@ -3,7 +3,8 @@ package yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.serv
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import yurykorzun.art.universe.music.data.raw.lastfm.config.LastfmThresholdConfig;
+import yurykorzun.art.universe.common.config.client.ConfigPropertyHolder;
+import yurykorzun.art.universe.music.data.raw.lastfm.config.LastfmParserProperty;
 import yurykorzun.art.universe.music.data.raw.lastfm.integration.dto.EntityDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.integration.dto.EntityDtoWithMetrics;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.BaseLastfmEntity;
@@ -24,14 +25,14 @@ import static java.util.stream.Collectors.groupingBy;
 @Slf4j
 public class DtoQualityService {
 
-    private final LastfmThresholdConfig thresholdConfig;
+    private final ConfigPropertyHolder configPropertyHolder;
     private final BlacklistedEntityUrlService blacklistService;
 
     public DtoQualityService(
-        LastfmThresholdConfig thresholdConfig,
+        ConfigPropertyHolder configPropertyHolder,
         BlacklistedEntityUrlService blacklistService
     ) {
-        this.thresholdConfig = thresholdConfig;
+        this.configPropertyHolder = configPropertyHolder;
         this.blacklistService = blacklistService;
     }
 
@@ -76,7 +77,7 @@ public class DtoQualityService {
     /**
      * Validates DTOs with metrics + automatically adds rejected ones to blacklist
      * Only adds to blacklist if entity doesn't exist in DB and was rejected due to low metrics
-     * 
+     *
      * @return List of validation results for each DTO
      */
     public <E extends BaseLastfmEntity, M extends EntityDtoWithMetrics<E>> List<Result<E, M>> validateAndBlacklist(List<M> dtos) {
@@ -109,7 +110,7 @@ public class DtoQualityService {
         // Batch add to blacklist
         if (!urlsToBlacklist.isEmpty()) {
             blacklistService.addToBlacklist(entityType, urlsToBlacklist);
-            log.info("Added {} {} URLs to blacklist due to low quality metrics", 
+            log.info("Added {} {} URLs to blacklist due to low quality metrics",
                 urlsToBlacklist.size(), entityType);
         }
 
@@ -120,8 +121,8 @@ public class DtoQualityService {
 
         long acceptedCount = result.stream().mapToLong(r -> r.isAccepted() ? 1 : 0).sum();
         if (acceptedCount < dtos.size()) {
-            log.debug("Validated {} {} DTOs: {} accepted, {} rejected, {} blacklisted", 
-                dtos.size(), entityType, acceptedCount, 
+            log.debug("Validated {} {} DTOs: {} accepted, {} rejected, {} blacklisted",
+                dtos.size(), entityType, acceptedCount,
                 dtos.size() - acceptedCount, urlsToBlacklist.size());
         }
 
@@ -138,14 +139,14 @@ public class DtoQualityService {
         }
 
         LastfmEntityType entityType = dtos.getFirst().getEntityType();
-        
+
         // Batch blacklist check
         List<String> urls = dtos.stream()
             .map(EntityDto::getUrl)
             .filter(Objects::nonNull)
             .filter(url -> !url.trim().isEmpty())
             .toList();
-            
+
         Set<String> blacklistedUrls = new HashSet<>(
             blacklistService.getBlacklisted(entityType, urls)
         );
@@ -159,7 +160,7 @@ public class DtoQualityService {
 
         long rejectedCount = results.stream().mapToLong(r -> r.isRejected() ? 1 : 0).sum();
         if (rejectedCount > 0) {
-            log.debug("Validated {} {} DTOs against blacklist: {} rejected", 
+            log.debug("Validated {} {} DTOs against blacklist: {} rejected",
                 dtos.size(), entityType, rejectedCount);
         }
 
@@ -168,10 +169,10 @@ public class DtoQualityService {
 
     private Integer getThreshold(LastfmEntityType entityType) {
         return switch (entityType) {
-            case ARTIST -> thresholdConfig.getArtist().getListenersCount();
-            case ALBUM -> thresholdConfig.getAlbum().getPlayCount().intValue();
-            case TRACK -> thresholdConfig.getTrack().getPlayCount().intValue();
-            case TAG -> thresholdConfig.getTag().getUsageCount();
+            case ARTIST -> configPropertyHolder.getInt(LastfmParserProperty.THRESHOLD_ARTIST_LISTENERS_COUNT);
+            case ALBUM -> configPropertyHolder.getInt(LastfmParserProperty.THRESHOLD_ALBUM_PLAY_COUNT);
+            case TRACK -> configPropertyHolder.getInt(LastfmParserProperty.THRESHOLD_TRACK_PLAY_COUNT);
+            case TAG -> configPropertyHolder.getInt(LastfmParserProperty.THRESHOLD_TAG_USAGE_COUNT);
         };
     }
 
@@ -212,7 +213,7 @@ public class DtoQualityService {
 
         @Override
         public String toString() {
-            return String.format("EntityQualityResult{accepted=%s, reason=%s, message='%s'}", 
+            return String.format("EntityQualityResult{accepted=%s, reason=%s, message='%s'}",
                 accepted, reason, message);
         }
     }
