@@ -2,8 +2,9 @@ package yurykorzun.art.universe.music.data.raw.spotify.staging;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.similarity.JaroWinklerSimilarity;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import yurykorzun.art.universe.common.config.client.ConfigPropertyHolder;
+import yurykorzun.art.universe.music.data.raw.spotify.config.SpotifyParserProperty;
 import yurykorzun.art.universe.music.data.raw.spotify.etl.entity.SearchAttemptStatus;
 import yurykorzun.art.universe.music.data.raw.spotify.etl.entity.SpotifySearchAttempt;
 import yurykorzun.art.universe.music.data.raw.spotify.etl.repository.SpotifySearchAttemptRepository;
@@ -17,16 +18,15 @@ import java.util.List;
 public class SearchMatchScoringService {
 
     private final SpotifySearchAttemptRepository searchAttemptRepository;
+    private final ConfigPropertyHolder configPropertyHolder;
     private final JaroWinklerSimilarity jaroWinkler = new JaroWinklerSimilarity();
 
-    @Value("${spotify.search.match-threshold:0.85}")
-    private double matchThreshold;
-
-    @Value("${spotify.search.grace-period-days:30}")
-    private int gracePeriodDays;
-
-    public SearchMatchScoringService(SpotifySearchAttemptRepository searchAttemptRepository) {
+    public SearchMatchScoringService(
+        SpotifySearchAttemptRepository searchAttemptRepository,
+        ConfigPropertyHolder configPropertyHolder
+    ) {
         this.searchAttemptRepository = searchAttemptRepository;
+        this.configPropertyHolder = configPropertyHolder;
     }
 
     /**
@@ -56,6 +56,9 @@ public class SearchMatchScoringService {
                 bestSpotifyId = candidateSpotifyIds.get(i);
             }
         }
+
+        double matchThreshold = configPropertyHolder.getDecimal(SpotifyParserProperty.SEARCH_MATCH_THRESHOLD).doubleValue();
+        int gracePeriodDays = configPropertyHolder.getInt(SpotifyParserProperty.SEARCH_GRACE_PERIOD_DAYS);
 
         attempt.setBestMatchScore(bestScore);
         attempt.setSearchedAt(Instant.now());
