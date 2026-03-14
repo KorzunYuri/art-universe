@@ -7,7 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.util.ReflectionTestUtils;
+import yurykorzun.art.universe.music.data.raw.lastfm.config.LastfmParserProperty;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.integration.dto.artist.topalbums.ArtistTopAlbumsDtoRoot;
@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 @Import({
     // processing
@@ -70,8 +71,10 @@ class LastfmArtistTopAlbumsResponseProcessorTest extends BaseLastfmApiResponsePr
         responseJsonString = LastfmApiClientResourceUtil.getApiClientResponse(TEST_RESPONSE_KEY);
         dtoRoot = parseResponse(responseJsonString);
         
-        // Set threshold to 0 to process all albums by default
-        ReflectionTestUtils.setField(processor, "albumPlayCountThreshold", DEFAULT_THRESHOLD);
+        // Set method threshold to 0 to process all quality-passing albums by default
+        when(configPropertyHolder.getInt(LastfmParserProperty.METHOD_ARTIST_TOP_ALBUMS_PLAY_COUNT_THRESHOLD)).thenReturn(DEFAULT_THRESHOLD);
+        // Set quality threshold to default (10000) so DtoQualityService filters as in production
+        when(configPropertyHolder.getInt(LastfmParserProperty.THRESHOLD_ALBUM_PLAY_COUNT)).thenReturn(10000);
     }
 
     /**
@@ -177,7 +180,7 @@ class LastfmArtistTopAlbumsResponseProcessorTest extends BaseLastfmApiResponsePr
 
         // Set high threshold to filter some albums
         int threshold = 1000000; // High threshold to filter out some albums
-        ReflectionTestUtils.setField(processor, "albumPlayCountThreshold", threshold);
+        when(configPropertyHolder.getInt(LastfmParserProperty.METHOD_ARTIST_TOP_ALBUMS_PLAY_COUNT_THRESHOLD)).thenReturn(threshold);
 
         // Record initial state
         long initialAlbumCount = albumRepository.count();
@@ -435,6 +438,9 @@ class LastfmArtistTopAlbumsResponseProcessorTest extends BaseLastfmApiResponsePr
         // Set all albums to have low play counts (below threshold of 10000)
         modifiedDtoRoot.getTopAlbumsObject().getAlbums().forEach(album -> album.setPlayCount(5000L));
         String modifiedResponse = objectMapper.writeValueAsString(modifiedDtoRoot);
+
+        // Override threshold so albums with 5000 plays are below it
+        when(configPropertyHolder.getInt(LastfmParserProperty.METHOD_ARTIST_TOP_ALBUMS_PLAY_COUNT_THRESHOLD)).thenReturn(10000);
 
         LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
             modifiedResponse, LastfmApiCallType.ARTIST_TOP_ALBUMS, sourceArtist);

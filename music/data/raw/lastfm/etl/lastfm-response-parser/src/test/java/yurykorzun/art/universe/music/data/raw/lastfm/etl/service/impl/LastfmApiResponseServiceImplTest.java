@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
+import yurykorzun.art.universe.common.config.client.ConfigPropertyHolder;
 import yurykorzun.art.universe.data.raw.common.etl.entity.ApiResponseStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.dto.LastfmApiResponseCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiResponse;
@@ -24,12 +25,16 @@ class LastfmApiResponseServiceImplTest {
     @Mock
     private LastfmApiResponseRepository apiResponseRepository;
 
+    @Mock
+    private ConfigPropertyHolder configPropertyHolder;
+
     private LastfmApiResponseServiceImpl apiResponseService;
 
     @BeforeEach
     void setUp() {
         apiResponseService = new LastfmApiResponseServiceImpl(
             apiResponseRepository,
+            configPropertyHolder,
             null
         );
 

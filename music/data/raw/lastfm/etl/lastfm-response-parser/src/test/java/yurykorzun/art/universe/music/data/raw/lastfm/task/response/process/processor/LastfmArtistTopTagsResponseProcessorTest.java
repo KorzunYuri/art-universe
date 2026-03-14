@@ -7,7 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.util.ReflectionTestUtils;
+import yurykorzun.art.universe.music.data.raw.lastfm.config.LastfmParserProperty;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.integration.dto.artist.toptags.ArtistTopTagsDtoRoot;
@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 @Import({
     // processing
@@ -72,7 +73,7 @@ class LastfmArtistTopTagsResponseProcessorTest extends BaseLastfmApiResponseProc
         dtoRoot = parseResponse(responseJsonString);
 
         // Set threshold to 0 to process all tags by default
-        ReflectionTestUtils.setField(processor, "tagUsageCountThreshold", DEFAULT_THRESHOLD);
+        when(configPropertyHolder.getInt(LastfmParserProperty.METHOD_ARTIST_TOP_TAGS_USAGE_COUNT_THRESHOLD)).thenReturn(DEFAULT_THRESHOLD);
     }
 
     /**
@@ -166,7 +167,7 @@ class LastfmArtistTopTagsResponseProcessorTest extends BaseLastfmApiResponseProc
 
         // Set high threshold to filter some tags
         int threshold = 100; // Set threshold to filter out some tags
-        ReflectionTestUtils.setField(processor, "tagUsageCountThreshold", threshold);
+        when(configPropertyHolder.getInt(LastfmParserProperty.METHOD_ARTIST_TOP_TAGS_USAGE_COUNT_THRESHOLD)).thenReturn(threshold);
 
         // Record initial state
         long initialTagCount = tagRepository.count();
@@ -294,7 +295,7 @@ class LastfmArtistTopTagsResponseProcessorTest extends BaseLastfmApiResponseProc
         LastfmArtist sourceArtist = consistencyHelper.createAndSaveArtist();
 
         // Set threshold to 10 to filter tags properly
-        ReflectionTestUtils.setField(processor, "tagUsageCountThreshold", 10);
+        when(configPropertyHolder.getInt(LastfmParserProperty.METHOD_ARTIST_TOP_TAGS_USAGE_COUNT_THRESHOLD)).thenReturn(10);
 
         // Blacklist some tags from the response
         var tags = dtoRoot.getTopTagsObject().getTags();
@@ -348,7 +349,7 @@ class LastfmArtistTopTagsResponseProcessorTest extends BaseLastfmApiResponseProc
         LastfmArtist sourceArtist = consistencyHelper.createAndSaveArtist();
 
         // Set threshold to 10 to filter tags properly
-        ReflectionTestUtils.setField(processor, "tagUsageCountThreshold", 10);
+        when(configPropertyHolder.getInt(LastfmParserProperty.METHOD_ARTIST_TOP_TAGS_USAGE_COUNT_THRESHOLD)).thenReturn(10);
 
         // Blacklist ALL tags that meet the usage count threshold
         var tags = dtoRoot.getTopTagsObject().getTags();
