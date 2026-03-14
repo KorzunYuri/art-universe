@@ -73,8 +73,9 @@ Patterns for Spring Boot configuration and environment management.
 **Files**:
 - [environment-profiles.md](configuration/environment-profiles.md) - Environment profiles configuration
 - [spring-config-import.md](configuration/spring-config-import.md) - Sharing configuration from library modules
+- [centralized-configuration.md](configuration/centralized-configuration.md) - Runtime-tunable properties via `au-config-service` and `config-client`
 
-**Use when**: Configuring Spring Boot applications, managing environments, sharing configuration
+**Use when**: Configuring Spring Boot applications, managing environments, sharing configuration, tuning ETL parameters at runtime
 
 ---
 
