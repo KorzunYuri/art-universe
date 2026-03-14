@@ -54,20 +54,6 @@ lastfm:
     maintenance:
       db:
         cron: "0 0 8 * * *"
-  tasks:
-    maintenance:
-      db:
-        unbind:
-          batch-size: 1000
-        thresholds:
-          artist:
-            listeners-count: 1000
-          album:
-            play-count: 10000
-          track:
-            play-count: 1000
-          tag:
-            usage-count: 1000
   metrics:
     update:
       # Low impact queries - simple COUNT queries with existing indexes

@@ -49,10 +49,6 @@ lastfm:
     pool:
       size: 4
       await-termination-secs: 300
-    response-parse:
-      fixed-delay-secs: 5
-    attribute-history:
-      fixed-delay-secs: 30
   tasks:
     response-parse:
       thresholds:
@@ -64,13 +60,3 @@ lastfm:
           play-count: 1000
         tag:
           usage-count: 1000
-      methods:
-        artist:
-          get-similar:
-            artist-match-threshold: 0.2
-          top-tags:
-            tag-usage-count-threshold: 10
-          top-albums:
-            album-play-count-threshold: 10000
-          search:
-            artist-similarity-threshold: 0.5

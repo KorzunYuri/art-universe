@@ -52,12 +52,3 @@ lastfm:
     pool:
       size: 2
       await-termination-secs: 300
-    calls-perform:
-      fixed-delay-secs: 1
-  tasks:
-    calls-perform:
-      calls-per-sec: 1.0
-      retry:
-        max-attempts: 3
-        initial-delay-ms: 500
-        multiplier: 1.5

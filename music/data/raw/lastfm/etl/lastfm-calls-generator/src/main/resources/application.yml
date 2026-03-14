@@ -49,22 +49,3 @@ lastfm:
     pool:
       size: 2
       await-termination-secs: 300
-    calls-generate:
-      fixed-delay-secs: 60
-  tasks:
-    calls-generate:
-      due-duration-days:
-        album-get-info: 28
-        artist-get-info: 7
-        artist-get-similar: 28
-        artist-top-tags: 7
-        artist-top-albums: 28
-        artist-top-tracks: 28
-        tag-top-tags: 7
-        tag-top-artists: 7
-        tag-top-tracks: 7
-        track-get-info: 56
-      records-limit:
-        tag-top-tags: 2000 # it is known that Lastfm API offset breaks after 2000th record for this method
-      usage-to-page-ratio:
-        tag-top-tracks: 50000 # for each N usages of the tag, ONE 50-items api call will be generated
