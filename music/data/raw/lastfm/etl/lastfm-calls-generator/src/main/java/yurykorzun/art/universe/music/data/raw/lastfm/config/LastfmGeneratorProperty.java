@@ -73,6 +73,12 @@ public enum LastfmGeneratorProperty implements ConfigurableProperty {
         "Enable generation of TAG_TOP_TRACKS calls",
         null
     ),
+    GENERATE_ARTIST_SEARCH(
+        "lastfm.generator.generate.artist-search",
+        PropertyType.BOOLEAN, "true",
+        "Enable generation of ARTIST_SEARCH calls",
+        null
+    ),
 
     DUE_DURATION_ARTIST_GET_INFO(
         "lastfm.generator.due-duration-days.artist-get-info",

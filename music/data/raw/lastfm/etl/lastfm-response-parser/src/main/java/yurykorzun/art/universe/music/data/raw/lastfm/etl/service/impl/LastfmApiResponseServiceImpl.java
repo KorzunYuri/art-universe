@@ -99,19 +99,7 @@ public class LastfmApiResponseServiceImpl implements LastfmApiResponseService {
     }
 
     private boolean isParsingEnabled(LastfmApiCallType callType) {
-        LastfmParserProperty property = switch (callType) {
-            case ARTIST_GET_INFO -> LastfmParserProperty.PARSE_ARTIST_GET_INFO;
-            case ARTIST_GET_SIMILAR -> LastfmParserProperty.PARSE_ARTIST_GET_SIMILAR;
-            case ARTIST_TOP_ALBUMS -> LastfmParserProperty.PARSE_ARTIST_TOP_ALBUMS;
-            case ARTIST_TOP_TRACKS -> LastfmParserProperty.PARSE_ARTIST_TOP_TRACKS;
-            case ARTIST_TOP_TAGS -> LastfmParserProperty.PARSE_ARTIST_TOP_TAGS;
-            case ARTIST_SEARCH -> LastfmParserProperty.PARSE_ARTIST_SEARCH;
-            case ALBUM_GET_INFO -> LastfmParserProperty.PARSE_ALBUM_GET_INFO;
-            case TRACK_GET_INFO -> LastfmParserProperty.PARSE_TRACK_GET_INFO;
-            case TAG_TOP_TAGS -> LastfmParserProperty.PARSE_TAG_TOP_TAGS;
-            case TAG_TOP_ARTISTS -> LastfmParserProperty.PARSE_TAG_TOP_ARTISTS;
-            case TAG_TOP_TRACKS -> LastfmParserProperty.PARSE_TAG_TOP_TRACKS;
-        };
-        return configPropertyHolder.getBoolean(property);
+        LastfmParserProperty prop = LastfmParserProperty.valueOf("PARSE_" + callType.name());
+        return configPropertyHolder.getBoolean(prop);
     }
 }

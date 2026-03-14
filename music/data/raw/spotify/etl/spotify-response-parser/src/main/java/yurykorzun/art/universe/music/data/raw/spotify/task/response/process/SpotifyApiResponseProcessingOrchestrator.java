@@ -95,16 +95,7 @@ public class SpotifyApiResponseProcessingOrchestrator {
     }
 
     private boolean isParsingEnabled(SpotifyApiCallType callType) {
-        SpotifyParserProperty property = switch (callType) {
-            case ARTIST_GET -> SpotifyParserProperty.PARSE_ARTIST_GET;
-            case ARTIST_ALBUMS -> SpotifyParserProperty.PARSE_ARTIST_ALBUMS;
-            case ALBUM_GET -> SpotifyParserProperty.PARSE_ALBUM_GET;
-            case ALBUM_TRACKS -> SpotifyParserProperty.PARSE_ALBUM_TRACKS;
-            case TRACK_GET -> SpotifyParserProperty.PARSE_TRACK_GET;
-            case SEARCH_ARTIST -> SpotifyParserProperty.PARSE_SEARCH_ARTIST;
-            case SEARCH_ALBUM -> SpotifyParserProperty.PARSE_SEARCH_ALBUM;
-            case SEARCH_TRACK -> SpotifyParserProperty.PARSE_SEARCH_TRACK;
-        };
-        return configPropertyHolder.getBoolean(property);
+        SpotifyParserProperty prop = SpotifyParserProperty.valueOf("PARSE_" + callType.name());
+        return configPropertyHolder.getBoolean(prop);
     }
 }

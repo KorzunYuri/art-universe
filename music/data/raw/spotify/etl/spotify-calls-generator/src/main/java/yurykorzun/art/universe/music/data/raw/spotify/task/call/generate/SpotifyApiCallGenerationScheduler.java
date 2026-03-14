@@ -68,16 +68,7 @@ public class SpotifyApiCallGenerationScheduler {
     }
 
     private boolean isGenerationEnabled(SpotifyApiCallType callType) {
-        SpotifyGeneratorProperty property = switch (callType) {
-            case ARTIST_GET -> SpotifyGeneratorProperty.GENERATE_ARTIST_GET;
-            case ARTIST_ALBUMS -> SpotifyGeneratorProperty.GENERATE_ARTIST_ALBUMS;
-            case ALBUM_GET -> SpotifyGeneratorProperty.GENERATE_ALBUM_GET;
-            case ALBUM_TRACKS -> SpotifyGeneratorProperty.GENERATE_ALBUM_TRACKS;
-            case TRACK_GET -> SpotifyGeneratorProperty.GENERATE_TRACK_GET;
-            case SEARCH_ARTIST -> SpotifyGeneratorProperty.GENERATE_SEARCH_ARTIST;
-            case SEARCH_ALBUM -> SpotifyGeneratorProperty.GENERATE_SEARCH_ALBUM;
-            case SEARCH_TRACK -> SpotifyGeneratorProperty.GENERATE_SEARCH_TRACK;
-        };
-        return configPropertyHolder.getBoolean(property);
+        SpotifyGeneratorProperty prop = SpotifyGeneratorProperty.valueOf("GENERATE_" + callType.name());
+        return configPropertyHolder.getBoolean(prop);
     }
 }
