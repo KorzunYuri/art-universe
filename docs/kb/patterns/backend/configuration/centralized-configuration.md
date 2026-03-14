@@ -63,6 +63,16 @@ private boolean isGenerationEnabled(LastfmApiCallType callType) {
 This makes the relationship self-maintaining: adding a new `LastfmApiCallType` only requires adding the corresponding `GENERATE_*` enum constant — no switch to update. If the constant is missing, `valueOf` throws `IllegalArgumentException` at the point of first use, giving a clear failure signal.
 
 
+## Change Listeners
+
+When a component caches config values in its own fields (e.g. to avoid a map lookup on every call), use `ConfigPropertyHolder.onChange()` to keep those fields in sync with refreshes:
+
+**Rules**:
+- Listeners are invoked synchronously on the config refresh thread — keep them to a single field assignment
+- Cast the `Object` parameter to the Java type corresponding to the property's `PropertyType` (`Integer`, `Boolean`, `BigDecimal`, `String`)
+- Register listeners in a `@Bean` factory method (or `@PostConstruct`) after constructing the target object
+- Listeners fire only when the value **changes** from the previous refresh — no spurious calls
+
 ## Constraints
 
 Optional. Validated on `PUT /api/v1/config/properties/{key}`.
@@ -79,9 +89,9 @@ Pass `null` for unconstrained properties.
 | Module | Enum | Properties |
 |--------|------|------------|
 | [lastfm-calls-generator](../../../../../music/data/raw/lastfm/etl/lastfm-calls-generator/README.md) | [LastfmGeneratorProperty](../../../../../music/data/raw/lastfm/etl/lastfm-calls-generator/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/config/LastfmGeneratorProperty.java) | Scheduler delay, per-call-type enable flags, due-duration days |
-| [lastfm-calls-performer](../../../../../music/data/raw/lastfm/etl/lastfm-calls-performer/README.md) | [LastfmPerformerProperty](../../../../../music/data/raw/lastfm/etl/lastfm-calls-performer/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/config/LastfmPerformerProperty.java) | Scheduler delay, calls-per-second rate |
+| [lastfm-calls-performer](../../../../../music/data/raw/lastfm/etl/lastfm-calls-performer/README.md) | [LastfmPerformerProperty](../../../../../music/data/raw/lastfm/etl/lastfm-calls-performer/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/config/LastfmPerformerProperty.java) | Scheduler delay, adaptive rate-limiter parameters |
 | [lastfm-response-parser](../../../../../music/data/raw/lastfm/etl/lastfm-response-parser/README.md) | [LastfmParserProperty](../../../../../music/data/raw/lastfm/etl/lastfm-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/config/LastfmParserProperty.java) | Scheduler delay, per-call-type parse flags, quality thresholds |
-| [lastfm-etl-rest-api](../../../../../music/data/raw/lastfm/etl/lastfm-etl-rest-api/README.md) | [LastfmMaintenanceProperty](../../../../../music/data/raw/lastfm/etl/lastfm-etl-rest-api/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/config/LastfmMaintenanceProperty.java) | Entity quality thresholds, unbind batch size |
+| [lastfm-etl-rest-api](../../../../../music/data/raw/lastfm/etl/lastfm-etl-rest-api/README.md) | [LastfmMaintenanceProperty](../../../../../music/data/raw/lastfm/etl/lastfm-etl-rest-api/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/config/LastfmMaintenanceProperty.java) | Entity quality thresholds, unbind batch size, metrics update intervals |
 | [spotify-calls-generator](../../../../../music/data/raw/spotify/etl/spotify-calls-generator/README.md) | [SpotifyGeneratorProperty](../../../../../music/data/raw/spotify/etl/spotify-calls-generator/src/main/java/yurykorzun/art/universe/music/data/raw/spotify/config/SpotifyGeneratorProperty.java) | Scheduler delay, per-call-type enable flags, due-duration days |
 | [spotify-calls-performer](../../../../../music/data/raw/spotify/etl/spotify-calls-performer/README.md) | [SpotifyPerformerProperty](../../../../../music/data/raw/spotify/etl/spotify-calls-performer/src/main/java/yurykorzun/art/universe/music/data/raw/spotify/config/SpotifyPerformerProperty.java) | Scheduler delay, adaptive rate-limiter parameters |
 | [spotify-response-parser](../../../../../music/data/raw/spotify/etl/spotify-response-parser/README.md) | [SpotifyParserProperty](../../../../../music/data/raw/spotify/etl/spotify-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/spotify/config/SpotifyParserProperty.java) | Scheduler delay, per-call-type parse flags, staging iteration limits |

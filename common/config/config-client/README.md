@@ -105,6 +105,21 @@ public class MyScheduler {
 }
 ```
 
+### 5. (Optional) Register Change Listeners
+
+Register a callback to be notified when a specific property's value changes during a refresh cycle:
+
+```java
+configPropertyHolder.onChange(MyModuleProperty.SOME_PROPERTY, newValue -> {
+    myBean.setSomeValue((Integer) newValue);
+});
+```
+
+The consumer receives the new parsed value (typed as `Object` — cast to `Integer`, `Boolean`, `BigDecimal`, or `String` per the property's `PropertyType`). Listeners are invoked **synchronously on the refresh thread**, so keep them lightweight (setting a volatile field is ideal). A failed listener logs a warning and does not block other listeners or the refresh cycle.
+
+This is the recommended mechanism for objects that cache config values internally (e.g. a rate limiter holding `minDelayMs` as a field) — see `AdaptiveRateLimiter` wiring in performer modules for a real example.
+
+
 ## Configuration Properties
 
 | Property | Default | Description |
