@@ -2,6 +2,7 @@ package yurykorzun.art.universe.music.data.raw.spotify.task.call.perform;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import yurykorzun.art.universe.data.raw.common.integration.AdaptiveRateLimiter;
 import yurykorzun.art.universe.music.data.raw.spotify.etl.entity.SpotifyApiCall;
 import yurykorzun.art.universe.music.data.raw.spotify.etl.service.SpotifyApiCallService;
 

@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 import yurykorzun.art.universe.data.raw.common.etl.entity.ApiCallStatus;
+import yurykorzun.art.universe.data.raw.common.integration.AdaptiveRateLimiter;
 import yurykorzun.art.universe.music.data.raw.spotify.etl.entity.SpotifyApiCall;
 import yurykorzun.art.universe.music.data.raw.spotify.etl.service.SpotifyApiCallService;
 import yurykorzun.art.universe.music.data.raw.spotify.etl.service.SpotifyApiResponseService;

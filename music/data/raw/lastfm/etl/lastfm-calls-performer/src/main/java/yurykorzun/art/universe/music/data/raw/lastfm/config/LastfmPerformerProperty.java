@@ -12,11 +12,23 @@ public enum LastfmPerformerProperty implements ConfigurableProperty {
         "Delay in seconds between API call execution runs",
         PropertyConstraints.ofRange(1, 60)
     ),
-    CALLS_PER_SEC(
-        "lastfm.performer.calls-per-sec",
-        PropertyType.DECIMAL, "1.0",
-        "Maximum LastFM API calls per second (rate limiter)",
-        PropertyConstraints.ofRange(0.1, 5.0)
+    RATE_LIMITER_MIN_DELAY_MS(
+        "lastfm.performer.rate-limiter.min-delay-ms",
+        PropertyType.INTEGER, "1000",
+        "Minimum delay between LastFM API calls in milliseconds (~1 call/sec)",
+        PropertyConstraints.ofRange(200, 10000)
+    ),
+    RATE_LIMITER_MAX_DELAY_MS(
+        "lastfm.performer.rate-limiter.max-delay-ms",
+        PropertyType.INTEGER, "30000",
+        "Maximum delay between LastFM API calls when rate-limited (ms)",
+        PropertyConstraints.ofRange(1000, 300000)
+    ),
+    RATE_LIMITER_BACKOFF_MULTIPLIER(
+        "lastfm.performer.rate-limiter.backoff-multiplier",
+        PropertyType.DECIMAL, "2.0",
+        "Backoff multiplier applied on rate-limit response",
+        PropertyConstraints.ofRange(1.0, 10.0)
     ),
     RETRY_MAX_ATTEMPTS(
         "lastfm.performer.retry.max-attempts",
