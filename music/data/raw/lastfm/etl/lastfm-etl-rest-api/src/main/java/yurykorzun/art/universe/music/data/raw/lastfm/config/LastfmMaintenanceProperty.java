@@ -35,6 +35,30 @@ public enum LastfmMaintenanceProperty implements ConfigurableProperty {
         PropertyType.INTEGER, "1000",
         "Batch size for unbinding deleted entities from master data",
         PropertyConstraints.ofRange(10, 10000)
+    ),
+    METRICS_UPDATE_ENTITY_COUNTS_INTERVAL_MS(
+        "lastfm.maintenance.metrics-update.entity-counts-interval-ms",
+        PropertyType.INTEGER, "15000",
+        "Interval (ms) between entity count metrics updates",
+        PropertyConstraints.ofRange(1000, 3600000)
+    ),
+    METRICS_UPDATE_API_CALL_COUNTS_INTERVAL_MS(
+        "lastfm.maintenance.metrics-update.api-call-counts-interval-ms",
+        PropertyType.INTEGER, "15000",
+        "Interval (ms) between API call count metrics updates",
+        PropertyConstraints.ofRange(1000, 3600000)
+    ),
+    METRICS_UPDATE_API_RESPONSE_COUNTS_INTERVAL_MS(
+        "lastfm.maintenance.metrics-update.api-response-counts-interval-ms",
+        PropertyType.INTEGER, "15000",
+        "Interval (ms) between API response count metrics updates",
+        PropertyConstraints.ofRange(1000, 3600000)
+    ),
+    METRICS_UPDATE_TABLE_SIZES_INTERVAL_MS(
+        "lastfm.maintenance.metrics-update.table-sizes-interval-ms",
+        PropertyType.INTEGER, "300000",
+        "Interval (ms) between table size metrics updates",
+        PropertyConstraints.ofRange(10000, 86400000)
     );
 
     private final String key;

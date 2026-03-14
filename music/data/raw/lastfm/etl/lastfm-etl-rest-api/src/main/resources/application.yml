@@ -54,15 +54,3 @@ lastfm:
     maintenance:
       db:
         cron: "0 0 8 * * *"
-  metrics:
-    update:
-      # Low impact queries - simple COUNT queries with existing indexes
-      entity-counts:
-        interval: 15000
-      api-call-counts:
-        interval: 15000
-      api-response-counts:
-        interval: 15000
-      # Medium impact queries
-      table-sizes:
-        interval: 300000
