@@ -7,8 +7,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.util.ReflectionTestUtils;
+import yurykorzun.art.universe.common.config.client.ConfigPropertyHolder;
 import yurykorzun.art.universe.common.observability.util.NoOpObservabilityService;
+import yurykorzun.art.universe.music.data.raw.lastfm.config.LastfmMaintenanceProperty;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.LastfmEntityType;
 
 import java.util.Collections;
@@ -29,18 +30,19 @@ class DbMaintenanceExecutorTest {
     @Mock
     private MusicDataIntegrationService musicDataIntegrationService;
 
+    @Mock
+    private ConfigPropertyHolder configPropertyHolder;
+
     private DbMaintenanceExecutor executor;
 
     @BeforeEach
     void setUp() {
-        executor = new DbMaintenanceExecutor(jdbcTemplate, musicDataIntegrationService, NoOpObservabilityService.getInstance());
+        when(configPropertyHolder.getInt(LastfmMaintenanceProperty.THRESHOLD_ARTIST_LISTENERS_COUNT)).thenReturn(1000);
+        when(configPropertyHolder.getInt(LastfmMaintenanceProperty.THRESHOLD_ALBUM_PLAY_COUNT)).thenReturn(10000);
+        when(configPropertyHolder.getInt(LastfmMaintenanceProperty.THRESHOLD_TRACK_PLAY_COUNT)).thenReturn(10000);
+        when(configPropertyHolder.getInt(LastfmMaintenanceProperty.THRESHOLD_TAG_USAGE_COUNT)).thenReturn(1000);
 
-        // Set thresholds via reflection
-        ReflectionTestUtils.setField(executor, "artistThreshold", 1000);
-        ReflectionTestUtils.setField(executor, "albumThreshold", 10000);
-        ReflectionTestUtils.setField(executor, "trackThreshold", 10000);
-        ReflectionTestUtils.setField(executor, "tagThreshold", 1000);
-
+        executor = new DbMaintenanceExecutor(jdbcTemplate, musicDataIntegrationService, NoOpObservabilityService.getInstance(), configPropertyHolder);
     }
 
     @Test
