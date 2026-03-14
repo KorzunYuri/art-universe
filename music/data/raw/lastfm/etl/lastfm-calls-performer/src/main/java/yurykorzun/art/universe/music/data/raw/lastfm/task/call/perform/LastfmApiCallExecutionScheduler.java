@@ -14,14 +14,14 @@ import java.time.Instant;
 @Slf4j
 public class LastfmApiCallExecutionScheduler {
 
-    private final LastfmCallsOrchestrator orchestrator;
+    private final LastfmApiCallsOrchestrator orchestrator;
     private final ThreadPoolTaskScheduler taskScheduler;
     private final ConfigPropertyHolder configPropertyHolder;
 
     private volatile boolean running = true;
 
     public LastfmApiCallExecutionScheduler(
-        LastfmCallsOrchestrator orchestrator,
+        LastfmApiCallsOrchestrator orchestrator,
         ThreadPoolTaskScheduler taskScheduler,
         ConfigPropertyHolder configPropertyHolder
     ) {

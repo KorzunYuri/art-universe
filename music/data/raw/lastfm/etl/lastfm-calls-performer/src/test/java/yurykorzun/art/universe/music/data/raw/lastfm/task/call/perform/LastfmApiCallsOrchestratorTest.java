@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import yurykorzun.art.universe.data.raw.common.etl.entity.ApiCallStatus;
+import yurykorzun.art.universe.data.raw.common.integration.AdaptiveRateLimiter;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.LastfmApiCallService;
@@ -18,22 +19,20 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class LastfmCallsOrchestratorTest {
+class LastfmApiCallsOrchestratorTest {
 
     @Mock
     private LastfmApiCallService apiCallService;
     @Mock
     private LastfmApiCallExecutor executor;
+    @Mock
+    private AdaptiveRateLimiter rateLimiter;
 
-    private LastfmCallsOrchestrator orchestrator;
+    private LastfmApiCallsOrchestrator orchestrator;
 
     @BeforeEach
     void setUp() {
-        orchestrator = new LastfmCallsOrchestrator(
-            apiCallService,
-            executor,
-            5.0 // limiter constant
-        );
+        orchestrator = new LastfmApiCallsOrchestrator(apiCallService, executor, rateLimiter);
     }
 
     private static final Instant dueDttm = Instant.now().plus(Duration.ofDays(1));
@@ -61,7 +60,7 @@ class LastfmCallsOrchestratorTest {
     }
 
     @Test
-    void orchestrateApiCalls_shouldExecuteEachCall_whenCallsExist() {
+    void orchestrateApiCalls_shouldExecuteEachCall_whenCallsExist() throws InterruptedException {
         // given
         LastfmApiCall call1 = createApiCall(1L);
         LastfmApiCall call2 = createApiCall(2L);
@@ -78,6 +77,21 @@ class LastfmCallsOrchestratorTest {
     }
 
     @Test
+    void orchestrateApiCalls_shouldAcquireRateLimiterPerCall() throws InterruptedException {
+        // given
+        LastfmApiCall call1 = createApiCall(1L);
+        LastfmApiCall call2 = createApiCall(2L);
+        when(apiCallService.findAllUnprocessedUnexpired()).thenReturn(List.of(call1, call2));
+
+        // when
+        orchestrator.orchestrateApiCalls();
+
+        // then
+        verify(rateLimiter, times(2)).acquire();
+        verify(rateLimiter, times(2)).recordSuccess();
+    }
+
+    @Test
     void orchestrateApiCalls_shouldNotExecuteAnyCalls_whenNoCallsExist() {
         // given
         when(apiCallService.findAllUnprocessedUnexpired()).thenReturn(List.of());
@@ -87,10 +101,11 @@ class LastfmCallsOrchestratorTest {
 
         // then
         verify(executor, never()).execute(any());
+        verifyNoInteractions(rateLimiter);
     }
 
     @Test
-    void orchestrateApiCalls_shouldContinueWithOtherCalls_whenOneCallFails() {
+    void orchestrateApiCalls_shouldContinueWithOtherCalls_whenOneCallFails() throws InterruptedException {
         // given
         LastfmApiCall call1 = createApiCall(1L);
         LastfmApiCall call2 = createApiCall(2L);

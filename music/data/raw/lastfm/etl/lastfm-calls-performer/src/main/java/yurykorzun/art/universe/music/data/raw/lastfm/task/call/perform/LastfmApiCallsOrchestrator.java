@@ -10,13 +10,13 @@ import java.util.Collection;
 
 @Service
 @Slf4j
-public class LastfmCallsOrchestrator {
+public class LastfmApiCallsOrchestrator {
 
     private final LastfmApiCallService apiCallService;
     private final LastfmApiCallExecutor executor;
     private final AdaptiveRateLimiter rateLimiter;
 
-    public LastfmCallsOrchestrator(
+    public LastfmApiCallsOrchestrator(
         LastfmApiCallService apiCallService,
         LastfmApiCallExecutor executor,
         AdaptiveRateLimiter rateLimiter
