@@ -42,7 +42,7 @@ public class LastfmApiCallGenerationScheduler {
         scheduler.schedule(this::run, delaySeconds, TimeUnit.SECONDS);
     }
 
-    private void run() {
+    void run() {
         try {
             log.info("start API calls generation");
             LastfmApiCallGeneratorsRegistry.getRegistry()

@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import yurykorzun.art.universe.data.raw.common.domain.entity.ApprovalStatus;
+import yurykorzun.art.universe.music.data.raw.lastfm.config.LastfmGeneratorProperty;
 import yurykorzun.art.universe.music.data.raw.lastfm.integration.LastfmApiConstants;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.dto.LastfmApiCallCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCall;
@@ -134,9 +135,8 @@ public class LastfmArtistApiCallGeneratorIntegrationTest extends LastfmJpaTestHe
     }
 
     private LastfmArtistApiCallGenerator getGenerator(Class<? extends LastfmArtistApiCallGenerator> clazz) {
-        LastfmArtistApiCallGenerator generator = ctx.getBean(clazz);
-        ReflectionTestUtils.setField(generator, "dueDurationDays", DUE_DURATION_DAYS);
-        return generator;
+        lenient().when(configPropertyHolder.getInt(any(LastfmGeneratorProperty.class))).thenReturn(DUE_DURATION_DAYS);
+        return ctx.getBean(clazz);
     }
 
     @ParameterizedTest(name = "[{index}]getApiCallType({1})")

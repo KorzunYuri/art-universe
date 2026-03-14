@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
+import yurykorzun.art.universe.music.data.raw.lastfm.config.LastfmGeneratorProperty;
 import yurykorzun.art.universe.music.data.raw.lastfm.integration.LastfmApiConstants;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.dto.LastfmApiCallCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCall;
@@ -52,9 +53,9 @@ class LastfmTagTopTagsApiCallGeneratorTest extends LastfmJpaTestHelper {
     private static final LastfmEntityType ENTITY_TYPE = LastfmEntityType.TAG;
 
     @BeforeEach
-    void setUp() {
-        ReflectionTestUtils.setField(generator, "recordsLimit", RECORDS_LIMIT);
-        ReflectionTestUtils.setField(generator, "dueDurationDays", 1);
+    void setUpGenerator() {
+        when(configPropertyHolder.getInt(LastfmGeneratorProperty.RECORDS_LIMIT_TAG_TOP_TAGS)).thenReturn(RECORDS_LIMIT);
+        when(configPropertyHolder.getInt(LastfmGeneratorProperty.DUE_DURATION_TAG_TOP_TAGS)).thenReturn(1);
     }
 
     void create_shouldCreateApiCall_whenValidDataProvided(int existingApiCallsNumber) {

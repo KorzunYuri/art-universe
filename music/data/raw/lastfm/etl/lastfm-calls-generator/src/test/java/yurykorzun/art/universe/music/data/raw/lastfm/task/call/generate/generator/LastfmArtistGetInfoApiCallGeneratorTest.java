@@ -5,7 +5,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
+import yurykorzun.art.universe.common.config.client.ConfigPropertyHolder;
+import yurykorzun.art.universe.music.data.raw.lastfm.config.LastfmGeneratorProperty;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.LastfmApiCallService;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmArtist;
@@ -30,6 +31,8 @@ class LastfmArtistGetInfoApiCallGeneratorTest {
     private LastfmDataSnapshotService snapshotService;
     @Mock
     private LastfmApiCallEntityService entityService;
+    @Mock
+    private ConfigPropertyHolder configPropertyHolder;
 
     @InjectMocks
     private LastfmArtistGetInfoApiCallGenerator generator;
@@ -47,7 +50,7 @@ class LastfmArtistGetInfoApiCallGeneratorTest {
     void getDueDurationDays_shouldReturnConfiguredValue() {
         // given
         int expectedDays = 7;
-        ReflectionTestUtils.setField(generator, "dueDurationDays", expectedDays);
+        when(configPropertyHolder.getInt(LastfmGeneratorProperty.DUE_DURATION_ARTIST_GET_INFO)).thenReturn(expectedDays);
 
         // when
         int result = generator.getDueDurationDays();

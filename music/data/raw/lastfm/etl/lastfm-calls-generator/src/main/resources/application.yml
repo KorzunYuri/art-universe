@@ -42,7 +42,7 @@ server:
 au:
   config:
     client:
-      service-url: "${AU_CONFIG_SERVICE_URL}"
+      service-url: "${AU_CONFIG_SERVICE_URL:stub-for-tests}"
 
 lastfm:
   scheduling:

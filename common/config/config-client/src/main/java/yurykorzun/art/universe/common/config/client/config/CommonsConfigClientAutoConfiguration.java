@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
 import yurykorzun.art.universe.common.config.client.ConfigClientProperties;
 import yurykorzun.art.universe.common.config.client.ConfigPropertyAutoRegistrator;
 import yurykorzun.art.universe.common.config.client.ConfigPropertyHolder;
@@ -16,6 +17,7 @@ import yurykorzun.art.universe.common.config.client.ConfigServiceClient;
  * Activated only when {@code au.config.client.service-url} is set in the application's
  * {@code application.yml}. Modules that do not declare this property get zero overhead.
  */
+@Profile("!test")
 @AutoConfiguration
 @ConditionalOnProperty(name = "au.config.client.service-url")
 @EnableConfigurationProperties(ConfigClientProperties.class)
