@@ -1,7 +1,6 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.test.archetypes;
 
 import org.springframework.context.annotation.Import;
-import yurykorzun.art.universe.music.data.raw.lastfm.config.LastfmThresholdConfig;
 import yurykorzun.art.universe.music.data.raw.lastfm.config.MappingConfig;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.LastfmApiDtoProcessingOrchestrator;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.service.DtoQualityService;
@@ -19,7 +18,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.impl.LastfmAttr
         // Quality control
         BlacklistedEntityUrlService.class,
         DtoQualityService.class,
-        LastfmThresholdConfig.class,
         // Attributes infrastructure
         LastfmAttributeHistoryStagingServiceImpl.class,
         LastfmAttributeHistoryProcessor.class,

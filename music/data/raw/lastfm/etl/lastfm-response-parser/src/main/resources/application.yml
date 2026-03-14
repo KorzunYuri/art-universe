@@ -49,14 +49,3 @@ lastfm:
     pool:
       size: 4
       await-termination-secs: 300
-  tasks:
-    response-parse:
-      thresholds:
-        artist:
-          listeners-count: 1000
-        album:
-          play-count: 10000
-        track:
-          play-count: 1000
-        tag:
-          usage-count: 1000
