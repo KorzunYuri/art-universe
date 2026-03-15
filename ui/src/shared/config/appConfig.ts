@@ -16,6 +16,8 @@ interface AppConfig {
     musicQuizPort: string;
     artDataHost: string;
     artDataPort: string;
+    configServiceHost: string;
+    configServicePort: string;
 }
 
 const runtimeConfig = (window as any).__APP_CONFIG__;
@@ -31,4 +33,6 @@ export const appConfig: AppConfig = {
     musicQuizPort: runtimeConfig?.MUSIC_QUIZ_PORT || import.meta.env.VITE_MU_QUIZ_APP_EXTERNAL_PORT || '8083',
     artDataHost: runtimeConfig?.ART_DATA_HOST || import.meta.env.VITE_ART_DATA_APP_HOST || 'localhost',
     artDataPort: runtimeConfig?.ART_DATA_PORT || import.meta.env.VITE_ART_DATA_APP_EXTERNAL_PORT || '8081',
+    configServiceHost: runtimeConfig?.CONFIG_SERVICE_HOST || import.meta.env.VITE_AU_CONFIG_APP_HOST || 'localhost',
+    configServicePort: runtimeConfig?.CONFIG_SERVICE_PORT || import.meta.env.VITE_AU_CONFIG_APP_EXTERNAL_PORT || '8070',
 };

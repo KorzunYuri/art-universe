@@ -1,0 +1,208 @@
+.root {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* ── Columns ─────────────────────────────────────────────── */
+
+.columnsArea {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 2px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+
+.column {
+    display: flex;
+    flex-direction: column;
+    min-width: 200px;
+    max-width: 280px;
+    flex-shrink: 0;
+}
+
+.columnHeader {
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 4px 8px 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.columnItems {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* ── Items (rectangles) ──────────────────────────────────── */
+
+.item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+    text-align: left;
+    transition: border-color 0.12s, background 0.12s;
+    font-size: 0.875rem;
+}
+
+.item:hover {
+    border-color: #94a3b8;
+    background: #f8fafc;
+}
+
+.itemSelected {
+    border-color: #3b82f6;
+    background: #eff6ff;
+}
+
+.itemSelected:hover {
+    border-color: #2563eb;
+    background: #dbeafe;
+}
+
+.itemLabel {
+    color: #1e293b;
+    font-weight: 400;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.itemArrow {
+    color: #94a3b8;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+/* ── Type badges ─────────────────────────────────────────── */
+
+.typeBadge {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    padding: 2px 5px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    text-transform: uppercase;
+}
+
+.typeINTEGER  { background: #dbeafe; color: #1d4ed8; }
+.typeBOOLEAN  { background: #dcfce7; color: #15803d; }
+.typeDECIMAL  { background: #fef3c7; color: #b45309; }
+.typeSTRING   { background: #f3e8ff; color: #7e22ce; }
+
+/* ── Property editor ─────────────────────────────────────── */
+
+.editor {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 480px;
+}
+
+.editorKey {
+    font-family: ui-monospace, monospace;
+    font-size: 0.8rem;
+    color: #475569;
+    word-break: break-all;
+}
+
+.editorDescription {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.editorField {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.editorLabel {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.editorDefault {
+    font-family: ui-monospace, monospace;
+    font-size: 0.85rem;
+    color: #94a3b8;
+}
+
+.input {
+    padding: 6px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    color: #1e293b;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.12s;
+}
+
+.input:focus {
+    border-color: #3b82f6;
+}
+
+.editorError {
+    font-size: 0.8rem;
+    color: #dc2626;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 4px;
+    padding: 6px 10px;
+}
+
+.saveButton {
+    align-self: flex-start;
+    padding: 7px 18px;
+    background: #3b82f6;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.12s;
+}
+
+.saveButton:hover:not(:disabled) {
+    background: #2563eb;
+}
+
+.saveButton:disabled {
+    background: #93c5fd;
+    cursor: not-allowed;
+}
+
+/* ── Empty state ─────────────────────────────────────────── */
+
+.empty {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    padding: 24px 0;
+}
