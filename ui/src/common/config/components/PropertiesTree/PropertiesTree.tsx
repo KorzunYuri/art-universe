@@ -234,7 +234,7 @@ interface PropertiesTreeProps {
 }
 
 export function PropertiesTree({ properties }: PropertiesTreeProps) {
-    const root = useMemo(() => buildTree(properties), [properties]);
+    const root = useMemo(() => buildTree([...properties].sort((a, b) => a.key.localeCompare(b.key))), [properties]);
     const [selectionPath, setSelectionPath] = useState<string[]>([]);
     const [selectedProperty, setSelectedProperty] = useState<PropertyResponse | null>(null);
 
