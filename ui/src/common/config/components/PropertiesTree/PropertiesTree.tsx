@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { type PropertyResponse, updateProperty } from '../../api/config-api';
+import { useNotifications } from '@/shared/hooks/useNotifications';
 import styles from './PropertiesTree.module.css';
 
 // ── Tree model ────────────────────────────────────────────────────────────────
@@ -243,20 +244,20 @@ export function PropertiesTree({ properties }: PropertiesTreeProps) {
     const [saveErrors, setSaveErrors] = useState<Record<string, string>>({});
 
     const queryClient = useQueryClient();
+    const { showNotification } = useNotifications();
     const mutation = useMutation({
         mutationFn: ({ key, value }: { key: string; value: string }) => updateProperty(key, value),
         onSuccess: (updated) => {
             queryClient.invalidateQueries({ queryKey: ['config-properties'] });
-            // Clear the tracked edit so the control reverts to the freshly fetched currentValue
             setEditValues(prev => { const n = { ...prev }; delete n[updated.key]; return n; });
             setSaveErrors(prev => { const n = { ...prev }; delete n[updated.key]; return n; });
             if (selectedProperty?.key === updated.key) setSelectedProperty(updated);
+            showNotification('success', `${updated.key} saved`);
         },
         onError: (err: unknown, { key }) => {
-            setSaveErrors(prev => ({
-                ...prev,
-                [key]: err instanceof Error ? err.message : 'Failed to update',
-            }));
+            const msg = err instanceof Error ? err.message : 'Failed to update';
+            setSaveErrors(prev => ({ ...prev, [key]: msg }));
+            showNotification('error', `Failed to save ${key}: ${msg}`);
         },
     });
 
