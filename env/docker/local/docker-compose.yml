@@ -125,6 +125,7 @@ services:
     env_file:
       - ./common.env
       - ../common/au-config.env
+      - ./au-config.env
       - ./database.secrets.env
     ports:
       - "${AU_CONFIG_APP_EXTERNAL_PORT}:${AU_CONFIG_APP_INTERNAL_PORT}"
