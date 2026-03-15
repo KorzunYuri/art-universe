@@ -18,9 +18,8 @@
 .column {
     display: flex;
     flex-direction: column;
-    min-width: 200px;
-    max-width: 280px;
     flex-shrink: 0;
+    min-width: 200px;
 }
 
 .columnHeader {
@@ -31,8 +30,6 @@
     letter-spacing: 0.04em;
     padding: 4px 8px 6px;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .columnItems {
@@ -45,17 +42,12 @@
 
 .item {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    padding: 8px 12px;
+    align-items: stretch;
     border: 1px solid #e2e8f0;
     border-radius: 6px;
     background: #fff;
-    cursor: pointer;
-    text-align: left;
+    overflow: hidden;
     transition: border-color 0.12s, background 0.12s;
-    font-size: 0.875rem;
 }
 
 .item:hover {
@@ -73,8 +65,23 @@
     background: #dbeafe;
 }
 
+.itemSelectArea {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    flex: 1;
+    min-width: 0;
+    text-align: left;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    outline: none;
+}
+
 .itemLabel {
     color: #1e293b;
+    font-size: 0.875rem;
     font-weight: 400;
     flex: 1;
     min-width: 0;
@@ -87,6 +94,133 @@
     color: #94a3b8;
     font-size: 1rem;
     flex-shrink: 0;
+}
+
+/* ── Inline controls ─────────────────────────────────────── */
+
+.inlineControls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-left: 1px solid #e2e8f0;
+    flex-shrink: 0;
+}
+
+.item:hover .inlineControls,
+.itemSelected .inlineControls {
+    border-left-color: transparent;
+}
+
+.inlineInput {
+    width: 80px;
+    padding: 3px 6px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    color: #1e293b;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.12s;
+}
+
+.inlineInput:focus {
+    border-color: #3b82f6;
+}
+
+input[type="text"].inlineInput {
+    width: 130px;
+}
+
+.sliderWrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.slider {
+    width: 100px;
+    accent-color: #3b82f6;
+    cursor: pointer;
+}
+
+.sliderValue {
+    font-size: 0.75rem;
+    color: #475569;
+    font-variant-numeric: tabular-nums;
+    min-width: 38px;
+}
+
+.toggle {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.toggle input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggleTrack {
+    width: 32px;
+    height: 18px;
+    background: #cbd5e1;
+    border-radius: 9px;
+    position: relative;
+    transition: background 0.15s;
+    flex-shrink: 0;
+}
+
+.toggleTrack::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 14px;
+    height: 14px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+    transition: transform 0.15s;
+}
+
+.toggle input:checked + .toggleTrack {
+    background: #3b82f6;
+}
+
+.toggle input:checked + .toggleTrack::after {
+    transform: translateX(14px);
+}
+
+.inlineSaveBtn {
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    background: #fff;
+    color: #16a34a;
+    font-size: 0.85rem;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.12s, border-color 0.12s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.inlineSaveBtn:hover:not(:disabled) {
+    background: #f0fdf4;
+    border-color: #86efac;
+}
+
+.inlineSaveBtn:disabled {
+    color: #cbd5e1;
+    cursor: not-allowed;
 }
 
 /* ── Type badges ─────────────────────────────────────────── */
