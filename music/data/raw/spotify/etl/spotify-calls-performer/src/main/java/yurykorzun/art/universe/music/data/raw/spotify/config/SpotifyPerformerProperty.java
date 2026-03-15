@@ -14,7 +14,7 @@ public enum SpotifyPerformerProperty implements ConfigurableProperty {
     ),
     RATE_LIMITER_MIN_DELAY_MS(
         "spotify.performer.rate-limiter.min-delay-ms",
-        PropertyType.INTEGER, "200",
+        PropertyType.INTEGER, "1000",
         "Minimum delay between Spotify API calls in milliseconds",
         PropertyConstraints.ofRange(50, 5000)
     ),
