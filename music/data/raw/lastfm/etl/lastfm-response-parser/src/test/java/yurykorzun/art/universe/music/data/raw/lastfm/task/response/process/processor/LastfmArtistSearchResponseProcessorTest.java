@@ -6,8 +6,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.util.ReflectionTestUtils;
 import yurykorzun.art.universe.data.raw.common.domain.entity.ApprovalStatus;
+import yurykorzun.art.universe.music.data.raw.lastfm.config.LastfmParserProperty;
 import yurykorzun.art.universe.music.data.raw.lastfm.integration.LastfmApiConstants;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCallType;
@@ -22,11 +22,13 @@ import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.utils
 import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.mapping.factory.artist.search.LastfmArtistSearchArtistFactory;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 @Import({
     // processing
@@ -91,8 +93,9 @@ class LastfmArtistSearchResponseProcessorTest extends BaseLastfmApiResponseProce
         LastfmApiResponse apiResponse = createApiResponse();
         
         // Set threshold to 0 to process all artists
-        ReflectionTestUtils.setField(processor, "artistSimilarityThreshold", 0.0);
-        
+        when(configPropertyHolder.getDecimal(LastfmParserProperty.METHOD_ARTIST_SEARCH_SIMILARITY_THRESHOLD))
+            .thenReturn(BigDecimal.ZERO);
+
         // Calculate expected counts
         int expectedArtistsCount = dtoRoot.getRootObject().getMatches().getArtists().size();
         
@@ -144,7 +147,8 @@ class LastfmArtistSearchResponseProcessorTest extends BaseLastfmApiResponseProce
         
         // Set high threshold to filter most artists
         double threshold = 0.8;
-        ReflectionTestUtils.setField(processor, "artistSimilarityThreshold", threshold);
+        when(configPropertyHolder.getDecimal(LastfmParserProperty.METHOD_ARTIST_SEARCH_SIMILARITY_THRESHOLD))
+            .thenReturn(BigDecimal.valueOf(threshold));
         
         // Record initial state
         long initialArtistCount = artistRepository.count();
@@ -179,7 +183,8 @@ class LastfmArtistSearchResponseProcessorTest extends BaseLastfmApiResponseProce
         LastfmApiResponse apiResponse = createApiResponse();
         
         // Set extremely high threshold so no artists pass
-        ReflectionTestUtils.setField(processor, "artistSimilarityThreshold", 1.0);
+        when(configPropertyHolder.getDecimal(LastfmParserProperty.METHOD_ARTIST_SEARCH_SIMILARITY_THRESHOLD))
+            .thenReturn(BigDecimal.ONE);
         
         // Record initial state
         long initialArtistCount = artistRepository.count();
@@ -200,11 +205,12 @@ class LastfmArtistSearchResponseProcessorTest extends BaseLastfmApiResponseProce
         LastfmApiResponse apiResponse = createApiResponse();
         
         // Set threshold to 0 to process all artists
-        ReflectionTestUtils.setField(processor, "artistSimilarityThreshold", 0.0);
-        
+        when(configPropertyHolder.getDecimal(LastfmParserProperty.METHOD_ARTIST_SEARCH_SIMILARITY_THRESHOLD))
+            .thenReturn(BigDecimal.ZERO);
+
         // when
         processor.processResponse(apiResponse);
-        
+
         // Record counts after first processing
         long artistCount = artistRepository.count();
 
@@ -230,11 +236,12 @@ class LastfmArtistSearchResponseProcessorTest extends BaseLastfmApiResponseProce
         LastfmApiResponse apiResponse = createApiResponse();
         
         // Set threshold to 0 to process all artists
-        ReflectionTestUtils.setField(processor, "artistSimilarityThreshold", 0.0);
-        
+        when(configPropertyHolder.getDecimal(LastfmParserProperty.METHOD_ARTIST_SEARCH_SIMILARITY_THRESHOLD))
+            .thenReturn(BigDecimal.ZERO);
+
         // when
         processor.processResponse(apiResponse);
-        
+
         // then
         // Verify the artist was updated but approval status preserved
         Optional<LastfmArtist> updatedArtist = artistRepository.findById(approvedArtist.getId());
@@ -284,7 +291,7 @@ class LastfmArtistSearchResponseProcessorTest extends BaseLastfmApiResponseProce
             modifiedResponse, sourceApiCall);
         
         // Set threshold to 0 to process all artists
-        ReflectionTestUtils.setField(processor, "artistSimilarityThreshold", 0.0);
+        when(configPropertyHolder.getDecimal(LastfmParserProperty.METHOD_ARTIST_SEARCH_SIMILARITY_THRESHOLD)).thenReturn(BigDecimal.ZERO);
         
         // when
         processor.processResponse(apiResponse);

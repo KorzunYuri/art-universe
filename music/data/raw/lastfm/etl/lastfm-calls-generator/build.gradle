@@ -6,6 +6,7 @@ archivesBaseName = 'lastfm-etl-calls-generator'
 ext.dockerImageName = 'mu-lastfm-calls-generator'
 
 dependencies {
+    implementation project(':common:config:config-client')
     implementation project(':common:commons-observability')
     implementation project(':music:data:raw:lastfm:lastfm-repositories')
 

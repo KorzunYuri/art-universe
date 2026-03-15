@@ -2,6 +2,8 @@ package yurykorzun.art.universe.music.data.raw.lastfm.task.response.process;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.aop.support.AopUtils;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.integration.dto.artist.getinfo.ArtistGetInfoDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.integration.dto.DtoRoot;
@@ -23,6 +25,9 @@ import static org.junit.jupiter.api.Assertions.*;
  * 3. Concurrent registration/retrieval works safely
  */
 class LastfmApiResponseProcessorsRegistryTest extends LastfmContextTestWithDb {
+
+    @MockitoBean
+    private ThreadPoolTaskScheduler taskScheduler;
 
     private static final Set<Class<? extends DtoRoot>> DTO_CLASSES = Arrays.stream(LastfmApiCallType.values())
         .map(LastfmApiCallType::getResponseDtoClass)

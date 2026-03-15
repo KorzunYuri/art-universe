@@ -5,4 +5,5 @@ plugins {
 dependencies {
     api project(':common:data:raw:data-raw-commons-jpa')
     api 'org.springframework:spring-web' // for HTTP client
+    api 'org.slf4j:slf4j-api'
 }

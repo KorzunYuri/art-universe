@@ -7,7 +7,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
+import yurykorzun.art.universe.common.config.client.ConfigPropertyHolder;
 import yurykorzun.art.universe.data.raw.common.domain.entity.ApprovalStatus;
+import yurykorzun.art.universe.music.data.raw.lastfm.config.LastfmGeneratorProperty;
 import yurykorzun.art.universe.music.data.raw.lastfm.integration.LastfmApiConstants;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.dto.LastfmApiCallCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCall;
@@ -18,6 +20,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmDataSnapsh
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.LastfmDataSnapshotService;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.LastfmTrackService;
+import yurykorzun.art.universe.music.data.raw.lastfm.task.call.generate.LastfmApiCallEntityService;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -40,7 +43,13 @@ class LastfmTrackGetInfoApiCallGeneratorTest {
     private LastfmDataSnapshotService snapshotService;
 
     @Mock
+    private LastfmApiCallEntityService entityService;
+
+    @Mock
     private LastfmTrackService trackService;
+
+    @Mock
+    private ConfigPropertyHolder configPropertyHolder;
 
     @InjectMocks
     private LastfmTrackGetInfoApiCallGenerator generator;
@@ -58,7 +67,7 @@ class LastfmTrackGetInfoApiCallGeneratorTest {
     void getDueDurationDays_shouldReturnConfiguredValue() {
         // given
         int expectedDays = 14;
-        ReflectionTestUtils.setField(generator, "dueDurationDays", expectedDays);
+        when(configPropertyHolder.getInt(LastfmGeneratorProperty.DUE_DURATION_TRACK_GET_INFO)).thenReturn(expectedDays);
 
         // when
         int actualDays = generator.getDueDurationDays();
@@ -84,8 +93,7 @@ class LastfmTrackGetInfoApiCallGeneratorTest {
     @Test
     void createApiCalls_shouldGenerateApiCallsForSelectedTracks() {
         // given
-        int batchSize = 10;
-        ReflectionTestUtils.setField(generator, "batchSize", batchSize);
+        when(configPropertyHolder.getInt(LastfmGeneratorProperty.DUE_DURATION_TRACK_GET_INFO)).thenReturn(56);
 
         List<LastfmTrack> tracks = createTestTracks(3);
         when(trackService.findTracksForGetInfo()).thenReturn(tracks);

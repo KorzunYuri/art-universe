@@ -9,6 +9,7 @@ import LastfmApp from '@/music/data/raw/lastfm/LastfmApp.tsx'
 import MusicMasterApp from '@/music/data/master/MusicMasterApp.tsx'
 import ArtMasterApp from '@/art/data/master/ArtMasterApp.tsx'
 import MusicQuizApp from '@/music/quiz/MusicQuizApp.tsx'
+import ConfigApp from '@/common/config/ConfigApp.tsx'
 import styles from './App.module.css'
 
 const routes = [
@@ -21,6 +22,7 @@ const routes = [
                 <NavigationCard to="/music/data/master" label="Music Master" />
                 <NavigationCard to="/music/data/raw/lastfm" label="Last.fm" />
                 <NavigationCard to="/music/quiz" label="Music Quiz" />
+                <NavigationCard to="/common/config" label="Configuration" />
             </div>
         ),
     },
@@ -39,6 +41,10 @@ const routes = [
     {
         path: '/music/quiz/*',
         element: <MusicQuizApp />,
+    },
+    {
+        path: '/common/config/*',
+        element: <ConfigApp />,
     },
 ]
 

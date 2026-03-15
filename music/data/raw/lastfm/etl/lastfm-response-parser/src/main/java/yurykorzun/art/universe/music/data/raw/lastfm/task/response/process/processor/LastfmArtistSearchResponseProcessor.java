@@ -3,8 +3,9 @@ package yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.proc
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import yurykorzun.art.universe.common.config.client.ConfigPropertyHolder;
+import yurykorzun.art.universe.music.data.raw.lastfm.config.LastfmParserProperty;
 import yurykorzun.art.universe.data.raw.common.etl.entity.ApiCallType;
 import yurykorzun.art.universe.data.raw.common.domain.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.integration.LastfmApiConstants;
@@ -36,9 +37,7 @@ public class LastfmArtistSearchResponseProcessor extends LastfmApiResponseProces
     private final LastfmApiDtoProcessingOrchestrator dtoProcessingService;
     private final LastfmArtistService artistService;
     private final EntityFactory<LastfmArtist, ArtistSearchArtistDto> artistFactory;
-
-    @Value("${lastfm.tasks.response-parse.methods.artist.search.artist-similarity-threshold}")
-    private double artistSimilarityThreshold;
+    private final ConfigPropertyHolder configPropertyHolder;
 
     private static final List<EntityAttributeHandler<LastfmArtist, ?, ArtistSearchArtistDto>> artistAttrHandlers;
     static {
@@ -52,8 +51,10 @@ public class LastfmArtistSearchResponseProcessor extends LastfmApiResponseProces
     }
 
     protected LastfmArtistSearchResponseProcessor(
-        LastfmApiDtoProcessingOrchestrator dtoProcessingService, LastfmArtistService artistService,
+        LastfmApiDtoProcessingOrchestrator dtoProcessingService,
+        LastfmArtistService artistService,
         EntityFactory<LastfmArtist, ArtistSearchArtistDto> artistFactory,
+        ConfigPropertyHolder configPropertyHolder,
         @Qualifier(MappingConfig.LASTFM_API_RESPONSE_OBJECT_MAPPER_BEAN_NAME) ObjectMapper objectMapper
     ) {
         super(ArtistSearchDtoRoot.class, objectMapper);
@@ -61,6 +62,7 @@ public class LastfmArtistSearchResponseProcessor extends LastfmApiResponseProces
         this.dtoProcessingService = dtoProcessingService;
         this.artistService = artistService;
         this.artistFactory = artistFactory;
+        this.configPropertyHolder = configPropertyHolder;
     }
 
     @Override
@@ -104,7 +106,7 @@ public class LastfmArtistSearchResponseProcessor extends LastfmApiResponseProces
     private List<ArtistSearchArtistDto> filterArtistsForSaving(List<ArtistSearchArtistDto> artistDtos, String searchString) {
         List<ArtistSearchArtistDto> result = new ArrayList<>();
         for (ArtistSearchArtistDto dto : artistDtos) {
-            if (StringUtils.getSimilarity(dto.getName(), searchString) > artistSimilarityThreshold) {
+            if (StringUtils.getSimilarity(dto.getName(), searchString) > configPropertyHolder.getDecimal(LastfmParserProperty.METHOD_ARTIST_SEARCH_SIMILARITY_THRESHOLD).doubleValue()) {
                 result.add(dto);
             }
         }

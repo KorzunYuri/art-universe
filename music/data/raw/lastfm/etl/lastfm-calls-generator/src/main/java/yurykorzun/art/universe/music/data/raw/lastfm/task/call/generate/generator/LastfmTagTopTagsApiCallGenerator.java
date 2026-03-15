@@ -1,12 +1,12 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.task.call.generate.generator;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import yurykorzun.art.universe.common.config.client.ConfigPropertyHolder;
+import yurykorzun.art.universe.music.data.raw.lastfm.config.LastfmGeneratorProperty;
 import yurykorzun.art.universe.music.data.raw.lastfm.integration.LastfmApiConstants;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.dto.LastfmApiCallCreateRequest;
-import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.call.generate.BaseLastfmApiCallGenerator;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.LastfmApiCallService;
@@ -14,6 +14,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.task.call.generate.utils.Ti
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.attribute.LastfmAttribute;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmDataSnapshot;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.LastfmDataSnapshotService;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.LastfmAttributeSnapshotService;
 
@@ -28,20 +29,18 @@ public class LastfmTagTopTagsApiCallGenerator extends BaseLastfmApiCallGenerator
     private final LastfmApiCallService apiCallService;
     private final LastfmDataSnapshotService snapshotService;
     private final LastfmAttributeSnapshotService attributeSnapshotService;
-
-    @Value("${lastfm.tasks.calls-generate.records-limit.tag-top-tags}")
-    private int recordsLimit;
-    @Value("${lastfm.tasks.calls-generate.due-duration-days.tag-top-tags}")
-    private int dueDurationDays;
+    private final ConfigPropertyHolder configPropertyHolder;
 
     public LastfmTagTopTagsApiCallGenerator(
-            LastfmApiCallService apiCallService,
-            LastfmDataSnapshotService snapshotService,
-            LastfmAttributeSnapshotService attributeSnapshotService
+        LastfmApiCallService apiCallService,
+        LastfmDataSnapshotService snapshotService,
+        LastfmAttributeSnapshotService attributeSnapshotService,
+        ConfigPropertyHolder configPropertyHolder
     ) {
         this.apiCallService = apiCallService;
         this.snapshotService = snapshotService;
         this.attributeSnapshotService = attributeSnapshotService;
+        this.configPropertyHolder = configPropertyHolder;
     }
 
     @Override
@@ -52,8 +51,6 @@ public class LastfmTagTopTagsApiCallGenerator extends BaseLastfmApiCallGenerator
     @Override
     @Transactional
     public void createApiCalls() {
-
-        //  generate api calls
         List<LastfmApiCallCreateRequest> apiCallCreationRequests = generateApiCallCreationRequests();
         apiCallService.createApiCalls(apiCallCreationRequests);
         log.info("created {} API calls for method {}", apiCallCreationRequests.size(), getApiCallType().getMethod());
@@ -62,11 +59,12 @@ public class LastfmTagTopTagsApiCallGenerator extends BaseLastfmApiCallGenerator
     }
 
     private List<LastfmApiCallCreateRequest> generateApiCallCreationRequests() {
+        int recordsLimit = configPropertyHolder.getInt(LastfmGeneratorProperty.RECORDS_LIMIT_TAG_TOP_TAGS);
+        int dueDurationDays = configPropertyHolder.getInt(LastfmGeneratorProperty.DUE_DURATION_TAG_TOP_TAGS);
 
         final int tagsCount = Integer.MAX_VALUE;
         final int pagesNumber = Math.min(tagsCount, (int) Math.ceil((float) recordsLimit / PAGE_SIZE));
 
-        //  find all pending non expired requests to not duplicate them
         List<LastfmApiCall> pendingCalls = apiCallService.findAllUnexpiredByType(getApiCallType());
         Set<Integer> pendingOffsets = new HashSet<>();
         for (LastfmApiCall pendingCall : pendingCalls) {
@@ -77,23 +75,20 @@ public class LastfmTagTopTagsApiCallGenerator extends BaseLastfmApiCallGenerator
         LastfmDataSnapshot snapshot = null;
         boolean isSnapshotRetrieved = false;
         for (int i = 0; i < pagesNumber; i++) {
-            // skip duplicate call
             int offset = i * PAGE_SIZE;
             if (pendingOffsets.contains(offset)) {
                 continue;
             }
 
             if (!isSnapshotRetrieved) {
-                //  get or create snapshot
                 snapshot = snapshotService.getOrCreateSnapshotFor(getApiCallType());
 
-                //  create attribute snapshots on first launch
                 if (snapshot.getCreatedCount() == 0) {
                     createAttributeSnapshots(snapshot);
                 }
                 isSnapshotRetrieved = true;
             }
-            calls.add(buildApiCallCreationRequest(snapshot, offset));
+            calls.add(buildApiCallCreationRequest(snapshot, offset, dueDurationDays));
         }
 
         if (!calls.isEmpty()) {
@@ -103,18 +98,17 @@ public class LastfmTagTopTagsApiCallGenerator extends BaseLastfmApiCallGenerator
         return calls;
     }
 
-    private LastfmApiCallCreateRequest buildApiCallCreationRequest(LastfmDataSnapshot snapshot, int offset) {
+    private LastfmApiCallCreateRequest buildApiCallCreationRequest(LastfmDataSnapshot snapshot, int offset, int dueDurationDays) {
         return LastfmApiCallCreateRequest.builder()
-                .type(getApiCallType())
-                .entityType(LastfmEntityType.TAG)
-                .dataSnapshotId(snapshot.getId())
-                .dueDttm(TimeUtil.calcDueDttm(dueDurationDays))
-                .params(Map.of(LastfmApiConstants.PARAM_NAME_OFFSET, String.valueOf(offset)))
+            .type(getApiCallType())
+            .entityType(LastfmEntityType.TAG)
+            .dataSnapshotId(snapshot.getId())
+            .dueDttm(TimeUtil.calcDueDttm(dueDurationDays))
+            .params(Map.of(LastfmApiConstants.PARAM_NAME_OFFSET, String.valueOf(offset)))
             .build();
     }
 
     private void createAttributeSnapshots(LastfmDataSnapshot parentSnapshot) {
         attributeSnapshotService.getOrCreateForEntityType(parentSnapshot, LastfmEntityType.TAG, LastfmAttribute.RANK);
     }
-
 }

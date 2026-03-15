@@ -5,6 +5,8 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import yurykorzun.art.universe.common.config.client.ConfigPropertyHolder;
 import yurykorzun.art.universe.common.test.archetypes.BaseTest;
 import yurykorzun.art.universe.common.test.db.PostgresDynamicPropertyConfigurer;
 import yurykorzun.art.universe.music.data.raw.lastfm.test.db.LastfmPostgresTestContainer;
@@ -18,6 +20,9 @@ import yurykorzun.art.universe.music.data.raw.lastfm.test.db.LastfmPostgresTestC
 @LastfmPostgresTestContainer
 @Tag("integration")
 public abstract class LastfmJpaTest extends BaseTest {
+
+    @MockitoBean
+    protected ConfigPropertyHolder configPropertyHolder;
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {

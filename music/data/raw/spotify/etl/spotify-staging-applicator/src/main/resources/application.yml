@@ -38,15 +38,12 @@ server:
   # Non-web app - only needs actuator endpoints
   port: ${MURAW_SPOTIFY_STAGING_APPLICATOR_ACTUATOR_INTERNAL_PORT:8080}
 
+au:
+  config:
+    client:
+      service-url: "${AU_CONFIG_SERVICE_URL}"
+
 spotify:
-  scheduling:
-    staging-apply:
-      fixed-delay-secs: ${SPOTIFY_SCHEDULING_STAGING_APPLY_FIXED_DELAY_SECS:10}
-    staging-cleanup:
-      fixed-delay-secs: ${SPOTIFY_SCHEDULING_STAGING_CLEANUP_FIXED_DELAY_SECS:3600}
-  staging:
-    cleanup:
-      completed-retention-hours: ${SPOTIFY_STAGING_CLEANUP_RETENTION_HOURS:240}
   integration:
     music-data-master:
       base-url: http://${MU_DATA_APP_HOST}:${MU_DATA_APP_PORT}

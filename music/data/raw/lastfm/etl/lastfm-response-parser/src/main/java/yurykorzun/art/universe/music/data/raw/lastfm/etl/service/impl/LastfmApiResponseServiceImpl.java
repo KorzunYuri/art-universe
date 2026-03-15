@@ -6,7 +6,10 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import yurykorzun.art.universe.common.config.client.ConfigPropertyHolder;
 import yurykorzun.art.universe.data.raw.common.etl.entity.ApiResponseStatus;
+import yurykorzun.art.universe.music.data.raw.lastfm.config.LastfmParserProperty;
+import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.repository.LastfmApiResponseRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.LastfmApiResponseService;
@@ -21,13 +24,16 @@ import java.util.List;
 public class LastfmApiResponseServiceImpl implements LastfmApiResponseService {
 
     private final LastfmApiResponseRepository repository;
+    private final ConfigPropertyHolder configPropertyHolder;
     private final LastfmApiResponseServiceImpl self;
 
     public LastfmApiResponseServiceImpl(
         LastfmApiResponseRepository repository,
+        ConfigPropertyHolder configPropertyHolder,
         @Lazy LastfmApiResponseServiceImpl self
     ) {
         this.repository = repository;
+        this.configPropertyHolder = configPropertyHolder;
         this.self = self;
     }
 
@@ -48,11 +54,20 @@ public class LastfmApiResponseServiceImpl implements LastfmApiResponseService {
         try {
             self.setStatus(response, ApiResponseStatus.PROCESSING);
 
+            LastfmApiCallType callType = response.getApiCall().getType();
+
+            if (!isParsingEnabled(callType)) {
+                log.info("Parsing is disabled for call type {}, skipping response ID {}",
+                    callType, response.getId());
+                self.setStatus(response, ApiResponseStatus.PROCESSING_ERROR);
+                return;
+            }
+
             LastfmApiResponseProcessor<?> processor =
-                    LastfmApiResponseProcessorsRegistry.get(response.getApiCall().getType().getResponseDtoClass());
+                    LastfmApiResponseProcessorsRegistry.get(callType.getResponseDtoClass());
 
             if (processor == null) {
-                log.warn("No processor found for response type: {}", response.getApiCall().getType());
+                log.warn("No processor found for response type: {}", callType);
                 self.setStatus(response, ApiResponseStatus.PROCESSING_ERROR);
                 return;
             }
@@ -81,5 +96,10 @@ public class LastfmApiResponseServiceImpl implements LastfmApiResponseService {
         response.setStatus(status);
         response.setUpdatedAt(Instant.now());
         repository.save(response);
+    }
+
+    private boolean isParsingEnabled(LastfmApiCallType callType) {
+        LastfmParserProperty prop = LastfmParserProperty.valueOf("PARSE_" + callType.name());
+        return configPropertyHolder.getBoolean(prop);
     }
 }

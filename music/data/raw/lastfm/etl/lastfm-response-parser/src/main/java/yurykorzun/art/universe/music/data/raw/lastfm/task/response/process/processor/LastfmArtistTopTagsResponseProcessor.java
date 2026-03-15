@@ -4,8 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import yurykorzun.art.universe.common.config.client.ConfigPropertyHolder;
+import yurykorzun.art.universe.music.data.raw.lastfm.config.LastfmParserProperty;
 import yurykorzun.art.universe.data.raw.common.etl.entity.ApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCallType;
@@ -47,9 +48,7 @@ public class LastfmArtistTopTagsResponseProcessor extends LastfmApiResponseProce
     private final LastfmApiDtoProcessingOrchestrator dtoProcessingService;
     private final DtoQualityService dtoQualityService;
     private final EntityFactory<LastfmTag, ArtistTopTagsTagDto> tagEntityFactory;
-
-    @Value("${lastfm.tasks.response-parse.methods.artist.top-tags.tag-usage-count-threshold}")
-    private int tagUsageCountThreshold;
+    private final ConfigPropertyHolder configPropertyHolder;
 
     private static final List<EntityAttributeHandler<LastfmTag, ?, ArtistTopTagsTagDto>> tagAttrHandlers;
     static {
@@ -69,6 +68,7 @@ public class LastfmArtistTopTagsResponseProcessor extends LastfmApiResponseProce
         EntityFactory<LastfmTag, ArtistTopTagsTagDto> tagEntityFactory,
         LastfmApiDtoProcessingOrchestrator dtoProcessingService,
         DtoQualityService dtoQualityService,
+        ConfigPropertyHolder configPropertyHolder,
         @Qualifier(MappingConfig.LASTFM_API_RESPONSE_OBJECT_MAPPER_BEAN_NAME) ObjectMapper objectMapper
     ) {
         super(ArtistTopTagsDtoRoot.class, objectMapper);
@@ -80,6 +80,7 @@ public class LastfmArtistTopTagsResponseProcessor extends LastfmApiResponseProce
         this.tagEntityFactory = tagEntityFactory;
         this.dtoProcessingService = dtoProcessingService;
         this.dtoQualityService = dtoQualityService;
+        this.configPropertyHolder = configPropertyHolder;
     }
 
     @Override
@@ -127,7 +128,7 @@ public class LastfmArtistTopTagsResponseProcessor extends LastfmApiResponseProce
     private List<ArtistTopTagsTagDto> filterDtosForSaving(List<ArtistTopTagsTagDto> dtos) {
         // First filter by usage count threshold
         List<ArtistTopTagsTagDto> thresholdFilteredTags = dtos.stream()
-            .filter(dto -> dto.getUsageCount() >= tagUsageCountThreshold)
+            .filter(dto -> dto.getUsageCount() >= configPropertyHolder.getInt(LastfmParserProperty.METHOD_ARTIST_TOP_TAGS_USAGE_COUNT_THRESHOLD))
             .toList();
 
         // Then validate against blacklist

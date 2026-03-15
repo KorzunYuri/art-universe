@@ -6,29 +6,33 @@ import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.EventListener;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import yurykorzun.art.universe.common.config.client.ConfigPropertyHolder;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Configuration
+@Profile("!test")
 @Slf4j
 public class MetricsConfig {
 
     private final MeterRegistry registry;
     private final JdbcTemplate jdbcTemplate;
     private final ResourceLoader resourceLoader;
+    private final ConfigPropertyHolder configPropertyHolder;
+    private final ThreadPoolTaskScheduler taskScheduler;
 
     // Metrics cache
     private final Map<String, AtomicInteger> entityCountsCache = new HashMap<>();
@@ -39,61 +43,107 @@ public class MetricsConfig {
     public MetricsConfig(
             MeterRegistry registry,
             JdbcTemplate jdbcTemplate,
-            ResourceLoader resourceLoader
+            ResourceLoader resourceLoader,
+            ConfigPropertyHolder configPropertyHolder,
+            ThreadPoolTaskScheduler taskScheduler
     ) {
         this.registry = registry;
         this.jdbcTemplate = jdbcTemplate;
         this.resourceLoader = resourceLoader;
+        this.configPropertyHolder = configPropertyHolder;
+        this.taskScheduler = taskScheduler;
     }
 
     @EventListener(ApplicationReadyEvent.class)
     public void initMetrics() {
         log.info("Initializing custom metrics");
-        
+
         // Register metrics
         registerEntityCountMetrics();
         registerApiCallCountMetrics();
         registerApiResponseCountMetrics();
         registerTableSizeMetrics();
-        
+
         // Initial update of metrics
         updateEntityCountMetrics();
         updateApiCallCountMetrics();
         updateApiResponseCountMetrics();
         updateTableSizeMetrics();
+
+        // Start self-rescheduling loops
+        scheduleEntityCountsUpdate();
+        scheduleApiCallCountsUpdate();
+        scheduleApiResponseCountsUpdate();
+        scheduleTableSizesUpdate();
     }
-    
+
+    // ========== Scheduling ==========
+
+    private void scheduleEntityCountsUpdate() {
+        long intervalMs = configPropertyHolder.getInt(LastfmMaintenanceProperty.METRICS_UPDATE_ENTITY_COUNTS_INTERVAL_MS);
+        taskScheduler.schedule(() -> {
+            updateEntityCountMetrics();
+            scheduleEntityCountsUpdate();
+        }, Instant.now().plusMillis(intervalMs));
+    }
+
+    private void scheduleApiCallCountsUpdate() {
+        long intervalMs = configPropertyHolder.getInt(LastfmMaintenanceProperty.METRICS_UPDATE_API_CALL_COUNTS_INTERVAL_MS);
+        taskScheduler.schedule(() -> {
+            updateApiCallCountMetrics();
+            scheduleApiCallCountsUpdate();
+        }, Instant.now().plusMillis(intervalMs));
+    }
+
+    private void scheduleApiResponseCountsUpdate() {
+        long intervalMs = configPropertyHolder.getInt(LastfmMaintenanceProperty.METRICS_UPDATE_API_RESPONSE_COUNTS_INTERVAL_MS);
+        taskScheduler.schedule(() -> {
+            updateApiResponseCountMetrics();
+            scheduleApiResponseCountsUpdate();
+        }, Instant.now().plusMillis(intervalMs));
+    }
+
+    private void scheduleTableSizesUpdate() {
+        long intervalMs = configPropertyHolder.getInt(LastfmMaintenanceProperty.METRICS_UPDATE_TABLE_SIZES_INTERVAL_MS);
+        taskScheduler.schedule(() -> {
+            updateTableSizeMetrics();
+            scheduleTableSizesUpdate();
+        }, Instant.now().plusMillis(intervalMs));
+    }
+
+    // ========== Registration ==========
+
     private void registerEntityCountMetrics() {
         List<String> entityTypes = List.of("artist", "album", "track", "tag");
-        
+
         for (String entityType : entityTypes) {
             AtomicInteger entityCount = new AtomicInteger(0);
             entityCountsCache.put(entityType, entityCount);
-            
+
             Gauge.builder("lastfm.entity.count", entityCount::get)
                 .tag("entity_type", entityType)
                 .description("Number of " + entityType + " entities in the database")
                 .register(registry);
         }
     }
-    
+
     private void registerApiCallCountMetrics() {
         try {
             // Get all possible API call types and statuses from dictionary
             String apiCallTypesSql = "SELECT name FROM mu_raw_lastfm.dictionary WHERE domain = 'ApiCallType'    ORDER BY name";
             String statusesSql =     "SELECT name FROM mu_raw_lastfm.dictionary WHERE domain = 'ApiCallStatus'  ORDER BY name";
-            
+
             List<String> apiCallTypes = jdbcTemplate.queryForList(apiCallTypesSql, String.class);
             List<String> statuses = jdbcTemplate.queryForList(statusesSql, String.class);
-            
+
             // Register metrics for all possible combinations
             for (String apiCallType : apiCallTypes) {
                 for (String status : statuses) {
                     String key = apiCallType + ":" + status;
-                    
+
                     AtomicInteger count = new AtomicInteger(0);
                     apiCallCountsCache.put(key, count);
-                    
+
                     Gauge.builder("lastfm.api_call.count", count::get)
                         .tag("api_call_type", apiCallType)
                         .tag("status", status)
@@ -105,24 +155,24 @@ public class MetricsConfig {
             log.error("Error registering API call count metrics", e);
         }
     }
-    
+
     private void registerApiResponseCountMetrics() {
         try {
             // Get all possible API call types and response statuses from dictionary
             String apiCallTypesSql = "SELECT name FROM mu_raw_lastfm.dictionary WHERE domain = 'ApiCallType' ORDER BY name";
             String statusesSql = "SELECT name FROM mu_raw_lastfm.dictionary WHERE domain = 'ApiResponseStatus' ORDER BY name";
-            
+
             List<String> apiCallTypes = jdbcTemplate.queryForList(apiCallTypesSql, String.class);
             List<String> statuses = jdbcTemplate.queryForList(statusesSql, String.class);
-            
+
             // Register metrics for all possible combinations
             for (String apiCallType : apiCallTypes) {
                 for (String status : statuses) {
                     String key = apiCallType + ":" + status;
-                    
+
                     AtomicInteger count = new AtomicInteger(0);
                     apiResponseCountsCache.put(key, count);
-                    
+
                     Gauge.builder("lastfm.api_response.count", count::get)
                         .tag("api_call_type", apiCallType)
                         .tag("status", status)
@@ -134,41 +184,40 @@ public class MetricsConfig {
             log.error("Error registering API response count metrics", e);
         }
     }
-    
+
     private void registerTableSizeMetrics() {
         try {
             // Register schema total size metric
             AtomicInteger schemaTotalSize = new AtomicInteger(0);
             tableSizesCache.put("schema_total", schemaTotalSize);
-            
+
             Gauge.builder("lastfm.database.schema_size_bytes", schemaTotalSize::get)
                 .description("Total size of mu_raw_lastfm schema in bytes")
                 .register(registry);
-            
+
             // Register category size metrics
             List<String> categories = List.of("core_entities", "relationships", "attributes", "api_processing", "maintenance", "other");
-            
+
             for (String category : categories) {
                 AtomicInteger categorySize = new AtomicInteger(0);
                 tableSizesCache.put("category:" + category, categorySize);
-                
+
                 Gauge.builder("lastfm.database.category_size_bytes", categorySize::get)
                     .tag("category", category)
                     .description("Size of " + category + " tables in bytes")
                     .register(registry);
             }
-            
+
             // Individual table metrics will be registered dynamically during updates
-            
+
         } catch (Exception e) {
             log.error("Error registering table size metrics", e);
         }
     }
-    
+
+    // ========== Update methods ==========
+
     @Timed(value = "music.data.raw.lastfm.metrics.update", extraTags = {"category", "entities"})
-    @Scheduled(
-            fixedRateString = "${lastfm.metrics.update.entity-counts.interval:60000}"
-    )
     public void updateEntityCountMetrics() {
         log.debug("Updating entity count metrics");
         try {
@@ -190,9 +239,6 @@ public class MetricsConfig {
     }
 
     @Timed(value = "music.data.raw.lastfm.metrics.update", extraTags = {"category", "api_calls"})
-    @Scheduled(
-        fixedRateString = "${lastfm.metrics.update.api-call-counts.interval:60000}"
-    )
     public void updateApiCallCountMetrics() {
         log.debug("Updating API call count metrics");
         try {
@@ -216,9 +262,6 @@ public class MetricsConfig {
     }
 
     @Timed(value = "music.data.raw.lastfm.metrics.update", extraTags = {"category", "api_responses"})
-    @Scheduled(
-        fixedRateString = "${lastfm.metrics.update.api-response-counts.interval:60000}"
-    )
     public void updateApiResponseCountMetrics() {
         log.debug("Updating API response count metrics");
         try {
@@ -242,9 +285,6 @@ public class MetricsConfig {
     }
 
     @Timed(value = "music.data.raw.lastfm.metrics.update", extraTags = {"category", "table_sizes"})
-    @Scheduled(
-        fixedRateString = "${lastfm.metrics.update.table-sizes.interval:300000}"
-    )
     public void updateTableSizeMetrics() {
         log.debug("Updating table size metrics");
         try {

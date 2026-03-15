@@ -4,8 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import yurykorzun.art.universe.common.config.client.ConfigPropertyHolder;
+import yurykorzun.art.universe.music.data.raw.lastfm.config.LastfmParserProperty;
 import yurykorzun.art.universe.data.raw.common.etl.entity.ApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCallType;
@@ -46,9 +47,7 @@ public class LastfmArtistTopAlbumsResponseProcessor extends LastfmApiResponsePro
     private final LastfmArtistAlbumService artistAlbumService;
     private final LastfmApiDtoProcessingOrchestrator dtoProcessingService;
     private final DtoQualityService dtoQualityService;
-
-    @Value("${lastfm.tasks.response-parse.methods.artist.top-albums.album-play-count-threshold}")
-    private long albumPlayCountThreshold;
+    private final ConfigPropertyHolder configPropertyHolder;
 
     // Artist attribute handlers
     private static final List<EntityAttributeHandler<LastfmArtist, ?, ArtistDto>> artistAttrHandlers;
@@ -79,6 +78,7 @@ public class LastfmArtistTopAlbumsResponseProcessor extends LastfmApiResponsePro
         LastfmArtistAlbumService artistAlbumService,
         LastfmApiDtoProcessingOrchestrator dtoProcessingService,
         DtoQualityService dtoQualityService,
+        ConfigPropertyHolder configPropertyHolder,
         @Qualifier(MappingConfig.LASTFM_API_RESPONSE_OBJECT_MAPPER_BEAN_NAME) ObjectMapper objectMapper
     ) {
         super(ArtistTopAlbumsDtoRoot.class, objectMapper);
@@ -88,6 +88,7 @@ public class LastfmArtistTopAlbumsResponseProcessor extends LastfmApiResponsePro
         this.artistAlbumService = artistAlbumService;
         this.dtoProcessingService = dtoProcessingService;
         this.dtoQualityService = dtoQualityService;
+        this.configPropertyHolder = configPropertyHolder;
     }
 
     @Override
@@ -150,7 +151,7 @@ public class LastfmArtistTopAlbumsResponseProcessor extends LastfmApiResponsePro
 
         // Then filter by play count threshold
         var thresholdFilteredAlbums = qualityAlbums.stream()
-            .filter(dto -> dto.getPlayCount() > albumPlayCountThreshold)
+            .filter(dto -> dto.getPlayCount() > (long) configPropertyHolder.getInt(LastfmParserProperty.METHOD_ARTIST_TOP_ALBUMS_PLAY_COUNT_THRESHOLD))
             .toList();
 
         if (thresholdFilteredAlbums.size() < allAlbums.size()) {

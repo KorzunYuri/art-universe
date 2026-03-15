@@ -39,6 +39,11 @@ server:
   # Non-web app - only needs actuator endpoints
   port: ${MURAW_LASTFM_CALLS_PERFORMER_ACTUATOR_INTERNAL_PORT}
 
+au:
+  config:
+    client:
+      service-url: "${AU_CONFIG_SERVICE_URL:stub-for-tests}"
+
 lastfm:
   api:
     base-url: "http://ws.audioscrobbler.com/2.0/"
@@ -47,12 +52,3 @@ lastfm:
     pool:
       size: 2
       await-termination-secs: 300
-    calls-perform:
-      fixed-delay-secs: 1
-  tasks:
-    calls-perform:
-      calls-per-sec: 1.0
-      retry:
-        max-attempts: 3
-        initial-delay-ms: 500
-        multiplier: 1.5

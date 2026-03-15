@@ -1,9 +1,10 @@
 package yurykorzun.art.universe.music.data.raw.spotify.staging;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import yurykorzun.art.universe.common.config.client.ConfigPropertyHolder;
+import yurykorzun.art.universe.music.data.raw.spotify.config.SpotifyParserProperty;
 import yurykorzun.art.universe.music.data.raw.spotify.etl.entity.StagingIteration;
 import yurykorzun.art.universe.music.data.raw.spotify.etl.entity.StagingIterationStatus;
 import yurykorzun.art.universe.music.data.raw.spotify.etl.repository.SpotifyStagingIterationRepository;
@@ -17,19 +18,16 @@ public class StagingIterationServiceImpl implements StagingIterationService {
 
     private final SpotifyStagingIterationRepository repository;
     private final StagingWriter stagingWriter;
-    private final long maxRecords;
-    private final long maxOpenMinutes;
+    private final ConfigPropertyHolder configPropertyHolder;
 
     public StagingIterationServiceImpl(
         SpotifyStagingIterationRepository repository,
         StagingWriter stagingWriter,
-        @Value("${spotify.staging.iteration.max-records}") long maxRecords,
-        @Value("${spotify.staging.iteration.max-open-minutes}") long maxOpenMinutes
+        ConfigPropertyHolder configPropertyHolder
     ) {
         this.repository = repository;
         this.stagingWriter = stagingWriter;
-        this.maxRecords = maxRecords;
-        this.maxOpenMinutes = maxOpenMinutes;
+        this.configPropertyHolder = configPropertyHolder;
     }
 
     @Override
@@ -53,9 +51,11 @@ public class StagingIterationServiceImpl implements StagingIterationService {
         if (iteration.getRecordsStaged() == 0) {
             return false;
         }
+        long maxRecords = configPropertyHolder.getInt(SpotifyParserProperty.STAGING_ITERATION_MAX_RECORDS);
         if (iteration.getRecordsStaged() >= maxRecords) {
             return true;
         }
+        long maxOpenMinutes = configPropertyHolder.getInt(SpotifyParserProperty.STAGING_ITERATION_MAX_OPEN_MINUTES);
         Instant threshold = iteration.getOpenedAt().plus(maxOpenMinutes, ChronoUnit.MINUTES);
         return Instant.now().isAfter(threshold);
     }

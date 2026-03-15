@@ -9,6 +9,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClient;
+import yurykorzun.art.universe.common.config.client.ConfigPropertyHolder;
+import yurykorzun.art.universe.music.data.raw.lastfm.config.LastfmMaintenanceProperty;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.maintenance.dto.MasterBatchUnbindRequestDTO;
 import yurykorzun.art.universe.music.data.raw.lastfm.maintenance.dto.MasterBatchUnbindResponseDTO;
@@ -22,6 +24,7 @@ import java.util.stream.IntStream;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
 class MusicDataIntegrationServiceTest {
@@ -44,6 +47,9 @@ class MusicDataIntegrationServiceTest {
     @Mock
     private ResponseEntity<MasterBatchUnbindResponseDTO> responseEntity;
 
+    @Mock
+    private ConfigPropertyHolder configPropertyHolder;
+
     private MusicDataIntegrationService service;
 
     private static final String MUSIC_DATA_BASE_URL = "localhost:7082";
@@ -54,9 +60,10 @@ class MusicDataIntegrationServiceTest {
         // Setup RestClient.Builder mock to return our mocked RestClient
         when(restClientBuilder.baseUrl(anyString())).thenReturn(restClientBuilder);
         when(restClientBuilder.build()).thenReturn(restClient);
-        
+        lenient().when(configPropertyHolder.getInt(LastfmMaintenanceProperty.UNBIND_BATCH_SIZE)).thenReturn(MUSIC_DATA_UNBIND_BATCH_SIZE);
+
         // Create service with mocked RestClient.Builder
-        service = new MusicDataIntegrationService(restClientBuilder, MUSIC_DATA_BASE_URL, MUSIC_DATA_UNBIND_BATCH_SIZE);
+        service = new MusicDataIntegrationService(restClientBuilder, MUSIC_DATA_BASE_URL, configPropertyHolder);
     }
 
     /**

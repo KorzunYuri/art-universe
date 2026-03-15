@@ -2,11 +2,12 @@ package yurykorzun.art.universe.music.data.raw.lastfm.maintenance.service;
 
 import io.micrometer.observation.annotation.Observed;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.common.CodedRegistry;
+import yurykorzun.art.universe.common.config.client.ConfigPropertyHolder;
 import yurykorzun.art.universe.common.observability.util.ObservabilityService;
+import yurykorzun.art.universe.music.data.raw.lastfm.config.LastfmMaintenanceProperty;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.LastfmEntityType;
 
 import java.util.List;
@@ -19,24 +20,18 @@ public class DbMaintenanceExecutor {
     private final JdbcTemplate jdbc;
     private final MusicDataIntegrationService musicDataIntegrationService;
     private final ObservabilityService observabilityService;
-
-    @Value("${lastfm.tasks.maintenance.db.thresholds.artist.listeners-count}")
-    private int artistThreshold;
-    @Value("${lastfm.tasks.maintenance.db.thresholds.album.play-count}")
-    private int albumThreshold;
-    @Value("${lastfm.tasks.maintenance.db.thresholds.track.play-count}")
-    private int trackThreshold;
-    @Value("${lastfm.tasks.maintenance.db.thresholds.tag.usage-count}")
-    private int tagThreshold;
+    private final ConfigPropertyHolder configPropertyHolder;
 
     public DbMaintenanceExecutor(
         JdbcTemplate jdbc,
         MusicDataIntegrationService musicDataIntegrationService,
-        ObservabilityService observabilityService
+        ObservabilityService observabilityService,
+        ConfigPropertyHolder configPropertyHolder
     ) {
         this.jdbc = jdbc;
         this.musicDataIntegrationService = musicDataIntegrationService;
         this.observabilityService = observabilityService;
+        this.configPropertyHolder = configPropertyHolder;
     }
 
     @Observed(name = "music.data.raw.lastfm.maintenance.process",
@@ -44,10 +39,10 @@ public class DbMaintenanceExecutor {
     public void performMaintenance() {
 
         Map.of(
-            LastfmEntityType.ARTIST, artistThreshold,
-            LastfmEntityType.ALBUM, albumThreshold,
-            LastfmEntityType.TRACK, trackThreshold,
-            LastfmEntityType.TAG, tagThreshold
+            LastfmEntityType.ARTIST, configPropertyHolder.getInt(LastfmMaintenanceProperty.THRESHOLD_ARTIST_LISTENERS_COUNT),
+            LastfmEntityType.ALBUM, configPropertyHolder.getInt(LastfmMaintenanceProperty.THRESHOLD_ALBUM_PLAY_COUNT),
+            LastfmEntityType.TRACK, configPropertyHolder.getInt(LastfmMaintenanceProperty.THRESHOLD_TRACK_PLAY_COUNT),
+            LastfmEntityType.TAG, configPropertyHolder.getInt(LastfmMaintenanceProperty.THRESHOLD_TAG_USAGE_COUNT)
         ).forEach((entityType, threshold) -> {
             Long cleanupRunId = observeCleanupEntity(entityType, threshold);
             observeUnbindEntity(entityType, cleanupRunId);

@@ -6,8 +6,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.util.ReflectionTestUtils;
 import yurykorzun.art.universe.data.raw.common.domain.entity.ApprovalStatus;
+import yurykorzun.art.universe.music.data.raw.lastfm.config.LastfmParserProperty;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.integration.dto.artist.getsimilar.ArtistGetSimilarDtoRoot;
@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 @Import({
     // processing
@@ -67,7 +68,8 @@ class LastfmArtistGetSimilarResponseProcessorTest extends BaseLastfmApiResponseP
         dtoRoot = parseResponse(responseJsonString);
 
         // Set threshold to 0 to process all similar artists by default
-        ReflectionTestUtils.setField(processor, "artistMatchThreshold", DEFAULT_THRESHOLD);
+        when(configPropertyHolder.getDecimal(LastfmParserProperty.METHOD_ARTIST_GET_SIMILAR_MATCH_THRESHOLD))
+            .thenReturn(BigDecimal.valueOf(DEFAULT_THRESHOLD));
     }
 
     /**
@@ -151,7 +153,8 @@ class LastfmArtistGetSimilarResponseProcessorTest extends BaseLastfmApiResponseP
 
         // Set threshold to filter out some artists
         float threshold = 0.5f;
-        ReflectionTestUtils.setField(processor, "artistMatchThreshold", threshold);
+        when(configPropertyHolder.getDecimal(LastfmParserProperty.METHOD_ARTIST_GET_SIMILAR_MATCH_THRESHOLD))
+            .thenReturn(BigDecimal.valueOf(threshold));
 
         // Count how many artists should pass the threshold
         long expectedArtistsCount = dtoRoot.getRootObject().getArtists().stream()

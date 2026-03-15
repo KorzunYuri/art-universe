@@ -39,33 +39,13 @@ server:
   # Non-web app - only needs actuator endpoints
   port: ${MURAW_LASTFM_RESPONSE_PARSER_ACTUATOR_INTERNAL_PORT}
 
+au:
+  config:
+    client:
+      service-url: "${AU_CONFIG_SERVICE_URL:stub-for-tests}"
+
 lastfm:
   scheduling:
     pool:
       size: 4
       await-termination-secs: 300
-    response-parse:
-      fixed-delay-secs: 5
-    attribute-history:
-      fixed-delay-secs: 30
-  tasks:
-    response-parse:
-      thresholds:
-        artist:
-          listeners-count: 1000
-        album:
-          play-count: 10000
-        track:
-          play-count: 1000
-        tag:
-          usage-count: 1000
-      methods:
-        artist:
-          get-similar:
-            artist-match-threshold: 0.2
-          top-tags:
-            tag-usage-count-threshold: 10
-          top-albums:
-            album-play-count-threshold: 10000
-          search:
-            artist-similarity-threshold: 0.5

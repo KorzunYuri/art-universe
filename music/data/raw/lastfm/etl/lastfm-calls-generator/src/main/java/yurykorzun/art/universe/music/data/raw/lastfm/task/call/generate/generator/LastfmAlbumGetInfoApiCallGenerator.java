@@ -1,8 +1,9 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.task.call.generate.generator;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import yurykorzun.art.universe.common.config.client.ConfigPropertyHolder;
+import yurykorzun.art.universe.music.data.raw.lastfm.config.LastfmGeneratorProperty;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.call.generate.LastfmApiCallEntityService;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.LastfmApiCallService;
@@ -18,18 +19,18 @@ import java.util.List;
 public class LastfmAlbumGetInfoApiCallGenerator extends LastfmAlbumApiCallGenerator {
 
     private final LastfmAlbumService albumService;
-
-    @Value("${lastfm.tasks.calls-generate.due-duration-days.album-get-info}")
-    private int dueDurationDays;
+    private final ConfigPropertyHolder configPropertyHolder;
 
     public LastfmAlbumGetInfoApiCallGenerator(
         LastfmApiCallService apiCallService,
         LastfmDataSnapshotService snapshotService,
         LastfmApiCallEntityService entityService,
-        LastfmAlbumService albumService
+        LastfmAlbumService albumService,
+        ConfigPropertyHolder configPropertyHolder
     ) {
         super(apiCallService, snapshotService, entityService);
         this.albumService = albumService;
+        this.configPropertyHolder = configPropertyHolder;
     }
 
     @Override
@@ -39,9 +40,9 @@ public class LastfmAlbumGetInfoApiCallGenerator extends LastfmAlbumApiCallGenera
 
     @Override
     protected int getDueDurationDays() {
-        return dueDurationDays;
+        return configPropertyHolder.getInt(LastfmGeneratorProperty.DUE_DURATION_ALBUM_GET_INFO);
     }
-    
+
     @Override
     protected List<LastfmAlbum> selectEntitiesForApiCalls() {
         return albumService.findAlbumsForGetInfo();

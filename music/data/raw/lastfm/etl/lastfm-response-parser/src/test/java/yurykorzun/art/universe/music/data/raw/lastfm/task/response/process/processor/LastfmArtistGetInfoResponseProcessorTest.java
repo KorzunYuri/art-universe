@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import yurykorzun.art.universe.data.raw.common.domain.entity.ApprovalStatus;
+import yurykorzun.art.universe.music.data.raw.lastfm.config.LastfmParserProperty;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.LastfmEntityRelationType;
@@ -37,6 +38,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 @Import({
     // processing
@@ -365,6 +367,8 @@ class LastfmArtistGetInfoResponseProcessorTest extends BaseLastfmApiResponseProc
         ArtistGetInfoDtoRoot modifiedDtoRoot = objectMapper.readValue(responseJsonString, ArtistGetInfoDtoRoot.class);
         modifiedDtoRoot.getArtist().getStats().setListeners(500); // Below threshold of 1000
         String modifiedResponse = objectMapper.writeValueAsString(modifiedDtoRoot);
+
+        when(configPropertyHolder.getInt(LastfmParserProperty.THRESHOLD_ARTIST_LISTENERS_COUNT)).thenReturn(1000);
 
         // Create existing artist
         LastfmArtist existingArtist = consistencyHelper.createAndSaveArtist(builder ->

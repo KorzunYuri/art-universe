@@ -38,18 +38,7 @@ server:
   # Non-web app - only needs actuator endpoints
   port: ${MURAW_SPOTIFY_RESPONSE_PARSER_ACTUATOR_INTERNAL_PORT:8080}
 
-spotify:
-  scheduling:
-    response-parse:
-      fixed-delay-secs: ${SPOTIFY_SCHEDULING_RESPONSE_PARSE_FIXED_DELAY_SECS:5}
-  staging:
-    iteration:
-      max-records: ${SPOTIFY_STAGING_ITERATION_MAX_RECORDS:5000}
-      max-open-minutes: ${SPOTIFY_STAGING_ITERATION_MAX_OPEN_MINUTES:5}
-  tasks:
-    calls-generate:
-      due-duration-days:
-        artist-get: 30
-  search:
-    match-threshold: ${SPOTIFY_SEARCH_MATCH_THRESHOLD:0.85}
-    grace-period-days: ${SPOTIFY_SEARCH_GRACE_PERIOD_DAYS:30}
+au:
+  config:
+    client:
+      service-url: "${AU_CONFIG_SERVICE_URL}"

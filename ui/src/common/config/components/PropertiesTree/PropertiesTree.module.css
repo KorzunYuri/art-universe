@@ -1,0 +1,342 @@
+.root {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* ── Columns ─────────────────────────────────────────────── */
+
+.columnsArea {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 2px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+
+.column {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    min-width: 200px;
+}
+
+.columnHeader {
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 4px 8px 6px;
+    white-space: nowrap;
+}
+
+.columnItems {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* ── Items (rectangles) ──────────────────────────────────── */
+
+.item {
+    display: flex;
+    align-items: stretch;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: #fff;
+    overflow: hidden;
+    transition: border-color 0.12s, background 0.12s;
+}
+
+.item:hover {
+    border-color: #94a3b8;
+    background: #f8fafc;
+}
+
+.itemSelected {
+    border-color: #3b82f6;
+    background: #eff6ff;
+}
+
+.itemSelected:hover {
+    border-color: #2563eb;
+    background: #dbeafe;
+}
+
+.itemSelectArea {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    flex: 1;
+    min-width: 0;
+    text-align: left;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    outline: none;
+}
+
+.itemLabel {
+    color: #1e293b;
+    font-size: 0.875rem;
+    font-weight: 400;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.itemArrow {
+    color: #94a3b8;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+/* ── Inline controls ─────────────────────────────────────── */
+
+.inlineControls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-left: 1px solid #e2e8f0;
+    flex-shrink: 0;
+}
+
+.item:hover .inlineControls,
+.itemSelected .inlineControls {
+    border-left-color: transparent;
+}
+
+.inlineInput {
+    width: 80px;
+    padding: 3px 6px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    color: #1e293b;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.12s;
+}
+
+.inlineInput:focus {
+    border-color: #3b82f6;
+}
+
+input[type="text"].inlineInput {
+    width: 130px;
+}
+
+.sliderWrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.slider {
+    width: 100px;
+    accent-color: #3b82f6;
+    cursor: pointer;
+}
+
+.sliderValue {
+    font-size: 0.75rem;
+    color: #475569;
+    font-variant-numeric: tabular-nums;
+    min-width: 38px;
+}
+
+.toggle {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.toggle input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggleTrack {
+    width: 32px;
+    height: 18px;
+    background: #cbd5e1;
+    border-radius: 9px;
+    position: relative;
+    transition: background 0.15s;
+    flex-shrink: 0;
+}
+
+.toggleTrack::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 14px;
+    height: 14px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+    transition: transform 0.15s;
+}
+
+.toggle input:checked + .toggleTrack {
+    background: #3b82f6;
+}
+
+.toggle input:checked + .toggleTrack::after {
+    transform: translateX(14px);
+}
+
+.inlineSaveBtn {
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    background: #fff;
+    color: #16a34a;
+    font-size: 0.85rem;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.12s, border-color 0.12s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.inlineSaveBtn:hover:not(:disabled) {
+    background: #f0fdf4;
+    border-color: #86efac;
+}
+
+.inlineSaveBtn:disabled {
+    color: #cbd5e1;
+    cursor: not-allowed;
+}
+
+/* ── Type badges ─────────────────────────────────────────── */
+
+.typeBadge {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    padding: 2px 5px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    text-transform: uppercase;
+}
+
+.typeINTEGER  { background: #dbeafe; color: #1d4ed8; }
+.typeBOOLEAN  { background: #dcfce7; color: #15803d; }
+.typeDECIMAL  { background: #fef3c7; color: #b45309; }
+.typeSTRING   { background: #f3e8ff; color: #7e22ce; }
+
+/* ── Property editor ─────────────────────────────────────── */
+
+.editor {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 480px;
+}
+
+.editorKey {
+    font-family: ui-monospace, monospace;
+    font-size: 0.8rem;
+    color: #475569;
+    word-break: break-all;
+}
+
+.editorDescription {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.editorField {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.editorLabel {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.editorDefault {
+    font-family: ui-monospace, monospace;
+    font-size: 0.85rem;
+    color: #94a3b8;
+}
+
+.input {
+    padding: 6px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    color: #1e293b;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.12s;
+}
+
+.input:focus {
+    border-color: #3b82f6;
+}
+
+.editorError {
+    font-size: 0.8rem;
+    color: #dc2626;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 4px;
+    padding: 6px 10px;
+}
+
+.saveButton {
+    align-self: flex-start;
+    padding: 7px 18px;
+    background: #3b82f6;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.12s;
+}
+
+.saveButton:hover:not(:disabled) {
+    background: #2563eb;
+}
+
+.saveButton:disabled {
+    background: #93c5fd;
+    cursor: not-allowed;
+}
+
+/* ── Empty state ─────────────────────────────────────────── */
+
+.empty {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    padding: 24px 0;
+}

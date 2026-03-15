@@ -1,0 +1,21 @@
+plugins {
+    id 'art-universe.spring-boot-web-app'
+    id 'org.liquibase.gradle'
+}
+
+archivesBaseName = 'au-config-service'
+ext.dockerImageName = 'au-config-service'
+
+dependencies {
+    implementation project(':common:commons-web')
+    implementation project(':common:commons-observability')
+    // Reuse PropertyType and related types from the client library.
+    // The client auto-configuration won't activate because au.config.client.service-url is not set here.
+    implementation project(':common:config:config-client')
+
+    runtimeOnly project(':common:config:config-service-liquibase-resources')
+    runtimeOnly 'org.liquibase:liquibase-core'
+
+    testImplementation project(':common:test:commons-test-web')
+    testImplementation project(':common:test:commons-test-db')
+}

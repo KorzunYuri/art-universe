@@ -1,11 +1,12 @@
 package yurykorzun.art.universe.music.data.raw.spotify.generator;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import yurykorzun.art.universe.common.config.client.ConfigPropertyHolder;
 import yurykorzun.art.universe.music.data.raw.spotify.common.SpotifyConstants;
+import yurykorzun.art.universe.music.data.raw.spotify.config.SpotifyGeneratorProperty;
 import yurykorzun.art.universe.music.data.raw.spotify.enums.SpotifyEntityType;
 import yurykorzun.art.universe.music.data.raw.spotify.etl.dto.SpotifyApiCallCreateRequest;
 import yurykorzun.art.universe.music.data.raw.spotify.etl.entity.*;
@@ -44,24 +45,18 @@ public class SpotifySearchArtistCallGenerator extends BaseSpotifyApiCallGenerato
     private final JdbcTemplate jdbcTemplate;
     private final SpotifyApiCallService apiCallService;
     private final SpotifySearchAttemptRepository searchAttemptRepository;
-
-    @Value("${spotify.tasks.calls-generate.search.enabled:false}")
-    private boolean enabled;
-
-    @Value("${spotify.tasks.calls-generate.search.batch-size:100}")
-    private int batchSize;
-
-    @Value("${spotify.tasks.calls-generate.due-duration-days.search-artist:7}")
-    private int dueDurationDays;
+    private final ConfigPropertyHolder configPropertyHolder;
 
     public SpotifySearchArtistCallGenerator(
         JdbcTemplate jdbcTemplate,
         SpotifyApiCallService apiCallService,
-        SpotifySearchAttemptRepository searchAttemptRepository
+        SpotifySearchAttemptRepository searchAttemptRepository,
+        ConfigPropertyHolder configPropertyHolder
     ) {
         this.jdbcTemplate = jdbcTemplate;
         this.apiCallService = apiCallService;
         this.searchAttemptRepository = searchAttemptRepository;
+        this.configPropertyHolder = configPropertyHolder;
     }
 
     @Override
@@ -72,9 +67,8 @@ public class SpotifySearchArtistCallGenerator extends BaseSpotifyApiCallGenerato
     @Override
     @Transactional
     public void createApiCalls() {
-        if (!enabled) {
-            return;
-        }
+        int batchSize = configPropertyHolder.getInt(SpotifyGeneratorProperty.SEARCH_BATCH_SIZE);
+        int dueDurationDays = configPropertyHolder.getInt(SpotifyGeneratorProperty.DUE_DURATION_SEARCH);
 
         List<UnboundEntity> unboundArtists = jdbcTemplate.query(
             FIND_UNBOUND_ARTISTS_SQL,

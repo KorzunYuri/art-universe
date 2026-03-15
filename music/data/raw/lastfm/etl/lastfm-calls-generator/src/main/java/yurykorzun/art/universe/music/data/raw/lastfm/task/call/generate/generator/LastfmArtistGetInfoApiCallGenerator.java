@@ -1,8 +1,9 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.task.call.generate.generator;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import yurykorzun.art.universe.common.config.client.ConfigPropertyHolder;
+import yurykorzun.art.universe.music.data.raw.lastfm.config.LastfmGeneratorProperty;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.call.generate.LastfmApiCallEntityService;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.LastfmApiCallService;
@@ -18,19 +19,18 @@ import java.util.List;
 public class LastfmArtistGetInfoApiCallGenerator extends LastfmArtistApiCallGenerator {
 
     private final LastfmArtistService artistService;
-
-    @Value("${lastfm.tasks.calls-generate.due-duration-days.artist-get-info}")
-    private int dueDurationDays;
+    private final ConfigPropertyHolder configPropertyHolder;
 
     public LastfmArtistGetInfoApiCallGenerator(
         LastfmApiCallService apiCallService,
         LastfmArtistService artistService,
         LastfmDataSnapshotService snapshotService,
-        LastfmApiCallEntityService entityService
+        LastfmApiCallEntityService entityService,
+        ConfigPropertyHolder configPropertyHolder
     ) {
         super(apiCallService, snapshotService, entityService);
-
         this.artistService = artistService;
+        this.configPropertyHolder = configPropertyHolder;
     }
 
     @Override
@@ -40,12 +40,11 @@ public class LastfmArtistGetInfoApiCallGenerator extends LastfmArtistApiCallGene
 
     @Override
     protected int getDueDurationDays() {
-        return dueDurationDays;
+        return configPropertyHolder.getInt(LastfmGeneratorProperty.DUE_DURATION_ARTIST_GET_INFO);
     }
 
     @Override
     protected List<LastfmArtist> selectEntitiesForApiCalls() {
-        // note: deduplication is already applied on SQL level
         return artistService.findArtistsForGetInfo();
     }
 }

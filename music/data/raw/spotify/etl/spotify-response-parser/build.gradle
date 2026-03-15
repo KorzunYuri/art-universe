@@ -6,6 +6,7 @@ archivesBaseName = 'spotify-etl-response-parser'
 ext.dockerImageName = 'mu-spotify-response-parser'
 
 dependencies {
+    implementation project(':common:config:config-client')
     implementation project(':common:commons-observability')
     implementation project(':music:data:raw:spotify:spotify-repositories')
 

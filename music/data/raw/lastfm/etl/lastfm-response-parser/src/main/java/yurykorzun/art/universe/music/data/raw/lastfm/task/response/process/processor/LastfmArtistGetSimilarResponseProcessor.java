@@ -4,8 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import yurykorzun.art.universe.common.config.client.ConfigPropertyHolder;
+import yurykorzun.art.universe.music.data.raw.lastfm.config.LastfmParserProperty;
 import yurykorzun.art.universe.data.raw.common.etl.entity.ApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCall;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCallType;
@@ -45,9 +46,7 @@ public class LastfmArtistGetSimilarResponseProcessor extends LastfmApiResponsePr
     private final LastfmArtistsRelationService artistsRelationService;
     private final LastfmAttributeHistoryStagingService attributeHistoryService;
     private final DtoQualityService dtoQualityService;
-
-    @Value("${lastfm.tasks.response-parse.methods.artist.get-similar.artist-match-threshold}")
-    private float artistMatchThreshold;
+    private final ConfigPropertyHolder configPropertyHolder;
 
     private static final List<EntityAttributeHandler<LastfmArtist, ?, ArtistGetSimilarArtistDto>> artistAttrHandlers;
     static {
@@ -66,6 +65,7 @@ public class LastfmArtistGetSimilarResponseProcessor extends LastfmApiResponsePr
         LastfmArtistsRelationService artistsRelationService,
         LastfmAttributeHistoryStagingService attributeHistoryService,
         DtoQualityService dtoQualityService,
+        ConfigPropertyHolder configPropertyHolder,
         @Qualifier(MappingConfig.LASTFM_API_RESPONSE_OBJECT_MAPPER_BEAN_NAME) ObjectMapper objectMapper
     ) {
         super(ArtistGetSimilarDtoRoot.class, objectMapper);
@@ -76,6 +76,7 @@ public class LastfmArtistGetSimilarResponseProcessor extends LastfmApiResponsePr
         this.artistsRelationService = artistsRelationService;
         this.attributeHistoryService = attributeHistoryService;
         this.dtoQualityService = dtoQualityService;
+        this.configPropertyHolder = configPropertyHolder;
     }
 
     @Override
@@ -152,7 +153,7 @@ public class LastfmArtistGetSimilarResponseProcessor extends LastfmApiResponsePr
      */
     private List<ArtistGetSimilarArtistDto> filterDtosForSaving(ArtistGetSimilarDtoRoot dtoRoot, LastfmArtist sourceArtist) {
         List<ArtistGetSimilarArtistDto> candidateDtos = dtoRoot.getRootObject().getArtists().stream()
-            .filter(a -> a.getMatchCoeff() > artistMatchThreshold)
+            .filter(a -> a.getMatchCoeff() > configPropertyHolder.getDecimal(LastfmParserProperty.METHOD_ARTIST_GET_SIMILAR_MATCH_THRESHOLD).floatValue())
             .filter(a -> !isSameArtist(a, sourceArtist))
             .toList();
 
