@@ -8,6 +8,7 @@ ext.dockerImageName = 'mu-spotify-response-parser'
 dependencies {
     implementation project(':common:config:config-client')
     implementation project(':common:commons-observability')
+    implementation project(':common:messaging:kafka-commons')
     implementation project(':music:data:raw:spotify:spotify-repositories')
 
     // web for actuator endpoints

@@ -9,4 +9,6 @@ import java.util.List;
 public interface SpotifyApiCallService {
 
     List<SpotifyApiCall> createApiCalls(List<SpotifyApiCallCreateRequest> requests);
+
+    void markAsProduced(long callId, String kafkaTopic);
 }

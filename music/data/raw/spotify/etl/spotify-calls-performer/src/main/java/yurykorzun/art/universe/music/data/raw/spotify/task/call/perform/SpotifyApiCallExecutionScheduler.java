@@ -1,6 +1,5 @@
 package yurykorzun.art.universe.music.data.raw.spotify.task.call.perform;
 
-import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -30,7 +29,6 @@ public class SpotifyApiCallExecutionScheduler {
         this.configPropertyHolder = configPropertyHolder;
     }
 
-    @PostConstruct
     public void start() {
         scheduleNext();
     }

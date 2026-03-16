@@ -86,6 +86,19 @@ public enum SpotifyParserProperty implements ConfigurableProperty {
         PropertyType.INTEGER, "30",
         "Days before retrying a failed search attempt",
         PropertyConstraints.ofRange(1, 365)
+    ),
+
+    KAFKA_BATCH_SIZE(
+        "spotify.parser.kafka.batch-size",
+        PropertyType.INTEGER, "20",
+        "Maximum response messages consumed per Kafka poll cycle",
+        PropertyConstraints.ofRange(1, 100)
+    ),
+    KAFKA_ORPHAN_SWEEP_CYCLES(
+        "spotify.parser.kafka.orphan-sweep-cycles",
+        PropertyType.INTEGER, "20",
+        "Number of cycles between DB sweeps for PENDING responses missed via Kafka",
+        PropertyConstraints.ofRange(1, 200)
     );
 
     private final String key;

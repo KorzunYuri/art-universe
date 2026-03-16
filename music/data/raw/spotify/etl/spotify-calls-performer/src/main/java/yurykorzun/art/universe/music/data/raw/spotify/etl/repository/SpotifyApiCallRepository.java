@@ -27,4 +27,22 @@ public interface SpotifyApiCallRepository extends BaseSpotifyApiCallRepository {
             SpotifyConstants.HIBERNATE_BATCH_SIZE
         );
     }
+
+    @Query(
+        value = "SELECT * FROM api_call WHERE status = :statusCode AND due_dttm > NOW() ORDER BY priority DESC, id ASC LIMIT :batchSize",
+        nativeQuery = true
+    )
+    List<SpotifyApiCall> findByStatusAndNotExpired(
+        @Param("statusCode") int statusCode,
+        @Param("batchSize") int batchSize
+    );
+
+    @Query(
+        value = "SELECT * FROM api_call WHERE status = :statusCode AND (kafka_produced IS NULL OR kafka_produced = false) ORDER BY id ASC LIMIT :batchSize",
+        nativeQuery = true
+    )
+    List<SpotifyApiCall> findByStatusAndNotKafkaProduced(
+        @Param("statusCode") int statusCode,
+        @Param("batchSize") int batchSize
+    );
 }

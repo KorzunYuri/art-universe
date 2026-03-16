@@ -1,0 +1,11 @@
+plugins {
+    id 'art-universe.java-library'
+}
+
+archivesBaseName = 'kafka-commons'
+
+dependencies {
+    api 'org.springframework.kafka:spring-kafka'
+    api 'com.fasterxml.jackson.core:jackson-databind'
+    api 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+}

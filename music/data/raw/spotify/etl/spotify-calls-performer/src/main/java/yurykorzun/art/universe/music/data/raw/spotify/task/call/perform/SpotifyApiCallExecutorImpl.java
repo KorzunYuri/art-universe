@@ -8,12 +8,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
+import yurykorzun.art.universe.common.config.client.ConfigPropertyHolder;
 import yurykorzun.art.universe.data.raw.common.etl.entity.ApiCallStatus;
 import yurykorzun.art.universe.data.raw.common.integration.AdaptiveRateLimiter;
+import yurykorzun.art.universe.music.data.raw.spotify.config.SpotifyCommonProperty;
 import yurykorzun.art.universe.music.data.raw.spotify.etl.entity.SpotifyApiCall;
 import yurykorzun.art.universe.music.data.raw.spotify.etl.service.SpotifyApiCallService;
 import yurykorzun.art.universe.music.data.raw.spotify.etl.service.SpotifyApiResponseService;
 import yurykorzun.art.universe.music.data.raw.spotify.integration.SpotifyApiClient;
+import yurykorzun.art.universe.music.data.raw.spotify.kafka.SpotifyResponseKafkaProducer;
 
 @Service
 @Slf4j
@@ -24,19 +27,25 @@ public class SpotifyApiCallExecutorImpl implements SpotifyApiCallExecutor {
     private final SpotifyApiClient apiClient;
     private final AdaptiveRateLimiter rateLimiter;
     private final SpotifyApiCallExecutorImpl self;
+    private final SpotifyResponseKafkaProducer responseKafkaProducer;
+    private final ConfigPropertyHolder configPropertyHolder;
 
     public SpotifyApiCallExecutorImpl(
         SpotifyApiCallService apiCallService,
         SpotifyApiResponseService apiResponseService,
         SpotifyApiClient apiClient,
         AdaptiveRateLimiter rateLimiter,
-        @Lazy SpotifyApiCallExecutorImpl self
+        @Lazy SpotifyApiCallExecutorImpl self,
+        SpotifyResponseKafkaProducer responseKafkaProducer,
+        ConfigPropertyHolder configPropertyHolder
     ) {
         this.apiCallService = apiCallService;
         this.apiResponseService = apiResponseService;
         this.apiClient = apiClient;
         this.rateLimiter = rateLimiter;
         this.self = self;
+        this.responseKafkaProducer = responseKafkaProducer;
+        this.configPropertyHolder = configPropertyHolder;
     }
 
     @Override
@@ -46,9 +55,13 @@ public class SpotifyApiCallExecutorImpl implements SpotifyApiCallExecutor {
 
         try {
             String response = self.makeApiCallWithRetry(call);
-            apiResponseService.createResponse(call, response);
+            long apiResponseId = apiResponseService.createResponse(call, response);
             apiCallService.finalizeApiCall(call, ApiCallStatus.SUCCESSFUL, 200, null);
             rateLimiter.recordSuccess();
+
+            if (configPropertyHolder.getBoolean(SpotifyCommonProperty.KAFKA_ENABLED)) {
+                responseKafkaProducer.produce(apiResponseId, call);
+            }
         } catch (HttpClientErrorException.TooManyRequests e) {
             log.warn("Rate limited (429) for api_call {} — resetting to CREATED for retry", call.getId());
             apiCallService.markForRetry(call);

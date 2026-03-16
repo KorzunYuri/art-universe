@@ -18,6 +18,7 @@ include 'music:data:master'
 
 include 'common:data:raw:data-raw-commons-jpa'
 include 'common:data:raw:data-raw-commons-api-client'
+include 'common:messaging:kafka-commons'
 
 include 'music:data:raw:lastfm:migrations:lastfm-liquibase-resources'
 include 'music:data:raw:lastfm:migrations:lastfm-liquibase-service'

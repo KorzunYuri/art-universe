@@ -58,8 +58,19 @@ public class SpotifyApiResponseProcessingOrchestrator {
             responses.size(), totalStaged, iteration.getId());
     }
 
+    public void processSingleResponse(SpotifyApiResponse response) {
+        StagingIteration iteration = stagingIterationService.getOrCreateOpenIteration();
+        int staged = processSingle(response, iteration);
+        if (staged > 0) {
+            stagingIterationService.incrementRecordsStaged(iteration, staged);
+        }
+        if (stagingIterationService.shouldSeal(iteration)) {
+            stagingIterationService.seal(iteration);
+        }
+    }
+
     @Transactional
-    protected int processSingle(SpotifyApiResponse response, StagingIteration iteration) {
+    public int processSingle(SpotifyApiResponse response, StagingIteration iteration) {
         SpotifyApiCallType callType = response.getApiCall().getType();
 
         if (!isParsingEnabled(callType)) {

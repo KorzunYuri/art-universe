@@ -8,6 +8,7 @@ import yurykorzun.art.universe.music.data.raw.spotify.etl.repository.SpotifyApiC
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class SpotifyApiCallServiceImpl implements SpotifyApiCallService {
@@ -21,6 +22,21 @@ public class SpotifyApiCallServiceImpl implements SpotifyApiCallService {
     @Override
     public List<SpotifyApiCall> findAllCreatedUnexpired() {
         return apiCallRepository.findAllCreatedUnexpired();
+    }
+
+    @Override
+    public Optional<SpotifyApiCall> findById(long id) {
+        return apiCallRepository.findById(id);
+    }
+
+    @Override
+    public List<SpotifyApiCall> findDueToRetry(int batchSize) {
+        return apiCallRepository.findByStatusAndNotExpired(ApiCallStatus.DUE_TO_RETRY.getCode(), batchSize);
+    }
+
+    @Override
+    public List<SpotifyApiCall> findCreatedNotProduced(int batchSize) {
+        return apiCallRepository.findByStatusAndNotKafkaProduced(ApiCallStatus.CREATED.getCode(), batchSize);
     }
 
     @Override

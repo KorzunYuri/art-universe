@@ -38,6 +38,9 @@ server:
   # Non-web app - only needs actuator endpoints
   port: ${MURAW_SPOTIFY_RESPONSE_PARSER_ACTUATOR_INTERNAL_PORT:8080}
 
+kafka:
+  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+
 au:
   config:
     client:
