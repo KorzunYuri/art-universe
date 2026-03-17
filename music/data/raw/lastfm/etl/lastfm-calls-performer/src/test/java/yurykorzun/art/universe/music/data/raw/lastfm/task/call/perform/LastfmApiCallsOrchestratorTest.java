@@ -16,6 +16,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 
+import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -105,6 +107,49 @@ class LastfmApiCallsOrchestratorTest {
         // then
         verify(executor, never()).execute(any());
         verifyNoInteractions(rateLimiter);
+    }
+
+    @Test
+    void orchestrateApiCalls_shouldNotifyAfterCommit_whenAtLeastOneCallSucceeds() throws InterruptedException {
+        // given
+        LastfmApiCall call1 = createApiCall(1L);
+        LastfmApiCall call2 = createApiCall(2L);
+        when(apiCallService.findAllUnprocessedUnexpired()).thenReturn(List.of(call1, call2));
+        when(executor.execute(call1)).thenReturn(false);
+        when(executor.execute(call2)).thenReturn(true);
+
+        // when
+        orchestrator.orchestrateApiCalls();
+
+        // then
+        verify(pgNotifyEventPublisher).notifyAfterCommit(LastfmConstants.NOTIFY_RESPONSES_READY);
+    }
+
+    @Test
+    void orchestrateApiCalls_shouldNotNotify_whenNoCallsSucceed() throws InterruptedException {
+        // given
+        LastfmApiCall call1 = createApiCall(1L);
+        LastfmApiCall call2 = createApiCall(2L);
+        when(apiCallService.findAllUnprocessedUnexpired()).thenReturn(List.of(call1, call2));
+        when(executor.execute(any())).thenReturn(false);
+
+        // when
+        orchestrator.orchestrateApiCalls();
+
+        // then
+        verifyNoInteractions(pgNotifyEventPublisher);
+    }
+
+    @Test
+    void orchestrateApiCalls_shouldNotNotify_whenNoCallsExist() {
+        // given
+        when(apiCallService.findAllUnprocessedUnexpired()).thenReturn(List.of());
+
+        // when
+        orchestrator.orchestrateApiCalls();
+
+        // then
+        verifyNoInteractions(pgNotifyEventPublisher);
     }
 
     @Test
