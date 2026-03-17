@@ -13,6 +13,8 @@ dependencies {
     // web for actuator endpoints
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
+    implementation project(':common:commons-pg-notify')
+
     // JdbcTemplate for dynamic staging SQL
     implementation 'org.springframework.boot:spring-boot-starter-jdbc'
 }

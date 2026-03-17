@@ -49,3 +49,9 @@ spotify:
     client-id: ${SPOTIFY_CLIENT_ID}
     client-secret: ${SPOTIFY_CLIENT_SECRET}
     token-url: ${SPOTIFY_TOKEN_URL:https://accounts.spotify.com/api/token}
+  tasks:
+    calls-perform:
+      retry:
+        max-attempts: 3
+        initial-delay-ms: 1000
+        multiplier: 2.0

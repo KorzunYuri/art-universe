@@ -14,6 +14,8 @@ dependencies {
     // web for actuator endpoints
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
+    implementation project(':common:commons-pg-notify')
+
     implementation 'org.springframework.retry:spring-retry'
     implementation 'com.google.guava:guava:33.4.0-jre'
 }
