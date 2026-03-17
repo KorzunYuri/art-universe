@@ -29,12 +29,6 @@ public enum LastfmPerformerProperty implements ConfigurableProperty {
         PropertyType.DECIMAL, "2.0",
         "Backoff multiplier applied on rate-limit response",
         PropertyConstraints.ofRange(1.0, 10.0)
-    ),
-    RETRY_MAX_ATTEMPTS(
-        "lastfm.performer.retry.max-attempts",
-        PropertyType.INTEGER, "3",
-        "Maximum retry attempts for failed API calls",
-        PropertyConstraints.ofRange(1, 10)
     );
 
     private final String key;

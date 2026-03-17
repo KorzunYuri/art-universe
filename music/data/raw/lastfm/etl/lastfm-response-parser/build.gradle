@@ -10,6 +10,8 @@ dependencies {
     implementation project(':common:commons-observability')
     implementation project(':music:data:raw:lastfm:lastfm-repositories')
 
+    implementation project(':common:commons-pg-notify')
+
     implementation 'info.debatty:java-string-similarity:2.0.0'
 
     // web for actuator endpoints

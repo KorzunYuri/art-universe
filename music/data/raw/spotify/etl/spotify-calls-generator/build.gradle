@@ -15,4 +15,6 @@ dependencies {
 
     // JdbcTemplate for cross-schema search queries
     implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+
+    implementation project(':common:commons-pg-notify')
 }

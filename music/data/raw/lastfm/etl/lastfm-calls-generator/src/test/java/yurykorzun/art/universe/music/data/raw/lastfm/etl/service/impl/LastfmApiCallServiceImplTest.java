@@ -12,6 +12,8 @@ import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCallTyp
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.repository.LastfmApiCallRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.test.common.entity.EntityCreationHelper;
+import yurykorzun.art.universe.common.pgnotify.PgNotifyEventPublisher;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 
 import java.time.Instant;
 import java.util.List;
@@ -26,6 +28,9 @@ class LastfmApiCallServiceImplTest {
 
     @Mock
     private LastfmApiCallRepository apiCallRepository;
+
+    @Mock
+    private PgNotifyEventPublisher pgNotifyEventPublisher;
 
     @InjectMocks
     private LastfmApiCallServiceImpl service;
@@ -62,6 +67,38 @@ class LastfmApiCallServiceImplTest {
                    callsList.getFirst().getStatus() == ApiCallStatus.PENDING &&
                    callsList.getFirst().getType() == LastfmApiCallType.TAG_TOP_TAGS;
         }));
+    }
+
+    @Test
+    void createApiCalls_shouldNotifyAfterCommit_whenCallsAreSaved() {
+        // given
+        LastfmApiCallCreateRequest request = LastfmApiCallCreateRequest.builder()
+                .type(LastfmApiCallType.TAG_TOP_TAGS)
+                .entityType(LastfmEntityType.TAG)
+                .entityId(1L)
+                .dataSnapshotId(1L)
+                .dueDttm(Instant.now())
+                .build();
+        LastfmApiCall savedCall = LastfmApiCall.builder().id(1L).type(LastfmApiCallType.TAG_TOP_TAGS).dueDttm(Instant.now()).build();
+        when(apiCallRepository.saveAll(any())).thenReturn(List.of(savedCall));
+
+        // when
+        service.createApiCalls(List.of(request));
+
+        // then
+        verify(pgNotifyEventPublisher).notifyAfterCommit(LastfmConstants.NOTIFY_CALLS_READY);
+    }
+
+    @Test
+    void createApiCalls_shouldNotNotify_whenNoCallsAreSaved() {
+        // given
+        when(apiCallRepository.saveAll(any())).thenReturn(List.of());
+
+        // when
+        service.createApiCalls(List.of());
+
+        // then
+        verifyNoInteractions(pgNotifyEventPublisher);
     }
 
     @Test

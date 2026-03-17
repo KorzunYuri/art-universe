@@ -41,7 +41,7 @@ public class SpotifyApiCallExecutorImpl implements SpotifyApiCallExecutor {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void execute(SpotifyApiCall call) {
+    public boolean execute(SpotifyApiCall call) {
         apiCallService.updateApiCallStatus(call, ApiCallStatus.PROCESSING);
 
         try {
@@ -49,19 +49,23 @@ public class SpotifyApiCallExecutorImpl implements SpotifyApiCallExecutor {
             apiResponseService.createResponse(call, response);
             apiCallService.finalizeApiCall(call, ApiCallStatus.SUCCESSFUL, 200, null);
             rateLimiter.recordSuccess();
+            return true;
         } catch (HttpClientErrorException.TooManyRequests e) {
             log.warn("Rate limited (429) for api_call {} — resetting to CREATED for retry", call.getId());
             apiCallService.markForRetry(call);
             rateLimiter.record429();
+            return false;
         } catch (HttpClientErrorException e) {
             int status = e.getStatusCode().value();
             log.warn("Spotify HTTP {} for api_call {} (spotifyId={})",
                 status, call.getId(), call.getSpotifyId());
             apiCallService.finalizeApiCall(call, ApiCallStatus.FAILED, status, e.getMessage());
+            return false;
         } catch (Exception e) {
             log.error("Failed to execute api_call {} (type={}): {}",
                 call.getId(), call.getType().getMethod(), e.getMessage(), e);
             apiCallService.finalizeApiCall(call, ApiCallStatus.FAILED, null, e.getMessage());
+            return false;
         }
     }
 

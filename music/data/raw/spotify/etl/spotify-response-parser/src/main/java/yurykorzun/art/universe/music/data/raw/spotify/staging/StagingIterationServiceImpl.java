@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.common.config.client.ConfigPropertyHolder;
+import yurykorzun.art.universe.common.pgnotify.PgNotifyEventPublisher;
+import yurykorzun.art.universe.music.data.raw.spotify.common.SpotifyConstants;
 import yurykorzun.art.universe.music.data.raw.spotify.config.SpotifyParserProperty;
 import yurykorzun.art.universe.music.data.raw.spotify.etl.entity.StagingIteration;
 import yurykorzun.art.universe.music.data.raw.spotify.etl.entity.StagingIterationStatus;
@@ -19,15 +21,18 @@ public class StagingIterationServiceImpl implements StagingIterationService {
     private final SpotifyStagingIterationRepository repository;
     private final StagingWriter stagingWriter;
     private final ConfigPropertyHolder configPropertyHolder;
+    private final PgNotifyEventPublisher pgNotifyEventPublisher;
 
     public StagingIterationServiceImpl(
         SpotifyStagingIterationRepository repository,
         StagingWriter stagingWriter,
-        ConfigPropertyHolder configPropertyHolder
+        ConfigPropertyHolder configPropertyHolder,
+        PgNotifyEventPublisher pgNotifyEventPublisher
     ) {
         this.repository = repository;
         this.stagingWriter = stagingWriter;
         this.configPropertyHolder = configPropertyHolder;
+        this.pgNotifyEventPublisher = pgNotifyEventPublisher;
     }
 
     @Override
@@ -44,6 +49,7 @@ public class StagingIterationServiceImpl implements StagingIterationService {
         iteration.setSealedAt(Instant.now());
         repository.save(iteration);
         log.info("Sealed staging iteration {} with {} records staged", iteration.getId(), iteration.getRecordsStaged());
+        pgNotifyEventPublisher.notifyAfterCommit(SpotifyConstants.NOTIFY_ITERATIONS_SEALED);
     }
 
     @Override
