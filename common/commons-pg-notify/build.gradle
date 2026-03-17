@@ -8,5 +8,9 @@ dependencies {
     implementation 'org.springframework:spring-jdbc'
     implementation 'org.postgresql:postgresql'
     compileOnly 'org.springframework.boot:spring-boot-autoconfigure'
-    compileOnly 'com.zaxxer:HikariCP'
+    compileOnly 'org.springframework.boot:spring-boot-starter-jdbc'
+
+    testImplementation project(':common:test:commons-test-db')
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-jdbc'
 }
