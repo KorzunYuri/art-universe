@@ -19,6 +19,7 @@ public class PgNotifyAfterCommitListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onNotify(PgNotifyEvent event) {
         String channel = event.getChannel();
+        PgChannelValidator.requireValid(channel);
         try {
             jdbcTemplate.execute("NOTIFY " + channel);
             log.debug("Sent NOTIFY on channel '{}'", channel);
