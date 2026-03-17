@@ -1,8 +1,8 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.task.call.perform;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import yurykorzun.art.universe.common.pgnotify.PgNotifyEventPublisher;
 import yurykorzun.art.universe.data.raw.common.integration.AdaptiveRateLimiter;
 import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCall;
@@ -17,18 +17,18 @@ public class LastfmApiCallsOrchestrator {
     private final LastfmApiCallService apiCallService;
     private final LastfmApiCallExecutor executor;
     private final AdaptiveRateLimiter rateLimiter;
-    private final JdbcTemplate jdbcTemplate;
+    private final PgNotifyEventPublisher pgNotifyEventPublisher;
 
     public LastfmApiCallsOrchestrator(
         LastfmApiCallService apiCallService,
         LastfmApiCallExecutor executor,
         AdaptiveRateLimiter rateLimiter,
-        JdbcTemplate jdbcTemplate
+        PgNotifyEventPublisher pgNotifyEventPublisher
     ) {
         this.apiCallService = apiCallService;
         this.executor = executor;
         this.rateLimiter = rateLimiter;
-        this.jdbcTemplate = jdbcTemplate;
+        this.pgNotifyEventPublisher = pgNotifyEventPublisher;
     }
 
     public void orchestrateApiCalls() {
@@ -58,12 +58,7 @@ public class LastfmApiCallsOrchestrator {
             }
         }
         if (successCount > 0) {
-            try {
-                jdbcTemplate.execute("NOTIFY " + LastfmConstants.NOTIFY_RESPONSES_READY);
-                log.debug("Sent NOTIFY on channel '{}' after {} successful calls", LastfmConstants.NOTIFY_RESPONSES_READY, successCount);
-            } catch (Exception e) {
-                log.warn("Failed to send NOTIFY on channel '{}': {}", LastfmConstants.NOTIFY_RESPONSES_READY, e.getMessage());
-            }
+            pgNotifyEventPublisher.notifyAfterCommit(LastfmConstants.NOTIFY_RESPONSES_READY);
         }
     }
 }

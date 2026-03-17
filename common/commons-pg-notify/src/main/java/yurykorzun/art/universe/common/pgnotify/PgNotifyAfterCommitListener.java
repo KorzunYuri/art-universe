@@ -6,13 +6,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-import java.util.regex.Pattern;
-
 @Component
 @Slf4j
 public class PgNotifyAfterCommitListener {
-
-    private static final Pattern VALID_CHANNEL = Pattern.compile("^[a-z][a-z0-9_]*$");
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -23,10 +19,6 @@ public class PgNotifyAfterCommitListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onNotify(PgNotifyEvent event) {
         String channel = event.getChannel();
-        if (!VALID_CHANNEL.matcher(channel).matches()) {
-            log.error("Invalid NOTIFY channel name: '{}' — skipping", channel);
-            return;
-        }
         try {
             jdbcTemplate.execute("NOTIFY " + channel);
             log.debug("Sent NOTIFY on channel '{}'", channel);

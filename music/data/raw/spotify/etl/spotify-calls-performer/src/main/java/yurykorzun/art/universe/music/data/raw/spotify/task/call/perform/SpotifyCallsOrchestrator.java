@@ -1,8 +1,8 @@
 package yurykorzun.art.universe.music.data.raw.spotify.task.call.perform;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import yurykorzun.art.universe.common.pgnotify.PgNotifyEventPublisher;
 import yurykorzun.art.universe.data.raw.common.integration.AdaptiveRateLimiter;
 import yurykorzun.art.universe.music.data.raw.spotify.common.SpotifyConstants;
 import yurykorzun.art.universe.music.data.raw.spotify.etl.entity.SpotifyApiCall;
@@ -17,18 +17,18 @@ public class SpotifyCallsOrchestrator {
     private final SpotifyApiCallService apiCallService;
     private final SpotifyApiCallExecutor executor;
     private final AdaptiveRateLimiter rateLimiter;
-    private final JdbcTemplate jdbcTemplate;
+    private final PgNotifyEventPublisher pgNotifyEventPublisher;
 
     public SpotifyCallsOrchestrator(
         SpotifyApiCallService apiCallService,
         SpotifyApiCallExecutor executor,
         AdaptiveRateLimiter rateLimiter,
-        JdbcTemplate jdbcTemplate
+        PgNotifyEventPublisher pgNotifyEventPublisher
     ) {
         this.apiCallService = apiCallService;
         this.executor = executor;
         this.rateLimiter = rateLimiter;
-        this.jdbcTemplate = jdbcTemplate;
+        this.pgNotifyEventPublisher = pgNotifyEventPublisher;
     }
 
     public void orchestrateApiCalls() {
@@ -52,12 +52,7 @@ public class SpotifyCallsOrchestrator {
             }
         }
         if (successCount > 0) {
-            try {
-                jdbcTemplate.execute("NOTIFY " + SpotifyConstants.NOTIFY_RESPONSES_READY);
-                log.debug("Sent NOTIFY on channel '{}' after {} successful calls", SpotifyConstants.NOTIFY_RESPONSES_READY, successCount);
-            } catch (Exception e) {
-                log.warn("Failed to send NOTIFY on channel '{}': {}", SpotifyConstants.NOTIFY_RESPONSES_READY, e.getMessage());
-            }
+            pgNotifyEventPublisher.notifyAfterCommit(SpotifyConstants.NOTIFY_RESPONSES_READY);
         }
     }
 }

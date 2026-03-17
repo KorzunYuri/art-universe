@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.jdbc.core.JdbcTemplate;
+import yurykorzun.art.universe.common.pgnotify.PgNotifyEventPublisher;
 import yurykorzun.art.universe.data.raw.common.etl.entity.ApiCallStatus;
 import yurykorzun.art.universe.data.raw.common.integration.AdaptiveRateLimiter;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCall;
@@ -29,13 +29,13 @@ class LastfmApiCallsOrchestratorTest {
     @Mock
     private AdaptiveRateLimiter rateLimiter;
     @Mock
-    private JdbcTemplate jdbcTemplate;
+    private PgNotifyEventPublisher pgNotifyEventPublisher;
 
     private LastfmApiCallsOrchestrator orchestrator;
 
     @BeforeEach
     void setUp() {
-        orchestrator = new LastfmApiCallsOrchestrator(apiCallService, executor, rateLimiter, jdbcTemplate);
+        orchestrator = new LastfmApiCallsOrchestrator(apiCallService, executor, rateLimiter, pgNotifyEventPublisher);
     }
 
     private static final Instant dueDttm = Instant.now().plus(Duration.ofDays(1));
