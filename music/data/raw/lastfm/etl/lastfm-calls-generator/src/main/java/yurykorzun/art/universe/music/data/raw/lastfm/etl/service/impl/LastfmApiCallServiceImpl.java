@@ -6,6 +6,8 @@ import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.data.raw.common.etl.entity.ApiCallStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.dto.LastfmApiCallCreateRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCall;
+import yurykorzun.art.universe.common.pgnotify.PgNotifyEventPublisher;
+import yurykorzun.art.universe.music.data.raw.lastfm.common.LastfmConstants;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCallType;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.repository.LastfmApiCallRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.service.LastfmApiCallService;
@@ -17,9 +19,14 @@ import java.util.List;
 public class LastfmApiCallServiceImpl implements LastfmApiCallService {
 
     private final LastfmApiCallRepository apiCallRepository;
+    private final PgNotifyEventPublisher pgNotifyEventPublisher;
 
-    public LastfmApiCallServiceImpl(LastfmApiCallRepository apiCallRepository) {
+    public LastfmApiCallServiceImpl(
+        LastfmApiCallRepository apiCallRepository,
+        PgNotifyEventPublisher pgNotifyEventPublisher
+    ) {
         this.apiCallRepository = apiCallRepository;
+        this.pgNotifyEventPublisher = pgNotifyEventPublisher;
     }
 
     @Override
@@ -32,6 +39,9 @@ public class LastfmApiCallServiceImpl implements LastfmApiCallService {
 
         List<LastfmApiCall> apiCalls = apiCallRepository.saveAll(calls);
 
+        if (!apiCalls.isEmpty()) {
+            pgNotifyEventPublisher.notifyAfterCommit(LastfmConstants.NOTIFY_CALLS_READY);
+        }
         return apiCalls.stream().map(LastfmApiCall::getId).toList();
     }
 

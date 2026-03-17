@@ -4,6 +4,6 @@ import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCall;
 
 public interface LastfmApiCallExecutor {
 
-    void execute(LastfmApiCall call);
+    boolean execute(LastfmApiCall call);
 
 }

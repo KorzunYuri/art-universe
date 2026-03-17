@@ -48,7 +48,9 @@ lastfm:
   api:
     base-url: "http://ws.audioscrobbler.com/2.0/"
     key: ${MURAW_LASTFM_API_KEY}
-  scheduling:
-    pool:
-      size: 2
-      await-termination-secs: 300
+  tasks:
+    calls-perform:
+      retry:
+        max-attempts: 3
+        initial-delay-ms: 1000
+        multiplier: 2.0

@@ -12,6 +12,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCallTyp
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.repository.LastfmApiCallRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.LastfmEntityType;
 import yurykorzun.art.universe.music.data.raw.lastfm.test.common.entity.EntityCreationHelper;
+import yurykorzun.art.universe.common.pgnotify.PgNotifyEventPublisher;
 
 import java.time.Instant;
 import java.util.List;
@@ -26,6 +27,9 @@ class LastfmApiCallServiceImplTest {
 
     @Mock
     private LastfmApiCallRepository apiCallRepository;
+
+    @Mock
+    private PgNotifyEventPublisher pgNotifyEventPublisher;
 
     @InjectMocks
     private LastfmApiCallServiceImpl service;

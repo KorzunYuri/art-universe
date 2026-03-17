@@ -37,15 +37,17 @@ public class LastfmApiCallExecutorImpl implements LastfmApiCallExecutor {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void execute(LastfmApiCall call) {
+    public boolean execute(LastfmApiCall call) {
         apiCallService.updateApiCallStatus(call, ApiCallStatus.PROCESSING);
 
         try {
             String response = self.makeApiCallWithRetry(call);
             apiResponseService.createResponse(createApiResponseCreateDto(call, response));
             apiCallService.updateApiCallStatus(call, ApiCallStatus.SUCCESSFUL);
+            return true;
         } catch (Exception ex) {
             apiCallService.updateApiCallStatus(call, ApiCallStatus.FAILED);
+            return false;
         }
     }
 
