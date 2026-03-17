@@ -8,7 +8,6 @@ import lombok.experimental.SuperBuilder;
 
 /**
  * Extended DTO for binding entities that are related to an artist (tracks, albums) to existing entities.
- * {@code masterPrimaryArtistId} is required.
  */
 @Data
 @SuperBuilder
@@ -17,6 +16,11 @@ import lombok.experimental.SuperBuilder;
 @EqualsAndHashCode(callSuper = true)
 public class ArtistRelatedEntityBindToExistingRequestDTO extends EntityBindToExistingRequestDTO {
 
-    /** Master artist ID — used directly to set the entity's primary artist. */
+    /**
+     * @deprecated No longer used by {@code bindToExisting} — the service resolves the primary artist
+     * from the existing master entity. Retained for backward compatibility with older API clients.
+     * For {@code createAndBind}, use {@link ArtistRelatedEntityCreateAndBindRequestDTO#getMasterPrimaryArtistId()} instead.
+     */
+    @Deprecated(since = "2026-03-17")
     private Long masterPrimaryArtistId;
 }

@@ -10,10 +10,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.dto.AlbumDto;
 import yurykorzun.art.universe.music.data.master.dto.AlbumSaveRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.AlbumWithCategoriesDto;
+import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityBindToExistingRequestDTO;
+import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
+import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.master.entity.*;
 import yurykorzun.art.universe.music.data.master.repository.*;
 
@@ -21,7 +25,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -412,10 +416,111 @@ class AlbumServiceCrudTest {
     // --- bindToExisting ---
 
     @Test
-    void bindToExisting_shouldThrowUnsupportedOperation() {
+    void bindToExisting_withNewBinding_shouldCreateBindingAndRelation() {
+        // Given
+        DataSource dataSource = DataSource.SPOTIFY;
+        Long externalId = 1L;
+        Long primaryArtistId = 100L;
+        Long masterId = 200L;
+
+        ArtistRelatedEntityBindToExistingRequestDTO request = ArtistRelatedEntityBindToExistingRequestDTO.builder()
+            .masterId(masterId)
+            .build();
+
+        Album existingAlbum = album(masterId, "Test Album", primaryArtistId);
+
+        TestBoundEntityProjectionImpl expectedResult = new TestBoundEntityProjectionImpl(
+            externalId, dataSource, masterId, "Test Album"
+        );
+
+        when(albumRepository.findById(masterId)).thenReturn(Optional.of(existingAlbum));
+        when(albumBindingRepository.findByDataSourceAndExternalId(dataSource, externalId))
+            .thenReturn(Optional.empty());
+        when(albumBindingRepository.save(any(AlbumBinding.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(relationService.createInternalRelation(
+            eq(MasterEntityType.ARTIST), eq(primaryArtistId),
+            eq(MasterEntityType.ALBUM), eq(masterId),
+            isNull(),
+            eq(Origin.MANUAL), eq(MasterApprovalStatus.APPROVED)
+        )).thenReturn(500L);
+        when(albumBindingRepository.findBoundAlbumsForDataSource(dataSource, List.of(externalId)))
+            .thenReturn(List.of(expectedResult));
+
+        // When
+        BoundEntityProjection result = albumService.bindToExisting(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
+
+        // Then
+        assertEquals(expectedResult, result);
+        verifyNoInteractions(artistService); // artist resolved from album entity
+        verify(albumRepository).findById(masterId);
+        verify(albumBindingRepository).save(any(AlbumBinding.class));
+        verify(relationService).createInternalRelation(
+            eq(MasterEntityType.ARTIST), eq(primaryArtistId),
+            eq(MasterEntityType.ALBUM), eq(masterId),
+            isNull(),
+            eq(Origin.MANUAL), eq(MasterApprovalStatus.APPROVED)
+        );
+    }
+
+    @Test
+    void bindToExisting_whenBindingAlreadyExists_shouldUpdateAndCreateRelation() {
+        // Given
+        DataSource dataSource = DataSource.SPOTIFY;
+        Long externalId = 1L;
+        Long primaryArtistId = 100L;
+        Long masterId = 200L;
+
+        ArtistRelatedEntityBindToExistingRequestDTO request = ArtistRelatedEntityBindToExistingRequestDTO.builder()
+            .masterId(masterId)
+            .build();
+
+        Album existingAlbum = album(masterId, "Test Album", primaryArtistId);
+
+        AlbumBinding existingBinding = AlbumBinding.builder()
+            .id(1L)
+            .dataSource(dataSource)
+            .externalId(externalId)
+            .masterId(999L) // different master ID — should be updated
+            .build();
+
+        TestBoundEntityProjectionImpl expectedResult = new TestBoundEntityProjectionImpl(
+            externalId, dataSource, masterId, "Test Album"
+        );
+
+        when(albumRepository.findById(masterId)).thenReturn(Optional.of(existingAlbum));
+        when(albumBindingRepository.findByDataSourceAndExternalId(dataSource, externalId))
+            .thenReturn(Optional.of(existingBinding));
+        when(albumBindingRepository.save(any(AlbumBinding.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(relationService.createInternalRelation(
+            eq(MasterEntityType.ARTIST), eq(primaryArtistId),
+            eq(MasterEntityType.ALBUM), eq(masterId),
+            isNull(),
+            eq(Origin.MANUAL), eq(MasterApprovalStatus.APPROVED)
+        )).thenReturn(500L);
+        when(albumBindingRepository.findBoundAlbumsForDataSource(dataSource, List.of(externalId)))
+            .thenReturn(List.of(expectedResult));
+
+        // When
+        BoundEntityProjection result = albumService.bindToExisting(dataSource, externalId, request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
+
+        // Then
+        assertEquals(expectedResult, result);
+        verifyNoInteractions(artistService);
+        verify(albumBindingRepository).save(any(AlbumBinding.class)); // binding was updated
+    }
+
+    @Test
+    void bindToExisting_whenAlbumNotFound_shouldThrowException() {
+        // Given
+        ArtistRelatedEntityBindToExistingRequestDTO request = ArtistRelatedEntityBindToExistingRequestDTO.builder()
+            .masterId(999L)
+            .build();
+
+        when(albumRepository.findById(999L)).thenReturn(Optional.empty());
+
         // When & Then
-        assertThrows(UnsupportedOperationException.class,
-            () -> albumService.bindToExisting(DataSource.LASTFM, 1L, null, Origin.MANUAL, MasterApprovalStatus.APPROVED));
+        assertThrows(CustomEntityNotFoundException.class,
+            () -> albumService.bindToExisting(DataSource.SPOTIFY, 1L, request, Origin.MANUAL, MasterApprovalStatus.APPROVED));
     }
 
     // --- helpers ---

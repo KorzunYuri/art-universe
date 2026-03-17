@@ -212,10 +212,9 @@ public class TrackServiceImpl implements TrackService {
     @Override
     @Transactional
     public BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, ArtistRelatedEntityBindToExistingRequestDTO request, Origin origin, MasterApprovalStatus approvalStatus) {
-        Long masterArtistId = resolveMasterArtistId(request.getMasterPrimaryArtistId());
-
         Track track = trackRepository.findById(request.getMasterId())
             .orElseThrow(() -> new CustomEntityNotFoundException("Track", request.getMasterId()));
+        Long masterArtistId = track.getPrimaryArtistId();
 
         Optional<TrackBinding> existingBinding = bindingsRepository.findByDataSourceAndExternalId(dataSource, externalId);
 

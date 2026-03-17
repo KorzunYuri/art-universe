@@ -40,7 +40,8 @@ class ArtistRelatedEntityBindToExistingRequestDTOTest {
 
     @Test
     void shouldCreateValidDTO_whenMasterPrimaryArtistIdIsNull() {
-        // Given — masterPrimaryArtistId is optional at DTO level; service validates it
+        // Given — masterPrimaryArtistId is deprecated and ignored by bindToExisting;
+        // the service resolves the artist from the existing master entity
         ArtistRelatedEntityBindToExistingRequestDTO dto = ArtistRelatedEntityBindToExistingRequestDTO.builder()
             .masterId(123L)
             .build();
@@ -48,7 +49,7 @@ class ArtistRelatedEntityBindToExistingRequestDTOTest {
         // When
         Set<ConstraintViolation<ArtistRelatedEntityBindToExistingRequestDTO>> violations = validator.validate(dto);
 
-        // Then — no violations (masterPrimaryArtistId is optional in DTO)
+        // Then — no violations (masterPrimaryArtistId is deprecated and optional)
         assertTrue(violations.isEmpty());
     }
 

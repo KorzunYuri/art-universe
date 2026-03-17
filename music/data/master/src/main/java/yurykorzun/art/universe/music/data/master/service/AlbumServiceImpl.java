@@ -262,8 +262,37 @@ public class AlbumServiceImpl implements AlbumService {
     }
 
     @Override
+    @Transactional
     public BoundEntityProjection bindToExisting(DataSource dataSource, Long externalId, ArtistRelatedEntityBindToExistingRequestDTO request, Origin origin, MasterApprovalStatus approvalStatus) {
-        throw new UnsupportedOperationException("Album bindToExisting is not yet implemented");
+        Album album = albumRepository.findById(request.getMasterId())
+            .orElseThrow(() -> new CustomEntityNotFoundException("Album", request.getMasterId()));
+        Long masterArtistId = album.getPrimaryArtistId();
+
+        Optional<AlbumBinding> existingBinding = bindingsRepository.findByDataSourceAndExternalId(dataSource, externalId);
+
+        if (existingBinding.isPresent()) {
+            AlbumBinding binding = existingBinding.get();
+            if (!binding.getMasterId().equals(album.getId())) {
+                binding.setMasterId(album.getId());
+                bindingsRepository.save(binding);
+            }
+        } else {
+            AlbumBinding binding = AlbumBinding.builder()
+                .dataSource(dataSource)
+                .externalId(externalId)
+                .masterId(album.getId())
+                .origin(origin)
+                .approvalStatus(approvalStatus)
+                .build();
+            bindingsRepository.save(binding);
+        }
+
+        relationService.createInternalRelation(
+            MasterEntityType.ARTIST, masterArtistId, MasterEntityType.ALBUM, album.getId(), null, origin, approvalStatus);
+
+        return bindingsRepository.findBoundAlbumsForDataSource(dataSource, List.of(externalId))
+            .stream().findFirst()
+            .orElseThrow(() -> new CustomEntityNotFoundException("Album binding not found after creation"));
     }
 
     @Override
