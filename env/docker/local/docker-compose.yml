@@ -756,6 +756,7 @@ services:
       - ./common.env
       - ./art-universe-ui.env
       - ./art-universe-ui.secrets.env
+      - ./au-auth.secrets.env
     ports:
       - "${MU_UI_EXTERNAL_PORT}:80"
     depends_on:
