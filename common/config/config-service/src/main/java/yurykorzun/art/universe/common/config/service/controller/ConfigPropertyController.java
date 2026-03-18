@@ -3,6 +3,7 @@ package yurykorzun.art.universe.common.config.service.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -50,6 +51,7 @@ public class ConfigPropertyController {
      * Validates the new value against the property's type and constraints.
      */
     @PutMapping("/{key}")
+    @PreAuthorize("hasRole('CONFIG_MANAGER')")
     public ResponseEntity<PropertyResponse> update(@PathVariable String key,
                                                     @Valid @RequestBody UpdatePropertyRequest request) {
         return ResponseEntity.ok(service.updateValue(key, request));

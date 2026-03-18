@@ -8,6 +8,7 @@ ext.dockerImageName = 'au-config-service'
 
 dependencies {
     implementation project(':common:commons-web')
+    implementation project(':common:commons-security')
     implementation project(':common:commons-observability')
     // Reuse PropertyType and related types from the client library.
     // The client auto-configuration won't activate because au.config.client.service-url is not set here.
