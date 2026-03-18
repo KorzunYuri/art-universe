@@ -1,6 +1,7 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.domain.controller;
 
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.dto.ApprovalStatusRequestDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.dto.LastfmTrackResponseDto;
@@ -20,6 +21,7 @@ public class LastfmTrackController {
         value = "/{id}/approval",
         produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @PreAuthorize("hasRole('LASTFM_CURATOR')")
     public LastfmTrackResponseDto updateApprovalStatus(
             @PathVariable Long id,
             @RequestBody ApprovalStatusRequestDto request
