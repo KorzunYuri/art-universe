@@ -81,6 +81,7 @@ services:
       - ./common.env
       - ./music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.secrets.env
+      - ./database.secrets.env
     depends_on:
       postgres-master:
         condition: service_healthy
@@ -95,6 +96,7 @@ services:
       - ./common.env
       - ./music-data-raw-spotify.env
       - ./music-data-raw-spotify.secrets.env
+      - ./database.secrets.env
     depends_on:
       postgres-master:
         condition: service_healthy
@@ -161,6 +163,7 @@ services:
       - ./common.env
       - ./music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.secrets.env
+      - ./database.secrets.env
     ports:
       - "${MURAW_LASTFM_REST_API_EXTERNAL_PORT}:${MURAW_LASTFM_REST_API_INTERNAL_PORT}"
     volumes:
@@ -202,6 +205,7 @@ services:
       - ./common.env
       - ./music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.secrets.env
+      - ./database.secrets.env
     ports:
       - "${MURAW_LASTFM_ETL_REST_API_EXTERNAL_PORT}:${MURAW_LASTFM_ETL_REST_API_INTERNAL_PORT}"
     volumes:
@@ -245,6 +249,7 @@ services:
       - ./common.env
       - ./music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.secrets.env
+      - ./database.secrets.env
     ports:
       - "${MURAW_LASTFM_CALLS_GENERATOR_ACTUATOR_EXTERNAL_PORT}:${MURAW_LASTFM_CALLS_GENERATOR_ACTUATOR_INTERNAL_PORT}"
     volumes:
@@ -286,6 +291,7 @@ services:
       - ./common.env
       - ./music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.secrets.env
+      - ./database.secrets.env
     ports:
       - "${MURAW_LASTFM_CALLS_PERFORMER_ACTUATOR_EXTERNAL_PORT}:${MURAW_LASTFM_CALLS_PERFORMER_ACTUATOR_INTERNAL_PORT}"
     volumes:
@@ -329,6 +335,7 @@ services:
       - ./common.env
       - ./music-data-raw-lastfm.env
       - ./music-data-raw-lastfm.secrets.env
+      - ./database.secrets.env
     ports:
       - "${MURAW_LASTFM_RESPONSE_PARSER_ACTUATOR_EXTERNAL_PORT}:${MURAW_LASTFM_RESPONSE_PARSER_ACTUATOR_INTERNAL_PORT}"
     volumes:
@@ -370,6 +377,7 @@ services:
       - ./common.env
       - ./music-data-raw-spotify.env
       - ./music-data-raw-spotify.secrets.env
+      - ./database.secrets.env
     ports:
       - "${MURAW_SPOTIFY_REST_API_EXTERNAL_PORT}:${MURAW_SPOTIFY_REST_API_INTERNAL_PORT}"
     volumes:
@@ -409,6 +417,7 @@ services:
       - ../common/au-config.env
       - ./common.env
       - ./music-data-raw-spotify.secrets.env
+      - ./database.secrets.env
     ports:
       - "${MURAW_SPOTIFY_CALLS_GENERATOR_ACTUATOR_EXTERNAL_PORT}:${MURAW_SPOTIFY_CALLS_GENERATOR_ACTUATOR_INTERNAL_PORT}"
     volumes:
@@ -450,6 +459,7 @@ services:
       - ../common/au-config.env
       - ./common.env
       - ./music-data-raw-spotify.secrets.env
+      - ./database.secrets.env
     ports:
       - "${MURAW_SPOTIFY_CALLS_PERFORMER_ACTUATOR_EXTERNAL_PORT}:${MURAW_SPOTIFY_CALLS_PERFORMER_ACTUATOR_INTERNAL_PORT}"
     volumes:
@@ -493,6 +503,7 @@ services:
       - ../common/au-config.env
       - ./common.env
       - ./music-data-raw-spotify.secrets.env
+      - ./database.secrets.env
     ports:
       - "${MURAW_SPOTIFY_RESPONSE_PARSER_ACTUATOR_EXTERNAL_PORT}:${MURAW_SPOTIFY_RESPONSE_PARSER_ACTUATOR_INTERNAL_PORT}"
     volumes:
@@ -536,6 +547,7 @@ services:
       - ../common/au-config.env
       - ./common.env
       - ./music-data-raw-spotify.secrets.env
+      - ./database.secrets.env
     ports:
       - "${MURAW_SPOTIFY_STAGING_APPLICATOR_ACTUATOR_EXTERNAL_PORT}:${MURAW_SPOTIFY_STAGING_APPLICATOR_ACTUATOR_INTERNAL_PORT}"
     volumes:

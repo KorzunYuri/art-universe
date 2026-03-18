@@ -1,0 +1,61 @@
+plugins {
+    id 'art-universe.java-base'
+    id 'application'
+}
+
+archivesBaseName = 'config-liquibase-service'
+
+application {
+    mainClass = 'yurykorzun.art.universe.common.config.migration.liquibase.LiquibaseMigrationRunner'
+}
+
+dependencies {
+    implementation 'org.liquibase:liquibase-core'
+    runtimeOnly 'org.postgresql:postgresql'
+}
+
+// Copy resources to main resources for classpath access (IDE/local run)
+tasks.register('copyLiquibaseResources', Copy) {
+    from project(':common:config:config-service-liquibase-resources').file('src/main/resources')
+    into "$buildDir/resources/main"
+}
+
+processResources {
+    dependsOn copyLiquibaseResources
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': application.mainClass.get()
+        attributes 'Class-Path': configurations.runtimeClasspath.files.collect { "lib/${it.name}" }.join(' ')
+    }
+}
+
+tasks.register('copyDependencies', Copy) {
+    from configurations.runtimeClasspath
+    into "$buildDir/libs/lib"
+}
+
+tasks.register('copyLiquibaseResourcesForDocker', Copy) {
+    from project(':common:config:config-service-liquibase-resources').file('src/main/resources')
+    into "$buildDir/libs/resources"
+}
+
+jar.dependsOn copyDependencies, copyLiquibaseResourcesForDocker
+
+ext.dockerImageName = 'au-config-liquibase'
+
+tasks.register('dockerBuild', Exec) {
+    group = 'docker'
+    description = "Build Docker image ${project.dockerImageName}"
+    dependsOn tasks.named('jar')
+
+    def imageName = "${project.dockerImageName}:latest"
+    def dockerContext = project.projectDir
+
+    commandLine 'docker', 'build', '-t', imageName, '-f', "${dockerContext}/Dockerfile", dockerContext.absolutePath
+
+    doFirst {
+        println "Building Docker image: ${imageName} from ${dockerContext}"
+    }
+}

@@ -35,6 +35,5 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA mu_raw_spotify GRANT USAGE  ON SEQUENCES TO m
 ALTER DEFAULT PRIVILEGES IN SCHEMA mu_raw_spotify GRANT USAGE  ON SEQUENCES TO mu_raw_spotify_parser;
 ALTER DEFAULT PRIVILEGES IN SCHEMA mu_raw_spotify GRANT USAGE  ON SEQUENCES TO mu_raw_spotify_appl;
 
--- mu_view: schema USAGE for generator (SELECT on individual views is granted by
--- music-master Liquibase migration 0022-0020-spotify_generator_grants)
-GRANT USAGE ON SCHEMA mu_view TO mu_raw_spotify_gen;
+-- mu_view: USAGE is already granted to PUBLIC by the DB init script (0004-master-data.sql).
+-- SELECT on individual views is granted by music-master Liquibase migration 0022-0020-spotify_generator_grants.

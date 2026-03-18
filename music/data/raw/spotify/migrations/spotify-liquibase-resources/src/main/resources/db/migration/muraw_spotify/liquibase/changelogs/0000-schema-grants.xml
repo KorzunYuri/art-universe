@@ -5,7 +5,7 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
 
-    <changeSet id="0000_0010_schema_grants$initial" author="developer">
+    <changeSet id="0000_0010_schema_grants$initial" author="developer" runOnChange="true">
         <sqlFile path="db/migration/muraw_spotify/liquibase/changesets/0000-bootstrap/0000_0010_schema_grants$initial.sql"/>
     </changeSet>
 
