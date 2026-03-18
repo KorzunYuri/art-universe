@@ -2,6 +2,7 @@ package yurykorzun.art.universe.music.quiz.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.music.quiz.dto.PipelineDto;
 import yurykorzun.art.universe.music.quiz.dto.PipelineStepDto;
@@ -22,7 +23,8 @@ public class PipelineController {
     }
 
     @PostMapping("/pipeline/{pipelineId}/steps")
-    public PipelineDto addStep(@PathVariable Long pipelineId, 
+    @PreAuthorize("hasRole('QUIZ_MASTER')")
+    public PipelineDto addStep(@PathVariable Long pipelineId,
                               @RequestBody PipelineStepDto stepDto,
                               @RequestParam Integer position) {
         log.info("Adding step {} to pipeline {} at position {}", stepDto.getType(), pipelineId, position);
@@ -30,6 +32,7 @@ public class PipelineController {
     }
 
     @PutMapping("/pipeline/{pipelineId}/steps/{stepId}/move")
+    @PreAuthorize("hasRole('QUIZ_MASTER')")
     public PipelineDto moveStep(@PathVariable Long pipelineId,
                                @PathVariable Long stepId,
                                @RequestParam Integer newPosition) {
@@ -38,12 +41,14 @@ public class PipelineController {
     }
 
     @DeleteMapping("/pipeline/{pipelineId}/steps/{stepId}")
+    @PreAuthorize("hasRole('QUIZ_MASTER')")
     public PipelineDto removeStep(@PathVariable Long pipelineId, @PathVariable Long stepId) {
         log.info("Removing step {} from pipeline {}", stepId, pipelineId);
         return pipelineService.removeStep(pipelineId, stepId);
     }
 
     @PutMapping("/pipeline/{pipelineId}/steps/{stepId}")
+    @PreAuthorize("hasRole('QUIZ_MASTER')")
     public PipelineDto updateStepConfiguration(@PathVariable Long pipelineId,
                                               @PathVariable Long stepId,
                                               @RequestBody PipelineStepDto stepDto) {
@@ -58,6 +63,7 @@ public class PipelineController {
     }
 
     @PostMapping("/pipeline/{pipelineId}/steps/{stepId}/execute")
+    @PreAuthorize("hasRole('QUIZ_MASTER')")
     public PipelineDto executeStep(@PathVariable Long pipelineId, @PathVariable Long stepId) {
         log.info("Executing step {} in pipeline {}", stepId, pipelineId);
         pipelineService.executeStep(pipelineId, stepId);

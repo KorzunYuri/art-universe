@@ -2,6 +2,7 @@ package yurykorzun.art.universe.music.quiz.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.music.quiz.dto.GenerationDto;
 import yurykorzun.art.universe.music.quiz.dto.GenerationTrackDto;
@@ -21,6 +22,7 @@ public class GenerationController {
     private final PipelineService pipelineService;
 
     @PostMapping("/games/{gameId}/generations")
+    @PreAuthorize("hasRole('QUIZ_MASTER')")
     public GenerationDto generateTracks(@PathVariable Long gameId) {
         log.info("Generating tracks for game {}", gameId);
         return generationService.generateTracks(gameId);
@@ -39,18 +41,21 @@ public class GenerationController {
     }
 
     @PatchMapping("/generations/{generationId}/approve")
+    @PreAuthorize("hasRole('QUIZ_MASTER')")
     public GenerationDto approveGeneration(@PathVariable Long generationId) {
         log.info("Approving generation {}", generationId);
         return generationService.approveGeneration(generationId);
     }
 
     @PatchMapping("/generations/{generationId}/disapprove")
+    @PreAuthorize("hasRole('QUIZ_MASTER')")
     public GenerationDto disapproveGeneration(@PathVariable Long generationId) {
         log.info("Disapproving generation {}", generationId);
         return generationService.disapproveGeneration(generationId);
     }
 
     @DeleteMapping("/generations/{generationId}/tracks/{trackId}")
+    @PreAuthorize("hasRole('QUIZ_MASTER')")
     public void removeTrackFromGeneration(@PathVariable Long generationId, @PathVariable Long trackId) {
         log.info("Removing track {} from generation {}", trackId, generationId);
         generationService.removeTrackFromGeneration(generationId, trackId);
