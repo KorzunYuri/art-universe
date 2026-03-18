@@ -3,6 +3,7 @@ package yurykorzun.art.universe.music.data.master.controller;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.music.data.master.dto.TrackDto;
 import yurykorzun.art.universe.music.data.master.dto.TrackSaveRequestDTO;
@@ -67,11 +68,13 @@ public class TrackController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public TrackDto saveTrack(@Valid @RequestBody TrackSaveRequestDTO request) {
         return trackService.saveTrack(request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public boolean deleteTrack(@PathVariable Long id) {
         boolean deleted = trackService.deleteTrack(id);
         if (!deleted) {
@@ -81,6 +84,7 @@ public class TrackController {
     }
 
     @PostMapping("/{trackId}/categories/{categoryId}")
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public void bindToCategory(
         @PathVariable Long trackId,
         @PathVariable Long categoryId
@@ -89,6 +93,7 @@ public class TrackController {
     }
 
     @DeleteMapping("/{trackId}/categories/{categoryId}")
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public void unbindFromCategory(
         @PathVariable Long trackId,
         @PathVariable Long categoryId
@@ -130,6 +135,7 @@ public class TrackController {
     }
     
     @PostMapping("/bind/existing/{dataSource}/{externalId}")
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public BoundEntityProjection bindToExisting(
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId,
@@ -139,6 +145,7 @@ public class TrackController {
     }
     
     @PostMapping("/bind/new/{dataSource}/{externalId}")
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public BoundEntityProjection createAndBind(
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId,
@@ -148,6 +155,7 @@ public class TrackController {
     }
     
     @DeleteMapping("/unbind/{dataSource}/{externalId}")
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public boolean unbindTrack(
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId
@@ -156,6 +164,7 @@ public class TrackController {
     }
     
     @DeleteMapping("/unbind/{dataSource}/batch")
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public BatchUnbindResponseDTO batchUnbindTracks(
         @PathVariable DataSource dataSource,
         @Valid @RequestBody BatchUnbindRequestDTO request

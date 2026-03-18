@@ -3,6 +3,7 @@ package yurykorzun.art.universe.music.data.master.controller;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.common.domain.dto.lookup.BaseBatchLookupRequestDTO;
 import yurykorzun.art.universe.common.domain.dto.lookup.BatchLookupResponseDTO;
@@ -71,6 +72,7 @@ public class ArtistController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public ArtistDto saveArtist(
         @Valid @RequestBody ArtistSaveRequestDTO request
     ) {
@@ -78,6 +80,7 @@ public class ArtistController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public boolean deleteArtist(@PathVariable Long id) {
         boolean deleted = artistService.deleteArtist(id);
         if (!deleted) {
@@ -114,6 +117,7 @@ public class ArtistController {
     }
     
     @PostMapping("/bind/existing/{dataSource}/{externalId}")
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public BoundEntityProjection bindToExisting(
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId,
@@ -123,6 +127,7 @@ public class ArtistController {
     }
     
     @PostMapping("/bind/new/{dataSource}/{externalId}")
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public BoundEntityProjection createAndBind(
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId,
@@ -132,6 +137,7 @@ public class ArtistController {
     }
     
     @DeleteMapping("/unbind/{dataSource}/{externalId}")
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public boolean unbindArtist(
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId
@@ -140,6 +146,7 @@ public class ArtistController {
     }
     
     @DeleteMapping("/unbind/{dataSource}/batch")
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public BatchUnbindResponseDTO batchUnbindArtists(
         @PathVariable DataSource dataSource,
         @Valid @RequestBody BatchUnbindRequestDTO request
@@ -148,6 +155,7 @@ public class ArtistController {
     }
 
     @PostMapping("/{artistId}/categories/{categoryId}")
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public void bindToCategory(
         @PathVariable Long artistId,
         @PathVariable Long categoryId
@@ -156,6 +164,7 @@ public class ArtistController {
     }
 
     @DeleteMapping("/{artistId}/categories/{categoryId}")
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public void unbindFromCategory(
         @PathVariable Long artistId,
         @PathVariable Long categoryId

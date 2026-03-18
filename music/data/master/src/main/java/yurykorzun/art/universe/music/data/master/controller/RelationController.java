@@ -1,6 +1,7 @@
 package yurykorzun.art.universe.music.data.master.controller;
 
 import jakarta.annotation.Nullable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.common.domain.entity.EntityType;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelatedEntityDTO;
@@ -60,6 +61,7 @@ public class RelationController {
      * Accepts multiple relation type IDs; when none provided, creates a single untyped relation.
      */
     @PostMapping("/internal/{sourceEntityType}/{sourceEntityId}/{targetEntityType}/{targetEntityId}")
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public List<Long> createInternalRelations(
         @PathVariable EntityType sourceEntityType,
         @PathVariable Long sourceEntityId,
@@ -76,6 +78,7 @@ public class RelationController {
      * Deletes an internal relation by entity types and IDs
      */
     @DeleteMapping("/internal/{sourceEntityType}/{sourceEntityId}/{targetEntityType}/{targetEntityId}")
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public boolean deleteInternalRelation(
         @PathVariable EntityType sourceEntityType,
         @PathVariable Long sourceEntityId,
@@ -92,6 +95,7 @@ public class RelationController {
      * identified by source and target entity types.
      */
     @DeleteMapping("/internal/{sourceEntityType}/{targetEntityType}/{relationId}")
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public boolean deleteInternalRelationById(
         @PathVariable EntityType sourceEntityType,
         @PathVariable EntityType targetEntityType,

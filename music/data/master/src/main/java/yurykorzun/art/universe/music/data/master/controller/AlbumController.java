@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.music.data.master.dto.AlbumDto;
 import yurykorzun.art.universe.music.data.master.dto.AlbumSaveRequestDTO;
@@ -72,16 +73,19 @@ public class AlbumController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public AlbumDto saveAlbum(@Valid @RequestBody AlbumSaveRequestDTO request) {
         return albumService.saveAlbum(request, Origin.MANUAL, MasterApprovalStatus.APPROVED);
     }
 
     @PostMapping("/with-tracks")
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public AlbumDto saveAlbumWithTracks(@Valid @RequestBody AlbumWithTracksSaveRequestDTO request) {
         return albumService.saveAlbumWithTracks(request);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public boolean deleteAlbum(@PathVariable Long id) {
         boolean deleted = albumService.deleteAlbum(id);
         if (!deleted) {
@@ -91,6 +95,7 @@ public class AlbumController {
     }
 
     @PostMapping("/{albumId}/categories/{categoryId}")
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public void bindToCategory(
         @PathVariable Long albumId,
         @PathVariable Long categoryId
@@ -99,6 +104,7 @@ public class AlbumController {
     }
 
     @DeleteMapping("/{albumId}/categories/{categoryId}")
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public void unbindFromCategory(
         @PathVariable Long albumId,
         @PathVariable Long categoryId
@@ -140,6 +146,7 @@ public class AlbumController {
     }
 
     @PostMapping("/bind/existing/{dataSource}/{externalId}")
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public BoundEntityProjection bindToExisting(
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId,
@@ -149,6 +156,7 @@ public class AlbumController {
     }
 
     @PostMapping("/bind/new/{dataSource}/{externalId}")
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public BoundEntityProjection createAndBind(
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId,
@@ -158,6 +166,7 @@ public class AlbumController {
     }
 
     @PostMapping("/bind/new/{dataSource}/{externalId}/with-tracks")
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public BoundEntityProjection createAndBindWithTracks(
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId,
@@ -167,6 +176,7 @@ public class AlbumController {
     }
 
     @DeleteMapping("/unbind/{dataSource}/{externalId}")
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public boolean unbindAlbum(
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId
@@ -175,6 +185,7 @@ public class AlbumController {
     }
     
     @PostMapping("/{albumId}/tracks/copy-from/{sourceAlbumId}")
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public Map<String, Integer> copyTracklist(
         @PathVariable Long albumId,
         @PathVariable Long sourceAlbumId
@@ -185,6 +196,7 @@ public class AlbumController {
 
     @PutMapping("/{albumId}/tracks/reorder")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public void reorderTracks(
         @PathVariable Long albumId,
         @Valid @RequestBody TrackReorderRequestDTO request
@@ -193,6 +205,7 @@ public class AlbumController {
     }
 
     @DeleteMapping("/unbind/{dataSource}/batch")
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public BatchUnbindResponseDTO batchUnbindAlbums(
         @PathVariable DataSource dataSource,
         @Valid @RequestBody BatchUnbindRequestDTO request
