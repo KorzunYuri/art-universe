@@ -9,6 +9,7 @@ ext.dockerImageName = 'art-data'
 dependencies {
     implementation project(':art:data:models')
     implementation project(':common:commons-web')
+    implementation project(':common:commons-security')
     implementation project(':common:commons-observability')
 
     implementation 'org.springframework.boot:spring-boot-docker-compose'
