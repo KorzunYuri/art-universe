@@ -1,11 +1,10 @@
 import axios from 'axios';
-import { setupTracingInterceptor } from '@/shared/services/tracingInterceptor';
+import { setupApiInterceptors } from '@/shared/services/apiSetup';
 import { appConfig } from '@/shared/config/appConfig';
 
 const readApiUrl = `http://${appConfig.lastfmReadApiHost}:${appConfig.lastfmReadApiPort}/api/v1`;
 const writeApiUrl = `http://${appConfig.lastfmWriteApiHost}:${appConfig.lastfmWriteApiPort}/api/v1`;
 
-// Create axios instance for LastFM Read API with tracing
 const readApi = axios.create({
     baseURL: readApiUrl,
     headers: {
@@ -13,7 +12,6 @@ const readApi = axios.create({
     },
 });
 
-// Create axios instance for LastFM Write API with tracing
 const writeApi = axios.create({
     baseURL: writeApiUrl,
     headers: {
@@ -21,9 +19,8 @@ const writeApi = axios.create({
     },
 });
 
-// Add distributed tracing headers to all LastFM API requests
-setupTracingInterceptor(readApi);
-setupTracingInterceptor(writeApi);
+setupApiInterceptors(readApi);
+setupApiInterceptors(writeApi);
 
 export class LastfmConfig {
     // Axios instances with tracing enabled

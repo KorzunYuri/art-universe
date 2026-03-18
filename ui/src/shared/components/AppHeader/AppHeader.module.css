@@ -87,3 +87,40 @@
 .subLinkActive {
     color: #93c5fd;
 }
+
+.userSection {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+}
+
+.userName {
+    font-size: 0.875rem;
+    color: #475569;
+    white-space: nowrap;
+}
+
+.logoutButton {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.8rem;
+    color: #64748b;
+    background: transparent;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+
+.logoutButton:hover {
+    color: #1e293b;
+    border-color: #94a3b8;
+}

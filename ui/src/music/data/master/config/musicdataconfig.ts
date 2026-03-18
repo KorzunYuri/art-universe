@@ -1,10 +1,9 @@
 import axios from 'axios';
-import { setupTracingInterceptor } from '@/shared/services/tracingInterceptor';
+import { setupApiInterceptors } from '@/shared/services/apiSetup';
 import { appConfig } from '@/shared/config/appConfig';
 
 const baseApiUrl = `http://${appConfig.musicDataHost}:${appConfig.musicDataPort}/api/v1`;
 
-// Create axios instance for Master Data API with tracing
 const api = axios.create({
     baseURL: baseApiUrl,
     headers: {
@@ -12,8 +11,7 @@ const api = axios.create({
     },
 });
 
-// Add distributed tracing headers to all Master Data API requests
-setupTracingInterceptor(api);
+setupApiInterceptors(api);
 
 export const MusicDataConfig = {
     baseApiUrl,

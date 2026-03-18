@@ -18,6 +18,9 @@ interface AppConfig {
     artDataPort: string;
     configServiceHost: string;
     configServicePort: string;
+    authServiceHost: string;
+    authServicePort: string;
+    googleClientId: string;
 }
 
 const runtimeConfig = (window as any).__APP_CONFIG__;
@@ -35,4 +38,7 @@ export const appConfig: AppConfig = {
     artDataPort: runtimeConfig?.ART_DATA_PORT || import.meta.env.VITE_ART_DATA_APP_EXTERNAL_PORT || '8081',
     configServiceHost: runtimeConfig?.CONFIG_SERVICE_HOST || import.meta.env.VITE_AU_CONFIG_APP_HOST || 'localhost',
     configServicePort: runtimeConfig?.CONFIG_SERVICE_PORT || import.meta.env.VITE_AU_CONFIG_APP_EXTERNAL_PORT || '8070',
+    authServiceHost: runtimeConfig?.AUTH_SERVICE_HOST || import.meta.env.VITE_AU_AUTH_APP_HOST || 'localhost',
+    authServicePort: runtimeConfig?.AUTH_SERVICE_PORT || import.meta.env.VITE_AU_AUTH_APP_EXTERNAL_PORT || '8071',
+    googleClientId: runtimeConfig?.GOOGLE_CLIENT_ID || import.meta.env.VITE_GOOGLE_CLIENT_ID || '',
 };

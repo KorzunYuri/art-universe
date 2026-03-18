@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { setupTracingInterceptor } from '@/shared/services/tracingInterceptor';
+import { setupApiInterceptors } from '@/shared/services/apiSetup';
 import { appConfig } from '@/shared/config/appConfig';
 
 const api = axios.create({
@@ -7,7 +7,7 @@ const api = axios.create({
     headers: { 'Content-Type': 'application/json' },
 });
 
-setupTracingInterceptor(api);
+setupApiInterceptors(api);
 
 export class ConfigServiceConfig {
     static readonly api = api;
