@@ -32,6 +32,7 @@ set -e
 : "${MURAW_SPOTIFY_RESPONSE_PARSER_DB_PASSWORD:=test_password}"
 : "${MURAW_SPOTIFY_STAGING_APPLICATOR_DB_PASSWORD:=test_password}"
 : "${AU_CONFIG_DB_PASSWORD_DM:=test_password}"
+: "${AU_AUTH_DB_PASSWORD_DM:=test_password}"
 
 CHANGESETS_DIR="$(dirname "${BASH_SOURCE[0]:-$0}")/changesets"
 
@@ -52,6 +53,7 @@ substitute_env_vars() {
         -e "s|\${MURAW_SPOTIFY_RESPONSE_PARSER_DB_PASSWORD}|${MURAW_SPOTIFY_RESPONSE_PARSER_DB_PASSWORD}|g" \
         -e "s|\${MURAW_SPOTIFY_STAGING_APPLICATOR_DB_PASSWORD}|${MURAW_SPOTIFY_STAGING_APPLICATOR_DB_PASSWORD}|g" \
         -e "s|\${AU_CONFIG_DB_PASSWORD_DM}|${AU_CONFIG_DB_PASSWORD_DM}|g" \
+        -e "s|\${AU_AUTH_DB_PASSWORD_DM}|${AU_AUTH_DB_PASSWORD_DM}|g" \
         "$1"
 }
 
