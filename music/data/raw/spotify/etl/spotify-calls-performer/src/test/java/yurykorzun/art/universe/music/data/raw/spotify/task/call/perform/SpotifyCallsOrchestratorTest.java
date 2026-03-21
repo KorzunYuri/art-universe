@@ -88,4 +88,41 @@ class SpotifyCallsOrchestratorTest {
         // then
         verifyNoInteractions(pgNotifyEventPublisher);
     }
+
+    @Test
+    void orchestrateApiCalls_shouldBreakLoop_whenInterrupted() throws InterruptedException {
+        // given
+        SpotifyApiCall call1 = createApiCall(1L);
+        SpotifyApiCall call2 = createApiCall(2L);
+        when(apiCallService.findAllCreatedUnexpired()).thenReturn(List.of(call1, call2));
+        doThrow(new InterruptedException("interrupted")).when(rateLimiter).acquire();
+
+        // when
+        orchestrator.orchestrateApiCalls();
+
+        // then — loop broke after first call, so executor never ran for any call
+        verify(executor, never()).execute(any());
+        verifyNoInteractions(pgNotifyEventPublisher);
+        // thread interrupt flag should be re-set
+        assert Thread.currentThread().isInterrupted();
+        Thread.interrupted(); // clear for other tests
+    }
+
+    @Test
+    void orchestrateApiCalls_shouldContinueToNextCall_whenExecutorThrowsException() throws InterruptedException {
+        // given
+        SpotifyApiCall call1 = createApiCall(1L);
+        SpotifyApiCall call2 = createApiCall(2L);
+        when(apiCallService.findAllCreatedUnexpired()).thenReturn(List.of(call1, call2));
+        when(executor.execute(call1)).thenThrow(new RuntimeException("network error"));
+        when(executor.execute(call2)).thenReturn(true);
+
+        // when
+        orchestrator.orchestrateApiCalls();
+
+        // then — second call succeeded, so notify is sent
+        verify(executor).execute(call1);
+        verify(executor).execute(call2);
+        verify(pgNotifyEventPublisher).notifyAfterCommit(SpotifyConstants.NOTIFY_RESPONSES_READY);
+    }
 }

@@ -1,0 +1,19 @@
+spring:
+  liquibase:
+    change-log: classpath:db/migration/muraw_spotify/liquibase/db.changelog.xml
+  jpa:
+    properties:
+      hibernate:
+        show-sql: true
+
+logging:
+  level:
+    org:
+      springframework:
+        transaction: TRACE
+      hibernate:
+        SQL: DEBUG
+        type:
+          descriptor:
+            sql:
+              BasicBinder: TRACE

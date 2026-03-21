@@ -17,4 +17,6 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-jdbc'
 
     implementation project(':common:commons-pg-notify')
+
+    testImplementation project(':music:data:raw:spotify:test:spotify-commons-test-db-helper')
 }

@@ -71,6 +71,10 @@ tasks.register('jacocoSummary') {
 
     doLast {
         def report = file("$buildDir/reports/jacoco/test/jacocoTestReport.xml")
+        if (!report.exists()) {
+            logger.lifecycle("jacocoSummary: no report found (no test sources) — skipping.")
+            return
+        }
         def parser = new XmlParser(false, false)
         parser.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false)
         parser.setFeature("http://xml.org/sax/features/external-general-entities", false)

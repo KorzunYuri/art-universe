@@ -11,4 +11,5 @@ dependencies {
     implementation project(':common:data:raw:data-raw-commons-api-client')
     implementation project(':music:data:raw:spotify:spotify-repositories')
 
+    testImplementation project(':common:test:commons-test-web')
 }

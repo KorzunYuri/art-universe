@@ -60,6 +60,32 @@
 ./gradlew :music:data:master:integrationTest
 ```
 
+### Code Coverage
+
+```bash
+# Print classes below 80% line coverage for a module
+./gradlew :<module-path>:jacocoSummary
+
+# Example — single module
+./gradlew :music:data:raw:spotify:spotify-rest-api:jacocoSummary
+
+# Example — multiple modules at once
+./gradlew :music:data:raw:spotify:etl:spotify-calls-generator:jacocoSummary \
+          :music:data:raw:spotify:etl:spotify-calls-performer:jacocoSummary
+```
+
+`jacocoSummary` runs tests, generates the JaCoCo XML report, then prints only classes below **80% line coverage** in the format:
+
+```
+com/example/SomeClass -> 62% (missed: 15)
+```
+
+If the output is empty, all classes already meet the 80% threshold.
+
+The raw JaCoCo XML report is at: `<module>/build/reports/jacoco/test/jacocoTestReport.xml`
+
+For a structured analysis-and-improve workflow, use the `/analyze-coverage` skill.
+
 ### Docker Images
 ```bash
 # Build all Docker images (via convenience script)
