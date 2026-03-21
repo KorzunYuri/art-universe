@@ -13,8 +13,13 @@ import yurykorzun.art.universe.music.data.raw.spotify.etl.entity.SpotifyApiCallT
 import yurykorzun.art.universe.music.data.raw.spotify.etl.repository.SpotifyApiCallRepository;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
+import org.mockito.ArgumentCaptor;
+import yurykorzun.art.universe.music.data.raw.spotify.enums.SpotifyEntityType;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -34,7 +39,9 @@ class SpotifyApiCallServiceImplTest {
         return SpotifyApiCallCreateRequest.builder()
             .type(SpotifyApiCallType.ARTIST_GET)
             .spotifyId("3TVXtAsR1Inumwj472S9r4")
-            .dueDttm(Instant.now())
+            .entityType(SpotifyEntityType.ARTIST)
+            .entityId(1L)
+            .dueDttm(Instant.now().plus(7, ChronoUnit.DAYS))
             .build();
     }
 
@@ -65,5 +72,36 @@ class SpotifyApiCallServiceImplTest {
 
         // then
         verifyNoInteractions(pgNotifyEventPublisher);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void createApiCalls_shouldMapRequestToEntityCorrectly() {
+        SpotifyApiCall savedCall = mock(SpotifyApiCall.class);
+        when(apiCallRepository.saveAll(any())).thenReturn(List.of(savedCall));
+
+        ArgumentCaptor<List<SpotifyApiCall>> captor = ArgumentCaptor.forClass(List.class);
+        service.createApiCalls(List.of(createRequest()));
+
+        verify(apiCallRepository).saveAll(captor.capture());
+        SpotifyApiCall built = captor.getValue().get(0);
+        assertThat(built.getType()).isEqualTo(SpotifyApiCallType.ARTIST_GET);
+        assertThat(built.getSpotifyId()).isEqualTo("3TVXtAsR1Inumwj472S9r4");
+        assertThat(built.getEntityType()).isEqualTo(SpotifyEntityType.ARTIST);
+        assertThat(built.getEntityId()).isEqualTo(1L);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void createApiCalls_shouldDefaultParamsToSpotifyId_whenParamsNotSet() {
+        SpotifyApiCall savedCall = mock(SpotifyApiCall.class);
+        when(apiCallRepository.saveAll(any())).thenReturn(List.of(savedCall));
+
+        ArgumentCaptor<List<SpotifyApiCall>> captor = ArgumentCaptor.forClass(List.class);
+        service.createApiCalls(List.of(createRequest()));
+
+        verify(apiCallRepository).saveAll(captor.capture());
+        assertThat(captor.getValue().get(0).getParams())
+            .containsEntry("spotify_id", "3TVXtAsR1Inumwj472S9r4");
     }
 }
