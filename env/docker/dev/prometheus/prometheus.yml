@@ -44,3 +44,24 @@ scrape_configs:
     metrics_path: '/actuator/prometheus'
     static_configs:
       - targets: ['host.docker.internal:7088']
+
+  # Spotify ETL services
+  - job_name: 'spotify-calls-generator'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['host.docker.internal:7091']
+
+  - job_name: 'spotify-calls-performer'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['host.docker.internal:7092']
+
+  - job_name: 'spotify-response-parser'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['host.docker.internal:7093']
+
+  - job_name: 'spotify-staging-applicator'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['host.docker.internal:7095']

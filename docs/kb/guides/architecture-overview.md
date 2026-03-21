@@ -21,8 +21,7 @@ The system follows a three-stage architecture:
 ### 1. Data Collection
 
 Automated ETL processes gather raw data from external APIs:
-- **Current**: LastFM API
-- **Planned**: Spotify API
+- **Current**: LastFM API, Spotify API
 
 Raw data is stored in source-specific schemas (e.g., `mu_raw_lastfm`)
 
@@ -45,6 +44,7 @@ Curated data powers various applications:
 ### Domains
 
 - [LastFM Data Collection](../../../music/data/raw/lastfm/README.md): Complete ETL pipeline for fetching and parsing LastFM API data
+- [Spotify Data Collection](../../../music/data/raw/spotify/README.md): Complete ETL pipeline for fetching and parsing Spotify Web API data
 - [Master Data](../../../music/data/master/README.md): Entity management for artists, albums, tracks with basic relationships
 - [Quiz Game](../../../music/quiz/README.md): "Guess the Track" quiz with configurable difficulty and categories
 
@@ -52,11 +52,12 @@ Curated data powers various applications:
 
 ### Current Data Flow
 
-#### Stage 1: Raw Data Collection (LastFM ETL)
+#### Stage 1: Raw Data Collection (LastFM and Spotify ETL)
 
 1. **Calls Generator** - Generates API calls based on seed data
-2. **Calls Performer** - Executes API calls against LastFM
-3. **Response Parser** - Parses and stores responses in `mu_raw_lastfm` schema
+2. **Calls Performer** - Executes API calls against LastFM / Spotify and stores responses for parsing
+3. **Response Parser** - Parses entities from responses and stores them in target tables (Lastfm) or staging layer (Spotify)
+4. **Staging Applicator** - Picks up batches of entities from staging and applies them to target tables
 
 #### Stage 2: Master Data Curation
 
@@ -73,7 +74,7 @@ Curated data powers various applications:
 ### Planned Features
 
 - **Enhanced Master Data**: Support for complex entity relationships with connection types (e.g., track versions, artist collaborations)
-- **Spotify Integration**: Additional data source with attributes ETL to enrich master data
+- **Spotify Integration**: Raw ETL complete; attributes ETL to enrich master data is next
 - **Extended Quiz Types**: Multiple quiz variations and game modes
 - **Additional Domains**: Expansion beyond music to visual arts and literature
 

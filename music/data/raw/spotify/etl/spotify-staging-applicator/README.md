@@ -71,6 +71,16 @@ Apart from [ETL environment variables](../README.md#common-environment-variables
 
 **See**: [Docker Deployment Guide](../../../../../../env/docker/README.md) for deployment procedures
 
+## Observability
+
+This module is instrumented with an AOP-based observability aspect:
+
+- `StagingApplicationObservabilityAspect` — wraps each staging iteration application
+- **Metric**: `music.data.raw.spotify.staging.apply` (timer)
+- **Tags**: `status`
+
+See [OBSERVABILITY.md](../../../../../../docs/OBSERVABILITY.md) for the full picture.
+
 ## Patterns Used
 
 This module follows these project-wide patterns:

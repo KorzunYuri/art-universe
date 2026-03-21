@@ -69,6 +69,16 @@ Apart from [ETL environment variables](../README.md#common-environment-variables
 
 **See**: [Docker Deployment Guide](../../../../../../env/docker/README.md) for deployment procedures
 
+## Observability
+
+This module is instrumented with an AOP-based observability aspect:
+
+- `ApiResponseProcessorObservabilityAspect` — wraps each processor's `process()` call
+- **Metric**: `music.data.raw.spotify.api.response.process` (timer)
+- **Tags**: `api_call_type`, `status`
+
+See [OBSERVABILITY.md](../../../../../../docs/OBSERVABILITY.md) for the full picture.
+
 ## Patterns Used
 
 This module follows these project-wide patterns:
