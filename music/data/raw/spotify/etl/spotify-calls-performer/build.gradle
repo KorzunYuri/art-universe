@@ -18,4 +18,6 @@ dependencies {
 
     implementation 'org.springframework.retry:spring-retry'
     implementation 'com.google.guava:guava:33.4.0-jre'
+
+    testImplementation project(':music:data:raw:spotify:test:spotify-commons-test-db-helper')
 }
