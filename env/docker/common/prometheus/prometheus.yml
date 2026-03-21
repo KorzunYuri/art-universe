@@ -44,3 +44,24 @@ scrape_configs:
     metrics_path: '/actuator/prometheus'
     static_configs:
       - targets: ['lastfm-response-parser:8080']
+
+  # Spotify ETL services
+  - job_name: 'spotify-calls-generator'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['spotify-calls-generator:8080']
+
+  - job_name: 'spotify-calls-performer'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['spotify-calls-performer:8080']
+
+  - job_name: 'spotify-response-parser'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['spotify-response-parser:8080']
+
+  - job_name: 'spotify-staging-applicator'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['spotify-staging-applicator:8080']

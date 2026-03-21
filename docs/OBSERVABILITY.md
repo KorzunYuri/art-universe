@@ -52,9 +52,13 @@ These are traced automatically by Spring Boot without explicit annotations:
 
 - **@Observed** Annotated Methods
 - **AOP-Based** Aspects, e.g.:
-  - [ApiCallGeneratorObservabilityAspect.java](../music/data/raw/lastfm/etl/lastfm-calls-generator/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/task/call/generate/aspect/ApiCallGeneratorObservabilityAspect.java)
-  - [ApiCallPerformerObservabilityAspect.java](../music/data/raw/lastfm/etl/lastfm-calls-performer/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/task/call/perform/aspect/ApiCallPerformerObservabilityAspect.java)
-  - [ApiResponseProcessorObservabilityAspect.java](../music/data/raw/lastfm/etl/lastfm-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/task/response/process/aspect/ApiResponseProcessorObservabilityAspect.java)
+  - [ApiCallGeneratorObservabilityAspect.java (Lastfm)](../music/data/raw/lastfm/etl/lastfm-calls-generator/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/task/call/generate/aspect/ApiCallGeneratorObservabilityAspect.java)
+  - [ApiCallPerformerObservabilityAspect.java (Lastfm)](../music/data/raw/lastfm/etl/lastfm-calls-performer/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/task/call/perform/aspect/ApiCallPerformerObservabilityAspect.java)
+  - [ApiResponseProcessorObservabilityAspect.java (Lastfm)](../music/data/raw/lastfm/etl/lastfm-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/task/response/process/aspect/ApiResponseProcessorObservabilityAspect.java)
+  - [ApiCallGeneratorObservabilityAspect.java (Spotify)](../music/data/raw/spotify/etl/spotify-calls-generator/src/main/java/yurykorzun/art/universe/music/data/raw/spotify/task/call/generate/aspect/ApiCallGeneratorObservabilityAspect.java)
+  - [ApiCallPerformerObservabilityAspect.java (Spotify)](../music/data/raw/spotify/etl/spotify-calls-performer/src/main/java/yurykorzun/art/universe/music/data/raw/spotify/task/call/perform/aspect/ApiCallPerformerObservabilityAspect.java)
+  - [ApiResponseProcessorObservabilityAspect.java (Spotify)](../music/data/raw/spotify/etl/spotify-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/spotify/task/response/process/aspect/ApiResponseProcessorObservabilityAspect.java)
+  - [StagingApplicationObservabilityAspect.java (Spotify)](../music/data/raw/spotify/etl/spotify-staging-applicator/src/main/java/yurykorzun/art/universe/music/data/raw/spotify/application/aspect/StagingApplicationObservabilityAspect.java)
 
 List of observed/timed methods by module:
 
@@ -69,6 +73,14 @@ List of observed/timed methods by module:
   - single response processing (per method) (timer)
 - [Lastfm ETL REST API](../music/data/raw/lastfm/etl/lastfm-etl-rest-api/README.md)
   - database maintenance tasks
+- [spotify-calls-generator](../music/data/raw/spotify/etl/spotify-calls-generator/README.md)
+  - single API call generation per call type (timer: `music.data.raw.spotify.api.call.generate`, tags: `api_call_type`, `status`)
+- [spotify-calls-performer](../music/data/raw/spotify/etl/spotify-calls-performer/README.md)
+  - single API call execution per call type (timer: `music.data.raw.spotify.api.call.perform`, tags: `api_call_type`, `status`)
+- [spotify-response-parser](../music/data/raw/spotify/etl/spotify-response-parser/README.md)
+  - single API response processing per call type (timer: `music.data.raw.spotify.api.response.process`, tags: `api_call_type`, `status`)
+- [spotify-staging-applicator](../music/data/raw/spotify/etl/spotify-staging-applicator/README.md)
+  - single staging iteration application (timer: `music.data.raw.spotify.staging.apply`, tag: `status`)
 
 **Rationale for @Timed vs @Observed**:
 - **Generation/Processing**: Use `@Timed` because these are async batch operations without shared trace context (database is the only connector between execution and parsing phases)

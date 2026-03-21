@@ -49,6 +49,16 @@ Apart from [ETL environment variables](../README.md#common-environment-variables
 - `SPOTIFY_CLIENT_ID` - Spotify application client ID
 - `SPOTIFY_CLIENT_SECRET` - Spotify application client secret
 
+## Observability
+
+This module is instrumented with an AOP-based observability aspect:
+
+- `ApiCallPerformerObservabilityAspect` — wraps individual API call execution
+- **Metric**: `music.data.raw.spotify.api.call.perform` (timer)
+- **Tags**: `api_call_type`, `status`
+
+See [OBSERVABILITY.md](../../../../../../docs/OBSERVABILITY.md) for the full picture.
+
 ## Patterns Used
 
 This module follows these project-wide patterns:

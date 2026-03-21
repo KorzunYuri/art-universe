@@ -75,19 +75,35 @@ Consumer code unchanged - `getRegistry()` returns map of Spring proxies, AOP int
 
 ### API Call Generators Registry
 
+**Lastfm**:
 - **Registry**: [LastfmApiCallGeneratorsRegistry](../../../../music/data/raw/lastfm/etl/lastfm-calls-generator/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/task/call/generate/LastfmApiCallGeneratorsRegistry.java)
 - **Base**: [BaseLastfmApiCallGenerator](../../../../music/data/raw/lastfm/etl/lastfm-calls-generator/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/task/call/generate/BaseLastfmApiCallGenerator.java)
 - **Implementations**: 17 generators (LastfmTagTopTagsApiCallGenerator, LastfmArtistGetInfoApiCallGenerator, EntityScopedApiCallGenerator + 14 subclasses)
 - **Consumer**: [LastfmApiCallGenerationScheduler](../../../../music/data/raw/lastfm/etl/lastfm-calls-generator/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/task/call/generate/LastfmApiCallGenerationScheduler.java)
 - **AOP**: [ApiCallGeneratorObservabilityAspect](../../../../music/data/raw/lastfm/etl/lastfm-calls-generator/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/task/call/generate/aspect/ApiCallGeneratorObservabilityAspect.java) measures `createApiCalls()` timing
 
+**Spotify**:
+- **Registry**: [SpotifyApiCallGeneratorsRegistry](../../../../music/data/raw/spotify/etl/spotify-calls-generator/src/main/java/yurykorzun/art/universe/music/data/raw/spotify/task/call/generate/SpotifyApiCallGeneratorsRegistry.java)
+- **Base**: [BaseSpotifyApiCallGenerator](../../../../music/data/raw/spotify/etl/spotify-calls-generator/src/main/java/yurykorzun/art/universe/music/data/raw/spotify/task/call/generate/BaseSpotifyApiCallGenerator.java)
+- **Implementations**: 8 generators (entity GET generators + search generators)
+- **Consumer**: [SpotifyApiCallGenerationScheduler](../../../../music/data/raw/spotify/etl/spotify-calls-generator/src/main/java/yurykorzun/art/universe/music/data/raw/spotify/task/call/generate/SpotifyApiCallGenerationScheduler.java)
+- **AOP**: [ApiCallGeneratorObservabilityAspect](../../../../music/data/raw/spotify/etl/spotify-calls-generator/src/main/java/yurykorzun/art/universe/music/data/raw/spotify/task/call/generate/aspect/ApiCallGeneratorObservabilityAspect.java) measures `createApiCalls()` timing
+
 ### API Response Processors Registry
 
+**Lastfm**:
 - **Registry**: [LastfmApiResponseProcessorsRegistry](../../../../music/data/raw/lastfm/etl/lastfm-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/task/response/process/LastfmApiResponseProcessorsRegistry.java)
 - **Base**: [LastfmApiResponseProcessor](../../../../music/data/raw/lastfm/etl/lastfm-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/task/response/process/LastfmApiResponseProcessor.java)
 - **Implementations**: 12 processors (LastfmAlbumGetInfoResponseProcessor, LastfmArtistGetInfoResponseProcessor, LastfmTrackGetInfoResponseProcessor, etc.)
 - **Consumer**: [LastfmApiResponseServiceImpl](../../../../music/data/raw/lastfm/etl/lastfm-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/etl/service/impl/LastfmApiResponseServiceImpl.java)
 - **AOP**: [ApiResponseProcessorObservabilityAspect](../../../../music/data/raw/lastfm/etl/lastfm-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/task/response/process/aspect/ApiResponseProcessorObservabilityAspect.java) measures `process()` timing
+
+**Spotify**:
+- **Registry**: [SpotifyApiResponseProcessorsRegistry](../../../../music/data/raw/spotify/etl/spotify-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/spotify/task/response/process/SpotifyApiResponseProcessorsRegistry.java)
+- **Base**: [BaseSpotifyApiResponseProcessor](../../../../music/data/raw/spotify/etl/spotify-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/spotify/task/response/process/BaseSpotifyApiResponseProcessor.java)
+- **Implementations**: 8 processors (entity GET processors + search processors)
+- **Consumer**: [SpotifyApiResponseProcessingScheduler](../../../../music/data/raw/spotify/etl/spotify-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/spotify/task/response/process/SpotifyApiResponseProcessingScheduler.java)
+- **AOP**: [ApiResponseProcessorObservabilityAspect](../../../../music/data/raw/spotify/etl/spotify-response-parser/src/main/java/yurykorzun/art/universe/music/data/raw/spotify/task/response/process/aspect/ApiResponseProcessorObservabilityAspect.java) measures `process()` timing
 
 ### Coded Enum Registry (Different Pattern)
 
