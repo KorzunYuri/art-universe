@@ -17,6 +17,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.task.call.generate.LastfmAp
 import java.util.List;
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -262,6 +263,61 @@ class LastfmAlbumApiCallGeneratorTest {
         assertNull(key, "Key should be null for invalid album");
     }
 
+    @Test
+    void getCommonApiCallParameters_shouldUseMbid_whenPresent() {
+        generator = new TestableLastfmAlbumApiCallGenerator(apiCallService, snapshotService, entityService);
+        LastfmAlbum album = createAlbum(1L, "Album1", "mbid-123", ApprovalStatus.APPROVED, 1000);
+
+        Map<String, String> params = generator.getCommonApiCallParameters(album);
+
+        assertThat(params).containsKey("mbid").containsValue("mbid-123");
+        assertThat(params).doesNotContainKey("album");
+    }
+
+    @Test
+    void getCommonApiCallParameters_shouldUseAlbumAndArtist_whenNoMbid() {
+        generator = new TestableLastfmAlbumApiCallGenerator(apiCallService, snapshotService, entityService);
+        LastfmAlbum album = createAlbum(1L, "Dark Side", null, ApprovalStatus.APPROVED, 1000);
+        album.setArtist(createArtist(1L, "Pink Floyd"));
+
+        Map<String, String> params = generator.getCommonApiCallParameters(album);
+
+        assertThat(params).containsKey("album").containsKey("artist");
+        assertThat(params).doesNotContainKey("mbid");
+    }
+
+    @Test
+    void getCommonApiCallParameters_shouldUseAlbumOnly_whenNoMbidAndNoArtist() {
+        generator = new TestableLastfmAlbumApiCallGenerator(apiCallService, snapshotService, entityService);
+        LastfmAlbum album = createAlbum(1L, "Unknown Album", null, ApprovalStatus.PENDING, 0);
+        // artist not set
+
+        Map<String, String> params = generator.getCommonApiCallParameters(album);
+
+        assertThat(params).containsKey("album");
+        assertThat(params).doesNotContainKey("mbid").doesNotContainKey("artist");
+    }
+
+    @Test
+    void hasHigherPriority_shouldReturnTrue_whenExistingIsNull() {
+        generator = new TestableLastfmAlbumApiCallGenerator(apiCallService, snapshotService, entityService);
+        LastfmAlbum album = createAlbum(1L, "Album", "mbid", ApprovalStatus.APPROVED, 100);
+
+        assertTrue(generator.hasHigherPriority(album, null));
+    }
+
+    @Test
+    void hasHigherPriority_shouldPrioritizeByPlayCount_whenListenersCountEqual() {
+        generator = new TestableLastfmAlbumApiCallGenerator(apiCallService, snapshotService, entityService);
+        LastfmAlbum highPlayCount = createAlbum(1L, "Album1", "mbid1", ApprovalStatus.APPROVED, 1000);
+        highPlayCount.setPlayCount(50000L);
+        LastfmAlbum lowPlayCount = createAlbum(2L, "Album2", "mbid2", ApprovalStatus.APPROVED, 1000);
+        lowPlayCount.setPlayCount(10000L);
+
+        assertTrue(generator.hasHigherPriority(highPlayCount, lowPlayCount));
+        assertFalse(generator.hasHigherPriority(lowPlayCount, highPlayCount));
+    }
+
     // open protected methods for testing
     private static class TestableLastfmAlbumApiCallGenerator extends LastfmAlbumApiCallGenerator {
         public TestableLastfmAlbumApiCallGenerator(
@@ -305,6 +361,11 @@ class LastfmAlbumApiCallGeneratorTest {
         @Override
         public boolean hasHigherPriority(LastfmAlbum candidate, LastfmAlbum existing) {
             return super.hasHigherPriority(candidate, existing);
+        }
+
+        @Override
+        public Map<String, String> getCommonApiCallParameters(LastfmAlbum album) {
+            return super.getCommonApiCallParameters(album);
         }
     }
 
