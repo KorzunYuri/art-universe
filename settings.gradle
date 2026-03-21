@@ -46,6 +46,8 @@ include 'music:data:raw:spotify:etl:spotify-calls-generator'
 include 'music:data:raw:spotify:etl:spotify-calls-performer'
 include 'music:data:raw:spotify:etl:spotify-response-parser'
 include 'music:data:raw:spotify:etl:spotify-staging-applicator'
+include 'music:data:raw:spotify:test:spotify-commons-test-db'
+include 'music:data:raw:spotify:test:spotify-commons-test-db-helper'
 
 include 'music:quiz'
 include 'ui'
