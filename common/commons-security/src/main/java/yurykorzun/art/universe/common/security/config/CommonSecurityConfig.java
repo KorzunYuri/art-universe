@@ -6,6 +6,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
@@ -32,6 +33,7 @@ import java.util.List;
 @EnableWebSecurity
 @EnableConfigurationProperties({JwtProperties.class, SecurityProperties.class})
 @EnableMethodSecurity
+@Import(SecurityExceptionHandler.class)
 @RequiredArgsConstructor
 public class CommonSecurityConfig {
 
