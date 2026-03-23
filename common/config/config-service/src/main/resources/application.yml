@@ -36,5 +36,5 @@ server:
 
 auth:
   security:
-    public-paths: /health, /actuator/**, /api/v1/config/properties/register
+    public-paths: /health, /actuator/**, /api/v1/config/properties/**
     allowed-origins: ${AU_CONFIG_CORS_ALLOWED_ORIGINS}
