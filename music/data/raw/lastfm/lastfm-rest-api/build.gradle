@@ -7,6 +7,7 @@ ext.dockerImageName = 'mu-lastfm-rest-api'
 
 dependencies {
     implementation project(':common:commons-web')
+    implementation project(':common:commons-security')
     implementation project(':common:commons-observability')
     implementation project(':music:data:raw:lastfm:lastfm-repositories')
 

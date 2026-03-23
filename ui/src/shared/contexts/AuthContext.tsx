@@ -1,15 +1,23 @@
 import { createContext } from 'react';
-import type { MasterEntityType } from '@/music/shared/types/entities';
-import type { DataSource } from '@/music/data/raw/shared/types/data-sources';
+import type { UserInfo, Role } from '@/shared/types/auth';
+
+export interface AuthState {
+    user: UserInfo | null;
+    isAuthenticated: boolean;
+    isLoading: boolean;
+    login: (googleIdToken: string) => Promise<void>;
+    logout: () => Promise<void>;
+    hasRole: (role: Role) => boolean;
+}
 
 export interface Permissions {
     isAdmin(): boolean;
-    canEditMasterEntity(entityType: MasterEntityType): boolean;
-    canDeleteMasterEntity(entityType: MasterEntityType): boolean;
-    canCreateMasterEntity(entityType: MasterEntityType): boolean;
-    canBindRawEntity(dataSource: DataSource, entityType: MasterEntityType): boolean;
-    canEditRawEntityApproval(dataSource: DataSource, entityType: MasterEntityType): boolean;
-    canEditQuizBinding(entityType: MasterEntityType): boolean;
+    canEditMasterEntity(): boolean;
+    canDeleteMasterEntity(): boolean;
+    canCreateMasterEntity(): boolean;
+    canBindRawEntity(): boolean;
+    canEditRawEntityApproval(): boolean;
+    canEditQuizBinding(): boolean;
 }
 
-export const AuthContext = createContext<Permissions | null>(null);
+export const AuthContext = createContext<AuthState | null>(null);

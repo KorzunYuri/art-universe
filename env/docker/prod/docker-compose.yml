@@ -2,6 +2,18 @@ version: '3.8'
 
 services:
   # Migrations
+  au-auth-liquibase:
+    container_name: prod__au-auth__liquibase
+    image: au-auth-liquibase:latest
+    env_file:
+      - ./common.env
+      - ../common/au-auth.env
+      - ./au-auth.secrets.env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - mu__network
+
   au-config-liquibase:
     container_name: prod__au-config__liquibase
     image: au-config-liquibase:latest
@@ -41,6 +53,43 @@ services:
       - mu__network
 
   # Applications
+  au-auth-service:
+    container_name: prod__au-auth-service__app
+    restart: unless-stopped
+    image: au-auth-service:latest
+    environment:
+      - JAVA_OPTS=-Xms128m -Xmx256m -XX:MaxMetaspaceSize=96m
+    env_file:
+      - ./common.env
+      - ../common/au-auth.env
+      - ./au-auth.env
+      - ./au-auth.secrets.env
+    ports:
+      - "${AU_AUTH_APP_EXTERNAL_PORT}:${AU_AUTH_APP_INTERNAL_PORT}"
+    volumes:
+      - prod__au-auth-service__app-logs:/app/logs
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      au-auth-liquibase:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${AU_AUTH_APP_INTERNAL_PORT}/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 120s
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+          cpus: '0.2'
+        reservations:
+          memory: 128M
+          cpus: '0.05'
+    networks:
+      - mu__network
+
   au-config-service:
     container_name: prod__au-config-service__app
     restart: unless-stopped
@@ -50,7 +99,9 @@ services:
     env_file:
       - ./common.env
       - ../common/au-config.env
+      - ../common/au-auth.env
       - ./au-config.env
+      - ./au-auth.secrets.env
       - ./au-config.secrets.env
     ports:
       - "${AU_CONFIG_APP_EXTERNAL_PORT}:${AU_CONFIG_APP_INTERNAL_PORT}"
@@ -86,8 +137,10 @@ services:
       - JAVA_OPTS=-Xms256m -Xmx768m -XX:MaxMetaspaceSize=192m
     env_file:
       - ../common/music-data-raw-spotify.env
+      - ../common/au-auth.env
       - ./common.env
       - ./music-data-raw-spotify.env
+      - ./au-auth.secrets.env
       - ./music-data-raw-spotify.secrets.env
     ports:
       - "${MURAW_SPOTIFY_REST_API_EXTERNAL_PORT}:${MURAW_SPOTIFY_REST_API_INTERNAL_PORT}"
@@ -293,8 +346,10 @@ services:
       - JAVA_OPTS=-Xms256m -Xmx768m -XX:MaxMetaspaceSize=192m
     env_file:
       - ../common/music-data-raw-lastfm.env
+      - ../common/au-auth.env
       - ./common.env
       - ./music-data-raw-lastfm.env
+      - ./au-auth.secrets.env
       - ./music-data-raw-lastfm.secrets.env
     ports:
       - "${MURAW_LASTFM_REST_API_EXTERNAL_PORT}:${MURAW_LASTFM_REST_API_INTERNAL_PORT}"
@@ -332,8 +387,10 @@ services:
     env_file:
       - ../common/music-data-raw-lastfm.env
       - ../common/au-config.env
+      - ../common/au-auth.env
       - ./common.env
       - ./music-data-raw-lastfm.env
+      - ./au-auth.secrets.env
       - ./music-data-raw-lastfm.secrets.env
     ports:
       - "${MURAW_LASTFM_ETL_REST_API_EXTERNAL_PORT}:${MURAW_LASTFM_ETL_REST_API_INTERNAL_PORT}"
@@ -500,8 +557,10 @@ services:
       - JAVA_OPTS=-Xms128m -Xmx384m -XX:MaxMetaspaceSize=96m
     env_file:
       - ../common/music-data.env
+      - ../common/au-auth.env
       - ./common.env
       - ./music-data.env
+      - ./au-auth.secrets.env
       - ./music-data.secrets.env
     ports:
       - "${MU_DATA_APP_EXTERNAL_PORT}:${MU_DATA_APP_INTERNAL_PORT}"
@@ -534,8 +593,10 @@ services:
       - JAVA_OPTS=-Xms128m -Xmx384m -XX:MaxMetaspaceSize=96m
     env_file:
       - ../common/art-data.env
+      - ../common/au-auth.env
       - ./common.env
       - ./art-data.env
+      - ./au-auth.secrets.env
       - ./art-data.secrets.env
     ports:
       - "${ART_DATA_APP_EXTERNAL_PORT}:${ART_DATA_APP_INTERNAL_PORT}"
@@ -566,8 +627,10 @@ services:
       - JAVA_OPTS=-Xms128m -Xmx384m -XX:MaxMetaspaceSize=96m
     env_file:
       - ../common/music-quiz.env
+      - ../common/au-auth.env
       - ./common.env
       - ./music-quiz.env
+      - ./au-auth.secrets.env
       - ./music-quiz.secrets.env
     ports:
       - "${MU_QUIZ_APP_EXTERNAL_PORT}:${MU_QUIZ_APP_INTERNAL_PORT}"
@@ -604,9 +667,12 @@ services:
       - ./common.env
       - ./art-universe-ui.env
       - ./art-universe-ui.secrets.env
+      - ./au-auth.secrets.env
     ports:
       - "${MU_UI_EXTERNAL_PORT}:80"
     depends_on:
+      au-auth-service:
+        condition: service_healthy
       lastfm-rest-api:
         condition: service_healthy
       lastfm-etl-rest-api:
@@ -756,5 +822,7 @@ volumes:
     name: prod__mu__grafana-data
   prod__art-data__app-logs:
     name: prod__art-data__app-logs
+  prod__au-auth-service__app-logs:
+    name: prod__au-auth-service__app-logs
   prod__au-config-service__app-logs:
     name: prod__au-config-service__app-logs

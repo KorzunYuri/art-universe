@@ -1,10 +1,26 @@
 import { useContext } from 'react';
 import { AuthContext, type Permissions } from '../contexts/AuthContext';
+import type { Role } from '@/shared/types/auth';
+
+function createPermissions(roles: Role[]): Permissions {
+    const roleSet = new Set(roles);
+    const isAdmin = () => roleSet.has('ADMIN');
+
+    return {
+        isAdmin,
+        canEditMasterEntity: () => isAdmin() || roleSet.has('MASTER_CURATOR'),
+        canDeleteMasterEntity: () => isAdmin() || roleSet.has('MASTER_CURATOR'),
+        canCreateMasterEntity: () => isAdmin() || roleSet.has('MASTER_CURATOR'),
+        canBindRawEntity: () => isAdmin() || roleSet.has('LASTFM_CURATOR') || roleSet.has('SPOTIFY_CURATOR'),
+        canEditRawEntityApproval: () => isAdmin() || roleSet.has('LASTFM_CURATOR') || roleSet.has('SPOTIFY_CURATOR'),
+        canEditQuizBinding: () => isAdmin() || roleSet.has('QUIZ_MASTER'),
+    };
+}
 
 export function usePermissions(): Permissions {
-    const permissions = useContext(AuthContext);
-    if (!permissions) {
+    const auth = useContext(AuthContext);
+    if (!auth) {
         throw new Error('usePermissions must be used within an AuthProvider');
     }
-    return permissions;
+    return createPermissions(auth.user?.roles ?? []);
 }

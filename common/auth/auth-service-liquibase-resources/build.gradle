@@ -1,0 +1,9 @@
+plugins {
+    id 'java'
+}
+
+archivesBaseName = 'auth-service-liquibase-resources'
+
+// include resources only
+compileJava.enabled = false
+compileTestJava.enabled = false

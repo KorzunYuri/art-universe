@@ -15,8 +15,9 @@ Cross-cutting patterns used across multiple layers.
 - [state-machine.md](state-machine.md) - State machine pattern for entity lifecycle management
 - [strategy-registry.md](strategy-registry.md) - Strategy Registry pattern with Spring AOP proxy support
 - [project-structure.md](project-structure.md) - Standard project structure
+- [security.md](security.md) - JWT authentication and role-based authorization via `commons-security`
 
-**Use when**: Managing entity state transitions, implementing plugin architectures, coordinating operations across modules
+**Use when**: Managing entity state transitions, implementing plugin architectures, coordinating operations across modules, securing REST endpoints with JWT auth
 
 ---
 

@@ -7,6 +7,7 @@ ext.dockerImageName = 'mu-spotify-rest-api'
 
 dependencies {
     implementation project(':common:commons-web')
+    implementation project(':common:commons-security')
     implementation project(':common:commons-observability')
     implementation project(':common:data:raw:data-raw-commons-api-client')
     implementation project(':music:data:raw:spotify:spotify-repositories')

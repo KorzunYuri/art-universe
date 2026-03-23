@@ -1,0 +1,21 @@
+plugins {
+    id 'art-universe.spring-boot-web-app'
+    id 'org.liquibase.gradle'
+}
+
+archivesBaseName = 'au-auth-service'
+ext.dockerImageName = 'au-auth-service'
+
+dependencies {
+    implementation project(':common:commons-web')
+    implementation project(':common:commons-security')
+    implementation project(':common:commons-observability')
+
+    implementation 'com.google.api-client:google-api-client:2.7.2'
+
+    runtimeOnly project(':common:auth:auth-service-liquibase-resources')
+    runtimeOnly 'org.liquibase:liquibase-core'
+
+    testImplementation project(':common:test:commons-test-web')
+    testImplementation project(':common:test:commons-test-db')
+}

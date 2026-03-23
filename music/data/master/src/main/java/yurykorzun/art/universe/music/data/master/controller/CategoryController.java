@@ -3,6 +3,7 @@ package yurykorzun.art.universe.music.data.master.controller;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.music.data.master.dto.CategoryDto;
 import yurykorzun.art.universe.common.domain.dto.lookup.LookupResultDTO;
@@ -91,6 +92,7 @@ public class CategoryController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public CategoryDto saveCategory(
         @Valid @RequestBody CategorySaveRequestDTO request
     ) {
@@ -98,6 +100,7 @@ public class CategoryController {
     }
 
     @PostMapping("/with-parents")
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public CategoryWithParentsDto saveCategoryWithParents(
         @Valid @RequestBody CategorySaveWithParentsRequestDTO request
     ) {
@@ -105,6 +108,7 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public boolean deleteCategory(@PathVariable Long id) {
         boolean deleted = categoryService.deleteCategory(id);
         if (!deleted) {
@@ -122,6 +126,7 @@ public class CategoryController {
     }
 
     @PostMapping("/bind/existing/{dataSource}/{externalId}")
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public BoundEntityProjection bindToExisting(
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId,
@@ -131,6 +136,7 @@ public class CategoryController {
     }
 
     @PostMapping("/bind/new/{dataSource}/{externalId}")
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public BoundEntityProjection createAndBind(
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId,
@@ -140,6 +146,7 @@ public class CategoryController {
     }
 
     @DeleteMapping("/unbind/{dataSource}/{externalId}")
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public boolean unbindCategory(
         @PathVariable DataSource dataSource,
         @PathVariable Long externalId
@@ -148,6 +155,7 @@ public class CategoryController {
     }
     
     @DeleteMapping("/unbind/{dataSource}/batch")
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public BatchUnbindResponseDTO batchUnbindCategories(
         @PathVariable DataSource dataSource,
         @Valid @RequestBody BatchUnbindRequestDTO request
@@ -161,11 +169,13 @@ public class CategoryController {
     }
 
     @PostMapping("/relations")
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public void createCategoryRelation(@Valid @RequestBody CategoryRelationDTO relation) {
         categoryService.createCategoryRelation(relation);
     }
 
     @DeleteMapping("/relations")
+    @PreAuthorize("hasRole('MASTER_CURATOR')")
     public void deleteCategoryRelation(@Valid @RequestBody CategoryRelationDTO relation) {
         categoryService.deleteCategoryRelation(relation);
     }

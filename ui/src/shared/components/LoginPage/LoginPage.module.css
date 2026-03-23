@@ -1,0 +1,44 @@
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f8fafc;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 3rem 2.5rem;
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+    max-width: 400px;
+    width: 100%;
+}
+
+.title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 0.5rem;
+}
+
+.subtitle {
+    font-size: 0.95rem;
+    color: #64748b;
+    margin: 0 0 2rem;
+}
+
+.googleButton {
+    display: flex;
+    justify-content: center;
+}
+
+.error {
+    margin-top: 1rem;
+    color: #dc2626;
+    font-size: 0.875rem;
+    text-align: center;
+}

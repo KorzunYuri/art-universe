@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom';
+import { useAuth } from '@/shared/hooks/useAuth';
 import styles from './AppHeader.module.css';
 
 const NAV_ITEMS = [
@@ -42,12 +43,14 @@ const NAV_ITEMS = [
 ] as const;
 
 export function AppHeader() {
+    const { user, logout } = useAuth();
+
     return (
         <header className={styles.header}>
             <NavLink end to="/" className={({ isActive }) =>
                 isActive ? `${styles.logo} ${styles.logoActive}` : styles.logo
             }>
-                Music Universe
+                Art Universe
             </NavLink>
 
             <nav className={styles.nav}>
@@ -78,6 +81,23 @@ export function AppHeader() {
                     </div>
                 ))}
             </nav>
+
+            {user && (
+                <div className={styles.userSection}>
+                    {user.pictureUrl && (
+                        <img
+                            src={user.pictureUrl}
+                            alt={user.name}
+                            className={styles.avatar}
+                            referrerPolicy="no-referrer"
+                        />
+                    )}
+                    <span className={styles.userName}>{user.name}</span>
+                    <button onClick={logout} className={styles.logoutButton}>
+                        Sign out
+                    </button>
+                </div>
+            )}
         </header>
     );
 }

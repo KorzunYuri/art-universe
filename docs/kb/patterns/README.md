@@ -115,6 +115,7 @@ When you identify a reusable pattern:
 | Manage entity state        | Backend > Core | [State Machine](backend/state-machine.md) |
 | Create plugin architecture | Backend > Core | [Strategy Registry](backend/strategy-registry.md) |
 | Organize project structure | Backend > Core | [Project Structure](backend/project-structure.md) |
+| Secure REST service with JWT | Backend > Core | [JWT Auth Pattern](backend/security.md) |
 
 ---
 

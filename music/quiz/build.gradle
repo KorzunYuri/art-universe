@@ -8,6 +8,7 @@ ext.dockerImageName = 'mu-music-quiz'
 
 dependencies {
     implementation project(':common:commons-web')
+    implementation project(':common:commons-security')
     implementation project(':common:commons-observability')
 
     implementation 'org.springframework.boot:spring-boot-docker-compose'

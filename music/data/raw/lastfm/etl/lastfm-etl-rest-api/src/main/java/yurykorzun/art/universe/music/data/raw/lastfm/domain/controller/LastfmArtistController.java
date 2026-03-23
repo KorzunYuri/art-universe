@@ -2,6 +2,7 @@ package yurykorzun.art.universe.music.data.raw.lastfm.domain.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.dto.ApprovalStatusRequestDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.dto.ArtistSearchRequestDto;
@@ -23,6 +24,7 @@ public class LastfmArtistController {
     }
 
     @PatchMapping("/{id}/approval")
+    @PreAuthorize("hasRole('LASTFM_CURATOR')")
     public LastfmArtistResponseDto updateApprovalStatus(
         @PathVariable Long id,
         @RequestBody ApprovalStatusRequestDto request
@@ -32,6 +34,7 @@ public class LastfmArtistController {
 
     @PostMapping("/search")
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('LASTFM_CURATOR')")
     public LastfmArtistSearchRequest createSearchRequest(@Valid @RequestBody ArtistSearchRequestDto request) {
         return artistSearchRequestService.saveRequest(request.searchString());
     }

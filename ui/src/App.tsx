@@ -1,10 +1,14 @@
 import { useRoutes } from 'react-router-dom'
+import { GoogleOAuthProvider } from '@react-oauth/google'
 import { NavigationCard } from '@/shared/components'
 import { QueryProvider } from '@/shared/providers/QueryProvider'
 import { AuthProvider } from '@/shared/providers/AuthProvider'
 import { NotificationProvider } from '@/shared/providers/NotificationProvider'
 import { NotificationContainer } from '@/shared/components/NotificationContainer'
 import { AppHeader } from '@/shared/components/AppHeader'
+import { LoginPage } from '@/shared/components/LoginPage'
+import { useAuth } from '@/shared/hooks/useAuth'
+import { appConfig } from '@/shared/config/appConfig'
 import LastfmApp from '@/music/data/raw/lastfm/LastfmApp.tsx'
 import MusicMasterApp from '@/music/data/master/MusicMasterApp.tsx'
 import ArtMasterApp from '@/art/data/master/ArtMasterApp.tsx'
@@ -48,7 +52,7 @@ const routes = [
     },
 ]
 
-function AppContent() {
+function AuthenticatedApp() {
     const content = useRoutes(routes)
     return (
         <div className={styles.layout}>
@@ -60,15 +64,31 @@ function AppContent() {
     )
 }
 
+function AppContent() {
+    const { isAuthenticated, isLoading } = useAuth()
+
+    if (isLoading) {
+        return <div className={styles.loading}>Loading...</div>
+    }
+
+    if (!isAuthenticated) {
+        return <LoginPage />
+    }
+
+    return <AuthenticatedApp />
+}
+
 export default function App() {
     return (
-        <QueryProvider>
-            <AuthProvider>
-                <NotificationProvider>
-                    <AppContent />
-                    <NotificationContainer />
-                </NotificationProvider>
-            </AuthProvider>
-        </QueryProvider>
+        <GoogleOAuthProvider clientId={appConfig.googleClientId}>
+            <QueryProvider>
+                <AuthProvider>
+                    <NotificationProvider>
+                        <AppContent />
+                        <NotificationContainer />
+                    </NotificationProvider>
+                </AuthProvider>
+            </QueryProvider>
+        </GoogleOAuthProvider>
     )
 }

@@ -1,0 +1,11 @@
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+      - org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration
+
+auth:
+  jwt:
+    secret: ${AUTH_JWT_SECRET:}
+    expiration-minutes: ${AUTH_JWT_EXPIRATION_MINUTES:120}
+    issuer: ${AUTH_JWT_ISSUER:art-universe}

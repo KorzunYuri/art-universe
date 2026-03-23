@@ -1,6 +1,7 @@
 package yurykorzun.art.universe.music.data.raw.lastfm.maintenance.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,6 +20,7 @@ public class MaintenanceController {
     }
 
     @GetMapping(value = "/trigger")
+    @PreAuthorize("hasRole('MAINTAINER')")
     public String triggerDbMaintenance() {
         if (maintenanceService.requestMaintenance()) {
             return "maintenance requested";
