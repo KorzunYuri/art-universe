@@ -10,6 +10,7 @@ import { LoginPage } from '@/shared/components/LoginPage'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { appConfig } from '@/shared/config/appConfig'
 import LastfmApp from '@/music/data/raw/lastfm/LastfmApp.tsx'
+import SpotifyApp from '@/music/data/raw/spotify/SpotifyApp.tsx'
 import MusicMasterApp from '@/music/data/master/MusicMasterApp.tsx'
 import ArtMasterApp from '@/art/data/master/ArtMasterApp.tsx'
 import MusicQuizApp from '@/music/quiz/MusicQuizApp.tsx'
@@ -25,6 +26,7 @@ const routes = [
                 <NavigationCard to="/art/data/master" label="Art Master" />
                 <NavigationCard to="/music/data/master" label="Music Master" />
                 <NavigationCard to="/music/data/raw/lastfm" label="Last.fm" />
+                <NavigationCard to="/music/data/raw/spotify" label="Spotify" />
                 <NavigationCard to="/music/quiz" label="Music Quiz" />
                 <NavigationCard to="/common/config" label="Configuration" />
             </div>
@@ -41,6 +43,10 @@ const routes = [
     {
         path: '/music/data/raw/lastfm/*',
         element: <LastfmApp />,
+    },
+    {
+        path: '/music/data/raw/spotify/*',
+        element: <SpotifyApp />,
     },
     {
         path: '/music/quiz/*',
