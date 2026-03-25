@@ -1,0 +1,1 @@
+export { SpotifyArtists } from './SpotifyArtists';

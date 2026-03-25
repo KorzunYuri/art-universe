@@ -6,17 +6,19 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.music.data.raw.spotify.domain.dto.SpotifyAlbumResponseDto;
-import yurykorzun.art.universe.music.data.raw.spotify.domain.entity.SpotifyAlbum;
-import yurykorzun.art.universe.music.data.raw.spotify.domain.repository.SpotifyAlbumRepository;
+import yurykorzun.art.universe.music.data.raw.spotify.domain.dto.SpotifyAlbumTrackResponseDto;
+import yurykorzun.art.universe.music.data.raw.spotify.domain.service.SpotifyAlbumService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/spotify/albums")
 public class SpotifyAlbumController {
 
-    private final SpotifyAlbumRepository albumRepository;
+    private final SpotifyAlbumService albumService;
 
-    public SpotifyAlbumController(SpotifyAlbumRepository albumRepository) {
-        this.albumRepository = albumRepository;
+    public SpotifyAlbumController(SpotifyAlbumService albumService) {
+        this.albumService = albumService;
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -24,13 +26,16 @@ public class SpotifyAlbumController {
             @RequestParam(required = false) String search,
             @PageableDefault(size = 20, sort = "name") Pageable pageable
     ) {
-        return albumRepository.findAlbums(search, pageable).map(SpotifyAlbumResponseDto::from);
+        return albumService.findAll(search, pageable);
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public SpotifyAlbumResponseDto getAlbumById(@PathVariable Long id) {
-        SpotifyAlbum album = albumRepository.findById(id)
-                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Album not found with id: " + id));
-        return SpotifyAlbumResponseDto.from(album);
+        return albumService.findById(id);
+    }
+
+    @GetMapping(value = "/{id}/tracks", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<SpotifyAlbumTrackResponseDto> getAlbumTracks(@PathVariable Long id) {
+        return albumService.findAlbumTracks(id);
     }
 }

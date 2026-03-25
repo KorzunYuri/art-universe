@@ -1,1 +1,1 @@
-export type DataSource = 'lastfm';
+export type DataSource = 'lastfm' | 'spotify';

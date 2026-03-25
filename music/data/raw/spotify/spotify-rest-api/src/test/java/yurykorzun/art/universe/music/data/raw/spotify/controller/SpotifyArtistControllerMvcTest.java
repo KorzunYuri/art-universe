@@ -14,6 +14,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import yurykorzun.art.universe.common.test.archetypes.BaseMvcTest;
 import yurykorzun.art.universe.music.data.raw.spotify.domain.dto.SpotifyArtistResponseDto;
 import yurykorzun.art.universe.music.data.raw.spotify.domain.service.SpotifyArtistService;
+import yurykorzun.art.universe.music.data.raw.spotify.domain.service.lookup.SpotifyArtistLookupService;
 
 import java.util.List;
 
@@ -30,6 +31,9 @@ class SpotifyArtistControllerMvcTest extends BaseMvcTest {
 
     @MockitoBean
     private SpotifyArtistService artistService;
+
+    @MockitoBean
+    private SpotifyArtistLookupService artistLookupService;
 
     private SpotifyArtistResponseDto artistDto;
 

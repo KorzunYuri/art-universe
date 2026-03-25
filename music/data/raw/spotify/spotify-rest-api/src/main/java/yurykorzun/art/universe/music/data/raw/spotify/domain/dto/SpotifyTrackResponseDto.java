@@ -17,11 +17,16 @@ public record SpotifyTrackResponseDto(
         @Nullable String isrc,
         @Nullable Long primaryArtistId,
         @Nullable String primaryArtistSpotifyId,
+        @Nullable String primaryArtistName,
         @Nullable Long albumId,
         @Nullable String albumSpotifyId,
         Integer approvalStatus
 ) {
     public static SpotifyTrackResponseDto from(SpotifyTrack track) {
+        return from(track, null);
+    }
+
+    public static SpotifyTrackResponseDto from(SpotifyTrack track, @Nullable String primaryArtistName) {
         return new SpotifyTrackResponseDto(
                 track.getId(),
                 track.getSpotifyId(),
@@ -36,6 +41,7 @@ public record SpotifyTrackResponseDto(
                 track.getIsrc(),
                 track.getPrimaryArtistId(),
                 track.getPrimaryArtistSpotifyId(),
+                primaryArtistName,
                 track.getAlbumId(),
                 track.getAlbumSpotifyId(),
                 track.getApprovalStatus().getCode()

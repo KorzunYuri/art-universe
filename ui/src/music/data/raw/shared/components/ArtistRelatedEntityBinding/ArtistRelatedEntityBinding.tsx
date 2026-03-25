@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import { useLastfmEntity } from "@/music/data/raw/lastfm/hooks/useLastfmEntity.tsx";
+import { useRawEntity } from "@/music/shared/hooks/useRawEntity.tsx";
+import { getRawEntityFetcher } from "@/music/data/raw/shared/registry/rawEntityFetchRegistry.ts";
 import { EntityLookup } from "@/shared/components";
 import { EntityBinding, type EntityBindingProps } from "@/music/data/raw/shared/components/EntityBinding/EntityBinding.tsx";
 import type { LookupEntity } from "@/shared/types/lookup.ts";
 import type { MasterEntityType } from "@/music/shared/types/entities.ts";
-import type { LastfmSupportedEntityType } from "@/music/data/raw/lastfm/types/lastfm-entity.ts";
+import type { MusicMasterEntityType } from "@/music/data/master/api/music-data-commons.ts";
+import type { ArtistRelatedRawEntity } from "@/music/shared/types/entities.ts";
 import type { ArtistRelatedLookupContext } from "@/music/data/raw/shared/types/lookup-context.ts";
 import { LookupContextFactory } from "@/shared/types/lookup-context.ts";
 import { useMasterEntity } from "@/music/data/master/hooks/useMasterEntity.ts";
@@ -28,7 +30,7 @@ interface ArtistRelatedEntityBindingProps<K extends MasterEntityType & ArtistRel
  * Wraps EntityBinding with an artist picker for album/track entities.
  * The artist picker controls which master artist is used for lookup filtering and binding.
  */
-export const ArtistRelatedEntityBinding = <T extends LastfmSupportedEntityType & ArtistRelatedEntityType>({
+export const ArtistRelatedEntityBinding = <T extends MusicMasterEntityType & ArtistRelatedEntityType>({
     dataSource,
     entityType,
     entityId,
@@ -40,10 +42,17 @@ export const ArtistRelatedEntityBinding = <T extends LastfmSupportedEntityType &
     ...entityBindingProps
 }: ArtistRelatedEntityBindingProps<T>) => {
 
+    const fetchFn = useCallback(
+        () => getRawEntityFetcher(dataSource)(entityType, entityId),
+        [dataSource, entityType, entityId]
+    );
+
     const {
-        entity,
+        entity: rawEntity,
         isLoading: isEntityLoading,
-    } = useLastfmEntity<T>(entityType, entityId);
+    } = useRawEntity(dataSource, entityType as MusicMasterEntityType, entityId, fetchFn);
+
+    const entity = rawEntity as ArtistRelatedRawEntity<T> | undefined;
 
     // Artist picker state
     const [artistSearchString, setArtistSearchString] = useState('');
@@ -73,7 +82,7 @@ export const ArtistRelatedEntityBinding = <T extends LastfmSupportedEntityType &
             onMasterArtistChange?.(masterArtist.id);
         } else if (boundMasterArtistId === 0) {
             // Entity not bound — use external artist name as search string for auto-select
-            setArtistSearchString(entity.artist?.name ?? '');
+            setArtistSearchString((entity as any).artist?.name ?? '');
         }
     }, [entity, masterArtist, boundMasterArtistId, onMasterArtistChange]);
 

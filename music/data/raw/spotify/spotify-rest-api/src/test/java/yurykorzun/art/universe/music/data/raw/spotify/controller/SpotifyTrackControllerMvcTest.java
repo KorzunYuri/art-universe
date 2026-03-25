@@ -1,5 +1,6 @@
 package yurykorzun.art.universe.music.data.raw.spotify.controller;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -9,15 +10,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import yurykorzun.art.universe.common.test.archetypes.BaseMvcTest;
-import yurykorzun.art.universe.data.raw.common.domain.entity.ApprovalStatus;
-import yurykorzun.art.universe.music.data.raw.spotify.domain.entity.SpotifyTrack;
-import yurykorzun.art.universe.music.data.raw.spotify.domain.repository.SpotifyTrackRepository;
+import yurykorzun.art.universe.music.data.raw.spotify.domain.dto.SpotifyTrackResponseDto;
+import yurykorzun.art.universe.music.data.raw.spotify.domain.service.SpotifyTrackService;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -26,23 +24,30 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class SpotifyTrackControllerMvcTest extends BaseMvcTest {
 
     @MockitoBean
-    private SpotifyTrackRepository trackRepository;
+    private SpotifyTrackService trackService;
 
-    private SpotifyTrack trackMock;
+    private SpotifyTrackResponseDto trackDto;
 
     @BeforeEach
     void setUp() {
-        trackMock = mock(SpotifyTrack.class);
-        when(trackMock.getId()).thenReturn(1L);
-        when(trackMock.getSpotifyId()).thenReturn("4cluDES4hQEUhmXj6TXkSo");
-        when(trackMock.getName()).thenReturn("God's Plan");
-        when(trackMock.getApprovalStatus()).thenReturn(ApprovalStatus.PENDING);
+        trackDto = new SpotifyTrackResponseDto(
+                1L,
+                "4cluDES4hQEUhmXj6TXkSo",
+                "God's Plan",
+                211000, 1, 1,
+                false, true,
+                "https://open.spotify.com/track/4cluDES4hQEUhmXj6TXkSo",
+                null, null,
+                10L, "artist-spotify-id", "Drake",
+                20L, "album-spotify-id",
+                0
+        );
     }
 
     @Test
     void GET_tracks_shouldReturnPageOfTracks() throws Exception {
-        Page<SpotifyTrack> page = new PageImpl<>(List.of(trackMock), PageRequest.of(0, 20), 1);
-        when(trackRepository.findTracks(isNull(), any())).thenReturn(page);
+        Page<SpotifyTrackResponseDto> page = new PageImpl<>(List.of(trackDto), PageRequest.of(0, 20), 1);
+        when(trackService.findAll(isNull(), any())).thenReturn(page);
 
         mockMvc.perform(get("/api/v1/spotify/tracks")
                 .accept(MediaType.APPLICATION_JSON))
@@ -50,13 +55,14 @@ class SpotifyTrackControllerMvcTest extends BaseMvcTest {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.content[0].id").value(1))
             .andExpect(jsonPath("$.content[0].name").value("God's Plan"))
-            .andExpect(jsonPath("$.content[0].spotifyId").value("4cluDES4hQEUhmXj6TXkSo"));
+            .andExpect(jsonPath("$.content[0].spotifyId").value("4cluDES4hQEUhmXj6TXkSo"))
+            .andExpect(jsonPath("$.content[0].primaryArtistName").value("Drake"));
     }
 
     @Test
-    void GET_tracks_withSearch_shouldPassSearchParamToRepository() throws Exception {
-        Page<SpotifyTrack> page = new PageImpl<>(List.of(trackMock), PageRequest.of(0, 20), 1);
-        when(trackRepository.findTracks(eq("God"), any())).thenReturn(page);
+    void GET_tracks_withSearch_shouldPassSearchParamToService() throws Exception {
+        Page<SpotifyTrackResponseDto> page = new PageImpl<>(List.of(trackDto), PageRequest.of(0, 20), 1);
+        when(trackService.findAll(eq("God"), any())).thenReturn(page);
 
         mockMvc.perform(get("/api/v1/spotify/tracks")
                 .param("search", "God")
@@ -67,7 +73,7 @@ class SpotifyTrackControllerMvcTest extends BaseMvcTest {
 
     @Test
     void GET_trackById_shouldReturnTrack_whenFound() throws Exception {
-        when(trackRepository.findById(1L)).thenReturn(Optional.of(trackMock));
+        when(trackService.findById(1L)).thenReturn(trackDto);
 
         mockMvc.perform(get("/api/v1/spotify/tracks/1")
                 .accept(MediaType.APPLICATION_JSON))
@@ -75,12 +81,14 @@ class SpotifyTrackControllerMvcTest extends BaseMvcTest {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.id").value(1))
             .andExpect(jsonPath("$.name").value("God's Plan"))
-            .andExpect(jsonPath("$.spotifyId").value("4cluDES4hQEUhmXj6TXkSo"));
+            .andExpect(jsonPath("$.spotifyId").value("4cluDES4hQEUhmXj6TXkSo"))
+            .andExpect(jsonPath("$.primaryArtistName").value("Drake"));
     }
 
     @Test
     void GET_trackById_shouldReturn404_whenNotFound() throws Exception {
-        when(trackRepository.findById(999L)).thenReturn(Optional.empty());
+        when(trackService.findById(999L))
+            .thenThrow(new EntityNotFoundException("Track not found with id: 999"));
 
         mockMvc.perform(get("/api/v1/spotify/tracks/999")
                 .accept(MediaType.APPLICATION_JSON))

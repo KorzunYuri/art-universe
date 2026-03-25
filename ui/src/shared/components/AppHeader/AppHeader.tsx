@@ -32,13 +32,27 @@ const NAV_ITEMS = [
             { label: 'Admin',   to: '/music/data/raw/lastfm/admin' },
         ],
     },
-
+    {
+        label: 'Spotify',
+        to: '/music/data/raw/spotify',
+        children: [
+            { label: 'Artists', to: '/music/data/raw/spotify/artists' },
+            { label: 'Albums',  to: '/music/data/raw/spotify/albums' },
+            { label: 'Tracks',  to: '/music/data/raw/spotify/tracks' },
+            { label: 'Genres',  to: '/music/data/raw/spotify/genres' },
+        ],
+    },
     {
         label: 'Quiz',
         to: '/music/quiz',
         children: [
             { label: 'Games', to: '/music/quiz' },
         ],
+    },
+    {
+        label: 'Config',
+        to: '/common/config',
+        children: [],
     },
 ] as const;
 

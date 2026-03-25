@@ -15,9 +15,14 @@ public record SpotifyAlbumResponseDto(
         @Nullable String uri,
         @Nullable Long primaryArtistId,
         @Nullable String primaryArtistSpotifyId,
+        @Nullable String primaryArtistName,
         Integer approvalStatus
 ) {
     public static SpotifyAlbumResponseDto from(SpotifyAlbum album) {
+        return from(album, null);
+    }
+
+    public static SpotifyAlbumResponseDto from(SpotifyAlbum album, @Nullable String primaryArtistName) {
         return new SpotifyAlbumResponseDto(
                 album.getId(),
                 album.getSpotifyId(),
@@ -30,6 +35,7 @@ public record SpotifyAlbumResponseDto(
                 album.getUri(),
                 album.getPrimaryArtistId(),
                 album.getPrimaryArtistSpotifyId(),
+                primaryArtistName,
                 album.getApprovalStatus().getCode()
         );
     }

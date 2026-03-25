@@ -6,17 +6,16 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.music.data.raw.spotify.domain.dto.SpotifyTrackResponseDto;
-import yurykorzun.art.universe.music.data.raw.spotify.domain.entity.SpotifyTrack;
-import yurykorzun.art.universe.music.data.raw.spotify.domain.repository.SpotifyTrackRepository;
+import yurykorzun.art.universe.music.data.raw.spotify.domain.service.SpotifyTrackService;
 
 @RestController
 @RequestMapping("/api/v1/spotify/tracks")
 public class SpotifyTrackController {
 
-    private final SpotifyTrackRepository trackRepository;
+    private final SpotifyTrackService trackService;
 
-    public SpotifyTrackController(SpotifyTrackRepository trackRepository) {
-        this.trackRepository = trackRepository;
+    public SpotifyTrackController(SpotifyTrackService trackService) {
+        this.trackService = trackService;
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -24,13 +23,11 @@ public class SpotifyTrackController {
             @RequestParam(required = false) String search,
             @PageableDefault(size = 20, sort = "name") Pageable pageable
     ) {
-        return trackRepository.findTracks(search, pageable).map(SpotifyTrackResponseDto::from);
+        return trackService.findAll(search, pageable);
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public SpotifyTrackResponseDto getTrackById(@PathVariable Long id) {
-        SpotifyTrack track = trackRepository.findById(id)
-                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Track not found with id: " + id));
-        return SpotifyTrackResponseDto.from(track);
+        return trackService.findById(id);
     }
 }

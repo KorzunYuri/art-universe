@@ -1,0 +1,15 @@
+.name {
+    flex: 10;
+    text-align: left;
+}
+
+.spotifyId {
+    flex: 5;
+    text-align: left;
+}
+
+.masterBinding {
+    flex: 8;
+    display: flex;
+    text-align: left;
+}

@@ -1,12 +1,14 @@
 import { LookupRegistry } from "@/shared/services/LookupRegistry.ts";
-import { 
-    lookupLastfmArtists, 
+import {
+    lookupLastfmArtists,
     lookupLastfmTags
 } from "@/music/data/raw/lastfm/api/lastfm-lookup.ts";
 import type {
     LastfmBasicLookupParams,
     LastfmBasicLookupRequest
 } from "@/music/data/raw/lastfm/types/lastfm-lookup-types.ts";
+import { registerRawEntityFetcher } from "@/music/data/raw/shared/registry/rawEntityFetchRegistry.ts";
+import { fetchLastfmEntity } from "@/music/data/raw/lastfm/api/lastfm-common-fetching.ts";
 
 /**
  * Registers lookup configurations for LastFM entities
@@ -14,6 +16,8 @@ import type {
  */
 export function registerLastfmLookups() {
     console.log('🔧 Registering LastFM entity lookups...');
+
+    registerRawEntityFetcher('lastfm', (entityType, id) => fetchLastfmEntity(entityType as any, id));
 
     LookupRegistry.register('lastfm', 'artist', {
         transformParams: (params: LastfmBasicLookupParams): LastfmBasicLookupRequest => ({
