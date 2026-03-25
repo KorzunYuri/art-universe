@@ -3,8 +3,10 @@ package yurykorzun.art.universe.music.data.raw.spotify.domain.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import yurykorzun.art.universe.music.data.raw.spotify.domain.entity.SpotifyTrack;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface SpotifyTrackRepository extends BaseSpotifyTrackRepository {
@@ -16,4 +18,7 @@ public interface SpotifyTrackRepository extends BaseSpotifyTrackRepository {
     @Query("SELECT t FROM track t WHERE " +
            "(:search IS NULL OR LOWER(t.name) LIKE LOWER(CONCAT('%', :search, '%')))")
     Page<SpotifyTrack> findTracks(String search, Pageable pageable);
+
+    @Query("SELECT t FROM track t WHERE t.albumId = :albumId ORDER BY t.trackNumber ASC")
+    List<SpotifyTrack> findByAlbumId(@Param("albumId") Long albumId);
 }
