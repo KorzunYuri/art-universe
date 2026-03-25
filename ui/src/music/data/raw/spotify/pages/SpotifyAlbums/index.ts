@@ -1,0 +1,1 @@
+export { SpotifyAlbums } from './SpotifyAlbums';

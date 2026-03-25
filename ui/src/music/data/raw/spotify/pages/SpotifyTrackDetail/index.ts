@@ -1,0 +1,1 @@
+export { SpotifyTrackDetail } from './SpotifyTrackDetail';
