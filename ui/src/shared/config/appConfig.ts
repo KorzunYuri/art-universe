@@ -10,6 +10,8 @@ interface AppConfig {
     lastfmReadApiPort: string;
     lastfmWriteApiHost: string;
     lastfmWriteApiPort: string;
+    spotifyReadApiHost: string;
+    spotifyReadApiPort: string;
     musicDataHost: string;
     musicDataPort: string;
     musicQuizHost: string;
@@ -30,6 +32,8 @@ export const appConfig: AppConfig = {
     lastfmReadApiPort: runtimeConfig?.LASTFM_READ_API_PORT || import.meta.env.VITE_MURAW_LASTFM_READ_API_EXTERNAL_PORT || '8084',
     lastfmWriteApiHost: runtimeConfig?.LASTFM_WRITE_API_HOST || import.meta.env.VITE_MURAW_LASTFM_WRITE_API_HOST || 'localhost',
     lastfmWriteApiPort: runtimeConfig?.LASTFM_WRITE_API_PORT || import.meta.env.VITE_MURAW_LASTFM_WRITE_API_EXTERNAL_PORT || '8085',
+    spotifyReadApiHost: runtimeConfig?.SPOTIFY_READ_API_HOST || import.meta.env.VITE_MURAW_SPOTIFY_READ_API_HOST || 'localhost',
+    spotifyReadApiPort: runtimeConfig?.SPOTIFY_READ_API_PORT || import.meta.env.VITE_MURAW_SPOTIFY_READ_API_EXTERNAL_PORT || '9094',
     musicDataHost: runtimeConfig?.MUSIC_DATA_HOST || import.meta.env.VITE_MU_DATA_APP_HOST || 'localhost',
     musicDataPort: runtimeConfig?.MUSIC_DATA_PORT || import.meta.env.VITE_MU_DATA_APP_EXTERNAL_PORT || '8082',
     musicQuizHost: runtimeConfig?.MUSIC_QUIZ_HOST || import.meta.env.VITE_MU_QUIZ_APP_HOST || 'localhost',
