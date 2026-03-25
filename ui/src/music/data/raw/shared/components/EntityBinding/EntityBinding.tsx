@@ -1,6 +1,7 @@
 // hooks
 import {useCallback, useEffect, useRef, useState} from "react";
-import {useLastfmEntity} from "@/music/data/raw/lastfm/hooks/useLastfmEntity.tsx";
+import { useRawEntity } from "@/music/shared/hooks/useRawEntity.tsx";
+import { getRawEntityFetcher } from "@/music/data/raw/shared/registry/rawEntityFetchRegistry.ts";
 import { Link } from "react-router-dom";
 // components
 import {EntityLookup} from "@/shared/components";
@@ -17,7 +18,6 @@ import {
     unbindRawEntity,
     type BoundEntityInfo,
 } from "@/music/data/master/api/music-data-common-binding.ts";
-import type {LastfmSupportedEntityType} from "@/music/data/raw/lastfm/types/lastfm-entity.ts";
 import {useQueryClient} from "@tanstack/react-query";
 import {entityLookupKeys} from "@/music/shared/utils/query-keys.ts";
 import { LookupContextFactory } from "@/shared/types/lookup-context.ts";
@@ -52,7 +52,7 @@ enum BindingState {
 /**
  * A component for binding raw ('external') entities to master entities.
  */
-export const EntityBinding = <T extends LastfmSupportedEntityType>(
+export const EntityBinding = <T extends MusicMasterEntityType>(
     {
         dataSource,
         entityType,
@@ -73,11 +73,16 @@ export const EntityBinding = <T extends LastfmSupportedEntityType>(
     const onSelectedEntityChangeRef = useRef(onSelectedEntityChange);
     onSelectedEntityChangeRef.current = onSelectedEntityChange;
 
+    const fetchFn = useCallback(
+        () => getRawEntityFetcher(dataSource)(entityType, entityId),
+        [dataSource, entityType, entityId]
+    );
+
     const {
         entity,
         isLoading,
         isError
-    } = useLastfmEntity<T>(entityType, entityId);
+    } = useRawEntity(dataSource, entityType, entityId, fetchFn);
 
     const [prevEntityId, setPrevEntityId] = useState(entityId);
     const [inputValue, setInputValue] = useState('');
@@ -187,10 +192,8 @@ export const EntityBinding = <T extends LastfmSupportedEntityType>(
             let result: BoundEntityInfo<T> | null = null;
 
             if (selectedEntity) {
-                // @ts-expect-error TS2345: Argument of type A | B is not assignable to type A & B
                 result = await bindRawEntityToExistingMaster(selectedEntity.id, entity, overrideMasterArtistId);
             } else {
-                // @ts-expect-error TS2345: Argument of type A | B is not assignable to type A & B
                 result = await bindRawEntityToNewMaster<T>(inputValue, entity, overrideMasterArtistId);
             }
 
