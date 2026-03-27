@@ -73,6 +73,14 @@ public class StagingIterationServiceImpl implements StagingIterationService {
         repository.save(iteration);
     }
 
+    @Override
+    @Transactional
+    public void sealIfExpired() {
+        repository.findFirstByStatusOrderByOpenedAtAsc(StagingIterationStatus.OPEN)
+            .filter(this::shouldSeal)
+            .ifPresent(this::seal);
+    }
+
     private StagingIteration createNewIteration() {
         StagingIteration iteration = StagingIteration.builder().build();
         iteration = repository.save(iteration);
