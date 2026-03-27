@@ -1,84 +1,84 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: lastfm-rest-api
-  namespace: mu-lastfm
+  name: spotify-calls-generator
+  namespace: mu-spotify
   labels:
-    app: lastfm-rest-api
-    app.kubernetes.io/name: lastfm-rest-api
+    app: spotify-calls-generator
+    app.kubernetes.io/name: spotify-calls-generator
 spec:
   replicas: 1
+  # Not scalable - use Recreate strategy
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
-      app: lastfm-rest-api
+      app: spotify-calls-generator
   template:
     metadata:
       labels:
-        app: lastfm-rest-api
-        app.kubernetes.io/name: lastfm-rest-api
+        app: spotify-calls-generator
+        app.kubernetes.io/name: spotify-calls-generator
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/path: "/actuator/prometheus"
         prometheus.io/port: "8080"
     spec:
       initContainers:
-        - name: wait-for-migrations
+        - name: wait-for-database
           image: busybox:1.36
           command:
             - sh
             - -c
             - |
-              echo "Waiting for liquibase migration job to complete..."
-              # Check if database has tables (migrations completed)
+              echo "Waiting for database..."
               until nc -z postgres-master.mu-data.svc.cluster.local 5432; do
-                echo "Waiting for database..."
                 sleep 2
               done
-              echo "Database ready, proceeding..."
-              # Give a bit more time for migrations
+              echo "Database ready!"
               sleep 10
       containers:
         - name: app
-          image: mu-lastfm-rest-api:latest
+          image: mu-spotify-calls-generator:latest
           imagePullPolicy: Never
           ports:
             - containerPort: 8080
-              name: http
+              name: actuator
           env:
             - name: JAVA_OPTS
               value: "-Xms256m -Xmx768m -XX:MaxMetaspaceSize=192m"
-            - name: MURAW_LASTFM_REST_API_CORS_ALLOWED_ORIGINS
-              value: "http://localhost:4000,http://localhost,http://localhost:80"
-            - name: MURAW_LASTFM_DB_READER_PASSWORD
+            - name: MURAW_SPOTIFY_CALLS_GENERATOR_DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: lastfm-db-credentials
-                  key: MURAW_LASTFM_DB_READER_PASSWORD
-            # Auth configuration (for JWT validation)
-            - name: AUTH_JWT_ISSUER
-              value: "art-universe"
-            - name: AUTH_JWT_SECRET
+                  name: spotify-db-credentials
+                  key: MURAW_SPOTIFY_CALLS_GENERATOR_DB_PASSWORD
+            - name: SPOTIFY_CLIENT_ID
               valueFrom:
                 secretKeyRef:
-                  name: au-auth-credentials
-                  key: AUTH_JWT_SECRET
+                  name: spotify-api-credentials
+                  key: SPOTIFY_CLIENT_ID
+            - name: SPOTIFY_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: spotify-api-credentials
+                  key: SPOTIFY_CLIENT_SECRET
           envFrom:
             - configMapRef:
-                name: lastfm-common-config
+                name: spotify-common-config
           resources:
             requests:
               memory: "256Mi"
-              cpu: "100m"
+              cpu: "50m"
             limits:
               memory: "1Gi"
-              cpu: "300m"
+              cpu: "200m"
           startupProbe:
             httpGet:
               path: /actuator/health
               port: 8080
             initialDelaySeconds: 30
             periodSeconds: 10
-            failureThreshold: 30  # 5 minutes max startup
+            failureThreshold: 30
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness

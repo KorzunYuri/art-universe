@@ -1,0 +1,17 @@
+# Art Universe - Core Namespace Resources
+# Infrastructure services: config-service, auth-service
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: au-core
+
+resources:
+  - au-config-service/deployment.yaml
+  - au-config-service/service.yaml
+  - au-auth-service/deployment.yaml
+  - au-auth-service/service.yaml
+
+commonLabels:
+  app.kubernetes.io/part-of: art-universe
+  app.kubernetes.io/component: core-services

@@ -1,0 +1,54 @@
+# Common configuration for all Spotify services
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spotify-common-config
+  namespace: mu-spotify
+  labels:
+    app.kubernetes.io/component: spotify-config
+data:
+  # Database configuration
+  AU_DB_MASTER_HOST: "postgres-master.mu-data.svc.cluster.local"
+  AU_DB_MASTER_PORT: "5432"
+  AU_DB_REPLICA_HOST: "postgres-replica.mu-data.svc.cluster.local"
+  AU_DB_REPLICA_PORT: "5432"
+  AU_DB_NAME: "art_universe"
+  MURAW_SPOTIFY_DB_SCHEMA: "mu_raw_spotify"
+  MURAW_SPOTIFY_DB_WRITER_USERNAME: "mu_raw_spotify_dm"
+  MURAW_SPOTIFY_DB_READER_USERNAME: "mu_raw_spotify_reader"
+
+  # Per-service ETL usernames (least privilege)
+  MURAW_SPOTIFY_CALLS_GENERATOR_DB_USERNAME: "mu_raw_spotify_gen"
+  MURAW_SPOTIFY_CALLS_PERFORMER_DB_USERNAME: "mu_raw_spotify_perf"
+  MURAW_SPOTIFY_RESPONSE_PARSER_DB_USERNAME: "mu_raw_spotify_parser"
+  MURAW_SPOTIFY_STAGING_APPLICATOR_DB_USERNAME: "mu_raw_spotify_appl"
+
+  # Spring profile
+  SPRING_PROFILES_ACTIVE: "local"
+
+  # Cross-namespace service dependencies
+  MU_DATA_APP_HOST: "music-data.mu-apps.svc.cluster.local"
+  MU_DATA_APP_PORT: "8080"
+  AU_CONFIG_SERVICE_URL: "http://au-config-service.au-core.svc.cluster.local:8080"
+
+  # Auth configuration (for JWT validation)
+  AUTH_JWT_ISSUER: "art-universe"
+
+  # Zipkin tracing
+  ZIPKIN_BASE_URL: "http://zipkin.art-universe-monitoring.svc.cluster.local:9411"
+
+  # ETL Services internal ports (actuator endpoints)
+  MURAW_SPOTIFY_CALLS_GENERATOR_ACTUATOR_INTERNAL_PORT: "8080"
+  MURAW_SPOTIFY_CALLS_PERFORMER_ACTUATOR_INTERNAL_PORT: "8080"
+  MURAW_SPOTIFY_RESPONSE_PARSER_ACTUATOR_INTERNAL_PORT: "8080"
+  MURAW_SPOTIFY_STAGING_APPLICATOR_ACTUATOR_INTERNAL_PORT: "8080"
+
+  # Search pipeline
+  SPOTIFY_SEARCH_ENABLED: "true"
+
+  # Spotify API rate limiting
+  SPOTIFY_RATE_LIMITER_INITIAL_DELAY_MS: "2000"
+  SPOTIFY_RATE_LIMITER_MIN_DELAY_MS: "1000"
+  SPOTIFY_RATE_LIMITER_MAX_DELAY_MS: "30000"
+  SPOTIFY_RATE_LIMITER_BACKOFF_MULTIPLIER: "2.0"
+  SPOTIFY_RATE_LIMITER_RECOVERY_STEP_MS: "100"

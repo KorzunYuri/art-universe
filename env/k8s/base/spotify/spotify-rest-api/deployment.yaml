@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: lastfm-rest-api
-  namespace: mu-lastfm
+  name: spotify-rest-api
+  namespace: mu-spotify
   labels:
-    app: lastfm-rest-api
-    app.kubernetes.io/name: lastfm-rest-api
+    app: spotify-rest-api
+    app.kubernetes.io/name: spotify-rest-api
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: lastfm-rest-api
+      app: spotify-rest-api
   template:
     metadata:
       labels:
-        app: lastfm-rest-api
-        app.kubernetes.io/name: lastfm-rest-api
+        app: spotify-rest-api
+        app.kubernetes.io/name: spotify-rest-api
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/path: "/actuator/prometheus"
@@ -28,18 +28,16 @@ spec:
             - sh
             - -c
             - |
-              echo "Waiting for liquibase migration job to complete..."
-              # Check if database has tables (migrations completed)
-              until nc -z postgres-master.mu-data.svc.cluster.local 5432; do
-                echo "Waiting for database..."
+              echo "Waiting for database..."
+              until nc -z postgres-replica.mu-data.svc.cluster.local 5432; do
+                echo "Waiting for replica database..."
                 sleep 2
               done
               echo "Database ready, proceeding..."
-              # Give a bit more time for migrations
               sleep 10
       containers:
         - name: app
-          image: mu-lastfm-rest-api:latest
+          image: mu-spotify-rest-api:latest
           imagePullPolicy: Never
           ports:
             - containerPort: 8080
@@ -47,16 +45,13 @@ spec:
           env:
             - name: JAVA_OPTS
               value: "-Xms256m -Xmx768m -XX:MaxMetaspaceSize=192m"
-            - name: MURAW_LASTFM_REST_API_CORS_ALLOWED_ORIGINS
+            - name: MURAW_SPOTIFY_REST_API_CORS_ALLOWED_ORIGINS
               value: "http://localhost:4000,http://localhost,http://localhost:80"
-            - name: MURAW_LASTFM_DB_READER_PASSWORD
+            - name: MURAW_SPOTIFY_DB_READER_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: lastfm-db-credentials
-                  key: MURAW_LASTFM_DB_READER_PASSWORD
-            # Auth configuration (for JWT validation)
-            - name: AUTH_JWT_ISSUER
-              value: "art-universe"
+                  name: spotify-db-credentials
+                  key: MURAW_SPOTIFY_DB_READER_PASSWORD
             - name: AUTH_JWT_SECRET
               valueFrom:
                 secretKeyRef:
@@ -64,7 +59,7 @@ spec:
                   key: AUTH_JWT_SECRET
           envFrom:
             - configMapRef:
-                name: lastfm-common-config
+                name: spotify-common-config
           resources:
             requests:
               memory: "256Mi"

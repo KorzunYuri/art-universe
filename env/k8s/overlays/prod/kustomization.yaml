@@ -8,11 +8,13 @@ kind: Kustomization
 resources:
   # Base resources (selectively — skip data/ which has PostgreSQL StatefulSets)
   # Note: namespaces.yaml is applied by deploy-prod scripts before this overlay
+  - ../../base/core
   - ../../base/lastfm
+  - ../../base/spotify
   - ../../base/apps
   - ../../base/frontend
   - ../../base/monitoring
-  # Database migration job (runs against external DB, no StatefulSets)
+  # Database migration jobs (run against external DB, no StatefulSets)
   - ../../base/data/migrations
   # External database connectivity (ExternalName services)
   - external-databases.yaml
@@ -100,6 +102,87 @@ patches:
               - name: app
                 env:
                   - name: MURAW_LASTFM_ETL_REST_API_CORS_ALLOWED_ORIGINS
+                    value: "http://localhost:3000"
+
+  # --- Spotify common config: spring profile + replica port ---
+  - patch: |
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: spotify-common-config
+        namespace: mu-spotify
+      data:
+        SPRING_PROFILES_ACTIVE: "prod"
+        AU_DB_REPLICA_PORT: "5433"
+
+  # --- spotify-rest-api: CORS ---
+  - patch: |
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: spotify-rest-api
+        namespace: mu-spotify
+      spec:
+        template:
+          spec:
+            containers:
+              - name: app
+                env:
+                  - name: MURAW_SPOTIFY_REST_API_CORS_ALLOWED_ORIGINS
+                    value: "http://localhost:3000"
+
+  # --- au-config-service: spring profile + CORS ---
+  - patch: |
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: au-config-service
+        namespace: au-core
+      spec:
+        template:
+          spec:
+            containers:
+              - name: app
+                env:
+                  - name: SPRING_PROFILES_ACTIVE
+                    value: "prod"
+                  - name: AU_CONFIG_CORS_ALLOWED_ORIGINS
+                    value: "http://localhost:3000"
+
+  # --- au-auth-service: spring profile + CORS ---
+  - patch: |
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: au-auth-service
+        namespace: au-core
+      spec:
+        template:
+          spec:
+            containers:
+              - name: app
+                env:
+                  - name: SPRING_PROFILES_ACTIVE
+                    value: "prod"
+                  - name: AU_AUTH_CORS_ALLOWED_ORIGINS
+                    value: "http://localhost:3000"
+
+  # --- art-data: spring profile + CORS ---
+  - patch: |
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: art-data
+        namespace: mu-apps
+      spec:
+        template:
+          spec:
+            containers:
+              - name: app
+                env:
+                  - name: SPRING_PROFILES_ACTIVE
+                    value: "prod"
+                  - name: ART_DATA_APP_CORS_ALLOWED_ORIGINS
                     value: "http://localhost:3000"
 
 commonLabels:

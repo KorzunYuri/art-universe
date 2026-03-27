@@ -35,6 +35,14 @@ patches:
                     value: "9082"
                   - name: MU_QUIZ_APP_EXTERNAL_PORT
                     value: "9083"
+                  - name: MURAW_SPOTIFY_REST_API_EXTERNAL_PORT
+                    value: "9094"
+                  - name: AU_CONFIG_APP_EXTERNAL_PORT
+                    value: "9070"
+                  - name: AU_AUTH_APP_EXTERNAL_PORT
+                    value: "9071"
+                  - name: ART_DATA_APP_EXTERNAL_PORT
+                    value: "9081"
   # Swap Grafana's emptyDir volume for the shared PVC
   - target:
       group: apps

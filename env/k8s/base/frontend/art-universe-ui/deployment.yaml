@@ -41,6 +41,22 @@ spec:
               value: "localhost"
             - name: MU_QUIZ_APP_EXTERNAL_PORT
               value: "8083"
+            - name: MURAW_SPOTIFY_REST_API_HOST
+              value: "localhost"
+            - name: MURAW_SPOTIFY_REST_API_EXTERNAL_PORT
+              value: "8094"
+            - name: AU_CONFIG_APP_HOST
+              value: "localhost"
+            - name: AU_CONFIG_APP_EXTERNAL_PORT
+              value: "8070"
+            - name: AU_AUTH_APP_HOST
+              value: "localhost"
+            - name: AU_AUTH_APP_EXTERNAL_PORT
+              value: "8071"
+            - name: ART_DATA_APP_HOST
+              value: "localhost"
+            - name: ART_DATA_APP_EXTERNAL_PORT
+              value: "8081"
           resources:
             requests:
               memory: "32Mi"

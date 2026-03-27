@@ -64,3 +64,67 @@ spec:
     - port: 8080
       targetPort: 8080
       name: http
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spotify-rest-api
+  namespace: mu-frontend
+  labels:
+    app.kubernetes.io/name: spotify-rest-api-external
+spec:
+  type: ExternalName
+  externalName: spotify-rest-api.mu-spotify.svc.cluster.local
+  ports:
+    - port: 8080
+      targetPort: 8080
+      name: http
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: au-config-service
+  namespace: mu-frontend
+  labels:
+    app.kubernetes.io/name: au-config-service-external
+spec:
+  type: ExternalName
+  externalName: au-config-service.au-core.svc.cluster.local
+  ports:
+    - port: 8080
+      targetPort: 8080
+      name: http
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: au-auth-service
+  namespace: mu-frontend
+  labels:
+    app.kubernetes.io/name: au-auth-service-external
+spec:
+  type: ExternalName
+  externalName: au-auth-service.au-core.svc.cluster.local
+  ports:
+    - port: 8080
+      targetPort: 8080
+      name: http
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: art-data
+  namespace: mu-frontend
+  labels:
+    app.kubernetes.io/name: art-data-external
+spec:
+  type: ExternalName
+  externalName: art-data.mu-apps.svc.cluster.local
+  ports:
+    - port: 8080
+      targetPort: 8080
+      name: http

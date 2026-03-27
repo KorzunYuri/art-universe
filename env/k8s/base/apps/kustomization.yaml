@@ -11,6 +11,8 @@ resources:
   - music-data/service.yaml
   - music-quiz/deployment.yaml
   - music-quiz/service.yaml
+  - art-data/deployment.yaml
+  - art-data/service.yaml
 
 commonLabels:
   app.kubernetes.io/part-of: art-universe
