@@ -28,4 +28,4 @@ $GRADLEW dockerBuildAll -x test
 
 echo -e "\n\033[32mAll images built successfully!\033[0m"
 echo -e "\n\033[36mLocal images:\033[0m"
-docker images | grep "^mu-"
+docker images | grep -E "^(mu-|au-|art-)"
