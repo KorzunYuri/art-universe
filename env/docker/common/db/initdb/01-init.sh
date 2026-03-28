@@ -34,6 +34,7 @@ set -e
 : "${AU_CONFIG_DB_PASSWORD_DM:=test_password}"
 : "${AU_AUTH_DB_PASSWORD_DM:=test_password}"
 : "${MCP_USER_DB_PASSWORD:=test_password}"
+: "${MU_SA_DB_PASSWORD_DM:=test_password}"
 
 CHANGESETS_DIR="$(dirname "${BASH_SOURCE[0]:-$0}")/changesets"
 
@@ -56,6 +57,7 @@ substitute_env_vars() {
         -e "s|\${AU_CONFIG_DB_PASSWORD_DM}|${AU_CONFIG_DB_PASSWORD_DM}|g" \
         -e "s|\${AU_AUTH_DB_PASSWORD_DM}|${AU_AUTH_DB_PASSWORD_DM}|g" \
         -e "s|\${MCP_USER_DB_PASSWORD}|${MCP_USER_DB_PASSWORD}|g" \
+        -e "s|\${MU_SA_DB_PASSWORD_DM}|${MU_SA_DB_PASSWORD_DM}|g" \
         "$1"
 }
 
