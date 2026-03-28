@@ -28,6 +28,5 @@
     <include file="changelogs/0021-origin-approval-status.xml" relativeToChangelogFile="true"/>
     <include file="changelogs/0022-binding-views.xml" relativeToChangelogFile="true"/>
     <include file="changelogs/0023-master-attributes.xml" relativeToChangelogFile="true"/>
-    <include file="changelogs/0024-proposals-schema.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
