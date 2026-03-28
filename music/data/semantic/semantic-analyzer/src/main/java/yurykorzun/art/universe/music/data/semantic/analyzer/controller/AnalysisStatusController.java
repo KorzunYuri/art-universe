@@ -1,9 +1,8 @@
 package yurykorzun.art.universe.music.data.semantic.analyzer.controller;
 
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import yurykorzun.art.universe.music.data.semantic.analyzer.reprocessing.ReprocessingService;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,9 +12,11 @@ import java.util.Map;
 public class AnalysisStatusController {
 
     private final JdbcTemplate jdbcTemplate;
+    private final ReprocessingService reprocessingService;
 
-    public AnalysisStatusController(JdbcTemplate jdbcTemplate) {
+    public AnalysisStatusController(JdbcTemplate jdbcTemplate, ReprocessingService reprocessingService) {
         this.jdbcTemplate = jdbcTemplate;
+        this.reprocessingService = reprocessingService;
     }
 
     @GetMapping("/tickets/stats")
@@ -37,5 +38,23 @@ public class AnalysisStatusController {
             }
         );
         return stats;
+    }
+
+    @PostMapping("/reprocess")
+    public Map<String, Object> triggerReprocessing(@RequestBody Map<String, String> request) {
+        String fromVersion = request.get("from_version");
+        String toVersion = request.get("to_version");
+        int batchSize = Integer.parseInt(request.getOrDefault("batch_size", "500"));
+
+        ReprocessingService.ReprocessingResult result = reprocessingService.triggerReprocessing(
+            fromVersion, toVersion, batchSize
+        );
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("tickets_created", result.ticketsCreated());
+        response.put("proposals_superseded", result.proposalsSuperseded());
+        response.put("from_version", fromVersion);
+        response.put("to_version", toVersion);
+        return response;
     }
 }
