@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: semantic-response-parser
+  datasource:
+    url: jdbc:postgresql://${AU_DB_MASTER_HOST}:${AU_DB_MASTER_PORT}/${AU_DB_NAME}?currentSchema=mu_semantic_analysis
+    username: ${MU_SA_DB_USERNAME}
+    password: '${MU_SA_DB_PASSWORD_DM}'
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+
+server:
+  port: ${SEMANTIC_ANALYSIS_RESPONSE_PARSER_PORT:8080}
+
+au:
+  config:
+    client:
+      service-url: "${AU_CONFIG_SERVICE_URL:stub-for-tests}"
