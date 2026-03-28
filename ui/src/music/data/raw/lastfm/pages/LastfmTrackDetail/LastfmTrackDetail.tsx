@@ -127,6 +127,7 @@ export const LastfmTrackDetail = () => {
                     entityId={entity.id}
                     entityApprovalStatus={entity.approvalStatus}
                     tagPageBaseUrl="/music/data/raw/lastfm/tags/"
+                    readOnly={curationReadOnly}
                 />
             </section>
         </div>

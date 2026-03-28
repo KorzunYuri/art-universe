@@ -24,6 +24,7 @@ export interface EntityTagItemProps {
   onApprove?: (tagId: number) => void;
   onUnapprove?: (tagId: number) => void;
   isProcessing?: boolean;
+  readOnly?: boolean;
 }
 
 export const EntityTagItem = ({
@@ -40,7 +41,8 @@ export const EntityTagItem = ({
   tagPageUrl,
   onApprove,
   onUnapprove,
-  isProcessing = false
+  isProcessing = false,
+  readOnly = false
 }: EntityTagItemProps) => {
   // Truncate name to 20 characters
   const displayName = name.length > 20 ? `${name.substring(0, 20)}...` : name;
@@ -98,9 +100,17 @@ export const EntityTagItem = ({
   // Handle click on tag
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    
+
     if (isProcessing) return;
-    
+
+    // In readOnly mode, always navigate to the tag page
+    if (readOnly) {
+      if (tagPageUrl) {
+        window.open(tagPageUrl, '_blank');
+      }
+      return;
+    }
+
     // If tag is not approved or not bound, navigate to tags page with search parameter
     if ((relationStatus === TagRelationStatus.NOT_APPROVED || relationStatus === TagRelationStatus.NOT_BOUND) && tagPageUrl) {
       // Extract base URL (remove the tag ID from the end)
@@ -109,13 +119,13 @@ export const EntityTagItem = ({
       window.open(`${baseUrl}?search=${encodeURIComponent(name)}`, '_blank');
       return;
     }
-    
+
     // If relation is approved, unapprove it
     if (relationStatus === TagRelationStatus.APPROVED) {
       onUnapprove?.(id);
       return;
     }
-    
+
     // If relation is pending, approve it
     if (relationStatus === TagRelationStatus.PENDING) {
       onApprove?.(id);

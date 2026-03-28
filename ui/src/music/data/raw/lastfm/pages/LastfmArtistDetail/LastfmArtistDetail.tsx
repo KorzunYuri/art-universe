@@ -124,6 +124,7 @@ export const LastfmArtistDetail = () => {
                     entityId={entity.id}
                     entityApprovalStatus={entity.approvalStatus}
                     tagPageBaseUrl="/music/data/raw/lastfm/tags/"
+                    readOnly={curationReadOnly}
                 />
             </section>
         </div>
