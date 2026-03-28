@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: master-category-analyzer
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://${AU_DB_MASTER_HOST}:${AU_DB_MASTER_PORT}/${AU_DB_NAME}?currentSchema=${MU_DATA_DB_SCHEMA}
+    username: ${MU_DATA_DB_USERNAME}
+    password: '${MU_DATA_DB_PASSWORD_DM}'
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+
+server:
+  port: ${MASTER_CATEGORY_ANALYZER_PORT:8080}
+
+trigger:
+  ticket-intake:
+    url: ${TICKET_INTAKE_URL}
+

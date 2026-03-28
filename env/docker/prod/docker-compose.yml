@@ -658,6 +658,218 @@ services:
     networks:
       - mu__network
 
+  # Semantic Analysis Pipeline
+  ticket-intake-service:
+    container_name: prod__ticket-intake__app
+    restart: unless-stopped
+    image: mu-ticket-intake-service:latest
+    env_file:
+      - ./common.env
+      - ./semantic.env
+      - ./semantic.secrets.env
+    ports:
+      - "${TICKET_INTAKE_SERVICE_EXTERNAL_PORT}:${TICKET_INTAKE_SERVICE_INTERNAL_PORT}"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:${TICKET_INTAKE_SERVICE_INTERNAL_PORT}/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: '0.1'
+        reservations:
+          memory: 16M
+          cpus: '0.05'
+    networks:
+      - mu__network
+
+  semantic-analyzer:
+    container_name: prod__semantic-analyzer__app
+    restart: unless-stopped
+    image: mu-semantic-analyzer:latest
+    environment:
+      - JAVA_OPTS=-Xms128m -Xmx512m -XX:MaxMetaspaceSize=128m
+    env_file:
+      - ./common.env
+      - ./semantic.env
+      - ./semantic.secrets.env
+    ports:
+      - "${SEMANTIC_ANALYZER_ACTUATOR_EXTERNAL_PORT}:${SEMANTIC_ANALYZER_ACTUATOR_INTERNAL_PORT}"
+    volumes:
+      - prod__semantic-analyzer__app-logs:/app/logs
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      ticket-intake-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${SEMANTIC_ANALYZER_ACTUATOR_INTERNAL_PORT}/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 120s
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+          cpus: '0.3'
+        reservations:
+          memory: 256M
+          cpus: '0.1'
+    networks:
+      - mu__network
+
+  semantic-response-parser:
+    container_name: prod__semantic-response-parser__app
+    restart: unless-stopped
+    image: mu-semantic-response-parser:latest
+    environment:
+      - JAVA_OPTS=-Xms128m -Xmx512m -XX:MaxMetaspaceSize=128m
+    env_file:
+      - ./common.env
+      - ./semantic.env
+      - ./semantic.secrets.env
+    ports:
+      - "${SEMANTIC_RESPONSE_PARSER_ACTUATOR_EXTERNAL_PORT}:${SEMANTIC_RESPONSE_PARSER_ACTUATOR_INTERNAL_PORT}"
+    volumes:
+      - prod__semantic-response-parser__app-logs:/app/logs
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${SEMANTIC_RESPONSE_PARSER_ACTUATOR_INTERNAL_PORT}/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 120s
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+          cpus: '0.3'
+        reservations:
+          memory: 256M
+          cpus: '0.1'
+    networks:
+      - mu__network
+
+  semantic-applicator:
+    container_name: prod__semantic-applicator__app
+    restart: unless-stopped
+    image: mu-semantic-applicator:latest
+    environment:
+      - JAVA_OPTS=-Xms128m -Xmx384m -XX:MaxMetaspaceSize=96m
+    env_file:
+      - ./common.env
+      - ./semantic.env
+      - ./semantic.secrets.env
+    ports:
+      - "${SEMANTIC_APPLICATOR_ACTUATOR_EXTERNAL_PORT}:${SEMANTIC_APPLICATOR_ACTUATOR_INTERNAL_PORT}"
+    volumes:
+      - prod__semantic-applicator__app-logs:/app/logs
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      music-data:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${SEMANTIC_APPLICATOR_ACTUATOR_INTERNAL_PORT}/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 120s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.2'
+        reservations:
+          memory: 256M
+          cpus: '0.05'
+    networks:
+      - mu__network
+
+  lastfm-analysis-trigger:
+    container_name: prod__lastfm-analysis-trigger__app
+    restart: unless-stopped
+    stop_grace_period: 1m
+    image: mu-lastfm-analysis-trigger:latest
+    environment:
+      - JAVA_OPTS=-Xms128m -Xmx384m -XX:MaxMetaspaceSize=96m
+    env_file:
+      - ../common/music-data-raw-lastfm.env
+      - ./common.env
+      - ./music-data-raw-lastfm.env
+      - ./music-data-raw-lastfm.secrets.env
+      - ./semantic.env
+    ports:
+      - "${LASTFM_ANALYSIS_TRIGGER_ACTUATOR_EXTERNAL_PORT}:${LASTFM_ANALYSIS_TRIGGER_ACTUATOR_INTERNAL_PORT}"
+    volumes:
+      - prod__lastfm-analysis-trigger__app-logs:/app/logs
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      ticket-intake-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${LASTFM_ANALYSIS_TRIGGER_ACTUATOR_INTERNAL_PORT}/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 120s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.2'
+        reservations:
+          memory: 256M
+          cpus: '0.05'
+    networks:
+      - mu__network
+
+  master-category-analyzer:
+    container_name: prod__master-category-analyzer__app
+    restart: unless-stopped
+    stop_grace_period: 1m
+    image: mu-master-category-analyzer:latest
+    environment:
+      - JAVA_OPTS=-Xms128m -Xmx384m -XX:MaxMetaspaceSize=96m
+    env_file:
+      - ./common.env
+      - ./music-data.env
+      - ./music-data.secrets.env
+      - ./semantic.env
+    ports:
+      - "${MASTER_CATEGORY_ANALYZER_ACTUATOR_EXTERNAL_PORT}:${MASTER_CATEGORY_ANALYZER_ACTUATOR_INTERNAL_PORT}"
+    volumes:
+      - prod__master-category-analyzer__app-logs:/app/logs
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      ticket-intake-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${MASTER_CATEGORY_ANALYZER_ACTUATOR_INTERNAL_PORT}/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 120s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.2'
+        reservations:
+          memory: 256M
+          cpus: '0.05'
+    networks:
+      - mu__network
+
   # UI
   art-universe-ui:
     container_name: prod__au-ui__app
@@ -816,6 +1028,16 @@ volumes:
     name: prod__mu-data__app-logs
   prod__mu-quiz__app-logs:
     name: prod__mu-quiz__app-logs
+  prod__semantic-analyzer__app-logs:
+    name: prod__semantic-analyzer__app-logs
+  prod__semantic-response-parser__app-logs:
+    name: prod__semantic-response-parser__app-logs
+  prod__semantic-applicator__app-logs:
+    name: prod__semantic-applicator__app-logs
+  prod__lastfm-analysis-trigger__app-logs:
+    name: prod__lastfm-analysis-trigger__app-logs
+  prod__master-category-analyzer__app-logs:
+    name: prod__master-category-analyzer__app-logs
   prod__mu__prometheus-data:
     name: prod__mu__prometheus-data
   prod__mu__grafana-data:
