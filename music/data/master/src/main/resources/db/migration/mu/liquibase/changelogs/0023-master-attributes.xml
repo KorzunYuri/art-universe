@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
+
+    <changeSet id="0023-0010-attribute_def$initial" author="yurykorzun">
+        <sqlFile path="../changesets/0023-master-attributes/0023-0010-attribute_def$initial.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0023-0020-attribute_def_applicability$initial" author="yurykorzun">
+        <sqlFile path="../changesets/0023-master-attributes/0023-0020-attribute_def_applicability$initial.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0023-0030-entity_attribute_value$initial" author="yurykorzun">
+        <sqlFile path="../changesets/0023-master-attributes/0023-0030-entity_attribute_value$initial.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0023-0040-attribute_def$seed" author="yurykorzun">
+        <sqlFile path="../changesets/0023-master-attributes/0023-0040-attribute_def$seed.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0023-0050-attribute_def$seed_derived" author="yurykorzun">
+        <sqlFile path="../changesets/0023-master-attributes/0023-0050-attribute_def$seed_derived.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0023-0060-attribute_def$seed_composite" author="yurykorzun">
+        <sqlFile path="../changesets/0023-master-attributes/0023-0060-attribute_def$seed_composite.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0023-0070-trgm_indexes$create" author="yurykorzun">
+        <sqlFile path="../changesets/0023-master-attributes/0023-0070-trgm_indexes$create.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+</databaseChangeLog>
