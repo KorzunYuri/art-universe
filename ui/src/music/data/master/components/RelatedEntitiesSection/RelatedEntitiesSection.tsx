@@ -21,6 +21,7 @@ interface RelatedEntitiesSectionProps {
     sourceEntityId: number;
     targetEntityType: MasterEntityType;
     defaultOpen?: boolean;
+    readOnly?: boolean;
     onEntityAction?: (entity: RelatedEntityDTO) => void;
     entityActionLabel?: string;
     actionInProgressIds?: Set<number>;
@@ -42,6 +43,7 @@ export const RelatedEntitiesSection = ({
     sourceEntityId,
     targetEntityType,
     defaultOpen = false,
+    readOnly = false,
     onEntityAction,
     entityActionLabel,
     actionInProgressIds,
@@ -161,15 +163,17 @@ export const RelatedEntitiesSection = ({
                                             .map(rt => (
                                                 <span key={rt.relationId} className={styles.relationTypeChip}>
                                                     {rt.relationTypeName}
-                                                    <button
-                                                        type="button"
-                                                        className={styles.chipRemove}
-                                                        onClick={() => handleRemoveRelationType(entity.id, rt.relationId)}
-                                                        disabled={removingIds.has(rt.relationId)}
-                                                        title={`Remove ${rt.relationTypeName}`}
-                                                    >
-                                                        &times;
-                                                    </button>
+                                                    {!readOnly && (
+                                                        <button
+                                                            type="button"
+                                                            className={styles.chipRemove}
+                                                            onClick={() => handleRemoveRelationType(entity.id, rt.relationId)}
+                                                            disabled={removingIds.has(rt.relationId)}
+                                                            title={`Remove ${rt.relationTypeName}`}
+                                                        >
+                                                            &times;
+                                                        </button>
+                                                    )}
                                                 </span>
                                             ))}
                                         {url ? (
@@ -178,7 +182,7 @@ export const RelatedEntitiesSection = ({
                                             <span className={styles.entityName}>{entity.name}</span>
                                         )}
                                     </div>
-                                    {hasReorderButtons && (
+                                    {!readOnly && hasReorderButtons && (
                                         <>
                                             <button
                                                 onClick={() => onEntitySwap!(entity, arr[index - 1])}
@@ -194,7 +198,7 @@ export const RelatedEntitiesSection = ({
                                             >↓</button>
                                         </>
                                     )}
-                                    {onEntityAction && entityActionLabel && (
+                                    {!readOnly && onEntityAction && entityActionLabel && (
                                         <button
                                             onClick={() => onEntityAction(entity)}
                                             disabled={actionInProgressIds?.has(entity.id)}
@@ -204,14 +208,16 @@ export const RelatedEntitiesSection = ({
                                             {actionInProgressIds?.has(entity.id) ? '...' : entityActionLabel}
                                         </button>
                                     )}
-                                    <button
-                                        onClick={() => handleRemoveAllRelations(entity)}
-                                        disabled={isAnyRemoving}
-                                        className={styles.removeButton}
-                                        title="Remove relation"
-                                    >
-                                        {isAnyRemoving ? '...' : '\u00d7'}
-                                    </button>
+                                    {!readOnly && (
+                                        <button
+                                            onClick={() => handleRemoveAllRelations(entity)}
+                                            disabled={isAnyRemoving}
+                                            className={styles.removeButton}
+                                            title="Remove relation"
+                                        >
+                                            {isAnyRemoving ? '...' : '\u00d7'}
+                                        </button>
+                                    )}
                                 </div>
                             );
                         })}
@@ -220,7 +226,7 @@ export const RelatedEntitiesSection = ({
             )}
 
             {/* Add relation form / button */}
-            {!isLoading && !isError && (
+            {!readOnly && !isLoading && !isError && (
                 showAddForm ? (
                     <AddRelationForm
                         sourceEntityType={sourceEntityType}

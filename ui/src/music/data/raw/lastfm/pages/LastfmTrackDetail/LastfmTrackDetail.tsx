@@ -1,7 +1,8 @@
 import { useParams } from 'react-router-dom';
 import { useLastfmEntity } from '@/music/data/raw/lastfm/hooks/useLastfmEntity';
 import { useLastfmEntityApproval } from '@/music/data/raw/lastfm/hooks/useLastfmEntityApproval';
-import { ExternalLink } from '@/shared/components';
+import { ExternalLink, AccessGate } from '@/shared/components';
+import { usePermissions } from '@/shared/hooks/usePermissions';
 import { EntityTagPanel } from '@/music/data/raw/lastfm/components';
 import { ApprovalToggle, ArtistRelatedEntityBinding } from '@/music/data/raw/shared/components';
 import { QuizBinding } from '@/music/quiz/components';
@@ -27,6 +28,9 @@ export const LastfmTrackDetail = () => {
         setApprovalStatus,
         ensureIsValidForBinding,
     } = useLastfmEntityApproval(entity, 'lastfm', updateEntity);
+
+    const permissions = usePermissions();
+    const curationReadOnly = permissions.lastfmCurationAccess !== 'full';
 
     if (isLoading) {
         return <div className={styles.loading}>Loading track...</div>;
@@ -80,6 +84,7 @@ export const LastfmTrackDetail = () => {
                         status={entity.approvalStatus}
                         onChange={setApprovalStatus}
                         disabled={isApproving}
+                        readOnly={curationReadOnly}
                     />
                 </div>
             </section>
@@ -96,20 +101,23 @@ export const LastfmTrackDetail = () => {
                         onAfterBind={invalidateEntity}
                         onAfterUnbind={invalidateEntity}
                         linkToMasterUrl={(masterId) => getMasterEntityUrl('track', masterId)}
+                        readOnly={curationReadOnly}
                     />
                 </div>
             </section>
 
             {/* Quiz Binding */}
-            <section className={styles.section}>
-                <h3 className={styles.sectionTitle}>Quiz</h3>
-                <div className={styles.controlRow}>
-                    <QuizBinding
-                        entityType="track"
-                        masterId={entity.getMasterEntity()?.id ?? null}
-                    />
-                </div>
-            </section>
+            <AccessGate level={permissions.quizAccess}>
+                <section className={styles.section}>
+                    <h3 className={styles.sectionTitle}>Quiz</h3>
+                    <div className={styles.controlRow}>
+                        <QuizBinding
+                            entityType="track"
+                            masterId={entity.getMasterEntity()?.id ?? null}
+                        />
+                    </div>
+                </section>
+            </AccessGate>
 
             {/* Tags */}
             <section className={styles.section}>

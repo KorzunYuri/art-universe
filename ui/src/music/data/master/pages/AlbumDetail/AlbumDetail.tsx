@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNotifications } from '@/shared/hooks';
+import { usePermissions } from '@/shared/hooks/usePermissions';
 import { EditableText, ConfirmDialog } from '@/shared/components';
 import { MasterEntityPanel } from '@/music/data/master/components/MasterEntityPanel';
 import { MasterEntityPicker } from '@/music/data/master/components/MasterEntityPicker';
@@ -26,6 +27,8 @@ export const AlbumDetail = () => {
     const id = Number(albumId);
     const { showNotification } = useNotifications();
     const queryClient = useQueryClient();
+    const permissions = usePermissions();
+    const readOnly = permissions.masterEntityAccess !== 'full';
 
     const {
         album,
@@ -173,29 +176,35 @@ export const AlbumDetail = () => {
         <div className={styles.detail}>
             {/* Header: name + actions */}
             <div className={styles.header}>
-                <EditableText
-                    value={editedName}
-                    onChange={handleNameChange}
-                    placeholder="Album name"
-                    disabled={isSaving}
-                    className={styles.nameInput}
-                />
-                <div className={styles.actions}>
-                    <button
-                        onClick={handleSave}
-                        disabled={!isDirty || isSaving || !editedName.trim()}
-                        className={styles.saveButton}
-                    >
-                        {isSaving ? '...' : 'Save'}
-                    </button>
-                    <button
-                        onClick={() => setShowDeleteConfirm(true)}
-                        disabled={isDeleting}
-                        className={styles.deleteButton}
-                    >
-                        {isDeleting ? '...' : 'Delete'}
-                    </button>
-                </div>
+                {readOnly ? (
+                    <h3 className={styles.nameInput}>{album.name}</h3>
+                ) : (
+                    <EditableText
+                        value={editedName}
+                        onChange={handleNameChange}
+                        placeholder="Album name"
+                        disabled={isSaving}
+                        className={styles.nameInput}
+                    />
+                )}
+                {!readOnly && (
+                    <div className={styles.actions}>
+                        <button
+                            onClick={handleSave}
+                            disabled={!isDirty || isSaving || !editedName.trim()}
+                            className={styles.saveButton}
+                        >
+                            {isSaving ? '...' : 'Save'}
+                        </button>
+                        <button
+                            onClick={() => setShowDeleteConfirm(true)}
+                            disabled={isDeleting}
+                            className={styles.deleteButton}
+                        >
+                            {isDeleting ? '...' : 'Delete'}
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* Primary Artist */}
@@ -215,14 +224,17 @@ export const AlbumDetail = () => {
                     processingEntities={processingCategories}
                     emptyMessage="No categories"
                     removeTitle="Remove category"
+                    readOnly={readOnly}
                 />
-                <div className={styles.addCategory}>
-                    <MasterEntityPicker
-                        entityType="category"
-                        buttonLabel="Add Category"
-                        onEntitySelected={handleCategoryAdded}
-                    />
-                </div>
+                {!readOnly && (
+                    <div className={styles.addCategory}>
+                        <MasterEntityPicker
+                            entityType="category"
+                            buttonLabel="Add Category"
+                            onEntitySelected={handleCategoryAdded}
+                        />
+                    </div>
+                )}
             </section>
 
             {/* Attributes stub */}
@@ -239,13 +251,15 @@ export const AlbumDetail = () => {
                     sourceEntityType="album"
                     sourceEntityId={album.id}
                     targetEntityType="artist"
+                    readOnly={readOnly}
                 />
                 <RelatedEntitiesSection
                     title="Related Albums"
                     sourceEntityType="album"
                     sourceEntityId={album.id}
                     targetEntityType="album"
-                    onEntityAction={handleCopyTracklist}
+                    readOnly={readOnly}
+                    onEntityAction={readOnly ? undefined : handleCopyTracklist}
                     entityActionLabel="Copy tracklist"
                     actionInProgressIds={copyingAlbumIds}
                 />
@@ -254,7 +268,8 @@ export const AlbumDetail = () => {
                     sourceEntityType="album"
                     sourceEntityId={album.id}
                     targetEntityType="track"
-                    onEntitySwap={handleSwapTracks}
+                    readOnly={readOnly}
+                    onEntitySwap={readOnly ? undefined : handleSwapTracks}
                     swappingRelationIds={swappingTrackRelationIds}
                 />
                 <RelatedEntitiesSection
@@ -262,16 +277,19 @@ export const AlbumDetail = () => {
                     sourceEntityType="album"
                     sourceEntityId={album.id}
                     targetEntityType="person"
+                    readOnly={readOnly}
                 />
             </section>
 
-            <ConfirmDialog
-                isOpen={showDeleteConfirm}
-                header="Delete Album"
-                message={`Are you sure you want to delete album "${album.name}"?`}
-                onConfirm={handleDelete}
-                onCancel={() => setShowDeleteConfirm(false)}
-            />
+            {!readOnly && (
+                <ConfirmDialog
+                    isOpen={showDeleteConfirm}
+                    header="Delete Album"
+                    message={`Are you sure you want to delete album "${album.name}"?`}
+                    onConfirm={handleDelete}
+                    onCancel={() => setShowDeleteConfirm(false)}
+                />
+            )}
         </div>
     );
 };

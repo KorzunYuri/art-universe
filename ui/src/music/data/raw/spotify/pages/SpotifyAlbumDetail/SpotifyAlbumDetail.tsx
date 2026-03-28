@@ -4,6 +4,7 @@ import { useSpotifyEntity } from '@/music/data/raw/spotify/hooks/useSpotifyEntit
 import { useSpotifyAlbumTracks } from '@/music/data/raw/spotify/hooks/useSpotifyAlbumTracks';
 import { useApplicableRelationTypes } from '@/music/data/master/hooks/useApplicableRelationTypes';
 import { ExternalLink } from '@/shared/components';
+import { usePermissions } from '@/shared/hooks/usePermissions';
 import { ArtistRelatedEntityBinding } from '@/music/data/raw/shared/components';
 import { SpotifyConfig } from '@/music/data/raw/spotify/config/spotifyconfig';
 import { getMasterEntityUrl } from '@/music/data/master/utils/masterEntityUrl';
@@ -42,6 +43,9 @@ export const SpotifyAlbumDetail = () => {
         isError,
         error,
     } = useSpotifyEntity('album', id);
+
+    const permissions = usePermissions();
+    const curationReadOnly = permissions.spotifyCurationAccess !== 'full';
 
     const { tracks, isLoading: isTracksLoading } = useSpotifyAlbumTracks(id);
 
@@ -214,6 +218,7 @@ export const SpotifyAlbumDetail = () => {
                                     onRelationTypeChange={handleRelationTypeChange}
                                     onMasterArtistChange={handleTrackArtistChange}
                                     onMasterEntityChange={handleTrackEntityChange}
+                                    readOnly={curationReadOnly}
                                 />
                             ))}
                         </tbody>
@@ -233,6 +238,7 @@ export const SpotifyAlbumDetail = () => {
                         onAfterUnbind={invalidateEntity}
                         onMasterArtistChange={setMasterArtistId}
                         linkToMasterUrl={(masterId) => getMasterEntityUrl('album', masterId)}
+                        readOnly={curationReadOnly}
                     />
                 </div>
 
@@ -240,7 +246,7 @@ export const SpotifyAlbumDetail = () => {
                     <div className={styles.bindWithTracksRow}>
                         <button
                             onClick={handleBindWithTracklist}
-                            disabled={!canBindWithTracklist}
+                            disabled={!canBindWithTracklist || curationReadOnly}
                             className={styles.bindWithTracksButton}
                         >
                             {isBindingWithTracks ? 'Binding...' : 'Bind with tracklist'}
@@ -266,6 +272,7 @@ interface TrackRowProps {
     onRelationTypeChange: (trackId: number, relationTypeId: number | undefined) => void;
     onMasterArtistChange: (trackId: number, artistId: number | null) => void;
     onMasterEntityChange: (trackId: number, entityId: number | null) => void;
+    readOnly: boolean;
 }
 
 const TrackRow = ({
@@ -277,6 +284,7 @@ const TrackRow = ({
     onRelationTypeChange,
     onMasterArtistChange,
     onMasterEntityChange,
+    readOnly,
 }: TrackRowProps) => {
     const { invalidateEntity } = useSpotifyEntity('track', track.trackId);
     const linkToMasterUrl = useCallback((masterId: number) => getMasterEntityUrl('track', masterId), []);
@@ -342,6 +350,7 @@ const TrackRow = ({
                     className={styles.trackBinding}
                     onMasterArtistChange={handleArtistChange}
                     onMasterEntityChange={handleEntityChange}
+                    readOnly={readOnly}
                 />
             </td>
         </tr>

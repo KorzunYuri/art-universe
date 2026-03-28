@@ -7,9 +7,10 @@ import type { Category } from '@/music/shared/types/entities';
 interface ParentsCellProps {
     category: Category;
     onChanged: () => void;
+    readOnly?: boolean;
 }
 
-export const ParentsCell = ({ category, onChanged }: ParentsCellProps) => {
+export const ParentsCell = ({ category, onChanged, readOnly = false }: ParentsCellProps) => {
     const { showNotification } = useNotifications();
     const [processingParents, setProcessingParents] = useState<Set<number>>(new Set());
 
@@ -33,10 +34,11 @@ export const ParentsCell = ({ category, onChanged }: ParentsCellProps) => {
         <span onClick={(e) => e.stopPropagation()}>
             <MasterEntityPanel
                 entities={category.parents ?? []}
-                onEntityRemoved={handleParentRemoved}
+                onEntityRemoved={readOnly ? undefined : handleParentRemoved}
                 processingEntities={processingParents}
                 emptyMessage="No parents"
                 removeTitle="Remove parent"
+                readOnly={readOnly}
             />
         </span>
     );

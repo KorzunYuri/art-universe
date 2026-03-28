@@ -8,9 +8,10 @@ import rowStyles from '../../CategoriesTableRow/CategoriesTableRow.module.css';
 interface NameCellProps {
     category: Category;
     onSaved: () => void;
+    readOnly?: boolean;
 }
 
-export const NameCell = ({ category, onSaved }: NameCellProps) => {
+export const NameCell = ({ category, onSaved, readOnly = false }: NameCellProps) => {
     const { showNotification } = useNotifications();
     const [editedName, setEditedName] = useState(category.name);
     const [isDirty, setIsDirty] = useState(false);
@@ -44,6 +45,10 @@ export const NameCell = ({ category, onSaved }: NameCellProps) => {
             setIsSaving(false);
         }
     };
+
+    if (readOnly) {
+        return <span>{category.name}</span>;
+    }
 
     return (
         <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }} onClick={(e) => e.stopPropagation()}>

@@ -33,6 +33,8 @@ export interface EntityBindingProps<K extends MusicMasterEntityType> {
     onBeforeUnbind?: () => Promise<boolean>;
     onAfterUnbind?: () => void;
     disabled?: boolean;
+    /** When true, shows binding status without interactive controls */
+    readOnly?: boolean;
     /** When provided and entity is bound, the master name becomes a link to this URL */
     linkToMasterUrl?: (masterId: number) => string;
     /** Fires whenever the effective selected entity changes (bound, matched, or cleared) */
@@ -62,6 +64,7 @@ export const EntityBinding = <T extends MusicMasterEntityType>(
         onBeforeUnbind = async () => true,
         onAfterUnbind = () => {},
         disabled = false,
+        readOnly = false,
         linkToMasterUrl,
         overrideLookupContext,
         overrideMasterArtistId,
@@ -158,6 +161,37 @@ export const EntityBinding = <T extends MusicMasterEntityType>(
     // Handle case when entity is undefined
     if (!entity) {
         return <div className={styles.emptyState}>No entity data</div>;
+    }
+
+    // Read-only mode: show binding status without interactive controls
+    if (readOnly) {
+        const masterUrl = linkToMasterUrl && entity.masterEntity
+            ? linkToMasterUrl(entity.masterEntity.id)
+            : null;
+
+        return (
+            <div className={styles.wrapper}>
+                {entity.masterEntity ? (
+                    masterUrl ? (
+                        <Link
+                            to={masterUrl}
+                            className={`${commonStyles.muLabel} ${styles.bindingName} ${styles.boundState} ${styles.boundLink}`}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            {entity.masterEntity.name}
+                        </Link>
+                    ) : (
+                        <span className={`${commonStyles.muLabel} ${styles.bindingName} ${styles.boundState}`}>
+                            {entity.masterEntity.name}
+                        </span>
+                    )
+                ) : (
+                    <span className={`${commonStyles.muLabel} ${styles.bindingName} ${styles.unboundState}`}>
+                        Not bound
+                    </span>
+                )}
+            </div>
+        );
     }
 
     // Determine current binding state

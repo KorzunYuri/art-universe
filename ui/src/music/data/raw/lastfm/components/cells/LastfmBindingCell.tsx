@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useLastfmEntity } from '@/music/data/raw/lastfm/hooks/useLastfmEntity';
 import { useLastfmEntityApproval } from '@/music/data/raw/lastfm/hooks/useLastfmEntityApproval';
+import { usePermissions } from '@/shared/hooks/usePermissions';
 import { EntityBinding } from '@/music/data/raw/shared/components/EntityBinding';
 import { getMasterEntityUrl } from '@/music/data/master/utils/masterEntityUrl';
 import type { LastfmSupportedEntityType } from '@/music/data/raw/lastfm/types/lastfm-entity';
@@ -11,6 +12,8 @@ interface LastfmBindingCellProps {
 }
 
 export const LastfmBindingCell = ({ entityType, entityId }: LastfmBindingCellProps) => {
+    const permissions = usePermissions();
+    const readOnly = permissions.lastfmCurationAccess !== 'full';
     const { entity, updateEntity, invalidateEntity } = useLastfmEntity(entityType, entityId);
 
     const { ensureIsValidForBinding } = useLastfmEntityApproval(
@@ -31,6 +34,7 @@ export const LastfmBindingCell = ({ entityType, entityId }: LastfmBindingCellPro
                 dataSource="lastfm"
                 entityType={entityType}
                 entityId={entityId}
+                readOnly={readOnly}
                 onBeforeBind={ensureIsValidForBinding}
                 onAfterBind={invalidateEntity}
                 onAfterUnbind={invalidateEntity}

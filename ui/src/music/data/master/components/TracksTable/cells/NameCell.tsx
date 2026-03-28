@@ -8,9 +8,10 @@ import styles from '../TracksTable.module.css';
 interface NameCellProps {
     track: Track;
     onSaved: () => void;
+    readOnly?: boolean;
 }
 
-export const NameCell = ({ track, onSaved }: NameCellProps) => {
+export const NameCell = ({ track, onSaved, readOnly = false }: NameCellProps) => {
     const { showNotification } = useNotifications();
     const [editedName, setEditedName] = useState(track.name);
     const [isDirty, setIsDirty] = useState(false);
@@ -44,6 +45,10 @@ export const NameCell = ({ track, onSaved }: NameCellProps) => {
             setIsSaving(false);
         }
     };
+
+    if (readOnly) {
+        return <span>{track.name}</span>;
+    }
 
     return (
         <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }} onClick={(e) => e.stopPropagation()}>

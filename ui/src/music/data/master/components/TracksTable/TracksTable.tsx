@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import type { ColumnDef } from '@tanstack/react-table';
 import { useMasterEntityTable } from '@/music/data/master/hooks/useMasterEntityTable';
 import { useNotifications } from '@/shared/hooks';
+import { usePermissions } from '@/shared/hooks/usePermissions';
 import { useColumnPreferences, type ColumnConfig } from '@/shared/hooks/useColumnPreferences';
 import { DataTable } from '@/shared/components/DataTable';
 import { stringToSortingState, sortingStateToString } from '@/shared/components/DataTable/sortUtils';
@@ -26,6 +27,8 @@ export const TracksTable = () => {
     const navigate = useNavigate();
     const { trackId } = useParams<{ trackId: string }>();
     const { showNotification } = useNotifications();
+    const permissions = usePermissions();
+    const canEdit = permissions.masterEntityAccess === 'full';
     const [newTrackName, setNewTrackName] = useState('');
     const [selectedArtistId, setSelectedArtistId] = useState<number | null>(null);
     const [selectedArtistName, setSelectedArtistName] = useState<string>('');
@@ -79,56 +82,67 @@ export const TracksTable = () => {
         setSelectedArtistName(entity.name);
     };
 
-    const columns = useMemo<ColumnDef<Track, any>[]>(() => [
-        {
-            accessorKey: 'name',
-            header: 'Name',
-            enableSorting: true,
-            meta: { headerClassName: styles.name, cellClassName: styles.name },
-            cell: ({ row }) => <NameCell track={row.original} onSaved={refresh} />,
-        },
-        {
-            id: 'primaryArtist',
-            header: 'Primary Artist',
-            enableSorting: false,
-            meta: { headerClassName: styles.primaryArtist, cellClassName: styles.primaryArtist },
-            cell: ({ row }) => <PrimaryArtistCell track={row.original} />,
-        },
-        {
-            id: 'categories',
-            header: 'Categories',
-            enableSorting: false,
-            meta: { headerClassName: styles.categories, cellClassName: styles.categories },
-            cell: ({ row }) => <CategoriesCell track={row.original} onChanged={refresh} />,
-        },
-        {
-            id: 'addCategory',
-            header: 'Add Category',
-            enableSorting: false,
-            meta: { headerClassName: styles.addCategory, cellClassName: styles.addCategory },
-            cell: ({ row }) => <AddCategoryCell trackId={row.original.id} onAdded={refresh} />,
-        },
-        {
-            id: 'actions',
-            header: 'Actions',
-            enableSorting: false,
-            meta: { headerClassName: styles.actions, cellClassName: styles.actions },
-            cell: ({ row }) => <ActionsCell track={row.original} onDeleted={refresh} />,
-        },
-        // Configurable columns
-        {
-            id: 'quiz',
-            header: 'Quiz',
-            enableSorting: false,
-            cell: () => <span className={styles.stub}>-</span>,
-        },
-        {
-            id: 'attributes',
-            header: 'Attributes',
-            enableSorting: false,
-            cell: () => <span className={styles.stub}>-</span>,
-        },
-    ], [refresh]);
+    const columns = useMemo<ColumnDef<Track, any>[]>(() => {
+        const cols: ColumnDef<Track, any>[] = [
+            {
+                accessorKey: 'name',
+                header: 'Name',
+                enableSorting: true,
+                meta: { headerClassName: styles.name, cellClassName: styles.name },
+                cell: ({ row }) => <NameCell track={row.original} onSaved={refresh} readOnly={!canEdit} />,
+            },
+            {
+                id: 'primaryArtist',
+                header: 'Primary Artist',
+                enableSorting: false,
+                meta: { headerClassName: styles.primaryArtist, cellClassName: styles.primaryArtist },
+                cell: ({ row }) => <PrimaryArtistCell track={row.original} />,
+            },
+            {
+                id: 'categories',
+                header: 'Categories',
+                enableSorting: false,
+                meta: { headerClassName: styles.categories, cellClassName: styles.categories },
+                cell: ({ row }) => <CategoriesCell track={row.original} onChanged={refresh} readOnly={!canEdit} />,
+            },
+        ];
+
+        if (canEdit) {
+            cols.push(
+                {
+                    id: 'addCategory',
+                    header: 'Add Category',
+                    enableSorting: false,
+                    meta: { headerClassName: styles.addCategory, cellClassName: styles.addCategory },
+                    cell: ({ row }) => <AddCategoryCell trackId={row.original.id} onAdded={refresh} />,
+                },
+                {
+                    id: 'actions',
+                    header: 'Actions',
+                    enableSorting: false,
+                    meta: { headerClassName: styles.actions, cellClassName: styles.actions },
+                    cell: ({ row }) => <ActionsCell track={row.original} onDeleted={refresh} />,
+                },
+            );
+        }
+
+        cols.push(
+            {
+                id: 'quiz',
+                header: 'Quiz',
+                enableSorting: false,
+                cell: () => <span className={styles.stub}>-</span>,
+            },
+            {
+                id: 'attributes',
+                header: 'Attributes',
+                enableSorting: false,
+                cell: () => <span className={styles.stub}>-</span>,
+            },
+        );
+
+        return cols;
+    }, [refresh, canEdit]);
 
     const sorting = useMemo(() => stringToSortingState(sort), [sort]);
     const handleSortingChange = useCallback(
@@ -150,7 +164,7 @@ export const TracksTable = () => {
         [navigate, trackId],
     );
 
-    const createSection = (
+    const createSection = canEdit ? (
         <div className={styles.createSection}>
             <MasterEntityPicker
                 entityType="artist"
@@ -173,7 +187,7 @@ export const TracksTable = () => {
                 {isCreating ? '...' : 'Create'}
             </button>
         </div>
-    );
+    ) : null;
 
     return (
         <div>

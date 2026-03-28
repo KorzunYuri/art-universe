@@ -1,5 +1,5 @@
 import styles from './LastfmHome.module.css';
-import { NavigationCard } from "@/shared/components";
+import { NavigationCard, AccessGate } from "@/shared/components";
 import { usePermissions } from "@/shared/hooks/usePermissions";
 
 export function LastfmHome() {
@@ -12,9 +12,9 @@ export function LastfmHome() {
             <NavigationCard to="/music/data/raw/lastfm/artists"    label="Artists" />
             <NavigationCard to="/music/data/raw/lastfm/albums"     label="Albums" />
             <NavigationCard to="/music/data/raw/lastfm/tracks"     label="Tracks" />
-            {permissions.isAdmin() && (
+            <AccessGate level={permissions.adminAccess}>
                 <NavigationCard to="/music/data/raw/lastfm/admin"  label="Administration" />
-            )}
+            </AccessGate>
         </div>
     )
 }

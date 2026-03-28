@@ -7,6 +7,7 @@ export interface MasterEntityPanelProps {
     processingEntities?: Set<number>;
     emptyMessage?: string;
     removeTitle?: string;
+    readOnly?: boolean;
 }
 
 export const MasterEntityPanel = ({
@@ -14,7 +15,8 @@ export const MasterEntityPanel = ({
     onEntityRemoved,
     processingEntities = new Set(),
     emptyMessage = "No entities",
-    removeTitle = "Remove"
+    removeTitle = "Remove",
+    readOnly = false,
 }: MasterEntityPanelProps) => {
     if (entities.length === 0) {
         return (
@@ -32,7 +34,7 @@ export const MasterEntityPanel = ({
                         key={entity.id}
                         id={entity.id}
                         name={entity.name}
-                        onRemove={onEntityRemoved}
+                        onRemove={readOnly ? undefined : onEntityRemoved}
                         isProcessing={processingEntities.has(entity.id)}
                         removeTitle={removeTitle}
                     />

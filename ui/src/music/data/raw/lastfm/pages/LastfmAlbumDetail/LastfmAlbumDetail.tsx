@@ -5,6 +5,7 @@ import {useLastfmEntityApproval} from '@/music/data/raw/lastfm/hooks/useLastfmEn
 import {useLastfmAlbumTracks} from '@/music/data/raw/lastfm/hooks/useLastfmAlbumTracks';
 import {useApplicableRelationTypes} from '@/music/data/master/hooks/useApplicableRelationTypes';
 import {ExternalLink} from '@/shared/components';
+import {usePermissions} from '@/shared/hooks/usePermissions';
 import { EntityTagPanel } from '@/music/data/raw/lastfm/components';
 import { ApprovalToggle, ArtistRelatedEntityBinding } from '@/music/data/raw/shared/components';
 import {LastfmConfig} from '@/music/data/raw/lastfm/config/lastfmconfig';
@@ -46,6 +47,8 @@ export const LastfmAlbumDetail = () => {
     } = useLastfmEntityApproval(entity, 'lastfm', updateEntity);
 
     const { tracks, isLoading: isTracksLoading } = useLastfmAlbumTracks(id);
+    const permissions = usePermissions();
+    const curationReadOnly = permissions.lastfmCurationAccess !== 'full';
     const albumArtistId = entity?.artist?.id;
 
     // Relation types for ALBUM→TRACK
@@ -246,6 +249,7 @@ export const LastfmAlbumDetail = () => {
                                     onRelationTypeChange={handleRelationTypeChange}
                                     onMasterArtistChange={handleTrackArtistChange}
                                     onMasterEntityChange={handleTrackEntityChange}
+                                    readOnly={curationReadOnly}
                                 />
                             ))}
                         </tbody>
@@ -261,6 +265,7 @@ export const LastfmAlbumDetail = () => {
                         status={entity.approvalStatus}
                         onChange={setApprovalStatus}
                         disabled={isApproving}
+                        readOnly={curationReadOnly}
                     />
                 </div>
             </section>
@@ -278,6 +283,7 @@ export const LastfmAlbumDetail = () => {
                         onAfterUnbind={invalidateEntity}
                         onMasterArtistChange={setMasterArtistId}
                         linkToMasterUrl={(masterId) => getMasterEntityUrl('album', masterId)}
+                        readOnly={curationReadOnly}
                     />
                 </div>
 
@@ -286,7 +292,7 @@ export const LastfmAlbumDetail = () => {
                     <div className={styles.bindWithTracksRow}>
                         <button
                             onClick={handleBindWithTracklist}
-                            disabled={!canBindWithTracklist}
+                            disabled={!canBindWithTracklist || curationReadOnly}
                             className={styles.bindWithTracksButton}
                         >
                             {isBindingWithTracks ? 'Binding...' : 'Bind with tracklist'}
@@ -324,6 +330,7 @@ interface TrackRowProps {
     onRelationTypeChange: (trackId: number, relationTypeId: number | undefined) => void;
     onMasterArtistChange: (trackId: number, artistId: number | null) => void;
     onMasterEntityChange: (trackId: number, entityId: number | null) => void;
+    readOnly: boolean;
 }
 
 const TrackRow = ({
@@ -336,6 +343,7 @@ const TrackRow = ({
     onRelationTypeChange,
     onMasterArtistChange,
     onMasterEntityChange,
+    readOnly,
 }: TrackRowProps) => {
     const { entity, updateEntity, invalidateEntity } = useLastfmEntity('track', track.trackId);
     const { ensureIsValidForBinding } = useLastfmEntityApproval(entity, 'lastfm', updateEntity);
@@ -405,6 +413,7 @@ const TrackRow = ({
                     className={styles.trackBinding}
                     onMasterArtistChange={handleArtistChange}
                     onMasterEntityChange={handleEntityChange}
+                    readOnly={readOnly}
                 />
             </td>
         </tr>

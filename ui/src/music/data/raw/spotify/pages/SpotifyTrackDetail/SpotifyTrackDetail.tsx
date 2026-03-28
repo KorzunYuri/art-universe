@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router-dom';
 import { useSpotifyEntity } from '@/music/data/raw/spotify/hooks/useSpotifyEntity';
 import { ExternalLink } from '@/shared/components';
+import { usePermissions } from '@/shared/hooks/usePermissions';
 import { ArtistRelatedEntityBinding } from '@/music/data/raw/shared/components';
 import { SpotifyConfig } from '@/music/data/raw/spotify/config/spotifyconfig';
 import { getMasterEntityUrl } from '@/music/data/master/utils/masterEntityUrl';
@@ -17,6 +18,9 @@ export const SpotifyTrackDetail = () => {
         isError,
         error,
     } = useSpotifyEntity('track', id);
+
+    const permissions = usePermissions();
+    const curationReadOnly = permissions.spotifyCurationAccess !== 'full';
 
     if (isLoading) {
         return <div className={styles.loading}>Loading track...</div>;
@@ -60,6 +64,7 @@ export const SpotifyTrackDetail = () => {
                         onAfterBind={invalidateEntity}
                         onAfterUnbind={invalidateEntity}
                         linkToMasterUrl={(masterId) => getMasterEntityUrl('track', masterId)}
+                        readOnly={curationReadOnly}
                     />
                 </div>
             </section>

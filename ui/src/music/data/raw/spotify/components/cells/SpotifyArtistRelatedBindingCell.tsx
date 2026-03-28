@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { useSpotifyEntity } from '@/music/data/raw/spotify/hooks/useSpotifyEntity';
+import { usePermissions } from '@/shared/hooks/usePermissions';
 import { ArtistRelatedEntityBinding } from '@/music/data/raw/shared/components';
 import { getMasterEntityUrl } from '@/music/data/master/utils/masterEntityUrl';
 
@@ -11,6 +12,8 @@ interface SpotifyArtistRelatedBindingCellProps {
 }
 
 export const SpotifyArtistRelatedBindingCell = ({ entityType, entityId }: SpotifyArtistRelatedBindingCellProps) => {
+    const permissions = usePermissions();
+    const readOnly = permissions.spotifyCurationAccess !== 'full';
     const { invalidateEntity } = useSpotifyEntity(entityType, entityId);
 
     const linkToMasterUrl = useCallback(
@@ -25,6 +28,7 @@ export const SpotifyArtistRelatedBindingCell = ({ entityType, entityId }: Spotif
                 dataSource="spotify"
                 entityType={entityType}
                 entityId={entityId}
+                readOnly={readOnly}
                 onAfterBind={invalidateEntity}
                 onAfterUnbind={invalidateEntity}
                 linkToMasterUrl={linkToMasterUrl}
