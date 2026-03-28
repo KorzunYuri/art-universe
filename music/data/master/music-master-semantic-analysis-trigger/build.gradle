@@ -1,0 +1,14 @@
+plugins {
+    id 'art-universe.spring-boot-web-app'
+}
+
+archivesBaseName = 'music-master-semantic-analysis-trigger'
+
+dependencies {
+    implementation project(':common:commons-web')
+    implementation project(':common:commons-observability')
+    implementation project(':common:config:config-client')
+
+    implementation 'org.springframework.boot:spring-boot-docker-compose'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+}

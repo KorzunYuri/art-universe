@@ -1,0 +1,14 @@
+plugins {
+    id 'art-universe.spring-boot-app'
+}
+
+archivesBaseName = 'lastfm-semantic-analysis-trigger'
+
+dependencies {
+    implementation project(':common:commons-observability')
+    implementation project(':common:config:config-client')
+    implementation project(':music:data:raw:lastfm:lastfm-repositories')
+
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+}

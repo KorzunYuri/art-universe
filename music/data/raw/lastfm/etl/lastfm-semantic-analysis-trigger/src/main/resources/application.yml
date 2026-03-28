@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: lastfm-semantic-analysis-trigger
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://${AU_DB_MASTER_HOST}:${AU_DB_MASTER_PORT}/${AU_DB_NAME}?currentSchema=${MURAW_LASTFM_DB_SCHEMA}
+    username: ${MURAW_LASTFM_DB_READER_USERNAME}
+    password: '${MURAW_LASTFM_DB_READER_PASSWORD}'
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+
+server:
+  port: ${LASTFM_TRIGGER_PORT:8080}
+
+au:
+  config:
+    client:
+      service-url: "${AU_CONFIG_SERVICE_URL:stub-for-tests}"
+
+trigger:
+  ticket-intake:
+    url: ${TICKET_INTAKE_URL}

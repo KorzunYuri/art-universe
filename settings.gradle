@@ -21,6 +21,7 @@ include 'art:data:models'
 include 'art:data:master'
 
 include 'music:data:master'
+include 'music:data:master:music-master-semantic-analysis-trigger'
 
 include 'music:data:semantic:semantic-models'
 include 'music:data:semantic:semantic-analyzer'
@@ -45,6 +46,7 @@ include 'music:data:raw:lastfm:test:lastfm-commons-test-jpa'
 include 'music:data:raw:lastfm:test:lastfm-commons-test-db'
 include 'music:data:raw:lastfm:test:lastfm-commons-test-db-helper'
 include 'music:data:raw:lastfm:test:lastfm-commons-test-web'
+include 'music:data:raw:lastfm:etl:lastfm-semantic-analysis-trigger'
 
 include 'music:data:raw:spotify:spotify-models'
 include 'music:data:raw:spotify:spotify-repositories'
