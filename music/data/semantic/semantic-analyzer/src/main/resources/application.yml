@@ -1,0 +1,50 @@
+spring:
+  application:
+    name: semantic-analyzer
+  config:
+    import:
+      - classpath:commons-context.yml
+      - optional:classpath:commons-context-${spring.profiles.active}.yml
+      - classpath:commons-observability.yml
+      - optional:classpath:commons-observability-${spring.profiles.active}.yml
+  datasource:
+    url: jdbc:postgresql://${AU_DB_MASTER_HOST}:${AU_DB_MASTER_PORT}/${AU_DB_NAME}?currentSchema=mu_semantic_analysis
+    username: ${MU_SA_DB_USERNAME}
+    password: '${MU_SA_DB_PASSWORD_DM}'
+    hikari:
+      pool-name: SemanticAnalyzerHikariPool
+      maximum-pool-size: 8
+      minimum-idle: 2
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+
+server:
+  port: ${SEMANTIC_ANALYZER_PORT:8080}
+
+au:
+  config:
+    client:
+      service-url: "${AU_CONFIG_SERVICE_URL:stub-for-tests}"
+
+semantic:
+  llm:
+    clients:
+      extraction:
+        provider: openai
+        api-key: ${OPENAI_API_KEY:}
+        base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
+        model: ${LLM_MODEL:gpt-4o}
+        temperature: ${LLM_EXTRACTION_TEMPERATURE:0.2}
+      creative:
+        provider: openai
+        api-key: ${OPENAI_API_KEY:}
+        base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
+        model: ${LLM_CREATIVE_MODEL:gpt-4o}
+        temperature: ${LLM_CREATIVE_TEMPERATURE:1.2}
+  modes:
+    full_extraction: extraction
+    creative_categorization: creative
+  cache:
+    category-refresh-ms: ${CATEGORY_CACHE_REFRESH_MS:300000}

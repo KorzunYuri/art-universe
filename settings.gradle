@@ -23,6 +23,7 @@ include 'art:data:master'
 include 'music:data:master'
 
 include 'music:data:semantic:semantic-models'
+include 'music:data:semantic:semantic-analyzer'
 
 include 'common:data:raw:data-raw-commons-jpa'
 include 'common:data:raw:data-raw-commons-api-client'
