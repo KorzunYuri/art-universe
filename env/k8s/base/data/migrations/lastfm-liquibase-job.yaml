@@ -51,7 +51,7 @@ spec:
             - name: MURAW_LASTFM_DB_WRITER_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: db-credentials
+                  name: lastfm-db-credentials
                   key: MURAW_LASTFM_DB_WRITER_PASSWORD
             - name: MURAW_LASTFM_DB_MIGRATIONS_PATH
               value: "db/migration/muraw/liquibase/db.changelog.xml"

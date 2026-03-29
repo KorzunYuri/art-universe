@@ -8,9 +8,10 @@ import styles from '../AlbumsTable.module.css';
 interface NameCellProps {
     album: Album;
     onSaved: () => void;
+    readOnly?: boolean;
 }
 
-export const NameCell = ({ album, onSaved }: NameCellProps) => {
+export const NameCell = ({ album, onSaved, readOnly = false }: NameCellProps) => {
     const { showNotification } = useNotifications();
     const [editedName, setEditedName] = useState(album.name);
     const [isDirty, setIsDirty] = useState(false);
@@ -44,6 +45,10 @@ export const NameCell = ({ album, onSaved }: NameCellProps) => {
             setIsSaving(false);
         }
     };
+
+    if (readOnly) {
+        return <span>{album.name}</span>;
+    }
 
     return (
         <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }} onClick={(e) => e.stopPropagation()}>

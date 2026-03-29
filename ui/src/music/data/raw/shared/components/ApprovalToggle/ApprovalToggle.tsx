@@ -7,6 +7,7 @@ interface Props {
     onChange: (newStatus: ApprovalStatusType) => void
     className?: string
     disabled?: boolean
+    readOnly?: boolean
 }
 
 const options: {
@@ -21,7 +22,7 @@ const options: {
     { label: 'auto', value: ApprovalStatus.AUTOAPPROVED,    color: 'auto', alwaysDisabled: true },
 ]
 
-export function ApprovalToggle({ status, onChange, className = '', disabled = false }: Props) {
+export function ApprovalToggle({ status, onChange, className = '', disabled = false, readOnly = false }: Props) {
 
     const handleClick = (e: React.MouseEvent, value: ApprovalStatusType, buttonDisabled?: boolean) => {
         e.stopPropagation();
@@ -31,6 +32,19 @@ export function ApprovalToggle({ status, onChange, className = '', disabled = fa
         } else {
             onChange(value)
         }
+    }
+
+    if (readOnly) {
+        const activeOption = options.find(o => o.value === status);
+        const label = activeOption?.label ?? 'pending';
+        const color = activeOption?.color ?? 'skip';
+        return (
+            <div className={`${styles.toggleContainer} ${styles.readOnly} ${className}`}>
+                <span className={`${styles.button} ${styles[color]} ${styles.active}`}>
+                    {label}
+                </span>
+            </div>
+        );
     }
 
     return (

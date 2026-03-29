@@ -35,6 +35,7 @@ public class SpotifyApiResponseProcessingOrchestrator {
     public void processResponses() {
         List<SpotifyApiResponse> responses = apiResponseRepository.findAllPending();
         if (responses.isEmpty()) {
+            stagingIterationService.sealIfExpired();
             return;
         }
 

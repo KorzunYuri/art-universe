@@ -121,8 +121,24 @@ export const ArtistRelatedEntityBinding = <T extends MusicMasterEntityType & Art
 
     const isEntityDisabled = disabled || !selectedArtist;
 
+    const isReadOnly = (entityBindingProps as any).readOnly === true;
+
     if (isEntityLoading) {
         return <div className={styles.loading}>Loading...</div>;
+    }
+
+    // In readOnly mode, skip the artist picker and just show EntityBinding in readOnly mode
+    if (isReadOnly) {
+        return (
+            <div className={`${styles.wrapper} ${compact ? styles.compact : ''} ${className ? ` ${className}` : ''}`}>
+                <EntityBinding
+                    dataSource={dataSource}
+                    entityType={entityType}
+                    entityId={entityId}
+                    {...entityBindingProps}
+                />
+            </div>
+        );
     }
 
     return (

@@ -8,8 +8,12 @@ resources:
   - namespaces.yaml
   # Phase 2: Database layer
   - data
+  # Phase 3: Core infrastructure services
+  - core
   # Phase 4: LastFM ETL pipeline
   - lastfm
+  # Phase 4b: Spotify ETL pipeline
+  - spotify
   # Phase 5: Core applications
   - apps
   # Phase 6: Frontend and Ingress

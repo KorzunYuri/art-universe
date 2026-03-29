@@ -36,6 +36,7 @@ class SpotifyApiResponseProcessingOrchestratorTest {
         orchestrator.processResponses();
 
         verify(apiResponseRepository).findAllPending();
+        verify(stagingIterationService).sealIfExpired();
         verifyNoMoreInteractions(apiResponseRepository, stagingIterationService);
     }
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useNotifications } from '@/shared/hooks';
+import { usePermissions } from '@/shared/hooks/usePermissions';
 import { EditableText, ConfirmDialog } from '@/shared/components';
 import { MasterEntityPanel } from '@/music/data/master/components/MasterEntityPanel';
 import { MasterEntityPicker } from '@/music/data/master/components/MasterEntityPicker';
@@ -20,6 +21,8 @@ export const TrackDetail = () => {
     const { trackId } = useParams<{ trackId: string }>();
     const id = Number(trackId);
     const { showNotification } = useNotifications();
+    const permissions = usePermissions();
+    const readOnly = permissions.masterEntityAccess !== 'full';
 
     const {
         track,
@@ -126,29 +129,35 @@ export const TrackDetail = () => {
         <div className={styles.detail}>
             {/* Header: name + actions */}
             <div className={styles.header}>
-                <EditableText
-                    value={editedName}
-                    onChange={handleNameChange}
-                    placeholder="Track name"
-                    disabled={isSaving}
-                    className={styles.nameInput}
-                />
-                <div className={styles.actions}>
-                    <button
-                        onClick={handleSave}
-                        disabled={!isDirty || isSaving || !editedName.trim()}
-                        className={styles.saveButton}
-                    >
-                        {isSaving ? '...' : 'Save'}
-                    </button>
-                    <button
-                        onClick={() => setShowDeleteConfirm(true)}
-                        disabled={isDeleting}
-                        className={styles.deleteButton}
-                    >
-                        {isDeleting ? '...' : 'Delete'}
-                    </button>
-                </div>
+                {readOnly ? (
+                    <h3 className={styles.nameInput}>{track.name}</h3>
+                ) : (
+                    <EditableText
+                        value={editedName}
+                        onChange={handleNameChange}
+                        placeholder="Track name"
+                        disabled={isSaving}
+                        className={styles.nameInput}
+                    />
+                )}
+                {!readOnly && (
+                    <div className={styles.actions}>
+                        <button
+                            onClick={handleSave}
+                            disabled={!isDirty || isSaving || !editedName.trim()}
+                            className={styles.saveButton}
+                        >
+                            {isSaving ? '...' : 'Save'}
+                        </button>
+                        <button
+                            onClick={() => setShowDeleteConfirm(true)}
+                            disabled={isDeleting}
+                            className={styles.deleteButton}
+                        >
+                            {isDeleting ? '...' : 'Delete'}
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* Primary Artist */}
@@ -168,14 +177,17 @@ export const TrackDetail = () => {
                     processingEntities={processingCategories}
                     emptyMessage="No categories"
                     removeTitle="Remove category"
+                    readOnly={readOnly}
                 />
-                <div className={styles.addCategory}>
-                    <MasterEntityPicker
-                        entityType="category"
-                        buttonLabel="Add Category"
-                        onEntitySelected={handleCategoryAdded}
-                    />
-                </div>
+                {!readOnly && (
+                    <div className={styles.addCategory}>
+                        <MasterEntityPicker
+                            entityType="category"
+                            buttonLabel="Add Category"
+                            onEntitySelected={handleCategoryAdded}
+                        />
+                    </div>
+                )}
             </section>
 
             {/* Attributes stub */}
@@ -192,34 +204,40 @@ export const TrackDetail = () => {
                     sourceEntityType="track"
                     sourceEntityId={track.id}
                     targetEntityType="artist"
+                    readOnly={readOnly}
                 />
                 <RelatedEntitiesSection
                     title="Related Albums"
                     sourceEntityType="track"
                     sourceEntityId={track.id}
                     targetEntityType="album"
+                    readOnly={readOnly}
                 />
                 <RelatedEntitiesSection
                     title="Related Tracks"
                     sourceEntityType="track"
                     sourceEntityId={track.id}
                     targetEntityType="track"
+                    readOnly={readOnly}
                 />
                 <RelatedEntitiesSection
                     title="Related Persons"
                     sourceEntityType="track"
                     sourceEntityId={track.id}
                     targetEntityType="person"
+                    readOnly={readOnly}
                 />
             </section>
 
-            <ConfirmDialog
-                isOpen={showDeleteConfirm}
-                header="Delete Track"
-                message={`Are you sure you want to delete track "${track.name}"?`}
-                onConfirm={handleDelete}
-                onCancel={() => setShowDeleteConfirm(false)}
-            />
+            {!readOnly && (
+                <ConfirmDialog
+                    isOpen={showDeleteConfirm}
+                    header="Delete Track"
+                    message={`Are you sure you want to delete track "${track.name}"?`}
+                    onConfirm={handleDelete}
+                    onCancel={() => setShowDeleteConfirm(false)}
+                />
+            )}
         </div>
     );
 };

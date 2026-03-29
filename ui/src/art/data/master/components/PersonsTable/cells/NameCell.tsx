@@ -7,9 +7,10 @@ import rowStyles from '../../PersonsTableRow/PersonsTableRow.module.css';
 interface NameCellProps {
     person: PersonDto;
     onSaved: () => void;
+    readOnly?: boolean;
 }
 
-export const NameCell = ({ person, onSaved }: NameCellProps) => {
+export const NameCell = ({ person, onSaved, readOnly = false }: NameCellProps) => {
     const { showNotification } = useNotifications();
     const [editedName, setEditedName] = useState(person.name);
     const [isDirty, setIsDirty] = useState(false);
@@ -43,6 +44,10 @@ export const NameCell = ({ person, onSaved }: NameCellProps) => {
             setIsSaving(false);
         }
     };
+
+    if (readOnly) {
+        return <span>{person.name}</span>;
+    }
 
     return (
         <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }} onClick={(e) => e.stopPropagation()}>

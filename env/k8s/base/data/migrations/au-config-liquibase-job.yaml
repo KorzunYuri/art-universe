@@ -1,0 +1,63 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: au-config-liquibase-migration
+  namespace: mu-data
+  labels:
+    app: au-config-liquibase
+    app.kubernetes.io/name: au-config-liquibase
+    app.kubernetes.io/component: migration
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 3600  # Clean up after 1 hour
+  template:
+    metadata:
+      labels:
+        app: au-config-liquibase
+        app.kubernetes.io/name: au-config-liquibase
+    spec:
+      restartPolicy: Never
+      initContainers:
+        - name: wait-for-db
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for postgres-master to be ready..."
+              until nc -z postgres-master.mu-data.svc.cluster.local 5432; do
+                echo "Database not ready, waiting..."
+                sleep 2
+              done
+              echo "Database is ready!"
+              sleep 5
+      containers:
+        - name: liquibase
+          image: au-config-liquibase:latest
+          imagePullPolicy: Never
+          env:
+            # Database connection
+            - name: AU_DB_MASTER_HOST
+              value: "postgres-master.mu-data.svc.cluster.local"
+            - name: AU_DB_MASTER_PORT
+              value: "5432"
+            - name: AU_DB_NAME
+              value: "art_universe"
+            - name: AU_CONFIG_DB_SCHEMA
+              value: "au_config"
+            - name: AU_CONFIG_DB_USERNAME
+              value: "au_config_dm"
+            - name: AU_CONFIG_DB_PASSWORD_DM
+              valueFrom:
+                secretKeyRef:
+                  name: au-config-db-credentials
+                  key: AU_CONFIG_DB_PASSWORD_DM
+            - name: AU_CONFIG_DB_MIGRATIONS_PATH
+              value: "db/migration/au_config/liquibase/db.changelog.xml"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"

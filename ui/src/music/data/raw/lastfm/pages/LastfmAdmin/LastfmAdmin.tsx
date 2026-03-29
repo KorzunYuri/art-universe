@@ -6,7 +6,7 @@ import styles from './LastfmAdmin.module.css';
 export function LastfmAdmin() {
     const permissions = usePermissions();
 
-    if (!permissions.isAdmin()) {
+    if (permissions.adminAccess === 'hidden') {
         return <Navigate to="/music/data/raw/lastfm" replace />;
     }
 

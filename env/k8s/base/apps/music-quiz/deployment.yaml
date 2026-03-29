@@ -56,6 +56,14 @@ spec:
                 secretKeyRef:
                   name: music-quiz-db-credentials
                   key: MU_QUIZ_DB_PASSWORD_DM
+            # Auth configuration (for JWT validation)
+            - name: AUTH_JWT_ISSUER
+              value: "art-universe"
+            - name: AUTH_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: au-auth-credentials
+                  key: AUTH_JWT_SECRET
             # Application configuration
             - name: SPRING_PROFILES_ACTIVE
               value: "local"

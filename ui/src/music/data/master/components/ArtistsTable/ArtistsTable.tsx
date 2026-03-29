@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import type { ColumnDef } from '@tanstack/react-table';
 import { useMasterEntityTable } from '@/music/data/master/hooks/useMasterEntityTable';
 import { useNotifications } from '@/shared/hooks';
+import { usePermissions } from '@/shared/hooks/usePermissions';
 import { useCategoryFilter } from '@/music/data/master/hooks/useMasterEntityFilters';
 import { useColumnPreferences, type ColumnConfig } from '@/shared/hooks/useColumnPreferences';
 import { DataTable } from '@/shared/components/DataTable';
@@ -26,6 +27,8 @@ export const ArtistsTable = () => {
     const navigate = useNavigate();
     const { artistId } = useParams<{ artistId: string }>();
     const { showNotification } = useNotifications();
+    const permissions = usePermissions();
+    const canEdit = permissions.masterEntityAccess === 'full';
     const [newArtistName, setNewArtistName] = useState('');
     const [isCreating, setIsCreating] = useState(false);
 
@@ -76,57 +79,69 @@ export const ArtistsTable = () => {
         }
     };
 
-    const columns = useMemo<ColumnDef<Artist, any>[]>(() => [
-        {
-            accessorKey: 'name',
-            header: 'Name',
-            enableSorting: true,
-            meta: { headerClassName: styles.name, cellClassName: styles.name },
-            cell: ({ row }) => (
-                <NameCell artist={row.original} onSaved={refresh} />
-            ),
-        },
-        {
-            id: 'categories',
-            header: 'Categories',
-            enableSorting: false,
-            meta: { headerClassName: styles.categories, cellClassName: styles.categories },
-            cell: ({ row }) => (
-                <CategoriesCell artist={row.original} onChanged={refresh} />
-            ),
-        },
-        {
-            id: 'addCategory',
-            header: 'Add Category',
-            enableSorting: false,
-            meta: { headerClassName: styles.addCategory, cellClassName: styles.addCategory },
-            cell: ({ row }) => (
-                <AddCategoryCell artistId={row.original.id} onAdded={refresh} />
-            ),
-        },
-        {
-            id: 'actions',
-            header: 'Actions',
-            enableSorting: false,
-            meta: { headerClassName: styles.actions, cellClassName: styles.actions },
-            cell: ({ row }) => (
-                <ActionsCell artist={row.original} onDeleted={refresh} />
-            ),
-        },
+    const columns = useMemo<ColumnDef<Artist, any>[]>(() => {
+        const cols: ColumnDef<Artist, any>[] = [
+            {
+                accessorKey: 'name',
+                header: 'Name',
+                enableSorting: true,
+                meta: { headerClassName: styles.name, cellClassName: styles.name },
+                cell: ({ row }) => (
+                    <NameCell artist={row.original} onSaved={refresh} readOnly={!canEdit} />
+                ),
+            },
+            {
+                id: 'categories',
+                header: 'Categories',
+                enableSorting: false,
+                meta: { headerClassName: styles.categories, cellClassName: styles.categories },
+                cell: ({ row }) => (
+                    <CategoriesCell artist={row.original} onChanged={refresh} readOnly={!canEdit} />
+                ),
+            },
+        ];
+
+        if (canEdit) {
+            cols.push(
+                {
+                    id: 'addCategory',
+                    header: 'Add Category',
+                    enableSorting: false,
+                    meta: { headerClassName: styles.addCategory, cellClassName: styles.addCategory },
+                    cell: ({ row }) => (
+                        <AddCategoryCell artistId={row.original.id} onAdded={refresh} />
+                    ),
+                },
+                {
+                    id: 'actions',
+                    header: 'Actions',
+                    enableSorting: false,
+                    meta: { headerClassName: styles.actions, cellClassName: styles.actions },
+                    cell: ({ row }) => (
+                        <ActionsCell artist={row.original} onDeleted={refresh} />
+                    ),
+                },
+            );
+        }
+
         // Configurable columns
-        {
-            id: 'quiz',
-            header: 'Quiz',
-            enableSorting: false,
-            cell: () => <span className={styles.stub}>-</span>,
-        },
-        {
-            id: 'attributes',
-            header: 'Attributes',
-            enableSorting: false,
-            cell: () => <span className={styles.stub}>-</span>,
-        },
-    ], [refresh]);
+        cols.push(
+            {
+                id: 'quiz',
+                header: 'Quiz',
+                enableSorting: false,
+                cell: () => <span className={styles.stub}>-</span>,
+            },
+            {
+                id: 'attributes',
+                header: 'Attributes',
+                enableSorting: false,
+                cell: () => <span className={styles.stub}>-</span>,
+            },
+        );
+
+        return cols;
+    }, [refresh, canEdit]);
 
     const sorting = useMemo(() => stringToSortingState(sort), [sort]);
     const handleSortingChange = useCallback(
@@ -155,7 +170,7 @@ export const ArtistsTable = () => {
         fields: [categoryField],
     };
 
-    const createSection = (
+    const createSection = canEdit ? (
         <div className={styles.createSection}>
             <input
                 type="text"
@@ -173,7 +188,7 @@ export const ArtistsTable = () => {
                 {isCreating ? '...' : 'Create'}
             </button>
         </div>
-    );
+    ) : null;
 
     return (
         <div>

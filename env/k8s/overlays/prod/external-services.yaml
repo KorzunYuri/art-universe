@@ -86,3 +86,71 @@ spec:
       targetPort: 8080
       protocol: TCP
       name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: art-data-prod
+  namespace: mu-apps
+  labels:
+    app: art-data
+spec:
+  type: LoadBalancer
+  selector:
+    app: art-data
+  ports:
+    - port: 8081
+      targetPort: 8080
+      protocol: TCP
+      name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spotify-rest-api-prod
+  namespace: mu-spotify
+  labels:
+    app: spotify-rest-api
+spec:
+  type: LoadBalancer
+  selector:
+    app: spotify-rest-api
+  ports:
+    - port: 8094
+      targetPort: 8080
+      protocol: TCP
+      name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: au-config-service-prod
+  namespace: au-core
+  labels:
+    app: au-config-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: au-config-service
+  ports:
+    - port: 8070
+      targetPort: 8080
+      protocol: TCP
+      name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: au-auth-service-prod
+  namespace: au-core
+  labels:
+    app: au-auth-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: au-auth-service
+  ports:
+    - port: 8071
+      targetPort: 8080
+      protocol: TCP
+      name: http

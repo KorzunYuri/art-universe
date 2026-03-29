@@ -16,6 +16,7 @@ export interface EntityTagPanelProps {
   entityApprovalStatus: ApprovalStatusType;
   tagPageBaseUrl?: string; // Base URL for tag pages, e.g. '/music/data/raw/lastfm/tags/'
   onClose?: () => void;
+  readOnly?: boolean;
 }
 
 interface TagWithRelation extends EntityTagDto {
@@ -34,7 +35,8 @@ export const EntityTagPanel = ({
   entityId,
   entityApprovalStatus,
   tagPageBaseUrl,
-  onClose
+  onClose,
+  readOnly = false
 }: EntityTagPanelProps) => {
 
   // TODO rewrite to TanQuery
@@ -270,9 +272,10 @@ export const EntityTagPanel = ({
                   isSourceBound={tag.isSourceBound}
                   isTargetBound={tag.isTargetBound}
                   tagPageUrl={tagPageBaseUrl ? `${tagPageBaseUrl}${tag.id}` : undefined}
-                  onApprove={handleApprove}
-                  onUnapprove={handleUnapprove}
+                  onApprove={readOnly ? undefined : handleApprove}
+                  onUnapprove={readOnly ? undefined : handleUnapprove}
                   isProcessing={tag.isProcessing}
+                  readOnly={readOnly}
                 />
               ))
             )}

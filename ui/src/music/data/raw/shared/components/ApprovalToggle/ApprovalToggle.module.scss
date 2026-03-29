@@ -27,6 +27,11 @@ $statuses: (
     flex-shrink: 0;
 }
 
+.readOnly {
+    justify-content: center;
+    min-width: auto;
+}
+
 .button {
     flex: 1;
     padding: 4px 6px;

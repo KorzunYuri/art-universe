@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spotify-staging-applicator
+  namespace: mu-spotify
+  labels:
+    app: spotify-staging-applicator
+    app.kubernetes.io/name: spotify-staging-applicator
+spec:
+  replicas: 1
+  # Not scalable - use Recreate strategy
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: spotify-staging-applicator
+  template:
+    metadata:
+      labels:
+        app: spotify-staging-applicator
+        app.kubernetes.io/name: spotify-staging-applicator
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8080"
+    spec:
+      initContainers:
+        - name: wait-for-parser
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for spotify-response-parser..."
+              until nc -z spotify-response-parser.mu-spotify.svc.cluster.local 8080; do
+                sleep 2
+              done
+              echo "response-parser ready!"
+              sleep 5
+      containers:
+        - name: app
+          image: mu-spotify-staging-applicator:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+              name: actuator
+          env:
+            - name: JAVA_OPTS
+              value: "-Xms256m -Xmx768m -XX:MaxMetaspaceSize=192m"
+            - name: MURAW_SPOTIFY_STAGING_APPLICATOR_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: spotify-db-credentials
+                  key: MURAW_SPOTIFY_STAGING_APPLICATOR_DB_PASSWORD
+          envFrom:
+            - configMapRef:
+                name: spotify-common-config
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "50m"
+            limits:
+              memory: "1Gi"
+              cpu: "200m"
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            periodSeconds: 5
+            failureThreshold: 3

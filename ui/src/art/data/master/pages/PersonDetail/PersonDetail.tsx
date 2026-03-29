@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useNotifications } from '@/shared/hooks';
+import { usePermissions } from '@/shared/hooks/usePermissions';
 import { EditableText, ConfirmDialog } from '@/shared/components';
 import { RelatedEntitiesSection } from '@/music/data/master/components/RelatedEntitiesSection';
 import { usePerson } from '@/art/data/master/hooks/usePerson';
@@ -15,6 +16,8 @@ export const PersonDetail = () => {
     const { personId } = useParams<{ personId: string }>();
     const id = Number(personId);
     const { showNotification } = useNotifications();
+    const permissions = usePermissions();
+    const readOnly = permissions.masterEntityAccess !== 'full';
 
     const {
         person,
@@ -90,29 +93,35 @@ export const PersonDetail = () => {
         <div className={styles.detail}>
             {/* Header: name + actions */}
             <div className={styles.header}>
-                <EditableText
-                    value={editedName}
-                    onChange={handleNameChange}
-                    placeholder="Person name"
-                    disabled={isSaving}
-                    className={styles.nameInput}
-                />
-                <div className={styles.actions}>
-                    <button
-                        onClick={handleSave}
-                        disabled={!isDirty || isSaving || !editedName.trim()}
-                        className={styles.saveButton}
-                    >
-                        {isSaving ? '...' : 'Save'}
-                    </button>
-                    <button
-                        onClick={() => setShowDeleteConfirm(true)}
-                        disabled={isDeleting}
-                        className={styles.deleteButton}
-                    >
-                        {isDeleting ? '...' : 'Delete'}
-                    </button>
-                </div>
+                {readOnly ? (
+                    <h3 className={styles.nameInput}>{person.name}</h3>
+                ) : (
+                    <EditableText
+                        value={editedName}
+                        onChange={handleNameChange}
+                        placeholder="Person name"
+                        disabled={isSaving}
+                        className={styles.nameInput}
+                    />
+                )}
+                {!readOnly && (
+                    <div className={styles.actions}>
+                        <button
+                            onClick={handleSave}
+                            disabled={!isDirty || isSaving || !editedName.trim()}
+                            className={styles.saveButton}
+                        >
+                            {isSaving ? '...' : 'Save'}
+                        </button>
+                        <button
+                            onClick={() => setShowDeleteConfirm(true)}
+                            disabled={isDeleting}
+                            className={styles.deleteButton}
+                        >
+                            {isDeleting ? '...' : 'Delete'}
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* Relations */}
@@ -123,28 +132,33 @@ export const PersonDetail = () => {
                     sourceEntityType="person"
                     sourceEntityId={person.id}
                     targetEntityType="artist"
+                    readOnly={readOnly}
                 />
                 <RelatedEntitiesSection
                     title="Related Albums"
                     sourceEntityType="person"
                     sourceEntityId={person.id}
                     targetEntityType="album"
+                    readOnly={readOnly}
                 />
                 <RelatedEntitiesSection
                     title="Related Tracks"
                     sourceEntityType="person"
                     sourceEntityId={person.id}
                     targetEntityType="track"
+                    readOnly={readOnly}
                 />
             </section>
 
-            <ConfirmDialog
-                isOpen={showDeleteConfirm}
-                header="Delete Person"
-                message={`Are you sure you want to delete person "${person.name}"?`}
-                onConfirm={handleDelete}
-                onCancel={() => setShowDeleteConfirm(false)}
-            />
+            {!readOnly && (
+                <ConfirmDialog
+                    isOpen={showDeleteConfirm}
+                    header="Delete Person"
+                    message={`Are you sure you want to delete person "${person.name}"?`}
+                    onConfirm={handleDelete}
+                    onCancel={() => setShowDeleteConfirm(false)}
+                />
+            )}
         </div>
     );
 };

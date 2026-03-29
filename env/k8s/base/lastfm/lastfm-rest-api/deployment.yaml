@@ -54,6 +54,14 @@ spec:
                 secretKeyRef:
                   name: lastfm-db-credentials
                   key: MURAW_LASTFM_DB_READER_PASSWORD
+            # Auth configuration (for JWT validation)
+            - name: AUTH_JWT_ISSUER
+              value: "art-universe"
+            - name: AUTH_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: au-auth-credentials
+                  key: AUTH_JWT_SECRET
           envFrom:
             - configMapRef:
                 name: lastfm-common-config

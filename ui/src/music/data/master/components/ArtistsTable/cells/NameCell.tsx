@@ -8,9 +8,10 @@ import rowStyles from '../../ArtistsTableRow/ArtistsTableRow.module.css';
 interface NameCellProps {
     artist: Artist;
     onSaved: () => void;
+    readOnly?: boolean;
 }
 
-export const NameCell = ({ artist, onSaved }: NameCellProps) => {
+export const NameCell = ({ artist, onSaved, readOnly = false }: NameCellProps) => {
     const { showNotification } = useNotifications();
     const [editedName, setEditedName] = useState(artist.name);
     const [isDirty, setIsDirty] = useState(false);
@@ -44,6 +45,10 @@ export const NameCell = ({ artist, onSaved }: NameCellProps) => {
             setIsSaving(false);
         }
     };
+
+    if (readOnly) {
+        return <span>{artist.name}</span>;
+    }
 
     return (
         <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }} onClick={(e) => e.stopPropagation()}>

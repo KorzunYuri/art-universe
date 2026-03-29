@@ -1,5 +1,6 @@
 import { useLastfmEntity } from '@/music/data/raw/lastfm/hooks/useLastfmEntity';
 import { useLastfmEntityApproval } from '@/music/data/raw/lastfm/hooks/useLastfmEntityApproval';
+import { usePermissions } from '@/shared/hooks/usePermissions';
 import { ApprovalToggle } from '@/music/data/raw/shared/components';
 import type { LastfmSupportedEntityType } from '@/music/data/raw/lastfm/types/lastfm-entity';
 
@@ -9,6 +10,8 @@ interface LastfmApprovalCellProps {
 }
 
 export const LastfmApprovalCell = ({ entityType, entityId }: LastfmApprovalCellProps) => {
+    const permissions = usePermissions();
+    const readOnly = permissions.lastfmCurationAccess !== 'full';
     const { entity, updateEntity } = useLastfmEntity(entityType, entityId);
 
     const { isApproving, setApprovalStatus } = useLastfmEntityApproval(
@@ -25,6 +28,7 @@ export const LastfmApprovalCell = ({ entityType, entityId }: LastfmApprovalCellP
                 status={entity.approvalStatus}
                 onChange={setApprovalStatus}
                 disabled={isApproving}
+                readOnly={readOnly}
             />
         </span>
     );

@@ -37,6 +37,22 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
+  name: mu-spotify
+  labels:
+    app.kubernetes.io/part-of: art-universe
+    app.kubernetes.io/component: spotify-etl
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: au-core
+  labels:
+    app.kubernetes.io/part-of: art-universe
+    app.kubernetes.io/component: core-services
+---
+apiVersion: v1
+kind: Namespace
+metadata:
   name: art-universe-monitoring
   labels:
     app.kubernetes.io/part-of: art-universe

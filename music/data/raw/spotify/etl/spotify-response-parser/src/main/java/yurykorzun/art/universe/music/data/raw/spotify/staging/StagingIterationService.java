@@ -11,4 +11,6 @@ public interface StagingIterationService {
     boolean shouldSeal(StagingIteration iteration);
 
     void incrementRecordsStaged(StagingIteration iteration, int count);
+
+    void sealIfExpired();
 }

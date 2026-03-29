@@ -42,6 +42,20 @@
             text-decoration: underline;
         }
     }
+
+    &.unboundState {
+        display: block;
+        width: 100%;
+        height: 2.25rem;
+        line-height: 2.25rem;
+        padding: 0 0.75rem;
+        color: #6c757d;
+        font-style: italic;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        box-sizing: border-box;
+    }
 }
 
 .bindingButton {

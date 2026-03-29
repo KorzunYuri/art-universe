@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { useMasterEntityTable } from '@/music/data/master/hooks/useMasterEntityTable';
 import { useNotifications } from '@/shared/hooks';
+import { usePermissions } from '@/shared/hooks/usePermissions';
 import { DataTable } from '@/shared/components/DataTable';
 import { stringToSortingState, sortingStateToString } from '@/shared/components/DataTable/sortUtils';
 import type { Category } from '@/music/shared/types/entities';
@@ -14,6 +15,8 @@ import styles from './CategoriesTable.module.css';
 
 export const CategoriesTable = () => {
     const { showNotification } = useNotifications();
+    const permissions = usePermissions();
+    const canEdit = permissions.masterEntityAccess === 'full';
     const [newCategoryName, setNewCategoryName] = useState('');
     const [isCreating, setIsCreating] = useState(false);
 
@@ -47,36 +50,45 @@ export const CategoriesTable = () => {
         }
     };
 
-    const columns = useMemo<ColumnDef<Category, any>[]>(() => [
-        {
-            accessorKey: 'name',
-            header: 'Name',
-            enableSorting: true,
-            meta: { headerClassName: styles.name, cellClassName: styles.name },
-            cell: ({ row }) => <NameCell category={row.original} onSaved={refresh} />,
-        },
-        {
-            id: 'parents',
-            header: 'Parents',
-            enableSorting: false,
-            meta: { headerClassName: styles.parents, cellClassName: styles.parents },
-            cell: ({ row }) => <ParentsCell category={row.original} onChanged={refresh} />,
-        },
-        {
-            id: 'addParent',
-            header: 'Add Parent',
-            enableSorting: false,
-            meta: { headerClassName: styles.addParent, cellClassName: styles.addParent },
-            cell: ({ row }) => <AddParentCell categoryId={row.original.id} onAdded={refresh} />,
-        },
-        {
-            id: 'actions',
-            header: 'Actions',
-            enableSorting: false,
-            meta: { headerClassName: styles.actions, cellClassName: styles.actions },
-            cell: ({ row }) => <ActionsCell category={row.original} onDeleted={refresh} />,
-        },
-    ], [refresh]);
+    const columns = useMemo<ColumnDef<Category, any>[]>(() => {
+        const cols: ColumnDef<Category, any>[] = [
+            {
+                accessorKey: 'name',
+                header: 'Name',
+                enableSorting: true,
+                meta: { headerClassName: styles.name, cellClassName: styles.name },
+                cell: ({ row }) => <NameCell category={row.original} onSaved={refresh} readOnly={!canEdit} />,
+            },
+            {
+                id: 'parents',
+                header: 'Parents',
+                enableSorting: false,
+                meta: { headerClassName: styles.parents, cellClassName: styles.parents },
+                cell: ({ row }) => <ParentsCell category={row.original} onChanged={refresh} readOnly={!canEdit} />,
+            },
+        ];
+
+        if (canEdit) {
+            cols.push(
+                {
+                    id: 'addParent',
+                    header: 'Add Parent',
+                    enableSorting: false,
+                    meta: { headerClassName: styles.addParent, cellClassName: styles.addParent },
+                    cell: ({ row }) => <AddParentCell categoryId={row.original.id} onAdded={refresh} />,
+                },
+                {
+                    id: 'actions',
+                    header: 'Actions',
+                    enableSorting: false,
+                    meta: { headerClassName: styles.actions, cellClassName: styles.actions },
+                    cell: ({ row }) => <ActionsCell category={row.original} onDeleted={refresh} />,
+                },
+            );
+        }
+
+        return cols;
+    }, [refresh, canEdit]);
 
     const sorting = useMemo(() => stringToSortingState(sort), [sort]);
     const handleSortingChange = useCallback(
@@ -89,23 +101,25 @@ export const CategoriesTable = () => {
 
     return (
         <div>
-            <div className={styles.createSection}>
-                <input
-                    type="text"
-                    value={newCategoryName}
-                    onChange={(e) => setNewCategoryName(e.target.value)}
-                    placeholder="New category name"
-                    disabled={isCreating}
-                    onKeyDown={(e) => e.key === 'Enter' && handleCreateCategory()}
-                />
-                <button
-                    onClick={handleCreateCategory}
-                    disabled={!newCategoryName.trim() || isCreating}
-                    className={styles.createButton}
-                >
-                    {isCreating ? '...' : 'Create'}
-                </button>
-            </div>
+            {canEdit && (
+                <div className={styles.createSection}>
+                    <input
+                        type="text"
+                        value={newCategoryName}
+                        onChange={(e) => setNewCategoryName(e.target.value)}
+                        placeholder="New category name"
+                        disabled={isCreating}
+                        onKeyDown={(e) => e.key === 'Enter' && handleCreateCategory()}
+                    />
+                    <button
+                        onClick={handleCreateCategory}
+                        disabled={!newCategoryName.trim() || isCreating}
+                        className={styles.createButton}
+                    >
+                        {isCreating ? '...' : 'Create'}
+                    </button>
+                </div>
+            )}
 
             <DataTable<Category>
                 columns={columns}

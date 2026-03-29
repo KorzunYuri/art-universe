@@ -1,3 +1,4 @@
+export * from './AccessGate'
 export * from './EntityLookup'
 export * from './EditableText'
 export * from './ExternalLink'

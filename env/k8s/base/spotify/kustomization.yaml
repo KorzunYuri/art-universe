@@ -1,0 +1,27 @@
+# Art Universe - Spotify Namespace Resources
+# Spotify ETL pipeline services
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: mu-spotify
+
+resources:
+  # Common configuration
+  - common-config.yaml
+  # REST API
+  - spotify-rest-api/deployment.yaml
+  - spotify-rest-api/service.yaml
+  # ETL Pipeline (non-scalable, single replica)
+  - spotify-calls-generator/deployment.yaml
+  - spotify-calls-generator/service.yaml
+  - spotify-calls-performer/deployment.yaml
+  - spotify-calls-performer/service.yaml
+  - spotify-response-parser/deployment.yaml
+  - spotify-response-parser/service.yaml
+  - spotify-staging-applicator/deployment.yaml
+  - spotify-staging-applicator/service.yaml
+
+commonLabels:
+  app.kubernetes.io/part-of: art-universe
+  app.kubernetes.io/component: spotify-etl

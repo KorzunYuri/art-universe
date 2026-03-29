@@ -1,0 +1,63 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: spotify-liquibase-migration
+  namespace: mu-data
+  labels:
+    app: spotify-liquibase
+    app.kubernetes.io/name: spotify-liquibase
+    app.kubernetes.io/component: migration
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 3600  # Clean up after 1 hour
+  template:
+    metadata:
+      labels:
+        app: spotify-liquibase
+        app.kubernetes.io/name: spotify-liquibase
+    spec:
+      restartPolicy: Never
+      initContainers:
+        - name: wait-for-db
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for postgres-master to be ready..."
+              until nc -z postgres-master.mu-data.svc.cluster.local 5432; do
+                echo "Database not ready, waiting..."
+                sleep 2
+              done
+              echo "Database is ready!"
+              sleep 5
+      containers:
+        - name: liquibase
+          image: mu-spotify-liquibase:latest
+          imagePullPolicy: Never
+          env:
+            # Database connection
+            - name: AU_DB_MASTER_HOST
+              value: "postgres-master.mu-data.svc.cluster.local"
+            - name: AU_DB_MASTER_PORT
+              value: "5432"
+            - name: AU_DB_NAME
+              value: "art_universe"
+            - name: MURAW_SPOTIFY_DB_SCHEMA
+              value: "mu_raw_spotify"
+            - name: MURAW_SPOTIFY_DB_WRITER_USERNAME
+              value: "mu_raw_spotify_dm"
+            - name: MURAW_SPOTIFY_DB_WRITER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: spotify-db-credentials
+                  key: MURAW_SPOTIFY_DB_WRITER_PASSWORD
+            - name: MURAW_SPOTIFY_DB_MIGRATIONS_PATH
+              value: "db/migration/muraw_spotify/liquibase/db.changelog.xml"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
