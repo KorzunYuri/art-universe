@@ -21,6 +21,10 @@
         <sqlFile path="../changesets/0023-master-attributes/0023-0040-attribute_def$seed.sql" relativeToChangelogFile="true"/>
     </changeSet>
 
+    <changeSet id="0023-0055-attribute_def$seed_semantic" author="yurykorzun">
+        <sqlFile path="../changesets/0023-master-attributes/0023-0055-attribute_def$seed_semantic.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
     <changeSet id="0023-0050-attribute_def$seed_derived" author="yurykorzun">
         <sqlFile path="../changesets/0023-master-attributes/0023-0050-attribute_def$seed_derived.sql" relativeToChangelogFile="true"/>
     </changeSet>

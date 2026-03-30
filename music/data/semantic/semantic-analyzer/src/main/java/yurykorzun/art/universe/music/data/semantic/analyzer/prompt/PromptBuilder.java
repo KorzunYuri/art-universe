@@ -1,6 +1,7 @@
 package yurykorzun.art.universe.music.data.semantic.analyzer.prompt;
 
 import org.springframework.stereotype.Component;
+import yurykorzun.art.universe.music.data.semantic.analyzer.cache.AttributeDefCacheService;
 import yurykorzun.art.universe.music.data.semantic.analyzer.cache.CategoryCacheService;
 import yurykorzun.art.universe.music.data.semantic.model.ProposalType;
 
@@ -11,10 +12,14 @@ public class PromptBuilder {
 
     private final PayloadSchemaRegistry schemaRegistry;
     private final CategoryCacheService categoryCacheService;
+    private final AttributeDefCacheService attributeDefCacheService;
 
-    public PromptBuilder(PayloadSchemaRegistry schemaRegistry, CategoryCacheService categoryCacheService) {
+    public PromptBuilder(PayloadSchemaRegistry schemaRegistry,
+                         CategoryCacheService categoryCacheService,
+                         AttributeDefCacheService attributeDefCacheService) {
         this.schemaRegistry = schemaRegistry;
         this.categoryCacheService = categoryCacheService;
+        this.attributeDefCacheService = attributeDefCacheService;
     }
 
     public String buildSystemPrompt() {
@@ -31,6 +36,15 @@ public class PromptBuilder {
 
             When referencing entities created in other proposals, use the synth_id in
             entity_ref/source_entity_ref/target_entity_ref fields.
+
+            For attribute proposals:
+            - Use attribute codes from the "Available Semantic Attributes" section when applicable.
+            - For multi-value PERIOD attributes (e.g. activity_periods), produce one proposal
+              per period with the appropriate valid_from/valid_till dates.
+              Example: an artist active 1996-2003 then 2006-present would yield two proposals
+              with the same attribute_code but different valid_from/valid_till values.
+            - For dates where only the year is known, use YYYY-01-01 format.
+            - Use null for valid_till when a period is ongoing.
 
             Respond ONLY with valid JSON in the format:
             {"proposals": [...]}
@@ -62,6 +76,15 @@ public class PromptBuilder {
         sb.append(schemaRegistry.getSchemasJson(expectedTypes, expectedEntityTypes));
         sb.append("\n\n");
 
+        String attributeDefs = attributeDefCacheService.getAttributeDefsJson();
+        if (attributeDefs != null && !"[]".equals(attributeDefs)) {
+            sb.append("## Available Semantic Attributes\n");
+            sb.append("Use these attribute codes in create_attribute proposals ");
+            sb.append("when the text contains matching information.\n");
+            sb.append(attributeDefs);
+            sb.append("\n\n");
+        }
+
         String categoryTree = categoryCacheService.getCategoryTreeJson();
         if (categoryTree != null && !categoryTree.isEmpty()) {
             sb.append("## Existing Category Tree\n");
@@ -69,7 +92,8 @@ public class PromptBuilder {
             sb.append("\n\n");
         }
 
-        sb.append("Analyze the text samples and produce proposals. Use existing category IDs when applicable.\n");
+        sb.append("Analyze the text samples and produce proposals. ");
+        sb.append("Use existing category IDs and attribute codes when applicable.\n");
 
         return sb.toString();
     }

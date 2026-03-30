@@ -79,17 +79,19 @@ public class PayloadSchemaRegistry {
 
     private ObjectNode buildCreateAttributeSchema() {
         ObjectNode schema = objectMapper.createObjectNode();
-        schema.put("description", "Propose setting an attribute value on an entity");
+        schema.put("description", "Propose setting an attribute value on an entity. " +
+            "For multi-value PERIOD attributes (e.g. activity_periods), emit one proposal per period " +
+            "with the same attribute_code but different valid_from/valid_till. Use null for ongoing periods.");
         ObjectNode fields = schema.putObject("payload_fields");
         addField(fields, "entity_type", "string", true, null);
         addField(fields, "entity_id", "integer", false, null);
         addField(fields, "entity_ref", "string", false, null);
-        addField(fields, "attribute_code", "string", true, null);
+        addField(fields, "attribute_code", "string", true, "must match a code from Available Semantic Attributes when applicable");
         addField(fields, "value", "string", true, "string representation of the value");
         addField(fields, "value_type", "string", true, "NUMERIC, STRING, DATE, BOOLEAN");
-        addField(fields, "event_date", "date", false, null);
-        addField(fields, "valid_from", "date", false, null);
-        addField(fields, "valid_till", "date", false, null);
+        addField(fields, "event_date", "date", false, "for INSTANT temporal_type");
+        addField(fields, "valid_from", "date", false, "period start (YYYY-MM-DD); use YYYY-01-01 if only year known");
+        addField(fields, "valid_till", "date", false, "period end (YYYY-MM-DD); null if ongoing");
         return schema;
     }
 
