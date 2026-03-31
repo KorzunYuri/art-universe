@@ -17,6 +17,8 @@ Features vs Patterns: Patterns describe *how* we build (SOP), Features describe 
 ## Documented Features
 
 - [Binding Raw Entities to Master](binding-raw-entities-to-master.md) - Core master data management process.
+- [Master Data Attributes](master-attributes.md) - 4-tier attribute system (RAW/DERIVED/COMPOSITE/SEMANTIC) with view-based serving.
+- [Music Semantic Analysis Service](semantic-analysis-service.md) - LLM-powered pipeline for extracting entities, relations, attributes, and creative category bindings from music data.
 - [Binding Master Entities to Quiz](quiz/binding-master-entities-to-quiz.md) - Allows master entities to participate in quiz track pack generation.
 - [Quiz Pack Generation Pipeline](quiz/quiz-pack-generation-pipeline.md) - Multi-step pipeline transforming master track sets through filtering, weighting, and selection to generate quiz packs.
 

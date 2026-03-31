@@ -100,11 +100,21 @@ This document is the **single source of truth** for list of modules.
 | [`:art:data:models`](../art/data/models/README.md) | Library | JPA entities and DTOs for art domain (Person) |
 | [`:art:data:master`](../art/data/master/README.md) | Service | Art foundation data management (Person CRUD) |
 
+### Semantic Analysis Pipeline Modules
+
+| Module | Type | Purpose |
+|--------|------|---------|
+| [`:music:data:semantic:semantic-models`](../music/data/semantic/semantic-models/README.md) | Library | Shared enums (ProposalType, AnalysisMode), constants (AnalysisVersions) |
+| [`:music:data:semantic:semantic-analyzer`](../music/data/semantic/semantic-analyzer/README.md) | Service | Polls tickets, builds LLM prompts, calls LLM, stores responses |
+| [`:music:data:semantic:ticket-intake-service`](../music/data/semantic/ticket-intake-service/README.md) | Service (Go) | REST API for ticket submission, validation, deduplication |
+| `:music:data:semantic:semantic-response-parser` | Service | Parses LLM responses, entity matching (pg_trgm), writes proposals |
+| `:music:data:semantic:semantic-applicator` | Service | Applies approved proposals to mu schema with confidence thresholds |
+
 ### Master Data & Quiz Modules
 
 | Module | Type | Purpose |
 |--------|------|---------|
-| [`:music:data:master`](../music/data/master/README.md) | Service | Master data management and binding service |
+| [`:music:data:master`](../music/data/master/README.md) | Service | Master data management, binding service, and attribute system |
 | [`:music:quiz`](../music/quiz/README.md) | Service | Quiz generation from master data |
 | [`:ui`](../ui/README.md) | Service | React-based data management interface |
 
