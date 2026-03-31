@@ -3,12 +3,14 @@ package yurykorzun.art.universe.music.data.semantic.analyzer.analysis;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import yurykorzun.art.universe.music.data.semantic.analyzer.config.LlmClientRegistry;
 import yurykorzun.art.universe.music.data.semantic.analyzer.llm.LlmClient;
 import yurykorzun.art.universe.music.data.semantic.analyzer.llm.LlmRequest;
 import yurykorzun.art.universe.music.data.semantic.analyzer.llm.LlmResponse;
 import yurykorzun.art.universe.music.data.semantic.analyzer.persistence.AnalysisTicketDao;
 import yurykorzun.art.universe.music.data.semantic.analyzer.persistence.TicketRow;
 import yurykorzun.art.universe.music.data.semantic.analyzer.prompt.PromptBuilder;
+import yurykorzun.art.universe.music.data.semantic.model.AnalysisMode;
 import yurykorzun.art.universe.music.data.semantic.model.AnalysisVersions;
 import yurykorzun.art.universe.music.data.semantic.model.ProposalType;
 
@@ -23,17 +25,18 @@ public class SemanticAnalyzer {
     private static final Logger log = LoggerFactory.getLogger(SemanticAnalyzer.class);
 
     private final AnalysisTicketDao ticketDao;
-    private final LlmClient llmClient;
+    private final LlmClientRegistry clientRegistry;
     private final PromptBuilder promptBuilder;
 
-    public SemanticAnalyzer(AnalysisTicketDao ticketDao, LlmClient llmClient, PromptBuilder promptBuilder) {
+    public SemanticAnalyzer(AnalysisTicketDao ticketDao, LlmClientRegistry clientRegistry, PromptBuilder promptBuilder) {
         this.ticketDao = ticketDao;
-        this.llmClient = llmClient;
+        this.clientRegistry = clientRegistry;
         this.promptBuilder = promptBuilder;
     }
 
     public void processTicket(TicketRow ticket) {
-        String analysisVersion = AnalysisVersions.CURRENT_UNIFIED;
+        AnalysisMode mode = AnalysisMode.fromCode(ticket.getAnalysisMode());
+        String analysisVersion = AnalysisVersions.currentVersionFor(mode);
         UUID requestId = UUID.randomUUID();
 
         try {
@@ -46,17 +49,20 @@ public class SemanticAnalyzer {
 
             // Build prompt
             String subjectTypeName = resolveSubjectTypeName(ticket.getSubjectType());
-            String systemPrompt = promptBuilder.buildSystemPrompt();
+            String systemPrompt = promptBuilder.buildSystemPrompt(mode);
             String userPrompt = promptBuilder.buildUserPrompt(
-                subjectTypeName, ticket.getSubjectName(), ticket.getSubjectId(),
+                mode, subjectTypeName, ticket.getSubjectName(), ticket.getSubjectId(),
                 ticket.getTextSamplesJson(), expectedTypes, expectedEntityTypes
             );
 
             // Compute input hash
             String inputHash = computeHash(userPrompt);
 
+            // Get the right client for this mode
+            LlmClient client = clientRegistry.getClient(mode);
+
             // Call LLM
-            LlmResponse response = llmClient.analyze(LlmRequest.builder()
+            LlmResponse response = client.analyze(LlmRequest.builder()
                 .systemPrompt(systemPrompt)
                 .userPrompt(userPrompt)
                 .jsonMode(true)
@@ -67,16 +73,18 @@ public class SemanticAnalyzer {
                 ticketDao.saveRawResponse(
                     requestId, ticket.getId(), inputHash, analysisVersion,
                     ticket.getDataSource(), ticket.getSubjectType(), ticket.getSubjectId(),
+                    ticket.getAnalysisMode(),
                     response.getProvider(), response.getModel(),
                     response.getPromptTokens(), response.getCompletionTokens(),
                     response.getContent()
                 );
                 ticketDao.updateStatus(ticket.getId(), 3, null, null);
-                log.info("Successfully analyzed ticket {}", ticket.getId());
+                log.info("Successfully analyzed ticket {} (mode={})", ticket.getId(), mode.getName());
             } else {
                 ticketDao.saveFailedRequest(
                     requestId, ticket.getId(), inputHash, analysisVersion,
                     ticket.getDataSource(), ticket.getSubjectType(), ticket.getSubjectId(),
+                    ticket.getAnalysisMode(),
                     response.getErrorMessage()
                 );
                 ticketDao.updateStatus(ticket.getId(), 4, null, response.getErrorMessage());

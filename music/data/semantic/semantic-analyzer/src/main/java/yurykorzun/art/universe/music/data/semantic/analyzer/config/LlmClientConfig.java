@@ -1,20 +1,55 @@
 package yurykorzun.art.universe.music.data.semantic.analyzer.config;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import yurykorzun.art.universe.music.data.semantic.analyzer.llm.LlmClient;
 import yurykorzun.art.universe.music.data.semantic.analyzer.llm.openai.OpenAiLlmClient;
+import yurykorzun.art.universe.music.data.semantic.model.AnalysisMode;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Configuration
 public class LlmClientConfig {
 
+    private static final Logger log = LoggerFactory.getLogger(LlmClientConfig.class);
+
     @Bean
-    public LlmClient llmClient(
-        @Value("${semantic.llm.api-key:}") String apiKey,
-        @Value("${semantic.llm.base-url:https://api.openai.com/v1}") String baseUrl,
-        @Value("${semantic.llm.model:gpt-4o}") String model
-    ) {
-        return new OpenAiLlmClient(apiKey, baseUrl, model);
+    public LlmClientRegistry llmClientRegistry(LlmClientProperties clientProps, AnalysisModeProperties modeProps) {
+        // Build named client instances
+        Map<String, LlmClient> namedClients = new HashMap<>();
+        for (Map.Entry<String, LlmClientProperties.ClientConfig> entry : clientProps.getClients().entrySet()) {
+            String name = entry.getKey();
+            LlmClientProperties.ClientConfig cfg = entry.getValue();
+            LlmClient client = createClient(cfg);
+            namedClients.put(name, client);
+            log.info("Created LLM client '{}': provider={}, model={}, temperature={}",
+                    name, cfg.getProvider(), cfg.getModel(), cfg.getTemperature());
+        }
+
+        // Map analysis modes to client instances
+        Map<AnalysisMode, LlmClient> modeClients = new HashMap<>();
+        for (Map.Entry<String, String> entry : modeProps.getModes().entrySet()) {
+            AnalysisMode mode = AnalysisMode.fromString(entry.getKey());
+            String clientName = entry.getValue();
+            LlmClient client = namedClients.get(clientName);
+            if (client == null) {
+                throw new IllegalStateException(
+                        "Analysis mode '" + mode.getName() + "' references unknown client '" + clientName
+                                + "'. Available clients: " + namedClients.keySet());
+            }
+            modeClients.put(mode, client);
+        }
+
+        return new LlmClientRegistry(modeClients);
+    }
+
+    private LlmClient createClient(LlmClientProperties.ClientConfig cfg) {
+        return switch (cfg.getProvider()) {
+            case "openai" -> new OpenAiLlmClient(cfg.getApiKey(), cfg.getBaseUrl(), cfg.getModel(), cfg.getTemperature());
+            default -> throw new IllegalArgumentException("Unknown LLM provider: " + cfg.getProvider());
+        };
     }
 }

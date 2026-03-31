@@ -40,6 +40,11 @@ func (s *TicketService) ProcessTicket(ctx context.Context, req model.TicketReque
 		return &TicketResult{Accepted: false, Reason: "validation_error", Error: fmt.Sprintf("unknown entity_type: %s", req.Subject.EntityType)}
 	}
 
+	analysisModeCode, ok := model.AnalysisModeCodes[strings.ToLower(req.AnalysisMode)]
+	if !ok {
+		return &TicketResult{Accepted: false, Reason: "validation_error", Error: fmt.Sprintf("unknown analysis_mode: %s", req.AnalysisMode)}
+	}
+
 	// Serialize text samples
 	textSamplesJSON, err := json.Marshal(req.TextSamples)
 	if err != nil {
@@ -48,7 +53,7 @@ func (s *TicketService) ProcessTicket(ctx context.Context, req model.TicketReque
 
 	// Check for duplicates
 	contentHash := computeHash(string(textSamplesJSON))
-	dup, err := s.repo.CheckDuplicate(ctx, dataSourceCode, subjectTypeCode, req.Subject.EntityID, contentHash)
+	dup, err := s.repo.CheckDuplicate(ctx, dataSourceCode, subjectTypeCode, req.Subject.EntityID, analysisModeCode, contentHash)
 	if err != nil {
 		return &TicketResult{Accepted: false, Reason: "internal_error", Error: "failed to check duplicates"}
 	}
@@ -66,6 +71,7 @@ func (s *TicketService) ProcessTicket(ctx context.Context, req model.TicketReque
 		string(textSamplesJSON),
 		req.ExpectedProposalTypes,
 		req.ExpectedEntityTypes,
+		analysisModeCode,
 	)
 	if err != nil {
 		return &TicketResult{Accepted: false, Reason: "internal_error", Error: "failed to save ticket"}

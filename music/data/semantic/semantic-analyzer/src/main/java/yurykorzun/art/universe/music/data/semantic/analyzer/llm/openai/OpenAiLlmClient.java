@@ -18,8 +18,9 @@ public class OpenAiLlmClient implements LlmClient {
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
     private final String defaultModel;
+    private final Double temperature;
 
-    public OpenAiLlmClient(String apiKey, String baseUrl, String defaultModel) {
+    public OpenAiLlmClient(String apiKey, String baseUrl, String defaultModel, Double temperature) {
         this.webClient = WebClient.builder()
             .baseUrl(baseUrl)
             .defaultHeader("Authorization", "Bearer " + apiKey)
@@ -27,6 +28,7 @@ public class OpenAiLlmClient implements LlmClient {
             .build();
         this.objectMapper = new ObjectMapper();
         this.defaultModel = defaultModel;
+        this.temperature = temperature;
     }
 
     @Override
@@ -46,6 +48,10 @@ public class OpenAiLlmClient implements LlmClient {
             ObjectNode userMsg = messages.addObject();
             userMsg.put("role", "user");
             userMsg.put("content", request.getUserPrompt());
+
+            if (temperature != null) {
+                body.put("temperature", temperature);
+            }
 
             if (request.isJsonMode()) {
                 ObjectNode responseFormat = body.putObject("response_format");

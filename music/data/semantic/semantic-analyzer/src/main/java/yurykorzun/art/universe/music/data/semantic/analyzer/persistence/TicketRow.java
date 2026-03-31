@@ -15,4 +15,5 @@ public class TicketRow {
     private String textSamplesJson;
     private int[] expectedProposalTypes;
     private int[] expectedEntityTypes;
+    private int analysisMode;
 }

@@ -17,6 +17,7 @@ type Subject struct {
 
 type TicketRequest struct {
 	DataSource            string       `json:"data_source" binding:"required"`
+	AnalysisMode          string       `json:"analysis_mode" binding:"required"`
 	Subject               Subject      `json:"subject" binding:"required"`
 	TextSamples           []TextSample `json:"text_samples" binding:"required,min=1"`
 	ExpectedProposalTypes []int        `json:"expected_proposal_types"`
@@ -32,6 +33,7 @@ type AnalysisTicket struct {
 	TextSamples           string     `json:"text_samples"`
 	ExpectedProposalTypes []int      `json:"expected_proposal_types"`
 	ExpectedEntityTypes   []int      `json:"expected_entity_types"`
+	AnalysisMode          int        `json:"analysis_mode"`
 	Status                int        `json:"status"`
 	CreatedAt             time.Time  `json:"created_at"`
 }
@@ -43,6 +45,12 @@ var EntityTypeCodes = map[string]int{
 	"track":    3,
 	"category": 4,
 	"person":   101,
+}
+
+// Analysis mode code mapping
+var AnalysisModeCodes = map[string]int{
+	"full_extraction":          1,
+	"creative_categorization":  2,
 }
 
 // Data source code mapping
