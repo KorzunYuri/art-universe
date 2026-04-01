@@ -1,0 +1,50 @@
+{
+  "album": {
+    "artist": "string — artist name",
+    "mbid": "string — MusicBrainz ID (may be empty)",
+    "tags": {
+      "tag": [
+        {
+          "url": "string — Last.fm tag URL",
+          "name": "string — tag name"
+        }
+      ]
+    },
+    "playcount": "string — total play count (numeric string)",
+    "image": [
+      {
+        "size": "string — small|medium|large|extralarge|mega|''",
+        "#text": "string — image URL"
+      }
+    ],
+    "tracks": {
+      "track": [
+        {
+          "streamable": {
+            "fulltrack": "string — '0' or '1'",
+            "#text": "string — '0' or '1'"
+          },
+          "duration": "integer — track duration in seconds",
+          "url": "string — Last.fm track URL",
+          "name": "string — track name",
+          "@attr": {
+            "rank": "integer — 1-based position in tracklist"
+          },
+          "artist": {
+            "url": "string — Last.fm artist URL",
+            "name": "string — artist name",
+            "mbid": "string — MusicBrainz ID (may be empty)"
+          }
+        }
+      ]
+    },
+    "url": "string — Last.fm album page URL",
+    "name": "string — album name",
+    "listeners": "string — total unique listeners (numeric string)",
+    "wiki": {
+      "published": "string — publish date ('07 Jul 2022, 20:57')",
+      "summary": "string — short wiki summary with HTML <a> link",
+      "content": "string — full wiki text with HTML <a> link, CC license notice"
+    }
+  }
+}

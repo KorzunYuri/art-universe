@@ -1,0 +1,25 @@
+{
+  "results": {
+    "opensearch:Query": {
+      "#text": "string — empty",
+      "role": "string — 'request'",
+      "searchTerms": "string — search query",
+      "startPage": "string — start page (numeric string)"
+    },
+    "opensearch:totalResults": "string — total matches (numeric string)",
+    "opensearch:startIndex": "string — start index (numeric string)",
+    "opensearch:itemsPerPage": "string — items per page (numeric string)",
+    "artistmatches": {
+      "artist": [
+        {
+          "name": "string — artist name",
+          "listeners": "string — listener count (numeric string)",
+          "mbid": "string — MusicBrainz ID (may be empty)",
+          "url": "string — Last.fm artist URL",
+          "streamable": "string — '0' or '1'",
+          "image": ["...same image structure..."]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "topartists": {
+    "artist": [
+      {
+        "name": "string — artist name",
+        "mbid": "string — MusicBrainz ID (may be empty)",
+        "url": "string — Last.fm artist URL",
+        "streamable": "string — '0' or '1'",
+        "image": ["...same image structure..."],
+        "@attr": {
+          "rank": "string — 1-based rank (numeric string)"
+        }
+      }
+    ],
+    "@attr": {
+      "tag": "string — tag name",
+      "page": "string",
+      "perPage": "string",
+      "totalPages": "string",
+      "total": "string"
+    }
+  }
+}

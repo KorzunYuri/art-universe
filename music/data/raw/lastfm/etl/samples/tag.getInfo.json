@@ -1,0 +1,11 @@
+{
+  "tag": {
+    "name": "string — tag name",
+    "total": "integer — total taggings count",
+    "reach": "integer — number of unique artists tagged",
+    "wiki": {
+      "summary": "string — short wiki summary with HTML <a> link",
+      "content": "string — full wiki text with HTML <a> link, CC license notice"
+    }
+  }
+}

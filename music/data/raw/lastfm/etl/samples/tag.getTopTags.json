@@ -1,0 +1,16 @@
+{
+  "toptags": {
+    "@attr": {
+      "offset": "integer — page offset",
+      "num_res": "integer — results per page",
+      "total": "integer — total tag count"
+    },
+    "tag": [
+      {
+        "name": "string — tag name",
+        "count": "integer — total taggings count",
+        "reach": "integer — number of unique artists tagged"
+      }
+    ]
+  }
+}

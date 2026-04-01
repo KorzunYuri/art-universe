@@ -1,0 +1,30 @@
+{
+  "topalbums": {
+    "album": [
+      {
+        "name": "string — album name",
+        "playcount": "integer — play count",
+        "mbid": "string — MusicBrainz ID (may be empty)",
+        "url": "string — Last.fm album URL",
+        "artist": {
+          "name": "string — artist name",
+          "mbid": "string — MusicBrainz ID",
+          "url": "string — Last.fm artist URL"
+        },
+        "image": [
+          {
+            "#text": "string — image URL",
+            "size": "string — small|medium|large|extralarge"
+          }
+        ]
+      }
+    ],
+    "@attr": {
+      "artist": "string — artist name",
+      "page": "string — current page",
+      "perPage": "string — items per page",
+      "totalPages": "string — total pages",
+      "total": "string — total items"
+    }
+  }
+}

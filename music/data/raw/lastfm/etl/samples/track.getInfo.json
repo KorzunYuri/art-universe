@@ -1,0 +1,42 @@
+{
+  "track": {
+    "name": "string — track name",
+    "mbid": "string — MusicBrainz ID (may be empty)",
+    "url": "string — Last.fm track page URL",
+    "duration": "string — duration in milliseconds (numeric string)",
+    "streamable": {
+      "#text": "string — '0' or '1'",
+      "fulltrack": "string — '0' or '1'"
+    },
+    "listeners": "string — total unique listeners (numeric string)",
+    "playcount": "string — total play count (numeric string)",
+    "artist": {
+      "name": "string — artist name",
+      "mbid": "string — MusicBrainz ID (may be empty)",
+      "url": "string — Last.fm artist URL"
+    },
+    "album": {
+      "artist": "string — album artist name",
+      "title": "string — album title",
+      "mbid": "string — MusicBrainz ID",
+      "url": "string — Last.fm album URL",
+      "image": ["...same image structure..."],
+      "@attr": {
+        "position": "string — track position in album (numeric string)"
+      }
+    },
+    "toptags": {
+      "tag": [
+        {
+          "name": "string — tag name",
+          "url": "string — Last.fm tag URL"
+        }
+      ]
+    },
+    "wiki": {
+      "published": "string — publish date ('27 Jul 2008, 15:44')",
+      "summary": "string — short wiki summary with HTML <a> link",
+      "content": "string — full wiki text with HTML <a> link, CC license notice"
+    }
+  }
+}

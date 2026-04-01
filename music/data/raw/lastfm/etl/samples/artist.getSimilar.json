@@ -1,0 +1,16 @@
+{
+  "similarartists": {
+    "artist": [
+      {
+        "name": "string — similar artist name",
+        "mbid": "string — MusicBrainz ID (may be empty)",
+        "match": "string — similarity score 0.0-1.0 (numeric string)",
+        "url": "string — Last.fm artist URL",
+        "image": ["...same image structure..."]
+      }
+    ],
+    "@attr": {
+      "artist": "string — source artist name"
+    }
+  }
+}

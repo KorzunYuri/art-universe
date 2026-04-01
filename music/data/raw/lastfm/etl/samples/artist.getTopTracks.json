@@ -1,0 +1,30 @@
+{
+  "toptracks": {
+    "track": [
+      {
+        "name": "string — track name",
+        "playcount": "string — play count (numeric string)",
+        "listeners": "string — unique listeners (numeric string)",
+        "mbid": "string — MusicBrainz ID (may be empty)",
+        "url": "string — Last.fm track URL",
+        "streamable": "string — '0' or '1'",
+        "artist": {
+          "name": "string — artist name",
+          "mbid": "string — MusicBrainz ID",
+          "url": "string — Last.fm artist URL"
+        },
+        "image": ["...same image structure..."],
+        "@attr": {
+          "rank": "string — 1-based rank position (numeric string)"
+        }
+      }
+    ],
+    "@attr": {
+      "artist": "string — artist name",
+      "page": "string",
+      "perPage": "string",
+      "totalPages": "string",
+      "total": "string"
+    }
+  }
+}

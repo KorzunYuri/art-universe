@@ -1,0 +1,48 @@
+{
+  "artist": {
+    "name": "string — artist name",
+    "mbid": "string — MusicBrainz ID (UUID format, may be empty)",
+    "url": "string — Last.fm artist page URL",
+    "image": [
+      {
+        "#text": "string — image URL",
+        "size": "string — small|medium|large|extralarge|mega|''"
+      }
+    ],
+    "streamable": "string — '0' or '1'",
+    "ontour": "string — '0' or '1'",
+    "stats": {
+      "listeners": "string — total unique listeners (numeric string)",
+      "playcount": "string — total play count (numeric string)"
+    },
+    "similar": {
+      "artist": [
+        {
+          "name": "string — similar artist name",
+          "url": "string — Last.fm URL",
+          "image": ["...same image structure..."]
+        }
+      ]
+    },
+    "tags": {
+      "tag": [
+        {
+          "name": "string — tag name",
+          "url": "string — Last.fm tag URL"
+        }
+      ]
+    },
+    "bio": {
+      "links": {
+        "link": {
+          "#text": "string — link text (usually empty)",
+          "rel": "string — 'original'",
+          "href": "string — wiki URL"
+        }
+      },
+      "published": "string — publish date ('11 Mar 2006, 02:13')",
+      "summary": "string — short bio with HTML <a> link to full bio on Last.fm",
+      "content": "string — full bio text with HTML <a> link, CC license notice"
+    }
+  }
+}

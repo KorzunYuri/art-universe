@@ -1,0 +1,15 @@
+{
+  "toptags": {
+    "tag": [
+      {
+        "count": "integer — tag weight (0-100)",
+        "name": "string — tag name",
+        "url": "string — Last.fm tag URL"
+      }
+    ],
+    "@attr": {
+      "artist": "string — artist name",
+      "track": "string — track name"
+    }
+  }
+}
