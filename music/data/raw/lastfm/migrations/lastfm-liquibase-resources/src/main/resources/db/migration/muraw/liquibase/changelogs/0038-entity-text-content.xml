@@ -10,9 +10,9 @@
         <sqlFile path="db/migration/muraw/liquibase/changesets/0038-entity-text-content/0038-0010-entity_text_content$initial.sql"/>
     </changeSet>
 
-<!--    <changeSet id="0038-0020-reprocess-getinfo-responses" author="yurykorzun">-->
-<!--        <comment>Reset the most recent getInfo responses to PENDING for bio/wiki extraction reprocessing</comment>-->
-<!--        <sqlFile path="db/migration/muraw/liquibase/changesets/0038-entity-text-content/0038-0020-reprocess_getinfo_responses.sql"/>-->
-<!--    </changeSet>-->
+    <changeSet id="0038-0020-reprocess-getinfo-responses" author="yurykorzun">
+        <comment>Reset the most recent getInfo responses to PENDING for bio/wiki extraction reprocessing</comment>
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0038-entity-text-content/0038-0020-reprocess_getinfo_responses.sql"/>
+    </changeSet>
 
 </databaseChangeLog>
