@@ -55,6 +55,7 @@ public class DbConsistencyHelper {
     private final TestLastfmTrackTagRepository trackTagRepository;
     private final TestLastfmAlbumTrackRepository albumTrackRepository;
     
+    private final TestEntityTextContentRepository entityTextContentRepository;
     private final EntityManager entityManager;
     private final TestBlacklistedEntityUrlRepository blacklistedEntityUrlRepository;
 
@@ -74,6 +75,7 @@ public class DbConsistencyHelper {
         TestLastfmAlbumTrackRepository albumTrackRepository,
         TestLastfmAlbumTagRepository albumTagRepository,
         TestLastfmTrackTagRepository trackTagRepository,
+        TestEntityTextContentRepository entityTextContentRepository,
         TestBlacklistedEntityUrlRepository blacklistedEntityUrlRepository,
         EntityManager entityManager
     ) {
@@ -95,6 +97,7 @@ public class DbConsistencyHelper {
         this.albumTagRepository = albumTagRepository;
         this.trackTagRepository = trackTagRepository;
 
+        this.entityTextContentRepository = entityTextContentRepository;
         this.entityManager = entityManager;
         this.blacklistedEntityUrlRepository = blacklistedEntityUrlRepository;
     }
@@ -103,6 +106,7 @@ public class DbConsistencyHelper {
         entityManager.clear();
         entityManager.flush();
 
+        entityTextContentRepository.deleteAll();
         trackRepository.deleteAll();
         artistRepository.deleteAll();
         tagRepository.deleteAll();

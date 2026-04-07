@@ -23,9 +23,12 @@ import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.attribute.LastfmAttribute;
+import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.TextContentType;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.relationship.LastfmAlbumTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.relationship.LastfmArtistTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.relationship.LastfmTrackTag;
+import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.EntityTextContentService;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.LastfmAlbumService;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.LastfmTagService;
@@ -47,6 +50,7 @@ public class LastfmTrackGetInfoResponseProcessor extends LastfmApiResponseProces
     private final LastfmArtistService artistService;
     private final LastfmAlbumService albumService;
     private final LastfmTagService tagService;
+    private final EntityTextContentService textContentService;
     // relation services
     private final LastfmArtistTrackService artistTrackService;
     private final LastfmTrackTagService trackTagService;
@@ -66,6 +70,7 @@ public class LastfmTrackGetInfoResponseProcessor extends LastfmApiResponseProces
         LastfmArtistService artistService,
         LastfmAlbumService albumService,
         LastfmTagService tagService,
+        EntityTextContentService textContentService,
         // relation services
         LastfmArtistTrackService artistTrackService,
         LastfmAlbumTrackService albumTrackService,
@@ -86,6 +91,7 @@ public class LastfmTrackGetInfoResponseProcessor extends LastfmApiResponseProces
         this.artistService = artistService;
         this.albumService = albumService;
         this.tagService = tagService;
+        this.textContentService = textContentService;
 
         this.artistTrackService = artistTrackService;
         this.albumTrackService = albumTrackService;
@@ -154,7 +160,10 @@ public class LastfmTrackGetInfoResponseProcessor extends LastfmApiResponseProces
         // Step 2. Process track with artist reference
         var trackResult = processTrack(dtoRoot, sourceApiCall, artist);
         LastfmTrack track = trackResult.actualEntities().get(0);
-        
+
+        // Step 2b. Save track wiki text content
+        saveTrackWiki(dtoRoot.getTrack(), track, sourceApiCall);
+
         // Step 3. Create artist-track relationship
         createArtistTrackRelationship(artist, track, sourceApiCall);
 
@@ -318,5 +327,21 @@ public class LastfmTrackGetInfoResponseProcessor extends LastfmApiResponseProces
             trackTagService.upsertAll(trackTags);
             log.info("Created {} track-tag relationships for track {}", trackTags.size(), track.getName());
         }
+    }
+
+    private void saveTrackWiki(TrackGetInfoTrackDto trackDto, LastfmTrack track, LastfmApiCall sourceApiCall) {
+        if (trackDto.getWiki() == null) {
+            return;
+        }
+        Long dataSnapshotId = sourceApiCall.getDataSnapshotId() != 0 ? sourceApiCall.getDataSnapshotId() : null;
+        String published = trackDto.getWiki().getPublished();
+        textContentService.saveTextContent(
+                LastfmEntityType.TRACK, track.getId(),
+                TextContentType.WIKI_SUMMARY, trackDto.getWiki().getSummary(), published,
+                sourceApiCall.getId(), dataSnapshotId);
+        textContentService.saveTextContent(
+                LastfmEntityType.TRACK, track.getId(),
+                TextContentType.WIKI_CONTENT, trackDto.getWiki().getContent(), published,
+                sourceApiCall.getId(), dataSnapshotId);
     }
 }

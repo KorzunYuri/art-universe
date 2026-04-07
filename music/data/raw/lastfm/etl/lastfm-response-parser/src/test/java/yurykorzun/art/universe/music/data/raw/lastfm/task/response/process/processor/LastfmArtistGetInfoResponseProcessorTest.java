@@ -8,10 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import yurykorzun.art.universe.data.raw.common.domain.entity.ApprovalStatus;
 import yurykorzun.art.universe.music.data.raw.lastfm.config.LastfmParserProperty;
+import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.EntityTextContent;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.LastfmEntityRelationType;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.TextContentType;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.relationship.LastfmArtistTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.relationship.LastfmArtistsRelation;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.repository.LastfmTagRepository;
@@ -28,6 +30,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.mappi
 import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.mapping.factory.artist.getinfo.LastfmArtistGetInfoSimilarArtistFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.mapping.factory.artist.getinfo.LastfmArtistGetInfoTagFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.test.archetypes.BaseLastfmApiResponseProcessorTest;
+import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.repository.TestEntityTextContentRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.repository.TestLastfmArtistRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.repository.relationship.TestLastfmArtistTagRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.repository.relationship.TestLastfmArtistsRelationRepository;
@@ -69,6 +72,9 @@ class LastfmArtistGetInfoResponseProcessorTest extends BaseLastfmApiResponseProc
 
     @Autowired
     private TestLastfmArtistsRelationRepository artistsRelationRepository;
+
+    @Autowired
+    private TestEntityTextContentRepository textContentRepository;
 
     @Autowired
     private BlacklistedEntityUrlService blacklistService;
@@ -156,6 +162,15 @@ class LastfmArtistGetInfoResponseProcessorTest extends BaseLastfmApiResponseProc
         assertEquals(artistDto.getUrl(), artist.getUrl(), "Artist URL should match");
         assertEquals(artistDto.getStats().getListeners(), artist.getListenersCount(), "Artist listeners count should match");
         assertEquals(artistDto.getStats().getPlayCount(), artist.getPlayCount(), "Artist play count should match");
+
+        // Verify bio text content was saved
+        List<EntityTextContent> textContents = textContentRepository.findByEntityTypeAndEntityId(
+                LastfmEntityType.ARTIST, artist.getId());
+        assertEquals(2, textContents.size(), "Both bio summary and bio content should be saved");
+        assertTrue(textContents.stream().anyMatch(tc -> tc.getContentType() == TextContentType.BIO_SUMMARY),
+                "Bio summary should be saved");
+        assertTrue(textContents.stream().anyMatch(tc -> tc.getContentType() == TextContentType.BIO_CONTENT),
+                "Bio content should be saved");
     }
 
     @Test
@@ -546,6 +561,24 @@ class LastfmArtistGetInfoResponseProcessorTest extends BaseLastfmApiResponseProc
         // Verify similar artists were still processed
         assertTrue(artistRepository.count() > 1, "Similar artists should still be processed");
         assertTrue(artistsRelationRepository.count() > 0, "Artist-artist relationships should still be created");
+    }
+
+    @Test
+    void process_shouldNotSaveTextContent_whenBioIsNull() throws Exception {
+        // given - create a response JSON without bio field
+        String noBioJson = responseJsonString.replaceAll(",\\s*\"bio\"\\s*:\\s*\\{[^}]*\"links\"[^}]*\\}[^}]*\\}", "");
+        ArtistGetInfoDtoRoot noBioRoot = parseResponse(noBioJson);
+        assertNull(noBioRoot.getArtist().getBio(), "Bio should be null in modified response");
+
+        LastfmApiResponse apiResponse = consistencyHelper.createAndSaveApiResponse(
+                noBioJson, LastfmApiCallType.ARTIST_GET_INFO);
+
+        // when
+        processor.processResponse(apiResponse);
+
+        // then
+        List<EntityTextContent> textContents = textContentRepository.findAll();
+        assertEquals(0, textContents.size(), "No text content should be saved when bio is null");
     }
 
     /**

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import yurykorzun.art.universe.music.data.raw.lastfm.integration.dto.artist.ArtistDto;
 import yurykorzun.art.universe.music.data.raw.lastfm.integration.dto.artist.ArtistDtoWithMetrics;
 import yurykorzun.art.universe.music.data.raw.lastfm.integration.dto.StatsDto;
+import yurykorzun.art.universe.music.data.raw.lastfm.integration.dto.WikiDto;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -29,6 +30,9 @@ public class ArtistGetInfoArtistDto extends ArtistDto implements ArtistDtoWithMe
 
     @JsonProperty("tags")
     private ArtistGetInfoArtistTagsDto tagsObject;
+
+    @JsonProperty("bio")
+    private WikiDto bio;
 
     @Override
     public Integer getListenersCount() {

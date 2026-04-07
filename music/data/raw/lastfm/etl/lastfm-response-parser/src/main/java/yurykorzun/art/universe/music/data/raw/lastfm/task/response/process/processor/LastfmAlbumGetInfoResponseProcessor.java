@@ -25,9 +25,12 @@ import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.attribute.LastfmAttribute;
+import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.TextContentType;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.relationship.LastfmAlbumTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.relationship.LastfmAlbumTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.relationship.LastfmArtistTrack;
+import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.EntityTextContentService;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.LastfmAlbumService;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.LastfmTagService;
@@ -56,6 +59,7 @@ public class LastfmAlbumGetInfoResponseProcessor extends LastfmApiResponseProces
     private final LastfmAlbumTrackService albumTrackService;
     private final LastfmAlbumTagService albumTagService;
     private final LastfmTagService tagService;
+    private final EntityTextContentService textContentService;
     private final EntityFactory<LastfmArtist, AlbumGetInfoTrackArtistDto> artistFactory;
     private final EntityFactory<LastfmAlbum, AlbumGetInfoAlbumDto> albumFactory;
     private final EntityFactory<LastfmTag, AlbumGetInfoTagDto> tagFactory;
@@ -116,6 +120,7 @@ public class LastfmAlbumGetInfoResponseProcessor extends LastfmApiResponseProces
         LastfmAlbumTrackService albumTrackService,
         LastfmAlbumTagService albumTagService,
         LastfmTagService tagService,
+        EntityTextContentService textContentService,
         EntityFactory<LastfmArtist, AlbumGetInfoTrackArtistDto> artistFactory,
         EntityFactory<LastfmAlbum, AlbumGetInfoAlbumDto> albumFactory,
         EntityFactory<LastfmTag, AlbumGetInfoTagDto> tagFactory,
@@ -131,6 +136,7 @@ public class LastfmAlbumGetInfoResponseProcessor extends LastfmApiResponseProces
         this.albumTrackService = albumTrackService;
         this.albumTagService = albumTagService;
         this.tagService = tagService;
+        this.textContentService = textContentService;
         this.artistFactory = artistFactory;
         this.albumFactory = albumFactory;
         this.tagFactory = tagFactory;
@@ -163,6 +169,9 @@ public class LastfmAlbumGetInfoResponseProcessor extends LastfmApiResponseProces
         }
         var albumResult = processAlbum(albumDto, sourceApiCall);
         LastfmAlbum updatedAlbum = albumResult.actualEntities().get(0);
+
+        // Step 1b: Save album wiki text content
+        saveAlbumWiki(albumDto, updatedAlbum, sourceApiCall);
 
         // Step 2: Process artists from tracks (if available)
         if (hasTracks(albumDto)) {
@@ -416,5 +425,21 @@ public class LastfmAlbumGetInfoResponseProcessor extends LastfmApiResponseProces
             albumTagService.upsertAll(relationships);
             log.info("Created {} album-tag relationships for album {}", relationships.size(), album.getName());
         }
+    }
+
+    private void saveAlbumWiki(AlbumGetInfoAlbumDto albumDto, LastfmAlbum album, LastfmApiCall sourceApiCall) {
+        if (albumDto.getWiki() == null) {
+            return;
+        }
+        Long dataSnapshotId = sourceApiCall.getDataSnapshotId() != 0 ? sourceApiCall.getDataSnapshotId() : null;
+        String published = albumDto.getWiki().getPublished();
+        textContentService.saveTextContent(
+                LastfmEntityType.ALBUM, album.getId(),
+                TextContentType.WIKI_SUMMARY, albumDto.getWiki().getSummary(), published,
+                sourceApiCall.getId(), dataSnapshotId);
+        textContentService.saveTextContent(
+                LastfmEntityType.ALBUM, album.getId(),
+                TextContentType.WIKI_CONTENT, albumDto.getWiki().getContent(), published,
+                sourceApiCall.getId(), dataSnapshotId);
     }
 }

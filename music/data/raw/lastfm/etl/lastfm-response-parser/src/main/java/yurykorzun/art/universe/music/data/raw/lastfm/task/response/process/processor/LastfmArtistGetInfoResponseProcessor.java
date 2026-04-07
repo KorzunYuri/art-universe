@@ -24,8 +24,11 @@ import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.attribute.LastfmAttribute;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.LastfmEntityRelationType;
+import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.TextContentType;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.relationship.LastfmArtistTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.relationship.LastfmArtistsRelation;
+import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.EntityTextContentService;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.LastfmArtistService;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.LastfmTagService;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.relationship.LastfmArtistTagService;
@@ -43,6 +46,7 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
     private final LastfmTagService tagService;
     private final LastfmArtistsRelationService artistsRelationService;
     private final LastfmArtistTagService artistTagService;
+    private final EntityTextContentService textContentService;
 
     private final EntityFactory<LastfmArtist, ArtistGetInfoArtistDto> artistFactory;
     private final EntityFactory<LastfmArtist, ArtistGetInfoSimilarArtistDto> similarArtistFactory;
@@ -56,6 +60,7 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
         LastfmTagService tagService,
         LastfmArtistsRelationService artistsRelationService,
         LastfmArtistTagService artistTagService,
+        EntityTextContentService textContentService,
         EntityFactory<LastfmArtist, ArtistGetInfoArtistDto> artistFactory,
         EntityFactory<LastfmArtist, ArtistGetInfoSimilarArtistDto> similarArtistFactory,
         EntityFactory<LastfmTag, ArtistGetInfoArtistTagDto> tagFactory,
@@ -69,6 +74,7 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
         this.artistsRelationService = artistsRelationService;
         this.tagService = tagService;
         this.artistTagService = artistTagService;
+        this.textContentService = textContentService;
         this.artistFactory = artistFactory;
         this.similarArtistFactory = similarArtistFactory;
         this.tagFactory = tagFactory;
@@ -123,10 +129,13 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
         // Step 1. Update source artist
         LastfmArtist artist = updateArtist(dtoRoot, sourceApiCall);
 
-        // Step 2. Create similar artists and relations between artists
+        // Step 2. Save artist bio text content
+        saveArtistBio(artistDto, artist, sourceApiCall);
+
+        // Step 3. Create similar artists and relations between artists
         var artistsBindingResult = updateSimilarArtists(dtoRoot, sourceApiCall, artist);
 
-        // Step 3.
+        // Step 4.
         bindArtistsToArtist(artistsBindingResult, artist, sourceApiCall);
 
         // update artist's tags
@@ -134,6 +143,22 @@ public class LastfmArtistGetInfoResponseProcessor extends LastfmApiResponseProce
 
         // bind artist's tags to artist
         bindTagsToArtist(tagsBindingResult, artist, sourceApiCall);
+    }
+
+    private void saveArtistBio(ArtistGetInfoArtistDto artistDto, LastfmArtist artist, LastfmApiCall sourceApiCall) {
+        if (artistDto.getBio() == null) {
+            return;
+        }
+        Long dataSnapshotId = sourceApiCall.getDataSnapshotId() != 0 ? sourceApiCall.getDataSnapshotId() : null;
+        String published = artistDto.getBio().getPublished();
+        textContentService.saveTextContent(
+                LastfmEntityType.ARTIST, artist.getId(),
+                TextContentType.BIO_SUMMARY, artistDto.getBio().getSummary(), published,
+                sourceApiCall.getId(), dataSnapshotId);
+        textContentService.saveTextContent(
+                LastfmEntityType.ARTIST, artist.getId(),
+                TextContentType.BIO_CONTENT, artistDto.getBio().getContent(), published,
+                sourceApiCall.getId(), dataSnapshotId);
     }
 
     /**

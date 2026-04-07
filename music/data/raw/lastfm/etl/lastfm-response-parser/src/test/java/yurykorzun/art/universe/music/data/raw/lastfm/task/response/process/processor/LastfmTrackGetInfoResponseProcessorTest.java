@@ -10,11 +10,13 @@ import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiCallTyp
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.entity.LastfmApiResponse;
 import yurykorzun.art.universe.music.data.raw.lastfm.integration.dto.track.getinfo.TrackGetInfoDtoRoot;
 import yurykorzun.art.universe.music.data.raw.lastfm.test.utils.LastfmApiClientResourceUtil;
+import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.EntityTextContent;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmAlbum;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmTag;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.TextContentType;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.relationship.LastfmAlbumTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.relationship.LastfmArtistTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.relationship.LastfmTrackTag;
@@ -34,6 +36,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.relationship
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.relationship.impl.LastfmArtistTrackServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.service.relationship.impl.LastfmTrackTagServiceImpl;
 import yurykorzun.art.universe.music.data.raw.lastfm.test.archetypes.BaseLastfmApiResponseProcessorTest;
+import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.repository.TestEntityTextContentRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.mapping.factory.track.getinfo.LastfmTrackGetInfoAlbumFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.mapping.factory.track.getinfo.LastfmTrackGetInfoArtistFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.mapping.factory.track.getinfo.LastfmTrackGetInfoTagFactory;
@@ -87,6 +90,9 @@ class LastfmTrackGetInfoResponseProcessorTest extends BaseLastfmApiResponseProce
 
     @Autowired
     private TestLastfmTrackTagRepository trackTagRepository;
+
+    @Autowired
+    private TestEntityTextContentRepository textContentRepository;
 
     private static final String TEST_RESPONSE_KEY = "track.getInfo";
     private String responseJsonString;
@@ -192,6 +198,14 @@ class LastfmTrackGetInfoResponseProcessorTest extends BaseLastfmApiResponseProce
         List<LastfmTrackTag> trackTags = trackTagRepository.findAll();
         assertEquals(expectedTagsCount, trackTags.size(), "Track-tag relationships should be created");
 
+        // Verify wiki text content was saved
+        List<EntityTextContent> textContents = textContentRepository.findByEntityTypeAndEntityId(
+                LastfmEntityType.TRACK, track.getId());
+        assertEquals(2, textContents.size(), "Both wiki summary and wiki content should be saved");
+        assertTrue(textContents.stream().anyMatch(tc -> tc.getContentType() == TextContentType.WIKI_SUMMARY),
+                "Wiki summary should be saved");
+        assertTrue(textContents.stream().anyMatch(tc -> tc.getContentType() == TextContentType.WIKI_CONTENT),
+                "Wiki content should be saved");
     }
 
     // ========== Blacklist validation tests ==========

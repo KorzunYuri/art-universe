@@ -7,9 +7,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import yurykorzun.art.universe.data.raw.common.domain.entity.ApprovalStatus;
+import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.EntityTextContent;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmAlbum;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.LastfmArtist;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.LastfmEntityType;
+import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.common.TextContentType;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.entity.relationship.LastfmAlbumTrack;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.repository.LastfmAlbumRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.domain.repository.LastfmArtistRepository;
@@ -31,6 +33,7 @@ import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.mappi
 import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.mapping.factory.album.getinfo.LastfmAlbumGetInfoTagFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.task.response.process.mapping.factory.album.getinfo.LastfmAlbumGetInfoTrackArtistFactory;
 import yurykorzun.art.universe.music.data.raw.lastfm.test.archetypes.BaseLastfmApiResponseProcessorTest;
+import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.repository.TestEntityTextContentRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.repository.relationship.TestLastfmAlbumTagRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.repository.relationship.TestLastfmAlbumTrackRepository;
 import yurykorzun.art.universe.music.data.raw.lastfm.test.domain.repository.relationship.TestLastfmArtistTrackRepository;
@@ -86,6 +89,10 @@ class LastfmAlbumGetInfoResponseProcessorTest extends BaseLastfmApiResponseProce
 
     @Autowired
     private TestLastfmAlbumTagRepository albumTagRepository;
+
+    @Autowired
+    private TestEntityTextContentRepository textContentRepository;
+
     private static final String TEST_RESPONSE_KEY = "album.getInfo";
     private String responseJsonString;
     private AlbumGetInfoDtoRoot dtoRoot;
@@ -190,6 +197,15 @@ class LastfmAlbumGetInfoResponseProcessorTest extends BaseLastfmApiResponseProce
         for (LastfmAlbumTrack albumTrack : albumTracks) {
             assertTrue(albumTrack.getPosition() > 0, "Track position should be set");
         }
+
+        // Verify wiki text content was saved
+        List<EntityTextContent> textContents = textContentRepository.findByEntityTypeAndEntityId(
+                LastfmEntityType.ALBUM, album.getId());
+        assertEquals(2, textContents.size(), "Both wiki summary and wiki content should be saved");
+        assertTrue(textContents.stream().anyMatch(tc -> tc.getContentType() == TextContentType.WIKI_SUMMARY),
+                "Wiki summary should be saved");
+        assertTrue(textContents.stream().anyMatch(tc -> tc.getContentType() == TextContentType.WIKI_CONTENT),
+                "Wiki content should be saved");
     }
 
     @Test

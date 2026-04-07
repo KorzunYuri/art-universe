@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="0038-0010-entity-text-content-initial" author="yurykorzun">
+        <comment>Create entity_text_content table for storing bio/wiki text separately from entity tables</comment>
+        <sqlFile path="db/migration/muraw/liquibase/changesets/0038-entity-text-content/0038-0010-entity_text_content$initial.sql"/>
+    </changeSet>
+
+<!--    <changeSet id="0038-0020-reprocess-getinfo-responses" author="yurykorzun">-->
+<!--        <comment>Reset the most recent getInfo responses to PENDING for bio/wiki extraction reprocessing</comment>-->
+<!--        <sqlFile path="db/migration/muraw/liquibase/changesets/0038-entity-text-content/0038-0020-reprocess_getinfo_responses.sql"/>-->
+<!--    </changeSet>-->
+
+</databaseChangeLog>
