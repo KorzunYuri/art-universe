@@ -40,9 +40,9 @@ Art Universe uses **two layers of validation**:
 **Best Practice**: Use both layers for complete validation
 
 **See Examples**:
-- [Album.java:25-27](../../../../../music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/entity/Album.java#L25-L27) - Required name field
-- [Album.java:29-31](../../../../../music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/entity/Album.java#L29-L31) - Required foreign key
-- [Track.java:25-27](../../../../../music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/entity/Track.java#L25-L27) - Required name field
+- [Album.java:25-27](../../../../../music/data/master/music-master-rest-api/src/main/java/yurykorzun/art/universe/music/data/master/entity/Album.java#L25-L27) - Required name field
+- [Album.java:29-31](../../../../../music/data/master/music-master-rest-api/src/main/java/yurykorzun/art/universe/music/data/master/entity/Album.java#L29-L31) - Required foreign key
+- [Track.java:25-27](../../../../../music/data/master/music-master-rest-api/src/main/java/yurykorzun/art/universe/music/data/master/entity/Track.java#L25-L27) - Required name field
 
 **Pattern**:
 ```java
@@ -61,8 +61,8 @@ private String fieldName;
 **Best Practice**: Match `@Size` max with `@Column` length
 
 **See Database Constraints**:
-- [Album migration](../../../../../music/data/master/src/main/resources/db/migration/mu/liquibase/changesets/0002-album/0002-0010-album$initial.sql) - VARCHAR(1024) for name
-- [Track migration](../../../../../music/data/master/src/main/resources/db/migration/mu/liquibase/changesets/0004-track/0004-0010-track$initial.sql) - VARCHAR(1024) for name
+- [Album migration](../../../../../music/data/master/music-master-rest-api/src/main/resources/db/migration/mu/liquibase/changesets/0002-album/0002-0010-album$initial.sql) - VARCHAR(1024) for name
+- [Track migration](../../../../../music/data/master/music-master-rest-api/src/main/resources/db/migration/mu/liquibase/changesets/0004-track/0004-0010-track$initial.sql) - VARCHAR(1024) for name
 
 **Pattern**:
 ```java
@@ -125,7 +125,7 @@ private String isrcCode;
 **Use when**: Validation involves multiple fields or complex logic beyond simple NOT NULL
 
 **See Migration Examples**:
-- [Album migration](../../../../../music/data/master/src/main/resources/db/migration/mu/liquibase/changesets/0002-album/0002-0010-album$initial.sql) - Foreign key constraints
+- [Album migration](../../../../../music/data/master/music-master-rest-api/src/main/resources/db/migration/mu/liquibase/changesets/0002-album/0002-0010-album$initial.sql) - Foreign key constraints
 
 **Pattern**:
 ```java
@@ -172,7 +172,7 @@ public boolean isReissueYearValid() {
 
 ### Required String Field with Length
 
-**See**: [Album.java:25-27](../../../../../music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/entity/Album.java#L25-L27)
+**See**: [Album.java:25-27](../../../../../music/data/master/music-master-rest-api/src/main/java/yurykorzun/art/universe/music/data/master/entity/Album.java#L25-L27)
 
 ```java
 @NonNull
@@ -202,7 +202,7 @@ private String description;
 
 ### Required Foreign Key
 
-**See**: [Album.java:29-31](../../../../../music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/entity/Album.java#L29-L31)
+**See**: [Album.java:29-31](../../../../../music/data/master/music-master-rest-api/src/main/java/yurykorzun/art/universe/music/data/master/entity/Album.java#L29-L31)
 
 ```java
 @NonNull
@@ -249,8 +249,8 @@ private Boolean approved = false;
 ### Test Required Fields
 
 **See Test Examples**:
-- [AlbumRepositoryTest.java](../../../../../music/data/master/src/test/java/yurykorzun/art/universe/music/data/master/repository/AlbumRepositoryTest.java)
-- [TrackRepositoryTest.java](../../../../../music/data/master/src/test/java/yurykorzun/art/universe/music/data/master/repository/TrackRepositoryTest.java)
+- [AlbumRepositoryTest.java](../../../../../music/data/master/music-master-rest-api/src/test/java/yurykorzun/art/universe/music/data/master/repository/AlbumRepositoryTest.java)
+- [TrackRepositoryTest.java](../../../../../music/data/master/music-master-rest-api/src/test/java/yurykorzun/art/universe/music/data/master/repository/TrackRepositoryTest.java)
 
 **Pattern**:
 ```java
@@ -380,19 +380,19 @@ Every validation constraint should have a corresponding test:
 
 ### Entities with Database Validation
 
-- [Album.java](../../../../../music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/entity/Album.java) - Required fields with @NonNull and @Column(nullable = false)
-- [Track.java](../../../../../music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/entity/Track.java) - Required fields and foreign keys
+- [Album.java](../../../../../music/data/master/music-master-rest-api/src/main/java/yurykorzun/art/universe/music/data/master/entity/Album.java) - Required fields with @NonNull and @Column(nullable = false)
+- [Track.java](../../../../../music/data/master/music-master-rest-api/src/main/java/yurykorzun/art/universe/music/data/master/entity/Track.java) - Required fields and foreign keys
 
 ### Migration Files with Constraints
 
-- [Album migration](../../../../../music/data/master/src/main/resources/db/migration/mu/liquibase/changesets/0002-album/0002-0010-album$initial.sql) - NOT NULL, foreign keys
-- [Track migration](../../../../../music/data/master/src/main/resources/db/migration/mu/liquibase/changesets/0004-track/0004-0010-track$initial.sql) - NOT NULL, foreign keys
+- [Album migration](../../../../../music/data/master/music-master-rest-api/src/main/resources/db/migration/mu/liquibase/changesets/0002-album/0002-0010-album$initial.sql) - NOT NULL, foreign keys
+- [Track migration](../../../../../music/data/master/music-master-rest-api/src/main/resources/db/migration/mu/liquibase/changesets/0004-track/0004-0010-track$initial.sql) - NOT NULL, foreign keys
 
 ### Validation Tests
 
-- [AlbumRepositoryTest.java](../../../../../music/data/master/src/test/java/yurykorzun/art/universe/music/data/master/repository/AlbumRepositoryTest.java)
-- [TrackRepositoryTest.java](../../../../../music/data/master/src/test/java/yurykorzun/art/universe/music/data/master/repository/TrackRepositoryTest.java)
-- [ArtistRepositoryTest.java](../../../../../music/data/master/src/test/java/yurykorzun/art/universe/music/data/master/repository/ArtistRepositoryTest.java)
+- [AlbumRepositoryTest.java](../../../../../music/data/master/music-master-rest-api/src/test/java/yurykorzun/art/universe/music/data/master/repository/AlbumRepositoryTest.java)
+- [TrackRepositoryTest.java](../../../../../music/data/master/music-master-rest-api/src/test/java/yurykorzun/art/universe/music/data/master/repository/TrackRepositoryTest.java)
+- [ArtistRepositoryTest.java](../../../../../music/data/master/music-master-rest-api/src/test/java/yurykorzun/art/universe/music/data/master/repository/ArtistRepositoryTest.java)
 
 ---
 

@@ -85,29 +85,29 @@ See [Environment Profiles Configuration](configuration/environment-profiles.md) 
 
 ## Examples from Actual Codebase
 
-### Music Data Master (`:music:data:master`)
+### Music Data Master REST API (`:music:data:master:music-master-rest-api`)
 
 ```
 Main class:
-music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/MusicDataMasterApplication.java
+music/data/master/music-master-rest-api/src/main/java/yurykorzun/art/universe/music/data/master/MusicDataMasterApplication.java
 
 Controllers:
-music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/controller/ArtistController.java
-music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/controller/AlbumController.java
+music/data/master/music-master-rest-api/src/main/java/yurykorzun/art/universe/music/data/master/controller/ArtistController.java
+music/data/master/music-master-rest-api/src/main/java/yurykorzun/art/universe/music/data/master/controller/AlbumController.java
 
 Entities:
-music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/entity/Artist.java
-music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/entity/Album.java
+music/data/master/music-master-rest-api/src/main/java/yurykorzun/art/universe/music/data/master/entity/Artist.java
+music/data/master/music-master-rest-api/src/main/java/yurykorzun/art/universe/music/data/master/entity/Album.java
 
 Services:
-music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/service/ArtistService.java
+music/data/master/music-master-rest-api/src/main/java/yurykorzun/art/universe/music/data/master/service/ArtistService.java
 
 Repositories:
-music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/repository/ArtistRepository.java
+music/data/master/music-master-rest-api/src/main/java/yurykorzun/art/universe/music/data/master/repository/ArtistRepository.java
 
 Tests:
-music/data/master/src/test/java/yurykorzun/art/universe/music/data/master/controller/ArtistControllerMvcTest.java
-music/data/master/src/test/java/yurykorzun/art/universe/music/data/master/repository/ArtistRepositoryTest.java
+music/data/master/music-master-rest-api/src/test/java/yurykorzun/art/universe/music/data/master/controller/ArtistControllerMvcTest.java
+music/data/master/music-master-rest-api/src/test/java/yurykorzun/art/universe/music/data/master/repository/ArtistRepositoryTest.java
 ```
 
 ### Music Quiz (`:music:quiz`)
@@ -144,7 +144,7 @@ music/data/raw/lastfm/etl/lastfm-response-parser/src/main/java/yurykorzun/art/un
 - `application.yml` with server port configuration
 - Typically include `controller/` package
 
-**Examples**: `:music:data:master`, `:music:quiz`, `:music:data:raw:lastfm:lastfm-rest-api`
+**Examples**: `:music:data:master:music-master-rest-api`, `:music:quiz`, `:music:data:raw:lastfm:lastfm-rest-api`
 
 ### Library Modules
 **Do NOT have**:

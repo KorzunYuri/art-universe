@@ -6,8 +6,8 @@ COPY build.gradle settings.gradle gradle.properties ./
 COPY buildSrc/ buildSrc/
 COPY common/ common/
 
-COPY music/data/master/build.gradle music/data/master/
-COPY music/data/master/src/ music/data/master/src/
+COPY music/data/master/music-master-rest-api/build.gradle music/data/master/music-master-rest-api/
+COPY music/data/master/music-master-rest-api/src/ music/data/master/music-master-rest-api/src/
 
 COPY music/data/master/music-master-semantic-analysis-trigger/build.gradle music/data/master/music-master-semantic-analysis-trigger/
 COPY music/data/master/music-master-semantic-analysis-trigger/src/ music/data/master/music-master-semantic-analysis-trigger/src/

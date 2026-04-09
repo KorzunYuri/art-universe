@@ -3,7 +3,7 @@ plugins {
     id 'org.liquibase.gradle'
 }
 
-archivesBaseName = 'music-data-master'
+archivesBaseName = 'music-master-rest-api'
 ext.dockerImageName = 'mu-music-data'
 
 dependencies {

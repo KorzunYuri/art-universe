@@ -41,9 +41,9 @@ value for manual curation.
 
 ## Domain Model
 
-- [Attribute Definition](../../../music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/entity/attribute/AttributeDef.java)
-- [Attribute Definition Applicability](../../../music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/entity/attribute/AttributeDefApplicability.java)
-- [Attribute Value](../../../music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/entity/attribute/EntityAttributeValue.java)
+- [Attribute Definition](../../../music/data/master/music-master-rest-api/src/main/java/yurykorzun/art/universe/music/data/master/entity/attribute/AttributeDef.java)
+- [Attribute Definition Applicability](../../../music/data/master/music-master-rest-api/src/main/java/yurykorzun/art/universe/music/data/master/entity/attribute/AttributeDefApplicability.java)
+- [Attribute Value](../../../music/data/master/music-master-rest-api/src/main/java/yurykorzun/art/universe/music/data/master/entity/attribute/EntityAttributeValue.java)
 
 
 ## Temporal Types

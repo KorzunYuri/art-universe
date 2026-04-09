@@ -715,7 +715,7 @@ Art Universe uses CodedRegistry to manage enum-to-integer mappings.
 In every module's configuration class, register all coded enums:
 
 **Example from Music Data Master**:
-`music/data/master/src/.../config/EnumRegistryConfig.java`
+`music/data/master/music-master-rest-api/src/.../config/EnumRegistryConfig.java`
 
 Key snippet:
 @Configuration

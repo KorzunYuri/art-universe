@@ -100,9 +100,9 @@ CREATE TABLE artist (
 
 ## Examples in Art Universe Codebase
 
-- [Master Artist](../../../../../music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/entity/Artist.java) - Simple Entity with Relationships
-- [Master Category](../../../../../music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/entity/Category.java) - Entity with Bidirectional Relationships
-- [Master Artsit Binding](../../../../../music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/entity/ArtistBinding.java) - Binding Entity
+- [Master Artist](../../../../../music/data/master/music-master-rest-api/src/main/java/yurykorzun/art/universe/music/data/master/entity/Artist.java) - Simple Entity with Relationships
+- [Master Category](../../../../../music/data/master/music-master-rest-api/src/main/java/yurykorzun/art/universe/music/data/master/entity/Category.java) - Entity with Bidirectional Relationships
+- [Master Artsit Binding](../../../../../music/data/master/music-master-rest-api/src/main/java/yurykorzun/art/universe/music/data/master/entity/ArtistBinding.java) - Binding Entity
 
 
 ## Best Practices

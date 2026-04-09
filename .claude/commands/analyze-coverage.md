@@ -7,7 +7,7 @@ You are analyzing and improving test coverage for a Gradle module in the Art Uni
 
 ## Input
 
-The user provides the Gradle module path as the command argument, e.g. `:music:data:master`.
+The user provides the Gradle module path as the command argument, e.g. `:music:data:master:music-master-rest-api`.
 If no argument was provided, ask the user which module to analyze before continuing.
 
 ## Step 1: Run coverage task

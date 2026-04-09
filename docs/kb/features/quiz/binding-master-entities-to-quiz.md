@@ -6,7 +6,7 @@ Current bindings are global and don't belong to any 'user' (at the moment of wri
 
 ## Modules Involved
 
-- [Music Master Data Service](../../../../music/data/master/README.md) - provides read access to master entities 
+- [Music Master Data Service](../../../../music/data/master/music-master-rest-api/README.md) - provides read access to master entities 
 - [Music Quiz service](../../../../music/quiz/README.md) - Creates and stores bindings (basically just master entity ids)
 - [Art Universe UI](../../../../ui/README.md) - provides user interface for 
 

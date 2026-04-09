@@ -22,8 +22,8 @@
 
 **Example:**
 ```bash
-./gradlew :music:data:master:build
-./gradlew :music:data:master:test
+./gradlew :music:quiz:build
+./gradlew :music:quiz:test
 ```
 
 ## Build Patterns
@@ -54,10 +54,10 @@
 ./gradlew test -PexcludeIntegrationTests
 
 # Run tests for specific module
-./gradlew :music:data:master:test
+./gradlew :music:quiz:test
 
 # Run integration tests for specific module
-./gradlew :music:data:master:integrationTest
+./gradlew :music:quiz:integrationTest
 ```
 
 ### Code Coverage

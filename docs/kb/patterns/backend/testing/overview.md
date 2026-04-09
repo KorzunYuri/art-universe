@@ -124,9 +124,9 @@ Check `build.gradle` for test dependencies.
 
 ## Examples in Codebase
 
-**Repository test**: music/data/master/src/test/java/**/repository/*RepositoryTest.java
-**Controller test**: music/data/master/src/test/java/**/controller/*ControllerTest.java
-**Service test**: music/data/master/src/test/java/**/service/*ServiceTest.java
+**Repository test**: music/data/master/music-master-rest-api/src/test/java/**/repository/*RepositoryTest.java
+**Controller test**: music/data/master/music-master-rest-api/src/test/java/**/controller/*ControllerTest.java
+**Service test**: music/data/master/music-master-rest-api/src/test/java/**/service/*ServiceTest.java
 
 
 ## See Also

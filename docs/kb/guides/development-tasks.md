@@ -154,7 +154,7 @@ If you changed shared code (common modules), build dependent modules:
 
 ```bash
 # Example: After changing commons-jpa
-./gradlew :music:data:master:build
+./gradlew :music:quiz:build
 ./gradlew :music:quiz:build
 ```
 

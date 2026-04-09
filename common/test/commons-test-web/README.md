@@ -18,4 +18,4 @@ It adds [CommonGlobalExceptionHandler.java](../../commons-web/src/main/java/yury
 
 Examples of usage:
 - [Lastfm controller example](../../../music/data/raw/lastfm/etl/lastfm-etl-rest-api/src/test/java/yurykorzun/art/universe/music/data/raw/lastfm/etl/controller/LastfmApiResponseControllerMvcTest.java)
-- [Example with an intermediate class](../../../music/data/master/src/test/java/yurykorzun/art/universe/music/data/master/controller/AlbumControllerMvcTest.java)
+- [Example with an intermediate class](../../../music/data/master/music-master-rest-api/src/test/java/yurykorzun/art/universe/music/data/master/controller/AlbumControllerMvcTest.java)

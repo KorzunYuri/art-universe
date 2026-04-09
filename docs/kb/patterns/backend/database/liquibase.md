@@ -280,7 +280,7 @@ ON CONFLICT ON CONSTRAINT rta_UK DO NOTHING;
 - `ON CONFLICT` targets the appropriate unique constraint for each table
 - Use `SELECT ... FROM` to reference parent rows by name rather than hardcoding FKs
 
-**Example**: [System relation types seed](../../../../../music/data/master/src/main/resources/db/migration/mu/liquibase/changesets/0016-relation-types/0016-0130-system_relation_types$seed.sql)
+**Example**: [System relation types seed](../../../../../music/data/master/music-master-rest-api/src/main/resources/db/migration/mu/liquibase/changesets/0016-relation-types/0016-0130-system_relation_types$seed.sql)
 
 
 ## Liquibase Tables
@@ -296,7 +296,7 @@ Liquibase creates two tables to track migrations:
 ## Examples in Codebase
 
 - [Music Quiz](../../../../../music/quiz/src/main/resources/db/migration/muquiz/liquibase/)
-- [Music Data Master](../../../../../music/data/master/src/main/resources/db/migration/mu/liquibase/)
+- [Music Data Master](../../../../../music/data/master/music-master-rest-api/src/main/resources/db/migration/mu/liquibase/)
 - [Music Data Lastfm](../../../../../music/data/raw/lastfm/migrations/lastfm-liquibase-resources/src/main/resources/db/migration/muraw/liquibase)
 
 

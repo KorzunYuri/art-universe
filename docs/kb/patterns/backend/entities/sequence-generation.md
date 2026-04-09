@@ -35,8 +35,8 @@ Every JPA entity must have:
 - `track_binding_seq` for TrackBinding entity
 
 **See Migration Files**:
-- [Album sequence creation](../../../../../music/data/master/src/main/resources/db/migration/mu/liquibase/changesets/0002-album/0002-0010-album$initial.sql)
-- [Track sequence creation](../../../../../music/data/master/src/main/resources/db/migration/mu/liquibase/changesets/0004-track/0004-0010-track$initial.sql)
+- [Album sequence creation](../../../../../music/data/master/music-master-rest-api/src/main/resources/db/migration/mu/liquibase/changesets/0002-album/0002-0010-album$initial.sql)
+- [Track sequence creation](../../../../../music/data/master/music-master-rest-api/src/main/resources/db/migration/mu/liquibase/changesets/0004-track/0004-0010-track$initial.sql)
 
 **Pattern**:
 ```sql
@@ -72,8 +72,8 @@ private Long id;
 ```
 
 **See Examples**:
-- **allocationSize = 50**: [Album.java:15-23](../../../../../music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/entity/Album.java#L15-L23)
-- **allocationSize = 50**: [Track.java:15-23](../../../../../music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/entity/Track.java#L15-L23)
+- **allocationSize = 50**: [Album.java:15-23](../../../../../music/data/master/music-master-rest-api/src/main/java/yurykorzun/art/universe/music/data/master/entity/Album.java#L15-L23)
+- **allocationSize = 50**: [Track.java:15-23](../../../../../music/data/master/music-master-rest-api/src/main/java/yurykorzun/art/universe/music/data/master/entity/Track.java#L15-L23)
 - **allocationSize = 50**: [LastfmArtist.java](../../../../../music/data/raw/lastfm/lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/entity/LastfmArtist.java)
 - **allocationSize = 1**: [Game.java](../../../../../music/quiz/src/main/java/yurykorzun/art/universe/music/quiz/entity/Game.java)
 
@@ -118,8 +118,8 @@ The `allocationSize` parameter determines how many IDs are pre-allocated by Hibe
 **Trade-off**: Sequence values may have gaps if application restarts
 
 **See Examples**:
-- [Album.java:19](../../../../../music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/entity/Album.java#L19)
-- [Track.java:19](../../../../../music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/entity/Track.java#L19)
+- [Album.java:19](../../../../../music/data/master/music-master-rest-api/src/main/java/yurykorzun/art/universe/music/data/master/entity/Album.java#L19)
+- [Track.java:19](../../../../../music/data/master/music-master-rest-api/src/main/java/yurykorzun/art/universe/music/data/master/entity/Track.java#L19)
 - [LastfmArtist.java](../../../../../music/data/raw/lastfm/lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/entity/LastfmArtist.java)
 
 ---
@@ -134,8 +134,8 @@ Both Album and Track entities use self-referencing relationships with optional g
 **Track**: `trackGroupId` → links versions/remixes to original track
 
 **See Implementation**:
-- [Album.java:37-42](../../../../../music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/entity/Album.java#L37-L42)
-- [Track.java:37-42](../../../../../music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/entity/Track.java#L37-L42)
+- [Album.java:37-42](../../../../../music/data/master/music-master-rest-api/src/main/java/yurykorzun/art/universe/music/data/master/entity/Album.java#L37-L42)
+- [Track.java:37-42](../../../../../music/data/master/music-master-rest-api/src/main/java/yurykorzun/art/universe/music/data/master/entity/Track.java#L37-L42)
 
 ---
 
@@ -144,9 +144,9 @@ Both Album and Track entities use self-referencing relationships with optional g
 ### Test Entity Creation with Sequence
 
 **See Test Files**:
-- [AlbumRepositoryTest.java](../../../../../music/data/master/src/test/java/yurykorzun/art/universe/music/data/master/repository/AlbumRepositoryTest.java)
-- [TrackRepositoryTest.java](../../../../../music/data/master/src/test/java/yurykorzun/art/universe/music/data/master/repository/TrackRepositoryTest.java)
-- [ArtistRepositoryTest.java](../../../../../music/data/master/src/test/java/yurykorzun/art/universe/music/data/master/repository/ArtistRepositoryTest.java)
+- [AlbumRepositoryTest.java](../../../../../music/data/master/music-master-rest-api/src/test/java/yurykorzun/art/universe/music/data/master/repository/AlbumRepositoryTest.java)
+- [TrackRepositoryTest.java](../../../../../music/data/master/music-master-rest-api/src/test/java/yurykorzun/art/universe/music/data/master/repository/TrackRepositoryTest.java)
+- [ArtistRepositoryTest.java](../../../../../music/data/master/music-master-rest-api/src/test/java/yurykorzun/art/universe/music/data/master/repository/ArtistRepositoryTest.java)
 
 **Testing Pattern**:
 ```java
@@ -235,8 +235,8 @@ SELECT setval('{table}_seq', {max_id}, false);
 ### Entity Files
 
 **Batch Entities (allocationSize = 50)**:
-- [Album.java](../../../../../music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/entity/Album.java)
-- [Track.java](../../../../../music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/entity/Track.java)
+- [Album.java](../../../../../music/data/master/music-master-rest-api/src/main/java/yurykorzun/art/universe/music/data/master/entity/Album.java)
+- [Track.java](../../../../../music/data/master/music-master-rest-api/src/main/java/yurykorzun/art/universe/music/data/master/entity/Track.java)
 - [LastfmArtist.java](../../../../../music/data/raw/lastfm/lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/entity/LastfmArtist.java)
 
 **On-Demand Entities (allocationSize = 1)**:
@@ -246,16 +246,16 @@ SELECT setval('{table}_seq', {max_id}, false);
 ### Migration Files
 
 **Sequence Creation**:
-- [0002-0010-album$initial.sql](../../../../../music/data/master/src/main/resources/db/migration/mu/liquibase/changesets/0002-album/0002-0010-album$initial.sql)
-- [0004-0010-track$initial.sql](../../../../../music/data/master/src/main/resources/db/migration/mu/liquibase/changesets/0004-track/0004-0010-track$initial.sql)
+- [0002-0010-album$initial.sql](../../../../../music/data/master/music-master-rest-api/src/main/resources/db/migration/mu/liquibase/changesets/0002-album/0002-0010-album$initial.sql)
+- [0004-0010-track$initial.sql](../../../../../music/data/master/music-master-rest-api/src/main/resources/db/migration/mu/liquibase/changesets/0004-track/0004-0010-track$initial.sql)
 
 **Changelog Index**:
-- [0002-album.xml](../../../../../music/data/master/src/main/resources/db/migration/mu/liquibase/changelogs/0002-album.xml)
-- [0004-track.xml](../../../../../music/data/master/src/main/resources/db/migration/mu/liquibase/changelogs/0004-track.xml)
+- [0002-album.xml](../../../../../music/data/master/music-master-rest-api/src/main/resources/db/migration/mu/liquibase/changelogs/0002-album.xml)
+- [0004-track.xml](../../../../../music/data/master/music-master-rest-api/src/main/resources/db/migration/mu/liquibase/changelogs/0004-track.xml)
 
 ### Test Files
 
 **Repository Tests**:
-- [AlbumRepositoryTest.java](../../../../../music/data/master/src/test/java/yurykorzun/art/universe/music/data/master/repository/AlbumRepositoryTest.java)
-- [TrackRepositoryTest.java](../../../../../music/data/master/src/test/java/yurykorzun/art/universe/music/data/master/repository/TrackRepositoryTest.java)
-- [ArtistRepositoryTest.java](../../../../../music/data/master/src/test/java/yurykorzun/art/universe/music/data/master/repository/ArtistRepositoryTest.java)
+- [AlbumRepositoryTest.java](../../../../../music/data/master/music-master-rest-api/src/test/java/yurykorzun/art/universe/music/data/master/repository/AlbumRepositoryTest.java)
+- [TrackRepositoryTest.java](../../../../../music/data/master/music-master-rest-api/src/test/java/yurykorzun/art/universe/music/data/master/repository/TrackRepositoryTest.java)
+- [ArtistRepositoryTest.java](../../../../../music/data/master/music-master-rest-api/src/test/java/yurykorzun/art/universe/music/data/master/repository/ArtistRepositoryTest.java)

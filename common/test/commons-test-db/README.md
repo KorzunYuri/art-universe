@@ -100,7 +100,7 @@ public abstract class YourDomainContextTestWithDb extends BaseTest {
 
 | Module | Base class | `initScript` |
 |--------|-----------|-------------|
-| `music:data:master` | `BaseMasterDataJpaTest` | — |
+| `music:data:master:music-master-rest-api` | `BaseMasterDataJpaTest` | — |
 | `music:quiz` | `BaseQuizJpaTest` | `db/mu-view-stubs.sql` (stubs `mu_view` objects) |
 | `music:data:raw:lastfm:*` | `LastfmJpaTest` / `LastfmContextTestWithDb` | — |
 

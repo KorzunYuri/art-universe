@@ -46,11 +46,11 @@ Ports follow a consistent scheme across environments: **dev = 7xxx**, **local = 
 
 ### Master Data Services
 
-| Service | Purpose | Module | Dev | Local | Prod |
-|---------|---------|--------|-----|-------|------|
-| [Art Data Master](../art/data/master/README.md) | Art foundation data management (Person CRUD) | [`:art:data:master`](../art/data/master/README.md) | 7081 | 9081 | 8081 |
-| [Music Data Master](../music/data/master/README.md) | Curated data management and binding service | [`:music:data:master`](../music/data/master/README.md) | 7082 | 9082 | 8082 |
-| Music Master Semantic Analysis Trigger | Scans master entities and submits analysis tickets | `:music:data:master:music-master-semantic-analysis-trigger` | 7101 | 9101 | 8101 |
+| Service | Purpose | Module                                                                        | Dev | Local | Prod |
+|---------|---------|-------------------------------------------------------------------------------|-----|-------|------|
+| [Art Data Master](../art/data/master/README.md) | Art foundation data management (Person CRUD) | [`:art:data:master`](../art/data/master/README.md)                            | 7081 | 9081 | 8081 |
+| [Music Data Master](../music/data/master/music-master-rest-api/README.md) | Curated data management and binding service | [`:music:data:master:music-master-rest-api`](../music/data/master/music-master-rest-api/README.md) | 7082 | 9082 | 8082 |
+| Music Master Semantic Analysis Trigger | Scans master entities and submits analysis tickets | `:music:data:master:music-master-semantic-analysis-trigger`                   | 7101 | 9101 | 8101 |
 
 ### Semantic Pipeline Services
 

@@ -45,7 +45,7 @@ Curated data powers various applications:
 
 - [LastFM Data Collection](../../../music/data/raw/lastfm/README.md): Complete ETL pipeline for fetching and parsing LastFM API data
 - [Spotify Data Collection](../../../music/data/raw/spotify/README.md): Complete ETL pipeline for fetching and parsing Spotify Web API data
-- [Master Data](../../../music/data/master/README.md): Entity management for artists, albums, tracks with basic relationships
+- [Master Data](../../../music/data/master/music-master-rest-api/README.md): Entity management for artists, albums, tracks with basic relationships
 - [Quiz Game](../../../music/quiz/README.md): "Guess the Track" quiz with configurable difficulty and categories
 
 [Art Universe UI](../../../ui/README.md) provides the interface to put all data management and application together.

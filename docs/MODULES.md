@@ -112,11 +112,11 @@ This document is the **single source of truth** for list of modules.
 
 ### Master Data & Quiz Modules
 
-| Module | Type | Purpose |
-|--------|------|---------|
-| [`:music:data:master`](../music/data/master/README.md) | Service | Master data management, binding service, and attribute system |
-| [`:music:quiz`](../music/quiz/README.md) | Service | Quiz generation from master data |
-| [`:ui`](../ui/README.md) | Service | React-based data management interface |
+| Module                                                                                              | Type | Purpose |
+|-----------------------------------------------------------------------------------------------------|------|---------|
+| [`:music:data:master:music-master-rest-api`](../music/data/master/music-master-rest-api/README.md) | Service | Master data management, binding service, and attribute system |
+| [`:music:quiz`](../music/quiz/README.md)                                                            | Service | Quiz generation from master data |
+| [`:ui`](../ui/README.md)                                                                            | Service | React-based data management interface |
 
 ---
 

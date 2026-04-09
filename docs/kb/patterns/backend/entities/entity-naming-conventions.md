@@ -246,10 +246,10 @@ private Boolean approved = false;  // → approved (BOOLEAN)
 ## Examples from Codebase
 
 ### Simple Entity
-`music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/entity/Artist.java`
+`music/data/master/music-master-rest-api/src/main/java/yurykorzun/art/universe/music/data/master/entity/Artist.java`
 
 ### Binding Entity
-`music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/entity/binding/ArtistBinding.java`
+`music/data/master/music-master-rest-api/src/main/java/yurykorzun/art/universe/music/data/master/entity/binding/ArtistBinding.java`
 
 ### Raw Data Entity
 `music/data/raw/lastfm/lastfm-models/src/main/java/yurykorzun/art/universe/music/data/raw/lastfm/entity/LastfmArtist.java`

@@ -228,7 +228,7 @@ Provided by Spring Boot Actuator.
 
 Controllers:
 ```
-music/data/master/src/main/java/**/controller/
+music/data/master/music-master-rest-api/src/main/java/**/controller/
 ```
 
 Example:

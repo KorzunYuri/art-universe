@@ -4,7 +4,7 @@ Binding raw entities to master is the core process of master data management. It
 - creating new master entities from the raw entities (with possible adjustments of name or other parameters)
 - binding raw entities to the existing master entities
 
-The concept is explained in [Music Master Data Service](../../../music/data/master/docs/entity-relations.md) aspect doc.
+The concept is explained in [Music Master Data Service](../../../music/data/master/music-master-rest-api/docs/entity-relations.md) aspect doc.
 
 At the moment of writing this Lastfm was the only source of raw entities, with Spotify planned.
 
@@ -26,7 +26,7 @@ At the moment of writing this Lastfm was the only source of raw entities, with S
 
 ## Modules Involved
 
-- [Music Master Data Service](../../../music/data/master/README.md) - Manages master entities
+- [Music Master Data Service](../../../music/data/master/music-master-rest-api/README.md) - Manages master entities
 - [Lastfm Read API](../../../music/data/raw/lastfm/lastfm-rest-api/README.md) - Provides read access to Lastfm entities
-- [Lastfm Write API](../../../music/data/master/README.md) - Provides write access to Lastfm entities (approval status management)
+- [Lastfm Write API](../../../music/data/raw/lastfm/etl/lastfm-etl-rest-api/README.md) - Provides write access to Lastfm entities (approval status management)
 - [Art Universe UI](../../../ui/README.md) - Provides user interface for all the required operations

@@ -74,7 +74,7 @@ public enum ExecutionStatus implements Coded {
 
 Apply the enum in your entity with `@Convert` annotation.
 
-**Example**: See entities using [ExecutionStatus](../../../../../music/quiz/src/main/java/yurykorzun/art/universe/music/quiz/entity/ExecutionStatus.java) or [DataSource](../../../../../music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/entity/DataSource.java)
+**Example**: See entities using [ExecutionStatus](../../../../../music/quiz/src/main/java/yurykorzun/art/universe/music/quiz/entity/ExecutionStatus.java) or [DataSource](../../../../../music/data/master/music-master-rest-api/src/main/java/yurykorzun/art/universe/music/data/master/entity/DataSource.java)
 
 **Key Points**:
 - Use `@Convert` annotation with your converter
@@ -174,11 +174,11 @@ Database: status = 3
 
 ### Data Source (Master Data Module)
 
-**Location**: [DataSource](../../../../../music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/entity/DataSource.java)
+**Location**: [DataSource](../../../../../music/data/master/music-master-rest-api/src/main/java/yurykorzun/art/universe/music/data/master/entity/DataSource.java)
 
 **Values**: Enumerates external data sources (LastFM, future sources)
 
-**Converter**: [DataSourceConverter](../../../../../music/data/master/src/main/java/yurykorzun/art/universe/music/data/master/entity/DataSourceConverter.java)
+**Converter**: [DataSourceConverter](../../../../../music/data/master/music-master-rest-api/src/main/java/yurykorzun/art/universe/music/data/master/entity/DataSourceConverter.java)
 
 ### Master Entity Type (Common Module)
 
