@@ -16,6 +16,29 @@ func NewTicketRepo(pool *pgxpool.Pool) *TicketRepo {
 	return &TicketRepo{pool: pool}
 }
 
+func (r *TicketRepo) LoadDataSources(ctx context.Context) (map[string]int, error) {
+	rows, err := r.pool.Query(ctx, `SELECT code, name FROM mu_semantic_analysis.data_source`)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load data sources: %w", err)
+	}
+	defer rows.Close()
+
+	sources := make(map[string]int)
+	for rows.Next() {
+		var code int
+		var name string
+		if err := rows.Scan(&code, &name); err != nil {
+			return nil, fmt.Errorf("failed to scan data source row: %w", err)
+		}
+		sources[name] = code
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating data source rows: %w", err)
+	}
+
+	return sources, nil
+}
+
 type SavedTicket struct {
 	ID string
 }

@@ -25,17 +25,17 @@ type TicketRequest struct {
 }
 
 type AnalysisTicket struct {
-	ID                    string     `json:"id"`
-	DataSource            int        `json:"data_source"`
-	SubjectType           int        `json:"subject_type"`
-	SubjectID             *int64     `json:"subject_id"`
-	SubjectName           string     `json:"subject_name"`
-	TextSamples           string     `json:"text_samples"`
-	ExpectedProposalTypes []int      `json:"expected_proposal_types"`
-	ExpectedEntityTypes   []int      `json:"expected_entity_types"`
-	AnalysisMode          int        `json:"analysis_mode"`
-	Status                int        `json:"status"`
-	CreatedAt             time.Time  `json:"created_at"`
+	ID                    string    `json:"id"`
+	DataSource            int       `json:"data_source"`
+	SubjectType           int       `json:"subject_type"`
+	SubjectID             *int64    `json:"subject_id"`
+	SubjectName           string    `json:"subject_name"`
+	TextSamples           string    `json:"text_samples"`
+	ExpectedProposalTypes []int     `json:"expected_proposal_types"`
+	ExpectedEntityTypes   []int     `json:"expected_entity_types"`
+	AnalysisMode          int       `json:"analysis_mode"`
+	Status                int       `json:"status"`
+	CreatedAt             time.Time `json:"created_at"`
 }
 
 // Entity type code mapping
@@ -49,14 +49,10 @@ var EntityTypeCodes = map[string]int{
 
 // Analysis mode code mapping
 var AnalysisModeCodes = map[string]int{
-	"full_extraction":          1,
-	"creative_categorization":  2,
+	"full_extraction":         1,
+	"creative_categorization": 2,
 }
 
-// Data source code mapping
-var DataSourceCodes = map[string]int{
-	"lastfm":      1,
-	"spotify":     2,
-	"musicbrainz": 3,
-	"master":      4,
-}
+// DataSourceCodes is loaded from the database on startup.
+// See repository.LoadDataSources().
+var DataSourceCodes = map[string]int{}
