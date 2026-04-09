@@ -101,6 +101,19 @@ services:
     networks:
       - mu__network
 
+  semantic-liquibase-service:
+    container_name: local__semantic__liquibase
+    image: mu-semantic-liquibase:latest
+    env_file:
+      - ../common/music-data-semantic.env
+      - ./common.env
+      - ./semantic.secrets.env
+    depends_on:
+      postgres-master:
+        condition: service_healthy
+    networks:
+      - mu__network
+
   au-config-liquibase:
     container_name: local__au-config__liquibase
     image: au-config-liquibase:latest
@@ -746,12 +759,14 @@ services:
       - ./semantic.env
       - ./semantic.secrets.env
     ports:
-      - "9095:7095"
+      - "9111:8080"
     depends_on:
       postgres-master:
         condition: service_healthy
+      semantic-liquibase-service:
+        condition: service_completed_successfully
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:7095/health"]
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/health"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -780,12 +795,14 @@ services:
       - ./semantic.env
       - ./semantic.secrets.env
     ports:
-      - "9096:8080"
+      - "9112:8080"
     volumes:
       - local__semantic-analyzer__app-logs:/app/logs
     depends_on:
       postgres-master:
         condition: service_healthy
+      semantic-liquibase-service:
+        condition: service_completed_successfully
       ticket-intake-service:
         condition: service_healthy
     deploy:
@@ -812,12 +829,14 @@ services:
       - ./semantic.env
       - ./semantic.secrets.env
     ports:
-      - "9097:8080"
+      - "9113:8080"
     volumes:
       - local__semantic-response-parser__app-logs:/app/logs
     depends_on:
       postgres-master:
         condition: service_healthy
+      semantic-liquibase-service:
+        condition: service_completed_successfully
     deploy:
       resources:
         limits:
@@ -842,12 +861,14 @@ services:
       - ./semantic.env
       - ./semantic.secrets.env
     ports:
-      - "9098:8080"
+      - "9114:8080"
     volumes:
       - local__semantic-applicator__app-logs:/app/logs
     depends_on:
       postgres-master:
         condition: service_healthy
+      semantic-liquibase-service:
+        condition: service_completed_successfully
       music-data:
         condition: service_healthy
     deploy:
@@ -861,12 +882,12 @@ services:
     networks:
       - mu__network
 
-  lastfm-analysis-trigger:
-    container_name: local__lastfm-analysis-trigger__app
+  lastfm-semantic-analysis-trigger:
+    container_name: local__lastfm-semantic-analysis-trigger__app
     restart: unless-stopped
     build:
       dockerfile: Dockerfile.local
-      context: ../../../music/data/raw/lastfm/etl/lastfm-analysis-trigger
+      context: ../../../music/data/raw/lastfm/etl/lastfm-semantic-analysis-trigger
     environment:
       - JAVA_OPTS=-Xms128m -Xmx384m -XX:MaxMetaspaceSize=96m
     env_file:
@@ -876,9 +897,9 @@ services:
       - ./music-data-raw-lastfm.secrets.env
       - ./semantic.env
     ports:
-      - "9099:8080"
+      - "9215:8080"
     volumes:
-      - local__lastfm-analysis-trigger__app-logs:/app/logs
+      - local__lastfm-semantic-analysis-trigger__app-logs:/app/logs
     depends_on:
       postgres-master:
         condition: service_healthy
@@ -895,12 +916,12 @@ services:
     networks:
       - mu__network
 
-  master-category-analyzer:
-    container_name: local__master-category-analyzer__app
+  music-master-semantic-analysis-trigger:
+    container_name: local__music-master-semantic-analysis-trigger__app
     restart: unless-stopped
     build:
       dockerfile: Dockerfile.local
-      context: ../../../music/data/master/master-category-analyzer
+      context: ../../../music/data/master/music-master-semantic-analysis-trigger
     environment:
       - JAVA_OPTS=-Xms128m -Xmx384m -XX:MaxMetaspaceSize=96m
     env_file:
@@ -909,9 +930,9 @@ services:
       - ./music-data.secrets.env
       - ./semantic.env
     ports:
-      - "9100:8080"
+      - "9101:8080"
     volumes:
-      - local__master-category-analyzer__app-logs:/app/logs
+      - local__music-master-semantic-analysis-trigger__app-logs:/app/logs
     depends_on:
       postgres-master:
         condition: service_healthy
@@ -1100,10 +1121,10 @@ volumes:
     name: local__semantic-response-parser__app-logs
   local__semantic-applicator__app-logs:
     name: local__semantic-applicator__app-logs
-  local__lastfm-analysis-trigger__app-logs:
-    name: local__lastfm-analysis-trigger__app-logs
-  local__master-category-analyzer__app-logs:
-    name: local__master-category-analyzer__app-logs
+  local__lastfm-semantic-analysis-trigger__app-logs:
+    name: local__lastfm-semantic-analysis-trigger__app-logs
+  local__music-master-semantic-analysis-trigger__app-logs:
+    name: local__music-master-semantic-analysis-trigger__app-logs
   local__mu__prometheus-data:
     name: local__mu__prometheus-data
   local__mu__grafana-data:
