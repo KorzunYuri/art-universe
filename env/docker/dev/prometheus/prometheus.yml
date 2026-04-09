@@ -18,6 +18,28 @@ scrape_configs:
     static_configs:
       - targets: ['host.docker.internal:7083']
 
+  # Master data management
+  - job_name: 'music-master-semantic-analysis-trigger'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['host.docker.internal:7101']
+
+  # Semantic pipeline
+  - job_name: 'semantic-analyzer'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['host.docker.internal:7112']
+
+  - job_name: 'semantic-response-parser'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['host.docker.internal:7113']
+
+  - job_name: 'semantic-applicator'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['host.docker.internal:7114']
+
   # LastFM web services
   - job_name: 'lastfm-rest-api'
     metrics_path: '/actuator/prometheus'
@@ -29,7 +51,7 @@ scrape_configs:
     static_configs:
       - targets: ['host.docker.internal:7085']
 
-  # LastFM ETL services (non-web apps)
+  # LastFM ETL services
   - job_name: 'lastfm-calls-generator'
     metrics_path: '/actuator/prometheus'
     static_configs:
@@ -44,6 +66,11 @@ scrape_configs:
     metrics_path: '/actuator/prometheus'
     static_configs:
       - targets: ['host.docker.internal:7088']
+
+  - job_name: 'lastfm-semantic-analysis-trigger'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['host.docker.internal:7215']
 
   # Spotify ETL services
   - job_name: 'spotify-calls-generator'
