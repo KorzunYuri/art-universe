@@ -23,6 +23,8 @@ include 'art:data:master'
 include 'music:data:master'
 include 'music:data:master:music-master-semantic-analysis-trigger'
 
+include 'music:data:semantic:migrations:semantic-liquibase-resources'
+include 'music:data:semantic:migrations:semantic-liquibase-service'
 include 'music:data:semantic:semantic-models'
 include 'music:data:semantic:semantic-analyzer'
 include 'music:data:semantic:semantic-response-parser'
