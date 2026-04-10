@@ -14,7 +14,7 @@ import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedBatchLo
 import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupRequestDTO;
 import yurykorzun.art.universe.common.domain.dto.lookup.BatchLookupResponseDTO;
 import yurykorzun.art.universe.common.domain.dto.lookup.LookupResultDTO;
-import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.model.DataSource;
 import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 
 import java.util.ArrayList;

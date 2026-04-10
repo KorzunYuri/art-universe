@@ -8,7 +8,7 @@ import org.springframework.test.context.jdbc.Sql;
 import yurykorzun.art.universe.music.data.master.test.archetypes.BaseMasterDataJpaTest;
 import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindResponseDTO;
-import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.model.DataSource;
 import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.repository.*;
 

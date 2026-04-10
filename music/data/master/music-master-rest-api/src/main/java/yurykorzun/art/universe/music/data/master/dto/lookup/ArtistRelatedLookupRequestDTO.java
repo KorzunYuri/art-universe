@@ -6,7 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import yurykorzun.art.universe.common.domain.dto.lookup.LookupRequestDTO;
-import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.model.DataSource;
 
 @Data
 @SuperBuilder

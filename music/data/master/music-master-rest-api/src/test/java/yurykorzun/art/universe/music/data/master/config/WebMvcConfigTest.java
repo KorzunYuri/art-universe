@@ -9,7 +9,7 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import yurykorzun.art.universe.common.test.archetypes.BaseMvcTest;
 import yurykorzun.art.universe.music.data.master.controller.RelationController;
-import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.model.DataSource;
 import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.service.RelationService;
 

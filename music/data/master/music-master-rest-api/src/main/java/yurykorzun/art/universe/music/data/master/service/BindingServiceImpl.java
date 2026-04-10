@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BatchUnbindResponseDTO;
-import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.model.DataSource;
 import yurykorzun.art.universe.music.data.master.entity.MasterEntityMetadata;
 import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 

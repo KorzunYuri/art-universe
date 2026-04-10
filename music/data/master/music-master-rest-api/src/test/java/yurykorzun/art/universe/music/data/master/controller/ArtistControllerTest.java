@@ -20,7 +20,7 @@ import yurykorzun.art.universe.common.domain.dto.lookup.LookupRequestDTO;
 import yurykorzun.art.universe.common.domain.dto.lookup.LookupResultDTO;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
-import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.model.DataSource;
 import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.model.MasterApprovalStatus;
 import yurykorzun.art.universe.music.data.master.model.Origin;

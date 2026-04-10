@@ -3,7 +3,7 @@ package yurykorzun.art.universe.music.data.master.entity.proposal;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.model.DataSource;
 import yurykorzun.art.universe.music.data.master.entity.attribute.AttributeTargetType;
 import yurykorzun.art.universe.music.data.semantic.model.AnalysisRequestStatus;
 

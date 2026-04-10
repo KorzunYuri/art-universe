@@ -9,7 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
-import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.model.DataSource;
 import yurykorzun.art.universe.music.data.master.repository.AlbumBindingRepository;
 import yurykorzun.art.universe.music.data.master.repository.AlbumCategoryRepository;
 import yurykorzun.art.universe.music.data.master.repository.AlbumRepository;

@@ -6,7 +6,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.entity.ArtistBinding;
-import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.model.DataSource;
 
 import java.util.List;
 import java.util.Optional;

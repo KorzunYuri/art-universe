@@ -7,7 +7,7 @@ import yurykorzun.art.universe.music.data.master.test.archetypes.BaseMasterDataJ
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.entity.Category;
 import yurykorzun.art.universe.music.data.master.entity.CategoryBinding;
-import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.model.DataSource;
 
 import java.util.List;
 

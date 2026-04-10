@@ -8,7 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelatedEntityDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.RelationBindingStatusDTO;
 import yurykorzun.art.universe.music.data.master.dto.relation.TargetEntityBindingDTO;
-import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.model.DataSource;
 import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.model.MasterApprovalStatus;
 import yurykorzun.art.universe.music.data.master.model.Origin;

@@ -4,6 +4,7 @@ plugins {
 
 dependencies {
     api project(':common:commons-jpa')
+    api project(':music:data:master:music-master-models')
 
     implementation 'com.fasterxml.jackson.core:jackson-databind'
 }

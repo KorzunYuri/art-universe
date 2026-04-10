@@ -1,6 +1,6 @@
 package yurykorzun.art.universe.music.data.master.dto.binding;
 
-import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.model.DataSource;
 
 public interface BoundEntityProjection {
     Long        getExternalId();

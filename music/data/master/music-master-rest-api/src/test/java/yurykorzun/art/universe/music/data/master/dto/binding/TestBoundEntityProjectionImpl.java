@@ -2,7 +2,7 @@ package yurykorzun.art.universe.music.data.master.dto.binding;
 
 import lombok.Builder;
 import lombok.Data;
-import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.model.DataSource;
 
 @Data
 @Builder

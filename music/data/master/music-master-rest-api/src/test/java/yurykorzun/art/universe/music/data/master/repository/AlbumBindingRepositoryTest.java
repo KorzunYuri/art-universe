@@ -8,7 +8,7 @@ import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjecti
 import yurykorzun.art.universe.music.data.master.entity.Album;
 import yurykorzun.art.universe.music.data.master.entity.AlbumBinding;
 import yurykorzun.art.universe.music.data.master.entity.Artist;
-import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.model.DataSource;
 
 import java.util.Arrays;
 import java.util.List;

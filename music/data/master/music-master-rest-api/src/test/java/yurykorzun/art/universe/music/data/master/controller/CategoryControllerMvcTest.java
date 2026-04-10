@@ -20,7 +20,7 @@ import yurykorzun.art.universe.music.data.master.dto.CategoryDagDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategoryDagNodeDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategoryDagEdgeDTO;
 import yurykorzun.art.universe.music.data.master.dto.CategoryRelationDTO;
-import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.model.DataSource;
 import yurykorzun.art.universe.music.data.master.service.BindingService;
 import yurykorzun.art.universe.music.data.master.service.CategoryService;
 import yurykorzun.art.universe.music.data.master.test.archetypes.BaseMasterDataMvcTest;

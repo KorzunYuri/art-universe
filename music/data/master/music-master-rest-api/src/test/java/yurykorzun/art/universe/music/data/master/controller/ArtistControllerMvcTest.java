@@ -20,7 +20,7 @@ import yurykorzun.art.universe.music.data.master.dto.ArtistSaveRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.ArtistWithCategoriesDto;
 import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjection;
 import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
-import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.model.DataSource;
 import yurykorzun.art.universe.music.data.master.service.ArtistService;
 import yurykorzun.art.universe.music.data.master.service.BindingService;
 

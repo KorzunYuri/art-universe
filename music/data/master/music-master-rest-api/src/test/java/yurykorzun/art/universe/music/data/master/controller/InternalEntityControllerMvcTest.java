@@ -7,7 +7,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import yurykorzun.art.universe.music.data.master.dto.*;
 import yurykorzun.art.universe.music.data.master.dto.binding.*;
-import yurykorzun.art.universe.music.data.master.entity.DataSource;
+import yurykorzun.art.universe.music.data.master.model.DataSource;
 
 import java.util.List;
 import yurykorzun.art.universe.music.data.master.model.MasterApprovalStatus;
