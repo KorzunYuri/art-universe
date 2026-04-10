@@ -17,4 +17,9 @@ dependencies {
 
     testImplementation project(':common:test:commons-test-web')
     testImplementation project(':common:test:commons-test-db')
+    testImplementation project(':music:data:master:migrations:master-liquibase-resources')
+
+    testRuntimeOnly 'org.liquibase:liquibase-core'
+    testRuntimeOnly 'org.testcontainers:postgresql'
+    testRuntimeOnly 'org.testcontainers:testcontainers'
 }

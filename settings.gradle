@@ -22,6 +22,7 @@ include 'art:data:master'
 
 include 'music:data:master:music-master-models'
 include 'music:data:master:migrations:master-liquibase-resources'
+include 'music:data:master:migrations:master-liquibase-service'
 include 'music:data:master:music-master-rest-api'
 include 'music:data:master:music-master-semantic-analysis-trigger'
 

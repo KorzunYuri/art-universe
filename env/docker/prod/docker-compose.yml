@@ -561,6 +561,18 @@ services:
     networks:
       - mu__network
 
+  master-liquibase-service:
+    container_name: prod__mu-master__liquibase
+    image: mu-master-liquibase:latest
+    env_file:
+      - ../common/music-data.env
+      - ./common.env
+      - ./music-data.secrets.env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - mu__network
+
   music-data:
     container_name: prod__mu-data__app
     restart: unless-stopped
@@ -580,6 +592,9 @@ services:
       - prod__mu-data__app-logs:/app/logs
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    depends_on:
+      master-liquibase-service:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${MU_DATA_APP_INTERNAL_PORT}/health"]
       interval: 10s
