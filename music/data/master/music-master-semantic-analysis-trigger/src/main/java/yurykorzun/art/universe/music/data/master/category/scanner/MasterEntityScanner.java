@@ -19,6 +19,9 @@ public class MasterEntityScanner {
 
     private static final Logger log = LoggerFactory.getLogger(MasterEntityScanner.class);
 
+    private static final int DATA_SOURCE_MASTER = 4;
+    private static final int ANALYSIS_MODE_CREATIVE_CATEGORIZATION = 2;
+
     private final JdbcTemplate jdbcTemplate;
     private final TicketIntakeClient intakeClient;
     private final ConfigPropertyHolder configPropertyHolder;
@@ -50,13 +53,21 @@ public class MasterEntityScanner {
         int batchSize = configPropertyHolder.getInt(MasterTriggerProperty.BATCH_SIZE);
         List<ObjectNode> tickets = new ArrayList<>();
 
+        String sql = String.format("""
+                SELECT id, name FROM mu.%s e
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM mu_semantic_analysis.analysis_ticket at
+                    WHERE at.data_source = ?
+                      AND at.subject_type = ?
+                      AND at.subject_id = e.id
+                      AND at.analysis_mode = ?
+                )
+                ORDER BY e.id
+                LIMIT ?
+                """, tableName);
+
         jdbcTemplate.query(
-            String.format(
-                "SELECT id, name FROM mu.%s " +
-                "WHERE id NOT IN (SELECT ac.%s_id FROM mu.artist_category ac) " +
-                "ORDER BY id LIMIT ?",
-                tableName, tableName.equals("artist") ? "artist" : "artist"
-            ),
+            sql,
             rs -> {
                 ObjectNode ticket = objectMapper.createObjectNode();
                 ticket.put("data_source", "MASTER");
@@ -76,6 +87,7 @@ public class MasterEntityScanner {
 
                 tickets.add(ticket);
             },
+            DATA_SOURCE_MASTER, entityTypeCode, ANALYSIS_MODE_CREATIVE_CATEGORIZATION,
             batchSize
         );
 

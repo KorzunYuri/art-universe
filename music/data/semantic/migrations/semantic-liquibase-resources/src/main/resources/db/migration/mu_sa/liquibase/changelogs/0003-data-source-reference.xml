@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
+
+    <changeSet id="0003-0010-data_source$initial" author="yurykorzun">
+        <sqlFile path="../changesets/0003-data-source-reference/0003-0010-data_source$initial.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="0003-0020-analysis_ticket$add_fk_data_source" author="yurykorzun">
+        <sqlFile path="../changesets/0003-data-source-reference/0003-0020-analysis_ticket$add_fk_data_source.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+</databaseChangeLog>

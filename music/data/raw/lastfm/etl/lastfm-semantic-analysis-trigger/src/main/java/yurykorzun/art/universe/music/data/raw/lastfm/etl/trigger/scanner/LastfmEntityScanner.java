@@ -15,6 +15,9 @@ import java.util.List;
 
 public abstract class LastfmEntityScanner {
 
+    private static final int DATA_SOURCE_LASTFM = 1;
+    private static final int ANALYSIS_MODE_FULL_EXTRACTION = 1;
+
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final JdbcTemplate jdbcTemplate;
@@ -69,6 +72,13 @@ public abstract class LastfmEntityScanner {
                 LEFT JOIN mu_raw_lastfm.entity_text_content summary
                   ON summary.entity_type = ? AND summary.entity_id = e.id AND summary.content_type = ?
                 WHERE e.listeners_count >= ?
+                  AND NOT EXISTS (
+                      SELECT 1 FROM mu_semantic_analysis.analysis_ticket at
+                      WHERE at.data_source = ?
+                        AND at.subject_type = ?
+                        AND at.subject_id = e.id
+                        AND at.analysis_mode = ?
+                  )
                 ORDER BY e.listeners_count DESC
                 LIMIT ?
                 """.formatted(entityTable());
@@ -99,7 +109,9 @@ public abstract class LastfmEntityScanner {
             },
             entityTypeCode(), contentTypeContent(),
             entityTypeCode(), contentTypeSummary(),
-            minListeners, batchSize
+            minListeners,
+            DATA_SOURCE_LASTFM, entityTypeCode(), ANALYSIS_MODE_FULL_EXTRACTION,
+            batchSize
         );
 
         if (!tickets.isEmpty()) {

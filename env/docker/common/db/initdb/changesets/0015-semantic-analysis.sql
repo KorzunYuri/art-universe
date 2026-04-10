@@ -21,6 +21,11 @@ GRANT USAGE ON SCHEMA mu TO mu_sa_dm;
 GRANT SELECT ON ALL TABLES IN SCHEMA mu TO mu_sa_dm;
 ALTER DEFAULT PRIVILEGES IN SCHEMA mu GRANT SELECT ON TABLES TO mu_sa_dm;
 
+-- mu_raw_lastfm_reader: read access to mu_semantic_analysis (for trigger dedup queries)
+GRANT USAGE ON SCHEMA mu_semantic_analysis TO mu_raw_lastfm_reader;
+GRANT SELECT ON ALL TABLES IN SCHEMA mu_semantic_analysis TO mu_raw_lastfm_reader;
+ALTER DEFAULT PRIVILEGES IN SCHEMA mu_semantic_analysis GRANT SELECT ON TABLES TO mu_raw_lastfm_reader;
+
 -- mu_dm: read/write access to mu_semantic_analysis schema (for proposal review API)
 GRANT USAGE ON SCHEMA mu_semantic_analysis TO mu_dm;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA mu_semantic_analysis TO mu_dm;

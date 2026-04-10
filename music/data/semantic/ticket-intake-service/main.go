@@ -10,6 +10,7 @@ import (
 
 	"yurykorzun/art-universe/ticket-intake-service/internal/config"
 	"yurykorzun/art-universe/ticket-intake-service/internal/handler"
+	"yurykorzun/art-universe/ticket-intake-service/internal/model"
 	"yurykorzun/art-universe/ticket-intake-service/internal/repository"
 	"yurykorzun/art-universe/ticket-intake-service/internal/service"
 )
@@ -32,6 +33,15 @@ func main() {
 
 	// Setup dependencies
 	repo := repository.NewTicketRepo(pool)
+
+	// Load valid data sources from DB
+	dataSources, err := repo.LoadDataSources(context.Background())
+	if err != nil {
+		log.Fatalf("Failed to load data sources: %v", err)
+	}
+	model.DataSourceCodes = dataSources
+	log.Printf("Loaded %d data sources from database", len(dataSources))
+
 	svc := service.NewTicketService(repo)
 	ticketHandler := handler.NewTicketHandler(svc)
 
