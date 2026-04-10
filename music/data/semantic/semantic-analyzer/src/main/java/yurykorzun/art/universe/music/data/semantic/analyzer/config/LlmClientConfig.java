@@ -1,5 +1,6 @@
 package yurykorzun.art.universe.music.data.semantic.analyzer.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -17,13 +18,17 @@ public class LlmClientConfig {
     private static final Logger log = LoggerFactory.getLogger(LlmClientConfig.class);
 
     @Bean
-    public LlmClientRegistry llmClientRegistry(LlmClientProperties clientProps, AnalysisModeProperties modeProps) {
+    public LlmClientRegistry llmClientRegistry(
+        LlmClientProperties clientProps,
+        AnalysisModeProperties modeProps,
+        ObjectMapper objectMapper
+    ) {
         // Build named client instances
         Map<String, LlmClient> namedClients = new HashMap<>();
         for (Map.Entry<String, LlmClientProperties.ClientConfig> entry : clientProps.getClients().entrySet()) {
             String name = entry.getKey();
             LlmClientProperties.ClientConfig cfg = entry.getValue();
-            LlmClient client = createClient(cfg);
+            LlmClient client = createClient(objectMapper, cfg);
             namedClients.put(name, client);
             log.info("Created LLM client '{}': provider={}, model={}, temperature={}",
                     name, cfg.getProvider(), cfg.getModel(), cfg.getTemperature());
@@ -46,9 +51,17 @@ public class LlmClientConfig {
         return new LlmClientRegistry(modeClients);
     }
 
-    private LlmClient createClient(LlmClientProperties.ClientConfig cfg) {
+    private LlmClient createClient(ObjectMapper objectMapper, LlmClientProperties.ClientConfig cfg) {
         return switch (cfg.getProvider()) {
-            case "openai" -> new OpenAiLlmClient(cfg.getApiKey(), cfg.getBaseUrl(), cfg.getModel(), cfg.getTemperature());
+            case "openai" -> new OpenAiLlmClient(
+                objectMapper,
+                cfg.getApiKey(),
+                cfg.getBaseUrl(),
+                cfg.getModel(),
+                cfg.getTemperature(),
+                cfg.getConnectTimeout(),
+                cfg.getReadTimeout()
+            );
             default -> throw new IllegalArgumentException("Unknown LLM provider: " + cfg.getProvider());
         };
     }

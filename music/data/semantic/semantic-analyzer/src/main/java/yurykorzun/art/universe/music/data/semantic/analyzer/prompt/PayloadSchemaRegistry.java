@@ -1,23 +1,29 @@
 package yurykorzun.art.universe.music.data.semantic.analyzer.prompt;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.stereotype.Component;
+import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.semantic.model.ProposalType;
 
-import java.util.*;
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.Map;
+import java.util.Set;
 
 @Component
 public class PayloadSchemaRegistry {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
     private final Map<ProposalType, ObjectNode> schemas = new EnumMap<>(ProposalType.class);
 
-    public PayloadSchemaRegistry() {
+    public PayloadSchemaRegistry(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
         initSchemas();
     }
 
-    public String getSchemasJson(Set<ProposalType> requestedTypes, Set<Integer> entityTypeCodes) {
+    public String getSchemasJson(Set<ProposalType> requestedTypes, Set<MasterEntityType> entityTypes) {
         try {
             ObjectNode root = objectMapper.createObjectNode();
             ObjectNode proposalTypesNode = root.putObject("proposal_types");
@@ -34,8 +40,8 @@ public class PayloadSchemaRegistry {
             }
 
             return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(root);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to serialize schemas", e);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Failed to serialize proposal type schemas", e);
         }
     }
 

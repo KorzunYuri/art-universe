@@ -1,60 +1,45 @@
 package yurykorzun.art.universe.music.data.semantic.analyzer.controller;
 
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.web.bind.annotation.*;
-import yurykorzun.art.universe.music.data.semantic.analyzer.reprocessing.ReprocessingService;
-
-import java.util.HashMap;
-import java.util.Map;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import yurykorzun.art.universe.music.data.semantic.analyzer.dto.ReprocessingRequestDto;
+import yurykorzun.art.universe.music.data.semantic.analyzer.dto.ReprocessingResultDto;
+import yurykorzun.art.universe.music.data.semantic.analyzer.dto.TicketStatsDto;
+import yurykorzun.art.universe.music.data.semantic.analyzer.service.AnalysisStatusService;
+import yurykorzun.art.universe.music.data.semantic.analyzer.service.ReprocessingService;
 
 @RestController
 @RequestMapping("/api/v1/analysis")
 public class AnalysisStatusController {
 
-    private final JdbcTemplate jdbcTemplate;
+    private static final int DEFAULT_BATCH_SIZE = 500;
+
+    private final AnalysisStatusService statusService;
     private final ReprocessingService reprocessingService;
 
-    public AnalysisStatusController(JdbcTemplate jdbcTemplate, ReprocessingService reprocessingService) {
-        this.jdbcTemplate = jdbcTemplate;
+    public AnalysisStatusController(
+        AnalysisStatusService statusService,
+        ReprocessingService reprocessingService
+    ) {
+        this.statusService = statusService;
         this.reprocessingService = reprocessingService;
     }
 
     @GetMapping("/tickets/stats")
-    public Map<String, Object> getTicketStats() {
-        Map<String, Object> stats = new HashMap<>();
-        jdbcTemplate.query(
-            "SELECT status, COUNT(*) as cnt FROM mu_semantic_analysis.analysis_ticket GROUP BY status",
-            rs -> {
-                int status = rs.getInt("status");
-                long count = rs.getLong("cnt");
-                String statusName = switch (status) {
-                    case 1 -> "pending";
-                    case 2 -> "processing";
-                    case 3 -> "completed";
-                    case 4 -> "failed";
-                    default -> "unknown_" + status;
-                };
-                stats.put(statusName, count);
-            }
-        );
-        return stats;
+    public TicketStatsDto getTicketStats() {
+        return statusService.getTicketStats();
     }
 
     @PostMapping("/reprocess")
-    public Map<String, Object> triggerReprocessing(@RequestBody Map<String, String> request) {
-        String fromVersion = request.get("from_version");
-        String toVersion = request.get("to_version");
-        int batchSize = Integer.parseInt(request.getOrDefault("batch_size", "500"));
-
-        ReprocessingService.ReprocessingResult result = reprocessingService.triggerReprocessing(
-            fromVersion, toVersion, batchSize
+    public ReprocessingResultDto triggerReprocessing(@Valid @RequestBody ReprocessingRequestDto request) {
+        return reprocessingService.triggerReprocessing(
+            request.fromVersion(),
+            request.toVersion(),
+            request.batchSizeOrDefault(DEFAULT_BATCH_SIZE)
         );
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("tickets_created", result.ticketsCreated());
-        response.put("proposals_superseded", result.proposalsSuperseded());
-        response.put("from_version", fromVersion);
-        response.put("to_version", toVersion);
-        return response;
     }
 }

@@ -2,6 +2,7 @@ package yurykorzun.art.universe.music.data.semantic.analyzer;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+
 @SpringBootApplication
 public class MusicSemanticAnalyzerApplication {
 

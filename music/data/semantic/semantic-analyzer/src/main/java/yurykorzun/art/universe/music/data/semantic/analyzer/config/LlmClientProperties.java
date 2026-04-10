@@ -4,6 +4,7 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.util.Map;
 
 @Data
@@ -20,5 +21,7 @@ public class LlmClientProperties {
         private String baseUrl = "https://api.openai.com/v1";
         private String model = "gpt-4o";
         private Double temperature;
+        private Duration connectTimeout = Duration.ofSeconds(10);
+        private Duration readTimeout = Duration.ofMinutes(2);
     }
 }

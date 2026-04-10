@@ -1,8 +1,9 @@
 package yurykorzun.art.universe.music.data.semantic.analyzer.prompt;
 
 import org.springframework.stereotype.Component;
-import yurykorzun.art.universe.music.data.semantic.analyzer.cache.AttributeDefCacheService;
-import yurykorzun.art.universe.music.data.semantic.analyzer.cache.CategoryCacheService;
+import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
+import yurykorzun.art.universe.music.data.semantic.analyzer.service.AttributeDefCacheService;
+import yurykorzun.art.universe.music.data.semantic.analyzer.service.CategoryCacheService;
 import yurykorzun.art.universe.music.data.semantic.model.AnalysisMode;
 import yurykorzun.art.universe.music.data.semantic.model.ProposalType;
 
@@ -37,12 +38,12 @@ public class PromptBuilder {
 
     public String buildUserPrompt(
         AnalysisMode mode,
-        String subjectType,
+        MasterEntityType subjectType,
         String subjectName,
         Long subjectId,
         String textSamplesJson,
         Set<ProposalType> expectedTypes,
-        Set<Integer> expectedEntityTypes
+        Set<MasterEntityType> expectedEntityTypes
     ) {
         return switch (mode) {
             case FULL_EXTRACTION -> buildFullExtractionUserPrompt(
@@ -84,17 +85,17 @@ public class PromptBuilder {
     }
 
     private String buildFullExtractionUserPrompt(
-        String subjectType,
+        MasterEntityType subjectType,
         String subjectName,
         Long subjectId,
         String textSamplesJson,
         Set<ProposalType> expectedTypes,
-        Set<Integer> expectedEntityTypes
+        Set<MasterEntityType> expectedEntityTypes
     ) {
         StringBuilder sb = new StringBuilder();
 
         sb.append("## Subject\n");
-        sb.append(String.format("Type: %s, Name: %s", subjectType, subjectName));
+        sb.append(String.format("Type: %s, Name: %s", subjectTypeLabel(subjectType), subjectName));
         if (subjectId != null) {
             sb.append(String.format(", ID: %d", subjectId));
         }
@@ -168,7 +169,7 @@ public class PromptBuilder {
     }
 
     private String buildCreativeCategorizationUserPrompt(
-        String subjectType,
+        MasterEntityType subjectType,
         String subjectName,
         Long subjectId,
         String textSamplesJson
@@ -176,7 +177,7 @@ public class PromptBuilder {
         StringBuilder sb = new StringBuilder();
 
         sb.append("## Subject\n");
-        sb.append(String.format("Type: %s, Name: %s", subjectType, subjectName));
+        sb.append(String.format("Type: %s, Name: %s", subjectTypeLabel(subjectType), subjectName));
         if (subjectId != null) {
             sb.append(String.format(", ID: %d", subjectId));
         }
@@ -204,5 +205,9 @@ public class PromptBuilder {
         sb.append("cultural references, and surprising associations.\n");
 
         return sb.toString();
+    }
+
+    private String subjectTypeLabel(MasterEntityType type) {
+        return type.getName().toUpperCase();
     }
 }
