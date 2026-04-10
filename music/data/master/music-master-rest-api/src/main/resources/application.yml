@@ -33,8 +33,7 @@ spring:
     hibernate:
       ddl-auto: none
   liquibase:
-    default-schema: ${MU_DATA_DB_SCHEMA}
-    change-log: classpath:db/migration/mu/liquibase/db.changelog.xml
+    enabled: false
   docker:
     compose:
       enabled: false

@@ -1,6 +1,5 @@
 plugins {
     id 'art-universe.spring-boot-web-app'
-    id 'org.liquibase.gradle'
 }
 
 archivesBaseName = 'music-master-rest-api'
@@ -15,8 +14,6 @@ dependencies {
     implementation project(':music:data:semantic:semantic-models')
 
     implementation 'org.springframework.boot:spring-boot-docker-compose'
-
-    runtimeOnly 'org.liquibase:liquibase-core'
 
     testImplementation project(':common:test:commons-test-web')
     testImplementation project(':common:test:commons-test-db')
