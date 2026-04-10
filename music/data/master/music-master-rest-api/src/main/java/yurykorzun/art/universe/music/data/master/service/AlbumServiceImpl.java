@@ -15,8 +15,9 @@ import yurykorzun.art.universe.music.data.master.dto.binding.*;
 import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedBatchLookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.lookup.ArtistRelatedLookupRequestDTO;
 import yurykorzun.art.universe.music.data.master.entity.*;
-import yurykorzun.art.universe.music.data.master.entity.MasterApprovalStatus;
-import yurykorzun.art.universe.music.data.master.entity.Origin;
+import yurykorzun.art.universe.music.data.master.model.MasterApprovalStatus;
+import yurykorzun.art.universe.music.data.master.model.DataSource;
+import yurykorzun.art.universe.music.data.master.model.Origin;
 import yurykorzun.art.universe.music.data.master.repository.*;
 import yurykorzun.art.universe.music.data.master.service.lookup.ArtistRelatedLookupService;
 

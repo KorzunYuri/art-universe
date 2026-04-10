@@ -20,6 +20,9 @@ import yurykorzun.art.universe.music.data.master.dto.binding.BoundEntityProjecti
 import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProjectionImpl;
 import yurykorzun.art.universe.music.data.master.entity.*;
 import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
+import yurykorzun.art.universe.music.data.master.model.DataSource;
+import yurykorzun.art.universe.music.data.master.model.MasterApprovalStatus;
+import yurykorzun.art.universe.music.data.master.model.Origin;
 import yurykorzun.art.universe.music.data.master.repository.ArtistBindingRepository;
 import yurykorzun.art.universe.music.data.master.repository.ArtistCategoryRepository;
 import yurykorzun.art.universe.music.data.master.repository.ArtistRepository;

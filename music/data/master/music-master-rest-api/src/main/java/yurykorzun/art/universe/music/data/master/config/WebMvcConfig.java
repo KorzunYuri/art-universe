@@ -5,9 +5,9 @@ import org.springframework.format.FormatterRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import yurykorzun.art.universe.common.domain.entity.EntityType;
 import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
-import yurykorzun.art.universe.music.data.master.entity.DataSource;
-import yurykorzun.art.universe.music.data.master.entity.MasterApprovalStatus;
-import yurykorzun.art.universe.music.data.master.entity.Origin;
+import yurykorzun.art.universe.music.data.master.model.DataSource;
+import yurykorzun.art.universe.music.data.master.model.MasterApprovalStatus;
+import yurykorzun.art.universe.music.data.master.model.Origin;
 
 /**
  * Configuration for WebMvc to handle enum conversion

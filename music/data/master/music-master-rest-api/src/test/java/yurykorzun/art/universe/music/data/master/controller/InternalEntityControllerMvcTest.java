@@ -10,8 +10,8 @@ import yurykorzun.art.universe.music.data.master.dto.binding.*;
 import yurykorzun.art.universe.music.data.master.entity.DataSource;
 
 import java.util.List;
-import yurykorzun.art.universe.music.data.master.entity.MasterApprovalStatus;
-import yurykorzun.art.universe.music.data.master.entity.Origin;
+import yurykorzun.art.universe.music.data.master.model.MasterApprovalStatus;
+import yurykorzun.art.universe.music.data.master.model.Origin;
 import yurykorzun.art.universe.music.data.master.service.AlbumService;
 import yurykorzun.art.universe.music.data.master.service.ArtistService;
 import yurykorzun.art.universe.music.data.master.service.CategoryService;

@@ -2,6 +2,7 @@ package yurykorzun.art.universe.music.data.master.entity;
 
 import org.junit.jupiter.api.Test;
 import yurykorzun.art.universe.common.CodedRegistry;
+import yurykorzun.art.universe.music.data.master.model.MasterApprovalStatus;
 
 import static org.junit.jupiter.api.Assertions.*;
 

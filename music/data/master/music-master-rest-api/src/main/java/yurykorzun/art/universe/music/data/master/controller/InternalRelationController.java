@@ -3,8 +3,8 @@ package yurykorzun.art.universe.music.data.master.controller;
 import jakarta.annotation.Nullable;
 import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.common.domain.entity.EntityType;
-import yurykorzun.art.universe.music.data.master.entity.MasterApprovalStatus;
-import yurykorzun.art.universe.music.data.master.entity.Origin;
+import yurykorzun.art.universe.music.data.master.model.MasterApprovalStatus;
+import yurykorzun.art.universe.music.data.master.model.Origin;
 import yurykorzun.art.universe.music.data.master.service.RelationService;
 
 import java.util.List;

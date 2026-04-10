@@ -1,6 +1,7 @@
 package yurykorzun.art.universe.music.data.master.entity;
 
 import org.junit.jupiter.api.Test;
+import yurykorzun.art.universe.music.data.master.model.DataSource;
 
 import static org.junit.jupiter.api.Assertions.*;
 

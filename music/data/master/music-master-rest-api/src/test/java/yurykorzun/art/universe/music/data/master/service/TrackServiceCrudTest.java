@@ -15,6 +15,8 @@ import yurykorzun.art.universe.music.data.master.dto.TrackDto;
 import yurykorzun.art.universe.music.data.master.dto.TrackSaveRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.TrackWithCategoriesDto;
 import yurykorzun.art.universe.music.data.master.entity.*;
+import yurykorzun.art.universe.music.data.master.model.MasterApprovalStatus;
+import yurykorzun.art.universe.music.data.master.model.Origin;
 import yurykorzun.art.universe.music.data.master.repository.CategoryRepository;
 import yurykorzun.art.universe.music.data.master.repository.TrackBindingRepository;
 import yurykorzun.art.universe.music.data.master.repository.TrackCategoryRepository;

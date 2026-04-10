@@ -12,6 +12,9 @@ import yurykorzun.art.universe.music.data.master.dto.binding.TestBoundEntityProj
 import yurykorzun.art.universe.music.data.master.dto.binding.ArtistRelatedEntityCreateAndBindRequestDTO;
 import yurykorzun.art.universe.music.data.master.entity.*;
 import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
+import yurykorzun.art.universe.music.data.master.model.DataSource;
+import yurykorzun.art.universe.music.data.master.model.MasterApprovalStatus;
+import yurykorzun.art.universe.music.data.master.model.Origin;
 import yurykorzun.art.universe.music.data.master.repository.TrackBindingRepository;
 import yurykorzun.art.universe.music.data.master.repository.TrackRepository;
 

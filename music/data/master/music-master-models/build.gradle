@@ -1,0 +1,9 @@
+plugins {
+    id 'art-universe.java-library'
+}
+
+dependencies {
+    api project(':common:commons-jpa')
+
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+}

@@ -1,4 +1,4 @@
-package yurykorzun.art.universe.music.data.master.entity;
+package yurykorzun.art.universe.music.data.master.model;
 
 import jakarta.persistence.Converter;
 import yurykorzun.art.universe.common.persistence.converter.CodedConverter;
