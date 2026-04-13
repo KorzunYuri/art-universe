@@ -8,7 +8,4 @@ dependencies {
     implementation project(':common:commons-web')
     implementation project(':common:commons-observability')
     implementation project(':common:config:config-client')
-
-    implementation 'org.springframework.boot:spring-boot-docker-compose'
-    implementation 'org.springframework.boot:spring-boot-starter-webflux'
 }
