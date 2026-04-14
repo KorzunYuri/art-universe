@@ -1,11 +1,21 @@
 spring:
   application:
     name: lastfm-semantic-analysis-trigger
+  config:
+    import:
+      - classpath:commons-context.yml
+      - optional:classpath:commons-context-${spring.profiles.active}.yml
+      - classpath:commons-observability.yml
+      - optional:classpath:commons-observability-${spring.profiles.active}.yml
   datasource:
     driverClassName: org.postgresql.Driver
     url: jdbc:postgresql://${AU_DB_MASTER_HOST}:${AU_DB_MASTER_PORT}/${AU_DB_NAME}?currentSchema=${MURAW_LASTFM_DB_SCHEMA}
     username: ${MURAW_LASTFM_DB_READER_USERNAME}
     password: '${MURAW_LASTFM_DB_READER_PASSWORD}'
+    hikari:
+      pool-name: LastfmTriggerHikariPool
+      maximum-pool-size: 4
+      minimum-idle: 1
   jpa:
     hibernate:
       ddl-auto: none
