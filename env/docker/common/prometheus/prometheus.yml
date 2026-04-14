@@ -65,3 +65,30 @@ scrape_configs:
     metrics_path: '/actuator/prometheus'
     static_configs:
       - targets: ['spotify-staging-applicator:8080']
+
+  # Semantic Analysis services
+  - job_name: 'semantic-analyzer'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['semantic-analyzer:8080']
+
+  - job_name: 'semantic-response-parser'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['semantic-response-parser:8080']
+
+  - job_name: 'semantic-applicator'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['semantic-applicator:8080']
+
+  # Analysis trigger services
+  - job_name: 'lastfm-semantic-analysis-trigger'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['lastfm-semantic-analysis-trigger:8080']
+
+  - job_name: 'music-master-semantic-analysis-trigger'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['music-master-semantic-analysis-trigger:8080']
