@@ -7,10 +7,13 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
+import yurykorzun.art.universe.data.raw.common.integration.AdaptiveRateLimiter;
 import yurykorzun.art.universe.music.data.semantic.analyzer.llm.LlmClient;
 import yurykorzun.art.universe.music.data.semantic.analyzer.llm.LlmRequest;
 import yurykorzun.art.universe.music.data.semantic.analyzer.llm.LlmResponse;
@@ -26,6 +29,7 @@ public class OpenAiLlmClient implements LlmClient {
     private final ObjectMapper objectMapper;
     private final String defaultModel;
     private final Double temperature;
+    private final AdaptiveRateLimiter rateLimiter;
 
     public OpenAiLlmClient(
         ObjectMapper objectMapper,
@@ -34,7 +38,8 @@ public class OpenAiLlmClient implements LlmClient {
         String defaultModel,
         Double temperature,
         Duration connectTimeout,
-        Duration readTimeout
+        Duration readTimeout,
+        AdaptiveRateLimiter rateLimiter
     ) {
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         requestFactory.setConnectTimeout((int) connectTimeout.toMillis());
@@ -48,11 +53,24 @@ public class OpenAiLlmClient implements LlmClient {
         this.objectMapper = objectMapper;
         this.defaultModel = defaultModel;
         this.temperature = temperature;
+        this.rateLimiter = rateLimiter;
     }
 
     @Override
     public LlmResponse analyze(LlmRequest request) {
         String model = request.getModel() != null ? request.getModel() : defaultModel;
+        try {
+            rateLimiter.acquire();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return LlmResponse.builder()
+                .provider(PROVIDER)
+                .model(model)
+                .success(false)
+                .errorMessage("Rate limiter sleep interrupted")
+                .build();
+        }
+
         try {
             String body = buildRequestBody(request, model);
             String responseBody = restClient.post()
@@ -64,6 +82,7 @@ public class OpenAiLlmClient implements LlmClient {
             JsonNode responseJson = objectMapper.readTree(responseBody);
             JsonNode usage = responseJson.path("usage");
 
+            rateLimiter.recordSuccess();
             return LlmResponse.builder()
                 .content(responseJson.path("choices").path(0).path("message").path("content").asText())
                 .provider(PROVIDER)
@@ -73,6 +92,25 @@ public class OpenAiLlmClient implements LlmClient {
                 .success(true)
                 .build();
 
+        } catch (HttpStatusCodeException e) {
+            if (e.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS) {
+                rateLimiter.record429();
+                log.warn("OpenAI-compatible API rate-limited (429); ticket will be retried after backoff");
+                return LlmResponse.builder()
+                    .provider(PROVIDER)
+                    .model(model)
+                    .success(false)
+                    .rateLimited(true)
+                    .errorMessage("429 Too Many Requests")
+                    .build();
+            }
+            log.error("OpenAI API call failed: status={}, body={}", e.getStatusCode(), e.getResponseBodyAsString(), e);
+            return LlmResponse.builder()
+                .provider(PROVIDER)
+                .model(model)
+                .success(false)
+                .errorMessage(e.getStatusCode() + ": " + e.getMessage())
+                .build();
         } catch (RestClientException | JsonProcessingException e) {
             log.error("OpenAI API call failed", e);
             return LlmResponse.builder()

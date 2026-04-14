@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import yurykorzun.art.universe.data.raw.common.integration.AdaptiveRateLimiter;
 import yurykorzun.art.universe.music.data.semantic.analyzer.llm.LlmClient;
 import yurykorzun.art.universe.music.data.semantic.analyzer.llm.openai.OpenAiLlmClient;
 import yurykorzun.art.universe.music.data.semantic.model.AnalysisMode;
@@ -52,6 +53,11 @@ public class LlmClientConfig {
     }
 
     private LlmClient createClient(ObjectMapper objectMapper, LlmClientProperties.ClientConfig cfg) {
+        AdaptiveRateLimiter rateLimiter = new AdaptiveRateLimiter(
+            cfg.getRateLimit().getMinDelayMs(),
+            cfg.getRateLimit().getMaxDelayMs(),
+            cfg.getRateLimit().getBackoffMultiplier()
+        );
         return switch (cfg.getProvider()) {
             case "openai" -> new OpenAiLlmClient(
                 objectMapper,
@@ -60,7 +66,8 @@ public class LlmClientConfig {
                 cfg.getModel(),
                 cfg.getTemperature(),
                 cfg.getConnectTimeout(),
-                cfg.getReadTimeout()
+                cfg.getReadTimeout(),
+                rateLimiter
             );
             default -> throw new IllegalArgumentException("Unknown LLM provider: " + cfg.getProvider());
         };

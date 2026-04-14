@@ -39,6 +39,10 @@ semantic:
         temperature: 0.2
         connect-timeout: 10s
         read-timeout: 120s
+        rate-limit:
+          min-delay-ms: ${LLM_EXTRACTION_MIN_DELAY_MS:4000}
+          max-delay-ms: ${LLM_EXTRACTION_MAX_DELAY_MS:120000}
+          backoff-multiplier: ${LLM_EXTRACTION_BACKOFF_MULTIPLIER:2.0}
       creative:
         provider: openai
         api-key: ${GROQ_API_KEY:}
@@ -47,6 +51,10 @@ semantic:
         temperature: 1.2
         connect-timeout: 10s
         read-timeout: 60s
+        rate-limit:
+          min-delay-ms: ${LLM_CREATIVE_MIN_DELAY_MS:2000}
+          max-delay-ms: ${LLM_CREATIVE_MAX_DELAY_MS:60000}
+          backoff-multiplier: ${LLM_CREATIVE_BACKOFF_MULTIPLIER:2.0}
   modes:
     full_extraction: extraction
     creative_categorization: creative

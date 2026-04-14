@@ -23,5 +23,13 @@ public class LlmClientProperties {
         private Double temperature;
         private Duration connectTimeout = Duration.ofSeconds(10);
         private Duration readTimeout = Duration.ofMinutes(2);
+        private RateLimitConfig rateLimit = new RateLimitConfig();
+    }
+
+    @Data
+    public static class RateLimitConfig {
+        private long minDelayMs = 0L;
+        private long maxDelayMs = 60_000L;
+        private double backoffMultiplier = 2.0;
     }
 }

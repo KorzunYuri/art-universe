@@ -54,4 +54,17 @@ public class AnalysisTicketService {
         managed.setErrorMessage(errorMessage);
         managed.setCompletedAt(Instant.now());
     }
+
+    /**
+     * Resets a ticket back to PENDING so it will be re-picked on the next poll.
+     * Used when a transient failure (e.g. LLM rate limit) should not terminate
+     * the ticket but defer it.
+     */
+    @Transactional
+    public void resetToPending(AnalysisTicket ticket) {
+        AnalysisTicket managed = ticketRepository.getReferenceById(ticket.getId());
+        managed.setStatus(AnalysisTicketStatus.PENDING);
+        managed.setPickedUpAt(null);
+        managed.setAnalysisVersion(null);
+    }
 }

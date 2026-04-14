@@ -9,5 +9,6 @@ dependencies {
     implementation project(':common:commons-observability')
     implementation project(':common:commons-pg-notify')
     implementation project(':common:config:config-client')
+    implementation project(':common:data:raw:data-raw-commons-api-client')
     implementation project(':music:data:semantic:semantic-models')
 }

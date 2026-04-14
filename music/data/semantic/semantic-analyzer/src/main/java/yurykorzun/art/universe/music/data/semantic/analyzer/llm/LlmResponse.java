@@ -17,5 +17,6 @@ public class LlmResponse {
     private int promptTokens;
     private int completionTokens;
     private boolean success;
+    private boolean rateLimited;
     private String errorMessage;
 }

@@ -84,6 +84,11 @@ public class SemanticAnalyzer {
                 requestService.completeRequest(request.getId(), response);
                 ticketService.markCompleted(ticket);
                 log.info("Successfully analyzed ticket {} (mode={})", ticket.getId(), mode.getName());
+            } else if (response.isRateLimited()) {
+                requestService.failRequest(request.getId(), response.getProvider(), response.getErrorMessage());
+                ticketService.resetToPending(ticket);
+                log.warn("Ticket {} hit LLM rate limit — reset to PENDING for retry after backoff",
+                    ticket.getId());
             } else {
                 requestService.failRequest(request.getId(), response.getProvider(), response.getErrorMessage());
                 ticketService.markFailed(ticket, response.getErrorMessage());
