@@ -1,6 +1,7 @@
 package yurykorzun.art.universe.music.data.semantic.analyzer.entity;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -10,9 +11,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
+import yurykorzun.art.universe.common.persistence.converter.EntityTypeConverter;
 import yurykorzun.art.universe.music.data.master.model.DataSource;
+import yurykorzun.art.universe.music.data.master.model.DataSourceConverter;
 import yurykorzun.art.universe.music.data.semantic.model.AnalysisMode;
+import yurykorzun.art.universe.music.data.semantic.model.AnalysisModeConverter;
 import yurykorzun.art.universe.music.data.semantic.model.AnalysisRequestStatus;
+import yurykorzun.art.universe.music.data.semantic.model.AnalysisRequestStatusConverter;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -39,18 +44,22 @@ public class AnalysisRequest {
     @Column(name = "analysis_version", nullable = false, length = 32)
     private String analysisVersion;
 
+    @Convert(converter = DataSourceConverter.class)
     @Column(name = "data_source", nullable = false)
     private DataSource dataSource;
 
+    @Convert(converter = EntityTypeConverter.class)
     @Column(name = "subject_type", nullable = false)
     private MasterEntityType subjectType;
 
     @Column(name = "subject_id")
     private Long subjectId;
 
+    @Convert(converter = AnalysisModeConverter.class)
     @Column(name = "analysis_mode", nullable = false)
     private AnalysisMode analysisMode;
 
+    @Convert(converter = AnalysisRequestStatusConverter.class)
     @Column(name = "status", nullable = false)
     private AnalysisRequestStatus status;
 

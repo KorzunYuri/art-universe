@@ -1,6 +1,7 @@
 package yurykorzun.art.universe.music.data.semantic.analyzer.entity;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -13,9 +14,13 @@ import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
+import yurykorzun.art.universe.common.persistence.converter.EntityTypeConverter;
 import yurykorzun.art.universe.music.data.master.model.DataSource;
+import yurykorzun.art.universe.music.data.master.model.DataSourceConverter;
 import yurykorzun.art.universe.music.data.semantic.model.AnalysisMode;
+import yurykorzun.art.universe.music.data.semantic.model.AnalysisModeConverter;
 import yurykorzun.art.universe.music.data.semantic.model.AnalysisTicketStatus;
+import yurykorzun.art.universe.music.data.semantic.model.AnalysisTicketStatusConverter;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -34,9 +39,11 @@ public class AnalysisTicket {
     @Setter(AccessLevel.NONE)
     private UUID id;
 
+    @Convert(converter = DataSourceConverter.class)
     @Column(name = "data_source", nullable = false)
     private DataSource dataSource;
 
+    @Convert(converter = EntityTypeConverter.class)
     @Column(name = "subject_type", nullable = false)
     private MasterEntityType subjectType;
 
@@ -46,6 +53,7 @@ public class AnalysisTicket {
     @Column(name = "subject_name", nullable = false, length = 256)
     private String subjectName;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "text_samples", nullable = false, columnDefinition = "jsonb")
     private String textSamplesJson;
 
@@ -57,9 +65,11 @@ public class AnalysisTicket {
     @Column(name = "expected_entity_types", columnDefinition = "smallint[]")
     private Integer[] expectedEntityTypes;
 
+    @Convert(converter = AnalysisModeConverter.class)
     @Column(name = "analysis_mode", nullable = false)
     private AnalysisMode analysisMode;
 
+    @Convert(converter = AnalysisTicketStatusConverter.class)
     @Column(name = "status", nullable = false)
     private AnalysisTicketStatus status;
 
