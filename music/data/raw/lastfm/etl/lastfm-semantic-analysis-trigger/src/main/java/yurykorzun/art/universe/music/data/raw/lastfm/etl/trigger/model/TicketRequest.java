@@ -3,6 +3,8 @@ package yurykorzun.art.universe.music.data.raw.lastfm.etl.trigger.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
+import yurykorzun.art.universe.music.data.master.model.DataSource;
+import yurykorzun.art.universe.music.data.semantic.model.AnalysisMode;
 
 import java.util.List;
 
@@ -11,10 +13,10 @@ import java.util.List;
 public class TicketRequest {
 
     @JsonProperty("data_source")
-    private String dataSource;
+    private DataSource dataSource;
 
     @JsonProperty("analysis_mode")
-    private String analysisMode;
+    private AnalysisMode analysisMode;
 
     private TicketSubject subject;
 

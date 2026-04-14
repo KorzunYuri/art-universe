@@ -5,18 +5,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import yurykorzun.art.universe.common.config.client.ConfigPropertyHolder;
 import yurykorzun.art.universe.common.config.client.ConfigurableProperty;
+import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
+import yurykorzun.art.universe.music.data.master.model.DataSource;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.trigger.client.TicketIntakeClient;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.trigger.model.TextSample;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.trigger.model.TicketRequest;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.trigger.model.TicketSubject;
+import yurykorzun.art.universe.music.data.semantic.model.AnalysisMode;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public abstract class LastfmEntityScanner {
-
-    private static final int DATA_SOURCE_LASTFM = 1;
-    private static final int ANALYSIS_MODE_FULL_EXTRACTION = 1;
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -36,9 +36,7 @@ public abstract class LastfmEntityScanner {
 
     protected abstract String entityTable();
 
-    protected abstract String entityTypeName();
-
-    protected abstract int entityTypeCode();
+    protected abstract MasterEntityType entityType();
 
     protected abstract int contentTypeContent();
 
@@ -59,6 +57,7 @@ public abstract class LastfmEntityScanner {
     public int scanAndSubmit() {
         int minListeners = configPropertyHolder.getInt(minListenersProperty());
         int batchSize = configPropertyHolder.getInt(batchSizeProperty());
+        int entityTypeCode = entityType().getCode();
 
         List<TicketRequest> tickets = new ArrayList<>();
 
@@ -99,24 +98,24 @@ public abstract class LastfmEntityScanner {
                 }
 
                 tickets.add(TicketRequest.builder()
-                    .dataSource("lastfm")
-                    .analysisMode("full_extraction")
-                    .subject(new TicketSubject(entityTypeName(), rs.getLong("id"), rs.getString("name")))
+                    .dataSource(DataSource.LASTFM)
+                    .analysisMode(AnalysisMode.FULL_EXTRACTION)
+                    .subject(new TicketSubject(entityType(), rs.getLong("id"), rs.getString("name")))
                     .textSamples(samples)
                     .expectedProposalTypes(expectedProposalTypes())
                     .expectedEntityTypes(expectedEntityTypes())
                     .build());
             },
-            entityTypeCode(), contentTypeContent(),
-            entityTypeCode(), contentTypeSummary(),
+            entityTypeCode, contentTypeContent(),
+            entityTypeCode, contentTypeSummary(),
             minListeners,
-            DATA_SOURCE_LASTFM, entityTypeCode(), ANALYSIS_MODE_FULL_EXTRACTION,
+            DataSource.LASTFM.getCode(), entityTypeCode, AnalysisMode.FULL_EXTRACTION.getCode(),
             batchSize
         );
 
         if (!tickets.isEmpty()) {
             log.info("Scanned {} eligible LastFM {}s (minListeners={}, batchSize={})",
-                    tickets.size(), entityTypeName(), minListeners, batchSize);
+                    tickets.size(), entityType().getName(), minListeners, batchSize);
             intakeClient.submitBatch(tickets);
         }
 

@@ -1,15 +1,19 @@
 package yurykorzun.art.universe.music.data.master.category.scanner;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.common.config.client.ConfigPropertyHolder;
+import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.master.category.client.TicketIntakeClient;
 import yurykorzun.art.universe.music.data.master.category.config.MasterTriggerProperty;
+import yurykorzun.art.universe.music.data.master.category.model.TextSample;
+import yurykorzun.art.universe.music.data.master.category.model.TicketRequest;
+import yurykorzun.art.universe.music.data.master.category.model.TicketSubject;
+import yurykorzun.art.universe.music.data.master.model.DataSource;
+import yurykorzun.art.universe.music.data.semantic.model.AnalysisMode;
+import yurykorzun.art.universe.music.data.semantic.model.ProposalType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,13 +23,14 @@ public class MasterEntityScanner {
 
     private static final Logger log = LoggerFactory.getLogger(MasterEntityScanner.class);
 
-    private static final int DATA_SOURCE_MASTER = 4;
-    private static final int ANALYSIS_MODE_CREATIVE_CATEGORIZATION = 2;
+    private static final List<Integer> EXPECTED_PROPOSAL_TYPES = List.of(
+        ProposalType.BIND_ENTITY_CATEGORY.getCode(),
+        ProposalType.CREATE_CATEGORY.getCode()
+    );
 
     private final JdbcTemplate jdbcTemplate;
     private final TicketIntakeClient intakeClient;
     private final ConfigPropertyHolder configPropertyHolder;
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public MasterEntityScanner(
         JdbcTemplate jdbcTemplate,
@@ -38,20 +43,12 @@ public class MasterEntityScanner {
     }
 
     public int scanArtists() {
-        return scanEntities("artist", "ARTIST", 1);
+        return scanEntities("artist", MasterEntityType.ARTIST);
     }
 
-    public int scanAlbums() {
-        return scanEntities("album", "ALBUM", 2);
-    }
-
-    public int scanTracks() {
-        return scanEntities("track", "TRACK", 3);
-    }
-
-    private int scanEntities(String tableName, String entityTypeName, int entityTypeCode) {
+    private int scanEntities(String tableName, MasterEntityType entityType) {
         int batchSize = configPropertyHolder.getInt(MasterTriggerProperty.BATCH_SIZE);
-        List<ObjectNode> tickets = new ArrayList<>();
+        List<TicketRequest> tickets = new ArrayList<>();
 
         String sql = String.format("""
                 SELECT id, name FROM mu.%s e
@@ -69,30 +66,23 @@ public class MasterEntityScanner {
         jdbcTemplate.query(
             sql,
             rs -> {
-                ObjectNode ticket = objectMapper.createObjectNode();
-                ticket.put("data_source", "MASTER");
-
-                ObjectNode subject = ticket.putObject("subject");
-                subject.put("entity_type", entityTypeName);
-                subject.put("entity_id", rs.getLong("id"));
-                subject.put("name", rs.getString("name"));
-
-                ArrayNode samples = ticket.putArray("text_samples");
-                ObjectNode sample = samples.addObject();
-                sample.put("content", rs.getString("name"));
-                sample.put("comment", entityTypeName.toLowerCase() + "_name");
-
-                ArrayNode proposalTypes = ticket.putArray("expected_proposal_types");
-                proposalTypes.add(6).add(7);
-
-                tickets.add(ticket);
+                String name = rs.getString("name");
+                tickets.add(TicketRequest.builder()
+                    .dataSource(DataSource.MASTER)
+                    .analysisMode(AnalysisMode.CREATIVE_CATEGORIZATION)
+                    .subject(new TicketSubject(entityType, rs.getLong("id"), name))
+                    .textSamples(List.of(new TextSample(name, entityType.getName() + "_name")))
+                    .expectedProposalTypes(EXPECTED_PROPOSAL_TYPES)
+                    .build());
             },
-            DATA_SOURCE_MASTER, entityTypeCode, ANALYSIS_MODE_CREATIVE_CATEGORIZATION,
+            DataSource.MASTER.getCode(),
+            entityType.getCode(),
+            AnalysisMode.CREATIVE_CATEGORIZATION.getCode(),
             batchSize
         );
 
         if (!tickets.isEmpty()) {
-            log.info("Scanned {} {} entities without category bindings", tickets.size(), entityTypeName);
+            log.info("Scanned {} {} entities without category bindings", tickets.size(), entityType.getName());
             intakeClient.submitBatch(tickets);
         }
 

@@ -6,8 +6,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.client.RestClient;
 import yurykorzun.art.universe.music.data.raw.lastfm.etl.trigger.model.TicketRequest;
 
 import java.util.List;
@@ -17,26 +18,29 @@ public class TicketIntakeClient {
 
     private static final Logger log = LoggerFactory.getLogger(TicketIntakeClient.class);
 
-    private final WebClient webClient;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final RestClient restClient;
+    private final ObjectMapper objectMapper;
 
-    public TicketIntakeClient(@Value("${trigger.ticket-intake.url:http://localhost:7095}") String baseUrl) {
-        this.webClient = WebClient.builder()
+    public TicketIntakeClient(
+        @Value("${trigger.ticket-intake.url:http://localhost:7095}") String baseUrl,
+        ObjectMapper objectMapper
+    ) {
+        this.restClient = RestClient.builder()
             .baseUrl(baseUrl)
-            .defaultHeader("Content-Type", "application/json")
+            .defaultHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
             .build();
+        this.objectMapper = objectMapper;
     }
 
     public void submitBatch(List<TicketRequest> tickets) {
         try {
             String body = objectMapper.writeValueAsString(tickets);
 
-            String response = webClient.post()
+            String response = restClient.post()
                 .uri("/api/v1/tickets/batch")
-                .bodyValue(body)
+                .body(body)
                 .retrieve()
-                .bodyToMono(String.class)
-                .block();
+                .body(String.class);
 
             JsonNode result = objectMapper.readTree(response);
             int accepted = result.path("accepted").size();
