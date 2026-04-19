@@ -56,10 +56,10 @@ public class MasterAttributeDefReadRepository {
         if (sqlArray == null) {
             return new int[0];
         }
-        Integer[] arr = (Integer[]) sqlArray.getArray();
+        Number[] arr = (Number[]) sqlArray.getArray();
         int[] result = new int[arr.length];
         for (int i = 0; i < arr.length; i++) {
-            result[i] = arr[i];
+            result[i] = arr[i].intValue();
         }
         return result;
     }

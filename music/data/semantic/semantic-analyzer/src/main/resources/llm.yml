@@ -1,0 +1,59 @@
+semantic:
+  llm:
+    clients:
+      gemini-extraction:
+        provider: openai
+        api-key: ${GEMINI_API_KEY:}
+        base-url: https://generativelanguage.googleapis.com/v1beta/openai
+        model: gemini-2.5-flash
+        temperature: 0.2
+        connect-timeout: 10s
+        read-timeout: 120s
+        rate-limit:
+          min-delay-ms: ${LLM_EXTRACTION_MIN_DELAY_MS:4000}
+          max-delay-ms: ${LLM_EXTRACTION_MAX_DELAY_MS:120000}
+          backoff-multiplier: ${LLM_EXTRACTION_BACKOFF_MULTIPLIER:2.0}
+      gemini-creative:
+        provider: openai
+        api-key: ${GEMINI_API_KEY:}
+        base-url: https://generativelanguage.googleapis.com/v1beta/openai
+        model: gemini-2.5-flash
+        temperature: 1.2
+        connect-timeout: 10s
+        read-timeout: 120s
+        rate-limit:
+          min-delay-ms: ${LLM_CREATIVE_GEMINI_MIN_DELAY_MS:4000}
+          max-delay-ms: ${LLM_CREATIVE_GEMINI_MAX_DELAY_MS:120000}
+          backoff-multiplier: 2.0
+      groq-creative:
+        provider: openai
+        api-key: ${GROQ_API_KEY:}
+        base-url: https://api.groq.com/openai/v1
+        model: llama-3.3-70b-versatile
+        temperature: 1.2
+        connect-timeout: 10s
+        read-timeout: 60s
+        rate-limit:
+          min-delay-ms: ${LLM_CREATIVE_GROQ_MIN_DELAY_MS:2000}
+          max-delay-ms: ${LLM_CREATIVE_GROQ_MAX_DELAY_MS:60000}
+          backoff-multiplier: 2.0
+        circuit-breaker:
+          rate-limit-threshold: 1
+          initial-cooldown: 2m
+          max-cooldown: 12h
+          cooldown-multiplier: 5.0
+        ban-patterns:
+          - status: 400
+            body-pattern: "organization.*(?:disabled|restricted|suspended)"
+          - status: 400
+            body-pattern: "account.*(?:disabled|restricted|suspended|deactivated)"
+          - status: 403
+          - body-pattern: "api.key.*(?:revoked|invalid|deactivated)"
+          - body-pattern: "access.*(?:denied|revoked|terminated)"
+  modes:
+    full_extraction:
+      - gemini-extraction
+      - gemini-creative
+    creative_categorization:
+      - groq-creative
+      - gemini-creative

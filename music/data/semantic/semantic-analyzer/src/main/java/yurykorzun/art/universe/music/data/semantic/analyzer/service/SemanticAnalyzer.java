@@ -7,9 +7,10 @@ import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.semantic.analyzer.config.LlmClientRegistry;
 import yurykorzun.art.universe.music.data.semantic.analyzer.entity.AnalysisRequest;
 import yurykorzun.art.universe.music.data.semantic.analyzer.entity.AnalysisTicket;
-import yurykorzun.art.universe.music.data.semantic.analyzer.llm.LlmClient;
 import yurykorzun.art.universe.music.data.semantic.analyzer.llm.LlmRequest;
 import yurykorzun.art.universe.music.data.semantic.analyzer.llm.LlmResponse;
+import yurykorzun.art.universe.music.data.semantic.analyzer.llm.resilience.ClientSelection;
+import yurykorzun.art.universe.music.data.semantic.analyzer.llm.resilience.LlmFailureType;
 import yurykorzun.art.universe.music.data.semantic.analyzer.prompt.PromptBuilder;
 import yurykorzun.art.universe.music.data.semantic.model.AnalysisMode;
 import yurykorzun.art.universe.music.data.semantic.model.AnalysisVersions;
@@ -24,11 +25,6 @@ import java.util.HexFormat;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/**
- * Processes a single analysis ticket: builds the prompt, calls the LLM,
- * and records the outcome as an {@link AnalysisRequest}. Status transitions
- * on the ticket are delegated to {@link AnalysisTicketService}.
- */
 @Service
 public class SemanticAnalyzer {
 
@@ -54,7 +50,13 @@ public class SemanticAnalyzer {
     public void processTicket(AnalysisTicket ticket) {
         AnalysisMode mode = ticket.getAnalysisMode();
         String analysisVersion = AnalysisVersions.currentVersionFor(mode);
-        LlmClient client = clientRegistry.getClient(mode);
+
+        ClientSelection selection = clientRegistry.acquireClient(mode);
+        if (selection == null) {
+            ticketService.resetToPending(ticket);
+            log.warn("No healthy LLM clients for mode {} — deferring ticket {}", mode.getName(), ticket.getId());
+            return;
+        }
 
         Set<ProposalType> expectedTypes = resolveExpectedProposalTypes(ticket.getExpectedProposalTypes());
         Set<MasterEntityType> expectedEntityTypes = resolveExpectedEntityTypes(ticket.getExpectedEntityTypes());
@@ -74,31 +76,52 @@ public class SemanticAnalyzer {
         AnalysisRequest request = requestService.createRequest(ticket, inputHash, analysisVersion);
 
         try {
-            LlmResponse response = client.analyze(LlmRequest.builder()
+            LlmResponse response = selection.client().analyze(LlmRequest.builder()
                 .systemPrompt(systemPrompt)
                 .userPrompt(userPrompt)
                 .jsonMode(true)
                 .build());
 
             if (response.isSuccess()) {
+                clientRegistry.reportSuccess(selection.clientName());
                 requestService.completeRequest(request.getId(), response);
                 ticketService.markCompleted(ticket);
-                log.info("Successfully analyzed ticket {} (mode={})", ticket.getId(), mode.getName());
-            } else if (response.isRateLimited()) {
-                requestService.failRequest(request.getId(), response.getProvider(), response.getErrorMessage());
-                ticketService.resetToPending(ticket);
-                log.warn("Ticket {} hit LLM rate limit — reset to PENDING for retry after backoff",
-                    ticket.getId());
+                log.info("Ticket {} analyzed successfully via client '{}' (mode={})",
+                    ticket.getId(), selection.clientName(), mode.getName());
             } else {
-                requestService.failRequest(request.getId(), response.getProvider(), response.getErrorMessage());
-                ticketService.markFailed(ticket, response.getErrorMessage());
-                log.warn("LLM analysis failed for ticket {}: {}", ticket.getId(), response.getErrorMessage());
+                LlmFailureType failureType = clientRegistry.reportFailure(selection.clientName(), response);
+                if (isTicketRetriable(failureType)) {
+                    // Discard the request row so the retry can re-insert under the same
+                    // (input_hash, analysis_version) without tripping the unique constraint.
+                    requestService.discardRequest(request.getId());
+                    ticketService.resetToPending(ticket);
+                    log.warn("Ticket {} deferred — client '{}' failure: {} ({})",
+                        ticket.getId(), selection.clientName(), failureType, response.getErrorMessage());
+                } else {
+                    requestService.failRequest(request.getId(), response.getProvider(), response.getErrorMessage());
+                    ticketService.markFailed(ticket, response.getErrorMessage());
+                    log.warn("Ticket {} FAILED permanently — client '{}' {}: {}",
+                        ticket.getId(), selection.clientName(), failureType, response.getErrorMessage());
+                }
             }
         } catch (Exception e) {
             log.error("Error processing ticket {}", ticket.getId(), e);
             requestService.failRequest(request.getId(), null, e.getMessage());
             ticketService.markFailed(ticket, e.getMessage());
         }
+    }
+
+    /**
+     * A ticket is retriable (reset to PENDING) when the failure is tied to the
+     * specific client rather than the ticket content. A ban or rate-limit on
+     * this client doesn't mean another client in the priority list will fail.
+     * CLIENT_ERROR (e.g. 400 from a bad prompt) is intrinsic to the ticket.
+     */
+    private static boolean isTicketRetriable(LlmFailureType type) {
+        return switch (type) {
+            case BANNED, RATE_LIMITED, SERVER_ERROR, NETWORK_ERROR -> true;
+            case CLIENT_ERROR -> false;
+        };
     }
 
     private Set<ProposalType> resolveExpectedProposalTypes(Integer[] codes) {

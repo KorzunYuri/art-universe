@@ -93,23 +93,22 @@ public class OpenAiLlmClient implements LlmClient {
                 .build();
 
         } catch (HttpStatusCodeException e) {
-            if (e.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS) {
+            int status = e.getStatusCode().value();
+            String errorBody = e.getResponseBodyAsString();
+            if (status == 429) {
                 rateLimiter.record429();
-                log.warn("OpenAI-compatible API rate-limited (429); ticket will be retried after backoff");
-                return LlmResponse.builder()
-                    .provider(PROVIDER)
-                    .model(model)
-                    .success(false)
-                    .rateLimited(true)
-                    .errorMessage("429 Too Many Requests")
-                    .build();
+                log.warn("OpenAI-compatible API rate-limited (429): {}", errorBody);
+            } else {
+                log.error("OpenAI API call failed: status={}, body={}", status, errorBody, e);
             }
-            log.error("OpenAI API call failed: status={}, body={}", e.getStatusCode(), e.getResponseBodyAsString(), e);
             return LlmResponse.builder()
                 .provider(PROVIDER)
                 .model(model)
                 .success(false)
-                .errorMessage(e.getStatusCode() + ": " + e.getMessage())
+                .rateLimited(status == 429)
+                .httpStatus(status)
+                .rawErrorBody(errorBody)
+                .errorMessage(status + ": " + errorBody)
                 .build();
         } catch (RestClientException | JsonProcessingException e) {
             log.error("OpenAI API call failed", e);

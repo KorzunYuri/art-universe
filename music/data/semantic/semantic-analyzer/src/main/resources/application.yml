@@ -7,6 +7,8 @@ spring:
       - optional:classpath:commons-context-${spring.profiles.active}.yml
       - classpath:commons-observability.yml
       - optional:classpath:commons-observability-${spring.profiles.active}.yml
+      - classpath:llm.yml
+      - optional:classpath:llm-${spring.profiles.active}.yml
   datasource:
     url: jdbc:postgresql://${AU_DB_MASTER_HOST}:${AU_DB_MASTER_PORT}/${AU_DB_NAME}?currentSchema=mu_semantic_analysis
     username: ${MU_SA_DB_USERNAME}
@@ -29,34 +31,5 @@ au:
       service-url: "${AU_CONFIG_SERVICE_URL:stub-for-tests}"
 
 semantic:
-  llm:
-    clients:
-      extraction:
-        provider: openai
-        api-key: ${GEMINI_API_KEY:}
-        base-url: https://generativelanguage.googleapis.com/v1beta/openai
-        model: gemini-2.5-flash
-        temperature: 0.2
-        connect-timeout: 10s
-        read-timeout: 120s
-        rate-limit:
-          min-delay-ms: ${LLM_EXTRACTION_MIN_DELAY_MS:4000}
-          max-delay-ms: ${LLM_EXTRACTION_MAX_DELAY_MS:120000}
-          backoff-multiplier: ${LLM_EXTRACTION_BACKOFF_MULTIPLIER:2.0}
-      creative:
-        provider: openai
-        api-key: ${GROQ_API_KEY:}
-        base-url: https://api.groq.com/openai/v1
-        model: llama-3.3-70b-versatile
-        temperature: 1.2
-        connect-timeout: 10s
-        read-timeout: 60s
-        rate-limit:
-          min-delay-ms: ${LLM_CREATIVE_MIN_DELAY_MS:2000}
-          max-delay-ms: ${LLM_CREATIVE_MAX_DELAY_MS:60000}
-          backoff-multiplier: ${LLM_CREATIVE_BACKOFF_MULTIPLIER:2.0}
-  modes:
-    full_extraction: extraction
-    creative_categorization: creative
   cache:
     category-refresh-ms: ${CATEGORY_CACHE_REFRESH_MS:300000}

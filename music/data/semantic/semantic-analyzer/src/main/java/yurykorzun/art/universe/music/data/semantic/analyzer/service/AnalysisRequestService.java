@@ -61,4 +61,16 @@ public class AnalysisRequestService {
         request.setErrorMessage(errorMessage);
         request.setCompletedAt(Instant.now());
     }
+
+    /**
+     * Removes a request row outright. Used when the ticket is being reset to
+     * PENDING for retry after a transient client-side failure (ban, rate limit,
+     * network, server error). Leaving the row behind would trip the
+     * {@code (input_hash, analysis_version)} unique constraint on the next
+     * processing attempt.
+     */
+    @Transactional
+    public void discardRequest(UUID requestId) {
+        requestRepository.deleteById(requestId);
+    }
 }

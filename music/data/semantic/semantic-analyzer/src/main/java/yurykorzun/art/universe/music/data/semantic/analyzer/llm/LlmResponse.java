@@ -18,5 +18,7 @@ public class LlmResponse {
     private int completionTokens;
     private boolean success;
     private boolean rateLimited;
+    private int httpStatus;
+    private String rawErrorBody;
     private String errorMessage;
 }
