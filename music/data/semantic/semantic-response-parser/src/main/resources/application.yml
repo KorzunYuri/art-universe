@@ -1,10 +1,20 @@
 spring:
   application:
     name: semantic-response-parser
+  config:
+    import:
+      - classpath:commons-context.yml
+      - optional:classpath:commons-context-${spring.profiles.active}.yml
+      - classpath:commons-observability.yml
+      - optional:classpath:commons-observability-${spring.profiles.active}.yml
   datasource:
     url: jdbc:postgresql://${AU_DB_MASTER_HOST}:${AU_DB_MASTER_PORT}/${AU_DB_NAME}?currentSchema=mu_semantic_analysis
     username: ${MU_SA_DB_USERNAME}
     password: '${MU_SA_DB_PASSWORD_DM}'
+    hikari:
+      pool-name: SemanticResponseParserHikariPool
+      maximum-pool-size: 8
+      minimum-idle: 2
   jpa:
     hibernate:
       ddl-auto: none

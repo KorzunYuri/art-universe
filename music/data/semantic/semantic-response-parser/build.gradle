@@ -10,6 +10,4 @@ dependencies {
     implementation project(':common:commons-pg-notify')
     implementation project(':common:config:config-client')
     implementation project(':music:data:semantic:semantic-models')
-
-    implementation 'org.springframework.boot:spring-boot-docker-compose'
 }
