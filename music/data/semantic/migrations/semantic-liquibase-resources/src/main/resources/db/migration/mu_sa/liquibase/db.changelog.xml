@@ -6,5 +6,6 @@
     <include file="changelogs/0001-initial-schema.xml" relativeToChangelogFile="true"/>
     <include file="changelogs/0002-notify-triggers.xml" relativeToChangelogFile="true"/>
     <include file="changelogs/0003-data-source-reference.xml" relativeToChangelogFile="true"/>
+    <include file="changelogs/0004-widen-synth-id.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
