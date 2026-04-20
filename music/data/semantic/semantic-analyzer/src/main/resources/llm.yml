@@ -2,7 +2,7 @@ semantic:
   llm:
     clients:
       gemini-extraction:
-        provider: openai
+        provider: gemini
         api-key: ${GEMINI_API_KEY:}
         base-url: https://generativelanguage.googleapis.com/v1beta/openai
         model: gemini-2.5-flash
@@ -14,7 +14,7 @@ semantic:
           max-delay-ms: ${LLM_EXTRACTION_MAX_DELAY_MS:120000}
           backoff-multiplier: ${LLM_EXTRACTION_BACKOFF_MULTIPLIER:2.0}
       gemini-creative:
-        provider: openai
+        provider: gemini
         api-key: ${GEMINI_API_KEY:}
         base-url: https://generativelanguage.googleapis.com/v1beta/openai
         model: gemini-2.5-flash
@@ -26,7 +26,7 @@ semantic:
           max-delay-ms: ${LLM_CREATIVE_GEMINI_MAX_DELAY_MS:120000}
           backoff-multiplier: 2.0
       groq-creative:
-        provider: openai
+        provider: groq
         api-key: ${GROQ_API_KEY:}
         base-url: https://api.groq.com/openai/v1
         model: llama-3.3-70b-versatile

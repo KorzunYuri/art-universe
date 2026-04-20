@@ -1,34 +1,47 @@
 package yurykorzun.art.universe.music.data.semantic.analyzer.llm.resilience;
 
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
- * Classifies LLM API error responses into actionable failure types, using
- * a per-client list of configured ban patterns.
- * <p>
- * Each {@link CompiledBanPattern} matches when both (non-null) conditions
- * hold: HTTP status and body regex. Missing fields act as wildcards, so a
- * status-only rule (body=null) triggers on any body, and a body-only rule
- * (status=null) triggers on any status.
- * <p>
- * Ban patterns are evaluated first; if none matches, we fall back to the
- * generic status-based classification (429 → RATE_LIMITED, 4xx → CLIENT_ERROR,
+ * Per-client error classifier. Combines two sources of signal:
+ * <ul>
+ *   <li>A per-provider {@link ProviderErrorAnalyzer} that extracts
+ *       retry/quota metadata (e.g. {@code Retry-After} header for OpenAI,
+ *       {@code details[].retryDelay} for Gemini)</li>
+ *   <li>A per-client list of ban patterns from YAML, matched against status
+ *       and body. A pattern matches when all non-null conditions hold.</li>
+ * </ul>
+ * Ban patterns are evaluated first. If none match, we fall back to generic
+ * status-based classification (429 → RATE_LIMITED, 4xx → CLIENT_ERROR,
  * 5xx → SERVER_ERROR, other → NETWORK_ERROR).
  */
 public final class LlmFailureClassifier {
 
     private final String clientName;
+    private final ProviderErrorAnalyzer providerAnalyzer;
     private final List<CompiledBanPattern> banPatterns;
 
-    public LlmFailureClassifier(String clientName, List<CompiledBanPattern> banPatterns) {
+    public LlmFailureClassifier(
+        String clientName,
+        ProviderErrorAnalyzer providerAnalyzer,
+        List<CompiledBanPattern> banPatterns
+    ) {
         this.clientName = clientName;
+        this.providerAnalyzer = providerAnalyzer;
         this.banPatterns = List.copyOf(banPatterns);
     }
 
-    public LlmFailureType classify(int httpStatus, String errorBody) {
+    public FailureHint classify(int httpStatus, Map<String, List<String>> headers, String body) {
+        ProviderHint providerHint = providerAnalyzer.extractHints(httpStatus, headers, body);
+        LlmFailureType type = determineType(httpStatus, body);
+        return FailureHint.of(type, providerHint);
+    }
+
+    private LlmFailureType determineType(int httpStatus, String body) {
         for (CompiledBanPattern pattern : banPatterns) {
-            if (pattern.matches(httpStatus, errorBody)) {
+            if (pattern.matches(httpStatus, body)) {
                 return LlmFailureType.BANNED;
             }
         }

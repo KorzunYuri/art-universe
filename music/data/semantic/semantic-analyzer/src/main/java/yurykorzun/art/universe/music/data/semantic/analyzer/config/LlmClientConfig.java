@@ -11,25 +11,44 @@ import yurykorzun.art.universe.music.data.semantic.analyzer.llm.openai.OpenAiLlm
 import yurykorzun.art.universe.music.data.semantic.analyzer.llm.resilience.LlmClientCircuitBreaker;
 import yurykorzun.art.universe.music.data.semantic.analyzer.llm.resilience.LlmFailureClassifier;
 import yurykorzun.art.universe.music.data.semantic.analyzer.llm.resilience.LlmFailureClassifier.CompiledBanPattern;
+import yurykorzun.art.universe.music.data.semantic.analyzer.llm.resilience.ProviderErrorAnalyzer;
 import yurykorzun.art.universe.music.data.semantic.model.AnalysisMode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
+/**
+ * Registry bean factory. Reads {@code llm.yml}, instantiates one
+ * {@link OpenAiLlmClient} per configured entry (all three supported providers
+ * — openai, gemini, groq — share the OpenAI-compatible chat-completions wire
+ * format), pairs each client with a circuit breaker and a per-provider
+ * {@link LlmFailureClassifier}, and hands the bundle to
+ * {@link LlmClientRegistry}.
+ */
 @Configuration
 public class LlmClientConfig {
 
     private static final Logger log = LoggerFactory.getLogger(LlmClientConfig.class);
 
+    /** Providers that speak OpenAI's {@code /chat/completions} wire format. */
+    private static final Set<String> OPENAI_COMPATIBLE_PROVIDERS = Set.of("openai", "gemini", "groq");
+
     @Bean
     public LlmClientRegistry llmClientRegistry(
         LlmClientProperties clientProps,
         AnalysisModeProperties modeProps,
-        ObjectMapper objectMapper
+        ObjectMapper objectMapper,
+        List<ProviderErrorAnalyzer> providerAnalyzers
     ) {
+        Map<String, ProviderErrorAnalyzer> analyzersByProvider = providerAnalyzers.stream()
+            .collect(Collectors.toMap(ProviderErrorAnalyzer::provider, Function.identity()));
+
         Map<String, LlmClient> namedClients = new HashMap<>();
         Map<String, LlmClientCircuitBreaker> circuitBreakers = new HashMap<>();
         Map<String, LlmFailureClassifier> classifiers = new HashMap<>();
@@ -38,9 +57,16 @@ public class LlmClientConfig {
             String name = entry.getKey();
             LlmClientProperties.ClientConfig cfg = entry.getValue();
 
+            ProviderErrorAnalyzer analyzer = analyzersByProvider.get(cfg.getProvider());
+            if (analyzer == null) {
+                throw new IllegalStateException(
+                    "No ProviderErrorAnalyzer registered for provider '" + cfg.getProvider()
+                        + "' (client '" + name + "'). Available: " + analyzersByProvider.keySet());
+            }
+
             namedClients.put(name, createClient(objectMapper, cfg));
             circuitBreakers.put(name, createCircuitBreaker(name, cfg.getCircuitBreaker()));
-            classifiers.put(name, createClassifier(name, cfg.getBanPatterns()));
+            classifiers.put(name, createClassifier(name, analyzer, cfg.getBanPatterns()));
 
             log.info("Created LLM client '{}': provider={}, model={}, temperature={}, ban-patterns={}",
                     name, cfg.getProvider(), cfg.getModel(), cfg.getTemperature(),
@@ -71,9 +97,10 @@ public class LlmClientConfig {
             cfg.getRateLimit().getMaxDelayMs(),
             cfg.getRateLimit().getBackoffMultiplier()
         );
-        return switch (cfg.getProvider()) {
-            case "openai" -> new OpenAiLlmClient(
+        if (OPENAI_COMPATIBLE_PROVIDERS.contains(cfg.getProvider())) {
+            return new OpenAiLlmClient(
                 objectMapper,
+                cfg.getProvider(),
                 cfg.getApiKey(),
                 cfg.getBaseUrl(),
                 cfg.getModel(),
@@ -82,8 +109,8 @@ public class LlmClientConfig {
                 cfg.getReadTimeout(),
                 rateLimiter
             );
-            default -> throw new IllegalArgumentException("Unknown LLM provider: " + cfg.getProvider());
-        };
+        }
+        throw new IllegalArgumentException("Unknown LLM provider: " + cfg.getProvider());
     }
 
     private LlmClientCircuitBreaker createCircuitBreaker(
@@ -101,6 +128,7 @@ public class LlmClientConfig {
 
     private LlmFailureClassifier createClassifier(
         String clientName,
+        ProviderErrorAnalyzer analyzer,
         List<LlmClientProperties.BanPatternConfig> patternConfigs
     ) {
         List<CompiledBanPattern> compiled = new ArrayList<>();
@@ -112,6 +140,6 @@ public class LlmClientConfig {
                 compiled.add(new CompiledBanPattern(pc.getStatus(), bodyRegex));
             }
         }
-        return new LlmFailureClassifier(clientName, compiled);
+        return new LlmFailureClassifier(clientName, analyzer, compiled);
     }
 }

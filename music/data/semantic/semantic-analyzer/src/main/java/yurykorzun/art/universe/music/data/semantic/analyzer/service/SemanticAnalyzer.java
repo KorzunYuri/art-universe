@@ -10,6 +10,7 @@ import yurykorzun.art.universe.music.data.semantic.analyzer.entity.AnalysisTicke
 import yurykorzun.art.universe.music.data.semantic.analyzer.llm.LlmRequest;
 import yurykorzun.art.universe.music.data.semantic.analyzer.llm.LlmResponse;
 import yurykorzun.art.universe.music.data.semantic.analyzer.llm.resilience.ClientSelection;
+import yurykorzun.art.universe.music.data.semantic.analyzer.llm.resilience.FailureHint;
 import yurykorzun.art.universe.music.data.semantic.analyzer.llm.resilience.LlmFailureType;
 import yurykorzun.art.universe.music.data.semantic.analyzer.prompt.PromptBuilder;
 import yurykorzun.art.universe.music.data.semantic.model.AnalysisMode;
@@ -89,14 +90,16 @@ public class SemanticAnalyzer {
                 log.info("Ticket {} analyzed successfully via client '{}' (mode={})",
                     ticket.getId(), selection.clientName(), mode.getName());
             } else {
-                LlmFailureType failureType = clientRegistry.reportFailure(selection.clientName(), response);
+                FailureHint hint = clientRegistry.reportFailure(selection.clientName(), response);
+                LlmFailureType failureType = hint.failureType();
                 if (isTicketRetriable(failureType)) {
                     // Discard the request row so the retry can re-insert under the same
                     // (input_hash, analysis_version) without tripping the unique constraint.
                     requestService.discardRequest(request.getId());
                     ticketService.resetToPending(ticket);
-                    log.warn("Ticket {} deferred — client '{}' failure: {} ({})",
-                        ticket.getId(), selection.clientName(), failureType, response.getErrorMessage());
+                    log.warn("Ticket {} deferred — client '{}' {} (quotaKind={}, retryAfter={}): {}",
+                        ticket.getId(), selection.clientName(), failureType,
+                        hint.quotaKind(), hint.retryAfter(), response.getErrorMessage());
                 } else {
                     requestService.failRequest(request.getId(), response.getProvider(), response.getErrorMessage());
                     ticketService.markFailed(ticket, response.getErrorMessage());

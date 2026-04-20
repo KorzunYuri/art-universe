@@ -5,10 +5,11 @@ import org.slf4j.LoggerFactory;
 import yurykorzun.art.universe.music.data.semantic.analyzer.llm.LlmClient;
 import yurykorzun.art.universe.music.data.semantic.analyzer.llm.LlmResponse;
 import yurykorzun.art.universe.music.data.semantic.analyzer.llm.resilience.ClientSelection;
+import yurykorzun.art.universe.music.data.semantic.analyzer.llm.resilience.FailureHint;
 import yurykorzun.art.universe.music.data.semantic.analyzer.llm.resilience.LlmClientCircuitBreaker;
 import yurykorzun.art.universe.music.data.semantic.analyzer.llm.resilience.LlmClientState;
 import yurykorzun.art.universe.music.data.semantic.analyzer.llm.resilience.LlmFailureClassifier;
-import yurykorzun.art.universe.music.data.semantic.analyzer.llm.resilience.LlmFailureType;
+import yurykorzun.art.universe.music.data.semantic.analyzer.llm.resilience.QuotaKind;
 import yurykorzun.art.universe.music.data.semantic.model.AnalysisMode;
 
 import java.util.LinkedHashMap;
@@ -75,25 +76,36 @@ public class LlmClientRegistry {
     }
 
     /**
-     * Classifies the failure (ban vs rate-limit vs other) and updates the
-     * circuit breaker accordingly. Returns the classified failure type.
+     * Classifies the failure via the per-client classifier (which delegates
+     * retry-hint extraction to its provider analyzer) and updates the
+     * circuit breaker accordingly. Returns the full {@link FailureHint} so
+     * the caller can log/branch on retry hints too.
      */
-    public LlmFailureType reportFailure(String clientName, LlmResponse response) {
+    public FailureHint reportFailure(String clientName, LlmResponse response) {
         LlmFailureClassifier classifier = classifiers.get(clientName);
-        LlmFailureType type = classifier.classify(
-            response.getHttpStatus(), response.getRawErrorBody());
+        FailureHint hint = classifier.classify(
+            response.getHttpStatus(),
+            response.getRawErrorHeaders(),
+            response.getRawErrorBody());
 
         LlmClientCircuitBreaker breaker = circuitBreakers.get(clientName);
-        switch (type) {
+        switch (hint.failureType()) {
             case BANNED -> breaker.recordBan(response.getErrorMessage());
-            case RATE_LIMITED -> breaker.recordRateLimit();
+            case RATE_LIMITED -> {
+                if (hint.quotaKind() == QuotaKind.PER_DAY) {
+                    log.warn("Client '{}' hit a per-day quota — escalating to long cooldown", clientName);
+                    breaker.recordQuotaExhaustion(hint.retryAfter());
+                } else {
+                    breaker.recordRateLimit(hint.retryAfter());
+                }
+            }
             default -> {
                 // Server errors / network errors: treat like rate limit for circuit-breaker
                 // purposes so we can fallback after repeated failures
-                breaker.recordRateLimit();
+                breaker.recordRateLimit(hint.retryAfter());
             }
         }
-        return type;
+        return hint;
     }
 
     public void forceDisable(String clientName, String reason) {

@@ -5,6 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+import java.util.Map;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -20,5 +23,6 @@ public class LlmResponse {
     private boolean rateLimited;
     private int httpStatus;
     private String rawErrorBody;
+    private Map<String, List<String>> rawErrorHeaders;
     private String errorMessage;
 }

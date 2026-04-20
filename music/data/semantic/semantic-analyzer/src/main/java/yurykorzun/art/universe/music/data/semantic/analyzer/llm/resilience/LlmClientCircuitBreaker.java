@@ -75,10 +75,39 @@ public class LlmClientCircuitBreaker {
     }
 
     public void recordRateLimit() {
+        recordRateLimit(null);
+    }
+
+    /**
+     * Variant that honors a server-provided {@code retry-after} hint: the
+     * resulting COOLING window is the longer of the breaker's progressive
+     * cooldown and the hint. A non-null hint also forces an immediate
+     * transition into COOLING regardless of the threshold — the provider has
+     * told us exactly when it's safe to retry.
+     */
+    public void recordRateLimit(Duration retryAfterHint) {
         int count = consecutiveRateLimits.incrementAndGet();
-        if (count >= rateLimitThreshold || state.get() == LlmClientState.COOLING) {
-            enterCooling();
+        if (retryAfterHint != null || count >= rateLimitThreshold || state.get() == LlmClientState.COOLING) {
+            enterCooling(retryAfterHint);
         }
+    }
+
+    /**
+     * For quota exhaustions that are resolved only by calendar rollover (e.g.
+     * Gemini's free-tier "PerDay" quota). Jumps straight to {@code maxCooldown}
+     * (or the provider's retry hint, whichever is longer) without progressive
+     * escalation — progressive backoff is pointless when the window is
+     * already measured in hours.
+     */
+    public void recordQuotaExhaustion(Duration retryAfterHint) {
+        Duration cooldown = maxCooldown;
+        if (retryAfterHint != null && retryAfterHint.compareTo(cooldown) > 0) {
+            cooldown = retryAfterHint;
+        }
+        cooldownUntil.set(Instant.now().plus(cooldown));
+        currentCooldown.set(cooldown);
+        state.set(LlmClientState.COOLING);
+        log.warn("Client '{}' entered COOLING state (quota exhausted) for {}", clientName, cooldown);
     }
 
     public void recordBan(String reason) {
@@ -113,17 +142,23 @@ public class LlmClientCircuitBreaker {
         return cooldownUntil.get();
     }
 
-    private void enterCooling() {
+    private void enterCooling(Duration retryAfterHint) {
         Duration cooldown = currentCooldown.get();
+        if (retryAfterHint != null && retryAfterHint.compareTo(cooldown) > 0) {
+            cooldown = retryAfterHint;
+        }
         Instant until = Instant.now().plus(cooldown);
         cooldownUntil.set(until);
         state.set(LlmClientState.COOLING);
 
-        // Grow cooldown for next time, capped at max
-        long nextMs = Math.min((long) (cooldown.toMillis() * cooldownMultiplier), maxCooldown.toMillis());
+        // Grow cooldown for next time, capped at max. Base growth on the
+        // progressive cooldown, not the hint — otherwise a single long hint
+        // would push us to max forever.
+        Duration base = currentCooldown.get();
+        long nextMs = Math.min((long) (base.toMillis() * cooldownMultiplier), maxCooldown.toMillis());
         currentCooldown.set(Duration.ofMillis(nextMs));
 
-        log.warn("Client '{}' entered COOLING state for {} (next cooldown: {})",
+        log.warn("Client '{}' entered COOLING state for {} (next progressive cooldown: {})",
             clientName, cooldown, Duration.ofMillis(nextMs));
     }
 }

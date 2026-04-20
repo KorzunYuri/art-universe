@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.HttpStatusCodeException;
@@ -20,19 +19,28 @@ import yurykorzun.art.universe.music.data.semantic.analyzer.llm.LlmResponse;
 
 import java.time.Duration;
 
+/**
+ * HTTP transport for OpenAI-compatible chat completion APIs. Used for OpenAI,
+ * Google Gemini (via OpenAI-compat shim), Groq, and anything else that speaks
+ * the {@code /chat/completions} wire format. Provider-specific error
+ * interpretation (retry hints, quota granularity) lives in a separate
+ * {@code ProviderErrorAnalyzer} strategy — this class only captures the raw
+ * status, body and headers and hands them up.
+ */
 public class OpenAiLlmClient implements LlmClient {
 
     private static final Logger log = LoggerFactory.getLogger(OpenAiLlmClient.class);
-    private static final String PROVIDER = "openai";
 
     private final RestClient restClient;
     private final ObjectMapper objectMapper;
+    private final String provider;
     private final String defaultModel;
     private final Double temperature;
     private final AdaptiveRateLimiter rateLimiter;
 
     public OpenAiLlmClient(
         ObjectMapper objectMapper,
+        String provider,
         String apiKey,
         String baseUrl,
         String defaultModel,
@@ -51,6 +59,7 @@ public class OpenAiLlmClient implements LlmClient {
             .requestFactory(requestFactory)
             .build();
         this.objectMapper = objectMapper;
+        this.provider = provider;
         this.defaultModel = defaultModel;
         this.temperature = temperature;
         this.rateLimiter = rateLimiter;
@@ -64,7 +73,7 @@ public class OpenAiLlmClient implements LlmClient {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             return LlmResponse.builder()
-                .provider(PROVIDER)
+                .provider(provider)
                 .model(model)
                 .success(false)
                 .errorMessage("Rate limiter sleep interrupted")
@@ -85,7 +94,7 @@ public class OpenAiLlmClient implements LlmClient {
             rateLimiter.recordSuccess();
             return LlmResponse.builder()
                 .content(responseJson.path("choices").path(0).path("message").path("content").asText())
-                .provider(PROVIDER)
+                .provider(provider)
                 .model(model)
                 .promptTokens(usage.path("prompt_tokens").asInt())
                 .completionTokens(usage.path("completion_tokens").asInt())
@@ -97,23 +106,24 @@ public class OpenAiLlmClient implements LlmClient {
             String errorBody = e.getResponseBodyAsString();
             if (status == 429) {
                 rateLimiter.record429();
-                log.warn("OpenAI-compatible API rate-limited (429): {}", errorBody);
+                log.warn("{} API rate-limited (429): {}", provider, errorBody);
             } else {
-                log.error("OpenAI API call failed: status={}, body={}", status, errorBody, e);
+                log.error("{} API call failed: status={}, body={}", provider, status, errorBody, e);
             }
             return LlmResponse.builder()
-                .provider(PROVIDER)
+                .provider(provider)
                 .model(model)
                 .success(false)
                 .rateLimited(status == 429)
                 .httpStatus(status)
                 .rawErrorBody(errorBody)
+                .rawErrorHeaders(e.getResponseHeaders())
                 .errorMessage(status + ": " + errorBody)
                 .build();
         } catch (RestClientException | JsonProcessingException e) {
-            log.error("OpenAI API call failed", e);
+            log.error("{} API call failed", provider, e);
             return LlmResponse.builder()
-                .provider(PROVIDER)
+                .provider(provider)
                 .model(model)
                 .success(false)
                 .errorMessage(e.getMessage())
