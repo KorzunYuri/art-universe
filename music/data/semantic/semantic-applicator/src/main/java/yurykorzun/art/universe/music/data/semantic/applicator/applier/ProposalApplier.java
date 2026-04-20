@@ -1,15 +1,16 @@
 package yurykorzun.art.universe.music.data.semantic.applicator.applier;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import yurykorzun.art.universe.music.data.semantic.model.ProposalResolution;
+import yurykorzun.art.universe.music.data.semantic.applicator.repository.ProposalRepository;
+import yurykorzun.art.universe.music.data.semantic.model.ProposalType;
 
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,101 +19,62 @@ public class ProposalApplier {
 
     private static final Logger log = LoggerFactory.getLogger(ProposalApplier.class);
 
-    private final JdbcTemplate jdbcTemplate;
     private final DependencyResolver dependencyResolver;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
+    private final ProposalRepository proposalRepository;
+    private final Map<ProposalType, ProposalApplyStrategy> strategies;
 
-    public ProposalApplier(JdbcTemplate jdbcTemplate, DependencyResolver dependencyResolver) {
-        this.jdbcTemplate = jdbcTemplate;
+    public ProposalApplier(
+        DependencyResolver dependencyResolver,
+        ObjectMapper objectMapper,
+        ProposalRepository proposalRepository,
+        List<ProposalApplyStrategy> strategyBeans
+    ) {
         this.dependencyResolver = dependencyResolver;
+        this.objectMapper = objectMapper;
+        this.proposalRepository = proposalRepository;
+        this.strategies = new EnumMap<>(ProposalType.class);
+        for (ProposalApplyStrategy strategy : strategyBeans) {
+            this.strategies.put(strategy.supportedType(), strategy);
+        }
     }
 
     @Transactional
     public void applyApprovedProposals(List<ProposalRow> proposals) {
         List<ProposalRow> sorted = dependencyResolver.topologicalSort(proposals);
-        Map<String, Long> synthIdMap = new HashMap<>();
+        ApplicationContext context = new ApplicationContext();
 
         for (ProposalRow proposal : sorted) {
-            try {
-                String appliedRef = applyProposal(proposal, synthIdMap);
-                markApplied(proposal.getId(), appliedRef);
-                log.info("Applied proposal {} (type={}, synth_id={})",
-                    proposal.getId(), proposal.getProposalType(), proposal.getSynthId());
-            } catch (Exception e) {
-                log.error("Failed to apply proposal {}, rolling back batch", proposal.getId(), e);
-                throw new RuntimeException("Proposal application failed for id=" + proposal.getId(), e);
-            }
+            String appliedRef = applyProposal(proposal, context);
+            proposalRepository.markApplied(proposal.getId(), appliedRef);
+            log.info("Applied proposal {} (type={}, synth_id={})",
+                proposal.getId(), proposal.getProposalType(), proposal.getSynthId());
         }
     }
 
-    private String applyProposal(ProposalRow proposal, Map<String, Long> synthIdMap) {
+    private String applyProposal(ProposalRow proposal, ApplicationContext context) {
+        JsonNode payload = parsePayload(proposal);
+
+        ProposalApplyStrategy strategy = strategies.get(proposal.getProposalType());
+        if (strategy == null) {
+            log.warn("No strategy registered for proposal type {} (proposal id={}). Skipping.",
+                proposal.getProposalType(), proposal.getId());
+            return "type_not_implemented:" + proposal.getProposalType().getName();
+        }
+
         try {
-            JsonNode payload = objectMapper.readTree(proposal.getPayload());
-
-            return switch (proposal.getProposalType()) {
-                case 1 -> applyCreateEntity(payload, proposal, synthIdMap);
-                case 7 -> applyCreateCategory(payload, proposal, synthIdMap);
-                default -> {
-                    log.info("Proposal type {} not yet implemented for auto-application", proposal.getProposalType());
-                    yield "type_not_implemented";
-                }
-            };
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to parse proposal payload", e);
+            return strategy.apply(payload, proposal, context);
+        } catch (RuntimeException e) {
+            log.error("Strategy for {} failed on proposal id={}: {}", proposal.getProposalType(), proposal.getId(), e.getMessage());
+            throw e;
         }
     }
 
-    private String applyCreateEntity(JsonNode payload, ProposalRow proposal, Map<String, Long> synthIdMap) {
-        String entityType = payload.path("entity_type").asText();
-        String name = payload.path("name").asText();
-
-        String table = switch (entityType.toLowerCase()) {
-            case "artist" -> "artist";
-            case "album" -> "album";
-            case "track" -> "track";
-            default -> throw new IllegalArgumentException("Unsupported entity type for creation: " + entityType);
-        };
-
-        String seqName = table + "_seq";
-        Long newId = jdbcTemplate.queryForObject("SELECT nextval('mu." + seqName + "')", Long.class);
-
-        jdbcTemplate.update(
-            "INSERT INTO mu." + table + " (id, name, created_at, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
-            newId, name
-        );
-
-        if (proposal.getSynthId() != null) {
-            synthIdMap.put(proposal.getSynthId(), newId);
+    private JsonNode parsePayload(ProposalRow proposal) {
+        try {
+            return objectMapper.readTree(proposal.getPayload());
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Failed to parse payload of proposal id=" + proposal.getId(), e);
         }
-
-        return table + ":" + newId;
-    }
-
-    private String applyCreateCategory(JsonNode payload, ProposalRow proposal, Map<String, Long> synthIdMap) {
-        String name = payload.path("name").asText();
-
-        Long newId = jdbcTemplate.queryForObject("SELECT nextval('mu.category_seq')", Long.class);
-
-        jdbcTemplate.update(
-            "INSERT INTO mu.category (id, name, created_at, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
-            newId, name
-        );
-
-        if (proposal.getSynthId() != null) {
-            synthIdMap.put(proposal.getSynthId(), newId);
-        }
-
-        return "category:" + newId;
-    }
-
-    private void markApplied(Long proposalId, String appliedRef) {
-        jdbcTemplate.update(
-            """
-            UPDATE mu_semantic_analysis.proposal
-            SET resolution = ?, applied_ref = ?, resolved_at = CURRENT_TIMESTAMP, resolved_by = 'applicator'
-            WHERE id = ?
-            """,
-            ProposalResolution.APPROVED.getCode(), appliedRef, proposalId
-        );
     }
 }

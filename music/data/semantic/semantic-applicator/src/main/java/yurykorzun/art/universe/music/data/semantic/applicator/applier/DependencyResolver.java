@@ -6,16 +6,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
 
 @Component
 public class DependencyResolver {
 
     private static final Logger log = LoggerFactory.getLogger(DependencyResolver.class);
-    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    private final ObjectMapper objectMapper;
+
+    public DependencyResolver(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
     public List<ProposalRow> topologicalSort(List<ProposalRow> proposals) {
-        // Build adjacency: proposal with ref depends on the proposal with that synth_id
         Map<String, ProposalRow> bySynthId = new HashMap<>();
         for (ProposalRow p : proposals) {
             if (p.getSynthId() != null) {
@@ -23,38 +34,21 @@ public class DependencyResolver {
             }
         }
 
+        Map<Long, ProposalRow> byId = new HashMap<>();
         Map<Long, Set<Long>> dependencies = new HashMap<>();
         for (ProposalRow p : proposals) {
-            dependencies.put(p.getId(), new HashSet<>());
-            Set<String> refs = extractRefs(p.getPayload());
-            for (String ref : refs) {
+            byId.put(p.getId(), p);
+            Set<Long> deps = new HashSet<>();
+            for (String ref : extractRefs(p.getPayload())) {
                 ProposalRow dep = bySynthId.get(ref);
                 if (dep != null && !dep.getId().equals(p.getId())) {
-                    dependencies.get(p.getId()).add(dep.getId());
+                    deps.add(dep.getId());
                 }
             }
-        }
-
-        // Kahn's algorithm
-        Map<Long, ProposalRow> byId = new HashMap<>();
-        for (ProposalRow p : proposals) {
-            byId.put(p.getId(), p);
+            dependencies.put(p.getId(), deps);
         }
 
         Map<Long, Integer> inDegree = new HashMap<>();
-        for (ProposalRow p : proposals) {
-            inDegree.put(p.getId(), 0);
-        }
-        for (Set<Long> deps : dependencies.values()) {
-            for (Long dep : deps) {
-                inDegree.merge(dep, 0, Integer::sum); // ensure key exists
-            }
-        }
-        // Recompute: inDegree of X = number of proposals that depend on X? No,
-        // inDegree of X = number of proposals X depends on (for topological sort of dependents)
-        // Actually for topo sort: edges go from dependency -> dependent
-        // So inDegree[dependent] = number of dependencies
-        inDegree.clear();
         for (ProposalRow p : proposals) {
             inDegree.put(p.getId(), dependencies.get(p.getId()).size());
         }
@@ -66,7 +60,7 @@ public class DependencyResolver {
             }
         }
 
-        List<ProposalRow> sorted = new ArrayList<>();
+        List<ProposalRow> sorted = new ArrayList<>(proposals.size());
         while (!queue.isEmpty()) {
             Long current = queue.poll();
             sorted.add(byId.get(current));
@@ -83,13 +77,15 @@ public class DependencyResolver {
         }
 
         if (sorted.size() < proposals.size()) {
-            log.warn("Cycle detected in proposal dependencies, {} proposals not sorted", proposals.size() - sorted.size());
-            // Add remaining unsorted proposals at the end
+            List<Long> unresolved = new ArrayList<>();
             Set<Long> sortedIds = new HashSet<>();
             for (ProposalRow p : sorted) sortedIds.add(p.getId());
             for (ProposalRow p : proposals) {
-                if (!sortedIds.contains(p.getId())) sorted.add(p);
+                if (!sortedIds.contains(p.getId())) unresolved.add(p.getId());
             }
+            throw new IllegalStateException(
+                "Cycle detected in proposal dependencies; unresolved proposal ids=" + unresolved
+            );
         }
 
         return sorted;
