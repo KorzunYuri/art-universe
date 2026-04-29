@@ -6,11 +6,14 @@ import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
 import yurykorzun.art.universe.music.data.semantic.applicator.applier.ApplicationContext;
 import yurykorzun.art.universe.music.data.semantic.applicator.applier.ProposalApplyStrategy;
 import yurykorzun.art.universe.music.data.semantic.applicator.applier.ProposalRow;
+import yurykorzun.art.universe.music.data.semantic.applicator.applier.support.ProposalPayloads;
 import yurykorzun.art.universe.music.data.semantic.applicator.repository.MasterDataRepository;
 import yurykorzun.art.universe.music.data.semantic.model.ProposalType;
 
 @Component
 public class CreateEntityStrategy implements ProposalApplyStrategy {
+
+    private static final String PROPOSAL_TYPE = "CREATE_ENTITY";
 
     private final MasterDataRepository masterDataRepository;
 
@@ -25,12 +28,15 @@ public class CreateEntityStrategy implements ProposalApplyStrategy {
 
     @Override
     public String apply(JsonNode payload, ProposalRow proposal, ApplicationContext context) {
-        String entityTypeRaw = payload.path("entity_type").asText();
-        String name = payload.path("name").asText();
-        if (name.isBlank()) {
-            throw new IllegalArgumentException("CREATE_ENTITY payload requires a non-blank 'name'");
+        MasterEntityType entityType = MasterEntityType.fromString(
+            ProposalPayloads.requireString(payload, "entity_type", PROPOSAL_TYPE)
+        );
+        String name = ProposalPayloads.requireString(payload, "name", PROPOSAL_TYPE);
+        if (entityType == MasterEntityType.PERSON) {
+            throw new IllegalArgumentException(
+                "CREATE_ENTITY for PERSON is not supported yet — PERSON lives in the art schema "
+                    + "and cross-schema creation is not wired. The LLM must reference existing persons by id.");
         }
-        MasterEntityType entityType = MasterEntityType.fromString(entityTypeRaw);
         Long newId = masterDataRepository.createEntity(entityType, name);
         context.registerSynthId(proposal.getSynthId(), newId);
         return entityType.getName() + ":" + newId;
