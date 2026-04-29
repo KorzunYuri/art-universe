@@ -14,8 +14,6 @@ import yurykorzun.art.universe.music.data.semantic.model.ProposalType;
 @Component
 public class CreateRelationStrategy implements ProposalApplyStrategy {
 
-    private static final String PROPOSAL_TYPE = "CREATE_RELATION";
-
     private final RelationRepository relationRepository;
     private final EntityReferenceResolver entityResolver;
 
@@ -32,26 +30,26 @@ public class CreateRelationStrategy implements ProposalApplyStrategy {
     @Override
     public String apply(JsonNode payload, ProposalRow proposal, ApplicationContext context) {
         MasterEntityType sourceType = MasterEntityType.fromString(
-            ProposalPayloads.requireString(payload, "source_entity_type", PROPOSAL_TYPE)
+            ProposalPayloads.requireString(payload, "source_entity_type", proposalTypeName())
         );
         MasterEntityType targetType = MasterEntityType.fromString(
-            ProposalPayloads.requireString(payload, "target_entity_type", PROPOSAL_TYPE)
+            ProposalPayloads.requireString(payload, "target_entity_type", proposalTypeName())
         );
         Long sourceId = entityResolver.require(
-            payload, "source_entity_id", "source_entity_ref", context, PROPOSAL_TYPE, "source"
+            payload, "source_entity_id", "source_entity_ref", context, proposalTypeName(), "source"
         );
         Long targetId = entityResolver.require(
-            payload, "target_entity_id", "target_entity_ref", context, PROPOSAL_TYPE, "target"
+            payload, "target_entity_id", "target_entity_ref", context, proposalTypeName(), "target"
         );
-        Long relationTypeId = ProposalPayloads.requireLong(payload, "relation_type_id", PROPOSAL_TYPE);
+        Long relationTypeId = ProposalPayloads.requireLong(payload, "relation_type_id", proposalTypeName());
 
         RelationRepository.RelationType relationType = relationRepository.findRelationType(relationTypeId);
         if (relationType == null) {
-            throw new IllegalArgumentException(PROPOSAL_TYPE + ": unknown relation_type_id=" + relationTypeId);
+            throw new IllegalArgumentException(proposalTypeName() + ": unknown relation_type_id=" + relationTypeId);
         }
         if (relationType.isSystem()) {
             throw new IllegalArgumentException(
-                PROPOSAL_TYPE + ": relation_type_id=" + relationTypeId + " is a system type managed automatically by the platform"
+                proposalTypeName() + ": relation_type_id=" + relationTypeId + " is a system type managed automatically by the platform"
             );
         }
 

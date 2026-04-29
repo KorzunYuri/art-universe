@@ -19,8 +19,6 @@ import java.util.List;
 @Component
 public class CreateAttributeDefStrategy implements ProposalApplyStrategy {
 
-    private static final String PROPOSAL_TYPE = "CREATE_ATTRIBUTE_DEF";
-
     private final AttributeRepository attributeRepository;
 
     public CreateAttributeDefStrategy(AttributeRepository attributeRepository) {
@@ -34,10 +32,10 @@ public class CreateAttributeDefStrategy implements ProposalApplyStrategy {
 
     @Override
     public String apply(JsonNode payload, ProposalRow proposal, ApplicationContext context) {
-        String code = ProposalPayloads.requireString(payload, "code", PROPOSAL_TYPE);
-        String name = ProposalPayloads.requireString(payload, "name", PROPOSAL_TYPE);
+        String code = ProposalPayloads.requireString(payload, "code", proposalTypeName());
+        String name = ProposalPayloads.requireString(payload, "name", proposalTypeName());
         AttributeDataType dataType = AttributeDataType.fromString(
-            ProposalPayloads.requireString(payload, "data_type", PROPOSAL_TYPE)
+            ProposalPayloads.requireString(payload, "data_type", proposalTypeName())
         );
         int temporalType = payload.hasNonNull("temporal_type")
             ? AttributeTemporalType.fromString(payload.get("temporal_type").asText()).getCode()

@@ -15,8 +15,6 @@ import yurykorzun.art.universe.music.data.semantic.model.ProposalType;
 @Component
 public class BindExternalEntityStrategy implements ProposalApplyStrategy {
 
-    private static final String PROPOSAL_TYPE = "BIND_EXTERNAL_ENTITY";
-
     private final ExternalBindingRepository externalBindingRepository;
     private final EntityReferenceResolver entityResolver;
 
@@ -36,17 +34,17 @@ public class BindExternalEntityStrategy implements ProposalApplyStrategy {
     @Override
     public String apply(JsonNode payload, ProposalRow proposal, ApplicationContext context) {
         DataSource dataSource = DataSource.fromString(
-            ProposalPayloads.requireString(payload, "data_source", PROPOSAL_TYPE)
+            ProposalPayloads.requireString(payload, "data_source", proposalTypeName())
         );
         long externalId = payload.path("external_id").asLong(-1);
         if (externalId < 0) {
-            throw new IllegalArgumentException(PROPOSAL_TYPE + " requires external_id");
+            throw new IllegalArgumentException(proposalTypeName() + " requires external_id");
         }
         MasterEntityType entityType = MasterEntityType.fromString(
-            ProposalPayloads.requireString(payload, "master_entity_type", PROPOSAL_TYPE)
+            ProposalPayloads.requireString(payload, "master_entity_type", proposalTypeName())
         );
         Long masterId = entityResolver.require(
-            payload, "master_entity_id", "master_entity_ref", context, PROPOSAL_TYPE, "master"
+            payload, "master_entity_id", "master_entity_ref", context, proposalTypeName(), "master"
         );
 
         Long id = externalBindingRepository.createBinding(entityType, masterId, dataSource.getCode(), externalId);

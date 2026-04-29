@@ -12,8 +12,6 @@ import yurykorzun.art.universe.music.data.semantic.model.ProposalType;
 @Component
 public class CreateDictionaryRecordStrategy implements ProposalApplyStrategy {
 
-    private static final String PROPOSAL_TYPE = "CREATE_DICTIONARY_RECORD";
-
     private final DictionaryRepository dictionaryRepository;
 
     public CreateDictionaryRecordStrategy(DictionaryRepository dictionaryRepository) {
@@ -27,8 +25,8 @@ public class CreateDictionaryRecordStrategy implements ProposalApplyStrategy {
 
     @Override
     public String apply(JsonNode payload, ProposalRow proposal, ApplicationContext context) {
-        String domain = ProposalPayloads.requireString(payload, "domain", PROPOSAL_TYPE);
-        String name = ProposalPayloads.requireString(payload, "name", PROPOSAL_TYPE);
+        String domain = ProposalPayloads.requireString(payload, "domain", proposalTypeName());
+        String name = ProposalPayloads.requireString(payload, "name", proposalTypeName());
         short code;
         if (payload.hasNonNull("code")) {
             code = (short) payload.get("code").asInt();

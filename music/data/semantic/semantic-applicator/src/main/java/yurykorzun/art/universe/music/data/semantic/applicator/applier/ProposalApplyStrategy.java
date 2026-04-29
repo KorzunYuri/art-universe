@@ -8,4 +8,8 @@ public interface ProposalApplyStrategy {
     ProposalType supportedType();
 
     String apply(JsonNode payload, ProposalRow proposal, ApplicationContext context);
+
+    default String proposalTypeName() {
+        return supportedType().name();
+    }
 }

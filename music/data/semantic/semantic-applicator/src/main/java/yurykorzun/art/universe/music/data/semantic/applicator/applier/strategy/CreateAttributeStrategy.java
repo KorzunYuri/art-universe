@@ -16,8 +16,6 @@ import java.time.LocalDate;
 @Component
 public class CreateAttributeStrategy implements ProposalApplyStrategy {
 
-    private static final String PROPOSAL_TYPE = "CREATE_ATTRIBUTE";
-
     private final AttributeRepository attributeRepository;
     private final EntityReferenceResolver entityResolver;
 
@@ -34,15 +32,15 @@ public class CreateAttributeStrategy implements ProposalApplyStrategy {
     @Override
     public String apply(JsonNode payload, ProposalRow proposal, ApplicationContext context) {
         MasterEntityType entityType = MasterEntityType.fromString(
-            ProposalPayloads.requireString(payload, "entity_type", PROPOSAL_TYPE)
+            ProposalPayloads.requireString(payload, "entity_type", proposalTypeName())
         );
-        Long entityId = entityResolver.require(payload, "entity_id", "entity_ref", context, PROPOSAL_TYPE, "entity");
-        String attributeCode = ProposalPayloads.requireString(payload, "attribute_code", PROPOSAL_TYPE);
-        String rawValue = ProposalPayloads.requireString(payload, "value", PROPOSAL_TYPE);
+        Long entityId = entityResolver.require(payload, "entity_id", "entity_ref", context, proposalTypeName(), "entity");
+        String attributeCode = ProposalPayloads.requireString(payload, "attribute_code", proposalTypeName());
+        String rawValue = ProposalPayloads.requireString(payload, "value", proposalTypeName());
 
         AttributeRepository.AttributeDef def = attributeRepository.findDefByCode(attributeCode);
         if (def == null) {
-            throw new IllegalStateException(PROPOSAL_TYPE + ": attribute_def not found for code=" + attributeCode);
+            throw new IllegalStateException(proposalTypeName() + ": attribute_def not found for code=" + attributeCode);
         }
 
         LocalDate eventDate = ProposalPayloads.readDate(payload, "event_date");

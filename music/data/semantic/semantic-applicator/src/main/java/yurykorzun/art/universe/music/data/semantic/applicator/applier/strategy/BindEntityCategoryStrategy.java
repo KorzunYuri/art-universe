@@ -15,8 +15,6 @@ import yurykorzun.art.universe.music.data.semantic.model.ProposalType;
 @Component
 public class BindEntityCategoryStrategy implements ProposalApplyStrategy {
 
-    private static final String PROPOSAL_TYPE = "BIND_ENTITY_CATEGORY";
-
     private final MasterDataRepository masterDataRepository;
     private final CategoryApplicationService categoryService;
     private final EntityReferenceResolver entityResolver;
@@ -41,16 +39,16 @@ public class BindEntityCategoryStrategy implements ProposalApplyStrategy {
         MasterEntityType entityType = MasterEntityType.fromString(
             ProposalPayloads.requireString(payload, "entity_type", supportedType().name())
         );
-        Long entityId = entityResolver.require(payload, "entity_id", "entity_ref", context, PROPOSAL_TYPE, "entity");
+        Long entityId = entityResolver.require(payload, "entity_id", "entity_ref", context, proposalTypeName(), "entity");
 
         Long categoryId = entityResolver.resolveOrNull(
-            payload, "category_id", "category_ref", context, PROPOSAL_TYPE, "category"
+            payload, "category_id", "category_ref", context, proposalTypeName(), "category"
         );
         if (categoryId == null) {
             String categoryName = ProposalPayloads.optionalString(payload, "category_name");
             if (categoryName == null) {
                 throw new IllegalArgumentException(
-                    PROPOSAL_TYPE + " requires category_id, category_ref, or category_name"
+                    proposalTypeName() + " requires category_id, category_ref, or category_name"
                 );
             }
             categoryId = categoryService.findOrCreate(categoryName).id();
