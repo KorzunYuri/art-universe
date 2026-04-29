@@ -4,7 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import yurykorzun.art.universe.music.data.master.entity.attribute.AttributeTargetType;
+import yurykorzun.art.universe.music.data.master.model.attribute.AttributeTargetType;
 import yurykorzun.art.universe.music.data.master.entity.attribute.EntityAttributeValue;
 
 import java.util.List;

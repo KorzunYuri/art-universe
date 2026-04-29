@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import yurykorzun.art.universe.music.data.master.entity.attribute.AttributeTargetType;
+import yurykorzun.art.universe.music.data.master.model.attribute.AttributeTargetType;
 import yurykorzun.art.universe.music.data.master.entity.proposal.Proposal;
 import yurykorzun.art.universe.music.data.semantic.model.ProposalResolution;
 import yurykorzun.art.universe.music.data.semantic.model.ProposalType;

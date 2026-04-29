@@ -3,6 +3,7 @@ package yurykorzun.art.universe.music.data.master.entity.attribute;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import yurykorzun.art.universe.music.data.master.model.attribute.AttributeTargetType;
 
 @Entity(name = "attribute_def_applicability")
 @SuperBuilder

@@ -4,7 +4,7 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import yurykorzun.art.universe.music.data.master.dto.attribute.AttributeDefDto;
 import yurykorzun.art.universe.music.data.master.dto.attribute.AttributeDefSaveRequestDTO;
-import yurykorzun.art.universe.music.data.master.entity.attribute.AttributeTargetType;
+import yurykorzun.art.universe.music.data.master.model.attribute.AttributeTargetType;
 import yurykorzun.art.universe.music.data.master.service.AttributeDefService;
 
 import java.util.List;

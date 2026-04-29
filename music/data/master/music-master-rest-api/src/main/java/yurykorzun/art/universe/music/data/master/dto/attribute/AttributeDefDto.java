@@ -4,10 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import yurykorzun.art.universe.music.data.master.entity.attribute.AttributeComputationType;
-import yurykorzun.art.universe.music.data.master.entity.attribute.AttributeDataType;
-import yurykorzun.art.universe.music.data.master.entity.attribute.AttributeTargetType;
-import yurykorzun.art.universe.music.data.master.entity.attribute.AttributeTemporalType;
+import yurykorzun.art.universe.music.data.master.model.attribute.AttributeComputationType;
+import yurykorzun.art.universe.music.data.master.model.attribute.AttributeDataType;
+import yurykorzun.art.universe.music.data.master.model.attribute.AttributeTargetType;
+import yurykorzun.art.universe.music.data.master.model.attribute.AttributeTemporalType;
 
 import java.util.List;
 

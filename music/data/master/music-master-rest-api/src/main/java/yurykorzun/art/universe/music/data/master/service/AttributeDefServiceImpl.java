@@ -7,7 +7,7 @@ import yurykorzun.art.universe.music.data.master.dto.attribute.AttributeDefDto;
 import yurykorzun.art.universe.music.data.master.dto.attribute.AttributeDefSaveRequestDTO;
 import yurykorzun.art.universe.music.data.master.entity.attribute.AttributeDef;
 import yurykorzun.art.universe.music.data.master.entity.attribute.AttributeDefApplicability;
-import yurykorzun.art.universe.music.data.master.entity.attribute.AttributeTargetType;
+import yurykorzun.art.universe.music.data.master.model.attribute.AttributeTargetType;
 import yurykorzun.art.universe.music.data.master.repository.AttributeDefRepository;
 
 import java.util.ArrayList;

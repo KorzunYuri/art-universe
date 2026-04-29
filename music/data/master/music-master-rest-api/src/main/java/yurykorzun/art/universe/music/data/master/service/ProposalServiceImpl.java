@@ -8,7 +8,7 @@ import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.dto.proposal.AnalysisRequestDto;
 import yurykorzun.art.universe.music.data.master.dto.proposal.ProposalDto;
 import yurykorzun.art.universe.music.data.master.dto.proposal.ProposalStatsDto;
-import yurykorzun.art.universe.music.data.master.entity.attribute.AttributeTargetType;
+import yurykorzun.art.universe.music.data.master.model.attribute.AttributeTargetType;
 import yurykorzun.art.universe.music.data.master.entity.proposal.AnalysisRequest;
 import yurykorzun.art.universe.music.data.master.entity.proposal.Proposal;
 import yurykorzun.art.universe.music.data.master.repository.AnalysisRequestRepository;

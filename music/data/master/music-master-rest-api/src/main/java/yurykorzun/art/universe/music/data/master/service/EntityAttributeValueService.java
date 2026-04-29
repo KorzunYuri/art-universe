@@ -2,7 +2,7 @@ package yurykorzun.art.universe.music.data.master.service;
 
 import yurykorzun.art.universe.music.data.master.dto.attribute.EntityAttributeValueDto;
 import yurykorzun.art.universe.music.data.master.dto.attribute.EntityAttributeValueSaveRequestDTO;
-import yurykorzun.art.universe.music.data.master.entity.attribute.AttributeTargetType;
+import yurykorzun.art.universe.music.data.master.model.attribute.AttributeTargetType;
 
 import java.util.List;
 

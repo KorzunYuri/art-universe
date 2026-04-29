@@ -1,4 +1,4 @@
-package yurykorzun.art.universe.music.data.master.entity.attribute;
+package yurykorzun.art.universe.music.data.master.model.attribute;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -30,6 +30,13 @@ public enum AttributeDataType implements Coded {
     @JsonValue
     public String getName() {
         return name;
+    }
+
+    public static AttributeDataType fromCode(int code) {
+        for (AttributeDataType type : values()) {
+            if (type.code == code) return type;
+        }
+        throw new IllegalArgumentException("Unknown attribute data type code: " + code);
     }
 
     @JsonCreator

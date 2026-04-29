@@ -6,6 +6,8 @@ import yurykorzun.art.universe.common.exception.CustomEntityNotFoundException;
 import yurykorzun.art.universe.music.data.master.dto.attribute.EntityAttributeValueDto;
 import yurykorzun.art.universe.music.data.master.dto.attribute.EntityAttributeValueSaveRequestDTO;
 import yurykorzun.art.universe.music.data.master.entity.attribute.*;
+import yurykorzun.art.universe.music.data.master.model.attribute.AttributeSourceType;
+import yurykorzun.art.universe.music.data.master.model.attribute.AttributeTargetType;
 import yurykorzun.art.universe.music.data.master.repository.AttributeDefRepository;
 import yurykorzun.art.universe.music.data.master.repository.EntityAttributeValueRepository;
 

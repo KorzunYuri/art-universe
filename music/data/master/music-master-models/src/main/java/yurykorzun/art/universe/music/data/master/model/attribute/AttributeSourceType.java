@@ -1,4 +1,4 @@
-package yurykorzun.art.universe.music.data.master.entity.attribute;
+package yurykorzun.art.universe.music.data.master.model.attribute;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;

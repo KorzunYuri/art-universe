@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import yurykorzun.art.universe.common.domain.entity.BaseEntity;
+import yurykorzun.art.universe.music.data.master.model.attribute.AttributeSourceType;
+import yurykorzun.art.universe.music.data.master.model.attribute.AttributeTargetType;
 
 import java.time.LocalDate;
 

@@ -8,7 +8,7 @@ import yurykorzun.art.universe.music.data.master.dto.proposal.AnalysisRequestDto
 import yurykorzun.art.universe.music.data.master.dto.proposal.ProposalDto;
 import yurykorzun.art.universe.music.data.master.dto.proposal.ProposalResolveRequestDTO;
 import yurykorzun.art.universe.music.data.master.dto.proposal.ProposalStatsDto;
-import yurykorzun.art.universe.music.data.master.entity.attribute.AttributeTargetType;
+import yurykorzun.art.universe.music.data.master.model.attribute.AttributeTargetType;
 import yurykorzun.art.universe.music.data.master.service.ProposalService;
 import yurykorzun.art.universe.music.data.semantic.model.ProposalResolution;
 import yurykorzun.art.universe.music.data.semantic.model.ProposalType;

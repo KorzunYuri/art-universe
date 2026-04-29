@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import yurykorzun.art.universe.music.data.master.entity.attribute.AttributeSourceType;
+import yurykorzun.art.universe.music.data.master.model.attribute.AttributeSourceType;
 
 import java.time.LocalDate;
 
