@@ -10,6 +10,7 @@ import yurykorzun.art.universe.music.data.semantic.applicator.applier.ProposalRo
 import yurykorzun.art.universe.music.data.semantic.applicator.applier.support.EntityReferenceResolver;
 import yurykorzun.art.universe.music.data.semantic.applicator.applier.support.ProposalPayloads;
 import yurykorzun.art.universe.music.data.semantic.applicator.repository.ExternalBindingRepository;
+import yurykorzun.art.universe.music.data.semantic.model.PayloadFields;
 import yurykorzun.art.universe.music.data.semantic.model.ProposalType;
 
 @Component
@@ -34,17 +35,17 @@ public class BindExternalEntityStrategy implements ProposalApplyStrategy {
     @Override
     public String apply(JsonNode payload, ProposalRow proposal, ApplicationContext context) {
         DataSource dataSource = DataSource.fromString(
-            ProposalPayloads.requireString(payload, "data_source", proposalTypeName())
+            ProposalPayloads.requireString(payload, PayloadFields.DATA_SOURCE, proposalTypeName())
         );
-        long externalId = payload.path("external_id").asLong(-1);
+        long externalId = payload.path(PayloadFields.EXTERNAL_ID).asLong(-1);
         if (externalId < 0) {
-            throw new IllegalArgumentException(proposalTypeName() + " requires external_id");
+            throw new IllegalArgumentException(proposalTypeName() + " requires " + PayloadFields.EXTERNAL_ID);
         }
         MasterEntityType entityType = MasterEntityType.fromString(
-            ProposalPayloads.requireString(payload, "master_entity_type", proposalTypeName())
+            ProposalPayloads.requireString(payload, PayloadFields.MASTER_ENTITY_TYPE, proposalTypeName())
         );
         Long masterId = entityResolver.require(
-            payload, "master_entity_id", "master_entity_ref", context, proposalTypeName(), "master"
+            payload, PayloadFields.MASTER_ENTITY_ID, PayloadFields.MASTER_ENTITY_REF, context, proposalTypeName(), "master"
         );
 
         Long id = externalBindingRepository.createBinding(entityType, masterId, dataSource.getCode(), externalId);

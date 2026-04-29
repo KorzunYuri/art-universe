@@ -9,6 +9,7 @@ import yurykorzun.art.universe.music.data.semantic.applicator.applier.ProposalRo
 import yurykorzun.art.universe.music.data.semantic.applicator.applier.support.EntityReferenceResolver;
 import yurykorzun.art.universe.music.data.semantic.applicator.applier.support.ProposalPayloads;
 import yurykorzun.art.universe.music.data.semantic.applicator.repository.AttributeRepository;
+import yurykorzun.art.universe.music.data.semantic.model.PayloadFields;
 import yurykorzun.art.universe.music.data.semantic.model.ProposalType;
 
 import java.time.LocalDate;
@@ -32,20 +33,20 @@ public class CreateAttributeStrategy implements ProposalApplyStrategy {
     @Override
     public String apply(JsonNode payload, ProposalRow proposal, ApplicationContext context) {
         MasterEntityType entityType = MasterEntityType.fromString(
-            ProposalPayloads.requireString(payload, "entity_type", proposalTypeName())
+            ProposalPayloads.requireString(payload, PayloadFields.ENTITY_TYPE, proposalTypeName())
         );
-        Long entityId = entityResolver.require(payload, "entity_id", "entity_ref", context, proposalTypeName(), "entity");
-        String attributeCode = ProposalPayloads.requireString(payload, "attribute_code", proposalTypeName());
-        String rawValue = ProposalPayloads.requireString(payload, "value", proposalTypeName());
+        Long entityId = entityResolver.require(payload, PayloadFields.ENTITY_ID, PayloadFields.ENTITY_REF, context, proposalTypeName(), "entity");
+        String attributeCode = ProposalPayloads.requireString(payload, PayloadFields.ATTRIBUTE_CODE, proposalTypeName());
+        String rawValue = ProposalPayloads.requireString(payload, PayloadFields.VALUE, proposalTypeName());
 
         AttributeRepository.AttributeDef def = attributeRepository.findDefByCode(attributeCode);
         if (def == null) {
             throw new IllegalStateException(proposalTypeName() + ": attribute_def not found for code=" + attributeCode);
         }
 
-        LocalDate eventDate = ProposalPayloads.readDate(payload, "event_date");
-        LocalDate validFrom = ProposalPayloads.readDate(payload, "valid_from");
-        LocalDate validTill = ProposalPayloads.readDate(payload, "valid_till");
+        LocalDate eventDate = ProposalPayloads.readDate(payload, PayloadFields.EVENT_DATE);
+        LocalDate validFrom = ProposalPayloads.readDate(payload, PayloadFields.VALID_FROM);
+        LocalDate validTill = ProposalPayloads.readDate(payload, PayloadFields.VALID_TILL);
         String sourceRef = "proposal:" + proposal.getId();
 
         Long id = attributeRepository.createValue(

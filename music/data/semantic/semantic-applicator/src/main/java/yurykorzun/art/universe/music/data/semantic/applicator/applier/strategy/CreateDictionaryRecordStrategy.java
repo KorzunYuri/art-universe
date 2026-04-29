@@ -7,6 +7,7 @@ import yurykorzun.art.universe.music.data.semantic.applicator.applier.ProposalAp
 import yurykorzun.art.universe.music.data.semantic.applicator.applier.ProposalRow;
 import yurykorzun.art.universe.music.data.semantic.applicator.applier.support.ProposalPayloads;
 import yurykorzun.art.universe.music.data.semantic.applicator.repository.DictionaryRepository;
+import yurykorzun.art.universe.music.data.semantic.model.PayloadFields;
 import yurykorzun.art.universe.music.data.semantic.model.ProposalType;
 
 @Component
@@ -25,11 +26,11 @@ public class CreateDictionaryRecordStrategy implements ProposalApplyStrategy {
 
     @Override
     public String apply(JsonNode payload, ProposalRow proposal, ApplicationContext context) {
-        String domain = ProposalPayloads.requireString(payload, "domain", proposalTypeName());
-        String name = ProposalPayloads.requireString(payload, "name", proposalTypeName());
+        String domain = ProposalPayloads.requireString(payload, PayloadFields.DOMAIN, proposalTypeName());
+        String name = ProposalPayloads.requireString(payload, PayloadFields.NAME, proposalTypeName());
         short code;
-        if (payload.hasNonNull("code")) {
-            code = (short) payload.get("code").asInt();
+        if (payload.hasNonNull(PayloadFields.CODE)) {
+            code = (short) payload.get(PayloadFields.CODE).asInt();
         } else {
             code = (short) (dictionaryRepository.findMaxCodeForDomain(domain) + 1);
         }

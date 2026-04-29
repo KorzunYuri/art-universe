@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.stereotype.Component;
 import yurykorzun.art.universe.common.domain.entity.MasterEntityType;
+import yurykorzun.art.universe.music.data.semantic.model.PayloadFieldType;
+import yurykorzun.art.universe.music.data.semantic.model.PayloadFields;
 import yurykorzun.art.universe.music.data.semantic.model.ProposalType;
 
 import java.util.EnumMap;
@@ -59,8 +61,8 @@ public class PayloadSchemaRegistry {
         ObjectNode schema = objectMapper.createObjectNode();
         schema.put("description", "Propose creating a new master entity");
         ObjectNode fields = schema.putObject("payload_fields");
-        addField(fields, "entity_type", "string", true, "ARTIST, ALBUM, TRACK, PERSON, CATEGORY");
-        addField(fields, "name", "string", true, null);
+        addField(fields, PayloadFields.ENTITY_TYPE, PayloadFieldType.STRING, true, "ARTIST, ALBUM, TRACK, PERSON, CATEGORY");
+        addField(fields, PayloadFields.NAME, PayloadFieldType.STRING, true, null);
         return schema;
     }
 
@@ -68,18 +70,18 @@ public class PayloadSchemaRegistry {
         ObjectNode schema = objectMapper.createObjectNode();
         schema.put("description", "Propose creating a relation between two entities");
         ObjectNode fields = schema.putObject("payload_fields");
-        addField(fields, "source_entity_type", "string", true, null);
-        addField(fields, "source_entity_id", "integer", false, "existing entity ID (null if using ref)");
-        addField(fields, "source_entity_ref", "string", false, "synth_id of a CREATE_ENTITY proposal");
-        addField(fields, "target_entity_type", "string", true, null);
-        addField(fields, "target_entity_id", "integer", false, null);
-        addField(fields, "target_entity_ref", "string", false, null);
-        addField(fields, "relation_type_id", "integer", true, null);
-        addField(fields, "relation_type_name", "string", false, "human-readable");
-        addField(fields, "temporal_type", "string", false, "CONSTANT, INSTANT, PERIOD");
-        addField(fields, "event_date", "date", false, null);
-        addField(fields, "valid_from", "date", false, null);
-        addField(fields, "valid_till", "date", false, null);
+        addField(fields, PayloadFields.SOURCE_ENTITY_TYPE, PayloadFieldType.STRING, true, null);
+        addField(fields, PayloadFields.SOURCE_ENTITY_ID, PayloadFieldType.INTEGER, false, "existing entity ID (null if using ref)");
+        addField(fields, PayloadFields.SOURCE_ENTITY_REF, PayloadFieldType.STRING, false, "synth_id of a CREATE_ENTITY proposal");
+        addField(fields, PayloadFields.TARGET_ENTITY_TYPE, PayloadFieldType.STRING, true, null);
+        addField(fields, PayloadFields.TARGET_ENTITY_ID, PayloadFieldType.INTEGER, false, null);
+        addField(fields, PayloadFields.TARGET_ENTITY_REF, PayloadFieldType.STRING, false, null);
+        addField(fields, PayloadFields.RELATION_TYPE_ID, PayloadFieldType.INTEGER, true, null);
+        addField(fields, PayloadFields.RELATION_TYPE_NAME, PayloadFieldType.STRING, false, "human-readable");
+        addField(fields, PayloadFields.TEMPORAL_TYPE, PayloadFieldType.STRING, false, "CONSTANT, INSTANT, PERIOD");
+        addField(fields, PayloadFields.EVENT_DATE, PayloadFieldType.DATE, false, null);
+        addField(fields, PayloadFields.VALID_FROM, PayloadFieldType.DATE, false, null);
+        addField(fields, PayloadFields.VALID_TILL, PayloadFieldType.DATE, false, null);
         return schema;
     }
 
@@ -89,15 +91,15 @@ public class PayloadSchemaRegistry {
             "For multi-value PERIOD attributes (e.g. activity_periods), emit one proposal per period " +
             "with the same attribute_code but different valid_from/valid_till. Use null for ongoing periods.");
         ObjectNode fields = schema.putObject("payload_fields");
-        addField(fields, "entity_type", "string", true, null);
-        addField(fields, "entity_id", "integer", false, null);
-        addField(fields, "entity_ref", "string", false, null);
-        addField(fields, "attribute_code", "string", true, "must match a code from Available Semantic Attributes when applicable");
-        addField(fields, "value", "string", true, "string representation of the value");
-        addField(fields, "value_type", "string", true, "NUMERIC, STRING, DATE, BOOLEAN");
-        addField(fields, "event_date", "date", false, "for INSTANT temporal_type");
-        addField(fields, "valid_from", "date", false, "period start (YYYY-MM-DD); use YYYY-01-01 if only year known");
-        addField(fields, "valid_till", "date", false, "period end (YYYY-MM-DD); null if ongoing");
+        addField(fields, PayloadFields.ENTITY_TYPE, PayloadFieldType.STRING, true, null);
+        addField(fields, PayloadFields.ENTITY_ID, PayloadFieldType.INTEGER, false, null);
+        addField(fields, PayloadFields.ENTITY_REF, PayloadFieldType.STRING, false, null);
+        addField(fields, PayloadFields.ATTRIBUTE_CODE, PayloadFieldType.STRING, true, "must match a code from Available Semantic Attributes when applicable");
+        addField(fields, PayloadFields.VALUE, PayloadFieldType.STRING, true, "string representation of the value");
+        addField(fields, PayloadFields.VALUE_TYPE, PayloadFieldType.STRING, true, "NUMERIC, STRING, DATE, BOOLEAN");
+        addField(fields, PayloadFields.EVENT_DATE, PayloadFieldType.DATE, false, "for INSTANT temporal_type");
+        addField(fields, PayloadFields.VALID_FROM, PayloadFieldType.DATE, false, "period start (YYYY-MM-DD); use YYYY-01-01 if only year known");
+        addField(fields, PayloadFields.VALID_TILL, PayloadFieldType.DATE, false, "period end (YYYY-MM-DD); null if ongoing");
         return schema;
     }
 
@@ -105,11 +107,11 @@ public class PayloadSchemaRegistry {
         ObjectNode schema = objectMapper.createObjectNode();
         schema.put("description", "Propose creating a new attribute definition");
         ObjectNode fields = schema.putObject("payload_fields");
-        addField(fields, "code", "string", true, null);
-        addField(fields, "name", "string", true, null);
-        addField(fields, "data_type", "string", true, "NUMERIC, STRING, DATE, BOOLEAN");
-        addField(fields, "temporal_type", "string", true, "CONSTANT, INSTANT, PERIOD");
-        addField(fields, "applicable_to", "array", true, "array of entity type strings");
+        addField(fields, PayloadFields.CODE, PayloadFieldType.STRING, true, null);
+        addField(fields, PayloadFields.NAME, PayloadFieldType.STRING, true, null);
+        addField(fields, PayloadFields.DATA_TYPE, PayloadFieldType.STRING, true, "NUMERIC, STRING, DATE, BOOLEAN");
+        addField(fields, PayloadFields.TEMPORAL_TYPE, PayloadFieldType.STRING, true, "CONSTANT, INSTANT, PERIOD");
+        addField(fields, PayloadFields.APPLICABLE_TO, PayloadFieldType.ARRAY, true, "array of entity type strings");
         return schema;
     }
 
@@ -117,11 +119,11 @@ public class PayloadSchemaRegistry {
         ObjectNode schema = objectMapper.createObjectNode();
         schema.put("description", "Propose binding an entity to a category");
         ObjectNode fields = schema.putObject("payload_fields");
-        addField(fields, "entity_type", "string", true, null);
-        addField(fields, "entity_id", "integer", false, null);
-        addField(fields, "entity_ref", "string", false, null);
-        addField(fields, "category_name", "string", true, null);
-        addField(fields, "category_id", "integer", false, "ID from the provided category tree");
+        addField(fields, PayloadFields.ENTITY_TYPE, PayloadFieldType.STRING, true, null);
+        addField(fields, PayloadFields.ENTITY_ID, PayloadFieldType.INTEGER, false, null);
+        addField(fields, PayloadFields.ENTITY_REF, PayloadFieldType.STRING, false, null);
+        addField(fields, PayloadFields.CATEGORY_NAME, PayloadFieldType.STRING, true, null);
+        addField(fields, PayloadFields.CATEGORY_ID, PayloadFieldType.INTEGER, false, "ID from the provided category tree");
         return schema;
     }
 
@@ -129,9 +131,9 @@ public class PayloadSchemaRegistry {
         ObjectNode schema = objectMapper.createObjectNode();
         schema.put("description", "Propose creating a new category in the hierarchy");
         ObjectNode fields = schema.putObject("payload_fields");
-        addField(fields, "name", "string", true, null);
-        addField(fields, "parent_category_name", "string", false, null);
-        addField(fields, "parent_category_id", "integer", false, null);
+        addField(fields, PayloadFields.NAME, PayloadFieldType.STRING, true, null);
+        addField(fields, PayloadFields.PARENT_CATEGORY_NAME, PayloadFieldType.STRING, false, null);
+        addField(fields, PayloadFields.PARENT_CATEGORY_ID, PayloadFieldType.INTEGER, false, null);
         return schema;
     }
 
@@ -139,18 +141,18 @@ public class PayloadSchemaRegistry {
         ObjectNode schema = objectMapper.createObjectNode();
         schema.put("description", "Propose binding a raw external entity to a master entity");
         ObjectNode fields = schema.putObject("payload_fields");
-        addField(fields, "data_source", "string", true, null);
-        addField(fields, "external_id", "integer", true, null);
-        addField(fields, "master_entity_type", "string", true, null);
-        addField(fields, "master_entity_id", "integer", false, null);
-        addField(fields, "master_entity_ref", "string", false, null);
-        addField(fields, "master_entity_name", "string", true, null);
+        addField(fields, PayloadFields.DATA_SOURCE, PayloadFieldType.STRING, true, null);
+        addField(fields, PayloadFields.EXTERNAL_ID, PayloadFieldType.INTEGER, true, null);
+        addField(fields, PayloadFields.MASTER_ENTITY_TYPE, PayloadFieldType.STRING, true, null);
+        addField(fields, PayloadFields.MASTER_ENTITY_ID, PayloadFieldType.INTEGER, false, null);
+        addField(fields, PayloadFields.MASTER_ENTITY_REF, PayloadFieldType.STRING, false, null);
+        addField(fields, PayloadFields.MASTER_ENTITY_NAME, PayloadFieldType.STRING, true, null);
         return schema;
     }
 
-    private void addField(ObjectNode fields, String name, String type, boolean required, String description) {
+    private void addField(ObjectNode fields, String name, PayloadFieldType type, boolean required, String description) {
         ObjectNode field = fields.putObject(name);
-        field.put("type", type);
+        field.put("type", type.getValue());
         field.put("required", required);
         if (description != null) {
             field.put("description", description);

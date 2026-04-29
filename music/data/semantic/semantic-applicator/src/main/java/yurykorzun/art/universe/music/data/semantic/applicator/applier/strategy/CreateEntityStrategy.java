@@ -8,6 +8,7 @@ import yurykorzun.art.universe.music.data.semantic.applicator.applier.ProposalAp
 import yurykorzun.art.universe.music.data.semantic.applicator.applier.ProposalRow;
 import yurykorzun.art.universe.music.data.semantic.applicator.applier.support.ProposalPayloads;
 import yurykorzun.art.universe.music.data.semantic.applicator.repository.MasterDataRepository;
+import yurykorzun.art.universe.music.data.semantic.model.PayloadFields;
 import yurykorzun.art.universe.music.data.semantic.model.ProposalType;
 
 @Component
@@ -27,9 +28,9 @@ public class CreateEntityStrategy implements ProposalApplyStrategy {
     @Override
     public String apply(JsonNode payload, ProposalRow proposal, ApplicationContext context) {
         MasterEntityType entityType = MasterEntityType.fromString(
-            ProposalPayloads.requireString(payload, "entity_type", proposalTypeName())
+            ProposalPayloads.requireString(payload, PayloadFields.ENTITY_TYPE, proposalTypeName())
         );
-        String name = ProposalPayloads.requireString(payload, "name", proposalTypeName());
+        String name = ProposalPayloads.requireString(payload, PayloadFields.NAME, proposalTypeName());
         if (entityType == MasterEntityType.PERSON) {
             throw new IllegalArgumentException(
                 "CREATE_ENTITY for PERSON is not supported yet — PERSON lives in the art schema "

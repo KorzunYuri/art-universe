@@ -9,6 +9,7 @@ import yurykorzun.art.universe.music.data.semantic.applicator.applier.ProposalRo
 import yurykorzun.art.universe.music.data.semantic.applicator.applier.support.EntityReferenceResolver;
 import yurykorzun.art.universe.music.data.semantic.applicator.applier.support.ProposalPayloads;
 import yurykorzun.art.universe.music.data.semantic.applicator.repository.AttributeRepository;
+import yurykorzun.art.universe.music.data.semantic.model.PayloadFields;
 import yurykorzun.art.universe.music.data.semantic.model.ProposalType;
 
 @Component
@@ -30,11 +31,11 @@ public class ModifyAttributeStrategy implements ProposalApplyStrategy {
     @Override
     public String apply(JsonNode payload, ProposalRow proposal, ApplicationContext context) {
         MasterEntityType entityType = MasterEntityType.fromString(
-            ProposalPayloads.requireString(payload, "entity_type", proposalTypeName())
+            ProposalPayloads.requireString(payload, PayloadFields.ENTITY_TYPE, proposalTypeName())
         );
-        Long entityId = entityResolver.require(payload, "entity_id", "entity_ref", context, proposalTypeName(), "entity");
-        String attributeCode = ProposalPayloads.requireString(payload, "attribute_code", proposalTypeName());
-        String rawValue = ProposalPayloads.requireString(payload, "value", proposalTypeName());
+        Long entityId = entityResolver.require(payload, PayloadFields.ENTITY_ID, PayloadFields.ENTITY_REF, context, proposalTypeName(), "entity");
+        String attributeCode = ProposalPayloads.requireString(payload, PayloadFields.ATTRIBUTE_CODE, proposalTypeName());
+        String rawValue = ProposalPayloads.requireString(payload, PayloadFields.VALUE, proposalTypeName());
 
         AttributeRepository.AttributeDef def = attributeRepository.findDefByCode(attributeCode);
         if (def == null) {

@@ -7,6 +7,7 @@ import yurykorzun.art.universe.music.data.semantic.applicator.applier.ProposalAp
 import yurykorzun.art.universe.music.data.semantic.applicator.applier.ProposalRow;
 import yurykorzun.art.universe.music.data.semantic.applicator.applier.service.CategoryApplicationService;
 import yurykorzun.art.universe.music.data.semantic.applicator.applier.support.ProposalPayloads;
+import yurykorzun.art.universe.music.data.semantic.model.PayloadFields;
 import yurykorzun.art.universe.music.data.semantic.model.ProposalType;
 
 @Component
@@ -25,7 +26,7 @@ public class CreateCategoryStrategy implements ProposalApplyStrategy {
 
     @Override
     public String apply(JsonNode payload, ProposalRow proposal, ApplicationContext context) {
-        String name = ProposalPayloads.requireString(payload, "name", proposalTypeName());
+        String name = ProposalPayloads.requireString(payload, PayloadFields.NAME, proposalTypeName());
         CategoryApplicationService.Resolved resolved = categoryService.findOrCreate(name);
         context.registerSynthId(proposal.getSynthId(), resolved.id());
         return "category:" + resolved.id() + (resolved.existed() ? ":existing" : ":created");

@@ -10,6 +10,7 @@ import yurykorzun.art.universe.music.data.semantic.applicator.applier.service.Ca
 import yurykorzun.art.universe.music.data.semantic.applicator.applier.support.EntityReferenceResolver;
 import yurykorzun.art.universe.music.data.semantic.applicator.applier.support.ProposalPayloads;
 import yurykorzun.art.universe.music.data.semantic.applicator.repository.MasterDataRepository;
+import yurykorzun.art.universe.music.data.semantic.model.PayloadFields;
 import yurykorzun.art.universe.music.data.semantic.model.ProposalType;
 
 @Component
@@ -37,15 +38,15 @@ public class BindEntityCategoryStrategy implements ProposalApplyStrategy {
     @Override
     public String apply(JsonNode payload, ProposalRow proposal, ApplicationContext context) {
         MasterEntityType entityType = MasterEntityType.fromString(
-            ProposalPayloads.requireString(payload, "entity_type", supportedType().name())
+            ProposalPayloads.requireString(payload, PayloadFields.ENTITY_TYPE, proposalTypeName())
         );
-        Long entityId = entityResolver.require(payload, "entity_id", "entity_ref", context, proposalTypeName(), "entity");
+        Long entityId = entityResolver.require(payload, PayloadFields.ENTITY_ID, PayloadFields.ENTITY_REF, context, proposalTypeName(), "entity");
 
         Long categoryId = entityResolver.resolveOrNull(
-            payload, "category_id", "category_ref", context, proposalTypeName(), "category"
+            payload, PayloadFields.CATEGORY_ID, PayloadFields.CATEGORY_REF, context, proposalTypeName(), "category"
         );
         if (categoryId == null) {
-            String categoryName = ProposalPayloads.optionalString(payload, "category_name");
+            String categoryName = ProposalPayloads.optionalString(payload, PayloadFields.CATEGORY_NAME);
             if (categoryName == null) {
                 throw new IllegalArgumentException(
                     proposalTypeName() + " requires category_id, category_ref, or category_name"

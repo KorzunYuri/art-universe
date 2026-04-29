@@ -11,6 +11,7 @@ import yurykorzun.art.universe.music.data.semantic.applicator.repository.Attribu
 import yurykorzun.art.universe.music.data.master.model.attribute.AttributeComputationType;
 import yurykorzun.art.universe.music.data.master.model.attribute.AttributeDataType;
 import yurykorzun.art.universe.music.data.master.model.attribute.AttributeTemporalType;
+import yurykorzun.art.universe.music.data.semantic.model.PayloadFields;
 import yurykorzun.art.universe.music.data.semantic.model.ProposalType;
 
 import java.util.ArrayList;
@@ -32,13 +33,13 @@ public class CreateAttributeDefStrategy implements ProposalApplyStrategy {
 
     @Override
     public String apply(JsonNode payload, ProposalRow proposal, ApplicationContext context) {
-        String code = ProposalPayloads.requireString(payload, "code", proposalTypeName());
-        String name = ProposalPayloads.requireString(payload, "name", proposalTypeName());
+        String code = ProposalPayloads.requireString(payload, PayloadFields.CODE, proposalTypeName());
+        String name = ProposalPayloads.requireString(payload, PayloadFields.NAME, proposalTypeName());
         AttributeDataType dataType = AttributeDataType.fromString(
-            ProposalPayloads.requireString(payload, "data_type", proposalTypeName())
+            ProposalPayloads.requireString(payload, PayloadFields.DATA_TYPE, proposalTypeName())
         );
-        int temporalType = payload.hasNonNull("temporal_type")
-            ? AttributeTemporalType.fromString(payload.get("temporal_type").asText()).getCode()
+        int temporalType = payload.hasNonNull(PayloadFields.TEMPORAL_TYPE)
+            ? AttributeTemporalType.fromString(payload.get(PayloadFields.TEMPORAL_TYPE).asText()).getCode()
             : attributeRepository.defaultTemporalType();
 
         AttributeRepository.AttributeDef existing = attributeRepository.findDefByCode(code);
@@ -56,7 +57,7 @@ public class CreateAttributeDefStrategy implements ProposalApplyStrategy {
     }
 
     private List<MasterEntityType> readApplicable(JsonNode payload) {
-        JsonNode node = payload.get("applicable_to");
+        JsonNode node = payload.get(PayloadFields.APPLICABLE_TO);
         List<MasterEntityType> result = new ArrayList<>();
         if (node != null && node.isArray()) {
             for (JsonNode item : node) {
